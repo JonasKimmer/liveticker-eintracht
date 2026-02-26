@@ -1,0 +1,1247 @@
+{
+  "name": "My workflow 6",
+  "nodes": [
+    {
+      "parameters": {
+        "url": "https://v3.football.api-sports.io/teams?league=140&season=2025",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "league",
+              "value": "78"
+            },
+            {
+              "name": "season",
+              "value": "2025"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        256,
+        -48
+      ],
+      "id": "8f1fe053-b716-49e7-a70f-2c8bbf2dab6d",
+      "name": "Alle Bundeliga Mannschaften",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "nw1wvLZ4u2BCZRVl",
+          "name": "Header Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const input = $input.all()[0].json;\n\nif (input.response) {\n  return input.response.map(item => ({\n    json: {\n      external_id: item.team.id,\n      name: item.team.name,\n      logo_url: item.team.logo\n    }\n  }));\n}\n\nreturn [{ json: input }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        480,
+        -48
+      ],
+      "id": "d2e7d99f-33ac-47b6-b4d3-6c03b4630d74",
+      "name": "Alles Bundeliga Mannschaften"
+    },
+    {
+      "parameters": {
+        "url": "https://v3.football.api-sports.io/fixtures?league=140&season=2025",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "league",
+              "value": "140"
+            },
+            {
+              "name": "season",
+              "value": "2025"
+            },
+            {
+              "name": "round",
+              "value": "Regular Season - 24"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        224,
+        2208
+      ],
+      "id": "b64fc5fe-99d6-422d-802c-a0a21eebd156",
+      "name": "Alle Bundeliga Mannschaften1",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "nw1wvLZ4u2BCZRVl",
+          "name": "Header Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Matches kommen vom Transform Node (2 Nodes zurück)\nconst matches = $('Transform Matches').all();\nconst teams = $('Get All Teams').all();\n\n// Team-Mapping\nconst teamMap = {};\nteams.forEach(team => {\n  teamMap[team.json.external_id] = team.json.id;\n});\n\n// Matches mit DB-IDs anreichern\nreturn matches.map(match => ({\n  json: {\n    external_id: match.json.external_id,\n    home_team_id: teamMap[match.json.home_team_external_id],\n    away_team_id: teamMap[match.json.away_team_external_id],\n    match_date: match.json.match_date,\n    status: match.json.status,\n    league_id: match.json.league_id,\n    league_name: match.json.league_name,\n    season: match.json.season,\n    score_home: match.json.score_home,\n    score_away: match.json.score_away\n  }\n}));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1104,
+        2208
+      ],
+      "id": "56b03565-4005-4e91-984a-882df7715154",
+      "name": "Code in JavaScript1"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT id, external_id FROM teams\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        896,
+        2208
+      ],
+      "id": "925dd0d0-0b34-41e1-bfc4-c4af2671a91f",
+      "name": "Get All Teams",
+      "credentials": {
+        "postgres": {
+          "id": "DpV9uZoIFOsBDj7t",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const matches = $input.all();\n\n// Alle Team-IDs sammeln\nconst teamIds = new Set();\nmatches.forEach(match => {\n  teamIds.add(match.json.home_team_external_id);\n  teamIds.add(match.json.away_team_external_id);\n});\n\n// IDs als String für SQL\nconst idsString = Array.from(teamIds).join(',');\n\n// Matches direkt als Array speichern\nreturn [{\n  json: {\n    team_ids: idsString,\n    matches: matches.map(m => m.json)  // Als Array, nicht String\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        624,
+        2208
+      ],
+      "id": "f3810af4-e444-4d69-bf57-87e863fca0a8",
+      "name": "Lookup Team IDs"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Debug-Version\nconst input = $input.all()[0].json;\n\n// Falls direkt ein Objekt mit response\nif (input.response) {\n  const matches = input.response;\n  \n  return matches.map(item => ({\n    json: {\n      external_id: item.fixture.id,\n      home_team_external_id: item.teams.home.id,\n      away_team_external_id: item.teams.away.id,\n      match_date: item.fixture.date,\n      status: item.fixture.status.short,\n      league_id: item.league.id,\n      league_name: item.league.name,\n      season: item.league.season,\n      round: item.league.round,\n      score_home: item.goals.home || 0,\n      score_away: item.goals.away || 0\n    }\n  }));\n}\n\n// Fallback: Zeig Struktur\nreturn [{ json: input }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        416,
+        2208
+      ],
+      "id": "96e18ce2-0b27-48b6-b003-6ba7958eb152",
+      "name": "Transform Matches"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO matches (external_id, home_team_id, away_team_id, match_date, status, league_id, league_name, season, score_home, score_away, created_at, updated_at)\nVALUES (\n  {{ $json.external_id }},\n  {{ $json.home_team_id }},\n  {{ $json.away_team_id }},\n  '{{ $json.match_date }}',\n  '{{ $json.status }}',\n  {{ $json.league_id }},\n  '{{ $json.league_name }}',\n  {{ $json.season }},\n  {{ $json.score_home }},\n  {{ $json.score_away }},\n  NOW(),\n  NOW()\n)\nON CONFLICT (external_id) DO UPDATE SET\n  status = EXCLUDED.status,\n  score_home = EXCLUDED.score_home,\n  score_away = EXCLUDED.score_away,\n  updated_at = NOW()",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        1408,
+        2192
+      ],
+      "id": "52df05e4-6415-4635-8f3d-7148a3669b7d",
+      "name": "Execute a SQL query1",
+      "credentials": {
+        "postgres": {
+          "id": "DpV9uZoIFOsBDj7t",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT m.id, t1.name as home, t2.name as away, m.status, m.score_home, m.score_away \nFROM matches m\nJOIN teams t1 ON m.home_team_id = t1.id\nJOIN teams t2 ON m.away_team_id = t2.id;",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        1776,
+        2208
+      ],
+      "id": "35636b76-b707-4008-910f-b48e3aa741f6",
+      "name": "Execute a SQL query2",
+      "credentials": {
+        "postgres": {
+          "id": "DpV9uZoIFOsBDj7t",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "https://v3.football.api-sports.io/fixtures/events",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "fixture",
+              "value": "1388308"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        160,
+        560
+      ],
+      "id": "39d39823-acf5-45d6-a939-8d3ae2b2c5fb",
+      "name": "Get Match Events",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "nw1wvLZ4u2BCZRVl",
+          "name": "Header Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const apiResponse = $input.all()[0].json;\n\nif (apiResponse.response) {\n  return apiResponse.response.map(event => ({\n    json: {\n      match_external_id: apiResponse.parameters.fixture,\n      minute: event.time.elapsed,\n      extra_time: event.time.extra || null,\n      team_external_id: event.team.id,\n      player_id: event.player?.id || null,\n      player_name: event.player?.name || null,\n      assist_id: event.assist?.id || null,\n      assist_name: event.assist?.name || null,\n      type: event.type,\n      detail: event.detail,\n      comments: event.comments || null\n    }\n  }));\n}\n\nreturn [];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        464,
+        560
+      ],
+      "id": "8ab4062e-3baf-481d-9e29-a640cdcbc49e",
+      "name": "Transform Events"
+    },
+    {
+      "parameters": {
+        "jsCode": "const events = $input.all();\n\nconsole.log('Events count:', events.length);\nconsole.log('First event:', events[0]?.json);\n\n// Alle einzigartigen IDs sammeln\nconst matchIds = new Set();\nconst teamIds = new Set();\n\nevents.forEach(event => {\n  matchIds.add(event.json.match_external_id);\n  teamIds.add(event.json.team_external_id);\n});\n\nconsole.log('Match IDs:', Array.from(matchIds));\nconsole.log('Team IDs:', Array.from(teamIds));\n\nreturn [{\n  json: {\n    match_ids: Array.from(matchIds).join(','),\n    team_ids: Array.from(teamIds).join(','),\n    events: events.map(e => e.json)\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        784,
+        560
+      ],
+      "id": "da51c82b-222c-4e26-b656-02af83a4ed1e",
+      "name": "Add DB IDs",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT \n  'match' as type, \n  external_id, \n  id \nFROM matches \nWHERE external_id IN ({{ $json.match_ids }})\n\nUNION ALL\n\nSELECT \n  'team' as type, \n  external_id, \n  id \nFROM teams \nWHERE external_id IN ({{ $json.team_ids }})",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        1344,
+        560
+      ],
+      "id": "8f726580-6852-47ae-b4df-a541d37d60f0",
+      "name": "Get Match and Team IDs",
+      "alwaysOutputData": true,
+      "credentials": {
+        "postgres": {
+          "id": "DpV9uZoIFOsBDj7t",
+          "name": "Postgres account"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "jsCode": "const eventsData = $('Add DB IDs').first().json;\nconst mappings = $('Get Match and Team IDs').all();\n\n// Mappings erstellen\nconst matchMap = {};\nconst teamMap = {};\n\nmappings.forEach(m => {\n  if (m.json.type === 'match') {\n    matchMap[m.json.external_id] = m.json.id;\n  } else {\n    teamMap[m.json.external_id] = m.json.id;\n  }\n});\n\n// Events mit DB-IDs\nreturn eventsData.events.map(event => ({\n  json: {\n    match_id: matchMap[event.match_external_id],\n    team_id: teamMap[event.team_external_id],\n    minute: event.minute,\n    extra_time: event.extra_time,\n    player_id: event.player_id,\n    player_name: event.player_name,\n    assist_id: event.assist_id,\n    assist_name: event.assist_name,\n    type: event.type,\n    detail: event.detail,\n    comments: event.comments\n  }\n}));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1632,
+        560
+      ],
+      "id": "14757eae-b3eb-4c01-926d-43f5c047919e",
+      "name": "Map to DB IDs",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO events (match_id, minute, extra_time, team_id, player_id, player_name, assist_id, assist_name, type, detail, comments, created_at)\nVALUES (\n  {{ $json.match_id }},\n  {{ $json.minute }},\n  {{ $json.extra_time }},\n  {{ $json.team_id }},\n  {{ $json.player_id }},\n  $${{ $json.player_name }}$$,\n  {{ $json.assist_id }},\n  $${{ $json.assist_name }}$$,\n  $${{ $json.type }}$$,\n  $${{ $json.detail }}$$,\n  $${{ $json.comments }}$$,\n  NOW()\n)\nON CONFLICT ON CONSTRAINT unique_event DO NOTHING",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        1872,
+        560
+      ],
+      "id": "d6b5ca8a-5ab7-4eed-aacf-b5f4f6debaef",
+      "name": "PostgreSQL Insert Events",
+      "alwaysOutputData": true,
+      "credentials": {
+        "postgres": {
+          "id": "DpV9uZoIFOsBDj7t",
+          "name": "Postgres account"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO teams (external_id, name, logo_url)\nVALUES (\n  {{ $json.external_id }},\n  '{{ $json.name }}',\n  '{{ $json.logo_url }}'\n)\nON CONFLICT (external_id) DO UPDATE SET\n  name = EXCLUDED.name,\n  logo_url = EXCLUDED.logo_url",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        736,
+        -48
+      ],
+      "id": "0758365c-7d47-4447-bb7f-1c3f160d8127",
+      "name": "Execute a SQL query",
+      "credentials": {
+        "postgres": {
+          "id": "DpV9uZoIFOsBDj7t",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const input = $input.all()[0].json;\n\nif (input.response && input.response.length > 0) {\n  const seasons = input.response[0].seasons;\n  \n  // Alle verfügbaren Seasons\n  return seasons.map(season => ({\n    json: {\n      year: season.year,\n      start_date: season.start,\n      end_date: season.end,\n      current: season.current\n    }\n  }));\n}\n\nreturn [];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        480,
+        -672
+      ],
+      "id": "1f302e66-a636-48e7-9281-8e6162ee5cdc",
+      "name": "Extract Seasons"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO seasons (year, start_date, end_date, current)\nVALUES (\n  {{ $json.year }},\n  '{{ $json.start_date }}',\n  '{{ $json.end_date }}',\n  {{ $json.current }}\n)\nON CONFLICT (year) DO UPDATE SET\n  start_date = EXCLUDED.start_date,\n  end_date = EXCLUDED.end_date,\n  current = EXCLUDED.current",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        752,
+        -672
+      ],
+      "id": "e6648aeb-b964-4867-8579-f56274a1e876",
+      "name": "Insert Seasons",
+      "credentials": {
+        "postgres": {
+          "id": "DpV9uZoIFOsBDj7t",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -384,
+        448
+      ],
+      "id": "daad3b38-a750-48f7-8a97-11909c9275a4",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO leagues (external_id, name, country, logo_url, type)\nVALUES (\n  {{ $json.external_id }},\n  '{{ $json.name }}',\n  '{{ $json.country }}',\n  '{{ $json.logo_url }}',\n  '{{ $json.type }}'\n)\nON CONFLICT (external_id) DO UPDATE SET\n  name = EXCLUDED.name,\n  logo_url = EXCLUDED.logo_url,\n  country = EXCLUDED.country,\n  type = EXCLUDED.type",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        752,
+        -496
+      ],
+      "id": "b87e46cd-4e5f-470e-8b1d-919f3d890ec1",
+      "name": "Insert League",
+      "credentials": {
+        "postgres": {
+          "id": "DpV9uZoIFOsBDj7t",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const input = $input.all()[0].json;\n\nif (input.response && input.response.length > 0) {\n  const item = input.response[0];\n  \n  // NUR League-Daten, KEINE Seasons!\n  return [{\n    json: {\n      external_id: item.league.id,\n      name: item.league.name,\n      country: item.country.name,\n      logo_url: item.league.logo,\n      type: item.league.type\n    }\n  }];\n}\n\nreturn [];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        480,
+        -496
+      ],
+      "id": "afb4ac90-6e51-40fe-8e0f-3abeeed31b1f",
+      "name": "League extrahieren"
+    },
+    {
+      "parameters": {
+        "url": "https://v3.football.api-sports.io/leagues",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "id",
+              "value": "78"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        288,
+        -496
+      ],
+      "id": "aebd5fef-5860-4564-b555-5c7924126976",
+      "name": "League importieren",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "nw1wvLZ4u2BCZRVl",
+          "name": "Header Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "https://v3.football.api-sports.io/leagues",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "season",
+              "value": "2024"
+            },
+            {
+              "name": "id",
+              "value": "78"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        288,
+        -672
+      ],
+      "id": "9627a088-5dfd-49e2-8f01-f3efce79f217",
+      "name": "Season importieren",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "nw1wvLZ4u2BCZRVl",
+          "name": "Header Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT id FROM seasons WHERE year = 2025\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        272,
+        -288
+      ],
+      "id": "498c2ddd-fe98-498c-8bb8-31c50f0dc3ab",
+      "name": "Get Season ID",
+      "credentials": {
+        "postgres": {
+          "id": "DpV9uZoIFOsBDj7t",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT id FROM leagues WHERE external_id = 78\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        480,
+        -288
+      ],
+      "id": "39f9508e-bf82-45f3-a10c-de87d28747ad",
+      "name": "Get League ID",
+      "credentials": {
+        "postgres": {
+          "id": "DpV9uZoIFOsBDj7t",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const leagueData = $('Get League ID').first().json;\nconst seasonData = $('Get Season ID').first().json;\n\nreturn [{\n  json: {\n    league_id: leagueData.id,\n    season_id: seasonData.id,\n    current_round: 'Regular Season - 1',\n    total_rounds: 34\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        736,
+        -288
+      ],
+      "id": "c33fcf04-db26-485a-8997-6b0944d3f061",
+      "name": "Combine IDs",
+      "executeOnce": false,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO league_seasons (league_id, season_id, current_round, total_rounds)\nVALUES (\n  {{ $json.league_id }},\n  {{ $json.season_id }},\n  '{{ $json.current_round }}',\n  {{ $json.total_rounds }}\n)\nON CONFLICT (league_id, season_id) DO UPDATE SET\n  current_round = EXCLUDED.current_round,\n  total_rounds = EXCLUDED.total_rounds",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        992,
+        -288
+      ],
+      "id": "4d37f1d9-4736-4a01-bcab-ee9b5f49306b",
+      "name": "Insert LeagueSeason",
+      "credentials": {
+        "postgres": {
+          "id": "DpV9uZoIFOsBDj7t",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "https://v3.football.api-sports.io/fixtures",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "league",
+              "value": "78"
+            },
+            {
+              "name": "season",
+              "value": "2025"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        272,
+        192
+      ],
+      "id": "189f003e-984e-4a58-aaac-ff0c2aa7a9fa",
+      "name": "Alle Bundeliga Mannschaften2",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "nw1wvLZ4u2BCZRVl",
+          "name": "Header Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT ls.id \nFROM league_seasons ls\nJOIN leagues l ON l.id = ls.league_id\nJOIN seasons s ON s.id = ls.season_id\nWHERE l.external_id = 78 AND s.year = 2025",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        752,
+        192
+      ],
+      "id": "89e9a53c-7663-4f85-9e38-139a21ac2ba0",
+      "name": "Execute a SQL query3",
+      "credentials": {
+        "postgres": {
+          "id": "DpV9uZoIFOsBDj7t",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const fixturesData = $('Alle Bundeliga Mannschaften2').all()[0].json;\nconst leagueSeasonData = $('Execute a SQL query3').first().json;\n\nconst league_season_id = leagueSeasonData.id;\n\nif (fixturesData.response) {\n  return fixturesData.response.map(item => ({\n    json: {\n      external_id: item.fixture.id,\n      league_season_id: league_season_id,\n      home_team_external_id: item.teams.home.id,\n      away_team_external_id: item.teams.away.id,\n      match_date: item.fixture.date,\n      round: item.league.round,\n      status: item.fixture.status.short === 'FT' ? 'finished' : \n              item.fixture.status.short.includes('1H') || item.fixture.status.short.includes('2H') ? 'live' : 'scheduled',\n      score_home: item.goals.home || 0,\n      score_away: item.goals.away || 0\n    }\n  }));\n}\n\nreturn [];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        960,
+        192
+      ],
+      "id": "323bd621-57ea-4365-a993-1e41d88a5159",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO matches (\n  external_id, \n  league_season_id, \n  home_team_id, \n  away_team_id, \n  match_date, \n  round, \n  status, \n  score_home, \n  score_away\n)\nVALUES (\n  {{ $json.external_id }},\n  {{ $json.league_season_id }},\n  (SELECT id FROM teams WHERE external_id = {{ $json.home_team_external_id }}),\n  (SELECT id FROM teams WHERE external_id = {{ $json.away_team_external_id }}),\n  '{{ $json.match_date }}',\n  '{{ $json.round }}',\n  '{{ $json.status }}',\n  {{ $json.score_home }},\n  {{ $json.score_away }}\n)\nON CONFLICT (external_id) DO UPDATE SET\n  status = EXCLUDED.status,\n  score_home = EXCLUDED.score_home,\n  score_away = EXCLUDED.score_away",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        1232,
+        208
+      ],
+      "id": "d48aa50c-c10a-4634-91d5-bae049356682",
+      "name": "Execute a SQL query4",
+      "credentials": {
+        "postgres": {
+          "id": "DpV9uZoIFOsBDj7t",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO events (\n  match_id, \n  minute, \n  extra_time, \n  team_id, \n  player_id, \n  player_name, \n  assist_id, \n  assist_name, \n  type, \n  detail, \n  comments\n)\nVALUES (\n  (SELECT id FROM matches WHERE external_id = {{ $json.match_external_id }}),\n  {{ $json.minute }},\n  {{ $json.extra_time }},\n  (SELECT id FROM teams WHERE external_id = {{ $json.team_external_id }}),\n  {{ $json.player_id }},\n  $${{ $json.player_name }}$$,\n  {{ $json.assist_id }},\n  $${{ $json.assist_name }}$$,\n  $${{ $json.type }}$$,\n  $${{ $json.detail }}$$,\n  $${{ $json.comments }}$$\n)\nON CONFLICT ON CONSTRAINT unique_event DO NOTHING",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        1056,
+        560
+      ],
+      "id": "2eece29f-39df-4523-9b1d-08f675445626",
+      "name": "Insert Match Event",
+      "alwaysOutputData": true,
+      "credentials": {
+        "postgres": {
+          "id": "DpV9uZoIFOsBDj7t",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "https://v3.football.api-sports.io/fixtures/statistics",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "fixture",
+              "value": "1388308"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        144,
+        1136
+      ],
+      "id": "9f968c8d-8a7b-4c79-8a47-007479457393",
+      "name": "Team statistics pro Spiel",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "nw1wvLZ4u2BCZRVl",
+          "name": "Header Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "https://v3.football.api-sports.io/fixtures/lineups?fixture=1388308",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "fixture",
+              "value": "1388308"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        160,
+        816
+      ],
+      "id": "1d8c7ea6-e4cb-493c-bb57-bdb46a163c8c",
+      "name": "Team AUfstellung pro Spiel",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "nw1wvLZ4u2BCZRVl",
+          "name": "Header Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "https://v3.football.api-sports.io/fixtures/players?fixture=1388308",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "fixture",
+              "value": "1388308"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        96,
+        1488
+      ],
+      "id": "062d5975-7056-4525-94ee-55977199c3f5",
+      "name": "spieler statistics in einem spiel",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "nw1wvLZ4u2BCZRVl",
+          "name": "Header Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const matchId = 2;\n\n// Team Mapping: API external_id → DB internal id\nconst teamMapping = {\n  157: 41,  // Bayern München\n  173: 53   // RB Leipzig\n};\n\nconst items_out = [];\n\nfor (const item of items) {\n  const responses = item.json.response;\n  \n  if (!responses || responses.length === 0) {\n    console.log(\"Keine Lineups gefunden\");\n    continue;\n  }\n  \n  for (const teamData of responses) {\n    if (!teamData || !teamData.team) continue;\n    \n    const externalTeamId = teamData.team.id;\n    const internalTeamId = teamMapping[externalTeamId];\n    \n    if (!internalTeamId) {\n      console.log(`⚠️ Team ${externalTeamId} nicht gefunden`);\n      continue;\n    }\n    \n    const formation = teamData.formation;\n    const coachId = teamData.coach?.id;\n    const coachName = teamData.coach?.name;\n    \n    // StartXI\n    if (teamData.startXI && Array.isArray(teamData.startXI)) {\n      for (const playerObj of teamData.startXI) {\n        const p = playerObj.player;\n        if (!p) continue;\n        \n        items_out.push({\n          json: {\n            match_id: matchId,\n            team_id: internalTeamId,\n            formation: formation || null,\n            coach_id: coachId || null,\n            coach_name: coachName || null,\n            player_id: p.id,\n            player_name: p.name,\n            number: p.number || null,\n            position: p.pos || null,\n            grid: p.grid || null,\n            is_substitute: false\n          }\n        });\n      }\n    }\n    \n    // Substitutes\n    if (teamData.substitutes && Array.isArray(teamData.substitutes)) {\n      for (const playerObj of teamData.substitutes) {\n        const p = playerObj.player;\n        if (!p) continue;\n        \n        items_out.push({\n          json: {\n            match_id: matchId,\n            team_id: internalTeamId,\n            formation: formation || null,\n            coach_id: coachId || null,\n            coach_name: coachName || null,\n            player_id: p.id,\n            player_name: p.name,\n            number: p.number || null,\n            position: p.pos || null,\n            grid: p.grid || null,\n            is_substitute: true\n          }\n        });\n      }\n    }\n  }\n}\n\nconsole.log(`✅ ${items_out.length} Spieler transformiert`);\nreturn items_out;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        368,
+        816
+      ],
+      "id": "72d224ea-959a-4ce9-ad5e-65ff02149c1e",
+      "name": "Code in JavaScript2"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO lineups (\n  match_id,\n  team_id,\n  formation,\n  coach_id,\n  coach_name,\n  player_id,\n  player_name,\n  number,\n  position,\n  grid,\n  is_substitute\n)\nVALUES (\n  {{ $json.match_id }},\n  {{ $json.team_id }},\n  '{{ $json.formation }}',\n  {{ $json.coach_id }},\n  '{{ $json.coach_name }}',\n  {{ $json.player_id }},\n  '{{ $json.player_name }}',\n  {{ $json.number }},\n  '{{ $json.position }}',\n  '{{ $json.grid }}',\n  {{ $json.is_substitute }}\n)\nON CONFLICT (match_id, player_id)\nDO NOTHING",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        816,
+        832
+      ],
+      "id": "bcafcbd3-0f0e-4e94-98a4-62d7cb312f35",
+      "name": "Insert LeagueSeason1",
+      "credentials": {
+        "postgres": {
+          "id": "DpV9uZoIFOsBDj7t",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT * FROM lineups LIMIT 10;",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        960,
+        960
+      ],
+      "id": "b7db9270-0e86-44b0-809d-57aa9f61f0eb",
+      "name": "Insert LeagueSeason2",
+      "credentials": {
+        "postgres": {
+          "id": "DpV9uZoIFOsBDj7t",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Node: Function - Transform Match Statistics\n\nconst matchId = 2;  // Hardcoded für Test (später dynamisch)\n\nconst teamMapping = {\n  157: 41,  // Bayern München\n  173: 53   // RB Leipzig\n};\n\nconst items_out = [];\n\nfor (const item of items) {\n  const responses = item.json.response;\n  \n  if (!responses || responses.length === 0) {\n    console.log(\"Keine Statistics gefunden\");\n    continue;\n  }\n  \n  for (const teamData of responses) {\n    const externalTeamId = teamData.team.id;\n    const internalTeamId = teamMapping[externalTeamId];\n    \n    if (!internalTeamId) {\n      console.log(`⚠️ Team ${externalTeamId} nicht in Mapping`);\n      continue;\n    }\n    \n    // Statistiken sammeln\n    const stats = {\n      match_id: matchId,\n      team_id: internalTeamId\n    };\n    \n    // Statistics Array parsen\n    for (const stat of teamData.statistics) {\n      const type = stat.type;\n      let value = stat.value;\n      \n      // NULL-Handling\n      if (value === null || value === undefined) {\n        value = 0;\n      }\n      \n      // String zu Integer konvertieren\n      if (typeof value === 'string') {\n        // Prozent-Werte (z.B. \"63%\")\n        if (value.includes('%')) {\n          value = parseInt(value.replace('%', ''));\n        } \n        // Floats (z.B. \"1.72\")\n        else if (value.includes('.')) {\n          value = Math.round(parseFloat(value));  // Runden auf Integer\n        }\n        // Normale Zahlen\n        else {\n          value = parseInt(value) || 0;\n        }\n      }\n      \n      // Mapping zu DB-Spalten (exakte Namen!)\n      const mapping = {\n        'Shots on Goal': 'shots_on_goal',\n        'Shots off Goal': 'shots_off_goal',\n        'Total Shots': 'total_shots',\n        'Blocked Shots': 'blocked_shots',\n        'Shots insidebox': 'shots_insidebox',\n        'Shots outsidebox': 'shots_outsidebox',\n        'Fouls': 'fouls',\n        'Corner Kicks': 'corner_kicks',\n        'Offsides': 'offsides',\n        'Ball Possession': 'ball_possession',\n        'Yellow Cards': 'yellow_cards',\n        'Red Cards': 'red_cards',\n        'Goalkeeper Saves': 'goalkeeper_saves',\n        'Total passes': 'total_passes',\n        'Passes accurate': 'passes_accurate',\n        'Passes %': 'passes_percentage'\n      };\n      \n      const dbColumn = mapping[type];\n      if (dbColumn) {\n        stats[dbColumn] = value;\n      }\n    }\n    \n    items_out.push({ json: stats });\n  }\n}\n\nconsole.log(`✅ ${items_out.length} Team-Statistiken transformiert`);\nreturn items_out;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        352,
+        1136
+      ],
+      "id": "cdd1b04e-b8d2-41c2-9a34-11cbb2eac1ec",
+      "name": "Code in JavaScript3"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO match_statistics (\n  match_id,\n  team_id,\n  shots_on_goal,\n  shots_off_goal,\n  total_shots,\n  blocked_shots,\n  shots_insidebox,\n  shots_outsidebox,\n  fouls,\n  corner_kicks,\n  offsides,\n  ball_possession,\n  yellow_cards,\n  red_cards,\n  goalkeeper_saves,\n  total_passes,\n  passes_accurate,\n  passes_percentage\n)\nVALUES (\n  {{ $json.match_id }},\n  {{ $json.team_id }},\n  {{ $json.shots_on_goal || 0 }},\n  {{ $json.shots_off_goal || 0 }},\n  {{ $json.total_shots || 0 }},\n  {{ $json.blocked_shots || 0 }},\n  {{ $json.shots_insidebox || 0 }},\n  {{ $json.shots_outsidebox || 0 }},\n  {{ $json.fouls || 0 }},\n  {{ $json.corner_kicks || 0 }},\n  {{ $json.offsides || 0 }},\n  {{ $json.ball_possession || 0 }},\n  {{ $json.yellow_cards || 0 }},\n  {{ $json.red_cards || 0 }},\n  {{ $json.goalkeeper_saves || 0 }},\n  {{ $json.total_passes || 0 }},\n  {{ $json.passes_accurate || 0 }},\n  {{ $json.passes_percentage || 0 }}\n)\nON CONFLICT (match_id, team_id)\nDO UPDATE SET\n  shots_on_goal = EXCLUDED.shots_on_goal,\n  shots_off_goal = EXCLUDED.shots_off_goal,\n  total_shots = EXCLUDED.total_shots,\n  blocked_shots = EXCLUDED.blocked_shots,\n  shots_insidebox = EXCLUDED.shots_insidebox,\n  shots_outsidebox = EXCLUDED.shots_outsidebox,\n  fouls = EXCLUDED.fouls,\n  corner_kicks = EXCLUDED.corner_kicks,\n  offsides = EXCLUDED.offsides,\n  ball_possession = EXCLUDED.ball_possession,\n  yellow_cards = EXCLUDED.yellow_cards,\n  red_cards = EXCLUDED.red_cards,\n  goalkeeper_saves = EXCLUDED.goalkeeper_saves,\n  total_passes = EXCLUDED.total_passes,\n  passes_accurate = EXCLUDED.passes_accurate,\n  passes_percentage = EXCLUDED.passes_percentage,\n  updated_at = NOW()",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        656,
+        1136
+      ],
+      "id": "0384dd0f-6bf9-4d4f-893f-de1e937e248e",
+      "name": "Insert LeagueSeason3",
+      "credentials": {
+        "postgres": {
+          "id": "DpV9uZoIFOsBDj7t",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Node: Function - Transform Player Statistics\n\nconst matchId = 2;\n\nconst teamMapping = {\n  157: 41,\n  173: 53\n};\n\nconst items_out = [];\n\nfor (const item of items) {\n  const responses = item.json.response;\n  \n  if (!responses || responses.length === 0) continue;\n  \n  for (const teamData of responses) {\n    const externalTeamId = teamData.team.id;\n    const internalTeamId = teamMapping[externalTeamId];\n    \n    if (!internalTeamId) continue;\n    \n    for (const playerData of teamData.players) {\n      const player = playerData.player;\n      const stats = playerData.statistics[0];\n      \n      if (!stats || !stats.games) continue;\n      \n      const games = stats.games;\n      const goals = stats.goals || {};\n      const passes = stats.passes || {};\n      const shots = stats.shots || {};\n      const tackles = stats.tackles || {};\n      const duels = stats.duels || {};\n      const dribbles = stats.dribbles || {};\n      const fouls = stats.fouls || {};\n      const cards = stats.cards || {};\n      const penalty = stats.penalty || {};\n      \n      items_out.push({\n        json: {\n          match_id: matchId,\n          team_id: internalTeamId,\n          player_id: player.id,\n          player_name: player.name,\n          \n          // Game Info (KORRIGIERT)\n          minutes_played: games.minutes || 0,\n          number: games.number || null,\n          position: games.position || null,\n          rating: games.rating ? parseFloat(games.rating) : null,\n          captain: games.captain || false,\n          substitute: games.substitute || false,\n          \n          // Offsides\n          offsides: stats.offsides || null,\n          \n          // Shots\n          shots_total: shots.total || null,\n          shots_on: shots.on || null,\n          \n          // Goals (KORRIGIERT)\n          goals_total: goals.total || 0,\n          goals_conceded: goals.conceded || null,\n          goals_assists: goals.assists || 0,\n          goals_saves: goals.saves || null,\n          \n          // Passes\n          passes_total: passes.total || null,\n          passes_key: passes.key || null,\n          passes_accuracy: passes.accuracy ? parseInt(passes.accuracy) : null,\n          \n          // Tackles (KORRIGIERT)\n          tackles_total: tackles.total || null,\n          tackles_blocks: tackles.blocks || null,\n          tackles_interceptions: tackles.interceptions || null,\n          \n          // Duels\n          duels_total: duels.total || null,\n          duels_won: duels.won || null,\n          \n          // Dribbles\n          dribbles_attempts: dribbles.attempts || null,\n          dribbles_success: dribbles.success || null,\n          dribbles_past: dribbles.past || null,\n          \n          // Fouls\n          fouls_drawn: fouls.drawn || null,\n          fouls_committed: fouls.committed || null,\n          \n          // Cards (KORRIGIERT)\n          cards_yellow: cards.yellow || 0,\n          cards_red: cards.red || 0,\n          \n          // Penalty\n          penalty_won: penalty.won || null,\n          penalty_committed: penalty.commited || null,\n          penalty_scored: penalty.scored || 0,\n          penalty_missed: penalty.missed || 0,\n          penalty_saved: penalty.saved || null\n        }\n      });\n    }\n  }\n}\n\nconsole.log(`✅ ${items_out.length} Spieler-Statistiken`);\nreturn items_out;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        304,
+        1488
+      ],
+      "id": "c40fc956-3bb1-4008-9470-b4b807c2fd5b",
+      "name": "Code in JavaScript4"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO player_statistics (\n  match_id, team_id, player_id, player_name,\n  minutes_played, number, position, rating, captain, substitute,\n  offsides,\n  shots_total, shots_on,\n  goals_total, goals_conceded, goals_assists, goals_saves,\n  passes_total, passes_key, passes_accuracy,\n  tackles_total, tackles_blocks, tackles_interceptions,\n  duels_total, duels_won,\n  dribbles_attempts, dribbles_success, dribbles_past,\n  fouls_drawn, fouls_committed,\n  cards_yellow, cards_red,\n  penalty_won, penalty_committed, penalty_scored, penalty_missed, penalty_saved\n)\nVALUES (\n  {{ $json.match_id }}, \n  {{ $json.team_id }}, \n  {{ $json.player_id }}, \n  '{{ $json.player_name }}',\n  {{ $json.minutes_played }}, \n  {{ $json.number }}, \n  '{{ $json.position }}', \n  {{ $json.rating }}, \n  {{ $json.captain }}, \n  {{ $json.substitute }},\n  {{ $json.offsides }},\n  {{ $json.shots_total }}, \n  {{ $json.shots_on }},\n  {{ $json.goals_total }}, \n  {{ $json.goals_conceded }}, \n  {{ $json.goals_assists }}, \n  {{ $json.goals_saves }},\n  {{ $json.passes_total }}, \n  {{ $json.passes_key }}, \n  {{ $json.passes_accuracy }},\n  {{ $json.tackles_total }}, \n  {{ $json.tackles_blocks }}, \n  {{ $json.tackles_interceptions }},\n  {{ $json.duels_total }}, \n  {{ $json.duels_won }},\n  {{ $json.dribbles_attempts }}, \n  {{ $json.dribbles_success }}, \n  {{ $json.dribbles_past }},\n  {{ $json.fouls_drawn }}, \n  {{ $json.fouls_committed }},\n  {{ $json.cards_yellow }}, \n  {{ $json.cards_red }},\n  {{ $json.penalty_won }}, \n  {{ $json.penalty_committed }}, \n  {{ $json.penalty_scored }}, \n  {{ $json.penalty_missed }}, \n  {{ $json.penalty_saved }}\n)\nON CONFLICT (match_id, player_id)\nDO UPDATE SET\n  rating = EXCLUDED.rating,\n  goals_total = EXCLUDED.goals_total,\n  goals_assists = EXCLUDED.goals_assists,\n  updated_at = NOW()",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        704,
+        1488
+      ],
+      "id": "5cf60ac0-a64a-4e96-9c1b-847b73882eae",
+      "name": "Insert LeagueSeason4",
+      "credentials": {
+        "postgres": {
+          "id": "DpV9uZoIFOsBDj7t",
+          "name": "Postgres account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Alle Bundeliga Mannschaften": {
+      "main": [
+        [
+          {
+            "node": "Alles Bundeliga Mannschaften",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Alles Bundeliga Mannschaften": {
+      "main": [
+        [
+          {
+            "node": "Execute a SQL query",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Alle Bundeliga Mannschaften1": {
+      "main": [
+        [
+          {
+            "node": "Transform Matches",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get All Teams": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Lookup Team IDs": {
+      "main": [
+        [
+          {
+            "node": "Get All Teams",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Transform Matches": {
+      "main": [
+        [
+          {
+            "node": "Lookup Team IDs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript1": {
+      "main": [
+        [
+          {
+            "node": "Execute a SQL query1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute a SQL query1": {
+      "main": [
+        [
+          {
+            "node": "Execute a SQL query2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Match Events": {
+      "main": [
+        [
+          {
+            "node": "Transform Events",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Transform Events": {
+      "main": [
+        [
+          {
+            "node": "Add DB IDs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Add DB IDs": {
+      "main": [
+        [
+          {
+            "node": "Insert Match Event",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Match and Team IDs": {
+      "main": [
+        [
+          {
+            "node": "Map to DB IDs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Map to DB IDs": {
+      "main": [
+        [
+          {
+            "node": "PostgreSQL Insert Events",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute a SQL query": {
+      "main": [
+        []
+      ]
+    },
+    "Extract Seasons": {
+      "main": [
+        [
+          {
+            "node": "Insert Seasons",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Team AUfstellung pro Spiel",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "League extrahieren": {
+      "main": [
+        [
+          {
+            "node": "Insert League",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "League importieren": {
+      "main": [
+        [
+          {
+            "node": "League extrahieren",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Season importieren": {
+      "main": [
+        [
+          {
+            "node": "Extract Seasons",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Season ID": {
+      "main": [
+        [
+          {
+            "node": "Get League ID",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get League ID": {
+      "main": [
+        [
+          {
+            "node": "Combine IDs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Combine IDs": {
+      "main": [
+        [
+          {
+            "node": "Insert LeagueSeason",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Alle Bundeliga Mannschaften2": {
+      "main": [
+        [
+          {
+            "node": "Execute a SQL query3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute a SQL query3": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Execute a SQL query4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insert Match Event": {
+      "main": [
+        [
+          {
+            "node": "Get Match and Team IDs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Team AUfstellung pro Spiel": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript2": {
+      "main": [
+        [
+          {
+            "node": "Insert LeagueSeason1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Team statistics pro Spiel": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript3": {
+      "main": [
+        [
+          {
+            "node": "Insert LeagueSeason3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "spieler statistics in einem spiel": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript4": {
+      "main": [
+        [
+          {
+            "node": "Insert LeagueSeason4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner",
+    "timeSavedPerExecution": 2,
+    "errorWorkflow": "lCkBomRKpsZKahgU"
+  },
+  "versionId": "27816e1c-de90-4c95-a5fc-84b4dae0db91",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "c812d7c91145a37daf0cb923fa307183fa91637fdbe8017dda5dce71e0f572b5"
+  },
+  "id": "lCkBomRKpsZKahgU",
+  "tags": []
+}

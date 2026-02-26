@@ -1,0 +1,150 @@
+# 5. Implementation
+
+## 5.1 System-Architektur
+
+Das entwickelte Liveticker-System folgt einer mehrschichtigen Architektur 
+(Layered Architecture), die eine klare Trennung von Verantwortlichkeiten 
+gewährleistet (siehe Abbildung X).
+
+### 5.1.1 Datenbank-Schema
+
+Die Datenhaltung erfolgt in PostgreSQL 15 mit einer normalisierten 
+Tabellenstruktur. Im Gegensatz zu einem denormalisierten Ansatz, 
+bei dem Liga- und Season-Informationen direkt in der `matches`-Tabelle 
+gespeichert würden, wurde eine Zwischentabelle `league_seasons` 
+eingeführt. Diese repräsentiert die m:n-Beziehung zwischen Ligen und 
+Saisons und ermöglicht:
+
+- Vermeidung von Datenredundanz
+- Flexible Verknüpfung von Ligen und Saisons
+- Erweiterbarkeit für zusätzliche Wettbewerbe
+
+**Entity-Relationship-Modell:**
+Das ER-Modell (siehe Abbildung Y) zeigt die Kernentitäten `League`, 
+`Season`, `LeagueSeason`, `Match`, `Event` und `TickerEntry`. Foreign 
+Keys mit `CASCADE DELETE` gewährleisten referentielle Integrität.
+
+### 5.1.2 Backend-Implementierung
+
+Das Backend wurde mit FastAPI implementiert und folgt dem Repository 
+Pattern zur Kapselung der Datenbankzugriffe. Diese Architektur bietet:
+
+**Vorteile:**
+- Testbarkeit durch Dependency Injection
+- Wiederverwendbarkeit von Datenbank-Logik
+- Type Safety durch Pydantic-Schemas
+- Automatische API-Dokumentation (Swagger/OpenAPI)
+
+**Beispiel-Implementation:**
+```python
+class MatchRepository:
+    """Repository für Match-Datenbank-Operationen."""
+    
+    def get_by_league_season(self, league_season_id: int) -> list[Match]:
+        return (
+            self.db.query(Match)
+            .options(
+                joinedload(Match.home_team),
+                joinedload(Match.away_team)
+            )
+            .filter(Match.league_season_id == league_season_id)
+            .all()
+        )
+```
+
+Dieser Ansatz vermeidet SQL-Duplikation und ermöglicht durch 
+`joinedload()` Eager Loading zur Vermeidung von N+1-Query-Problemen.
+
+### 5.1.3 LLM-Integration
+
+Die Integration von Claude AI (Anthropic) erfolgt über einen 
+Abstraction Layer (`llm_service.py`), der verschiedene LLM-Provider 
+unterstützen kann. Die Generierung erfolgt zweistufig:
+
+1. **System Prompt:** Definiert Rolle, Kontext und Stil
+2. **User Prompt:** Enthält Event-Daten (Spieler, Minute, Typ)
+
+**Prompt Engineering:**
+```
+System: Du bist ein Sportjournalist. Schreibe im [STIL] Stil.
+User: Tor in Minute 23 durch Max Mustermann (Vorlage: John Doe)
+Output: Mustermann trifft zur Führung! (neutral)
+        TOOOOR! Mustermann mit der Führung! (euphorisch)
+```
+
+Die Stil-Parameter (neutral, euphorisch, kritisch) werden via 
+Query-Parameter gesteuert und ermöglichen situationsabhängige 
+Textgenerierung.
+
+## 5.2 Workflow-Automation
+
+Die Datenakquise erfolgt über n8n-Workflows, die API-Football 
+im 10-Sekunden-Takt abfragen. Die Pipeline besteht aus:
+
+1. **HTTP Request Node:** Abruf von API-Football
+2. **JavaScript Node:** Daten-Transformation
+3. **PostgreSQL Node:** INSERT mit `ON CONFLICT DO NOTHING`
+
+Diese Architektur ermöglicht:
+- Automatisches Live-Tracking ohne manuelle Eingriffe
+- Deduplizierung durch Database Constraints
+- Fehlertoleranz bei API-Ausfällen
+
+## 5.3 Frontend-Implementierung
+
+Das React-Frontend kommuniziert via REST API mit dem Backend. 
+Zentrale Features:
+
+- Auto-Refresh (5 Sekunden Polling)
+- Ticker-Generierung per Button
+- Event-Timeline in Echtzeit
+
+**Technische Umsetzung:**
+```javascript
+useEffect(() => {
+  if (selectedMatchId) {
+    loadEvents();
+    const interval = setInterval(loadEvents, 5000);
+    return () => clearInterval(interval);
+  }
+}, [selectedMatchId]);
+```
+
+## 5.4 Performance-Optimierungen
+
+Folgende Maßnahmen wurden zur Performance-Steigerung implementiert:
+
+- **Eager Loading:** Relationships werden via `joinedload()` 
+  in einer Query geladen (statt N+1 Queries)
+- **Connection Pooling:** SQLAlchemy QueuePool mit 5-10 Connections
+- **Indizes:** Auf Foreign Keys und `external_id` Feldern
+- **Pagination:** Skip/Limit auf allen List-Endpunkten
+
+**Benchmark-Ergebnisse:**
+[Hier könnten Messwerte eingefügt werden]
+
+## 5.5 Herausforderungen & Lösungen
+
+### Challenge 1: Datenbank-Migration
+**Problem:** Bestehende denormalisierte Struktur musste 
+zu normalisiertem Schema migriert werden.
+
+**Lösung:** Implementierung von Alembic Migrations mit 
+kompletter DB-Neuerstellung. Daten wurden via n8n 
+neu importiert.
+
+### Challenge 2: API Rate Limits
+**Problem:** API-Football Free Tier erlaubt nur 
+100 Requests/Tag.
+
+**Lösung:**
+- Scheduled Workflows (nur bei Live-Matches)
+- Database Constraints gegen Duplikate
+- Lokales Caching in PostgreSQL
+
+### Challenge 3: Circular Imports
+**Problem:** Pydantic Schemas mit verschachtelten 
+Relationships führten zu Circular Imports.
+
+**Lösung:** Einführung von "Simple" Schemas ohne 
+Nested Objects für Listen-Endpoints.
