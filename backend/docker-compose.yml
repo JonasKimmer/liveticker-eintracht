@@ -3,15 +3,15 @@ version: "3.8"
 services:
   postgres:
     image: postgres:15
-    container_name: liveticker_db
+    container_name: liveticker_eintracht_db
     environment:
       POSTGRES_USER: liveticker_user
       POSTGRES_PASSWORD: dev_password_123
-      POSTGRES_DB: liveticker_dev
+      POSTGRES_DB: liveticker_eintracht
     ports:
-      - "5433:5432"
+      - "5434:5432"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - postgres_eintracht_data:/var/lib/postgresql/data
 
 volumes:
-  postgres_data:
+  postgres_eintracht_data:

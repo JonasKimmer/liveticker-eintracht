@@ -1,29 +1,17 @@
-"""
-SQLAlchemy Model für UserFavorites (Favoriten-Teams).
-"""
-
-from sqlalchemy import Column, Integer, ForeignKey, DateTime, func, UniqueConstraint
+from sqlalchemy import Column, Integer, TIMESTAMP, ForeignKey, UniqueConstraint
 from sqlalchemy.orm import relationship
+from sqlalchemy.sql import func
 from app.core.database import Base
 
 
 class UserFavorite(Base):
-    """User-Favoriten-Teams."""
-
     __tablename__ = "user_favorites"
+    __table_args__ = (UniqueConstraint("team_id", name="unique_favorite_team"),)
 
-    id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(Integer, nullable=False)  # Später: ForeignKey("users.id")
-    team_id = Column(Integer, ForeignKey("teams.id"), nullable=False)
-    created_at = Column(DateTime(timezone=True), server_default=func.now())
-
-    # Unique: Ein User kann ein Team nur einmal favorisieren
-    __table_args__ = (
-        UniqueConstraint("user_id", "team_id", name="unique_user_team_favorite"),
+    id = Column(Integer, primary_key=True)
+    team_id = Column(
+        Integer, ForeignKey("teams.id", ondelete="CASCADE"), nullable=False
     )
+    created_at = Column(TIMESTAMP(timezone=True), server_default=func.now())
 
-    # Relationships
-    team = relationship("Team", backref="favorited_by")
-
-    def __repr__(self):
-        return f"<UserFavorite(user={self.user_id}, team={self.team_id})>"
+    team = relationship("Team", back_populates="favorites")

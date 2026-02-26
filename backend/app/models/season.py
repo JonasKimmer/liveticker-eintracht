@@ -1,28 +1,23 @@
-"""
-SQLAlchemy Model für Seasons (Saisons).
-"""
-
-from sqlalchemy import Column, Integer, Date, Boolean, DateTime, func
+from sqlalchemy import Column, Integer, String, Date, TIMESTAMP
+from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
+from sqlalchemy.sql import func
 from app.core.database import Base
 
 
 class Season(Base):
-    """Saison-Model (2024/25, 2025/26, etc.)."""
-
     __tablename__ = "seasons"
 
-    id = Column(Integer, primary_key=True, index=True)
-    year = Column(Integer, nullable=False, unique=True)  # 2025
-    start_date = Column(Date, nullable=True)
-    end_date = Column(Date, nullable=True)
-    current = Column(Boolean, default=False)
-    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    id = Column(Integer, primary_key=True)
+    external_id = Column(Integer, nullable=True)
+    uid = Column(UUID, nullable=True)
+    sport = Column(String(20), nullable=False, default="Football")
+    title = Column(String(100), nullable=False)
+    short_title = Column(String(20), nullable=True)
+    starts_at = Column(Date, nullable=True)
+    ends_at = Column(Date, nullable=True)
+    source = Column(String(20), nullable=False, default="partner")
+    created_at = Column(TIMESTAMP(timezone=True), server_default=func.now())
 
-    # Relationships
-    league_seasons = relationship(
-        "LeagueSeason", back_populates="season", cascade="all, delete-orphan"
-    )
-
-    def __repr__(self):
-        return f"<Season(year={self.year})>"
+    matches = relationship("Match", back_populates="season")
+    standings = relationship("Standing", back_populates="season")

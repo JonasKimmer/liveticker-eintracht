@@ -2,7 +2,7 @@ from datetime import datetime
 from sqlalchemy.orm import Session, joinedload
 from sqlalchemy import or_
 from app.models.match import Match
-from app.models.league_season import LeagueSeason
+from app.models.competition import Competition
 from app.schemas.match import MatchCreate, MatchUpdate
 
 
@@ -10,150 +10,101 @@ class MatchRepository:
     def __init__(self, db: Session):
         self.db = db
 
-    def get_all(self, skip: int = 0, limit: int = 100) -> list[Match]:
-        return (
-            self.db.query(Match)
-            .options(
-                joinedload(Match.home_team),
-                joinedload(Match.away_team),
-                joinedload(Match.league_season),
-            )
-            .offset(skip)
-            .limit(limit)
-            .all()
+    def _base_query(self):
+        return self.db.query(Match).options(
+            joinedload(Match.home_team),
+            joinedload(Match.away_team),
+            joinedload(Match.competition),
+            joinedload(Match.season),
         )
+
+    def get_all(self, skip: int = 0, limit: int = 100) -> list[Match]:
+        return self._base_query().offset(skip).limit(limit).all()
 
     def get_by_id(self, match_id: int) -> Match | None:
-        return (
-            self.db.query(Match)
-            .options(
-                joinedload(Match.home_team),
-                joinedload(Match.away_team),
-                joinedload(Match.league_season),
-            )
-            .filter(Match.id == match_id)
-            .first()
-        )
+        return self._base_query().filter(Match.id == match_id).first()
 
-    def get_by_league_season(
-        self, league_season_id: int, skip: int = 0, limit: int = 100
+    def get_by_competition(
+        self, competition_id: int, skip: int = 0, limit: int = 100
     ) -> list[Match]:
         return (
-            self.db.query(Match)
-            .options(joinedload(Match.home_team), joinedload(Match.away_team))
-            .filter(Match.league_season_id == league_season_id)
-            .order_by(Match.match_date)
+            self._base_query()
+            .filter(Match.competition_id == competition_id)
+            .order_by(Match.starts_at)
             .offset(skip)
             .limit(limit)
             .all()
         )
 
-    def get_by_round(self, league_season_id: int, round: str) -> list[Match]:
+    def get_by_matchday(self, competition_id: int, matchday: int) -> list[Match]:
         return (
-            self.db.query(Match)
-            .options(joinedload(Match.home_team), joinedload(Match.away_team))
-            .filter(Match.league_season_id == league_season_id, Match.round == round)
-            .order_by(Match.match_date)
+            self._base_query()
+            .filter(Match.competition_id == competition_id, Match.matchday == matchday)
+            .order_by(Match.starts_at)
             .all()
         )
 
     def get_by_team(self, team_id: int, skip: int = 0, limit: int = 100) -> list[Match]:
         return (
-            self.db.query(Match)
-            .options(joinedload(Match.home_team), joinedload(Match.away_team))
+            self._base_query()
             .filter(or_(Match.home_team_id == team_id, Match.away_team_id == team_id))
-            .order_by(Match.match_date.desc())
+            .order_by(Match.starts_at.desc())
             .offset(skip)
             .limit(limit)
             .all()
         )
 
     def get_live(self) -> list[Match]:
-        return (
-            self.db.query(Match)
-            .options(joinedload(Match.home_team), joinedload(Match.away_team))
-            .filter(Match.status == "live")
-            .all()
-        )
+        return self._base_query().filter(Match.match_state == "Live").all()
 
     def get_by_date(self, date: datetime) -> list[Match]:
         start = date.replace(hour=0, minute=0, second=0)
         end = date.replace(hour=23, minute=59, second=59)
         return (
-            self.db.query(Match)
-            .options(joinedload(Match.home_team), joinedload(Match.away_team))
-            .filter(Match.match_date >= start, Match.match_date <= end)
-            .order_by(Match.match_date)
+            self._base_query()
+            .filter(Match.starts_at >= start, Match.starts_at <= end)
+            .order_by(Match.starts_at)
             .all()
         )
 
-    def get_competitions_by_team(self, team_id: int) -> list[LeagueSeason]:
-        from app.models.team_league import TeamLeague
-        from app.models.season import Season
-
+    def get_competitions_by_team(self, team_id: int) -> list[Competition]:
         return (
-            self.db.query(LeagueSeason)
-            .options(
-                joinedload(LeagueSeason.league),
-                joinedload(LeagueSeason.season),
+            self.db.query(Competition)
+            .join(
+                Match, or_(Match.home_team_id == team_id, Match.away_team_id == team_id)
             )
-            .join(TeamLeague, TeamLeague.league_id == LeagueSeason.league_id)
-            .join(Season, Season.id == LeagueSeason.season_id)
-            .filter(
-                TeamLeague.team_id == team_id,
-                TeamLeague.season_year == Season.year,
-            )
+            .filter(Match.competition_id == Competition.id)
             .distinct()
             .all()
         )
 
     def get_matchdays_by_team_and_competition(
-        self, team_id: int, league_season_id: int
-    ) -> list[str]:
-        """Liest Spieltage aus league_seasons.rounds (JSONB).
-        Fallback auf matches.round wenn rounds noch nicht importiert."""
-        import json
-
-        ls = (
-            self.db.query(LeagueSeason)
-            .filter(LeagueSeason.id == league_season_id)
-            .first()
-        )
-
-        if ls and ls.rounds:
-            rounds = ls.rounds
-            if isinstance(rounds, str):
-                rounds = json.loads(rounds)
-            return rounds if isinstance(rounds, list) else []
-
-        # Fallback: aus bereits importierten Matches lesen
+        self, team_id: int, competition_id: int
+    ) -> list[int]:
         rows = (
-            self.db.query(Match.round)
+            self.db.query(Match.matchday)
             .filter(
-                Match.league_season_id == league_season_id,
+                Match.competition_id == competition_id,
                 or_(Match.home_team_id == team_id, Match.away_team_id == team_id),
+                Match.matchday.isnot(None),
             )
             .distinct()
-            .order_by(Match.round)
+            .order_by(Match.matchday)
             .all()
         )
-        return [r.round for r in rows if r.round]
+        return [r.matchday for r in rows]
 
     def get_by_team_competition_matchday(
-        self, team_id: int, league_season_id: int, round: str
+        self, team_id: int, competition_id: int, matchday: int
     ) -> list[Match]:
         return (
-            self.db.query(Match)
-            .options(
-                joinedload(Match.home_team),
-                joinedload(Match.away_team),
-            )
+            self._base_query()
             .filter(
-                Match.league_season_id == league_season_id,
-                Match.round == round,
+                Match.competition_id == competition_id,
+                Match.matchday == matchday,
                 or_(Match.home_team_id == team_id, Match.away_team_id == team_id),
             )
-            .order_by(Match.match_date)
+            .order_by(Match.starts_at)
             .all()
         )
 

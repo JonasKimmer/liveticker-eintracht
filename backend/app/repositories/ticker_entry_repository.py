@@ -1,7 +1,7 @@
+from datetime import datetime, timezone
 from sqlalchemy.orm import Session
 from app.models.ticker_entry import TickerEntry
 from app.schemas.ticker_entry import TickerEntryCreate, TickerEntryUpdate
-from datetime import datetime, timezone
 
 
 class TickerEntryRepository:
@@ -20,18 +20,7 @@ class TickerEntryRepository:
         return (
             self.db.query(TickerEntry)
             .filter(TickerEntry.match_id == match_id)
-            .order_by(TickerEntry.minute.desc())
-            .offset(skip)
-            .limit(limit)
-            .all()
-        )
-
-    def get_by_mode(
-        self, mode: str, skip: int = 0, limit: int = 100
-    ) -> list[TickerEntry]:
-        return (
-            self.db.query(TickerEntry)
-            .filter(TickerEntry.mode == mode)
+            .order_by(TickerEntry.created_at.desc())
             .offset(skip)
             .limit(limit)
             .all()
@@ -40,22 +29,15 @@ class TickerEntryRepository:
     def get_published(self, match_id: int) -> list[TickerEntry]:
         return (
             self.db.query(TickerEntry)
-            .filter(
-                TickerEntry.match_id == match_id,
-                TickerEntry.status == "published",
-            )
-            .order_by(TickerEntry.minute.desc())
+            .filter(TickerEntry.match_id == match_id, TickerEntry.status == "published")
+            .order_by(TickerEntry.created_at.desc())
             .all()
         )
 
     def create(self, entry: TickerEntryCreate) -> TickerEntry:
         data = entry.model_dump()
-
-        # Manuelle Einträge sofort publishen
-        if data.get("mode") == "manual" and data.get("status") == "draft":
+        if data.get("source") == "manual" and data.get("status") == "draft":
             data["status"] = "published"
-            data["published_at"] = datetime.now(timezone.utc)
-
         db_entry = TickerEntry(**data)
         self.db.add(db_entry)
         self.db.commit()
@@ -79,7 +61,6 @@ class TickerEntryRepository:
         if not db_entry:
             return None
         db_entry.status = "published"
-        db_entry.published_at = datetime.now(timezone.utc)
         self.db.commit()
         self.db.refresh(db_entry)
         return db_entry

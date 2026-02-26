@@ -1,23 +1,30 @@
-# app/models/team.py
-from sqlalchemy import Column, Integer, String, Boolean, DateTime, func
+from sqlalchemy import Column, Integer, String, Boolean, TIMESTAMP
+from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.orm import relationship
+from sqlalchemy.sql import func
 from app.core.database import Base
 
 
 class Team(Base):
     __tablename__ = "teams"
 
-    id = Column(Integer, primary_key=True, index=True)
-    external_id = Column(Integer, nullable=True, index=True, unique=True)
+    id = Column(Integer, primary_key=True)
+    external_id = Column(Integer, nullable=True, unique=True)
+    uid = Column(UUID, nullable=True)
+    sport = Column(String(20), nullable=False, default="Football")
     name = Column(String(100), nullable=False)
-    short_name = Column(String(50), nullable=True)  # "Eintracht" / "shortName"
-    code = Column(String(10), nullable=True)  # "EIN" / "MUN"
+    initials = Column(String(10), nullable=True)
+    short_name = Column(String(100), nullable=True)
     logo_url = Column(String(255), nullable=True)
-    country = Column(String(100), nullable=True)
-    founded = Column(Integer, nullable=True)
-    venue_name = Column(String(100), nullable=True)
-    venue_capacity = Column(Integer, nullable=True)
-    is_partner = Column(Boolean, default=False)  # Tenant-Kennzeichnung
-    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    is_partner_team = Column(Boolean, default=False)
+    hidden = Column(Boolean, default=False)
+    source = Column(String(20), nullable=False, default="partner")
+    created_at = Column(TIMESTAMP(timezone=True), server_default=func.now())
 
-    def __repr__(self):
-        return f"<Team(id={self.id}, name='{self.name}')>"
+    home_matches = relationship(
+        "Match", foreign_keys="Match.home_team_id", back_populates="home_team"
+    )
+    away_matches = relationship(
+        "Match", foreign_keys="Match.away_team_id", back_populates="away_team"
+    )
+    favorites = relationship("UserFavorite", back_populates="team")

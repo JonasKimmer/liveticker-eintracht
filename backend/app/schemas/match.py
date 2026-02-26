@@ -1,63 +1,65 @@
-"""
-Pydantic Schemas für Match.
-"""
-
 from datetime import datetime
+from typing import Optional
 from pydantic import BaseModel, ConfigDict
-from app.schemas.team import Team
-from app.schemas.league_season import LeagueSeasonSimple
 
 
-class MatchBase(BaseModel):
-    league_season_id: int
-    home_team_id: int
-    away_team_id: int
-    match_date: datetime
-    round: str | None = None
-    status: str = "scheduled"
-
-
-class MatchCreate(MatchBase):
-    external_id: int | None = None
-    score_home: int = 0
-    score_away: int = 0
+class MatchCreate(BaseModel):
+    external_id: Optional[int] = None
+    sport: str = "Football"
+    season_id: Optional[int] = None
+    competition_id: Optional[int] = None
+    home_team_id: Optional[int] = None
+    away_team_id: Optional[int] = None
+    home_score: Optional[int] = None
+    away_score: Optional[int] = None
+    matchday: Optional[int] = None
+    starts_at: Optional[datetime] = None
+    ends_at: Optional[datetime] = None
+    venue: Optional[str] = None
+    city: Optional[str] = None
+    match_state: Optional[str] = None
+    match_phase: Optional[str] = None
+    is_scheduled: bool = False
+    source: str = "partner"
 
 
 class MatchUpdate(BaseModel):
-    league_season_id: int | None = None
-    round: str | None = None
-    match_date: datetime | None = None
-    status: str | None = None
-    score_home: int | None = None
-    score_away: int | None = None
-
-
-class Match(MatchBase):
-    id: int
-    external_id: int | None
-    score_home: int | None = None  # Fix: None erlaubt für noch nicht gespielte Matches
-    score_away: int | None = None  # Fix: None erlaubt für noch nicht gespielte Matches
-    minute: int | None = None
-    created_at: datetime
-    updated_at: datetime | None
-
-    home_team: Team
-    away_team: Team
-    league_season: LeagueSeasonSimple
-
-    model_config = ConfigDict(from_attributes=True)
+    home_score: Optional[int] = None
+    away_score: Optional[int] = None
+    match_state: Optional[str] = None
+    match_phase: Optional[str] = None
+    starts_at: Optional[datetime] = None
+    ends_at: Optional[datetime] = None
+    venue: Optional[str] = None
+    city: Optional[str] = None
+    is_scheduled: Optional[bool] = None
 
 
 class MatchSimple(BaseModel):
     id: int
-    league_season_id: int
-    home_team_id: int
-    away_team_id: int
-    match_date: datetime
-    round: str | None
-    status: str
-    score_home: int | None = None  # Fix: None erlaubt
-    score_away: int | None = None  # Fix: None erlaubt
-    minute: int | None = None
+    external_id: Optional[int]
+    sport: str
+    season_id: Optional[int]
+    competition_id: Optional[int]
+    home_team_id: Optional[int]
+    away_team_id: Optional[int]
+    home_score: Optional[int]
+    away_score: Optional[int]
+    matchday: Optional[int]
+    starts_at: Optional[datetime]
+    match_state: Optional[str]
+    match_phase: Optional[str]
+    source: str
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class Match(MatchSimple):
+    ends_at: Optional[datetime]
+    venue: Optional[str]
+    city: Optional[str]
+    is_scheduled: bool
+    created_at: datetime
+    updated_at: Optional[datetime]
 
     model_config = ConfigDict(from_attributes=True)

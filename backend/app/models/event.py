@@ -1,41 +1,27 @@
-# app/models/event.py
-"""
-SQLAlchemy Model für Events-Tabelle.
-Speichert Spielereignisse (Tore, Karten, Wechsel, etc.).
-"""
-
-from sqlalchemy import Column, Integer, String, ForeignKey, DateTime, Text, func
+from sqlalchemy import Column, Integer, String, Text, TIMESTAMP, ForeignKey
 from sqlalchemy.orm import relationship
+from sqlalchemy.sql import func
 from app.core.database import Base
 
 
 class Event(Base):
-    """Event Model - Spielereignisse während eines Matches."""
-
     __tablename__ = "events"
 
-    id = Column(Integer, primary_key=True, index=True)
+    id = Column(Integer, primary_key=True)
+    external_id = Column(Integer, nullable=True)
+    source_id = Column(String(100), nullable=True)
     match_id = Column(
-        Integer,
-        ForeignKey("matches.id", ondelete="CASCADE"),
-        nullable=False,
-        index=True,
+        Integer, ForeignKey("matches.id", ondelete="CASCADE"), nullable=False
     )
-    minute = Column(Integer, nullable=False)
-    extra_time = Column(Integer, nullable=True)
-    team_id = Column(Integer, ForeignKey("teams.id"), nullable=True)
-    player_id = Column(Integer, nullable=True)
-    player_name = Column(String(100), nullable=True)
-    assist_id = Column(Integer, nullable=True)
-    assist_name = Column(String(100), nullable=True)
-    type = Column(String(50), nullable=False)  # Goal, Card, subst
-    detail = Column(String(100), nullable=True)  # Normal Goal, Yellow Card, etc.
-    comments = Column(Text, nullable=True)
-    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    sport = Column(String(20), nullable=True)
+    position = Column(Integer, nullable=True)
+    time = Column(Integer, nullable=True)
+    description = Column(Text, nullable=True)
+    html_description = Column(Text, nullable=True)
+    image_url = Column(String(255), nullable=True)
+    video_url = Column(String(255), nullable=True)
+    source = Column(String(20), nullable=False, default="partner")
+    created_at = Column(TIMESTAMP(timezone=True), server_default=func.now())
 
-    # Relationships
-    match = relationship("Match", backref="events")
-    team = relationship("Team", foreign_keys=[team_id])
-
-    def __repr__(self):
-        return f"<Event(id={self.id}, type='{self.type}', minute={self.minute})>"
+    match = relationship("Match", back_populates="events")
+    ticker_entries = relationship("TickerEntry", back_populates="event")
