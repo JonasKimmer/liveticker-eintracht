@@ -1,10 +1,49 @@
 """
 LLM Service für Ticker-Text-Generierung.
-Provider: Mock, OpenAI, Anthropic, Gemini
+Provider: Mock, OpenAI, Anthropic, Gemini, OpenRouter
 """
 
 from typing import Optional, Literal
 import random
+
+# Partner-API liveTickerEventType → interner Mock-Branch
+EVENT_TYPE_MAP = {
+    "PartnerGoal": "Goal",
+    "PartnerPenaltyGoal": "Goal",
+    "PartnerOwnGoal": "OwnGoal",
+    "PartnerMissedPenalty": "MissedPenalty",
+    "PartnerYellowCard": "YellowCard",
+    "PartnerRedCard": "RedCard",
+    "PartnerYellowRedCard": "RedCard",
+    "PartnerSubstitution": "Substitution",
+    "PartnerKickOff": "KickOff",
+    "PartnerHalfTime": "HalfTime",
+    "PartnerFullTime": "FullTime",
+    "PartnerExtraTimeStart": "ExtraTimeStart",
+    "PartnerExtraTimeHalfTime": "HalfTime",
+    "PartnerExtraTimeEnd": "FullTime",
+    "PartnerPenaltyShootoutStart": "PenaltyShootout",
+    "PartnerPenaltyShootoutEnd": "FullTime",
+    # Legacy api-sports Werte (Fallback)
+    "Goal": "Goal",
+    "Card": "YellowCard",
+    "subst": "Substitution",
+}
+
+# Prompt-Label für LLM (Klartext statt interner Key)
+EVENT_TYPE_LABEL = {
+    "Goal": "Tor",
+    "OwnGoal": "Eigentor",
+    "MissedPenalty": "Elfmeter verschossen",
+    "YellowCard": "Gelbe Karte",
+    "RedCard": "Rote Karte",
+    "Substitution": "Spielerwechsel",
+    "KickOff": "Anstoß",
+    "HalfTime": "Halbzeit",
+    "FullTime": "Abpfiff",
+    "ExtraTimeStart": "Verlängerung beginnt",
+    "PenaltyShootout": "Elfmeterschießen",
+}
 
 
 class LLMService:
@@ -42,6 +81,10 @@ class LLMService:
         elif provider == "anthropic" and not api_key:
             raise ValueError("Anthropic API Key erforderlich")
 
+    def _normalize_event_type(self, event_type: str) -> str:
+        """Partner-API / Legacy EventType → internen Key normalisieren."""
+        return EVENT_TYPE_MAP.get(event_type, "update")
+
     def generate_ticker_text(
         self,
         event_type: str,
@@ -54,9 +97,11 @@ class LLMService:
         language: str = "de",
         context_data: Optional[dict] = None,
     ) -> str:
+        normalized = self._normalize_event_type(event_type)
+
         if self.provider == "mock":
             return self._generate_mock_text(
-                event_type,
+                normalized,
                 event_detail,
                 minute,
                 player_name,
@@ -67,7 +112,7 @@ class LLMService:
             )
         elif self.provider == "gemini":
             return self._generate_gemini_text(
-                event_type,
+                normalized,
                 event_detail,
                 minute,
                 player_name,
@@ -79,7 +124,7 @@ class LLMService:
             )
         elif self.provider == "openrouter":
             return self._generate_openrouter_text(
-                event_type,
+                normalized,
                 event_detail,
                 minute,
                 player_name,
@@ -91,7 +136,7 @@ class LLMService:
             )
         elif self.provider == "openai":
             return self._generate_openai_text(
-                event_type,
+                normalized,
                 event_detail,
                 minute,
                 player_name,
@@ -103,7 +148,7 @@ class LLMService:
             )
         elif self.provider == "anthropic":
             return self._generate_claude_text(
-                event_type,
+                normalized,
                 event_detail,
                 minute,
                 player_name,
@@ -134,24 +179,23 @@ class LLMService:
         }.get(style, "neutral")
 
         minute_str = f"{minute}. Minute" if minute else "Vor dem Spiel"
+        event_label = EVENT_TYPE_LABEL.get(event_type, event_type)
 
-        # Immer explizit befüllen – unabhängig vom event_type
         event_lines = [
-            f"Ereignistyp: {event_type}",
+            f"Ereignistyp: {event_label}",
             f"Detail: {event_detail}",
         ]
         if player_name:
             event_lines.append(f"Spieler: {player_name}")
         if assist_name:
-            # Bei Substitution ist assist_name der eingewechselte Spieler
-            label = "Eingewechselt für" if event_type == "subst" else "Vorlagengeber"
+            label = (
+                "Eingewechselt für" if event_type == "Substitution" else "Vorlagengeber"
+            )
             event_lines.append(f"{label}: {assist_name}")
         if team_name:
             event_lines.append(f"Team: {team_name}")
 
         event_info = "\n".join(event_lines)
-
-        # Zusätzlicher Kontext (z.B. Pre-Match, Live-Stats)
         context_str = self._build_context_str(event_type, context_data)
 
         style_hint = ""
@@ -232,65 +276,6 @@ Schreibe nur den Ticker-Text, keine Erklärungen."""
             f"Kontextdaten:\n{json.dumps(context_data, ensure_ascii=False, indent=2)}"
         )
 
-    def _generate_gemini_text(
-        self,
-        event_type,
-        event_detail,
-        minute,
-        player_name,
-        assist_name,
-        team_name,
-        style,
-        language,
-        context_data=None,
-    ) -> str:
-        prompt = self._build_prompt(
-            event_type,
-            event_detail,
-            minute,
-            player_name,
-            assist_name,
-            team_name,
-            style,
-            language,
-            context_data=context_data,
-        )
-        response = self.gemini_client.models.generate_content(
-            model="gemini-2.0-flash-lite-001",
-            contents=prompt,
-        )
-        return response.text.strip()
-
-    def _generate_openrouter_text(
-        self,
-        event_type,
-        event_detail,
-        minute,
-        player_name,
-        assist_name,
-        team_name,
-        style,
-        language,
-        context_data=None,
-    ) -> str:
-        prompt = self._build_prompt(
-            event_type,
-            event_detail,
-            minute,
-            player_name,
-            assist_name,
-            team_name,
-            style,
-            language,
-            context_data=context_data,
-        )
-        response = self.openrouter_client.chat.completions.create(
-            model=self.openrouter_model,
-            messages=[{"role": "user", "content": prompt}],
-            max_tokens=150,
-        )
-        return response.choices[0].message.content.strip()
-
     def _generate_mock_text(
         self,
         event_type,
@@ -323,22 +308,24 @@ Schreibe nur den Ticker-Text, keine Erklärungen."""
                 text += f" Vorlage: {assist_name}."
             return text
 
-        elif event_type == "Card":
-            if event_detail == "Yellow Card":
-                if style == "neutral":
-                    return f"{minute}. Minute: Gelbe Karte für {player_name}."
-                elif style == "euphorisch":
-                    return (
-                        f"{minute}. Minute: {player_name} sieht Gelb - das war unnötig!"
-                    )
-                else:
-                    return (
-                        f"Gelb für {player_name} ({minute}') - vollkommen berechtigt."
-                    )
-            else:
-                return f"🔴 ROTE KARTE! {player_name} muss vom Platz! {minute}. Minute."
+        elif event_type == "OwnGoal":
+            return f"{minute}. Minute: Eigentor! {player_name} befördert den Ball ins eigene Netz."
 
-        elif event_type == "subst":
+        elif event_type == "MissedPenalty":
+            return f"{minute}. Minute: Elfmeter verschossen! {player_name} scheitert vom Punkt."
+
+        elif event_type == "YellowCard":
+            if style == "neutral":
+                return f"{minute}. Minute: Gelbe Karte für {player_name}."
+            elif style == "euphorisch":
+                return f"{minute}. Minute: {player_name} sieht Gelb - das war unnötig!"
+            else:
+                return f"Gelb für {player_name} ({minute}') - vollkommen berechtigt."
+
+        elif event_type == "RedCard":
+            return f"🔴 ROTE KARTE! {player_name} muss vom Platz! {minute}. Minute."
+
+        elif event_type == "Substitution":
             if style == "neutral":
                 return f"{minute}. Minute: Wechsel bei {team_name}. {player_name} kommt für {assist_name}."
             elif style == "euphorisch":
@@ -346,7 +333,80 @@ Schreibe nur den Ticker-Text, keine Erklärungen."""
             else:
                 return f"Wechsel ({minute}'): {player_name} für {assist_name} - fragwürdig."
 
-        return f"{minute}. Minute: {event_type} - {event_detail}"
+        elif event_type == "HalfTime":
+            return f"Halbzeit! Stand nach 45 Minuten."
+
+        elif event_type == "FullTime":
+            return f"Abpfiff! Das Spiel ist beendet."
+
+        elif event_type == "KickOff":
+            return f"Anstoß! Das Spiel läuft."
+
+        elif event_type == "ExtraTimeStart":
+            return f"Die Verlängerung beginnt!"
+
+        elif event_type == "PenaltyShootout":
+            return f"Elfmeterschießen! Es geht in die entscheidende Phase."
+
+        return f"{minute}. Minute: {event_detail or event_type}"
+
+    def _generate_gemini_text(
+        self,
+        event_type,
+        event_detail,
+        minute,
+        player_name,
+        assist_name,
+        team_name,
+        style,
+        language,
+        context_data=None,
+    ) -> str:
+        prompt = self._build_prompt(
+            event_type,
+            event_detail,
+            minute,
+            player_name,
+            assist_name,
+            team_name,
+            style,
+            language,
+            context_data=context_data,
+        )
+        response = self.gemini_client.models.generate_content(
+            model="gemini-2.0-flash-lite-001", contents=prompt
+        )
+        return response.text.strip()
+
+    def _generate_openrouter_text(
+        self,
+        event_type,
+        event_detail,
+        minute,
+        player_name,
+        assist_name,
+        team_name,
+        style,
+        language,
+        context_data=None,
+    ) -> str:
+        prompt = self._build_prompt(
+            event_type,
+            event_detail,
+            minute,
+            player_name,
+            assist_name,
+            team_name,
+            style,
+            language,
+            context_data=context_data,
+        )
+        response = self.openrouter_client.chat.completions.create(
+            model=self.openrouter_model,
+            messages=[{"role": "user", "content": prompt}],
+            max_tokens=150,
+        )
+        return response.choices[0].message.content.strip()
 
     def _generate_openai_text(self, *args, context_data=None, **kwargs) -> str:
         raise NotImplementedError("OpenAI Integration noch nicht implementiert")

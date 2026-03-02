@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Boolean, TIMESTAMP
+from sqlalchemy import Column, Integer, String, Boolean, TIMESTAMP, ForeignKey
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
@@ -19,8 +19,10 @@ class Team(Base):
     is_partner_team = Column(Boolean, default=False)
     hidden = Column(Boolean, default=False)
     source = Column(String(20), nullable=False, default="partner")
+    country_id = Column(Integer, ForeignKey("countries.id"), nullable=True)
     created_at = Column(TIMESTAMP(timezone=True), server_default=func.now())
 
+    country = relationship("Country", back_populates="teams")
     home_matches = relationship(
         "Match", foreign_keys="Match.home_team_id", back_populates="home_team"
     )

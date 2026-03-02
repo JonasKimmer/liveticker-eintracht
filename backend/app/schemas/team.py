@@ -1,39 +1,42 @@
-#  app/schemas/team.py
-from pydantic import BaseModel, Field, ConfigDict
+from pydantic import BaseModel, ConfigDict
+from typing import Optional
 from datetime import datetime
 
 
-class TeamBase(BaseModel):
-    name: str = Field(..., min_length=1, max_length=100)
-    short_name: str | None = None
-    code: str | None = None
-    logo_url: str | None = None
-    country: str | None = None
-    founded: int | None = None
-    venue_name: str | None = None
-    venue_capacity: int | None = None
-    external_id: int | None = None
-    is_partner: bool = False
-
-
-class TeamCreate(TeamBase):
-    pass
+class TeamCreate(BaseModel):
+    external_id: Optional[int] = None
+    uid: Optional[str] = None
+    sport: str = "Football"
+    name: str
+    initials: Optional[str] = None
+    short_name: Optional[str] = None
+    logo_url: Optional[str] = None
+    is_partner_team: bool = False
+    hidden: bool = False
+    source: str = "partner"
 
 
 class TeamUpdate(BaseModel):
-    name: str | None = None
-    short_name: str | None = None
-    code: str | None = None
-    logo_url: str | None = None
-    country: str | None = None
-    founded: int | None = None
-    venue_name: str | None = None
-    venue_capacity: int | None = None
-    is_partner: bool | None = None
+    name: Optional[str] = None
+    initials: Optional[str] = None
+    short_name: Optional[str] = None
+    logo_url: Optional[str] = None
+    is_partner_team: Optional[bool] = None
+    hidden: Optional[bool] = None
 
 
-class Team(TeamBase):
+class Team(BaseModel):
     id: int
+    external_id: Optional[int] = None
+    uid: Optional[str] = None
+    sport: str
+    name: str
+    initials: Optional[str] = None
+    short_name: Optional[str] = None
+    logo_url: Optional[str] = None
+    is_partner_team: bool
+    hidden: bool
+    source: str
     created_at: datetime
 
     model_config = ConfigDict(from_attributes=True)

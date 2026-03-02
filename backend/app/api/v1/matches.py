@@ -7,12 +7,17 @@ from sqlalchemy.orm import Session
 from app.core.database import get_db
 from app.core.config import settings
 from app.repositories.match_repository import MatchRepository
-from app.models.lineup import Lineup
-from app.models.match_statistic import MatchStatistic
-from app.models.player_statistic import PlayerStatistic
 from app.models.event import Event
 from app.models.synthetic_event import SyntheticEvent
+from app.models.lineup import Lineup
+from app.models.match_statistic import MatchStatistic
 from app.schemas.match import Match, MatchCreate, MatchUpdate, MatchSimple
+from app.schemas.lineup import LineupPlayerCreate, LineupPlayerUpdate, LineupPlayer
+from app.schemas.match_statistic import (
+    MatchStatisticCreate,
+    MatchStatisticUpdate,
+    MatchStatistic as MatchStatisticSchema,
+)
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/matches", tags=["matches"])
@@ -67,28 +72,6 @@ async def get_match(
 
     if match.external_id:
         eid = match.external_id
-        if db.query(Lineup).filter(Lineup.match_id == match_id).count() == 0:
-            background_tasks.add_task(
-                _trigger_webhook, settings.N8N_WEBHOOK_LINEUP, {"fixture_id": eid}
-            )
-        if (
-            db.query(MatchStatistic).filter(MatchStatistic.match_id == match_id).count()
-            == 0
-        ):
-            background_tasks.add_task(
-                _trigger_webhook, settings.N8N_WEBHOOK_STATISTICS, {"fixture_id": eid}
-            )
-        if (
-            db.query(PlayerStatistic)
-            .filter(PlayerStatistic.match_id == match_id)
-            .count()
-            == 0
-        ):
-            background_tasks.add_task(
-                _trigger_webhook,
-                settings.N8N_WEBHOOK_PLAYER_STATISTICS,
-                {"fixture_id": eid},
-            )
         if db.query(Event).filter(Event.match_id == match_id).count() == 0:
             background_tasks.add_task(
                 _trigger_webhook, settings.N8N_WEBHOOK_EVENTS, {"fixture_id": eid}
@@ -123,3 +106,98 @@ def update_match(
 def delete_match(match_id: int, db: Session = Depends(get_db)):
     if not MatchRepository(db).delete(match_id):
         raise HTTPException(status_code=404, detail="Match not found")
+
+
+# --- Lineup Sub-Endpunkte ---
+
+
+@router.get("/{match_id}/lineup", response_model=list[LineupPlayer])
+def get_lineup(match_id: int, db: Session = Depends(get_db)):
+    return db.query(Lineup).filter(Lineup.match_id == match_id).all()
+
+
+@router.post("/{match_id}/lineup", response_model=LineupPlayer, status_code=201)
+def create_lineup_player(
+    match_id: int, data: LineupPlayerCreate, db: Session = Depends(get_db)
+):
+    player = Lineup(**data.model_dump(), match_id=match_id)
+    db.add(player)
+    db.commit()
+    db.refresh(player)
+    return player
+
+
+@router.patch("/{match_id}/lineup/{lineup_id}", response_model=LineupPlayer)
+def update_lineup_player(
+    match_id: int,
+    lineup_id: int,
+    data: LineupPlayerUpdate,
+    db: Session = Depends(get_db),
+):
+    player = (
+        db.query(Lineup)
+        .filter(Lineup.id == lineup_id, Lineup.match_id == match_id)
+        .first()
+    )
+    if not player:
+        raise HTTPException(status_code=404, detail="Lineup entry not found")
+    for k, v in data.model_dump(exclude_unset=True).items():
+        setattr(player, k, v)
+    db.commit()
+    db.refresh(player)
+    return player
+
+
+@router.delete("/{match_id}/lineup/{lineup_id}", status_code=204)
+def delete_lineup_player(match_id: int, lineup_id: int, db: Session = Depends(get_db)):
+    player = (
+        db.query(Lineup)
+        .filter(Lineup.id == lineup_id, Lineup.match_id == match_id)
+        .first()
+    )
+    if not player:
+        raise HTTPException(status_code=404, detail="Lineup entry not found")
+    db.delete(player)
+    db.commit()
+
+
+# --- Statistics Sub-Endpunkte ---
+
+
+@router.get("/{match_id}/statistics", response_model=list[MatchStatisticSchema])
+def get_statistics(match_id: int, db: Session = Depends(get_db)):
+    return db.query(MatchStatistic).filter(MatchStatistic.match_id == match_id).all()
+
+
+@router.post(
+    "/{match_id}/statistics", response_model=MatchStatisticSchema, status_code=201
+)
+def create_statistics(
+    match_id: int, data: MatchStatisticCreate, db: Session = Depends(get_db)
+):
+    stat = MatchStatistic(**data.model_dump(), match_id=match_id)
+    db.add(stat)
+    db.commit()
+    db.refresh(stat)
+    return stat
+
+
+@router.patch("/{match_id}/statistics/{team_id}", response_model=MatchStatisticSchema)
+def update_statistics(
+    match_id: int,
+    team_id: int,
+    data: MatchStatisticUpdate,
+    db: Session = Depends(get_db),
+):
+    stat = (
+        db.query(MatchStatistic)
+        .filter(MatchStatistic.match_id == match_id, MatchStatistic.team_id == team_id)
+        .first()
+    )
+    if not stat:
+        raise HTTPException(status_code=404, detail="Statistics not found")
+    for k, v in data.model_dump(exclude_unset=True).items():
+        setattr(stat, k, v)
+    db.commit()
+    db.refresh(stat)
+    return stat

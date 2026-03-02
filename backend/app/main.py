@@ -5,13 +5,9 @@ from app.api.v1 import (
     teams,
     matches,
     events,
-    ticker_entries,
     ticker,
     seasons,
     favorites,
-    player_statistics,
-    match_statistics,
-    lineups,
     competitions,
 )
 from app.core.database import engine, Base
@@ -23,11 +19,14 @@ from app.models.match import Match
 from app.models.event import Event
 from app.models.ticker_entry import TickerEntry
 from app.models.user_favorite import UserFavorite
-from app.models.match_statistic import MatchStatistic
-from app.models.lineup import Lineup
-from app.models.player_statistic import PlayerStatistic
 from app.models.synthetic_event import SyntheticEvent
 from app.models.standing import Standing
+from app.models.competition_team import CompetitionTeam
+from app.models.lineup import Lineup
+from app.models.match_statistic import MatchStatistic
+from app.api.v1 import countries
+from app.models.country import Country
+
 
 Base.metadata.create_all(bind=engine)
 
@@ -55,14 +54,11 @@ app.add_middleware(
 app.include_router(teams.router, prefix="/api/v1")
 app.include_router(matches.router, prefix="/api/v1")
 app.include_router(events.router, prefix="/api/v1")
-app.include_router(ticker_entries.router, prefix="/api/v1")
 app.include_router(ticker.router, prefix="/api/v1")
 app.include_router(seasons.router, prefix="/api/v1")
 app.include_router(favorites.router, prefix="/api/v1")
-app.include_router(player_statistics.router, prefix="/api/v1")
-app.include_router(match_statistics.router, prefix="/api/v1")
-app.include_router(lineups.router, prefix="/api/v1")
 app.include_router(competitions.router, prefix="/api/v1")
+app.include_router(countries.router, prefix="/api/v1")
 
 
 @app.get("/")
@@ -73,10 +69,11 @@ def read_root():
 @app.get("/health")
 def health_check():
     try:
+        from sqlalchemy import text
         from app.core.database import SessionLocal
 
         db = SessionLocal()
-        db.execute("SELECT 1")
+        db.execute(text("SELECT 1"))
         db.close()
         db_status = True
     except Exception:

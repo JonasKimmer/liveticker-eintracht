@@ -94,7 +94,7 @@ async def generate_for_event(
 
     try:
         text, model_used = await generate_ticker_text(
-            event_type=event.description or "update",
+            event_type=event.event_type or event.description or "update",
             context_data={},
             match_context=match_context,
             style=style,

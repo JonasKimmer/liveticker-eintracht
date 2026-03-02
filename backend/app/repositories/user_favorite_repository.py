@@ -1,29 +1,16 @@
-"""
-UserFavorite Repository - Data Access Layer.
-"""
-
 from sqlalchemy.orm import Session, joinedload
 from app.models.user_favorite import UserFavorite
 from app.schemas.user_favorite import UserFavoriteCreate
 
 
 class UserFavoriteRepository:
-    """Repository für UserFavorite-Datenbank-Operationen."""
-
     def __init__(self, db: Session):
         self.db = db
 
-    def get_by_user(self, user_id: int) -> list[UserFavorite]:
-        """Holt alle Favoriten eines Users."""
-        return (
-            self.db.query(UserFavorite)
-            .options(joinedload(UserFavorite.team))
-            .filter(UserFavorite.user_id == user_id)
-            .all()
-        )
+    def get_all(self) -> list[UserFavorite]:
+        return self.db.query(UserFavorite).options(joinedload(UserFavorite.team)).all()
 
     def get_by_id(self, favorite_id: int) -> UserFavorite | None:
-        """Holt Favorit nach ID."""
         return (
             self.db.query(UserFavorite)
             .options(joinedload(UserFavorite.team))
@@ -31,34 +18,25 @@ class UserFavoriteRepository:
             .first()
         )
 
-    def exists(self, user_id: int, team_id: int) -> bool:
-        """Prüft ob Favorit bereits existiert."""
+    def exists(self, team_id: int) -> bool:
         return (
-            self.db.query(UserFavorite)
-            .filter(UserFavorite.user_id == user_id, UserFavorite.team_id == team_id)
-            .count()
+            self.db.query(UserFavorite).filter(UserFavorite.team_id == team_id).count()
             > 0
         )
 
-    def create(self, favorite: UserFavoriteCreate) -> UserFavorite:
-        """Erstellt neuen Favoriten."""
-        db_favorite = UserFavorite(**favorite.model_dump())
-        self.db.add(db_favorite)
+    def create(self, team_id: int) -> UserFavorite:
+        fav = UserFavorite(team_id=team_id)
+        self.db.add(fav)
         self.db.commit()
-        self.db.refresh(db_favorite)
-        return db_favorite
+        self.db.refresh(fav)
+        return fav
 
-    def delete(self, user_id: int, team_id: int) -> bool:
-        """Löscht Favoriten."""
-        db_favorite = (
-            self.db.query(UserFavorite)
-            .filter(UserFavorite.user_id == user_id, UserFavorite.team_id == team_id)
-            .first()
+    def delete(self, team_id: int) -> bool:
+        fav = (
+            self.db.query(UserFavorite).filter(UserFavorite.team_id == team_id).first()
         )
-
-        if not db_favorite:
+        if not fav:
             return False
-
-        self.db.delete(db_favorite)
+        self.db.delete(fav)
         self.db.commit()
         return True

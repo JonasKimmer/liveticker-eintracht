@@ -9,14 +9,21 @@ class Event(Base):
 
     id = Column(Integer, primary_key=True)
     external_id = Column(Integer, nullable=True)
-    source_id = Column(String(100), nullable=True)
+    source_id = Column(String(100), nullable=True)  # Partner-API sourceId
     match_id = Column(
         Integer, ForeignKey("matches.id", ondelete="CASCADE"), nullable=False
     )
     sport = Column(String(20), nullable=True)
-    position = Column(Integer, nullable=True)
-    time = Column(Integer, nullable=True)
-    description = Column(Text, nullable=True)
+    position = Column(Integer, nullable=True)  # Reihenfolge im Ticker
+    time = Column(Integer, nullable=True)  # Spielminute
+    time_additional = Column(Integer, nullable=True)  # timeAdditional (Nachspielzeit)
+    event_type = Column(
+        String(50), nullable=True
+    )  # liveTickerEventType: PartnerGoal, PartnerYellowCard, ...
+    phase = Column(
+        String(50), nullable=True
+    )  # liveTickerPhaseType: FirstHalf, SecondHalf, ...
+    description = Column(Text, nullable=True)  # Freitext
     html_description = Column(Text, nullable=True)
     image_url = Column(String(255), nullable=True)
     video_url = Column(String(255), nullable=True)

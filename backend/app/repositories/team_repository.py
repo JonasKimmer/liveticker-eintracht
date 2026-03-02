@@ -1,6 +1,3 @@
-# ----------------------------------------
-# app/repositories/team_repository.py
-# ----------------------------------------
 from sqlalchemy.orm import Session
 from app.models.team import Team
 from app.schemas.team import TeamCreate, TeamUpdate
@@ -19,29 +16,12 @@ class TeamRepository:
     def get_by_external_id(self, external_id: int) -> Team | None:
         return self.db.query(Team).filter(Team.external_id == external_id).first()
 
-    def get_countries(self) -> list[str]:
-        """Alle Länder aus denen Teams vorhanden sind."""
-        rows = (
-            self.db.query(Team.country)
-            .distinct()
-            .filter(Team.country.isnot(None))
-            .order_by(Team.country)
-            .all()
-        )
-        return [r.country for r in rows]
-
-    def get_by_country(self, country: str) -> list[Team]:
-        """Alle Teams eines Landes."""
-        return (
-            self.db.query(Team)
-            .filter(Team.country == country)
-            .order_by(Team.name)
-            .all()
-        )
+    def get_by_uid(self, uid: str) -> Team | None:
+        return self.db.query(Team).filter(Team.uid == uid).first()
 
     def get_partners(self) -> list[Team]:
-        """Alle Partner-Teams."""
-        return self.db.query(Team).filter(Team.is_partner == True).all()
+        """Alle Partner-Teams (is_partner_team=True)."""
+        return self.db.query(Team).filter(Team.is_partner_team == True).all()
 
     def create(self, team: TeamCreate) -> Team:
         db_team = Team(**team.model_dump())

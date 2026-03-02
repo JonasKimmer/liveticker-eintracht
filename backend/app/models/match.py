@@ -34,10 +34,10 @@ class Match(Base):
     city = Column(String(100), nullable=True)
     match_state = Column(
         String(30), nullable=True
-    )  # Undefined|PreMatch|Live|FullTime|Postponed|Cancelled
+    )  # Undefined|ToBeConfirmed|PreMatch|Live|Interrupted|FullTime|Postponed|Cancelled
     match_phase = Column(
         String(30), nullable=True
-    )  # Undefined|FirstHalf|SecondHalf|PostMatch
+    )  # Undefined|PreMatch|FullTime|PostPoned|FirstHalf|SecondHalf
     is_scheduled = Column(Boolean, default=False)
     source = Column(String(20), nullable=False, default="partner")
     created_at = Column(TIMESTAMP(timezone=True), server_default=func.now())
@@ -55,16 +55,13 @@ class Match(Base):
     ticker_entries = relationship(
         "TickerEntry", back_populates="match", cascade="all, delete-orphan"
     )
+    synthetic_events = relationship(
+        "SyntheticEvent", back_populates="match", cascade="all, delete-orphan"
+    )
+    standings = relationship("Standing", back_populates="match")
     lineups = relationship(
         "Lineup", back_populates="match", cascade="all, delete-orphan"
     )
     match_statistics = relationship(
         "MatchStatistic", back_populates="match", cascade="all, delete-orphan"
     )
-    player_statistics = relationship(
-        "PlayerStatistic", back_populates="match", cascade="all, delete-orphan"
-    )
-    synthetic_events = relationship(
-        "SyntheticEvent", back_populates="match", cascade="all, delete-orphan"
-    )
-    standings = relationship("Standing", back_populates="match")

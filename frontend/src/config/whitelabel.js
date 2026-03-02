@@ -8,7 +8,7 @@ const config = {
   darkBorder: "#2a2a2a",
   darkText: "#e0e0e0",
   darkMuted: "#888",
-  apiBase: "http://localhost:8000/api/v1",
+  apiBase: "http://localhost:8001/api/v1",
   n8nBase: "http://localhost:5678/webhook",
 };
 

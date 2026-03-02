@@ -1,40 +1,36 @@
-"""
-Pydantic Schemas für Season.
-"""
-
-from datetime import datetime, date
 from pydantic import BaseModel, ConfigDict
+from datetime import datetime, date
+from typing import Optional
 
 
-class SeasonBase(BaseModel):
-    """Basis-Schema für Season."""
-
-    year: int
-    current: bool = False
-
-
-class SeasonCreate(SeasonBase):
-    """Schema zum Erstellen einer Season."""
-
-    start_date: date | None = None
-    end_date: date | None = None
+class SeasonCreate(BaseModel):
+    external_id: Optional[int] = None
+    uid: Optional[str] = None
+    sport: str = "Football"
+    title: str
+    short_title: Optional[str] = None
+    starts_at: Optional[date] = None
+    ends_at: Optional[date] = None
+    source: str = "partner"
 
 
 class SeasonUpdate(BaseModel):
-    """Schema zum Aktualisieren einer Season."""
-
-    year: int | None = None
-    start_date: date | None = None
-    end_date: date | None = None
-    current: bool | None = None
+    title: Optional[str] = None
+    short_title: Optional[str] = None
+    starts_at: Optional[date] = None
+    ends_at: Optional[date] = None
 
 
-class Season(SeasonBase):
-    """Vollständiges Season-Schema (DB → API)."""
-
+class Season(BaseModel):
     id: int
-    start_date: date | None
-    end_date: date | None
+    external_id: Optional[int] = None
+    uid: Optional[str] = None
+    sport: str
+    title: str
+    short_title: Optional[str] = None
+    starts_at: Optional[date] = None
+    ends_at: Optional[date] = None
+    source: str
     created_at: datetime
 
     model_config = ConfigDict(from_attributes=True)
