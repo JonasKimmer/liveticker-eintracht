@@ -1,30 +1,17 @@
-"""
-Pydantic Schemas für UserFavorite.
-"""
-
 from datetime import datetime
 from pydantic import BaseModel, ConfigDict
-from app.schemas.team import Team
+
+from app.schemas.team import TeamResponse
 
 
-class UserFavoriteBase(BaseModel):
-    """Basis-Schema für UserFavorite."""
-
-    user_id: int
+class UserFavoriteCreate(BaseModel):
     team_id: int
 
 
-class UserFavoriteCreate(UserFavoriteBase):
-    """Schema zum Erstellen eines Favoriten."""
-
-    pass
-
-
-class UserFavorite(UserFavoriteBase):
-    """Vollständiges UserFavorite-Schema."""
+class UserFavoriteResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
 
     id: int
-    team: Team  # ← Relationship!
+    team_id: int
+    team: TeamResponse
     created_at: datetime
-
-    model_config = ConfigDict(from_attributes=True)

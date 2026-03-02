@@ -1,74 +1,49 @@
-from datetime import datetime, timezone
+import logging
+from typing import Optional
+
 from sqlalchemy.orm import Session
+
 from app.models.ticker_entry import TickerEntry
 from app.schemas.ticker_entry import TickerEntryCreate, TickerEntryUpdate
 
+logger = logging.getLogger(__name__)
+
 
 class TickerEntryRepository:
-    def __init__(self, db: Session):
+    def __init__(self, db: Session) -> None:
         self.db = db
 
-    def get_all(self, skip: int = 0, limit: int = 100) -> list[TickerEntry]:
-        return self.db.query(TickerEntry).offset(skip).limit(limit).all()
+    def get_by_match(
+        self, match_id: int, published_only: bool = True
+    ) -> list[TickerEntry]:
+        q = self.db.query(TickerEntry).filter(TickerEntry.match_id == match_id)
+        if published_only:
+            q = q.filter(TickerEntry.status == "published")
+        return q.order_by(TickerEntry.created_at.desc()).all()
 
-    def get_by_id(self, entry_id: int) -> TickerEntry | None:
+    def get_by_id(self, entry_id: int) -> Optional[TickerEntry]:
         return self.db.query(TickerEntry).filter(TickerEntry.id == entry_id).first()
 
-    def get_by_match(
-        self, match_id: int, skip: int = 0, limit: int = 100
-    ) -> list[TickerEntry]:
+    def get_by_event(self, event_id: int) -> Optional[TickerEntry]:
         return (
-            self.db.query(TickerEntry)
-            .filter(TickerEntry.match_id == match_id)
-            .order_by(TickerEntry.created_at.desc())
-            .offset(skip)
-            .limit(limit)
-            .all()
+            self.db.query(TickerEntry).filter(TickerEntry.event_id == event_id).first()
         )
 
-    def get_published(self, match_id: int) -> list[TickerEntry]:
-        return (
-            self.db.query(TickerEntry)
-            .filter(TickerEntry.match_id == match_id, TickerEntry.status == "published")
-            .order_by(TickerEntry.created_at.desc())
-            .all()
-        )
-
-    def create(self, entry: TickerEntryCreate) -> TickerEntry:
-        data = entry.model_dump()
-        if data.get("source") == "manual" and data.get("status") == "draft":
-            data["status"] = "published"
-        db_entry = TickerEntry(**data)
-        self.db.add(db_entry)
+    def create(self, data: TickerEntryCreate) -> TickerEntry:
+        entry = TickerEntry(**data.model_dump())
+        self.db.add(entry)
         self.db.commit()
-        self.db.refresh(db_entry)
-        return db_entry
+        self.db.refresh(entry)
+        logger.debug("TickerEntry created: id=%s match_id=%s", entry.id, entry.match_id)
+        return entry
 
-    def update(
-        self, entry_id: int, entry_update: TickerEntryUpdate
-    ) -> TickerEntry | None:
-        db_entry = self.get_by_id(entry_id)
-        if not db_entry:
+    def update(self, entry_id: int, data: TickerEntryUpdate) -> Optional[TickerEntry]:
+        entry = self.get_by_id(entry_id)
+        if not entry:
             return None
-        for k, v in entry_update.model_dump(exclude_unset=True).items():
-            setattr(db_entry, k, v)
+        for field, value in data.model_dump(exclude_unset=True).items():
+            setattr(entry, field, value)
         self.db.commit()
-        self.db.refresh(db_entry)
-        return db_entry
-
-    def publish(self, entry_id: int) -> TickerEntry | None:
-        db_entry = self.get_by_id(entry_id)
-        if not db_entry:
-            return None
-        db_entry.status = "published"
-        self.db.commit()
-        self.db.refresh(db_entry)
-        return db_entry
-
-    def delete(self, entry_id: int) -> bool:
-        db_entry = self.get_by_id(entry_id)
-        if not db_entry:
-            return False
-        self.db.delete(db_entry)
-        self.db.commit()
-        return True
+        self.db.refresh(entry)
+        logger.debug("TickerEntry updated: id=%s status=%s", entry.id, entry.status)
+        return entry

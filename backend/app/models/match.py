@@ -1,16 +1,25 @@
+import uuid
+
 from sqlalchemy import Column, Integer, String, Boolean, TIMESTAMP, ForeignKey
 from sqlalchemy.dialects.postgresql import UUID, JSONB
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
+
 from app.core.database import Base
 
 
 class Match(Base):
     __tablename__ = "matches"
 
-    id = Column(Integer, primary_key=True)
-    external_id = Column(Integer, nullable=True)
-    uid = Column(UUID, nullable=True)
+    id = Column(Integer, primary_key=True, index=True)
+    external_id = Column(Integer, nullable=True, unique=True, index=True)
+    uid = Column(
+        UUID(as_uuid=True),
+        default=uuid.uuid4,
+        nullable=False,
+        unique=True,
+        index=True,
+    )
     sport = Column(String(20), nullable=False, default="Football")
     season_id = Column(
         Integer, ForeignKey("seasons.id", ondelete="SET NULL"), nullable=True
@@ -27,7 +36,11 @@ class Match(Base):
     home_score = Column(Integer, nullable=True)
     away_score = Column(Integer, nullable=True)
     matchday = Column(Integer, nullable=True)
-    matchday_title = Column(JSONB, nullable=True)
+    matchday_title = Column(
+        JSONB, nullable=True
+    )  # {"de": "Erster Spieltag", "en": "First matchday"}
+    title = Column(String(200), nullable=True)
+    localized_title = Column(JSONB, nullable=True)  # {"de": "...", "en": "..."}
     starts_at = Column(TIMESTAMP(timezone=True), nullable=True)
     ends_at = Column(TIMESTAMP(timezone=True), nullable=True)
     venue = Column(String(100), nullable=True)
@@ -38,30 +51,64 @@ class Match(Base):
     match_phase = Column(
         String(30), nullable=True
     )  # Undefined|PreMatch|FullTime|PostPoned|FirstHalf|SecondHalf
-    is_scheduled = Column(Boolean, default=False)
+    is_scheduled = Column(Boolean, nullable=False, default=False)
+    is_kickoff_confirmed = Column(Boolean, nullable=False, default=False)
+    number_of_goal_scorers = Column(Integer, nullable=True)
+    number_of_viewers = Column(Integer, nullable=True)
+    team_home_jersey = Column(
+        JSONB, nullable=True
+    )  # {"imageUrl": "...", "flockColor": "#000000"}
+    team_away_jersey = Column(JSONB, nullable=True)
+    broadcasts = Column(JSONB, nullable=True)  # [broadcastId, ...]
+    # DB-only: never exposed in API responses
     source = Column(String(20), nullable=False, default="partner")
-    created_at = Column(TIMESTAMP(timezone=True), server_default=func.now())
-    updated_at = Column(TIMESTAMP(timezone=True), nullable=True)
+    created_at = Column(
+        TIMESTAMP(timezone=True), server_default=func.now(), nullable=False
+    )
+    updated_at = Column(
+        TIMESTAMP(timezone=True),
+        server_default=func.now(),
+        onupdate=func.now(),
+        nullable=False,
+    )
 
-    season = relationship("Season", back_populates="matches")
-    competition = relationship("Competition", back_populates="matches")
+    # Relationships
+    season = relationship("Season", back_populates="matches", lazy="select")
+    competition = relationship("Competition", back_populates="matches", lazy="select")
     home_team = relationship(
-        "Team", foreign_keys=[home_team_id], back_populates="home_matches"
+        "Team",
+        foreign_keys=[home_team_id],
+        back_populates="home_matches",
+        lazy="select",
     )
     away_team = relationship(
-        "Team", foreign_keys=[away_team_id], back_populates="away_matches"
+        "Team",
+        foreign_keys=[away_team_id],
+        back_populates="away_matches",
+        lazy="select",
     )
-    events = relationship("Event", back_populates="match", cascade="all, delete-orphan")
+    events = relationship(
+        "Event", back_populates="match", cascade="all, delete-orphan", lazy="select"
+    )
     ticker_entries = relationship(
-        "TickerEntry", back_populates="match", cascade="all, delete-orphan"
+        "TickerEntry",
+        back_populates="match",
+        cascade="all, delete-orphan",
+        lazy="select",
     )
     synthetic_events = relationship(
-        "SyntheticEvent", back_populates="match", cascade="all, delete-orphan"
+        "SyntheticEvent",
+        back_populates="match",
+        cascade="all, delete-orphan",
+        lazy="select",
     )
-    standings = relationship("Standing", back_populates="match")
+    standings = relationship("Standing", back_populates="match", lazy="select")
     lineups = relationship(
-        "Lineup", back_populates="match", cascade="all, delete-orphan"
+        "Lineup", back_populates="match", cascade="all, delete-orphan", lazy="select"
     )
     match_statistics = relationship(
-        "MatchStatistic", back_populates="match", cascade="all, delete-orphan"
+        "MatchStatistic",
+        back_populates="match",
+        cascade="all, delete-orphan",
+        lazy="select",
     )

@@ -1,7 +1,9 @@
-from pydantic import BaseModel, ConfigDict
 from datetime import datetime
-from typing import Optional
 from enum import Enum
+from typing import Optional
+from uuid import UUID
+
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class LiveTickerEventType(str, Enum):
@@ -33,48 +35,59 @@ class LiveTickerPhaseType(str, Enum):
     post_match = "PostMatch"
 
 
+class EventPlayerDto(BaseModel):
+    player_id: Optional[int] = None
+    name: Optional[str] = None
+    role: Optional[str] = None  # e.g. "Scorer", "Assist", "PlayerIn", "PlayerOut"
+
+
 class EventCreate(BaseModel):
-    match_id: int
-    external_id: Optional[int] = None
-    source_id: Optional[str] = None
-    sport: Optional[str] = None
-    position: Optional[int] = None
-    time: Optional[int] = None
-    time_additional: Optional[int] = None
-    event_type: Optional[str] = None
-    phase: Optional[str] = None
+    source_id: Optional[str] = Field(
+        None, max_length=100, description="Partner API key – used as upsert key"
+    )
+    sport: str = Field("Football", max_length=20)
+    position: Optional[int] = Field(None, ge=0)
+    time: Optional[int] = Field(None, ge=0)
+    time_additional: Optional[int] = Field(None, ge=0)
+    phase: Optional[str] = Field(None, max_length=50)
+    event_type: Optional[str] = Field(None, max_length=50)
     description: Optional[str] = None
-    html_description: Optional[str] = None
-    image_url: Optional[str] = None
-    video_url: Optional[str] = None
-    source: str = "partner"
+    image_url: Optional[str] = Field(None, max_length=500)
+    video_url: Optional[str] = Field(None, max_length=500)
+    embed_html: Optional[str] = None
+    players: Optional[list[EventPlayerDto]] = None
 
 
 class EventUpdate(BaseModel):
-    time: Optional[int] = None
-    time_additional: Optional[int] = None
-    event_type: Optional[str] = None
-    phase: Optional[str] = None
+    position: Optional[int] = Field(None, ge=0)
+    time: Optional[int] = Field(None, ge=0)
+    time_additional: Optional[int] = Field(None, ge=0)
+    phase: Optional[str] = Field(None, max_length=50)
+    event_type: Optional[str] = Field(None, max_length=50)
     description: Optional[str] = None
-    position: Optional[int] = None
+    image_url: Optional[str] = Field(None, max_length=500)
+    video_url: Optional[str] = Field(None, max_length=500)
+    embed_html: Optional[str] = None
+    players: Optional[list[EventPlayerDto]] = None
 
 
-class Event(BaseModel):
+class EventResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
     id: int
-    match_id: int
-    external_id: Optional[int] = None
+    uid: UUID
     source_id: Optional[str] = None
-    sport: Optional[str] = None
+    match_id: int
+    sport: str
     position: Optional[int] = None
     time: Optional[int] = None
     time_additional: Optional[int] = None
-    event_type: Optional[str] = None
     phase: Optional[str] = None
+    event_type: Optional[str] = None
     description: Optional[str] = None
-    html_description: Optional[str] = None
     image_url: Optional[str] = None
     video_url: Optional[str] = None
-    source: str
+    embed_html: Optional[str] = None
+    players: Optional[list] = None
     created_at: datetime
-
-    model_config = ConfigDict(from_attributes=True)
+    updated_at: datetime

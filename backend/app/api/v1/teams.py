@@ -1,80 +1,156 @@
 import logging
-from fastapi import APIRouter, Depends, HTTPException
+from typing import Optional
+from uuid import UUID
+
+from fastapi import APIRouter, Depends, HTTPException, Query, status
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
 from app.repositories.team_repository import TeamRepository
-from app.repositories.match_repository import MatchRepository
-from app.schemas.team import Team, TeamCreate, TeamUpdate
-from app.schemas.match import MatchSimple
+from app.schemas.team import TeamCreate, TeamResponse, TeamUpdate
 
 logger = logging.getLogger(__name__)
-router = APIRouter(prefix="/teams", tags=["teams"])
+
+router = APIRouter(prefix="/teams", tags=["Teams"])
 
 
-@router.get("/partners", response_model=list[Team])
-def get_partner_teams(db: Session = Depends(get_db)):
-    return TeamRepository(db).get_partners()
+# ------------------------------------------------------------------ #
+# GET /teams
+# ------------------------------------------------------------------ #
 
 
-@router.get("/", response_model=list[Team])
-def get_teams(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
-    return TeamRepository(db).get_all(skip=skip, limit=limit)
+@router.get(
+    "/",
+    response_model=list[TeamResponse],
+    summary="List teams",
+)
+def get_teams(
+    skip: int = Query(0, ge=0),
+    limit: int = Query(100, ge=1, le=500),
+    is_partner: Optional[bool] = Query(None, description="Filter by partner status"),
+    hidden: Optional[bool] = Query(None, description="Filter by visibility"),
+    db: Session = Depends(get_db),
+) -> list[TeamResponse]:
+    """
+    Returns all teams. Use `is_partner=true` to get partner teams only
+    (replaces the old `/teams/partners` endpoint).
+    """
+    return TeamRepository(db).get_all(
+        skip=skip, limit=limit, is_partner=is_partner, hidden=hidden
+    )
 
 
-@router.get("/{team_id}", response_model=Team)
-def get_team(team_id: int, db: Session = Depends(get_db)):
+# ------------------------------------------------------------------ #
+# GET /teams/{team_id}
+# ------------------------------------------------------------------ #
+
+
+@router.get(
+    "/{team_id}",
+    response_model=TeamResponse,
+    summary="Get a single team",
+)
+def get_team(
+    team_id: int,
+    db: Session = Depends(get_db),
+) -> TeamResponse:
     team = TeamRepository(db).get_by_id(team_id)
     if not team:
-        raise HTTPException(status_code=404, detail="Team not found")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Team not found"
+        )
     return team
 
 
-@router.get("/{team_id}/competitions")
-def get_team_competitions(team_id: int, db: Session = Depends(get_db)):
-    team = TeamRepository(db).get_by_id(team_id)
-    if not team:
-        raise HTTPException(status_code=404, detail="Team not found")
-    return MatchRepository(db).get_competitions_by_team(team_id)
+# ------------------------------------------------------------------ #
+# POST /teams
+# ------------------------------------------------------------------ #
 
 
-@router.get(
-    "/{team_id}/competitions/{competition_id}/matchdays", response_model=list[int]
+@router.post(
+    "/",
+    response_model=TeamResponse,
+    status_code=status.HTTP_201_CREATED,
+    summary="Create a team",
 )
-def get_team_matchdays(
-    team_id: int, competition_id: int, db: Session = Depends(get_db)
-):
-    team = TeamRepository(db).get_by_id(team_id)
-    if not team:
-        raise HTTPException(status_code=404, detail="Team not found")
-    return MatchRepository(db).get_matchdays_by_team_and_competition(
-        team_id, competition_id
-    )
+def create_team(
+    data: TeamCreate,
+    db: Session = Depends(get_db),
+) -> TeamResponse:
+    """
+    Creates a new team. If `external_id` is provided and already exists,
+    the existing team is returned (upsert semantics – safe for n8n imports).
+    """
+    try:
+        team, _ = TeamRepository(db).upsert(data)
+        return team
+    except IntegrityError:
+        logger.exception("IntegrityError creating team: %s", data.name)
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="A team with this external_id already exists.",
+        )
 
 
-@router.get(
-    "/{team_id}/competitions/{competition_id}/matchdays/{matchday}/matches",
-    response_model=list[MatchSimple],
+# ------------------------------------------------------------------ #
+# PATCH /teams/{team_id}
+# ------------------------------------------------------------------ #
+
+
+@router.patch(
+    "/{team_id}",
+    response_model=TeamResponse,
+    summary="Partially update a team",
 )
-def get_team_matches_by_matchday(
-    team_id: int, competition_id: int, matchday: int, db: Session = Depends(get_db)
-):
-    team = TeamRepository(db).get_by_id(team_id)
-    if not team:
-        raise HTTPException(status_code=404, detail="Team not found")
-    return MatchRepository(db).get_by_team_competition_matchday(
-        team_id, competition_id, matchday
-    )
-
-
-@router.post("/", response_model=Team, status_code=201)
-def create_team(team: TeamCreate, db: Session = Depends(get_db)):
-    return TeamRepository(db).create(team)
-
-
-@router.patch("/{team_id}", response_model=Team)
-def update_team(team_id: int, team_update: TeamUpdate, db: Session = Depends(get_db)):
-    updated = TeamRepository(db).update(team_id, team_update)
+def update_team(
+    team_id: int,
+    data: TeamUpdate,
+    db: Session = Depends(get_db),
+) -> TeamResponse:
+    """
+    Partial update – only provided fields are changed.
+    Fields like `source`, `external_id`, and `uid` are immutable via API.
+    """
+    if not data.model_fields_set:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="Request body must contain at least one field to update.",
+        )
+    try:
+        updated = TeamRepository(db).update(team_id, data)
+    except IntegrityError:
+        logger.exception("IntegrityError updating team id=%s", team_id)
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Update would violate a unique constraint.",
+        )
     if not updated:
-        raise HTTPException(status_code=404, detail="Team not found")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Team not found"
+        )
     return updated
+
+
+# ------------------------------------------------------------------ #
+# DELETE /teams/{team_id}
+# ------------------------------------------------------------------ #
+
+
+@router.delete(
+    "/{team_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    summary="Delete a team",
+)
+def delete_team(
+    team_id: int,
+    db: Session = Depends(get_db),
+) -> None:
+    """
+    Deletes a team. Related matches keep their team reference set to NULL
+    (ON DELETE SET NULL). Favorites are cascade-deleted.
+    """
+    if not TeamRepository(db).delete(team_id):
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Team not found"
+        )

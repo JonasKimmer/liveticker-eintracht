@@ -1,90 +1,127 @@
-from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy.orm import Session
-from pydantic import BaseModel
+import logging
 from typing import Optional
+
+from fastapi import APIRouter, Depends, HTTPException, Query, status
+from sqlalchemy.exc import IntegrityError
+from sqlalchemy.orm import Session
+
 from app.core.database import get_db
-from app.models.competition import Competition
+from app.repositories.competition_repository import CompetitionRepository
+from app.schemas.competition import (
+    CompetitionCreate,
+    CompetitionResponse,
+    CompetitionUpdate,
+)
 
-router = APIRouter(prefix="/competitions", tags=["competitions"])
+logger = logging.getLogger(__name__)
 
-
-class CompetitionCreate(BaseModel):
-    external_id: Optional[int] = None
-    sport: str = "Football"
-    title: Optional[str] = None
-    short_title: Optional[str] = None
-    logo_url: Optional[str] = None
-    matchcenter_image_url: Optional[str] = None
-    has_standings_per_matchday: bool = False
-    hidden: bool = False
-    position: int = 1
-    source: str = "partner"
+router = APIRouter(prefix="/competitions", tags=["Competitions"])
 
 
-class CompetitionUpdate(BaseModel):
-    title: Optional[str] = None
-    short_title: Optional[str] = None
-    logo_url: Optional[str] = None
-    hidden: Optional[bool] = None
-    position: Optional[int] = None
+@router.get(
+    "/",
+    response_model=list[CompetitionResponse],
+    summary="List competitions",
+)
+def get_competitions(
+    skip: int = Query(0, ge=0),
+    limit: int = Query(100, ge=1, le=500),
+    hidden: Optional[bool] = Query(None, description="Filter by visibility"),
+    db: Session = Depends(get_db),
+) -> list[CompetitionResponse]:
+    return CompetitionRepository(db).get_all(skip=skip, limit=limit, hidden=hidden)
 
 
-class CompetitionOut(BaseModel):
-    id: int
-    external_id: Optional[int]
-    sport: str
-    title: Optional[str]
-    short_title: Optional[str]
-    logo_url: Optional[str]
-    has_standings_per_matchday: bool
-    hidden: bool
-    position: int
-    source: str
-
-    class Config:
-        from_attributes = True
-
-
-@router.get("/", response_model=list[CompetitionOut])
-def get_competitions(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
-    return db.query(Competition).offset(skip).limit(limit).all()
+@router.get(
+    "/{competition_id}",
+    response_model=CompetitionResponse,
+    summary="Get a single competition",
+)
+def get_competition(
+    competition_id: int,
+    db: Session = Depends(get_db),
+) -> CompetitionResponse:
+    competition = CompetitionRepository(db).get_by_id(competition_id)
+    if not competition:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Competition not found"
+        )
+    return competition
 
 
-@router.get("/{competition_id}", response_model=CompetitionOut)
-def get_competition(competition_id: int, db: Session = Depends(get_db)):
-    c = db.query(Competition).filter(Competition.id == competition_id).first()
-    if not c:
-        raise HTTPException(status_code=404, detail="Competition not found")
-    return c
+@router.post(
+    "/",
+    response_model=CompetitionResponse,
+    status_code=status.HTTP_201_CREATED,
+    summary="Create or update a competition (upsert by external_id)",
+)
+def create_competition(
+    data: CompetitionCreate,
+    db: Session = Depends(get_db),
+) -> CompetitionResponse:
+    """
+    Idempotent upsert – safe to call repeatedly from n8n import workflows.
+    Matches on `external_id` if provided. Creates a new record otherwise.
+    """
+    try:
+        competition, _ = CompetitionRepository(db).upsert(data)
+        return competition
+    except IntegrityError:
+        logger.exception("IntegrityError upserting competition: %s", data.title)
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="A competition with this external_id already exists with conflicting data.",
+        )
 
 
-@router.post("/", response_model=CompetitionOut, status_code=201)
-def create_competition(data: CompetitionCreate, db: Session = Depends(get_db)):
-    c = Competition(**data.model_dump())
-    db.add(c)
-    db.commit()
-    db.refresh(c)
-    return c
-
-
-@router.patch("/{competition_id}", response_model=CompetitionOut)
+@router.patch(
+    "/{competition_id}",
+    response_model=CompetitionResponse,
+    summary="Partially update a competition",
+)
 def update_competition(
-    competition_id: int, data: CompetitionUpdate, db: Session = Depends(get_db)
-):
-    c = db.query(Competition).filter(Competition.id == competition_id).first()
-    if not c:
-        raise HTTPException(status_code=404, detail="Competition not found")
-    for k, v in data.model_dump(exclude_unset=True).items():
-        setattr(c, k, v)
-    db.commit()
-    db.refresh(c)
-    return c
+    competition_id: int,
+    data: CompetitionUpdate,
+    db: Session = Depends(get_db),
+) -> CompetitionResponse:
+    """
+    Partial update – only provided fields are changed.
+    Fields like `source`, `external_id`, and `uid` are immutable via API.
+    """
+    if not data.model_fields_set:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="Request body must contain at least one field to update.",
+        )
+    try:
+        updated = CompetitionRepository(db).update(competition_id, data)
+    except IntegrityError:
+        logger.exception("IntegrityError updating competition id=%s", competition_id)
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Update would violate a unique constraint.",
+        )
+    if not updated:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Competition not found"
+        )
+    return updated
 
 
-@router.delete("/{competition_id}", status_code=204)
-def delete_competition(competition_id: int, db: Session = Depends(get_db)):
-    c = db.query(Competition).filter(Competition.id == competition_id).first()
-    if not c:
-        raise HTTPException(status_code=404, detail="Competition not found")
-    db.delete(c)
-    db.commit()
+@router.delete(
+    "/{competition_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    summary="Delete a competition",
+)
+def delete_competition(
+    competition_id: int,
+    db: Session = Depends(get_db),
+) -> None:
+    """
+    Deletes a competition. Related matches keep their competition reference
+    set to NULL (ON DELETE SET NULL).
+    """
+    if not CompetitionRepository(db).delete(competition_id):
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Competition not found"
+        )

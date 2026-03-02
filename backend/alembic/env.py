@@ -7,7 +7,8 @@ from alembic import context
 
 from app.core.database import Base
 
-# Import ALL models
+# Import ALL models – required so Base.metadata knows all tables
+from app.models.country import Country
 from app.models.team import Team
 from app.models.competition import Competition
 from app.models.season import Season
@@ -20,7 +21,6 @@ from app.models.standing import Standing
 from app.models.competition_team import CompetitionTeam
 from app.models.lineup import Lineup
 from app.models.match_statistic import MatchStatistic
-
 
 config = context.config
 

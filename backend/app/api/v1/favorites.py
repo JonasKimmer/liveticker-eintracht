@@ -4,10 +4,10 @@ from sqlalchemy import or_
 
 from app.core.database import get_db
 from app.repositories.user_favorite_repository import UserFavoriteRepository
-from app.schemas.match import MatchSimple
+from app.schemas.match import MatchListResponse
 from app.models.match import Match as MatchModel
 
-router = APIRouter(prefix="/favorites", tags=["favorites"])
+router = APIRouter(prefix="/favorites", tags=["Favorites"])
 
 
 @router.get("/")
@@ -15,7 +15,7 @@ def get_user_favorites(db: Session = Depends(get_db)):
     return UserFavoriteRepository(db).get_all()
 
 
-@router.get("/matches", response_model=list[MatchSimple])
+@router.get("/matches", response_model=list[MatchListResponse])
 def get_favorite_team_matches(db: Session = Depends(get_db)):
     favorites = UserFavoriteRepository(db).get_all()
     team_ids = [f.team_id for f in favorites]
