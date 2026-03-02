@@ -2,7 +2,7 @@ import logging
 from datetime import datetime, timezone
 from typing import Optional
 
-from sqlalchemy import or_
+from sqlalchemy import func, or_
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session, joinedload
 
@@ -41,15 +41,15 @@ class MatchRepository:
     # Reads                                                                #
     # ------------------------------------------------------------------ #
 
-    def get_all(
+    def get_paginated(
         self,
-        skip: int = 0,
-        limit: int = 100,
+        page: int = 1,
+        page_size: int = 25,
         team_id: Optional[int] = None,
         competition_id: Optional[int] = None,
         matchday: Optional[int] = None,
         match_state: Optional[str] = None,
-    ) -> list[Match]:
+    ) -> tuple[list[Match], int]:
         q = self._base_query()
         if team_id:
             q = q.filter(
@@ -61,13 +61,17 @@ class MatchRepository:
             q = q.filter(Match.matchday == matchday)
         if match_state:
             q = q.filter(Match.match_state == match_state)
-        return q.order_by(Match.starts_at.desc()).offset(skip).limit(limit).all()
+        total = q.count()
+        items = (
+            q.order_by(Match.starts_at.desc())
+            .offset((page - 1) * page_size)
+            .limit(page_size)
+            .all()
+        )
+        return items, total
 
     def get_by_id(self, match_id: int) -> Optional[Match]:
         return self._base_query().filter(Match.id == match_id).first()
-
-    def get_by_external_id(self, external_id: int) -> Optional[Match]:
-        return self._base_query().filter(Match.external_id == external_id).first()
 
     def get_live(self) -> list[Match]:
         return self._base_query().filter(Match.match_state == "Live").all()
@@ -92,7 +96,7 @@ class MatchRepository:
 
     def _serialize_match_data(self, data: MatchCreate | MatchUpdate) -> dict:
         """Convert Pydantic model to dict safe for SQLAlchemy."""
-        d = data.model_dump(exclude_unset=True)
+        d = data.model_dump(exclude_unset=True, by_alias=False)
         for jsonb_field in (
             "matchday_title",
             "localized_title",
@@ -118,12 +122,17 @@ class MatchRepository:
                 if hasattr(d["match_phase"], "value")
                 else d["match_phase"]
             )
+        # Remove fields not present as DB columns
+        d.pop("source", None)
+        d.pop("kickoff", None)
         return d
 
     def create(self, data: MatchCreate) -> Match:
         match_data = self._serialize_match_data(data)
-        match_data.pop("source", None)
-        match = Match(**match_data, source=data.source)
+        explicit_id = match_data.pop("id", None)
+        match = Match(**match_data)
+        if explicit_id:
+            match.id = explicit_id
         self.db.add(match)
         try:
             self.db.commit()
@@ -148,25 +157,6 @@ class MatchRepository:
             self.db.rollback()
             raise
         return match
-
-    def upsert(self, data: MatchCreate) -> tuple[Match, bool]:
-        """Insert or update by external_id."""
-        if data.external_id:
-            existing = self.get_by_external_id(data.external_id)
-            if existing:
-                match_data = self._serialize_match_data(data)
-                match_data.pop("source", None)
-                for field, value in match_data.items():
-                    setattr(existing, field, value)
-                try:
-                    self.db.commit()
-                    self.db.refresh(existing)
-                except IntegrityError:
-                    self.db.rollback()
-                    raise
-                return existing, False
-        match = self.create(data)
-        return match, True
 
     def delete(self, match_id: int) -> bool:
         match = self.get_by_id(match_id)
@@ -203,7 +193,7 @@ class MatchRepository:
                     match_id=match_id,
                     team_id=team_id,
                     player_id=p.player_id,
-                    jersey_number=p.jersey_number,
+                    jersey_number=p.jersey_number or p.shirt_number,
                     status=p.status.value,
                     formation_place=p.formation_place,
                     formation_position=p.formation_position,

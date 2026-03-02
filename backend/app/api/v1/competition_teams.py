@@ -1,68 +1,54 @@
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+import logging
+
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
+from app.repositories.competition_repository import CompetitionRepository
 from app.repositories.competition_team_repository import CompetitionTeamRepository
-from app.schemas.competition_team import CompetitionTeamCreate, CompetitionTeamResponse
+from app.schemas.competition_team import CompetitionTeamAssignResponse
 
-router = APIRouter(prefix="/competition-teams", tags=["Competition Teams"])
+logger = logging.getLogger(__name__)
 
-
-@router.get(
-    "/",
-    response_model=list[CompetitionTeamResponse],
-    summary="List competition-team assignments",
-)
-def get_competition_teams(
-    season_id: int | None = Query(None, gt=0),
-    competition_id: int | None = Query(None, gt=0),
-    team_id: int | None = Query(None, gt=0),
-    db: Session = Depends(get_db),
-) -> list[CompetitionTeamResponse]:
-    return CompetitionTeamRepository(db).get_all(
-        season_id=season_id,
-        competition_id=competition_id,
-        team_id=team_id,
-    )
+# No prefix – full path is built under /api/v1 via main.py
+router = APIRouter(tags=["Competition Teams"])
 
 
 @router.post(
-    "/",
-    response_model=CompetitionTeamResponse,
-    status_code=status.HTTP_201_CREATED,
-    summary="Assign a team to a competition in a season (idempotent)",
+    "/seasons/{seasonId}/competitions/{competitionId}/teams/{teamId}",
+    response_model=CompetitionTeamAssignResponse,
+    response_model_by_alias=True,
+    summary="Assign a team to a competition and a season",
 )
-def create_competition_team(
-    data: CompetitionTeamCreate,
+def assign_team(
+    seasonId: int,
+    competitionId: int,
+    teamId: int,
     db: Session = Depends(get_db),
-) -> CompetitionTeamResponse:
+) -> CompetitionTeamAssignResponse:
+    competition = CompetitionRepository(db).get_by_id(competitionId)
+    if not competition:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Competition not found"
+        )
+
     try:
-        entry, created = CompetitionTeamRepository(db).create(data)
+        entry, _ = CompetitionTeamRepository(db).create_by_ids(
+            season_id=seasonId,
+            competition_id=competitionId,
+            team_id=teamId,
+        )
     except IntegrityError:
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            detail="season_id, competition_id or team_id does not exist.",
+            detail="seasonId, competitionId or teamId does not exist.",
         )
-    if not created:
-        # Already exists – return 200 instead of 201
-        from fastapi.responses import JSONResponse
-        from fastapi.encoders import jsonable_encoder
 
-        return JSONResponse(
-            status_code=status.HTTP_200_OK,
-            content=jsonable_encoder(CompetitionTeamResponse.model_validate(entry)),
-        )
-    return entry
-
-
-@router.delete(
-    "/{ct_id}",
-    status_code=status.HTTP_204_NO_CONTENT,
-    summary="Remove a team from a competition",
-)
-def delete_competition_team(ct_id: int, db: Session = Depends(get_db)) -> None:
-    if not CompetitionTeamRepository(db).delete(ct_id):
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Entry not found"
-        )
+    return CompetitionTeamAssignResponse(
+        uid=entry.uid,
+        season_id=entry.season_id,
+        competition_id=entry.competition_id,
+        team_id=entry.team_id,
+        sport=competition.sport,
+    )

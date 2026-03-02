@@ -1,26 +1,32 @@
-from datetime import datetime
+import math
 from typing import Optional
 from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field, HttpUrl, field_validator
+from pydantic.alias_generators import to_camel
 
-from app.schemas.country import CountryResponse
+
+class TeamCategory(BaseModel):
+    de: Optional[str] = Field(None, max_length=100)
+    en: Optional[str] = Field(None, max_length=100)
 
 
 class TeamCreate(BaseModel):
-    external_id: Optional[int] = Field(
-        None, gt=0, description="ID from external source (api-sports)"
+    model_config = ConfigDict(
+        populate_by_name=True,
+        alias_generator=to_camel,
     )
+
+    id: Optional[int] = Field(None, gt=0)
     sport: str = Field("Football", max_length=20)
     name: str = Field(..., min_length=1, max_length=100)
     initials: Optional[str] = Field(None, max_length=10)
     short_name: Optional[str] = Field(None, max_length=100)
+    category: Optional[TeamCategory] = None
     logo_url: Optional[HttpUrl] = None
     is_partner_team: bool = False
+    position: int = Field(0, ge=0)
     hidden: bool = False
-    country_id: Optional[int] = Field(None, gt=0)
-    # source is set server-side only, never from client
-    source: str = Field("partner", max_length=20, exclude=True)
 
     @field_validator("name")
     @classmethod
@@ -31,15 +37,20 @@ class TeamCreate(BaseModel):
 
 
 class TeamUpdate(BaseModel):
-    """Only fields a client is allowed to mutate."""
+    model_config = ConfigDict(
+        populate_by_name=True,
+        alias_generator=to_camel,
+    )
 
+    sport: Optional[str] = Field(None, max_length=20)
     name: Optional[str] = Field(None, min_length=1, max_length=100)
     initials: Optional[str] = Field(None, max_length=10)
     short_name: Optional[str] = Field(None, max_length=100)
+    category: Optional[TeamCategory] = None
     logo_url: Optional[HttpUrl] = None
     is_partner_team: Optional[bool] = None
+    position: Optional[int] = Field(None, ge=0)
     hidden: Optional[bool] = None
-    country_id: Optional[int] = Field(None, gt=0)
 
     @field_validator("name")
     @classmethod
@@ -50,21 +61,35 @@ class TeamUpdate(BaseModel):
 
 
 class TeamResponse(BaseModel):
-    """Public API response – source is intentionally excluded."""
-
-    model_config = ConfigDict(from_attributes=True)
+    model_config = ConfigDict(
+        from_attributes=True,
+        populate_by_name=True,
+        alias_generator=to_camel,
+    )
 
     id: int
-    uid: UUID
-    external_id: Optional[int] = None
+    uid: UUID = Field(serialization_alias="uId")
     sport: str
     name: str
     initials: Optional[str] = None
     short_name: Optional[str] = None
+    category: Optional[dict] = None
     logo_url: Optional[str] = None
     is_partner_team: bool
+    position: int
     hidden: bool
-    country_id: Optional[int] = None
-    country: Optional[CountryResponse] = None
-    created_at: datetime
-    updated_at: datetime
+
+
+class PaginatedTeamResponse(BaseModel):
+    model_config = ConfigDict(
+        populate_by_name=True,
+        alias_generator=to_camel,
+    )
+
+    items: list[TeamResponse]
+    total: int
+    page: int
+    page_size: int
+    page_count: int
+    has_previous_page: bool
+    has_next_page: bool

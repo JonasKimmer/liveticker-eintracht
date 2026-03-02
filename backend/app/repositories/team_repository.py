@@ -1,12 +1,13 @@
 import logging
+import math
 from typing import Optional
 from uuid import UUID
 
 from sqlalchemy.exc import IntegrityError
-from sqlalchemy.orm import Session, joinedload
+from sqlalchemy.orm import Session
 
 from app.models.team import Team
-from app.schemas.team import TeamCreate, TeamUpdate
+from app.schemas.team import PaginatedTeamResponse, TeamCreate, TeamResponse, TeamUpdate
 
 logger = logging.getLogger(__name__)
 
@@ -16,38 +17,44 @@ class TeamRepository:
         self.db = db
 
     # ------------------------------------------------------------------ #
-    # Internal helpers                                                     #
-    # ------------------------------------------------------------------ #
-
-    def _base_query(self):
-        return self.db.query(Team).options(joinedload(Team.country))
-
-    # ------------------------------------------------------------------ #
     # Reads                                                                #
     # ------------------------------------------------------------------ #
 
-    def get_all(
+    def get_paginated(
         self,
-        skip: int = 0,
-        limit: int = 100,
+        page: int = 1,
+        page_size: int = 20,
         is_partner: Optional[bool] = None,
         hidden: Optional[bool] = None,
-    ) -> list[Team]:
-        q = self._base_query()
+    ) -> PaginatedTeamResponse:
+        q = self.db.query(Team)
         if is_partner is not None:
             q = q.filter(Team.is_partner_team == is_partner)
         if hidden is not None:
             q = q.filter(Team.hidden == hidden)
-        return q.order_by(Team.name).offset(skip).limit(limit).all()
+        total = q.count()
+        items = (
+            q.order_by(Team.position, Team.name)
+            .offset((page - 1) * page_size)
+            .limit(page_size)
+            .all()
+        )
+        page_count = math.ceil(total / page_size) if page_size else 1
+        return PaginatedTeamResponse(
+            items=[TeamResponse.model_validate(t) for t in items],
+            total=total,
+            page=page,
+            page_size=page_size,
+            page_count=page_count,
+            has_previous_page=page > 1,
+            has_next_page=page < page_count,
+        )
 
     def get_by_id(self, team_id: int) -> Optional[Team]:
-        return self._base_query().filter(Team.id == team_id).first()
+        return self.db.query(Team).filter(Team.id == team_id).first()
 
     def get_by_uid(self, uid: UUID) -> Optional[Team]:
-        return self._base_query().filter(Team.uid == uid).first()
-
-    def get_by_external_id(self, external_id: int) -> Optional[Team]:
-        return self._base_query().filter(Team.external_id == external_id).first()
+        return self.db.query(Team).filter(Team.uid == uid).first()
 
     def exists(self, team_id: int) -> bool:
         return self.db.query(Team.id).filter(Team.id == team_id).scalar() is not None
@@ -58,16 +65,16 @@ class TeamRepository:
 
     def create(self, data: TeamCreate) -> Team:
         team = Team(
-            external_id=data.external_id,
+            **({"id": data.id} if data.id is not None else {}),
             sport=data.sport,
             name=data.name,
             initials=data.initials,
             short_name=data.short_name,
+            category=data.category.model_dump() if data.category else None,
             logo_url=str(data.logo_url) if data.logo_url else None,
             is_partner_team=data.is_partner_team,
+            position=data.position,
             hidden=data.hidden,
-            country_id=data.country_id,
-            source=data.source,
         )
         self.db.add(team)
         try:
@@ -87,6 +94,8 @@ class TeamRepository:
         update_data = data.model_dump(exclude_unset=True)
         if "logo_url" in update_data and update_data["logo_url"] is not None:
             update_data["logo_url"] = str(update_data["logo_url"])
+        if "category" in update_data and update_data["category"] is not None:
+            update_data["category"] = data.category.model_dump(exclude_none=True)
 
         for field, value in update_data.items():
             setattr(team, field, value)
@@ -99,31 +108,6 @@ class TeamRepository:
             self.db.rollback()
             raise
         return team
-
-    def upsert(self, data: TeamCreate) -> tuple[Team, bool]:
-        """
-        Insert or update by external_id.
-        Returns (team, created) where created=True if a new row was inserted.
-        """
-        if data.external_id:
-            existing = self.get_by_external_id(data.external_id)
-            if existing:
-                # Update mutable fields only
-                existing.name = data.name
-                existing.initials = data.initials
-                existing.short_name = data.short_name
-                existing.logo_url = str(data.logo_url) if data.logo_url else None
-                existing.country_id = data.country_id
-                try:
-                    self.db.commit()
-                    self.db.refresh(existing)
-                except IntegrityError:
-                    self.db.rollback()
-                    raise
-                return existing, False
-
-        team = self.create(data)
-        return team, True
 
     def delete(self, team_id: int) -> bool:
         team = self.get_by_id(team_id)

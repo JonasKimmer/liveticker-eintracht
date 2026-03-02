@@ -1,24 +1,23 @@
-from datetime import datetime
 from typing import Optional
 from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field, HttpUrl, field_validator
+from pydantic.alias_generators import to_camel
 
 
 class LocalizedTitle(BaseModel):
-    """Localized string map – at least one language expected."""
-
     de: Optional[str] = Field(None, max_length=100)
     en: Optional[str] = Field(None, max_length=100)
 
-    model_config = ConfigDict(extra="allow")  # allow additional language keys
-
 
 class CompetitionCreate(BaseModel):
-    external_id: Optional[int] = Field(
-        None, gt=0, description="ID from external source (api-sports)"
+    model_config = ConfigDict(
+        populate_by_name=True,
+        alias_generator=to_camel,
     )
+
     sport: str = Field("Football", max_length=20)
+    id: Optional[int] = Field(None, gt=0)
     title: Optional[str] = Field(None, max_length=100)
     localized_title: Optional[LocalizedTitle] = None
     short_title: Optional[str] = Field(None, max_length=20)
@@ -27,8 +26,6 @@ class CompetitionCreate(BaseModel):
     has_standings_per_matchday: bool = False
     hidden: bool = False
     position: int = Field(1, ge=1)
-    # source is set server-side only
-    source: str = Field("partner", max_length=20, exclude=True)
 
     @field_validator("title")
     @classmethod
@@ -39,8 +36,14 @@ class CompetitionCreate(BaseModel):
 
 
 class CompetitionUpdate(BaseModel):
-    """Only fields a client is allowed to mutate."""
+    """Fields a client may update via PUT."""
 
+    model_config = ConfigDict(
+        populate_by_name=True,
+        alias_generator=to_camel,
+    )
+
+    sport: Optional[str] = Field(None, max_length=20)
     title: Optional[str] = Field(None, max_length=100)
     localized_title: Optional[LocalizedTitle] = None
     short_title: Optional[str] = Field(None, max_length=20)
@@ -59,21 +62,22 @@ class CompetitionUpdate(BaseModel):
 
 
 class CompetitionResponse(BaseModel):
-    """Public API response – source intentionally excluded."""
+    """Partner API-compatible response schema. uid is auto-generated on create."""
 
-    model_config = ConfigDict(from_attributes=True)
+    model_config = ConfigDict(
+        from_attributes=True,
+        populate_by_name=True,
+        alias_generator=to_camel,
+    )
 
+    sport: str
     id: int
     uid: UUID
-    external_id: Optional[int] = None
-    sport: str
     title: Optional[str] = None
     localized_title: Optional[dict] = None
     short_title: Optional[str] = None
+    position: int
+    hidden: bool
     logo_url: Optional[str] = None
     matchcenter_image_url: Optional[str] = None
     has_standings_per_matchday: bool
-    hidden: bool
-    position: int
-    created_at: datetime
-    updated_at: datetime

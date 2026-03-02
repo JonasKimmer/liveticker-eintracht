@@ -1,9 +1,9 @@
-from datetime import datetime
+from math import ceil
 from enum import Enum
 from typing import Optional
-from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field
+from pydantic.alias_generators import to_camel
 
 
 class LiveTickerEventType(str, Enum):
@@ -36,12 +36,16 @@ class LiveTickerPhaseType(str, Enum):
 
 
 class EventPlayerDto(BaseModel):
+    model_config = ConfigDict(populate_by_name=True, alias_generator=to_camel)
+
     player_id: Optional[int] = None
     name: Optional[str] = None
     role: Optional[str] = None  # e.g. "Scorer", "Assist", "PlayerIn", "PlayerOut"
 
 
 class EventCreate(BaseModel):
+    model_config = ConfigDict(populate_by_name=True, alias_generator=to_camel)
+
     source_id: Optional[str] = Field(
         None, max_length=100, description="Partner API key – used as upsert key"
     )
@@ -49,45 +53,78 @@ class EventCreate(BaseModel):
     position: Optional[int] = Field(None, ge=0)
     time: Optional[int] = Field(None, ge=0)
     time_additional: Optional[int] = Field(None, ge=0)
-    phase: Optional[str] = Field(None, max_length=50)
-    event_type: Optional[str] = Field(None, max_length=50)
+    phase: Optional[str] = Field(None, max_length=50, alias="liveTickerPhaseType")
+    event_type: Optional[str] = Field(None, max_length=50, alias="liveTickerEventType")
     description: Optional[str] = None
+    html_description: Optional[str] = Field(None, alias="htmlDescription")
     image_url: Optional[str] = Field(None, max_length=500)
     video_url: Optional[str] = Field(None, max_length=500)
-    embed_html: Optional[str] = None
     players: Optional[list[EventPlayerDto]] = None
 
 
 class EventUpdate(BaseModel):
+    model_config = ConfigDict(populate_by_name=True, alias_generator=to_camel)
+
     position: Optional[int] = Field(None, ge=0)
     time: Optional[int] = Field(None, ge=0)
     time_additional: Optional[int] = Field(None, ge=0)
-    phase: Optional[str] = Field(None, max_length=50)
-    event_type: Optional[str] = Field(None, max_length=50)
+    phase: Optional[str] = Field(None, max_length=50, alias="liveTickerPhaseType")
+    event_type: Optional[str] = Field(None, max_length=50, alias="liveTickerEventType")
     description: Optional[str] = None
+    html_description: Optional[str] = Field(None, alias="htmlDescription")
     image_url: Optional[str] = Field(None, max_length=500)
     video_url: Optional[str] = Field(None, max_length=500)
-    embed_html: Optional[str] = None
     players: Optional[list[EventPlayerDto]] = None
 
 
 class EventResponse(BaseModel):
-    model_config = ConfigDict(from_attributes=True)
+    model_config = ConfigDict(
+        from_attributes=True,
+        populate_by_name=True,
+        alias_generator=to_camel,
+    )
 
     id: int
-    uid: UUID
+    partner_id: Optional[int] = Field(None, validation_alias="external_id")
     source_id: Optional[str] = None
     match_id: int
-    sport: str
+    sport: Optional[str] = None
     position: Optional[int] = None
     time: Optional[int] = None
     time_additional: Optional[int] = None
-    phase: Optional[str] = None
-    event_type: Optional[str] = None
+    phase: Optional[str] = Field(None, serialization_alias="liveTickerPhaseType")
+    event_type: Optional[str] = Field(None, serialization_alias="liveTickerEventType")
     description: Optional[str] = None
+    html_description: Optional[str] = Field(
+        None, serialization_alias="htmlDescription"
+    )
     image_url: Optional[str] = None
     video_url: Optional[str] = None
-    embed_html: Optional[str] = None
     players: Optional[list] = None
-    created_at: datetime
-    updated_at: datetime
+
+
+class PaginatedEventResponse(BaseModel):
+    model_config = ConfigDict(populate_by_name=True, alias_generator=to_camel)
+
+    items: list[EventResponse]
+    total: int
+    page: int
+    page_size: int
+    page_count: int
+    has_previous_page: bool
+    has_next_page: bool
+
+    @classmethod
+    def create(
+        cls, items: list[EventResponse], total: int, page: int, page_size: int
+    ) -> "PaginatedEventResponse":
+        page_count = ceil(total / page_size) if page_size > 0 else 0
+        return cls(
+            items=items,
+            total=total,
+            page=page,
+            page_size=page_size,
+            page_count=page_count,
+            has_previous_page=page > 1,
+            has_next_page=page < page_count,
+        )

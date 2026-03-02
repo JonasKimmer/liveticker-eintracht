@@ -14,13 +14,17 @@ class EventRepository:
     def __init__(self, db: Session) -> None:
         self.db = db
 
-    def get_by_match(self, match_id: int) -> list[Event]:
-        return (
+    def get_by_match_paginated(
+        self, match_id: int, page: int = 1, page_size: int = 50
+    ) -> tuple[list[Event], int]:
+        q = (
             self.db.query(Event)
             .filter(Event.match_id == match_id)
             .order_by(Event.position, Event.time)
-            .all()
         )
+        total = q.count()
+        items = q.offset((page - 1) * page_size).limit(page_size).all()
+        return items, total
 
     def get_by_id(self, event_id: int) -> Optional[Event]:
         return self.db.query(Event).filter(Event.id == event_id).first()
@@ -33,14 +37,10 @@ class EventRepository:
         if data.source_id:
             existing = self.get_by_source_id(data.source_id)
             if existing:
-                update_data = data.model_dump(exclude_unset=True)
+                update_data = data.model_dump(exclude_unset=True, by_alias=False)
                 update_data.pop("source_id", None)
+                update_data.pop("players", None)
                 for field, value in update_data.items():
-                    if field == "players" and value is not None:
-                        value = [
-                            p.model_dump() if hasattr(p, "model_dump") else p
-                            for p in value
-                        ]
                     setattr(existing, field, value)
                 try:
                     self.db.commit()
@@ -50,12 +50,8 @@ class EventRepository:
                     raise
                 return existing, False
 
-        data_dict = data.model_dump(exclude_unset=True)
-        if "players" in data_dict and data_dict["players"]:
-            data_dict["players"] = [
-                p.model_dump() if hasattr(p, "model_dump") else p
-                for p in data_dict["players"]
-            ]
+        data_dict = data.model_dump(exclude_unset=True, by_alias=False)
+        data_dict.pop("players", None)
         event = Event(match_id=match_id, **data_dict)
         self.db.add(event)
         try:
@@ -71,11 +67,9 @@ class EventRepository:
         event = self.get_by_source_id(source_id)
         if not event:
             return None
-        for field, value in data.model_dump(exclude_unset=True).items():
-            if field == "players" and value is not None:
-                value = [
-                    p.model_dump() if hasattr(p, "model_dump") else p for p in value
-                ]
+        update_data = data.model_dump(exclude_unset=True, by_alias=False)
+        update_data.pop("players", None)
+        for field, value in update_data.items():
             setattr(event, field, value)
         self.db.commit()
         self.db.refresh(event)

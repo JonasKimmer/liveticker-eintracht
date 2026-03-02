@@ -20,8 +20,9 @@ router = APIRouter(prefix="/seasons", tags=["Seasons"])
 
 
 @router.get(
-    "/",
+    "",
     response_model=PaginatedSeasonResponse,
+    response_model_by_alias=True,
     summary="List seasons (paginated)",
 )
 def get_seasons(
@@ -38,15 +39,16 @@ def get_seasons(
 
 
 @router.get(
-    "/{season_id}",
+    "/{seasonId}",
     response_model=SeasonResponse,
+    response_model_by_alias=True,
     summary="Get a single season",
 )
 def get_season(
-    season_id: int,
+    seasonId: int,
     db: Session = Depends(get_db),
 ) -> SeasonResponse:
-    season = SeasonRepository(db).get_by_id(season_id)
+    season = SeasonRepository(db).get_by_id(seasonId)
     if not season:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Season not found"
@@ -55,53 +57,46 @@ def get_season(
 
 
 @router.post(
-    "/",
+    "",
     response_model=SeasonResponse,
+    response_model_by_alias=True,
     status_code=status.HTTP_201_CREATED,
-    summary="Create or update a season (upsert by external_id)",
+    summary="Create a new season",
 )
 def create_season(
     data: SeasonCreate,
     db: Session = Depends(get_db),
 ) -> SeasonResponse:
-    """
-    Idempotent upsert – safe to call repeatedly from n8n import workflows.
-    Matches on `external_id` if provided. Creates a new record otherwise.
-    """
     try:
-        season, _ = SeasonRepository(db).upsert(data)
-        return season
+        return SeasonRepository(db).create(data)
     except IntegrityError:
-        logger.exception("IntegrityError upserting season: %s", data.title)
+        logger.exception("IntegrityError creating season: %s", data.title)
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
-            detail="A season with this external_id already exists with conflicting data.",
+            detail="A season with conflicting data already exists.",
         )
 
 
-@router.patch(
-    "/{season_id}",
+@router.put(
+    "/{seasonId}",
     response_model=SeasonResponse,
-    summary="Partially update a season",
+    response_model_by_alias=True,
+    summary="Update an existing season",
 )
 def update_season(
-    season_id: int,
+    seasonId: int,
     data: SeasonUpdate,
     db: Session = Depends(get_db),
 ) -> SeasonResponse:
-    """
-    Partial update – only provided fields are changed.
-    Fields like `source`, `external_id`, and `uid` are immutable via API.
-    """
     if not data.model_fields_set:
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
             detail="Request body must contain at least one field to update.",
         )
     try:
-        updated = SeasonRepository(db).update(season_id, data)
+        updated = SeasonRepository(db).update(seasonId, data)
     except IntegrityError:
-        logger.exception("IntegrityError updating season id=%s", season_id)
+        logger.exception("IntegrityError updating season id=%s", seasonId)
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
             detail="Update would violate a unique constraint.",
@@ -111,3 +106,18 @@ def update_season(
             status_code=status.HTTP_404_NOT_FOUND, detail="Season not found"
         )
     return updated
+
+
+@router.delete(
+    "/{seasonId}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    summary="Delete a season",
+)
+def delete_season(
+    seasonId: int,
+    db: Session = Depends(get_db),
+) -> None:
+    if not SeasonRepository(db).delete(seasonId):
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Season not found"
+        )

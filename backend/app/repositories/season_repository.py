@@ -1,6 +1,5 @@
 import logging
 import math
-from datetime import date
 from typing import Literal, Optional
 from uuid import UUID
 
@@ -67,9 +66,6 @@ class SeasonRepository:
     def get_by_uid(self, uid: UUID) -> Optional[Season]:
         return self.db.query(Season).filter(Season.uid == uid).first()
 
-    def get_by_external_id(self, external_id: int) -> Optional[Season]:
-        return self.db.query(Season).filter(Season.external_id == external_id).first()
-
     def exists(self, season_id: int) -> bool:
         return (
             self.db.query(Season.id).filter(Season.id == season_id).scalar() is not None
@@ -81,13 +77,12 @@ class SeasonRepository:
 
     def create(self, data: SeasonCreate) -> Season:
         season = Season(
-            external_id=data.external_id,
+            **({"id": data.id} if data.id is not None else {}),
             sport=data.sport,
             title=data.title,
             short_title=data.short_title,
             starts_at=data.starts_at,
             ends_at=data.ends_at,
-            source=data.source,
         )
         self.db.add(season)
         try:
@@ -116,26 +111,11 @@ class SeasonRepository:
             raise
         return season
 
-    def upsert(self, data: SeasonCreate) -> tuple[Season, bool]:
-        """
-        Insert or update by external_id.
-        Returns (season, created) where created=True if a new row was inserted.
-        """
-        if data.external_id:
-            existing = self.get_by_external_id(data.external_id)
-            if existing:
-                existing.title = data.title
-                existing.short_title = data.short_title
-                existing.starts_at = data.starts_at
-                existing.ends_at = data.ends_at
-                existing.sport = data.sport
-                try:
-                    self.db.commit()
-                    self.db.refresh(existing)
-                except IntegrityError:
-                    self.db.rollback()
-                    raise
-                return existing, False
-
-        season = self.create(data)
-        return season, True
+    def delete(self, season_id: int) -> bool:
+        season = self.get_by_id(season_id)
+        if not season:
+            return False
+        self.db.delete(season)
+        self.db.commit()
+        logger.debug("Season deleted: id=%s", season_id)
+        return True

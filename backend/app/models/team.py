@@ -1,7 +1,7 @@
 import uuid
 
 from sqlalchemy import Column, Integer, String, Boolean, TIMESTAMP, ForeignKey
-from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.dialects.postgresql import UUID, JSONB
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 
@@ -20,8 +20,10 @@ class Team(Base):
     name = Column(String(100), nullable=False, index=True)
     initials = Column(String(10), nullable=True)
     short_name = Column(String(100), nullable=True)
+    category = Column(JSONB, nullable=True)
     logo_url = Column(String(500), nullable=True)
     is_partner_team = Column(Boolean, nullable=False, default=False)
+    position = Column(Integer, nullable=False, default=0)
     hidden = Column(Boolean, nullable=False, default=False)
     source = Column(String(20), nullable=False, default="partner")
     country_id = Column(

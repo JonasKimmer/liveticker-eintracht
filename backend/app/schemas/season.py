@@ -1,21 +1,23 @@
-from datetime import date, datetime
+from datetime import date
 from typing import Optional
 from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
+from pydantic.alias_generators import to_camel
 
 
 class SeasonCreate(BaseModel):
-    external_id: Optional[int] = Field(
-        None, gt=0, description="ID from external source (api-sports)"
+    model_config = ConfigDict(
+        populate_by_name=True,
+        alias_generator=to_camel,
     )
+
+    id: Optional[int] = Field(None, gt=0)
     sport: str = Field("Football", max_length=20)
     title: str = Field(..., min_length=1, max_length=100)
     short_title: Optional[str] = Field(None, max_length=20)
     starts_at: Optional[date] = None
     ends_at: Optional[date] = None
-    # source is set server-side only
-    source: str = Field("partner", max_length=20, exclude=True)
 
     @field_validator("title")
     @classmethod
@@ -32,7 +34,10 @@ class SeasonCreate(BaseModel):
 
 
 class SeasonUpdate(BaseModel):
-    """Only fields a client is allowed to mutate."""
+    model_config = ConfigDict(
+        populate_by_name=True,
+        alias_generator=to_camel,
+    )
 
     sport: Optional[str] = Field(None, max_length=20)
     title: Optional[str] = Field(None, min_length=1, max_length=100)
@@ -55,24 +60,26 @@ class SeasonUpdate(BaseModel):
 
 
 class SeasonResponse(BaseModel):
-    """Public API response – source intentionally excluded."""
-
-    model_config = ConfigDict(from_attributes=True)
+    model_config = ConfigDict(
+        from_attributes=True,
+        populate_by_name=True,
+        alias_generator=to_camel,
+    )
 
     id: int
     uid: UUID
-    external_id: Optional[int] = None
     sport: str
     title: str
     short_title: Optional[str] = None
     starts_at: Optional[date] = None
     ends_at: Optional[date] = None
-    created_at: datetime
-    updated_at: datetime
 
 
 class PaginatedSeasonResponse(BaseModel):
-    """Paginated wrapper for season lists."""
+    model_config = ConfigDict(
+        populate_by_name=True,
+        alias_generator=to_camel,
+    )
 
     items: list[SeasonResponse]
     total: int

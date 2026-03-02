@@ -11,12 +11,12 @@ from app.schemas.season import (
     SeasonResponse,
     PaginatedSeasonResponse,
 )
-from app.schemas.competition_team import CompetitionTeamCreate, CompetitionTeamResponse
+from app.schemas.competition_team import CompetitionTeamAssignResponse
 from app.schemas.match import (
     MatchCreate,
     MatchUpdate,
     MatchResponse,
-    MatchListResponse,
+    PaginatedMatchResponse,
     LineupBulkUpdate,
     LineupPlayerResponse,
     StatisticsBulkUpdate,
@@ -44,12 +44,11 @@ __all__ = [
     "SeasonUpdate",
     "SeasonResponse",
     "PaginatedSeasonResponse",
-    "CompetitionTeamCreate",
-    "CompetitionTeamResponse",
+    "CompetitionTeamAssignResponse",
     "MatchCreate",
     "MatchUpdate",
     "MatchResponse",
-    "MatchListResponse",
+    "PaginatedMatchResponse",
     "LineupBulkUpdate",
     "LineupPlayerResponse",
     "StatisticsBulkUpdate",

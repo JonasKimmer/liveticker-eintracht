@@ -1,15 +1,18 @@
-from datetime import datetime
 from typing import Optional
 
 from pydantic import BaseModel, ConfigDict, Field, HttpUrl, field_validator
+from pydantic.alias_generators import to_camel
 
 
 class CountryCreate(BaseModel):
-    name: str = Field(..., min_length=1, max_length=100, description="Country name")
-    code: Optional[str] = Field(
-        None, min_length=2, max_length=3, description="ISO 3166-1 alpha-2/3 code"
+    model_config = ConfigDict(
+        populate_by_name=True,
+        alias_generator=to_camel,
     )
-    flag_url: Optional[HttpUrl] = Field(None, description="URL to flag image")
+
+    name: str = Field(..., min_length=1, max_length=100)
+    code: Optional[str] = Field(None, min_length=2, max_length=3, description="ISO 3166-1 alpha-2/3")
+    flag_url: Optional[HttpUrl] = None
 
     @field_validator("name")
     @classmethod
@@ -25,10 +28,13 @@ class CountryCreate(BaseModel):
 
 
 class CountryResponse(BaseModel):
-    model_config = ConfigDict(from_attributes=True)
+    model_config = ConfigDict(
+        from_attributes=True,
+        populate_by_name=True,
+        alias_generator=to_camel,
+    )
 
     id: int
     name: str
     code: Optional[str] = None
     flag_url: Optional[str] = None
-    created_at: datetime

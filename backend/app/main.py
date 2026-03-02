@@ -10,7 +10,6 @@ from app.api.v1 import (
     seasons,
     favorites,
     competitions,
-    competition_teams,
 )
 from app.core.config import settings
 from app.core.database import Base, engine, check_database_connection
@@ -60,7 +59,7 @@ app.include_router(countries.router, prefix=PREFIX)
 app.include_router(teams.router, prefix=PREFIX)
 app.include_router(seasons.router, prefix=PREFIX)
 app.include_router(competitions.router, prefix=PREFIX)
-app.include_router(competition_teams.router, prefix=PREFIX)
+app.include_router(teams.assignment_router, prefix=PREFIX)
 app.include_router(matches.router, prefix=PREFIX)
 app.include_router(events.router, prefix=PREFIX)
 app.include_router(ticker.router, prefix=PREFIX)

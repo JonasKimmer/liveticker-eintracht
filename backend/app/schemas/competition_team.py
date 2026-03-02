@@ -1,18 +1,17 @@
-from datetime import datetime
-from pydantic import BaseModel, ConfigDict, Field
+from uuid import UUID
+
+from pydantic import BaseModel, ConfigDict
+from pydantic.alias_generators import to_camel
 
 
-class CompetitionTeamCreate(BaseModel):
-    season_id: int = Field(..., gt=0)
-    competition_id: int = Field(..., gt=0)
-    team_id: int = Field(..., gt=0)
+class CompetitionTeamAssignResponse(BaseModel):
+    model_config = ConfigDict(
+        populate_by_name=True,
+        alias_generator=to_camel,
+    )
 
-
-class CompetitionTeamResponse(BaseModel):
-    model_config = ConfigDict(from_attributes=True)
-
-    id: int
+    uid: UUID
     season_id: int
     competition_id: int
     team_id: int
-    created_at: datetime
+    sport: str

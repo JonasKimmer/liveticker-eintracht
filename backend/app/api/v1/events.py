@@ -1,17 +1,17 @@
 import logging
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
 from app.repositories.event_repository import EventRepository
 from app.repositories.match_repository import MatchRepository
-from app.schemas.event import EventCreate, EventUpdate, EventResponse
+from app.schemas.event import EventCreate, EventResponse, EventUpdate, PaginatedEventResponse
 
 logger = logging.getLogger(__name__)
 
-router = APIRouter(prefix="/matches/{match_id}/events", tags=["Events"])
+router = APIRouter(prefix="/matches/{matchId}/events", tags=["Events"])
 
 
 def _get_match_or_404(match_id: int, db: Session):
@@ -24,56 +24,72 @@ def _get_match_or_404(match_id: int, db: Session):
 
 
 @router.get(
-    "/",
-    response_model=list[EventResponse],
-    summary="Get all events for a match",
+    "",
+    response_model=PaginatedEventResponse,
+    response_model_by_alias=True,
+    summary="Get all events for a match (paginated)",
 )
-def get_events(match_id: int, db: Session = Depends(get_db)) -> list[EventResponse]:
-    _get_match_or_404(match_id, db)
-    return EventRepository(db).get_by_match(match_id)
+def get_events(
+    matchId: int,
+    page: int = Query(1, ge=1),
+    page_size: int = Query(50, ge=1, le=500, alias="pageSize"),
+    db: Session = Depends(get_db),
+) -> PaginatedEventResponse:
+    _get_match_or_404(matchId, db)
+    items, total = EventRepository(db).get_by_match_paginated(
+        matchId, page=page, page_size=page_size
+    )
+    return PaginatedEventResponse.create(
+        items=[EventResponse.model_validate(e) for e in items],
+        total=total,
+        page=page,
+        page_size=page_size,
+    )
 
 
 @router.post(
-    "/",
+    "",
     response_model=EventResponse,
+    response_model_by_alias=True,
     status_code=status.HTTP_201_CREATED,
-    summary="Create or update an event (upsert by source_id)",
+    summary="Create or update an event (upsert by sourceId)",
 )
 def create_event(
-    match_id: int,
+    matchId: int,
     data: EventCreate,
     db: Session = Depends(get_db),
 ) -> EventResponse:
-    _get_match_or_404(match_id, db)
+    _get_match_or_404(matchId, db)
     try:
-        event, _ = EventRepository(db).upsert(match_id, data)
+        event, _ = EventRepository(db).upsert(matchId, data)
         return event
     except IntegrityError:
-        logger.exception("IntegrityError upserting event for match_id=%s", match_id)
+        logger.exception("IntegrityError upserting event for matchId=%s", matchId)
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
-            detail="Event with this source_id already exists with conflicting data.",
+            detail="Event with this sourceId already exists with conflicting data.",
         )
 
 
 @router.patch(
-    "/{source_id}",
+    "/{sourceId}",
     response_model=EventResponse,
-    summary="Update an event by source_id",
+    response_model_by_alias=True,
+    summary="Update an event by sourceId",
 )
 def update_event(
-    match_id: int,
-    source_id: str,
+    matchId: int,
+    sourceId: str,
     data: EventUpdate,
     db: Session = Depends(get_db),
 ) -> EventResponse:
-    _get_match_or_404(match_id, db)
+    _get_match_or_404(matchId, db)
     if not data.model_fields_set:
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
             detail="Request body must contain at least one field to update.",
         )
-    event = EventRepository(db).update_by_source_id(source_id, data)
+    event = EventRepository(db).update_by_source_id(sourceId, data)
     if not event:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Event not found"
@@ -82,13 +98,13 @@ def update_event(
 
 
 @router.delete(
-    "/{source_id}",
+    "/{sourceId}",
     status_code=status.HTTP_204_NO_CONTENT,
-    summary="Delete an event by source_id",
+    summary="Delete an event by sourceId",
 )
-def delete_event(match_id: int, source_id: str, db: Session = Depends(get_db)) -> None:
-    _get_match_or_404(match_id, db)
-    if not EventRepository(db).delete_by_source_id(source_id):
+def delete_event(matchId: int, sourceId: str, db: Session = Depends(get_db)) -> None:
+    _get_match_or_404(matchId, db)
+    if not EventRepository(db).delete_by_source_id(sourceId):
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Event not found"
         )

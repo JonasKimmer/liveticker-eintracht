@@ -1,9 +1,11 @@
-from datetime import datetime
+from datetime import date, datetime
 from enum import Enum
+from math import ceil
 from typing import Any, Optional
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict, Field, HttpUrl, field_validator
+from pydantic import BaseModel, ConfigDict, Field, computed_field, field_validator
+from pydantic.alias_generators import to_camel
 
 
 # ------------------------------------------------------------------ #
@@ -39,13 +41,13 @@ class MatchPhase(str, Enum):
 class LocalizedTitle(BaseModel):
     de: Optional[str] = Field(None, max_length=200)
     en: Optional[str] = Field(None, max_length=200)
-    model_config = ConfigDict(extra="allow")
 
 
 class JerseyInfo(BaseModel):
-    image_url: Optional[HttpUrl] = Field(None, alias="imageUrl")
-    flock_color: Optional[str] = Field(None, alias="flockColor", max_length=20)
-    model_config = ConfigDict(populate_by_name=True)
+    model_config = ConfigDict(populate_by_name=True, alias_generator=to_camel)
+
+    image_url: Optional[str] = Field(None, max_length=500)
+    flock_color: Optional[str] = Field(None, max_length=20)
 
 
 # ------------------------------------------------------------------ #
@@ -54,20 +56,23 @@ class JerseyInfo(BaseModel):
 
 
 class MatchCreate(BaseModel):
-    external_id: Optional[int] = Field(None, gt=0)
+    model_config = ConfigDict(populate_by_name=True, alias_generator=to_camel)
+
+    id: Optional[int] = Field(None, gt=0)
     sport: str = Field("Football", max_length=20)
     season_id: Optional[int] = Field(None, gt=0)
     competition_id: Optional[int] = Field(None, gt=0)
-    home_team_id: Optional[int] = Field(None, gt=0)
-    away_team_id: Optional[int] = Field(None, gt=0)
-    home_score: Optional[int] = Field(None, ge=0)
-    away_score: Optional[int] = Field(None, ge=0)
+    home_team_id: Optional[int] = Field(None, gt=0, alias="teamHomeId")
+    away_team_id: Optional[int] = Field(None, gt=0, alias="teamAwayId")
+    home_score: Optional[int] = Field(None, ge=0, alias="teamHomeScore")
+    away_score: Optional[int] = Field(None, ge=0, alias="teamAwayScore")
     matchday: Optional[int] = Field(None, ge=1)
     matchday_title: Optional[LocalizedTitle] = None
     title: Optional[str] = Field(None, max_length=200)
     localized_title: Optional[LocalizedTitle] = None
     starts_at: Optional[datetime] = None
     ends_at: Optional[datetime] = None
+    kickoff: Optional[datetime] = None
     venue: Optional[str] = Field(None, max_length=100)
     city: Optional[str] = Field(None, max_length=100)
     match_state: Optional[MatchState] = None
@@ -79,14 +84,13 @@ class MatchCreate(BaseModel):
     team_home_jersey: Optional[JerseyInfo] = None
     team_away_jersey: Optional[JerseyInfo] = None
     broadcasts: Optional[list[int]] = None
-    source: str = Field("partner", max_length=20, exclude=True)
 
     @field_validator("away_team_id")
     @classmethod
     def teams_must_differ(cls, v: Optional[int], info: Any) -> Optional[int]:
         home = info.data.get("home_team_id")
         if v is not None and home is not None and v == home:
-            raise ValueError("home_team_id and away_team_id must be different")
+            raise ValueError("teamHomeId and teamAwayId must be different")
         return v
 
 
@@ -96,12 +100,15 @@ class MatchCreate(BaseModel):
 
 
 class MatchUpdate(BaseModel):
-    home_score: Optional[int] = Field(None, ge=0)
-    away_score: Optional[int] = Field(None, ge=0)
-    match_state: Optional[MatchState] = None
+    model_config = ConfigDict(populate_by_name=True, alias_generator=to_camel)
+
+    home_score: Optional[int] = Field(None, ge=0, alias="teamHomeScore")
+    away_score: Optional[int] = Field(None, ge=0, alias="teamAwayScore")
+    match_state: Optional[MatchState] = Field(None, alias="state")
     match_phase: Optional[MatchPhase] = None
     starts_at: Optional[datetime] = None
     ends_at: Optional[datetime] = None
+    kickoff: Optional[datetime] = None
     venue: Optional[str] = Field(None, max_length=100)
     city: Optional[str] = Field(None, max_length=100)
     is_scheduled: Optional[bool] = None
@@ -120,79 +127,78 @@ class MatchUpdate(BaseModel):
 # ------------------------------------------------------------------ #
 
 
-class TeamInMatch(BaseModel):
-    """Minimal team representation embedded in match response."""
-
-    model_config = ConfigDict(from_attributes=True)
-
-    id: int
-    uid: UUID
-    name: str
-    short_name: Optional[str] = None
-    logo_url: Optional[str] = None
-
-
 class MatchResponse(BaseModel):
-    """Full match detail response."""
+    """Full match response – matches Partner API structure."""
 
-    model_config = ConfigDict(from_attributes=True)
+    model_config = ConfigDict(
+        from_attributes=True,
+        populate_by_name=True,
+        alias_generator=to_camel,
+    )
 
+    kickoff: Optional[datetime] = None
+    is_kickoff_confirmed: bool
+    localized_title: Optional[dict] = None
+    match_phase: Optional[str] = None
+    title: Optional[str] = None
     id: int
-    uid: UUID
-    external_id: Optional[int] = None
+    uid: UUID = Field(serialization_alias="uId")
     sport: str
+    created: Optional[date] = Field(None, validation_alias="created_at")
+    updated: Optional[date] = Field(None, validation_alias="updated_at")
+    starts_at: Optional[datetime] = None
+    is_scheduled: bool
     season_id: Optional[int] = None
     competition_id: Optional[int] = None
-    home_team_id: Optional[int] = None
-    away_team_id: Optional[int] = None
-    home_team: Optional[TeamInMatch] = None
-    away_team: Optional[TeamInMatch] = None
-    home_score: Optional[int] = None
-    away_score: Optional[int] = None
+    home_team_id: Optional[int] = Field(None, serialization_alias="teamHomeId")
+    away_team_id: Optional[int] = Field(None, serialization_alias="teamAwayId")
+    home_score: Optional[int] = Field(None, serialization_alias="teamHomeScore")
+    away_score: Optional[int] = Field(None, serialization_alias="teamAwayScore")
     matchday: Optional[int] = None
-    matchday_title: Optional[dict] = None
-    title: Optional[str] = None
-    localized_title: Optional[dict] = None
-    starts_at: Optional[datetime] = None
-    ends_at: Optional[datetime] = None
     venue: Optional[str] = None
     city: Optional[str] = None
-    match_state: Optional[str] = None
-    match_phase: Optional[str] = None
-    is_scheduled: bool
-    is_kickoff_confirmed: bool
+    matchday_title: Optional[dict] = None
     number_of_goal_scorers: Optional[int] = None
-    number_of_viewers: Optional[int] = None
     team_home_jersey: Optional[dict] = None
     team_away_jersey: Optional[dict] = None
     broadcasts: Optional[list] = None
-    created_at: datetime
-    updated_at: datetime
-
-
-class MatchListResponse(BaseModel):
-    """Slim response for list endpoints – no nested team objects."""
-
-    model_config = ConfigDict(from_attributes=True)
-
-    id: int
-    uid: UUID
-    external_id: Optional[int] = None
-    sport: str
-    season_id: Optional[int] = None
-    competition_id: Optional[int] = None
-    home_team_id: Optional[int] = None
-    away_team_id: Optional[int] = None
-    home_score: Optional[int] = None
-    away_score: Optional[int] = None
-    matchday: Optional[int] = None
-    starts_at: Optional[datetime] = None
-    ends_at: Optional[datetime] = None
+    number_of_viewers: Optional[int] = None
     match_state: Optional[str] = None
-    match_phase: Optional[str] = None
-    is_scheduled: bool
-    is_kickoff_confirmed: bool
-    updated_at: datetime
+    ends_at: Optional[datetime] = None
+
+    @field_validator("created", "updated", mode="before")
+    @classmethod
+    def datetime_to_date(cls, v: Any) -> Optional[date]:
+        if isinstance(v, datetime):
+            return v.date()
+        return v
+
+
+class PaginatedMatchResponse(BaseModel):
+    model_config = ConfigDict(populate_by_name=True, alias_generator=to_camel)
+
+    items: list[MatchResponse]
+    total: int
+    page: int
+    page_size: int
+    page_count: int
+    has_previous_page: bool
+    has_next_page: bool
+
+    @classmethod
+    def create(
+        cls, items: list[MatchResponse], total: int, page: int, page_size: int
+    ) -> "PaginatedMatchResponse":
+        page_count = ceil(total / page_size) if page_size > 0 else 0
+        return cls(
+            items=items,
+            total=total,
+            page=page,
+            page_size=page_size,
+            page_count=page_count,
+            has_previous_page=page > 1,
+            has_next_page=page < page_count,
+        )
 
 
 # ------------------------------------------------------------------ #
@@ -213,9 +219,13 @@ class LineupPlayerPosition(str, Enum):
 
 
 class LineupPlayerInput(BaseModel):
+    model_config = ConfigDict(populate_by_name=True, alias_generator=to_camel)
+
     player_id: int = Field(..., gt=0)
     jersey_number: Optional[int] = Field(None, ge=1, le=99)
+    shirt_number: Optional[int] = Field(None, ge=1, le=99)
     status: LineupPlayerStatus
+    role: Optional[str] = Field(None, max_length=50)
     formation_place: Optional[int] = Field(None, ge=0, le=99999)
     formation_position: Optional[int] = None
     position: Optional[LineupPlayerPosition] = None
@@ -227,14 +237,20 @@ class LineupPlayerInput(BaseModel):
 
 
 class LineupBulkUpdate(BaseModel):
-    """PUT /matches/{id}/lineup – replaces both team lineups at once."""
+    """PUT /matches/{matchId}/lineup – replaces both team lineups at once."""
+
+    model_config = ConfigDict(populate_by_name=True, alias_generator=to_camel)
 
     team_home_lineup: list[LineupPlayerInput] = Field(..., min_length=1)
     team_away_lineup: list[LineupPlayerInput] = Field(..., min_length=1)
 
 
 class LineupPlayerResponse(BaseModel):
-    model_config = ConfigDict(from_attributes=True)
+    model_config = ConfigDict(
+        from_attributes=True,
+        populate_by_name=True,
+        alias_generator=to_camel,
+    )
 
     id: int
     match_id: int
@@ -258,6 +274,8 @@ class LineupPlayerResponse(BaseModel):
 
 
 class TeamStatisticsInput(BaseModel):
+    model_config = ConfigDict(populate_by_name=True, alias_generator=to_camel)
+
     possession_percentage: Optional[str] = Field(None, max_length=10)
     total_pass: Optional[int] = Field(None, ge=0)
     accurate_pass: Optional[int] = Field(None, ge=0)
@@ -279,14 +297,20 @@ class TeamStatisticsInput(BaseModel):
 
 
 class StatisticsBulkUpdate(BaseModel):
-    """PATCH /matches/{id}/statistics – updates both teams at once."""
+    """PATCH /matches/{matchId}/statistics – updates both teams at once."""
+
+    model_config = ConfigDict(populate_by_name=True, alias_generator=to_camel)
 
     team_home_statistics: TeamStatisticsInput
     team_away_statistics: TeamStatisticsInput
 
 
 class MatchStatisticResponse(BaseModel):
-    model_config = ConfigDict(from_attributes=True)
+    model_config = ConfigDict(
+        from_attributes=True,
+        populate_by_name=True,
+        alias_generator=to_camel,
+    )
 
     id: int
     match_id: int

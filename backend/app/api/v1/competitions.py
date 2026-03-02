@@ -19,8 +19,9 @@ router = APIRouter(prefix="/competitions", tags=["Competitions"])
 
 
 @router.get(
-    "/",
+    "",
     response_model=list[CompetitionResponse],
+    response_model_by_alias=True,
     summary="List competitions",
 )
 def get_competitions(
@@ -33,15 +34,16 @@ def get_competitions(
 
 
 @router.get(
-    "/{competition_id}",
+    "/{competitionId}",
     response_model=CompetitionResponse,
+    response_model_by_alias=True,
     summary="Get a single competition",
 )
 def get_competition(
-    competition_id: int,
+    competitionId: int,
     db: Session = Depends(get_db),
 ) -> CompetitionResponse:
-    competition = CompetitionRepository(db).get_by_id(competition_id)
+    competition = CompetitionRepository(db).get_by_id(competitionId)
     if not competition:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Competition not found"
@@ -50,53 +52,46 @@ def get_competition(
 
 
 @router.post(
-    "/",
+    "",
     response_model=CompetitionResponse,
+    response_model_by_alias=True,
     status_code=status.HTTP_201_CREATED,
-    summary="Create or update a competition (upsert by external_id)",
+    summary="Create a new competition",
 )
 def create_competition(
     data: CompetitionCreate,
     db: Session = Depends(get_db),
 ) -> CompetitionResponse:
-    """
-    Idempotent upsert – safe to call repeatedly from n8n import workflows.
-    Matches on `external_id` if provided. Creates a new record otherwise.
-    """
     try:
-        competition, _ = CompetitionRepository(db).upsert(data)
-        return competition
+        return CompetitionRepository(db).create(data)
     except IntegrityError:
-        logger.exception("IntegrityError upserting competition: %s", data.title)
+        logger.exception("IntegrityError creating competition: %s", data.title)
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
-            detail="A competition with this external_id already exists with conflicting data.",
+            detail="A competition with conflicting data already exists.",
         )
 
 
-@router.patch(
-    "/{competition_id}",
+@router.put(
+    "/{competitionId}",
     response_model=CompetitionResponse,
-    summary="Partially update a competition",
+    response_model_by_alias=True,
+    summary="Update an existing competition",
 )
 def update_competition(
-    competition_id: int,
+    competitionId: int,
     data: CompetitionUpdate,
     db: Session = Depends(get_db),
 ) -> CompetitionResponse:
-    """
-    Partial update – only provided fields are changed.
-    Fields like `source`, `external_id`, and `uid` are immutable via API.
-    """
     if not data.model_fields_set:
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
             detail="Request body must contain at least one field to update.",
         )
     try:
-        updated = CompetitionRepository(db).update(competition_id, data)
+        updated = CompetitionRepository(db).update(competitionId, data)
     except IntegrityError:
-        logger.exception("IntegrityError updating competition id=%s", competition_id)
+        logger.exception("IntegrityError updating competition id=%s", competitionId)
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
             detail="Update would violate a unique constraint.",
@@ -109,19 +104,15 @@ def update_competition(
 
 
 @router.delete(
-    "/{competition_id}",
+    "/{competitionId}",
     status_code=status.HTTP_204_NO_CONTENT,
-    summary="Delete a competition",
+    summary="Delete an existing competition",
 )
 def delete_competition(
-    competition_id: int,
+    competitionId: int,
     db: Session = Depends(get_db),
 ) -> None:
-    """
-    Deletes a competition. Related matches keep their competition reference
-    set to NULL (ON DELETE SET NULL).
-    """
-    if not CompetitionRepository(db).delete(competition_id):
+    if not CompetitionRepository(db).delete(competitionId):
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Competition not found"
         )
