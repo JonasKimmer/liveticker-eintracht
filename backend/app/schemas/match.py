@@ -127,6 +127,14 @@ class MatchUpdate(BaseModel):
 # ------------------------------------------------------------------ #
 
 
+class MatchTeamInfo(BaseModel):
+    model_config = ConfigDict(from_attributes=True, populate_by_name=True, alias_generator=to_camel)
+
+    id: int
+    name: str
+    logo_url: Optional[str] = None
+
+
 class MatchResponse(BaseModel):
     """Full match response – matches Partner API structure."""
 
@@ -142,6 +150,7 @@ class MatchResponse(BaseModel):
     match_phase: Optional[str] = None
     title: Optional[str] = None
     id: int
+    external_id: Optional[int] = None
     uid: UUID = Field(serialization_alias="uId")
     sport: str
     created: Optional[date] = Field(None, validation_alias="created_at")
@@ -165,6 +174,8 @@ class MatchResponse(BaseModel):
     number_of_viewers: Optional[int] = None
     match_state: Optional[str] = None
     ends_at: Optional[datetime] = None
+    home_team: Optional[MatchTeamInfo] = None
+    away_team: Optional[MatchTeamInfo] = None
 
     @field_validator("created", "updated", mode="before")
     @classmethod
@@ -261,10 +272,10 @@ class LineupPlayerResponse(BaseModel):
     formation_place: Optional[int] = None
     formation_position: Optional[int] = None
     position: Optional[str] = None
-    number_of_goals: int
-    has_yellow_card: bool
-    has_red_card: bool
-    is_substituted: bool
+    number_of_goals: int = 0
+    has_yellow_card: bool = False
+    has_red_card: bool = False
+    is_substituted: bool = False
     formation: Optional[str] = None
 
 

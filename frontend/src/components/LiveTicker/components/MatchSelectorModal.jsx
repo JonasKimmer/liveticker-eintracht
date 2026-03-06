@@ -18,9 +18,11 @@ export function MatchSelectorModal({
   selCountry,
   onCountryChange,
   teams,
+  teamsLoading,
   selTeamId,
   onTeamChange,
   competitions,
+  competitionsLoading,
   selCompetitionId,
   onCompetitionChange,
   matchdays,
@@ -94,7 +96,7 @@ export function MatchSelectorModal({
               </ModalSelect>
 
               <ModalSelect
-                label="Team"
+                label={teamsLoading ? "Team (importiert…)" : "Team"}
                 disabled={!selCountry || !teams.length}
                 value={selTeamId ?? ""}
                 onChange={(v) => onTeamChange(parseInt(v))}
@@ -107,14 +109,14 @@ export function MatchSelectorModal({
               </ModalSelect>
 
               <ModalSelect
-                label="Wettbewerb"
+                label={competitionsLoading ? "Wettbewerb (importiert…)" : "Wettbewerb"}
                 disabled={!selTeamId || !competitions.length}
                 value={selCompetitionId ?? ""}
                 onChange={(v) => onCompetitionChange(parseInt(v))}
               >
                 {competitions.map((c) => (
                   <option key={c.id} value={c.id}>
-                    {c.league?.name} {c.season?.year}
+                    {c.title}
                   </option>
                 ))}
               </ModalSelect>
@@ -152,7 +154,7 @@ export function MatchSelectorModal({
             </option>
             {matches.map((m) => (
               <option key={m.id} value={m.id}>
-                {m.home_team.name} vs {m.away_team.name}
+                {m.homeTeam?.name} vs {m.awayTeam?.name}
               </option>
             ))}
           </ModalSelect>

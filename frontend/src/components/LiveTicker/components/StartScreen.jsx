@@ -12,9 +12,11 @@ export function StartScreen({
   selCountry,
   onCountryChange,
   teams,
+  teamsLoading,
   selTeamId,
   onTeamChange,
   competitions,
+  competitionsLoading,
   selCompetitionId,
   onCompetitionChange,
   matchdays,
@@ -50,13 +52,13 @@ export function StartScreen({
           </StartSelect>
 
           <StartSelect
-            label="Team"
+            label={teamsLoading ? "Team (importiert…)" : "Team"}
             disabled={!selCountry || !teams.length}
             value={selTeamId ?? ""}
             onChange={(v) => onTeamChange(parseInt(v))}
           >
             <option value="" disabled>
-              Team wählen…
+              {teamsLoading ? "Importiere Teams…" : "Team wählen…"}
             </option>
             {teams.map((t) => (
               <option key={t.id} value={t.id}>
@@ -66,7 +68,7 @@ export function StartScreen({
           </StartSelect>
 
           <StartSelect
-            label="Wettbewerb"
+            label={competitionsLoading ? "Wettbewerb (importiert…)" : "Wettbewerb"}
             disabled={!selTeamId || !competitions.length}
             value={selCompetitionId ?? ""}
             onChange={(v) => onCompetitionChange(parseInt(v))}
@@ -76,7 +78,7 @@ export function StartScreen({
             </option>
             {competitions.map((c) => (
               <option key={c.id} value={c.id}>
-                {c.league?.name} {c.season?.year}
+                {c.title}
               </option>
             ))}
           </StartSelect>
@@ -114,7 +116,7 @@ export function StartScreen({
             </option>
             {matches.map((m) => (
               <option key={m.id} value={m.id}>
-                {m.home_team.name} vs {m.away_team.name}
+                {m.homeTeam?.name} vs {m.awayTeam?.name}
               </option>
             ))}
           </StartSelect>

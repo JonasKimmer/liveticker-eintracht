@@ -6,6 +6,7 @@ from uuid import UUID
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
+from app.models.country import Country
 from app.models.team import Team
 from app.schemas.team import PaginatedTeamResponse, TeamCreate, TeamResponse, TeamUpdate
 
@@ -56,6 +57,15 @@ class TeamRepository:
     def get_by_uid(self, uid: UUID) -> Optional[Team]:
         return self.db.query(Team).filter(Team.uid == uid).first()
 
+    def get_by_country(self, country_name: str) -> list[Team]:
+        return (
+            self.db.query(Team)
+            .join(Country, Team.country_id == Country.id)
+            .filter(Country.name == country_name)
+            .order_by(Team.name)
+            .all()
+        )
+
     def exists(self, team_id: int) -> bool:
         return self.db.query(Team.id).filter(Team.id == team_id).scalar() is not None
 
@@ -63,7 +73,17 @@ class TeamRepository:
     # Writes                                                               #
     # ------------------------------------------------------------------ #
 
+    def _resolve_country_id(self, country_name: str) -> Optional[int]:
+        country = (
+            self.db.query(Country).filter(Country.name == country_name).first()
+        )
+        return country.id if country else None
+
     def create(self, data: TeamCreate) -> Team:
+        country_id = None
+        if data.country_name:
+            country_id = self._resolve_country_id(data.country_name)
+
         team = Team(
             **({"id": data.id} if data.id is not None else {}),
             sport=data.sport,
@@ -75,6 +95,7 @@ class TeamRepository:
             is_partner_team=data.is_partner_team,
             position=data.position,
             hidden=data.hidden,
+            country_id=country_id,
         )
         self.db.add(team)
         try:

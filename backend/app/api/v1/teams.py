@@ -8,8 +8,12 @@ from sqlalchemy.orm import Session
 from app.core.database import get_db
 from app.repositories.competition_repository import CompetitionRepository
 from app.repositories.competition_team_repository import CompetitionTeamRepository
+from app.repositories.country_repository import CountryRepository
+from app.repositories.match_repository import MatchRepository
 from app.repositories.team_repository import TeamRepository
+from app.schemas.competition import CompetitionResponse
 from app.schemas.competition_team import CompetitionTeamAssignResponse
+from app.schemas.match import MatchResponse
 from app.schemas.team import PaginatedTeamResponse, TeamCreate, TeamResponse, TeamUpdate
 
 logger = logging.getLogger(__name__)
@@ -39,6 +43,39 @@ def get_teams(
 ) -> PaginatedTeamResponse:
     return TeamRepository(db).get_paginated(
         page=page, page_size=page_size, is_partner=is_partner, hidden=hidden
+    )
+
+
+# ------------------------------------------------------------------ #
+# GET /teams/countries  (static – must be before /{teamId})
+# ------------------------------------------------------------------ #
+
+@router.get(
+    "/countries",
+    response_model=list[str],
+    summary="List country names",
+)
+def get_countries(db: Session = Depends(get_db)) -> list[str]:
+    return [c.name for c in CountryRepository(db).get_all()]
+
+
+# ------------------------------------------------------------------ #
+# GET /teams/partners  (static – must be before /{teamId})
+# ------------------------------------------------------------------ #
+
+@router.get(
+    "/partners",
+    response_model=PaginatedTeamResponse,
+    response_model_by_alias=True,
+    summary="List partner teams",
+)
+def get_partner_teams(
+    page: int = Query(1, ge=1),
+    page_size: int = Query(20, ge=1, le=100),
+    db: Session = Depends(get_db),
+) -> PaginatedTeamResponse:
+    return TeamRepository(db).get_paginated(
+        page=page, page_size=page_size, is_partner=True
     )
 
 
@@ -141,6 +178,83 @@ def delete_team(
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Team not found"
         )
+
+
+# ------------------------------------------------------------------ #
+# GET /teams/by-country/{country}
+# ------------------------------------------------------------------ #
+
+@router.get(
+    "/by-country/{country}",
+    response_model=list[TeamResponse],
+    response_model_by_alias=True,
+    summary="List teams by country name",
+)
+def get_teams_by_country(
+    country: str,
+    db: Session = Depends(get_db),
+) -> list[TeamResponse]:
+    return TeamRepository(db).get_by_country(country)
+
+
+# ------------------------------------------------------------------ #
+# GET /teams/{teamId}/competitions
+# ------------------------------------------------------------------ #
+
+@router.get(
+    "/{teamId}/competitions",
+    response_model=list[CompetitionResponse],
+    response_model_by_alias=True,
+    summary="List competitions a team is assigned to",
+)
+def get_team_competitions(
+    teamId: int,
+    db: Session = Depends(get_db),
+) -> list[CompetitionResponse]:
+    if not TeamRepository(db).exists(teamId):
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Team not found"
+        )
+    ct_comps = CompetitionTeamRepository(db).get_competitions_for_team(teamId)
+    if ct_comps:
+        return ct_comps
+    return MatchRepository(db).get_competitions_for_team(teamId)
+
+
+# ------------------------------------------------------------------ #
+# GET /teams/{teamId}/competitions/{competitionId}/matchdays
+# ------------------------------------------------------------------ #
+
+@router.get(
+    "/{teamId}/competitions/{competitionId}/matchdays",
+    response_model=list[int],
+    summary="List matchday numbers for a team in a competition",
+)
+def get_team_matchdays(
+    teamId: int,
+    competitionId: int,
+    db: Session = Depends(get_db),
+) -> list[int]:
+    return MatchRepository(db).get_matchdays(teamId, competitionId)
+
+
+# ------------------------------------------------------------------ #
+# GET /teams/{teamId}/competitions/{competitionId}/matchdays/{round}/matches
+# ------------------------------------------------------------------ #
+
+@router.get(
+    "/{teamId}/competitions/{competitionId}/matchdays/{round}/matches",
+    response_model=list[MatchResponse],
+    response_model_by_alias=True,
+    summary="List matches for a team on a specific matchday",
+)
+def get_team_matches_by_matchday(
+    teamId: int,
+    competitionId: int,
+    round: int,
+    db: Session = Depends(get_db),
+) -> list[MatchResponse]:
+    return MatchRepository(db).get_by_competition_matchday(teamId, competitionId, round)
 
 
 # ------------------------------------------------------------------ #

@@ -27,6 +27,7 @@ class TeamCreate(BaseModel):
     is_partner_team: bool = False
     position: int = Field(0, ge=0)
     hidden: bool = False
+    country_name: Optional[str] = Field(None, max_length=100)
 
     @field_validator("name")
     @classmethod
@@ -68,6 +69,7 @@ class TeamResponse(BaseModel):
     )
 
     id: int
+    external_id: Optional[int] = None
     uid: UUID = Field(serialization_alias="uId")
     sport: str
     name: str

@@ -2,7 +2,7 @@ import logging
 from datetime import datetime, timezone
 from typing import Optional
 
-from sqlalchemy import func, or_
+from sqlalchemy import distinct, func, or_
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session, joinedload
 
@@ -89,6 +89,57 @@ class MatchRepository:
 
     def exists(self, match_id: int) -> bool:
         return self.db.query(Match.id).filter(Match.id == match_id).scalar() is not None
+
+    def get_matchdays(self, team_id: int, competition_id: int) -> list[int]:
+        """Return sorted distinct matchday numbers for a team in a competition."""
+        rows = (
+            self.db.query(distinct(Match.matchday))
+            .filter(
+                Match.competition_id == competition_id,
+                Match.matchday.isnot(None),
+                or_(Match.home_team_id == team_id, Match.away_team_id == team_id),
+            )
+            .order_by(Match.matchday)
+            .all()
+        )
+        return [r[0] for r in rows]
+
+    def get_competitions_for_team(self, team_id: int) -> list:
+        """Return distinct Competition objects derived from matches the team plays in."""
+        from app.models.competition import Competition
+
+        ids = [
+            r[0]
+            for r in self.db.query(distinct(Match.competition_id))
+            .filter(
+                Match.competition_id.isnot(None),
+                or_(Match.home_team_id == team_id, Match.away_team_id == team_id),
+            )
+            .all()
+        ]
+        if not ids:
+            return []
+        return (
+            self.db.query(Competition)
+            .filter(Competition.id.in_(ids))
+            .order_by(Competition.position)
+            .all()
+        )
+
+    def get_by_competition_matchday(
+        self, team_id: int, competition_id: int, matchday: int
+    ) -> list[Match]:
+        """Return matches for a team in a specific competition matchday."""
+        return (
+            self._base_query()
+            .filter(
+                Match.competition_id == competition_id,
+                Match.matchday == matchday,
+                or_(Match.home_team_id == team_id, Match.away_team_id == team_id),
+            )
+            .order_by(Match.starts_at)
+            .all()
+        )
 
     # ------------------------------------------------------------------ #
     # Writes                                                               #

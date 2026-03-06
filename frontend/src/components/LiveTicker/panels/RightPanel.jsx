@@ -16,21 +16,22 @@ export function RightPanel({ match, matchStats, playerStats, lineups }) {
     );
   }
 
-  const homeStats = matchStats.find((s) => s.team_id === match.home_team_id);
-  const awayStats = matchStats.find((s) => s.team_id === match.away_team_id);
+  const homeStats = matchStats.find((s) => s.teamId === match.teamHomeId);
+  const awayStats = matchStats.find((s) => s.teamId === match.teamAwayId);
   const homeLineup = lineups.filter(
-    (l) => l.team_id === match.home_team_id && !l.is_substitute,
+    (l) => l.teamId === match.teamHomeId && l.status === "Start",
   );
   const awayLineup = lineups.filter(
-    (l) => l.team_id === match.away_team_id && !l.is_substitute,
+    (l) => l.teamId === match.teamAwayId && l.status === "Start",
   );
   const topPlayers = [...playerStats]
     .filter((p) => p.rating)
     .sort((a, b) => b.rating - a.rating)
     .slice(0, 5);
 
-  const homeAbbr = match.home_team.name.substring(0, 3).toUpperCase();
-  const awayAbbr = match.away_team.name.substring(0, 3).toUpperCase();
+  if (!match.homeTeam || !match.awayTeam) return null;
+  const homeAbbr = match.homeTeam.name.substring(0, 3).toUpperCase();
+  const awayAbbr = match.awayTeam.name.substring(0, 3).toUpperCase();
 
   return (
     <div className="lt-col lt-col--right">
@@ -42,31 +43,27 @@ export function RightPanel({ match, matchStats, playerStats, lineups }) {
           {/* Ballbesitz mit Bar */}
           <StatRow
             label="Ballbesitz"
-            home={`${homeStats.ball_possession}%`}
-            away={`${awayStats.ball_possession}%`}
+            home={`${homeStats.possessionPercentage}%`}
+            away={`${awayStats.possessionPercentage}%`}
           />
           <div className="lt-stat-bar">
             <div
               className="lt-stat-bar__home"
-              style={{ width: `${homeStats.ball_possession}%` }}
+              style={{ width: `${homeStats.possessionPercentage}%` }}
             />
             <div
               className="lt-stat-bar__away"
-              style={{ width: `${awayStats.ball_possession}%` }}
+              style={{ width: `${awayStats.possessionPercentage}%` }}
             />
           </div>
 
           {[
-            ["Schüsse", homeStats.total_shots, awayStats.total_shots],
-            ["aufs Tor", homeStats.shots_on_goal, awayStats.shots_on_goal],
-            [
-              "Pässe %",
-              `${homeStats.passes_percentage}%`,
-              `${awayStats.passes_percentage}%`,
-            ],
-            ["Ecken", homeStats.corner_kicks, awayStats.corner_kicks],
+            ["Schüsse", homeStats.goalScoringAttempt, awayStats.goalScoringAttempt],
+            ["aufs Tor", homeStats.goalOnTargetScoringAttempt, awayStats.goalOnTargetScoringAttempt],
+            ["Pässe", homeStats.totalPass, awayStats.totalPass],
+            ["Ecken", homeStats.cornerTaken, awayStats.cornerTaken],
             ["Fouls", homeStats.fouls, awayStats.fouls],
-            ["Abseits", homeStats.offsides, awayStats.offsides],
+            ["Abseits", homeStats.totalOffside, awayStats.totalOffside],
           ].map(([lbl, h, a]) => (
             <StatRow key={lbl} label={lbl} home={h} away={a} />
           ))}
@@ -110,8 +107,8 @@ export function RightPanel({ match, matchStats, playerStats, lineups }) {
               <ul className="lt-lineup-list">
                 {homeLineup.map((p) => (
                   <li key={p.id}>
-                    <span className="lt-lineup-num">#{p.number}</span>
-                    <span>{p.player_name}</span>
+                    <span className="lt-lineup-num">#{p.jerseyNumber}</span>
+                    <span>{p.position}</span>
                   </li>
                 ))}
               </ul>
@@ -126,8 +123,8 @@ export function RightPanel({ match, matchStats, playerStats, lineups }) {
               <ul className="lt-lineup-list">
                 {awayLineup.map((p) => (
                   <li key={p.id}>
-                    <span className="lt-lineup-num">#{p.number}</span>
-                    <span>{p.player_name}</span>
+                    <span className="lt-lineup-num">#{p.jerseyNumber}</span>
+                    <span>{p.position}</span>
                   </li>
                 ))}
               </ul>

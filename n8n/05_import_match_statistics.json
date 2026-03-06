@@ -1,0 +1,131 @@
+{
+  "name": "05 – Match-Statistics importieren",
+  "nodes": [
+    {
+      "id": "4edbced9-ce6c-403b-a90d-bca59cc596a1",
+      "name": "Webhook Match-Statistics",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [0, 0],
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "match-statistics",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "webhookId": "7299bedc-4173-4f56-b9a0-bc2890ccf7e5"
+    },
+    {
+      "id": "a1b2c3d4-0005-0005-0005-000000000001",
+      "name": "Get external_id",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.4,
+      "position": [224, 0],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT external_id FROM matches WHERE id = $1",
+        "options": {
+          "queryReplacement": "={{ [$json.body.match_id] }}"
+        }
+      },
+      "credentials": {
+        "postgres": {
+          "id": "DpV9uZoIFOsBDj7t",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "id": "5adf27f5-59d7-4590-a1a3-b1023fb3d372",
+      "name": "API: Match-Statistics",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [448, 0],
+      "parameters": {
+        "method": "GET",
+        "url": "https://v3.football.api-sports.io/fixtures/statistics",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "fixture",
+              "value": "={{ $json.external_id }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "nw1wvLZ4u2BCZRVl",
+          "name": "Header Auth account"
+        }
+      }
+    },
+    {
+      "id": "37e99096-df5e-4cb7-858c-b2b1d229ebee",
+      "name": "Match-Statistics extrahieren",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [672, 0],
+      "parameters": {
+        "jsCode": "const apiResponse = $('API: Match-Statistics').first().json;\nconst matchId = $('Webhook Match-Statistics').first().json.body.match_id;\nif (!apiResponse.response || apiResponse.response.length === 0) return [];\n\nconst mapping = {\n  'Shots on Goal': 'goal_on_target_scoring_attempt',\n  'Total Shots': 'goal_scoring_attempt',\n  'Fouls': 'fouls',\n  'Corner Kicks': 'corner_taken',\n  'Offsides': 'total_offside',\n  'Ball Possession': 'possession_percentage',\n  'Yellow Cards': 'yellow_cards',\n  'Total passes': 'total_pass',\n  'Passes accurate': 'accurate_pass'\n};\n\nreturn apiResponse.response.map(teamData => {\n  const stats = {};\n  for (const stat of teamData.statistics) {\n    const col = mapping[stat.type];\n    if (!col) continue;\n    let value = stat.value;\n    if (value === null || value === undefined) value = 0;\n    if (typeof value === 'string') {\n      value = parseInt(value.replace('%', '')) || 0;\n    }\n    stats[col] = value;\n  }\n  return {\n    json: {\n      match_id: matchId,\n      team_external_id: teamData.team.id,\n      goal_on_target_scoring_attempt: stats.goal_on_target_scoring_attempt ?? 0,\n      goal_scoring_attempt: stats.goal_scoring_attempt ?? 0,\n      fouls: stats.fouls ?? 0,\n      corner_taken: stats.corner_taken ?? 0,\n      total_offside: stats.total_offside ?? 0,\n      possession_percentage: String(stats.possession_percentage ?? 0),\n      yellow_cards: stats.yellow_cards ?? 0,\n      total_pass: stats.total_pass ?? 0,\n      accurate_pass: stats.accurate_pass ?? 0\n    }\n  };\n});"
+      }
+    },
+    {
+      "id": "b6539a6f-4b84-47b9-8e4e-eff885b2b940",
+      "name": "Upsert Match-Statistics",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.4,
+      "position": [896, 0],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO match_statistics (match_id, team_id, goal_on_target_scoring_attempt, goal_scoring_attempt, fouls, corner_taken, total_offside, possession_percentage, yellow_cards, total_pass, accurate_pass)\nVALUES ($1, (SELECT id FROM teams WHERE external_id = $2), $3, $4, $5, $6, $7, $8, $9, $10, $11)\nON CONFLICT ON CONSTRAINT uq_match_statistic DO UPDATE SET\n  goal_on_target_scoring_attempt = EXCLUDED.goal_on_target_scoring_attempt,\n  goal_scoring_attempt           = EXCLUDED.goal_scoring_attempt,\n  fouls                          = EXCLUDED.fouls,\n  corner_taken                   = EXCLUDED.corner_taken,\n  total_offside                  = EXCLUDED.total_offside,\n  possession_percentage          = EXCLUDED.possession_percentage,\n  yellow_cards                   = EXCLUDED.yellow_cards,\n  total_pass                     = EXCLUDED.total_pass,\n  accurate_pass                  = EXCLUDED.accurate_pass",
+        "options": {
+          "queryReplacement": "={{ [$json.match_id, $json.team_external_id, $json.goal_on_target_scoring_attempt, $json.goal_scoring_attempt, $json.fouls, $json.corner_taken, $json.total_offside, $json.possession_percentage, $json.yellow_cards, $json.total_pass, $json.accurate_pass] }}"
+        }
+      },
+      "credentials": {
+        "postgres": {
+          "id": "DpV9uZoIFOsBDj7t",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "id": "c7d8e9f0-0005-0005-0005-000000000002",
+      "name": "Respond to Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [1120, 0],
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={ \"status\": \"ok\", \"match_id\": {{ $('Webhook Match-Statistics').first().json.body.match_id }} }",
+        "options": {}
+      }
+    }
+  ],
+  "connections": {
+    "Webhook Match-Statistics": {
+      "main": [[{ "node": "Get external_id", "type": "main", "index": 0 }]]
+    },
+    "Get external_id": {
+      "main": [[{ "node": "API: Match-Statistics", "type": "main", "index": 0 }]]
+    },
+    "API: Match-Statistics": {
+      "main": [[{ "node": "Match-Statistics extrahieren", "type": "main", "index": 0 }]]
+    },
+    "Match-Statistics extrahieren": {
+      "main": [[{ "node": "Upsert Match-Statistics", "type": "main", "index": 0 }]]
+    },
+    "Upsert Match-Statistics": {
+      "main": [[{ "node": "Respond to Webhook", "type": "main", "index": 0 }]]
+    }
+  },
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": true
+  }
+}

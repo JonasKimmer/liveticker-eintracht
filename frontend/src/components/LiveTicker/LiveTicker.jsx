@@ -113,13 +113,61 @@ export default function LiveTicker() {
     [mode, setMode, acceptDraft, rejectDraft],
   );
 
-  // ── Init (unverändert) ────────────────────────────────────
+  // ── Import-Loading States ─────────────────────────────────
+  const [importingTeams, setImportingTeams] = useState(false);
+  const [importingCompetitions, setImportingCompetitions] = useState(false);
+
+  // ── Lineup Auto-Import ────────────────────────────────────
+  useEffect(() => {
+    if (!selMatchId || lineups.length > 0) return;
+    api.importLineups(selMatchId)
+      .then(() => reload.loadLineups())
+      .catch((err) => console.error("importLineups error:", err));
+  }, [selMatchId, lineups.length]);
+
+  // ── Match-Stats Auto-Import ───────────────────────────────
+  useEffect(() => {
+    if (!selMatchId || matchStats.length > 0) return;
+    api.importMatchStats(selMatchId)
+      .then(() => reload.loadMatchStats())
+      .catch((err) => console.error("importMatchStats error:", err));
+  }, [selMatchId, matchStats.length]);
+
+  // ── Pre-Match Auto-Import ─────────────────────────────────
+  // Nutzt useRef, da fetchPrematch denselben Endpunkt wie fetchTickerTexts
+  // aufruft – prematch.length wäre nie 0 wenn Ticker-Texte vorhanden sind.
+  const prematchImportedRef = useRef(null);
+  useEffect(() => {
+    if (!selMatchId || !match?.externalId) return;
+    if (prematchImportedRef.current === selMatchId) return;
+    prematchImportedRef.current = selMatchId;
+    api.importPrematch(match.externalId)
+      .then(() => reload.loadPrematch())
+      .catch((err) => console.error("importPrematch error:", err));
+  }, [selMatchId, match?.externalId]);
+
+  // ── Init ──────────────────────────────────────────────────
   useEffect(() => {
     const controller = new AbortController();
     Promise.all([
-      api.fetchCountries().then((r) => {
-        setCountries(r.data);
-        if (r.data.length > 0) setSelCountry(r.data[0]);
+      api.fetchCountries().then(async (r) => {
+        if (controller.signal.aborted) return;
+        if (r.data.length === 0) {
+          // Einmalig: alle Länder von Football API importieren
+          try {
+            await api.importCountries();
+            const r2 = await api.fetchCountries();
+            if (!controller.signal.aborted) {
+              setCountries(r2.data);
+              if (r2.data.length > 0) setSelCountry(r2.data[0]);
+            }
+          } catch (err) {
+            console.error("importCountries error:", err);
+          }
+        } else {
+          setCountries(r.data);
+          if (r.data.length > 0) setSelCountry(r.data[0]);
+        }
       }),
       api.fetchFavorites().then((r) => setFavorites(r.data)),
     ]).finally(() => {
@@ -128,7 +176,7 @@ export default function LiveTicker() {
     return () => controller.abort();
   }, []);
 
-  // ── Land → Teams (unverändert) ────────────────────────────
+  // ── Land → Teams ──────────────────────────────────────────
   useEffect(() => {
     if (!selCountry) return;
     const controller = new AbortController();
@@ -136,10 +184,27 @@ export default function LiveTicker() {
     setSelTeamId(null);
     api
       .fetchTeamsByCountry(selCountry)
-      .then((r) => {
+      .then(async (r) => {
         if (controller.signal.aborted) return;
-        setTeams(r.data);
-        if (r.data.length > 0) setSelTeamId(r.data[0].id);
+        if (r.data.length === 0) {
+          // Teams nicht in DB → per n8n von Football API importieren
+          setImportingTeams(true);
+          try {
+            await api.importTeamsByCountry(selCountry, new Date().getFullYear());
+            const r2 = await api.fetchTeamsByCountry(selCountry);
+            if (!controller.signal.aborted) {
+              setTeams(r2.data);
+              if (r2.data.length > 0) setSelTeamId(r2.data[0].id);
+            }
+          } catch (err) {
+            console.error("importTeamsByCountry error:", err);
+          } finally {
+            if (!controller.signal.aborted) setImportingTeams(false);
+          }
+        } else {
+          setTeams(r.data);
+          if (r.data.length > 0) setSelTeamId(r.data[0].id);
+        }
       })
       .catch((err) => {
         if (!controller.signal.aborted) console.error(err);
@@ -147,7 +212,7 @@ export default function LiveTicker() {
     return () => controller.abort();
   }, [selCountry]);
 
-  // ── Team → Competitions (unverändert) ─────────────────────
+  // ── Team → Competitions ───────────────────────────────────
   useEffect(() => {
     if (!selTeamId) return;
     const controller = new AbortController();
@@ -158,10 +223,30 @@ export default function LiveTicker() {
     setSelMatchId(null);
     api
       .fetchTeamCompetitions(selTeamId)
-      .then((r) => {
+      .then(async (r) => {
         if (controller.signal.aborted) return;
-        setCompetitions(r.data);
-        if (r.data.length > 0) setSelCompetitionId(r.data[0].id);
+        if (r.data.length === 0) {
+          // Competitions/Matches nicht in DB → per n8n importieren
+          // externalId = Football API Team-ID (z.B. 169), nicht interne DB-ID
+          const team = teams.find((t) => t.id === selTeamId);
+          const apiTeamId = team?.externalId ?? selTeamId;
+          setImportingCompetitions(true);
+          try {
+            await api.importCompetitionsForTeam(apiTeamId, new Date().getFullYear());
+            const r2 = await api.fetchTeamCompetitions(selTeamId);
+            if (!controller.signal.aborted) {
+              setCompetitions(r2.data);
+              if (r2.data.length > 0) setSelCompetitionId(r2.data[0].id);
+            }
+          } catch (err) {
+            console.error("importCompetitionsForTeam error:", err);
+          } finally {
+            if (!controller.signal.aborted) setImportingCompetitions(false);
+          }
+        } else {
+          setCompetitions(r.data);
+          if (r.data.length > 0) setSelCompetitionId(r.data[0].id);
+        }
       })
       .catch((err) => {
         if (!controller.signal.aborted) console.error(err);
@@ -296,9 +381,11 @@ export default function LiveTicker() {
     selCountry,
     onCountryChange: setSelCountry,
     teams,
+    teamsLoading: importingTeams,
     selTeamId,
     onTeamChange: setSelTeamId,
     competitions,
+    competitionsLoading: importingCompetitions,
     selCompetitionId,
     onCompetitionChange: setSelCompetitionId,
     matchdays,

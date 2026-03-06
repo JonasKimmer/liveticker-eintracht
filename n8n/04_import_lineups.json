@@ -1,0 +1,154 @@
+{
+  "name": "04 – Lineups importieren",
+  "nodes": [
+    {
+      "id": "976b79fe-c9c3-4993-b0a8-a217ae6fad0d",
+      "name": "Webhook Lineup",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [0, 0],
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "lineups",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "webhookId": "6188adc1-362c-45e1-9e8a-abd1889bbe3b"
+    },
+    {
+      "id": "d1e2f3a4-0001-0001-0001-000000000010",
+      "name": "Get external_id",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.4,
+      "position": [224, 0],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT external_id FROM matches WHERE id = $1",
+        "options": {
+          "queryReplacement": "={{ [$json.body.match_id] }}"
+        }
+      },
+      "credentials": {
+        "postgres": {
+          "id": "DpV9uZoIFOsBDj7t",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "id": "f64ced41-fe9b-4527-a91c-f16aac676df9",
+      "name": "API: Lineup abrufen",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [448, 0],
+      "parameters": {
+        "method": "GET",
+        "url": "https://v3.football.api-sports.io/fixtures/lineups",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "fixture",
+              "value": "={{ $json.external_id }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "nw1wvLZ4u2BCZRVl",
+          "name": "Header Auth account"
+        }
+      }
+    },
+    {
+      "id": "d1e2f3a4-0001-0001-0001-000000000001",
+      "name": "DELETE alte Lineups",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.4,
+      "position": [672, 0],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "DELETE FROM lineups WHERE match_id = $1",
+        "options": {
+          "queryReplacement": "={{ [$('Webhook Lineup').first().json.body.match_id] }}"
+        }
+      },
+      "credentials": {
+        "postgres": {
+          "id": "DpV9uZoIFOsBDj7t",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "id": "0e7bd534-5b47-4504-8164-9d87a8083291",
+      "name": "Lineups extrahieren",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [896, 0],
+      "parameters": {
+        "jsCode": "const apiResponse = $('API: Lineup abrufen').first().json;\nconst matchId = $('Webhook Lineup').first().json.body.match_id;\nif (!apiResponse.response || apiResponse.response.length === 0) return [];\nreturn apiResponse.response.flatMap(teamData => {\n  const formation = teamData.formation;\n  const players = [\n    ...teamData.startXI.map(p => ({ ...p.player, is_substitute: false })),\n    ...teamData.substitutes.map(p => ({ ...p.player, is_substitute: true }))\n  ];\n  return players.map(p => ({\n    json: {\n      match_id: matchId,\n      team_external_id: teamData.team.id,\n      formation,\n      player_id: p.id,\n      jersey_number: p.number,\n      status: p.is_substitute ? 'Sub' : 'Start',\n      position: p.pos,\n      is_substituted: false\n    }\n  }));\n});"
+      }
+    },
+    {
+      "id": "85f3fd5d-156b-4390-bb46-4a2d10793654",
+      "name": "INSERT Lineup",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.4,
+      "position": [1120, 0],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO lineups (match_id, team_id, player_id, jersey_number, status, position, is_substituted, number_of_goals, has_yellow_card, has_red_card, formation)\nVALUES ($1, (SELECT id FROM teams WHERE external_id = $2), $3, $4, $5, $6, $7, 0, false, false, $8)",
+        "options": {
+          "queryReplacement": "={{ [$json.match_id, $json.team_external_id, $json.player_id, $json.jersey_number, $json.status, $json.position, $json.is_substituted, $json.formation] }}"
+        }
+      },
+      "credentials": {
+        "postgres": {
+          "id": "DpV9uZoIFOsBDj7t",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "id": "a89e8b6b-6630-4e5f-a443-6a2c1705e504",
+      "name": "Respond to Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [1344, 0],
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={ \"status\": \"ok\", \"match_id\": {{ $('Webhook Lineup').first().json.body.match_id }} }",
+        "options": {}
+      }
+    }
+  ],
+  "connections": {
+    "Webhook Lineup": {
+      "main": [[{ "node": "Get external_id", "type": "main", "index": 0 }]]
+    },
+    "Get external_id": {
+      "main": [[{ "node": "API: Lineup abrufen", "type": "main", "index": 0 }]]
+    },
+    "API: Lineup abrufen": {
+      "main": [[{ "node": "DELETE alte Lineups", "type": "main", "index": 0 }]]
+    },
+    "DELETE alte Lineups": {
+      "main": [[{ "node": "Lineups extrahieren", "type": "main", "index": 0 }]]
+    },
+    "Lineups extrahieren": {
+      "main": [[{ "node": "INSERT Lineup", "type": "main", "index": 0 }]]
+    },
+    "INSERT Lineup": {
+      "main": [[{ "node": "Respond to Webhook", "type": "main", "index": 0 }]]
+    }
+  },
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": true
+  }
+}

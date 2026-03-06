@@ -1,0 +1,569 @@
+{
+  "name": "07 – Pre-Match importieren",
+  "nodes": [
+    {
+      "id": "5a7dcda9-d27c-4a05-a143-6c271d45e786",
+      "name": "Webhook import-prematch",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [-736, 592],
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "import-prematch",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "webhookId": "4b5c6d7e-0007-0007-0007-000000000001"
+    },
+    {
+      "id": "c843e394-2097-45bf-93d5-265248b4bc2b",
+      "name": "API: Predictions abrufen",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [0, 0],
+      "parameters": {
+        "url": "https://v3.football.api-sports.io/predictions",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "fixture",
+              "value": "={{ $json.body.fixture_id }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "nw1wvLZ4u2BCZRVl",
+          "name": "Header Auth account"
+        }
+      }
+    },
+    {
+      "id": "9d5b79f9-1972-4ae5-8dc7-2a86a913578f",
+      "name": "API: Injuries abrufen",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [0, 224],
+      "parameters": {
+        "url": "https://v3.football.api-sports.io/injuries",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "fixture",
+              "value": "={{ $json.body.fixture_id }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "nw1wvLZ4u2BCZRVl",
+          "name": "Header Auth account"
+        }
+      }
+    },
+    {
+      "id": "aa947d98-790b-4fb9-a215-10761c571b99",
+      "name": "API: Events abrufen7",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [-48, 496],
+      "parameters": {
+        "url": "https://v3.football.api-sports.io/fixtures/headtohead",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "h2h",
+              "value": "={{ $json.home_team_external_id }}-{{ $json.away_team_external_id }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "nw1wvLZ4u2BCZRVl",
+          "name": "Header Auth account"
+        }
+      }
+    },
+    {
+      "id": "25b9f777-8010-44f4-8cdb-da5016068e69",
+      "name": "SQL: Match-Daten laden",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [-192, 752],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT \n  m.external_id as fixture_id,\n  c.external_id as league_id,\n  s.external_id as season,\n  ht.external_id as home_team_external_id,\n  at.external_id as away_team_external_id\nFROM matches m\nLEFT JOIN competitions c ON c.id = m.competition_id\nLEFT JOIN seasons s ON s.id = m.season_id\nJOIN teams ht ON ht.id = m.home_team_id\nJOIN teams at ON at.id = m.away_team_id\nWHERE m.external_id = $1",
+        "options": {
+          "queryReplacement": "={{ [$('Webhook import-prematch').first().json.body.fixture_id] }}"
+        }
+      },
+      "credentials": {
+        "postgres": {
+          "id": "DpV9uZoIFOsBDj7t",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "id": "b259309d-927c-450c-8e0b-06263481185b",
+      "name": "DB: Match Info",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [-320, 1248],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT \n  m.external_id as fixture_id,\n  ht.external_id as home_team_external_id,\n  at.external_id as away_team_external_id,\n  c.external_id as league_id,\n  s.external_id as season\nFROM matches m\nLEFT JOIN competitions c ON c.id = m.competition_id\nLEFT JOIN seasons s ON s.id = m.season_id\nJOIN teams ht ON ht.id = m.home_team_id\nJOIN teams at ON at.id = m.away_team_id\nWHERE m.external_id = $1",
+        "options": {
+          "queryReplacement": "={{ [$json.body.fixture_id] }}"
+        }
+      },
+      "credentials": {
+        "postgres": {
+          "id": "DpV9uZoIFOsBDj7t",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "id": "47bb64a5-a4fc-4661-94a1-eeb76a9aa7ea",
+      "name": "Prediction extrahieren",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [576, 0],
+      "parameters": {
+        "jsCode": "const data = $input.first().json.response[0];\nconst pred = data.predictions;\nconst comp = data.comparison;\nconst home = data.teams.home;\nconst away = data.teams.away;\nconst fixtureId = $input.first().json.parameters?.fixture;\n\nconst extractTeam = (team) => ({\n  name: team?.name ?? null,\n  form: team?.last_5?.form ?? null,\n  att: team?.last_5?.att ?? null,\n  def: team?.last_5?.def ?? null,\n  goals_for_avg: team?.last_5?.goals?.for?.average ?? null,\n  goals_against_avg: team?.last_5?.goals?.against?.average ?? null,\n  wins_total: team?.league?.fixtures?.wins?.total ?? null,\n  draws_total: team?.league?.fixtures?.draws?.total ?? null,\n  loses_total: team?.league?.fixtures?.loses?.total ?? null,\n  clean_sheets: team?.league?.clean_sheet?.total ?? null,\n  failed_to_score: team?.league?.failed_to_score?.total ?? null,\n});\n\nreturn [{\n  json: {\n    fixture_id: fixtureId,\n    winner_name: pred.winner?.name ?? null,\n    winner_comment: pred.winner?.comment ?? null,\n    advice: pred.advice,\n    percent_home: pred.percent.home,\n    percent_draw: pred.percent.draw,\n    percent_away: pred.percent.away,\n    home: extractTeam(home),\n    away: extractTeam(away),\n    comparison: {\n      form: comp.form,\n      att: comp.att,\n      def: comp.def,\n      h2h: comp.h2h,\n      goals: comp.goals,\n      total: comp.total,\n    }\n  }\n}];"
+      }
+    },
+    {
+      "id": "dfc4a4ec-8c8e-47e1-b4ae-d05a9ee26ff5",
+      "name": "Injuries extrahieren",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [592, 224],
+      "parameters": {
+        "jsCode": "const items = $input.first().json.response;\nconst fixtureId = $input.first().json.parameters?.fixture;\n\nconst grouped = {};\n\nfor (const entry of items) {\n  const teamId = entry.team.id;\n  const teamName = entry.team.name;\n\n  if (!grouped[teamId]) {\n    grouped[teamId] = {\n      team_id: teamId,\n      team_name: teamName,\n      players: []\n    };\n  }\n\n  grouped[teamId].players.push({\n    player_id: entry.player.id,\n    player_name: entry.player.name,\n    type: entry.player.type,\n    reason: entry.player.reason\n  });\n}\n\nreturn Object.values(grouped).map(team => ({ \n  json: {\n    fixture_id: fixtureId,\n    ...team\n  }\n}));"
+      }
+    },
+    {
+      "id": "18ca5fdc-5587-4a7f-905c-368f0a68fcff",
+      "name": "H2H extrahieren",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [528, 496],
+      "parameters": {
+        "jsCode": "const fixtures = $input.first().json.response;\nconst fixtureId = $('Webhook import-prematch').first().json.body.fixture_id;\n\nconst last5 = fixtures\n  .filter(f => f.fixture.status.short === 'FT')\n  .sort((a, b) => new Date(b.fixture.date) - new Date(a.fixture.date))\n  .slice(0, 5);\n\nreturn [{\n  json: {\n    fixture_id: fixtureId,\n    matches: last5.map(f => ({\n      fixture_id: f.fixture.id,\n      date: f.fixture.date,\n      home_team: f.teams.home.name,\n      home_team_id: f.teams.home.id,\n      away_team: f.teams.away.name,\n      away_team_id: f.teams.away.id,\n      goals_home: f.goals.home,\n      goals_away: f.goals.away,\n      winner: f.teams.home.winner ? f.teams.home.name : f.teams.away.winner ? f.teams.away.name : 'draw'\n    }))\n  }\n}];"
+      }
+    },
+    {
+      "id": "a1d90932-637b-4cea-8324-3da90ba8cfdf",
+      "name": "teams/statistics extrahieren",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [560, 768],
+      "parameters": {
+        "jsCode": "const data = $input.first().json.response;\nconst fixtureId = $('Webhook import-prematch').first().json.body.fixture_id;\n\nreturn [{\n  json: {\n    fixture_id: fixtureId,\n    team_id: data.team.id,\n    team_name: data.team.name,\n    league_id: data.league.id,\n    season: data.league.season,\n    form: data.form,\n    played_home: data.fixtures.played.home,\n    played_away: data.fixtures.played.away,\n    wins_total: data.fixtures.wins.total,\n    draws_total: data.fixtures.draws.total,\n    loses_total: data.fixtures.loses.total,\n    goals_for_avg: data.goals.for.average.total,\n    goals_against_avg: data.goals.against.average.total,\n    clean_sheets: data.clean_sheet.total,\n    failed_to_score: data.failed_to_score.total,\n    biggest_win_streak: data.biggest.streak.wins,\n    most_used_formation: data.lineups[0]?.formation ?? null,\n    penalty_scored: data.penalty.scored.total,\n    penalty_missed: data.penalty.missed.total\n  }\n}];"
+      }
+    },
+    {
+      "id": "633d892f-eaca-43a5-8b51-7bb83e51cd5b",
+      "name": "teams/statistics extrahieren1",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [512, 992],
+      "parameters": {
+        "jsCode": "const data = $input.first().json.response;\nconst fixtureId = $('Webhook import-prematch').first().json.body.fixture_id;\n\nreturn [{\n  json: {\n    fixture_id: fixtureId,\n    team_id: data.team.id,\n    team_name: data.team.name,\n    league_id: data.league.id,\n    season: data.league.season,\n    form: data.form,\n    played_home: data.fixtures.played.home,\n    played_away: data.fixtures.played.away,\n    wins_total: data.fixtures.wins.total,\n    draws_total: data.fixtures.draws.total,\n    loses_total: data.fixtures.loses.total,\n    goals_for_avg: data.goals.for.average.total,\n    goals_against_avg: data.goals.against.average.total,\n    clean_sheets: data.clean_sheet.total,\n    failed_to_score: data.failed_to_score.total,\n    biggest_win_streak: data.biggest.streak.wins,\n    most_used_formation: data.lineups[0]?.formation ?? null,\n    penalty_scored: data.penalty.scored.total,\n    penalty_missed: data.penalty.missed.total\n  }\n}];"
+      }
+    },
+    {
+      "id": "78325cd0-84c7-4c9a-8f17-d6ff3b0255e2",
+      "name": "Standings extrahieren",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [496, 1248],
+      "parameters": {
+        "jsCode": "const data = $input.first().json.response[0].league;\nconst standings = data.standings[0];\nconst dbData = $('DB: Match Info').first().json;\n\nconst homeId = parseInt(dbData.home_team_external_id);\nconst awayId = parseInt(dbData.away_team_external_id);\n\nreturn [{\n  json: {\n    fixture_id: dbData.fixture_id,\n    league_id: data.id,\n    league_name: data.name,\n    season: data.season,\n    standings: standings\n      .filter(t => t.team.id === homeId || t.team.id === awayId)\n      .map(t => ({\n        rank: t.rank,\n        team_id: t.team.id,\n        team_name: t.team.name,\n        points: t.points,\n        played: t.all.played,\n        wins: t.all.win,\n        draws: t.all.draw,\n        losses: t.all.lose,\n        goals_for: t.all.goals.for,\n        goals_against: t.all.goals.against,\n        form: t.form\n      }))\n  }\n}];"
+      }
+    },
+    {
+      "id": "2b382414-c294-4f81-b421-87ec08252c57",
+      "name": "API: team/statistics",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [48, 752],
+      "parameters": {
+        "url": "https://v3.football.api-sports.io/teams/statistics",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            { "name": "league", "value": "={{ $json.league_id }}" },
+            { "name": "season", "value": "={{ $json.season }}" },
+            { "name": "team",   "value": "={{ $json.home_team_external_id }}" }
+          ]
+        },
+        "options": {}
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "nw1wvLZ4u2BCZRVl",
+          "name": "Header Auth account"
+        }
+      }
+    },
+    {
+      "id": "25177c14-4e02-4850-83ab-27ab946a3b25",
+      "name": "API: team/statistics1",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [0, 976],
+      "parameters": {
+        "url": "https://v3.football.api-sports.io/teams/statistics",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            { "name": "league", "value": "={{ $json.league_id }}" },
+            { "name": "season", "value": "={{ $json.season }}" },
+            { "name": "team",   "value": "={{ $json.away_team_external_id }}" }
+          ]
+        },
+        "options": {}
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "nw1wvLZ4u2BCZRVl",
+          "name": "Header Auth account"
+        }
+      }
+    },
+    {
+      "id": "bb7def4e-0474-4eeb-baad-926441f30247",
+      "name": "API: Standings1",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [-64, 1248],
+      "parameters": {
+        "url": "https://v3.football.api-sports.io/standings",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            { "name": "league", "value": "={{ $json.league_id }}" },
+            { "name": "season", "value": "={{ $json.season }}" }
+          ]
+        },
+        "options": {}
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "nw1wvLZ4u2BCZRVl",
+          "name": "Header Auth account"
+        }
+      }
+    },
+    {
+      "id": "14b21e7b-bfc5-4d02-8cba-5b4108958cc1",
+      "name": "Insert Events1",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [896, 0],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO synthetic_events (match_id, type, data)\nVALUES ((SELECT id FROM matches WHERE external_id = $1), $2, $3::jsonb)\nON CONFLICT DO NOTHING\nRETURNING id",
+        "options": {
+          "queryReplacement": "={{ [$json.fixture_id, 'pre_match_prediction', JSON.stringify($json)] }}"
+        }
+      },
+      "credentials": {
+        "postgres": {
+          "id": "DpV9uZoIFOsBDj7t",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "id": "d7673d28-9f47-4a29-93e3-d86c32473c81",
+      "name": "Insert Events2",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [864, 256],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO synthetic_events (match_id, type, data)\nVALUES ((SELECT id FROM matches WHERE external_id = $1), $2, $3::jsonb)\nON CONFLICT DO NOTHING\nRETURNING id",
+        "options": {
+          "queryReplacement": "={{ [$json.fixture_id, 'pre_match_injuries', JSON.stringify($json)] }}"
+        }
+      },
+      "credentials": {
+        "postgres": {
+          "id": "DpV9uZoIFOsBDj7t",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "id": "e706ee38-54f2-40e0-a75c-802f3f64f7d7",
+      "name": "Insert Events3",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [896, 480],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO synthetic_events (match_id, type, data)\nVALUES ((SELECT id FROM matches WHERE external_id = $1), $2, $3::jsonb)\nON CONFLICT DO NOTHING\nRETURNING id",
+        "options": {
+          "queryReplacement": "={{ [$json.fixture_id, 'pre_match_h2h', JSON.stringify($json)] }}"
+        }
+      },
+      "credentials": {
+        "postgres": {
+          "id": "DpV9uZoIFOsBDj7t",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "id": "17f10d22-0d93-421a-a422-3356798f36ce",
+      "name": "Insert teams/statistics",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [928, 768],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO synthetic_events (match_id, type, data)\nVALUES ((SELECT id FROM matches WHERE external_id = $1), $2, $3::jsonb)\nON CONFLICT DO NOTHING\nRETURNING id",
+        "options": {
+          "queryReplacement": "={{ [$json.fixture_id, 'pre_match_team_stats', JSON.stringify($json)] }}"
+        }
+      },
+      "credentials": {
+        "postgres": {
+          "id": "DpV9uZoIFOsBDj7t",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "id": "d60224a0-796e-4633-b4e7-491953ddd07e",
+      "name": "Insert teams/statistics1",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [880, 992],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO synthetic_events (match_id, type, data)\nVALUES ((SELECT id FROM matches WHERE external_id = $1), $2, $3::jsonb)\nON CONFLICT DO NOTHING\nRETURNING id",
+        "options": {
+          "queryReplacement": "={{ [$json.fixture_id, 'pre_match_team_stats', JSON.stringify($json)] }}"
+        }
+      },
+      "credentials": {
+        "postgres": {
+          "id": "DpV9uZoIFOsBDj7t",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "id": "4209f85a-1b6b-457d-90cd-615a53af5e83",
+      "name": "Insert Standings",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [848, 1248],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO synthetic_events (match_id, type, data)\nVALUES ((SELECT id FROM matches WHERE external_id = $1), $2, $3::jsonb)\nON CONFLICT DO NOTHING\nRETURNING id",
+        "options": {
+          "queryReplacement": "={{ [$json.fixture_id, 'pre_match_standings', JSON.stringify($json)] }}"
+        }
+      },
+      "credentials": {
+        "postgres": {
+          "id": "DpV9uZoIFOsBDj7t",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "id": "06b12c0c-5426-4cf6-90bb-baae398babcf",
+      "name": "Merge1",
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [1344, 256],
+      "parameters": {
+        "numberInputs": 6
+      }
+    },
+    {
+      "id": "541fa87c-c019-4eae-933b-e20c3bcc551a",
+      "name": "Filter",
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.2,
+      "position": [1552, 256],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "2519fccc-2cb1-4a81-84aa-2bf3509b960f",
+              "leftValue": "={{ $json.id }}",
+              "rightValue": "exists",
+              "operator": {
+                "type": "number",
+                "operation": "exists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "619165b7-9ab3-4d72-85eb-4cb9d842d140",
+      "name": "LLM Trigger Node1",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [2048, 272],
+      "parameters": {
+        "method": "POST",
+        "url": "http://host.docker.internal:8001/api/v1/ticker/generate-synthetic",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ synthetic_event_id: $json.id, style: \"neutral\" }) }}",
+        "options": {}
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "nw1wvLZ4u2BCZRVl",
+          "name": "Header Auth account"
+        }
+      }
+    },
+    {
+      "id": "4b5c6d7e-0007-0007-0007-000000000002",
+      "name": "Respond to Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [2272, 272],
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={ \"status\": \"ok\", \"fixture_id\": {{ $('Webhook import-prematch').first().json.body.fixture_id }} }",
+        "options": {}
+      }
+    }
+  ],
+  "connections": {
+    "Webhook import-prematch": {
+      "main": [[
+        { "node": "API: Predictions abrufen", "type": "main", "index": 0 },
+        { "node": "API: Injuries abrufen",    "type": "main", "index": 0 },
+        { "node": "SQL: Match-Daten laden",   "type": "main", "index": 0 },
+        { "node": "DB: Match Info",           "type": "main", "index": 0 }
+      ]]
+    },
+    "SQL: Match-Daten laden": {
+      "main": [[
+        { "node": "API: team/statistics",  "type": "main", "index": 0 },
+        { "node": "API: team/statistics1", "type": "main", "index": 0 },
+        { "node": "API: Events abrufen7",  "type": "main", "index": 0 }
+      ]]
+    },
+    "DB: Match Info": {
+      "main": [[
+        { "node": "API: Standings1", "type": "main", "index": 0 }
+      ]]
+    },
+    "API: Predictions abrufen": {
+      "main": [[{ "node": "Prediction extrahieren", "type": "main", "index": 0 }]]
+    },
+    "API: Injuries abrufen": {
+      "main": [[{ "node": "Injuries extrahieren", "type": "main", "index": 0 }]]
+    },
+    "API: Events abrufen7": {
+      "main": [[{ "node": "H2H extrahieren", "type": "main", "index": 0 }]]
+    },
+    "API: team/statistics": {
+      "main": [[{ "node": "teams/statistics extrahieren", "type": "main", "index": 0 }]]
+    },
+    "API: team/statistics1": {
+      "main": [[{ "node": "teams/statistics extrahieren1", "type": "main", "index": 0 }]]
+    },
+    "API: Standings1": {
+      "main": [[{ "node": "Standings extrahieren", "type": "main", "index": 0 }]]
+    },
+    "Prediction extrahieren": {
+      "main": [[{ "node": "Insert Events1", "type": "main", "index": 0 }]]
+    },
+    "Injuries extrahieren": {
+      "main": [[{ "node": "Insert Events2", "type": "main", "index": 0 }]]
+    },
+    "H2H extrahieren": {
+      "main": [[{ "node": "Insert Events3", "type": "main", "index": 0 }]]
+    },
+    "teams/statistics extrahieren": {
+      "main": [[{ "node": "Insert teams/statistics", "type": "main", "index": 0 }]]
+    },
+    "teams/statistics extrahieren1": {
+      "main": [[{ "node": "Insert teams/statistics1", "type": "main", "index": 0 }]]
+    },
+    "Standings extrahieren": {
+      "main": [[{ "node": "Insert Standings", "type": "main", "index": 0 }]]
+    },
+    "Insert Events1": {
+      "main": [[{ "node": "Merge1", "type": "main", "index": 0 }]]
+    },
+    "Insert Events2": {
+      "main": [[{ "node": "Merge1", "type": "main", "index": 1 }]]
+    },
+    "Insert Events3": {
+      "main": [[{ "node": "Merge1", "type": "main", "index": 2 }]]
+    },
+    "Insert teams/statistics": {
+      "main": [[{ "node": "Merge1", "type": "main", "index": 3 }]]
+    },
+    "Insert teams/statistics1": {
+      "main": [[{ "node": "Merge1", "type": "main", "index": 4 }]]
+    },
+    "Insert Standings": {
+      "main": [[{ "node": "Merge1", "type": "main", "index": 5 }]]
+    },
+    "Merge1": {
+      "main": [[{ "node": "Filter", "type": "main", "index": 0 }]]
+    },
+    "Filter": {
+      "main": [[{ "node": "LLM Trigger Node1", "type": "main", "index": 0 }]]
+    },
+    "LLM Trigger Node1": {
+      "main": [[{ "node": "Respond to Webhook", "type": "main", "index": 0 }]]
+    }
+  },
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "c812d7c91145a37daf0cb923fa307183fa91637fdbe8017dda5dce71e0f572b5"
+  }
+}

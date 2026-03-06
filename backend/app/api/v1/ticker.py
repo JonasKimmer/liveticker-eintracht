@@ -1,11 +1,13 @@
 import logging
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
+from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
 from app.models.event import Event
 from app.models.match import Match
+from app.models.synthetic_event import SyntheticEvent
 from app.repositories.ticker_entry_repository import TickerEntryRepository
 from app.schemas.ticker_entry import (
     TickerEntryCreate,
@@ -126,6 +128,68 @@ async def generate_for_event(
             text=text,
             source="ai",
             style=style,
+            llm_model=model_used,
+            status="published",
+        )
+    )
+
+
+class GenerateSyntheticRequest(BaseModel):
+    synthetic_event_id: int
+    style: str = "neutral"
+
+
+@router.post(
+    "/generate-synthetic",
+    response_model=TickerEntryResponse,
+    status_code=status.HTTP_201_CREATED,
+    summary="Generate a ticker entry via LLM for a synthetic event",
+)
+async def generate_for_synthetic_event(
+    data: GenerateSyntheticRequest,
+    db: Session = Depends(get_db),
+) -> TickerEntryResponse:
+    synthetic = (
+        db.query(SyntheticEvent)
+        .filter(SyntheticEvent.id == data.synthetic_event_id)
+        .first()
+    )
+    if not synthetic:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="SyntheticEvent not found"
+        )
+
+    match = db.query(Match).filter(Match.id == synthetic.match_id).first()
+    match_context = {
+        "home_team": match.home_team.name if match and match.home_team else "",
+        "away_team": match.away_team.name if match and match.away_team else "",
+        "home_score": match.home_score if match else None,
+        "away_score": match.away_score if match else None,
+        "match_state": match.match_state if match else None,
+        "minute": synthetic.minute,
+    }
+
+    try:
+        text, model_used = await generate_ticker_text(
+            event_type=synthetic.type or "update",
+            context_data=synthetic.data or {},
+            match_context=match_context,
+            style=data.style,
+        )
+    except Exception as e:
+        logger.exception(
+            "LLM generation failed for synthetic_event_id=%s", data.synthetic_event_id
+        )
+        raise HTTPException(
+            status_code=status.HTTP_502_BAD_GATEWAY, detail=f"LLM error: {e}"
+        )
+
+    return TickerEntryRepository(db).create(
+        TickerEntryCreate(
+            match_id=synthetic.match_id,
+            text=text,
+            source="ai",
+            style=data.style,
             llm_model=model_used,
             status="published",
         )

@@ -1,0 +1,154 @@
+{
+  "name": "06 – Player-Statistics importieren",
+  "nodes": [
+    {
+      "id": "a1b2c3d4-0006-0006-0006-000000000001",
+      "name": "Webhook Player-Statistics",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [0, 0],
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "player-statistics",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "webhookId": "3a4b5c6d-0006-0006-0006-000000000001"
+    },
+    {
+      "id": "a1b2c3d4-0006-0006-0006-000000000002",
+      "name": "Get external_id",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.4,
+      "position": [224, 0],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT external_id FROM matches WHERE id = $1",
+        "options": {
+          "queryReplacement": "={{ [$json.body.match_id] }}"
+        }
+      },
+      "credentials": {
+        "postgres": {
+          "id": "DpV9uZoIFOsBDj7t",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "id": "a1b2c3d4-0006-0006-0006-000000000003",
+      "name": "API: Player-Statistics",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [448, 0],
+      "parameters": {
+        "method": "GET",
+        "url": "https://v3.football.api-sports.io/fixtures/players",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "fixture",
+              "value": "={{ $json.external_id }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "nw1wvLZ4u2BCZRVl",
+          "name": "Header Auth account"
+        }
+      }
+    },
+    {
+      "id": "a1b2c3d4-0006-0006-0006-000000000004",
+      "name": "DELETE alte Player-Statistics",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.4,
+      "position": [672, 0],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "DELETE FROM player_statistics WHERE match_id = $1",
+        "options": {
+          "queryReplacement": "={{ [$('Webhook Player-Statistics').first().json.body.match_id] }}"
+        }
+      },
+      "credentials": {
+        "postgres": {
+          "id": "DpV9uZoIFOsBDj7t",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "id": "a1b2c3d4-0006-0006-0006-000000000005",
+      "name": "Player-Statistics extrahieren",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [896, 0],
+      "parameters": {
+        "jsCode": "const apiResponse = $('API: Player-Statistics').first().json;\nconst matchId = $('Webhook Player-Statistics').first().json.body.match_id;\nif (!apiResponse.response || apiResponse.response.length === 0) return [];\n\nreturn apiResponse.response.flatMap(teamData => {\n  return teamData.players.map(playerData => {\n    const p = playerData.player;\n    const s = playerData.statistics[0];\n    if (!s) return null;\n\n    const g = s.games || {};\n    const goals = s.goals || {};\n    const passes = s.passes || {};\n    const shots = s.shots || {};\n    const tackles = s.tackles || {};\n    const dribbles = s.dribbles || {};\n    const fouls = s.fouls || {};\n    const cards = s.cards || {};\n\n    return {\n      json: {\n        match_id: matchId,\n        team_external_id: teamData.team.id,\n        player_external_id: p.id,\n        position: g.position || null,\n        minutes: g.minutes || 0,\n        rating: g.rating ? parseFloat(g.rating) : null,\n        shots_total: shots.total ?? null,\n        shots_on_target: shots.on ?? null,\n        goals: goals.total || 0,\n        assists: goals.assists || 0,\n        passes_total: passes.total ?? null,\n        passes_key: passes.key ?? null,\n        tackles_total: tackles.total ?? null,\n        dribbles_attempts: dribbles.attempts ?? null,\n        dribbles_success: dribbles.success ?? null,\n        fouls_drawn: fouls.drawn ?? null,\n        fouls_committed: fouls.committed ?? null,\n        cards_yellow: cards.yellow || 0,\n        cards_red: cards.red || 0\n      }\n    };\n  }).filter(Boolean);\n});"
+      }
+    },
+    {
+      "id": "a1b2c3d4-0006-0006-0006-000000000006",
+      "name": "INSERT Player-Statistics",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.4,
+      "position": [1120, 0],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO player_statistics (\n  match_id, team_id, player_id,\n  position, minutes, rating,\n  shots_total, shots_on_target,\n  goals, assists,\n  passes_total, passes_key,\n  tackles_total,\n  dribbles_attempts, dribbles_success,\n  fouls_drawn, fouls_committed,\n  cards_yellow, cards_red\n)\nVALUES (\n  $1,\n  (SELECT id FROM teams WHERE external_id = $2),\n  (SELECT id FROM players WHERE external_id = $3),\n  $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19\n)",
+        "options": {
+          "queryReplacement": "={{ [$json.match_id, $json.team_external_id, $json.player_external_id, $json.position, $json.minutes, $json.rating, $json.shots_total, $json.shots_on_target, $json.goals, $json.assists, $json.passes_total, $json.passes_key, $json.tackles_total, $json.dribbles_attempts, $json.dribbles_success, $json.fouls_drawn, $json.fouls_committed, $json.cards_yellow, $json.cards_red] }}"
+        }
+      },
+      "credentials": {
+        "postgres": {
+          "id": "DpV9uZoIFOsBDj7t",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "id": "a1b2c3d4-0006-0006-0006-000000000007",
+      "name": "Respond to Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [1344, 0],
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={ \"status\": \"ok\", \"match_id\": {{ $('Webhook Player-Statistics').first().json.body.match_id }} }",
+        "options": {}
+      }
+    }
+  ],
+  "connections": {
+    "Webhook Player-Statistics": {
+      "main": [[{ "node": "Get external_id", "type": "main", "index": 0 }]]
+    },
+    "Get external_id": {
+      "main": [[{ "node": "API: Player-Statistics", "type": "main", "index": 0 }]]
+    },
+    "API: Player-Statistics": {
+      "main": [[{ "node": "DELETE alte Player-Statistics", "type": "main", "index": 0 }]]
+    },
+    "DELETE alte Player-Statistics": {
+      "main": [[{ "node": "Player-Statistics extrahieren", "type": "main", "index": 0 }]]
+    },
+    "Player-Statistics extrahieren": {
+      "main": [[{ "node": "INSERT Player-Statistics", "type": "main", "index": 0 }]]
+    },
+    "INSERT Player-Statistics": {
+      "main": [[{ "node": "Respond to Webhook", "type": "main", "index": 0 }]]
+    }
+  },
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": true
+  }
+}

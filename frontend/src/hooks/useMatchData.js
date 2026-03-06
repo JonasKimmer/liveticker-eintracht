@@ -15,55 +15,97 @@ export function useMatchData(selectedMatchId) {
 
   const loadMatch = useCallback(async () => {
     if (!selectedMatchId) return;
-    const res = await api.fetchMatch(selectedMatchId);
-    setMatch(res.data);
+    try {
+      const res = await api.fetchMatch(selectedMatchId);
+      setMatch(res.data);
+    } catch (err) {
+      console.error("loadMatch error:", err);
+    }
   }, [selectedMatchId]);
 
   const loadEvents = useCallback(async () => {
     if (!selectedMatchId) return;
-    const res = await api.fetchEvents(selectedMatchId);
-    setEvents([...res.data].reverse());
+    try {
+      const res = await api.fetchEvents(selectedMatchId);
+      const items = res.data?.items ?? res.data ?? [];
+      setEvents([...items].reverse());
+    } catch (err) {
+      console.error("loadEvents error:", err);
+    }
   }, [selectedMatchId]);
 
   const loadTickerTexts = useCallback(async () => {
     if (!selectedMatchId) return;
-    const res = await api.fetchTickerTexts(selectedMatchId);
-    setTickerTexts(res.data);
+    try {
+      const res = await api.fetchTickerTexts(selectedMatchId);
+      setTickerTexts(res.data);
+    } catch (err) {
+      console.error("loadTickerTexts error:", err);
+    }
   }, [selectedMatchId]);
 
   const loadPrematch = useCallback(async () => {
     if (!selectedMatchId) return;
-    const res = await api.fetchPrematch(selectedMatchId);
-    setPrematch(res.data);
+    try {
+      const res = await api.fetchPrematch(selectedMatchId);
+      setPrematch(res.data);
+    } catch (err) {
+      console.error("loadPrematch error:", err);
+    }
   }, [selectedMatchId]);
 
   const loadLiveStats = useCallback(async () => {
     if (!selectedMatchId) return;
-    const res = await api.fetchLiveStats(selectedMatchId);
-    setLiveStats(res.data);
+    try {
+      const res = await api.fetchLiveStats(selectedMatchId);
+      setLiveStats(res.data);
+    } catch (err) {
+      console.error("loadLiveStats error:", err);
+    }
   }, [selectedMatchId]);
 
   const loadLineups = useCallback(async () => {
     if (!selectedMatchId) return;
-    const res = await api.fetchLineups(selectedMatchId);
-    setLineups(res.data);
+    try {
+      const res = await api.fetchLineups(selectedMatchId);
+      setLineups(res.data);
+    } catch (err) {
+      console.error("loadLineups error:", err);
+    }
   }, [selectedMatchId]);
 
   const loadMatchStats = useCallback(async () => {
     if (!selectedMatchId) return;
-    const res = await api.fetchMatchStats(selectedMatchId);
-    setMatchStats(res.data);
+    try {
+      const res = await api.fetchMatchStats(selectedMatchId);
+      setMatchStats(res.data);
+    } catch (err) {
+      console.error("loadMatchStats error:", err);
+    }
   }, [selectedMatchId]);
 
   const loadPlayerStats = useCallback(async () => {
     if (!selectedMatchId) return;
-    const res = await api.fetchPlayerStats(selectedMatchId);
-    setPlayerStats(res.data);
+    try {
+      const res = await api.fetchPlayerStats(selectedMatchId);
+      setPlayerStats(res.data);
+    } catch (err) {
+      console.error("loadPlayerStats error:", err);
+    }
   }, [selectedMatchId]);
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (!selectedMatchId) return;
+    // Reset stale data from previous match immediately
+    setMatch(null);
+    setEvents([]);
+    setTickerTexts([]);
+    setPrematch([]);
+    setLiveStats([]);
+    setLineups([]);
+    setMatchStats([]);
+    setPlayerStats([]);
     setLoading(true);
 
     Promise.all([
@@ -113,6 +155,6 @@ export function useMatchData(selectedMatchId) {
     matchStats,
     playerStats,
     loading,
-    reload: { loadEvents, loadTickerTexts, loadPrematch, loadLiveStats },
+    reload: { loadEvents, loadTickerTexts, loadPrematch, loadLiveStats, loadLineups, loadMatchStats },
   };
 }

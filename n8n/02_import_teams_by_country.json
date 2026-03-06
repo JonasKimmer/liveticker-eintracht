@@ -1,0 +1,135 @@
+{
+  "name": "02 – Teams nach Land importieren",
+  "nodes": [
+    {
+      "id": "fe81f3ea-a34c-4fa2-8e2e-ab2723ba9a1a",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1.1,
+      "position": [0, 0],
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "import-teams-by-country",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "webhookId": "import-teams-by-country"
+    },
+    {
+      "id": "b2c3d4e5-0002-0002-0002-000000000002",
+      "name": "Football API – Ligen des Landes",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [224, 0],
+      "parameters": {
+        "method": "GET",
+        "url": "=https://v3.football.api-sports.io/leagues?country={{ $json.body.country }}&season={{ $json.body.season || 2025 }}&type=League",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {}
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "nw1wvLZ4u2BCZRVl",
+          "name": "Header Auth account"
+        }
+      }
+    },
+    {
+      "id": "b2c3d4e5-0002-0002-0002-000000000003",
+      "name": "Erste Liga extrahieren",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [448, 0],
+      "parameters": {
+        "jsCode": "const leagues = $input.first().json.response;\nif (!leagues || leagues.length === 0) return [];\nconst top = leagues[0];\nconst country = $('Webhook').first().json.body.country;\nconst season = $('Webhook').first().json.body.season || 2025;\nreturn [{ json: { league_id: top.league.id, league_name: top.league.name, country, season } }];"
+      }
+    },
+    {
+      "id": "b2c3d4e5-0002-0002-0002-000000000004",
+      "name": "Football API – Teams der Liga",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [672, 0],
+      "parameters": {
+        "method": "GET",
+        "url": "=https://v3.football.api-sports.io/teams?league={{ $json.league_id }}&season={{ $json.season }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {}
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "nw1wvLZ4u2BCZRVl",
+          "name": "Header Auth account"
+        }
+      }
+    },
+    {
+      "id": "a4525edf-4d41-4cbf-90fc-adf0b8f7c126",
+      "name": "Extrahiere response[]",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [896, 0],
+      "parameters": {
+        "jsCode": "return $input.first().json.response.map(item => ({ json: item }));"
+      }
+    },
+    {
+      "id": "48b785dd-92aa-4ab4-b15d-90791fea85f2",
+      "name": "INSERT teams",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.4,
+      "position": [1120, 0],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO teams (uid, external_id, sport, name, initials, logo_url, is_partner_team, hidden, position, country_id)\nVALUES (gen_random_uuid(), $1, $2, $3, $4, $5, false, false, 0, (SELECT id FROM countries WHERE name = $6))\nON CONFLICT (external_id) DO UPDATE SET\n  name       = EXCLUDED.name,\n  initials   = EXCLUDED.initials,\n  logo_url   = EXCLUDED.logo_url,\n  country_id = EXCLUDED.country_id",
+        "options": {
+          "queryReplacement": "={{ [$json.team.id, 'football', $json.team.name, $json.team.code, $json.team.logo, $json.team.country] }}"
+        }
+      },
+      "credentials": {
+        "postgres": {
+          "id": "DpV9uZoIFOsBDj7t",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "id": "a89e8b6b-6630-4e5f-a443-6a2c1705e503",
+      "name": "Respond to Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [1344, 0],
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={ \"status\": \"ok\", \"country\": \"{{ $('Webhook').first().json.body.country }}\" }",
+        "options": {}
+      }
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [[{ "node": "Football API – Ligen des Landes", "type": "main", "index": 0 }]]
+    },
+    "Football API – Ligen des Landes": {
+      "main": [[{ "node": "Erste Liga extrahieren", "type": "main", "index": 0 }]]
+    },
+    "Erste Liga extrahieren": {
+      "main": [[{ "node": "Football API – Teams der Liga", "type": "main", "index": 0 }]]
+    },
+    "Football API – Teams der Liga": {
+      "main": [[{ "node": "Extrahiere response[]", "type": "main", "index": 0 }]]
+    },
+    "Extrahiere response[]": {
+      "main": [[{ "node": "INSERT teams", "type": "main", "index": 0 }]]
+    },
+    "INSERT teams": {
+      "main": [[{ "node": "Respond to Webhook", "type": "main", "index": 0 }]]
+    }
+  },
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": true
+  }
+}
