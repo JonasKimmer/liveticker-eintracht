@@ -137,8 +137,23 @@ export function parseCommand(input, currentMinute = 0) {
 
 /**
  * Hilfsfunktion: Gibt Icon + CSS-Klasse für einen Event-Typ zurück.
+ * Unterstützt normalisierte Typen (goal, yellow_card, ...) und Legacy-Typen (Goal, Card, subst).
  */
 export function getEventMeta(eventType, detail = "") {
+  const t = eventType?.toLowerCase();
+  if (t === "goal") return { icon: "⚽", cssClass: "goal" };
+  if (t === "own_goal") return { icon: "⚽", cssClass: "goal" };
+  if (t === "missed_penalty") return { icon: "❌", cssClass: "card" };
+  if (t === "yellow_card") return { icon: "🟨", cssClass: "card" };
+  if (t === "red_card") return { icon: "🟥", cssClass: "card" };
+  if (t === "substitution") return { icon: "🔄", cssClass: "sub" };
+  if (t === "kick_off") return { icon: "🟢", cssClass: "" };
+  if (t === "halftime") return { icon: "🔔", cssClass: "" };
+  if (t === "fulltime") return { icon: "🏁", cssClass: "" };
+  if (t === "comment" || t === "var") return { icon: "📢", cssClass: "" };
+  if (t === "pre_match" || t === "post_match") return { icon: "📋", cssClass: "" };
+  if (t === "halftime_comment") return { icon: "🔔", cssClass: "" };
+  // Legacy API-Football Typen
   if (eventType === "Goal") return { icon: "⚽", cssClass: "goal" };
   if (eventType === "Card")
     return {
@@ -151,19 +166,36 @@ export function getEventMeta(eventType, detail = "") {
 
 /**
  * Hilfsfunktion: Rohtext für ein Event (ohne AI-Text).
+ * Unterstützt normalisierte Typen und description-JSON.
  */
 export function getRawEventText(event) {
-  if (event.type === "Goal") {
-    const assist =
-      event.assist_name && event.assist_name !== "null"
-        ? ` (Assist: ${event.assist_name})`
-        : "";
-    return `Tor! ${event.player_name}${assist}`;
-  }
-  if (event.type === "Card") return `${event.detail} — ${event.player_name}`;
-  if (event.type === "subst")
-    return `${event.player_name} ↔ ${event.assist_name}`;
-  return event.detail ?? "";
+  // Normalisierter Typ aus Partner-API Response
+  const eventType = event.liveTickerEventType || event.type;
+  const t = eventType?.toLowerCase();
+
+  // description ist JSON-String im Partner-API Format
+  let desc = {};
+  try {
+    if (event.description) desc = JSON.parse(event.description);
+  } catch {}
+  const player = desc.player_name || event.player_name || "";
+  const assist = desc.assist_name || event.assist_name || "";
+  const detail = desc.detail || event.detail || "";
+
+  if (t === "goal") return `Tor! ${player}${assist ? ` (Assist: ${assist})` : ""}`;
+  if (t === "own_goal") return `Eigentor! ${player}`;
+  if (t === "missed_penalty") return `Elfmeter verschossen — ${player}`;
+  if (t === "yellow_card") return `Gelb — ${player}`;
+  if (t === "red_card") return `Rot — ${player}`;
+  if (t === "substitution") return `${player} ↔ ${assist}`;
+  if (t === "kick_off") return "Anstoß";
+  if (t === "halftime") return "Halbzeit";
+  if (t === "fulltime") return "Abpfiff";
+  // Legacy
+  if (eventType === "Goal") return `Tor! ${player}${assist ? ` (Assist: ${assist})` : ""}`;
+  if (eventType === "Card") return `${detail} — ${player}`;
+  if (eventType === "subst") return `${player} ↔ ${assist}`;
+  return detail;
 }
 
 /**

@@ -1,7 +1,24 @@
-import logging
+"""
+Ticker Router
+=============
+Endpunkte für Liveticker-Einträge.
 
-from fastapi import APIRouter, Depends, HTTPException, Query, status
-from pydantic import BaseModel
+Modi:
+- Modus 1 (manuell):     POST /ticker/manual/{match_id}
+- Modus 2 (vollautomatisch): POST /ticker/generate/{event_id}
+- Modus 3 (hybrid):      POST /ticker/generate/{event_id} → status=draft → PATCH /{id}/publish
+
+Instanzen:
+- generic:       neutral, kein Vereinsbezug
+- ef_whitelabel: Eintracht-Stil, Few-Shot aus style_references
+"""
+
+import json
+import logging
+from typing import Optional, Literal
+
+from fastapi import APIRouter, Depends, HTTPException, Query, Body, status
+from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
@@ -21,14 +38,116 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/ticker", tags=["Ticker"])
 
 
+# ──────────────────────────────────────────────
+# Request Schemas
+# ──────────────────────────────────────────────
+
+
+class GenerateEventRequest(BaseModel):
+    style: Literal["neutral", "euphorisch", "kritisch"] = "neutral"
+    language: str = Field(default="de", max_length=5)
+    instance: Literal["generic", "ef_whitelabel"] = "ef_whitelabel"
+    provider: Optional[str] = Field(
+        default=None, description="Provider override für Evaluation"
+    )
+    model: Optional[str] = Field(
+        default=None, description="Modell override für Evaluation"
+    )
+    auto_publish: bool = Field(
+        default=False, description="Modus 2: direkt publizieren ohne Review"
+    )
+
+
+class GenerateSyntheticRequest(BaseModel):
+    synthetic_event_id: int
+    style: Literal["neutral", "euphorisch", "kritisch"] = "neutral"
+    language: str = Field(default="de", max_length=5)
+    instance: Literal["generic", "ef_whitelabel"] = "ef_whitelabel"
+    provider: Optional[str] = None
+    model: Optional[str] = None
+    auto_publish: bool = False
+
+
+class ManualEntryRequest(BaseModel):
+    match_id: int
+    text: str = Field(..., min_length=1, max_length=2000)
+    event_id: Optional[int] = None
+    style: Optional[str] = None
+    icon: Optional[str] = None
+    minute: Optional[int] = None
+
+
+# ──────────────────────────────────────────────
+# Helper
+# ──────────────────────────────────────────────
+
+
+def _score_at_event(db: Session, event: Event, match: Optional[Match]) -> Optional[str]:
+    """Berechnet den Spielstand nach diesem Ereignis aus den vorherigen Tor-Events."""
+    if not match or not match.home_team or not match.away_team:
+        return None
+    home_ext = match.home_team.external_id
+    away_ext = match.away_team.external_id
+
+    # Alle Tor-Events bis einschließlich diesem Event (nach Position/ID geordnet)
+    order_col = Event.position if event.position is not None else Event.id
+    cutoff = event.position if event.position is not None else event.id
+    goals = (
+        db.query(Event)
+        .filter(
+            Event.match_id == match.id,
+            Event.event_type.in_(["goal", "own_goal"]),
+            order_col <= cutoff,
+        )
+        .all()
+    )
+    home_score = away_score = 0
+    for g in goals:
+        try:
+            d = json.loads(g.description or "{}")
+        except (ValueError, TypeError):
+            continue
+        tid = d.get("team_id")
+        if g.event_type == "own_goal":
+            if tid == home_ext:
+                away_score += 1
+            elif tid == away_ext:
+                home_score += 1
+        else:
+            if tid == home_ext:
+                home_score += 1
+            elif tid == away_ext:
+                away_score += 1
+    return f"{home_score}:{away_score}"
+
+
+def _build_match_context(match: Optional[Match], event_minute: Optional[int]) -> dict:
+    if not match:
+        return {}
+    return {
+        "home_team": match.home_team.name if match.home_team else "",
+        "away_team": match.away_team.name if match.away_team else "",
+        "home_score": match.home_score,
+        "away_score": match.away_score,
+        "match_state": match.match_state,
+        "minute": event_minute,
+        "league": match.competition.title if match.competition else None,
+    }
+
+
+# ──────────────────────────────────────────────
+# GET Endpunkte
+# ──────────────────────────────────────────────
+
+
 @router.get(
     "/match/{match_id}",
     response_model=list[TickerEntryResponse],
-    summary="Get published ticker entries for a match",
+    summary="Alle Ticker-Einträge eines Spiels (öffentlich)",
 )
 def get_match_ticker(
     match_id: int,
-    all_entries: bool = Query(False, description="Include drafts and rejected entries"),
+    all_entries: bool = Query(False, description="Auch Drafts und abgelehnte Einträge"),
     db: Session = Depends(get_db),
 ) -> list[TickerEntryResponse]:
     return TickerEntryRepository(db).get_by_match(
@@ -39,10 +158,11 @@ def get_match_ticker(
 @router.get(
     "/{entry_id}",
     response_model=TickerEntryResponse,
-    summary="Get a single ticker entry",
+    summary="Einzelnen Ticker-Eintrag abrufen",
 )
 def get_ticker_entry(
-    entry_id: int, db: Session = Depends(get_db)
+    entry_id: int,
+    db: Session = Depends(get_db),
 ) -> TickerEntryResponse:
     entry = TickerEntryRepository(db).get_by_id(entry_id)
     if not entry:
@@ -52,10 +172,36 @@ def get_ticker_entry(
     return entry
 
 
+# ──────────────────────────────────────────────
+# DELETE
+# ──────────────────────────────────────────────
+
+
+@router.delete(
+    "/{entry_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    summary="Ticker-Eintrag löschen",
+)
+def delete_ticker_entry(
+    entry_id: int,
+    db: Session = Depends(get_db),
+) -> None:
+    deleted = TickerEntryRepository(db).delete(entry_id)
+    if not deleted:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Entry not found"
+        )
+
+
+# ──────────────────────────────────────────────
+# PATCH Endpunkte (Modus 3: Human-in-the-Loop)
+# ──────────────────────────────────────────────
+
+
 @router.patch(
     "/{entry_id}",
     response_model=TickerEntryResponse,
-    summary="Update a ticker entry (text, status, style)",
+    summary="Ticker-Eintrag bearbeiten (Text, Status, Stil)",
 )
 def update_ticker_entry(
     entry_id: int,
@@ -65,7 +211,7 @@ def update_ticker_entry(
     if not data.model_fields_set:
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            detail="Request body must contain at least one field to update.",
+            detail="Mindestens ein Feld muss gesetzt sein.",
         )
     entry = TickerEntryRepository(db).update(entry_id, data)
     if not entry:
@@ -75,15 +221,89 @@ def update_ticker_entry(
     return entry
 
 
+@router.patch(
+    "/{entry_id}/publish",
+    response_model=TickerEntryResponse,
+    summary="Modus 3: Draft freigeben und publizieren",
+)
+def publish_ticker_entry(
+    entry_id: int,
+    db: Session = Depends(get_db),
+) -> TickerEntryResponse:
+    repo = TickerEntryRepository(db)
+    entry = repo.get_by_id(entry_id)
+    if not entry:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Entry not found"
+        )
+    if entry.status == "published":
+        return entry
+    updated = repo.update(entry_id, TickerEntryUpdate(status="published"))
+    return updated
+
+
+@router.patch(
+    "/{entry_id}/reject",
+    response_model=TickerEntryResponse,
+    summary="Modus 3: KI-Vorschlag ablehnen",
+)
+def reject_ticker_entry(
+    entry_id: int,
+    db: Session = Depends(get_db),
+) -> TickerEntryResponse:
+    repo = TickerEntryRepository(db)
+    entry = repo.get_by_id(entry_id)
+    if not entry:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Entry not found"
+        )
+    updated = repo.update(entry_id, TickerEntryUpdate(status="rejected"))
+    return updated
+
+
+# ──────────────────────────────────────────────
+# POST: Modus 1 – Manuell
+# ──────────────────────────────────────────────
+
+
+@router.post(
+    "/manual",
+    response_model=TickerEntryResponse,
+    status_code=status.HTTP_201_CREATED,
+    summary="Modus 1: Manuellen Ticker-Eintrag erstellen",
+)
+def create_manual_entry(
+    data: ManualEntryRequest,
+    db: Session = Depends(get_db),
+) -> TickerEntryResponse:
+    return TickerEntryRepository(db).create(
+        TickerEntryCreate(
+            match_id=data.match_id,
+            event_id=data.event_id,
+            text=data.text,
+            source="manual",
+            style=data.style,
+            icon=data.icon,
+            minute=data.minute,
+            status="published",
+        )
+    )
+
+
+# ──────────────────────────────────────────────
+# POST: Modus 2 / 3 – KI-Generierung für Event
+# ──────────────────────────────────────────────
+
+
 @router.post(
     "/generate/{event_id}",
     response_model=TickerEntryResponse,
     status_code=status.HTTP_201_CREATED,
-    summary="Generate a ticker entry via LLM for an event",
+    summary="Modus 2/3: KI-Ticker für Partner-API Event generieren",
 )
 async def generate_for_event(
     event_id: int,
-    style: str = Query("neutral", max_length=50),
+    data: GenerateEventRequest = Body(default_factory=GenerateEventRequest),
     db: Session = Depends(get_db),
 ) -> TickerEntryResponse:
     event = db.query(Event).filter(Event.id == event_id).first()
@@ -92,28 +312,63 @@ async def generate_for_event(
             status_code=status.HTTP_404_NOT_FOUND, detail="Event not found"
         )
 
-    # Return existing entry if already generated
+    # Idempotenz: bestehenden Entry zurückgeben wenn bereits generiert
     repo = TickerEntryRepository(db)
     existing = repo.get_by_event(event_id)
     if existing:
         return existing
 
     match = db.query(Match).filter(Match.id == event.match_id).first()
-    match_context = {
-        "home_team": match.home_team.name if match and match.home_team else "",
-        "away_team": match.away_team.name if match and match.away_team else "",
-        "home_score": match.home_score if match else None,
-        "away_score": match.away_score if match else None,
-        "match_state": match.match_state if match else None,
-        "minute": event.time,
-    }
+    match_context = _build_match_context(match, event.time)
+
+    # API-Football Felder aus description JSON parsen
+    try:
+        desc = json.loads(event.description or "{}")
+    except (ValueError, TypeError):
+        desc = {}
+    player_name = desc.get("player_name")
+    assist_name = desc.get("assist_name")
+    event_detail = desc.get("detail") or desc.get("comments") or event.description or ""
+
+    # team_id → team_name über Match-Zuordnung auflösen
+    team_id = desc.get("team_id")
+    if team_id and match:
+        if match.home_team and match.home_team.external_id == team_id:
+            team_name = match.home_team.name
+        elif match.away_team and match.away_team.external_id == team_id:
+            team_name = match.away_team.name
+        else:
+            team_name = None
+    else:
+        team_name = desc.get("team_name")
+
+    # Stand nach diesem Event berechnen (nur für Tor-Events)
+    score_str = None
+    if event.event_type in ("goal", "own_goal"):
+        score_str = _score_at_event(db, event, match)
 
     try:
         text, model_used = await generate_ticker_text(
-            event_type=event.event_type or event.description or "update",
-            context_data={},
+            event_type=event.event_type or "comment",
+            event_detail=event_detail,
+            minute=event.time,
+            player_name=player_name,
+            assist_name=assist_name,
+            team_name=team_name,
+            style=data.style,
+            language=data.language,
+            context_data={
+                "home_team": match_context.get("home_team"),
+                "away_team": match_context.get("away_team"),
+                **({"score": score_str} if score_str else {}),
+            } if data.instance == "ef_whitelabel" else (
+                {"score": score_str} if score_str else {}
+            ),
             match_context=match_context,
-            style=style,
+            provider=data.provider,
+            model=data.model,
+            db=db,
+            instance=data.instance,
         )
     except Exception as e:
         logger.exception("LLM generation failed for event_id=%s", event_id)
@@ -121,29 +376,31 @@ async def generate_for_event(
             status_code=status.HTTP_502_BAD_GATEWAY, detail=f"LLM error: {e}"
         )
 
+    entry_status = "published" if data.auto_publish else "draft"
+
     return repo.create(
         TickerEntryCreate(
             match_id=event.match_id,
             event_id=event_id,
             text=text,
             source="ai",
-            style=style,
+            style=data.style,
             llm_model=model_used,
-            status="published",
+            status=entry_status,
         )
     )
 
 
-class GenerateSyntheticRequest(BaseModel):
-    synthetic_event_id: int
-    style: str = "neutral"
+# ──────────────────────────────────────────────
+# POST: Modus 2 / 3 – KI-Generierung für Synthetic Event
+# ──────────────────────────────────────────────
 
 
 @router.post(
     "/generate-synthetic",
     response_model=TickerEntryResponse,
     status_code=status.HTTP_201_CREATED,
-    summary="Generate a ticker entry via LLM for a synthetic event",
+    summary="Modus 2/3: KI-Ticker für synthetisches Event generieren",
 )
 async def generate_for_synthetic_event(
     data: GenerateSyntheticRequest,
@@ -160,21 +417,21 @@ async def generate_for_synthetic_event(
         )
 
     match = db.query(Match).filter(Match.id == synthetic.match_id).first()
-    match_context = {
-        "home_team": match.home_team.name if match and match.home_team else "",
-        "away_team": match.away_team.name if match and match.away_team else "",
-        "home_score": match.home_score if match else None,
-        "away_score": match.away_score if match else None,
-        "match_state": match.match_state if match else None,
-        "minute": synthetic.minute,
-    }
+    match_context = _build_match_context(match, synthetic.minute)
 
     try:
         text, model_used = await generate_ticker_text(
-            event_type=synthetic.type or "update",
+            event_type=synthetic.type or "comment",
+            event_detail="",
+            minute=synthetic.minute,
+            style=data.style,
+            language=data.language,
             context_data=synthetic.data or {},
             match_context=match_context,
-            style=data.style,
+            provider=data.provider,
+            model=data.model,
+            db=db,
+            instance=data.instance,
         )
     except Exception as e:
         logger.exception(
@@ -184,6 +441,8 @@ async def generate_for_synthetic_event(
             status_code=status.HTTP_502_BAD_GATEWAY, detail=f"LLM error: {e}"
         )
 
+    entry_status = "published" if data.auto_publish else "draft"
+
     return TickerEntryRepository(db).create(
         TickerEntryCreate(
             match_id=synthetic.match_id,
@@ -191,6 +450,71 @@ async def generate_for_synthetic_event(
             source="ai",
             style=data.style,
             llm_model=model_used,
-            status="published",
+            status=entry_status,
         )
     )
+
+
+# ──────────────────────────────────────────────
+# POST: Bulk-Regenerierung (Evaluation)
+# ──────────────────────────────────────────────
+
+
+@router.post(
+    "/generate-bulk/{match_id}",
+    response_model=list[TickerEntryResponse],
+    status_code=status.HTTP_201_CREATED,
+    summary="Evaluation: Alle Events eines Spiels mit einem Provider generieren",
+)
+async def generate_bulk_for_match(
+    match_id: int,
+    data: GenerateEventRequest = Body(default_factory=GenerateEventRequest),
+    db: Session = Depends(get_db),
+) -> list[TickerEntryResponse]:
+    events = db.query(Event).filter(Event.match_id == match_id).all()
+    if not events:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Keine Events für dieses Spiel",
+        )
+
+    match = db.query(Match).filter(Match.id == match_id).first()
+    repo = TickerEntryRepository(db)
+    results = []
+
+    for event in events:
+        match_context = _build_match_context(match, event.time)
+        try:
+            text, model_used = await generate_ticker_text(
+                event_type=event.event_type or "comment",
+                event_detail=event.description or "",
+                minute=event.time,
+                style=data.style,
+                language=data.language,
+                context_data={
+                    "home_team": match_context.get("home_team"),
+                    "away_team": match_context.get("away_team"),
+                } if data.instance == "ef_whitelabel" else {},
+                match_context=match_context,
+                provider=data.provider,
+                model=data.model,
+                db=db,
+                instance=data.instance,
+            )
+            entry = repo.create(
+                TickerEntryCreate(
+                    match_id=match_id,
+                    event_id=event.id,
+                    text=text,
+                    source="ai",
+                    style=data.style,
+                    llm_model=model_used,
+                    status="draft",
+                )
+            )
+            results.append(entry)
+        except Exception:
+            logger.exception("Bulk generation failed for event_id=%s", event.id)
+            continue
+
+    return results

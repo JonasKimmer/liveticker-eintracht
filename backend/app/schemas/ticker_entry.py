@@ -26,6 +26,7 @@ class TickerEntryCreate(BaseModel):
     llm_model: Optional[str] = Field(None, max_length=100)
     status: TickerStatus = TickerStatus.draft
     source: TickerSource = TickerSource.ai
+    minute: Optional[int] = None
 
 
 class TickerEntryUpdate(BaseModel):
@@ -47,4 +48,5 @@ class TickerEntryResponse(BaseModel):
     llm_model: Optional[str] = None
     status: str
     source: str
+    minute: Optional[int] = None
     created_at: datetime

@@ -30,26 +30,26 @@ export const fetchEvents = (matchId) => api.get(`/matches/${matchId}/events`);
 
 // ── Ticker ─────────────────────────────────────────────
 export const fetchTickerTexts = (matchId) =>
-  api.get(`/ticker/match/${matchId}`);
+  api.get(`/ticker/match/${matchId}?all_entries=true`);
 export const fetchPrematch = (matchId) =>
   api.get(`/ticker/match/${matchId}`);
 export const fetchLiveStats = (matchId) =>
   api.get(`/matches/${matchId}/statistics`);
-export const generateTicker = (eventId, style) =>
-  api.post(`/ticker/generate/${eventId}?style=${style}`);
+export const generateTicker = (eventId, style, instance = "ef_whitelabel") =>
+  api.post(`/ticker/generate/${eventId}`, { style, instance });
 export const createManualTicker = (matchId, text, icon = "📝", minute) =>
-  api.post("/ticker/", {
+  api.post("/ticker/manual", {
     match_id: matchId,
     text,
-    mode: "manual",
-    language: "de",
-    minute,
     icon,
+    minute: minute ?? null,
   });
 export const publishTicker = (entryId, text) =>
   api.patch(`/ticker/${entryId}`, { text, status: "published" });
 export const updateTicker = (entryId, data) =>
   api.patch(`/ticker/${entryId}`, data);
+export const deleteTicker = (entryId) =>
+  api.delete(`/ticker/${entryId}`);
 
 // ── Stats / Lineups ────────────────────────────────────
 export const fetchLineups = (matchId) => api.get(`/matches/${matchId}/lineup`);
@@ -76,6 +76,9 @@ export const importTeamsByCountry = (country, season) =>
 
 export const importCompetitionsForTeam = (teamId, season) =>
   n8n.post("/import-competitions", { teamId, season });
+
+export const importEvents = (fixtureId) =>
+  n8n.post("/Events", { fixture_id: fixtureId });
 
 export const importLineups = (matchId) =>
   n8n.post("/lineups", { match_id: matchId });

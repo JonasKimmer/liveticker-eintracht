@@ -70,7 +70,6 @@ export default function LiveTicker() {
     events,
     tickerTexts,
     prematch,
-    liveStats,
     lineups,
     matchStats,
     playerStats,
@@ -113,9 +112,20 @@ export default function LiveTicker() {
     [mode, setMode, acceptDraft, rejectDraft],
   );
 
+  // ── Instance (Vereinsstil) ────────────────────────────────
+  const [instance, setInstance] = useState("ef_whitelabel");
+
   // ── Import-Loading States ─────────────────────────────────
   const [importingTeams, setImportingTeams] = useState(false);
   const [importingCompetitions, setImportingCompetitions] = useState(false);
+
+  // ── Events Auto-Import ───────────────────────────────────
+  useEffect(() => {
+    if (!selMatchId || !match?.externalId || events.length > 0) return;
+    api.importEvents(match.externalId)
+      .then(() => reload.loadEvents())
+      .catch((err) => console.error("importEvents error:", err));
+  }, [selMatchId, match?.externalId, events.length]);
 
   // ── Lineup Auto-Import ────────────────────────────────────
   useEffect(() => {
@@ -337,12 +347,12 @@ export default function LiveTicker() {
     [favorites],
   );
 
-  // ── Ticker generieren (unverändert) ───────────────────────
+  // ── Ticker generieren ─────────────────────────────────────
   const handleGenerate = useCallback(
     async (eventId, style) => {
       setGeneratingId(eventId);
       try {
-        await api.generateTicker(eventId, style);
+        await api.generateTicker(eventId, style, instance);
         await reload.loadTickerTexts();
       } catch (err) {
         console.error("generateTicker error:", err);
@@ -350,7 +360,7 @@ export default function LiveTicker() {
         setGeneratingId(null);
       }
     },
-    [reload],
+    [reload, instance],
   );
 
   // ── Manueller Eintrag (unverändert) ───────────────────────
@@ -441,6 +451,13 @@ export default function LiveTicker() {
             />
             <span>API: {isMatchLive ? "Live" : "Bereit"}</span>
             <button
+              className={`lt-header__hint${instance === "ef_whitelabel" ? " lt-header__hint--active" : ""}`}
+              onClick={() => setInstance(i => i === "ef_whitelabel" ? "generic" : "ef_whitelabel")}
+              title={instance === "ef_whitelabel" ? "EF-Stil aktiv – klicken für neutral" : "Neutraler Stil aktiv – klicken für EF-Stil"}
+            >
+              {instance === "ef_whitelabel" ? "EF" : "⬜"}
+            </button>
+            <button
               className="lt-header__hint"
               onClick={() => setShowHints(true)}
               title="Keyboard Shortcuts anzeigen (?)"
@@ -464,11 +481,8 @@ export default function LiveTicker() {
         {/* 3-Spalten Layout */}
         <main className="lt-columns">
           <LeftPanel
-            prematch={prematch}
-            liveStats={liveStats}
             events={events}
             tickerTexts={tickerTexts}
-            mode={mode}
             match={match}
           />
           <CenterPanel
@@ -483,6 +497,7 @@ export default function LiveTicker() {
               setActiveDraftText(text);
             }}
             reload={reload}
+            instance={instance}
           />
           <RightPanel
             match={match}

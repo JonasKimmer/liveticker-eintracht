@@ -18,6 +18,7 @@ export function CenterPanel({
   onManualPublish,
   onDraftActive,
   reload,
+  instance = "ef_whitelabel",
 }) {
   const { mode } = useTickerModeContext();
 
@@ -25,6 +26,7 @@ export function CenterPanel({
   const [editMode, setEditMode] = useState(false);
   const [editorValue, setEditorValue] = useState("");
   const [publishing, setPublishing] = useState(false); // eslint-disable-line no-unused-vars
+  const [bulkGenerating, setBulkGenerating] = useState(false);
 
   // Set mit Event-IDs die gerade auto-prozessiert werden → kein Doppel-Trigger
   const processingRef = useRef(new Set());
@@ -64,7 +66,7 @@ export function CenterPanel({
         // Noch kein Draft → generieren, dann publishen
         processingRef.current.add(ev.id);
         api
-          .generateTicker(ev.id, AUTO_STYLE)
+          .generateTicker(ev.id, AUTO_STYLE, instance)
           .then(() => reload.loadTickerTexts())
           .then(async () => {
             const res = await api.fetchTickerTexts(match.id);
@@ -87,6 +89,36 @@ export function CenterPanel({
     if (selectedDraft) onDraftActive?.(selectedDraft.id, selectedDraft.text);
     else onDraftActive?.(null, "");
   }, [selectedDraft, onDraftActive]);
+
+  const handleBulkGenerate = useCallback(async () => {
+    if (!pendingEvents.length) return;
+    setBulkGenerating(true);
+    try {
+      // 1. Alle Events ohne Draft: generieren
+      const withoutDraft = pendingEvents.filter(
+        (ev) => !tickerTexts.find((t) => t.event_id === ev.id),
+      );
+      for (const ev of withoutDraft) {
+        await api.generateTicker(ev.id, AUTO_STYLE, instance);
+      }
+
+      // 2. Alle Drafts (inkl. neu generierte) publishen
+      const freshRes = await api.fetchTickerTexts(match.id);
+      const allTexts = freshRes.data ?? [];
+      const drafts = allTexts.filter(
+        (t) => t.status !== "published" && t.event_id,
+      );
+      for (const d of drafts) {
+        await api.publishTicker(d.id, d.text);
+      }
+
+      await reload.loadTickerTexts();
+    } catch (err) {
+      console.error("bulkGenerate failed", err);
+    } finally {
+      setBulkGenerating(false);
+    }
+  }, [pendingEvents, tickerTexts, match, reload, instance]);
 
   const handleEditPublish = useCallback(async () => {
     if (!selectedDraft || !editorValue.trim()) return;
@@ -157,8 +189,18 @@ export function CenterPanel({
 
             {pendingEvents.length > 1 && (
               <div style={{ marginBottom: "1rem" }}>
-                <div className="lt-center__section-title">
-                  Events ({pendingEvents.length})
+                <div className="lt-center__section-title" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                  <span>Events ({pendingEvents.length})</span>
+                  {pendingEvents.some((ev) => !tickerTexts.find((t) => t.event_id === ev.id)) && (
+                    <button
+                      className="lt-event-card__gen-btn"
+                      onClick={handleBulkGenerate}
+                      disabled={bulkGenerating}
+                      title="KI-Texte für alle Events generieren"
+                    >
+                      {bulkGenerating ? "…" : "✦ Alle generieren & publishen"}
+                    </button>
+                  )}
                 </div>
                 {pendingEvents.map((ev) => (
                   <EventCard
@@ -186,21 +228,31 @@ export function CenterPanel({
                   onPublish={handleEditPublish}
                   onCancel={() => setEditMode(false)}
                   mode={mode}
-                  currentMinute={selectedEvent.minute}
+                  currentMinute={selectedEvent.time}
                 />
               ) : (
                 <AIDraft
-                  eventType={selectedEvent.type}
+                  eventType={selectedEvent.liveTickerEventType}
                   confidence={selectedDraft?.confidence ?? "medium"}
                   draftText={
                     selectedDraft?.text ??
                     "Kein Draft vorhanden – generiere einen Stil."
                   }
-                  onAccept={() =>
-                    onDraftActive?.(selectedDraft?.id, selectedDraft?.text)
-                  }
-                  onReject={() => onDraftActive?.(null, "")}
+                  onAccept={async () => {
+                    if (!selectedDraft) return;
+                    await api.publishTicker(selectedDraft.id, selectedDraft.text);
+                    await reload.loadTickerTexts();
+                  }}
+                  onReject={async () => {
+                    if (!selectedDraft) return;
+                    await api.deleteTicker(selectedDraft.id);
+                    await reload.loadTickerTexts();
+                  }}
                   onEdit={() => {
+                    setEditorValue(selectedDraft?.text ?? "");
+                    setEditMode(true);
+                  }}
+                  onTextClick={() => {
                     setEditorValue(selectedDraft?.text ?? "");
                     setEditMode(true);
                   }}
@@ -255,7 +307,7 @@ const EventCard = memo(function EventCard({
   onSelect,
   showGenButtons,
 }) {
-  const { icon, cssClass } = getEventMeta(event.type, event.detail);
+  const { icon, cssClass } = getEventMeta(event.liveTickerEventType, null);
 
   return (
     <div
@@ -265,9 +317,11 @@ const EventCard = memo(function EventCard({
       tabIndex={onSelect ? 0 : undefined}
     >
       <div className="lt-event-card__row">
-        <span className="lt-event-card__minute">{event.minute}'</span>
+        <span className="lt-event-card__minute">{event.time}'</span>
         <span className="lt-event-card__icon">{icon}</span>
-        <span className="lt-event-card__raw">{getRawEventText(event)}</span>
+        <span className="lt-event-card__raw">
+          {draft?.text ?? getRawEventText(event)}
+        </span>
       </div>
 
       {showGenButtons && !draft && (

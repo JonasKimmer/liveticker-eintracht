@@ -22,6 +22,7 @@ class TickerEntry(Base):
         String(20), nullable=False, default="draft"
     )  # draft|published|rejected
     source = Column(String(20), nullable=False, default="ai")  # ai|manual
+    minute = Column(Integer, nullable=True)
     created_at = Column(TIMESTAMP(timezone=True), server_default=func.now())
 
     match = relationship("Match", back_populates="ticker_entries")

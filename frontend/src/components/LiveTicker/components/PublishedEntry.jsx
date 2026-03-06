@@ -1,7 +1,7 @@
 // ============================================================
 // PublishedEntry.jsx  (React.memo — rendert oft)
 // ============================================================
-import React, { memo } from "react";
+import { memo } from "react";
 import { getEventMeta } from "../utils/parseCommand";
 
 export const PublishedEntry = memo(function PublishedEntry({
@@ -10,7 +10,8 @@ export const PublishedEntry = memo(function PublishedEntry({
   isManual,
   isPrematch,
 }) {
-  const { icon, cssClass } = getEventMeta(entry?.type, entry?.detail);
+  const eventType = entry?.liveTickerEventType ?? entry?.event_type ?? entry?.type;
+  const { icon, cssClass } = getEventMeta(eventType, entry?.detail);
 
   if (isPrematch) {
     return (
@@ -42,7 +43,7 @@ export const PublishedEntry = memo(function PublishedEntry({
 
   return (
     <div className={`lt-entry${cssClass ? ` lt-entry--${cssClass}` : ""}`}>
-      <span className="lt-entry__minute">{entry.minute}'</span>
+      <span className="lt-entry__minute">{entry.time ?? entry.minute}'</span>
       <span className="lt-entry__icon">{icon}</span>
       <div className="lt-entry__body">
         <div className="lt-entry__text">{tickerText.text}</div>

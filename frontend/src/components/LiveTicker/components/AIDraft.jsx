@@ -2,8 +2,6 @@
 // AIDraft.jsx  — read-only Anzeige des AI-generierten Texts
 // (CO-OP: TAB = annehmen, ESC = ablehnen, "Bearbeiten" öffnet EntryEditor)
 // ============================================================
-import React from "react";
-
 export function AIDraft({
   eventType,
   confidence,
@@ -11,6 +9,7 @@ export function AIDraft({
   onAccept,
   onReject,
   onEdit,
+  onTextClick,
 }) {
   return (
     <div className="lt-draft">
@@ -26,7 +25,12 @@ export function AIDraft({
         )}
       </div>
 
-      <div className="lt-draft__text-wrap">
+      <div
+        className="lt-draft__text-wrap"
+        onClick={onTextClick}
+        style={onTextClick ? { cursor: "text" } : undefined}
+        title={onTextClick ? "Klicken zum Bearbeiten" : undefined}
+      >
         <p className="lt-draft__text">{draftText || "Generiere Text…"}</p>
       </div>
 

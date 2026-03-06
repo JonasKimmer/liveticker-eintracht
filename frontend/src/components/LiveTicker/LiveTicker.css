@@ -1002,6 +1002,17 @@
   color: var(--lt-text-sec);
   flex: 1;
 }
+.lt-event-card__draft-preview {
+  margin-top: 0.4rem;
+  padding: 0.4rem 0.5rem;
+  font-size: 0.78rem;
+  color: var(--lt-text-muted);
+  font-style: italic;
+  border-left: 2px solid var(--lt-accent, #4a9eff);
+  background: var(--lt-bg-card);
+  border-radius: 0 4px 4px 0;
+  line-height: 1.4;
+}
 .lt-event-card__gen-btns {
   display: flex;
   gap: 0.35rem;

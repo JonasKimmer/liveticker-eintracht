@@ -1,9 +1,7 @@
-import React, { memo } from "react";
+import { memo } from "react";
 import { PublishedEntry } from "../components/PublishedEntry";
 
 export const LeftPanel = memo(function LeftPanel({
-  prematch,
-  liveStats,
   events,
   tickerTexts,
   match,
@@ -14,20 +12,6 @@ export const LeftPanel = memo(function LeftPanel({
 
   // Alle Einträge in eine gemeinsame Liste zusammenführen und nach Minute sortieren
   const allEntries = [
-    // Prematch (Minute = -1 damit sie ganz oben stehen)
-    ...prematch.map((e) => ({
-      key: `pre-${e.ticker_entry_id}`,
-      minute: -1,
-      type: "prematch",
-      data: e,
-    })),
-    // Live-Stats
-    ...liveStats.map((e) => ({
-      key: `ls-${e.ticker_entry_id}`,
-      minute: e.minute ?? 0,
-      type: "livestat",
-      data: e,
-    })),
     // Manuelle Einträge (event_id === null)
     ...publishedTexts
       .filter((t) => !t.event_id)
@@ -44,7 +28,7 @@ export const LeftPanel = memo(function LeftPanel({
         if (!tt) return null;
         return {
           key: `ev-${ev.id}`,
-          minute: ev.minute ?? 0,
+          minute: ev.time ?? 0,
           type: "event",
           data: { event: ev, tickerText: tt },
         };
@@ -78,27 +62,6 @@ export const LeftPanel = memo(function LeftPanel({
       )}
 
       {allEntries.map((entry) => {
-        if (entry.type === "prematch") {
-          return (
-            <PublishedEntry
-              key={entry.key}
-              tickerText={entry.data}
-              isPrematch
-            />
-          );
-        }
-        if (entry.type === "livestat") {
-          return (
-            <div key={entry.key} className="lt-entry lt-entry--manual">
-              <span className="lt-entry__minute">📈</span>
-              <span className="lt-entry__icon">⚡</span>
-              <div className="lt-entry__body">
-                <div className="lt-entry__text">{entry.data.text}</div>
-                <div className="lt-entry__meta">{entry.data.llm_model}</div>
-              </div>
-            </div>
-          );
-        }
         if (entry.type === "manual") {
           return (
             <PublishedEntry key={entry.key} tickerText={entry.data} isManual />

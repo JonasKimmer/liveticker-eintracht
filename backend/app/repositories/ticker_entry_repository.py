@@ -26,8 +26,21 @@ class TickerEntryRepository:
 
     def get_by_event(self, event_id: int) -> Optional[TickerEntry]:
         return (
-            self.db.query(TickerEntry).filter(TickerEntry.event_id == event_id).first()
+            self.db.query(TickerEntry)
+            .filter(
+                TickerEntry.event_id == event_id,
+                TickerEntry.status != "rejected",
+            )
+            .first()
         )
+
+    def delete(self, entry_id: int) -> bool:
+        entry = self.get_by_id(entry_id)
+        if not entry:
+            return False
+        self.db.delete(entry)
+        self.db.commit()
+        return True
 
     def create(self, data: TickerEntryCreate) -> TickerEntry:
         entry = TickerEntry(**data.model_dump())
