@@ -2,12 +2,11 @@
 // panels/RightPanel.jsx
 // Stats, Aufstellung, Top Spieler
 // ============================================================
-import React from "react";
 
 export function RightPanel({ match, matchStats, playerStats, lineups }) {
   if (!match) {
     return (
-      <div className="lt-col lt-col--right">
+      <div className="lt-col lt-col--stats">
         <div className="lt-empty">
           <div className="lt-empty__icon">📊</div>
           Kein Spiel ausgewählt
@@ -34,7 +33,7 @@ export function RightPanel({ match, matchStats, playerStats, lineups }) {
   const awayAbbr = match.awayTeam.name.substring(0, 3).toUpperCase();
 
   return (
-    <div className="lt-col lt-col--right">
+    <div className="lt-col lt-col--stats">
       {/* Statistiken */}
       {homeStats && awayStats && (
         <div className="lt-right__section">

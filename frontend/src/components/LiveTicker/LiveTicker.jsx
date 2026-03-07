@@ -5,7 +5,7 @@
 //   Zustand 2 (selMatchId gesetzt)  → 3-Spalten + Breadcrumb + Modal
 // Alle Nav-Hooks + api-Calls bleiben identisch.
 // ============================================================
-import React, {
+import {
   useState,
   useEffect,
   useCallback,
@@ -478,26 +478,28 @@ export default function LiveTicker() {
         )}
         {match && <ModeSelector mode={mode} onModeChange={setMode} />}
 
-        {/* 3-Spalten Layout */}
-        <main className="lt-columns">
+        {/* Layout: [Events] | Ticker | Stats — Auto-Modus: ohne Events-Spalte */}
+        <main className={`lt-columns${mode === "auto" ? " lt-columns--auto" : ""}`}>
+          {mode !== "auto" && (
+            <CenterPanel
+              match={match}
+              events={events}
+              tickerTexts={tickerTexts}
+              generatingId={generatingId}
+              onGenerate={handleGenerate}
+              onManualPublish={handleManualPublish}
+              onDraftActive={(id, text) => {
+                setActiveDraftId(id);
+                setActiveDraftText(text);
+              }}
+              reload={reload}
+              instance={instance}
+            />
+          )}
           <LeftPanel
             events={events}
             tickerTexts={tickerTexts}
             match={match}
-          />
-          <CenterPanel
-            match={match}
-            events={events}
-            tickerTexts={tickerTexts}
-            generatingId={generatingId}
-            onGenerate={handleGenerate}
-            onManualPublish={handleManualPublish}
-            onDraftActive={(id, text) => {
-              setActiveDraftId(id);
-              setActiveDraftText(text);
-            }}
-            reload={reload}
-            instance={instance}
           />
           <RightPanel
             match={match}

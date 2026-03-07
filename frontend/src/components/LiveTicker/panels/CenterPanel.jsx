@@ -138,7 +138,7 @@ export function CenterPanel({
 
   if (!match) {
     return (
-      <div className="lt-col lt-col--center">
+      <div className="lt-col lt-col--events">
         <div className="lt-center__empty">
           <div style={{ fontSize: "2rem", marginBottom: "0.5rem" }}>⚽</div>
           Kein Spiel ausgewählt
@@ -148,7 +148,7 @@ export function CenterPanel({
   }
 
   return (
-    <div className="lt-col lt-col--center">
+    <div className="lt-col lt-col--events">
       <div className="lt-center__inner">
         {/* ── AUTO ────────────────────────────────────────── */}
         {mode === MODES.AUTO && (

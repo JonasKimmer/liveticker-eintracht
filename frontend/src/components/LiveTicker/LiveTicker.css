@@ -470,12 +470,17 @@
 }
 
 /* ============================================================
-   3-COLUMN LAYOUT
+   LAYOUT
+   Normal:     [Events 320px] | [Ticker 1fr] | [Stats 380px]
+   Auto-Modus: [Ticker 1fr]   | [Stats 380px]  (Events nicht gerendert)
    ============================================================ */
 .lt-columns {
   display: grid;
-  grid-template-columns: 320px 1fr 420px;
+  grid-template-columns: 320px 1fr 380px;
   min-height: calc(100vh - var(--lt-header-h) - var(--lt-nav-h));
+}
+.lt-columns--auto {
+  grid-template-columns: 1fr 380px;
 }
 .lt-col {
   overflow-y: auto;
@@ -483,14 +488,15 @@
   position: sticky;
   top: calc(var(--lt-header-h) + var(--lt-nav-h));
 }
-.lt-col--left {
+.lt-col--events {
   border-right: 1px solid var(--lt-border);
   background: var(--lt-bg);
 }
-.lt-col--center {
+.lt-col--ticker {
   background: var(--lt-bg);
+  border-right: 1px solid var(--lt-border);
 }
-.lt-col--right {
+.lt-col--stats {
   border-left: 1px solid var(--lt-border);
   background: var(--lt-bg-card);
 }

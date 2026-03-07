@@ -39,7 +39,7 @@ export const LeftPanel = memo(function LeftPanel({
   const hasContent = allEntries.length > 0;
 
   return (
-    <div className="lt-col lt-col--left">
+    <div className="lt-col lt-col--ticker">
       <div className="lt-left__header">
         <span>Published Entries</span>
         <span className="lt-left__count">
