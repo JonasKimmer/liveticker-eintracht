@@ -10,6 +10,8 @@ from app.api.v1 import (
     seasons,
     favorites,
     competitions,
+    media,
+    players,
 )
 from app.core.config import settings
 from app.core.database import Base, engine, check_database_connection
@@ -28,6 +30,9 @@ from app.models import (  # noqa: F401
     competition_team,
     lineup,
     match_statistic,
+    media_queue,
+    player,
+    player_statistic,
 )
 
 Base.metadata.create_all(bind=engine)
@@ -64,6 +69,9 @@ app.include_router(matches.router, prefix=PREFIX)
 app.include_router(events.router, prefix=PREFIX)
 app.include_router(ticker.router, prefix=PREFIX)
 app.include_router(favorites.router, prefix=PREFIX)
+app.include_router(media.router, prefix=PREFIX)
+app.include_router(media.ws_router)  # WebSocket ohne /api/v1 Prefix → /ws/media
+app.include_router(players.router, prefix=PREFIX)
 
 
 @app.get("/", tags=["Meta"])

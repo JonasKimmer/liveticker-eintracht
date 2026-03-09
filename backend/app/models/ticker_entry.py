@@ -23,6 +23,7 @@ class TickerEntry(Base):
     )  # draft|published|rejected
     source = Column(String(20), nullable=False, default="ai")  # ai|manual
     minute = Column(Integer, nullable=True)
+    image_url = Column(Text, nullable=True)
     created_at = Column(TIMESTAMP(timezone=True), server_default=func.now())
 
     match = relationship("Match", back_populates="ticker_entries")

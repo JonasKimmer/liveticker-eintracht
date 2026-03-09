@@ -49,4 +49,5 @@ class TickerEntryResponse(BaseModel):
     status: str
     source: str
     minute: Optional[int] = None
+    image_url: Optional[str] = None
     created_at: datetime

@@ -9,14 +9,18 @@ export function useMatchData(selectedMatchId) {
   const [liveStats, setLiveStats] = useState([]);
   const [lineups, setLineups] = useState([]);
   const [matchStats, setMatchStats] = useState([]);
+  const [players, setPlayers] = useState([]);
   const [playerStats, setPlayerStats] = useState([]);
   const [loading, setLoading] = useState(false);
   const intervalRef = useRef(null);
+  // Ref hält aktuelle Match-Daten synchron für loadPlayers
+  const matchRef = useRef(null);
 
   const loadMatch = useCallback(async () => {
     if (!selectedMatchId) return;
     try {
       const res = await api.fetchMatch(selectedMatchId);
+      matchRef.current = res.data;
       setMatch(res.data);
     } catch (err) {
       console.error("loadMatch error:", err);
@@ -94,10 +98,24 @@ export function useMatchData(selectedMatchId) {
     }
   }, [selectedMatchId]);
 
+  // loadPlayers liest Team-IDs aus matchRef (setzt loadMatch voraus)
+  const loadPlayers = useCallback(async () => {
+    const m = matchRef.current;
+    const teamIds = [m?.teamHomeId, m?.teamAwayId].filter(Boolean);
+    if (!teamIds.length) return;
+    try {
+      const results = await Promise.all(teamIds.map((id) => api.fetchPlayers(id)));
+      const allPlayers = results.flatMap((r) => r.data?.items ?? []);
+      setPlayers(allPlayers);
+    } catch (err) {
+      console.error("loadPlayers error:", err);
+    }
+  }, []);
+
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (!selectedMatchId) return;
-    // Reset stale data from previous match immediately
+    matchRef.current = null;
     setMatch(null);
     setEvents([]);
     setTickerTexts([]);
@@ -105,11 +123,15 @@ export function useMatchData(selectedMatchId) {
     setLiveStats([]);
     setLineups([]);
     setMatchStats([]);
+    setPlayers([]);
     setPlayerStats([]);
     setLoading(true);
 
+    // loadMatch zuerst, dann loadPlayers (braucht teamIds aus Match)
+    const matchAndPlayers = loadMatch().then(() => loadPlayers());
+
     Promise.all([
-      loadMatch(),
+      matchAndPlayers,
       loadEvents(),
       loadTickerTexts(),
       loadPrematch(),
@@ -122,13 +144,13 @@ export function useMatchData(selectedMatchId) {
     const t1 = setTimeout(() => {
       loadLineups();
       loadMatchStats();
-      loadPlayerStats();
+      loadMatch().then(() => loadPlayers());
       loadPrematch();
     }, 5000);
     const t2 = setTimeout(() => {
       loadLineups();
       loadMatchStats();
-      loadPlayerStats();
+      loadMatch().then(() => loadPlayers());
       loadPrematch();
     }, 15000);
 
@@ -153,8 +175,9 @@ export function useMatchData(selectedMatchId) {
     liveStats,
     lineups,
     matchStats,
+    players,
     playerStats,
     loading,
-    reload: { loadEvents, loadTickerTexts, loadPrematch, loadLiveStats, loadLineups, loadMatchStats },
+    reload: { loadEvents, loadTickerTexts, loadPrematch, loadLiveStats, loadLineups, loadMatchStats, loadPlayers, loadPlayerStats },
   };
 }

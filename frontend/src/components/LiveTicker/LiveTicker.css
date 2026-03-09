@@ -589,6 +589,15 @@
   line-height: 1.5;
   word-break: break-word;
 }
+.lt-entry__image {
+  width: 400px;
+  height: 400px;
+  object-fit: cover;
+  border-radius: var(--lt-radius);
+  margin-bottom: 6px;
+  border: 1px solid var(--lt-border);
+  display: block;
+}
 .lt-entry__meta {
   font-family: var(--lt-font-mono);
   font-size: 0.65rem;
@@ -1156,6 +1165,54 @@
 .lt-lineup-num {
   color: var(--lt-text-faint);
   min-width: 18px;
+}
+
+/* ── Formation-Anzeige ───────────────────────────────── */
+.lt-formation-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  margin-top: 0.3rem;
+}
+.lt-formation-row {
+  display: flex;
+  justify-content: space-around;
+  gap: 0.2rem;
+}
+.lt-formation-player {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 0;
+  flex: 1;
+}
+.lt-formation-player__num {
+  font-family: var(--lt-font-mono);
+  font-size: 0.6rem;
+  color: var(--lt-text-faint);
+  line-height: 1;
+}
+.lt-formation-player__name {
+  font-size: 0.62rem;
+  font-weight: 500;
+  color: var(--lt-text-primary);
+  text-align: center;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 48px;
+  line-height: 1.2;
+}
+
+/* Kompakte Spieler-Karte für "Beste Spieler" */
+.lt-player--sm {
+  padding: 0.2rem 0;
+}
+.lt-player--sm .lt-player__name {
+  font-size: 0.72rem;
+}
+.lt-player--sm .lt-player__meta {
+  font-size: 0.6rem;
 }
 
 /* Top Players */

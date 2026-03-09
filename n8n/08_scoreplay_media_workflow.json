@@ -1,0 +1,185 @@
+{
+  "name": "ScorePlay Media Import",
+  "nodes": [
+    {
+      "id": "node-webhook-trigger",
+      "name": "Webhook Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [240, 300],
+      "parameters": {
+        "path": "scoreplay-media",
+        "httpMethod": "POST",
+        "responseMode": "onReceived",
+        "responseData": "allEntries",
+        "options": {}
+      },
+      "webhookId": "scoreplay-media-trigger"
+    },
+    {
+      "id": "node-scoreplay-api",
+      "name": "ScorePlay API – Bilder suchen",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [480, 300],
+      "parameters": {
+        "method": "POST",
+        "url": "https://media.scoreplay.io/v1/media/search",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpQueryAuth",
+        "credentials": {
+          "httpQueryAuth": {
+            "id": "scoreplay-query-auth",
+            "name": "ScorePlay API Key"
+          }
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"media_type\": \"photo\",\n  \"order_by\": \"created_at\",\n  \"order_type\": \"desc\",\n  \"per_page\": 10{{ $json.player_id ? ',\\n  \"players\": [' + $json.player_id + ']' : '' }}\n}",
+        "options": {}
+      }
+    },
+    {
+      "id": "node-extract-fields",
+      "name": "Felder extrahieren",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [720, 300],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "// ScorePlay API Response parsen\n// Erwartet: { data: [ { id, name, media_files: [...], event_id, ... } ] }\nconst items = $input.all();\nconst raw = items[0].json;\n\n// Unterstütze beide Response-Formate: direkt als Array oder als { data: [...] }\nconst mediaList = Array.isArray(raw) ? raw : (raw.data || []);\n\nconst result = [];\n\nfor (const media of mediaList) {\n  // URL-Felder aus media_files / details extrahieren\n  const files = media.media_files || media.details || [];\n\n  let thumbnail_url = null;\n  let compressed_url = null;\n  let original_url = null;\n\n  for (const file of files) {\n    const url = file.url || file.src || null;\n    if (!url) continue;\n\n    if (file.is_thumbnail === true) {\n      thumbnail_url = url;\n    } else if (file.is_compressed === true) {\n      compressed_url = url;\n    } else if (\n      file.detail === 'photographer_quality' ||\n      file.quality === 'photographer_quality'\n    ) {\n      original_url = url;\n    }\n  }\n\n  // Fallback: erstes verfügbares URL als thumbnail\n  if (!thumbnail_url && files.length > 0) {\n    thumbnail_url = files[0].url || files[0].src || null;\n  }\n\n  result.push({\n    json: {\n      media_id: media.id,\n      name: media.name || media.filename || null,\n      thumbnail_url,\n      compressed_url,\n      original_url,\n      event_id: media.event_id || media.eventId || null,\n    }\n  });\n}\n\nreturn result;\n"
+      }
+    },
+    {
+      "id": "node-postgres-upsert",
+      "name": "PostgreSQL – media_queue speichern",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [960, 300],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO media_queue (media_id, name, thumbnail_url, compressed_url, original_url, event_id, status)\nVALUES (\n  {{ $json.media_id }},\n  {{ $json.name ? '\\'' + $json.name.replace(/'/g, \"''\") + '\\'' : 'NULL' }},\n  {{ $json.thumbnail_url ? '\\'' + $json.thumbnail_url + '\\'' : 'NULL' }},\n  {{ $json.compressed_url ? '\\'' + $json.compressed_url + '\\'' : 'NULL' }},\n  {{ $json.original_url ? '\\'' + $json.original_url + '\\'' : 'NULL' }},\n  {{ $json.event_id || 'NULL' }},\n  'pending'\n)\nON CONFLICT (media_id) DO NOTHING\nRETURNING id, media_id, status;",
+        "options": {},
+        "credentials": {
+          "postgres": {
+            "id": "postgres-liveticker",
+            "name": "PostgreSQL Liveticker"
+          }
+        }
+      }
+    },
+    {
+      "id": "node-aggregate",
+      "name": "Items aggregieren",
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [1200, 300],
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "destinationFieldName": "items",
+        "options": {}
+      }
+    },
+    {
+      "id": "node-fastapi-push",
+      "name": "FastAPI – /media/incoming",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1440, 300],
+      "parameters": {
+        "method": "POST",
+        "url": "http://localhost:8000/api/v1/media/incoming",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json.items) }}",
+        "options": {}
+      }
+    }
+  ],
+  "connections": {
+    "Webhook Trigger": {
+      "main": [
+        [
+          {
+            "node": "ScorePlay API – Bilder suchen",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ScorePlay API – Bilder suchen": {
+      "main": [
+        [
+          {
+            "node": "Felder extrahieren",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Felder extrahieren": {
+      "main": [
+        [
+          {
+            "node": "PostgreSQL – media_queue speichern",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "PostgreSQL – media_queue speichern": {
+      "main": [
+        [
+          {
+            "node": "Items aggregieren",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Items aggregieren": {
+      "main": [
+        [
+          {
+            "node": "FastAPI – /media/incoming",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "saveManualExecutions": true,
+    "callerPolicy": "workflowsFromSameOwner"
+  },
+  "meta": {
+    "templateCredsSetupCompleted": false
+  },
+  "notes": "## ScorePlay Media Import Workflow\n\n### Setup\n1. **ScorePlay Credential** anlegen:\n   - Typ: Generic Credential → HTTP Query Authentication\n   - Name: ScorePlay API Key\n   - Parameter Name: `api_key`\n   - Value: <dein ScorePlay API Key>\n\n2. **PostgreSQL Credential** anlegen:\n   - Typ: PostgreSQL\n   - Name: PostgreSQL Liveticker\n   - Host: localhost, Port: 5432\n   - DB: liveticker (dein DB-Name)\n   - User/Password: aus .env\n\n3. **Webhook URL** im Frontend setzen:\n   - Production: http://localhost:5678/webhook/scoreplay-media\n   - Test: http://localhost:5678/webhook-test/scoreplay-media\n\n### Webhook Body (vom Frontend)\n```json\n{\n  \"player_id\": 12345,\n  \"event_type\": \"goal\"\n}\n```\n`player_id` ist optional – ohne Filter werden die neuesten 10 Bilder geladen.",
+  "id": "scoreplay-media-import-v1"
+}

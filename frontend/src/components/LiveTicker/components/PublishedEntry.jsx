@@ -29,11 +29,19 @@ export const PublishedEntry = memo(function PublishedEntry({
   if (isManual) {
     return (
       <div className="lt-entry lt-entry--manual">
-        <span className="lt-entry__minute">{tickerText?.minute}'</span>
-        <span className="lt-entry__icon">{tickerText?.icon ?? "📝"}</span>
+        <span className="lt-entry__minute">{tickerText?.minute ?? "–"}'</span>
+        <span className="lt-entry__icon">{tickerText?.image_url ? "📸" : (tickerText?.icon ?? "📝")}</span>
         <div className="lt-entry__body">
+          {tickerText?.image_url && (
+            <img
+              src={tickerText.image_url}
+              alt="Ticker-Bild"
+              className="lt-entry__image"
+              loading="lazy"
+            />
+          )}
           <div className="lt-entry__text">{tickerText?.text}</div>
-          <div className="lt-entry__meta">manuell</div>
+          <div className="lt-entry__meta">{tickerText?.image_url ? "foto · manuell" : "manuell"}</div>
         </div>
       </div>
     );

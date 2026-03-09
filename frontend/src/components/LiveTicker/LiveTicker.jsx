@@ -43,6 +43,55 @@ export default function LiveTicker() {
   const [modalOpen, setModalOpen] = useState(false);
   const [showHints, setShowHints] = useState(false);
 
+  // ── Resizable Panels ──────────────────────────────────────
+  const [rightW, setRightW] = useState(380);
+  const [centerW, setCenterW] = useState(320);
+  const draggingPanel = useRef(null); // "right" | "center" | null
+  const dragStartX = useRef(0);
+  const dragStartW = useRef(0);
+
+  const handleResizeMouseDown = useCallback((e) => {
+    draggingPanel.current = "right";
+    dragStartX.current = e.clientX;
+    dragStartW.current = rightW;
+    document.body.style.cursor = "col-resize";
+    document.body.style.userSelect = "none";
+  }, [rightW]);
+
+  const handleCenterResizeMouseDown = useCallback((e) => {
+    draggingPanel.current = "center";
+    dragStartX.current = e.clientX;
+    dragStartW.current = centerW;
+    document.body.style.cursor = "col-resize";
+    document.body.style.userSelect = "none";
+  }, [centerW]);
+
+  useEffect(() => {
+    const onMove = (e) => {
+      if (!draggingPanel.current) return;
+      const delta = e.clientX - dragStartX.current;
+      if (draggingPanel.current === "right") {
+        const next = Math.min(700, Math.max(280, dragStartW.current - delta));
+        setRightW(next);
+      } else {
+        const next = Math.min(600, Math.max(240, dragStartW.current + delta));
+        setCenterW(next);
+      }
+    };
+    const onUp = () => {
+      if (!draggingPanel.current) return;
+      draggingPanel.current = null;
+      document.body.style.cursor = "";
+      document.body.style.userSelect = "";
+    };
+    window.addEventListener("mousemove", onMove);
+    window.addEventListener("mouseup", onUp);
+    return () => {
+      window.removeEventListener("mousemove", onMove);
+      window.removeEventListener("mouseup", onUp);
+    };
+  }, []);
+
   // ── Navigation State (unverändert) ────────────────────────
   const [activeTab, setActiveTab] = useState("teams");
 
@@ -72,6 +121,7 @@ export default function LiveTicker() {
     prematch,
     lineups,
     matchStats,
+    players,
     playerStats,
     reload,
   } = useMatchData(selMatchId);
@@ -155,6 +205,17 @@ export default function LiveTicker() {
       .then(() => reload.loadPrematch())
       .catch((err) => console.error("importPrematch error:", err));
   }, [selMatchId, match?.externalId]);
+
+  // ── Player-Statistics Auto-Import ────────────────────────
+  const playerStatsImportedRef = useRef(null);
+  useEffect(() => {
+    if (!selMatchId) return;
+    if (playerStatsImportedRef.current === selMatchId) return;
+    playerStatsImportedRef.current = selMatchId;
+    api.importPlayerStatistics(selMatchId)
+      .then(() => reload.loadPlayerStats())
+      .catch((err) => console.error("importPlayerStatistics error:", err));
+  }, [selMatchId]);
 
   // ── Init ──────────────────────────────────────────────────
   useEffect(() => {
@@ -479,35 +540,73 @@ export default function LiveTicker() {
         {match && <ModeSelector mode={mode} onModeChange={setMode} />}
 
         {/* Layout: [Events] | Ticker | Stats — Auto-Modus: ohne Events-Spalte */}
-        <main className={`lt-columns${mode === "auto" ? " lt-columns--auto" : ""}`}>
+        <main
+          className={`lt-columns${mode === "auto" ? " lt-columns--auto" : ""}`}
+          style={{ gridTemplateColumns: mode === "auto" ? `1fr ${rightW}px` : `${centerW}px 1fr ${rightW}px` }}
+        >
           {mode !== "auto" && (
-            <CenterPanel
-              match={match}
-              events={events}
-              tickerTexts={tickerTexts}
-              generatingId={generatingId}
-              onGenerate={handleGenerate}
-              onManualPublish={handleManualPublish}
-              onDraftActive={(id, text) => {
-                setActiveDraftId(id);
-                setActiveDraftText(text);
-              }}
-              reload={reload}
-              instance={instance}
-            />
+            <div style={{ position: "relative" }}>
+              <div
+                onMouseDown={handleCenterResizeMouseDown}
+                title="Breite ziehen"
+                style={{
+                  position: "absolute",
+                  right: 0,
+                  top: 0,
+                  bottom: 0,
+                  width: 6,
+                  cursor: "col-resize",
+                  zIndex: 20,
+                  background: "transparent",
+                }}
+              />
+              <CenterPanel
+                match={match}
+                events={events}
+                tickerTexts={tickerTexts}
+                generatingId={generatingId}
+                onGenerate={handleGenerate}
+                onManualPublish={handleManualPublish}
+                onDraftActive={(id, text) => {
+                  setActiveDraftId(id);
+                  setActiveDraftText(text);
+                }}
+                reload={reload}
+                instance={instance}
+              />
+            </div>
           )}
           <LeftPanel
             events={events}
             tickerTexts={tickerTexts}
             match={match}
           />
-          <RightPanel
-            match={match}
-            matchStats={matchStats}
-            playerStats={playerStats}
-            lineups={lineups}
-            prematch={prematch}
-          />
+          {/* RightPanel + Resize Handle (ein Grid-Item) */}
+          <div style={{ position: "relative" }}>
+            <div
+              onMouseDown={handleResizeMouseDown}
+              title="Breite ziehen"
+              style={{
+                position: "absolute",
+                left: 0,
+                top: 0,
+                bottom: 0,
+                width: 6,
+                cursor: "col-resize",
+                zIndex: 20,
+                background: "transparent",
+              }}
+              className="hover:bg-[var(--lt-accent)] transition-colors duration-150"
+            />
+            <RightPanel
+              match={match}
+              matchStats={matchStats}
+              players={players}
+              playerStats={playerStats}
+              lineups={lineups}
+              prematch={prematch}
+            />
+          </div>
         </main>
 
         {/* Match Selector Modal */}

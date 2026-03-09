@@ -6,6 +6,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
+from app.models.player_statistic import PlayerStatistic
 from app.repositories.match_repository import MatchRepository
 from app.schemas.match import (
     LineupBulkUpdate,
@@ -17,6 +18,7 @@ from app.schemas.match import (
     PaginatedMatchResponse,
     StatisticsBulkUpdate,
 )
+from app.schemas.player import PlayerStatisticResponse
 
 logger = logging.getLogger(__name__)
 
@@ -255,3 +257,31 @@ def update_statistics(
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(e)
         )
+
+
+# ------------------------------------------------------------------ #
+# Player Statistics sub-resource                                       #
+# ------------------------------------------------------------------ #
+
+
+@router.get(
+    "/{matchId}/player-statistics",
+    response_model=list[PlayerStatisticResponse],
+    response_model_by_alias=True,
+    summary="Get player statistics for a match",
+)
+def get_player_statistics(
+    matchId: int, db: Session = Depends(get_db)
+) -> list[PlayerStatisticResponse]:
+    repo = MatchRepository(db)
+    if not repo.exists(matchId):
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Match not found"
+        )
+    rows = (
+        db.query(PlayerStatistic)
+        .filter(PlayerStatistic.match_id == matchId)
+        .order_by(PlayerStatistic.rating.desc().nulls_last(), PlayerStatistic.minutes.desc())
+        .all()
+    )
+    return [PlayerStatisticResponse.model_validate(r) for r in rows]

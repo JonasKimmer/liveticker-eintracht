@@ -56,7 +56,16 @@ export const fetchLineups = (matchId) => api.get(`/matches/${matchId}/lineup`);
 export const fetchMatchStats = (matchId) =>
   api.get(`/matches/${matchId}/statistics`);
 export const fetchPlayerStats = (matchId) =>
-  api.get(`/matches/${matchId}/statistics`);
+  api.get(`/matches/${matchId}/player-statistics`);
+
+// ── Players ────────────────────────────────────────────
+export const fetchPlayers = (teamId) =>
+  api.get(`/players?teamId=${teamId}&pageSize=100`);
+export const createPlayer = (data) => api.post("/players", data);
+export const updatePlayer = (playerId, data) => api.put(`/players/${playerId}`, data);
+export const deletePlayer = (playerId) => api.delete(`/players/${playerId}`);
+export const updatePlayerStats = (playerId, statistics) =>
+  api.patch(`/players/${playerId}/statistics`, { statistics });
 
 // ── Favorites ──────────────────────────────────────────
 export const fetchFavorites = () => api.get("/favorites/?user_id=1");
@@ -88,3 +97,6 @@ export const importMatchStats = (matchId) =>
 
 export const importPrematch = (fixtureId) =>
   n8n.post("/import-prematch", { fixture_id: fixtureId });
+
+export const importPlayerStatistics = (matchId) =>
+  n8n.post("/player-statistics", { match_id: matchId });
