@@ -1,17 +1,7 @@
 // ============================================================
 // LiveTicker.jsx — Hauptkomponente
-// Neu: 2-Zustands-UI
-//   Zustand 1 (selMatchId === null) → StartScreen
-//   Zustand 2 (selMatchId gesetzt)  → 3-Spalten + Breadcrumb + Modal
-// Alle Nav-Hooks + api-Calls bleiben identisch.
 // ============================================================
-import {
-  useState,
-  useEffect,
-  useCallback,
-  useRef,
-  useMemo,
-} from "react";
+import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import "./LiveTicker.css";
 
 import * as api from "../../api";
@@ -29,8 +19,6 @@ import { KeyboardHints } from "./components/KeyboardHints";
 import { LeftPanel } from "./panels/LeftPanel";
 import { CenterPanel } from "./panels/CenterPanel";
 import { RightPanel } from "./panels/RightPanel";
-
-// Neue Komponenten
 import { StartScreen } from "./components/StartScreen";
 import { MatchSelectorModal } from "./components/MatchSelectorModal";
 import { Breadcrumb } from "./components/Breadcrumb";
@@ -39,43 +27,47 @@ export default function LiveTicker() {
   // ── App Loading ───────────────────────────────────────────
   const [appLoading, setAppLoading] = useState(true);
 
-  // ── UI State (neu) ────────────────────────────────────────
+  // ── UI State ──────────────────────────────────────────────
   const [modalOpen, setModalOpen] = useState(false);
   const [showHints, setShowHints] = useState(false);
 
   // ── Resizable Panels ──────────────────────────────────────
   const [rightW, setRightW] = useState(380);
   const [centerW, setCenterW] = useState(320);
-  const draggingPanel = useRef(null); // "right" | "center" | null
+  const draggingPanel = useRef(null);
   const dragStartX = useRef(0);
   const dragStartW = useRef(0);
 
-  const handleResizeMouseDown = useCallback((e) => {
-    draggingPanel.current = "right";
-    dragStartX.current = e.clientX;
-    dragStartW.current = rightW;
-    document.body.style.cursor = "col-resize";
-    document.body.style.userSelect = "none";
-  }, [rightW]);
+  const handleResizeMouseDown = useCallback(
+    (e) => {
+      draggingPanel.current = "right";
+      dragStartX.current = e.clientX;
+      dragStartW.current = rightW;
+      document.body.style.cursor = "col-resize";
+      document.body.style.userSelect = "none";
+    },
+    [rightW],
+  );
 
-  const handleCenterResizeMouseDown = useCallback((e) => {
-    draggingPanel.current = "center";
-    dragStartX.current = e.clientX;
-    dragStartW.current = centerW;
-    document.body.style.cursor = "col-resize";
-    document.body.style.userSelect = "none";
-  }, [centerW]);
+  const handleCenterResizeMouseDown = useCallback(
+    (e) => {
+      draggingPanel.current = "center";
+      dragStartX.current = e.clientX;
+      dragStartW.current = centerW;
+      document.body.style.cursor = "col-resize";
+      document.body.style.userSelect = "none";
+    },
+    [centerW],
+  );
 
   useEffect(() => {
     const onMove = (e) => {
       if (!draggingPanel.current) return;
       const delta = e.clientX - dragStartX.current;
       if (draggingPanel.current === "right") {
-        const next = Math.min(700, Math.max(280, dragStartW.current - delta));
-        setRightW(next);
+        setRightW(Math.min(700, Math.max(280, dragStartW.current - delta)));
       } else {
-        const next = Math.min(600, Math.max(240, dragStartW.current + delta));
-        setCenterW(next);
+        setCenterW(Math.min(600, Math.max(240, dragStartW.current + delta)));
       }
     };
     const onUp = () => {
@@ -92,9 +84,8 @@ export default function LiveTicker() {
     };
   }, []);
 
-  // ── Navigation State (unverändert) ────────────────────────
+  // ── Navigation State ──────────────────────────────────────
   const [activeTab, setActiveTab] = useState("teams");
-
   const [countries, setCountries] = useState([]);
   const [selCountry, setSelCountry] = useState(null);
   const [teams, setTeams] = useState([]);
@@ -113,7 +104,7 @@ export default function LiveTicker() {
   const [selMatchId, setSelMatchId] = useState(null);
   const [favorites, setFavorites] = useState([]);
 
-  // ── Match-Daten (unverändert) ─────────────────────────────
+  // ── Match-Daten ───────────────────────────────────────────
   const {
     match,
     events,
@@ -126,7 +117,7 @@ export default function LiveTicker() {
     reload,
   } = useMatchData(selMatchId);
 
-  // ── Aktiver Draft (unverändert) ───────────────────────────
+  // ── Aktiver Draft ─────────────────────────────────────────
   const [activeDraftId, setActiveDraftId] = useState(null);
   const [activeDraftText, setActiveDraftText] = useState("");
 
@@ -162,57 +153,61 @@ export default function LiveTicker() {
     [mode, setMode, acceptDraft, rejectDraft],
   );
 
-  // ── Instance (Vereinsstil) ────────────────────────────────
+  // ── Instance ──────────────────────────────────────────────
   const [instance, setInstance] = useState("ef_whitelabel");
 
   // ── Import-Loading States ─────────────────────────────────
   const [importingTeams, setImportingTeams] = useState(false);
   const [importingCompetitions, setImportingCompetitions] = useState(false);
 
-  // ── Events Auto-Import ───────────────────────────────────
+  // ── Auto-Imports beim Match-Select ────────────────────────
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (!selMatchId || !match?.externalId || events.length > 0) return;
-    api.importEvents(match.externalId)
+    api
+      .importEvents(match.externalId)
       .then(() => reload.loadEvents())
       .catch((err) => console.error("importEvents error:", err));
   }, [selMatchId, match?.externalId, events.length]);
 
-  // ── Lineup Auto-Import ────────────────────────────────────
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (!selMatchId || lineups.length > 0) return;
-    api.importLineups(selMatchId)
+    api
+      .importLineups(selMatchId)
       .then(() => reload.loadLineups())
       .catch((err) => console.error("importLineups error:", err));
   }, [selMatchId, lineups.length]);
 
-  // ── Match-Stats Auto-Import ───────────────────────────────
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (!selMatchId || matchStats.length > 0) return;
-    api.importMatchStats(selMatchId)
+    api
+      .importMatchStats(selMatchId)
       .then(() => reload.loadMatchStats())
       .catch((err) => console.error("importMatchStats error:", err));
   }, [selMatchId, matchStats.length]);
 
-  // ── Pre-Match Auto-Import ─────────────────────────────────
-  // Nutzt useRef, da fetchPrematch denselben Endpunkt wie fetchTickerTexts
-  // aufruft – prematch.length wäre nie 0 wenn Ticker-Texte vorhanden sind.
   const prematchImportedRef = useRef(null);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (!selMatchId || !match?.externalId) return;
     if (prematchImportedRef.current === selMatchId) return;
     prematchImportedRef.current = selMatchId;
-    api.importPrematch(match.externalId)
+    api
+      .importPrematch(match.externalId)
       .then(() => reload.loadPrematch())
       .catch((err) => console.error("importPrematch error:", err));
   }, [selMatchId, match?.externalId]);
 
-  // ── Player-Statistics Auto-Import ────────────────────────
   const playerStatsImportedRef = useRef(null);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (!selMatchId) return;
     if (playerStatsImportedRef.current === selMatchId) return;
     playerStatsImportedRef.current = selMatchId;
-    api.importPlayerStatistics(selMatchId)
+    api
+      .importPlayerStatistics(selMatchId)
       .then(() => reload.loadPlayerStats())
       .catch((err) => console.error("importPlayerStatistics error:", err));
   }, [selMatchId]);
@@ -224,7 +219,6 @@ export default function LiveTicker() {
       api.fetchCountries().then(async (r) => {
         if (controller.signal.aborted) return;
         if (r.data.length === 0) {
-          // Einmalig: alle Länder von Football API importieren
           try {
             await api.importCountries();
             const r2 = await api.fetchCountries();
@@ -258,10 +252,12 @@ export default function LiveTicker() {
       .then(async (r) => {
         if (controller.signal.aborted) return;
         if (r.data.length === 0) {
-          // Teams nicht in DB → per n8n von Football API importieren
           setImportingTeams(true);
           try {
-            await api.importTeamsByCountry(selCountry, new Date().getFullYear());
+            await api.importTeamsByCountry(
+              selCountry,
+              new Date().getFullYear(),
+            );
             const r2 = await api.fetchTeamsByCountry(selCountry);
             if (!controller.signal.aborted) {
               setTeams(r2.data);
@@ -283,7 +279,8 @@ export default function LiveTicker() {
     return () => controller.abort();
   }, [selCountry]);
 
-  // ── Team → Competitions ───────────────────────────────────
+  // ── Team → Competitions + Matches importieren ─────────────
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (!selTeamId) return;
     const controller = new AbortController();
@@ -292,31 +289,43 @@ export default function LiveTicker() {
     setSelCompetitionId(null);
     setSelRound(null);
     setSelMatchId(null);
+
+    const team = teams.find((t) => t.id === selTeamId);
+    const apiTeamId = team?.externalId ?? selTeamId;
+
     api
       .fetchTeamCompetitions(selTeamId)
       .then(async (r) => {
         if (controller.signal.aborted) return;
-        if (r.data.length === 0) {
-          // Competitions/Matches nicht in DB → per n8n importieren
-          // externalId = Football API Team-ID (z.B. 169), nicht interne DB-ID
-          const team = teams.find((t) => t.id === selTeamId);
-          const apiTeamId = team?.externalId ?? selTeamId;
-          setImportingCompetitions(true);
-          try {
-            await api.importCompetitionsForTeam(apiTeamId, new Date().getFullYear());
-            const r2 = await api.fetchTeamCompetitions(selTeamId);
-            if (!controller.signal.aborted) {
-              setCompetitions(r2.data);
-              if (r2.data.length > 0) setSelCompetitionId(r2.data[0].id);
-            }
-          } catch (err) {
-            console.error("importCompetitionsForTeam error:", err);
-          } finally {
-            if (!controller.signal.aborted) setImportingCompetitions(false);
+        setImportingCompetitions(true);
+        try {
+          // 1. Competitions immer importieren (holt ggf. neue dazu)
+          await api.importCompetitionsForTeam(apiTeamId, 2025);
+          const r2 = await api.fetchTeamCompetitions(selTeamId);
+          let competitions = r2.data.length > 0 ? r2.data : r.data;
+          if (!controller.signal.aborted) {
+            setCompetitions(competitions);
+            if (competitions.length > 0) setSelCompetitionId(competitions[0].id);
+            // 2. Matches immer importieren
+            await Promise.all(
+              competitions
+                .filter((c) => c.externalId)
+                .map((c) =>
+                  api
+                    .importMatchesForTeam(apiTeamId, c.externalId, 2025)
+                    .catch((err) =>
+                      console.error(
+                        `importMatchesForTeam error (league ${c.externalId}):`,
+                        err,
+                      ),
+                    ),
+                ),
+            );
           }
-        } else {
-          setCompetitions(r.data);
-          if (r.data.length > 0) setSelCompetitionId(r.data[0].id);
+        } catch (err) {
+          console.error("importCompetitionsForTeam error:", err);
+        } finally {
+          if (!controller.signal.aborted) setImportingCompetitions(false);
         }
       })
       .catch((err) => {
@@ -325,7 +334,7 @@ export default function LiveTicker() {
     return () => controller.abort();
   }, [selTeamId]);
 
-  // ── Competition → Reset (unverändert) ─────────────────────
+  // ── Competition → Reset ───────────────────────────────────
   useEffect(() => {
     if (!selCompetitionId) return;
     setMatches([]);
@@ -333,12 +342,12 @@ export default function LiveTicker() {
     setSelMatchId(null);
   }, [selCompetitionId]);
 
-  // ── Matchdays → letzten vorauswählen (unverändert) ────────
+  // ── Matchdays → letzten vorauswählen ─────────────────────
   useEffect(() => {
     if (matchdays.length > 0) setSelRound(matchdays[matchdays.length - 1]);
   }, [matchdays]);
 
-  // ── Spieltag → Matches (unverändert) ─────────────────────
+  // ── Spieltag → Matches ────────────────────────────────────
   useEffect(() => {
     if (!selTeamId || !selCompetitionId || !selRound) return;
     const controller = new AbortController();
@@ -349,7 +358,6 @@ export default function LiveTicker() {
       .then((r) => {
         if (controller.signal.aborted) return;
         setMatches(r.data);
-        // Kein Auto-Select mehr: User soll bewusst wählen (StartScreen / Modal)
       })
       .catch((err) => {
         if (!controller.signal.aborted) console.error(err);
@@ -357,7 +365,7 @@ export default function LiveTicker() {
     return () => controller.abort();
   }, [selTeamId, selCompetitionId, selRound]);
 
-  // ── Live-Tab Polling (unverändert) ────────────────────────
+  // ── Live-Tab Polling ──────────────────────────────────────
   const liveIntervalRef = useRef(null);
 
   const handleTabMatches = useCallback(async (tab) => {
@@ -392,7 +400,7 @@ export default function LiveTicker() {
     [handleTabMatches],
   );
 
-  // ── Favoriten (unverändert) ───────────────────────────────
+  // ── Favoriten ─────────────────────────────────────────────
   const toggleFav = useCallback(
     async (teamId) => {
       const isFav = favorites.some((f) => f.team_id === teamId);
@@ -424,7 +432,7 @@ export default function LiveTicker() {
     [reload, instance],
   );
 
-  // ── Manueller Eintrag (unverändert) ───────────────────────
+  // ── Manueller Eintrag ─────────────────────────────────────
   const handleManualPublish = useCallback(
     async (text, icon = "📝", minute) => {
       try {
@@ -446,7 +454,7 @@ export default function LiveTicker() {
     return () => window.removeEventListener("keydown", handler);
   }, []);
 
-  // ── Shared Nav Props (für StartScreen + Modal) ────────────
+  // ── Shared Nav Props ──────────────────────────────────────
   const navProps = {
     countries,
     selCountry,
@@ -477,7 +485,6 @@ export default function LiveTicker() {
   // ── Render ────────────────────────────────────────────────
   if (appLoading) return <LoadingScreen />;
 
-  // Zustand 1: Kein Match ausgewählt
   if (!selMatchId) {
     return (
       <div className="lt">
@@ -486,11 +493,9 @@ export default function LiveTicker() {
     );
   }
 
-  // Zustand 2: Match aktiv
   return (
     <TickerModeContext.Provider value={tickerModeCtx}>
       <div className="lt">
-        {/* Header */}
         <header className="lt-header">
           <div
             className="lt-header__logo"
@@ -499,13 +504,11 @@ export default function LiveTicker() {
           >
             {config.clubName}
           </div>
-
           <Breadcrumb
             match={match}
             competition={curCompetition}
             onOpen={() => setModalOpen(true)}
           />
-
           <div className="lt-header__status">
             <div
               className={`lt-header__dot${isMatchLive ? " lt-header__dot--live" : ""}`}
@@ -513,8 +516,16 @@ export default function LiveTicker() {
             <span>API: {isMatchLive ? "Live" : "Bereit"}</span>
             <button
               className={`lt-header__hint${instance === "ef_whitelabel" ? " lt-header__hint--active" : ""}`}
-              onClick={() => setInstance(i => i === "ef_whitelabel" ? "generic" : "ef_whitelabel")}
-              title={instance === "ef_whitelabel" ? "EF-Stil aktiv – klicken für neutral" : "Neutraler Stil aktiv – klicken für EF-Stil"}
+              onClick={() =>
+                setInstance((i) =>
+                  i === "ef_whitelabel" ? "generic" : "ef_whitelabel",
+                )
+              }
+              title={
+                instance === "ef_whitelabel"
+                  ? "EF-Stil aktiv – klicken für neutral"
+                  : "Neutraler Stil aktiv – klicken für EF-Stil"
+              }
             >
               {instance === "ef_whitelabel" ? "EF" : "⬜"}
             </button>
@@ -528,7 +539,6 @@ export default function LiveTicker() {
           </div>
         </header>
 
-        {/* Match Header + Mode Selector */}
         {match && (
           <MatchHeader
             match={match}
@@ -539,10 +549,14 @@ export default function LiveTicker() {
         )}
         {match && <ModeSelector mode={mode} onModeChange={setMode} />}
 
-        {/* Layout: [Events] | Ticker | Stats — Auto-Modus: ohne Events-Spalte */}
         <main
           className={`lt-columns${mode === "auto" ? " lt-columns--auto" : ""}`}
-          style={{ gridTemplateColumns: mode === "auto" ? `1fr ${rightW}px` : `${centerW}px 1fr ${rightW}px` }}
+          style={{
+            gridTemplateColumns:
+              mode === "auto"
+                ? `1fr ${rightW}px`
+                : `${centerW}px 1fr ${rightW}px`,
+          }}
         >
           {mode !== "auto" && (
             <div style={{ position: "relative" }}>
@@ -576,12 +590,7 @@ export default function LiveTicker() {
               />
             </div>
           )}
-          <LeftPanel
-            events={events}
-            tickerTexts={tickerTexts}
-            match={match}
-          />
-          {/* RightPanel + Resize Handle (ein Grid-Item) */}
+          <LeftPanel events={events} tickerTexts={tickerTexts} match={match} />
           <div style={{ position: "relative" }}>
             <div
               onMouseDown={handleResizeMouseDown}
@@ -609,19 +618,14 @@ export default function LiveTicker() {
           </div>
         </main>
 
-        {/* Match Selector Modal */}
         {modalOpen && (
           <MatchSelectorModal
             {...navProps}
             onClose={() => setModalOpen(false)}
             activeTab={activeTab}
-            onTabChange={(tab) => {
-              handleTabChange(tab); // lädt Matches für heute/live/favoriten
-            }}
+            onTabChange={handleTabChange}
           />
         )}
-
-        {/* Keyboard Hints */}
         {showHints && (
           <KeyboardHints mode={mode} onClose={() => setShowHints(false)} />
         )}

@@ -18,7 +18,9 @@ export const fetchTeamCompetitions = (teamId) =>
 export const fetchTeamMatchdays = (teamId, competitionId) =>
   api.get(`/teams/${teamId}/competitions/${competitionId}/matchdays`);
 export const fetchTeamMatchesByMatchday = (teamId, competitionId, round) =>
-  api.get(`/teams/${teamId}/competitions/${competitionId}/matchdays/${round}/matches`);
+  api.get(
+    `/teams/${teamId}/competitions/${competitionId}/matchdays/${round}/matches`,
+  );
 
 // ── Matches ────────────────────────────────────────────
 export const fetchMatch = (id) => api.get(`/matches/${id}`);
@@ -31,8 +33,7 @@ export const fetchEvents = (matchId) => api.get(`/matches/${matchId}/events`);
 // ── Ticker ─────────────────────────────────────────────
 export const fetchTickerTexts = (matchId) =>
   api.get(`/ticker/match/${matchId}?all_entries=true`);
-export const fetchPrematch = (matchId) =>
-  api.get(`/ticker/match/${matchId}`);
+export const fetchPrematch = (matchId) => api.get(`/ticker/match/${matchId}`);
 export const fetchLiveStats = (matchId) =>
   api.get(`/matches/${matchId}/statistics`);
 export const generateTicker = (eventId, style, instance = "ef_whitelabel") =>
@@ -48,8 +49,7 @@ export const publishTicker = (entryId, text) =>
   api.patch(`/ticker/${entryId}`, { text, status: "published" });
 export const updateTicker = (entryId, data) =>
   api.patch(`/ticker/${entryId}`, data);
-export const deleteTicker = (entryId) =>
-  api.delete(`/ticker/${entryId}`);
+export const deleteTicker = (entryId) => api.delete(`/ticker/${entryId}`);
 
 // ── Stats / Lineups ────────────────────────────────────
 export const fetchLineups = (matchId) => api.get(`/matches/${matchId}/lineup`);
@@ -62,7 +62,8 @@ export const fetchPlayerStats = (matchId) =>
 export const fetchPlayers = (teamId) =>
   api.get(`/players?teamId=${teamId}&pageSize=100`);
 export const createPlayer = (data) => api.post("/players", data);
-export const updatePlayer = (playerId, data) => api.put(`/players/${playerId}`, data);
+export const updatePlayer = (playerId, data) =>
+  api.put(`/players/${playerId}`, data);
 export const deletePlayer = (playerId) => api.delete(`/players/${playerId}`);
 export const updatePlayerStats = (playerId, statistics) =>
   api.patch(`/players/${playerId}/statistics`, { statistics });
@@ -77,8 +78,7 @@ export const removeFavorite = (teamId) =>
   api.delete(`/favorites/${teamId}?user_id=1`);
 
 // ── n8n Webhooks ───────────────────────────────────────
-export const importCountries = () =>
-  n8n.post("/import-countries");
+export const importCountries = () => n8n.post("/import-countries");
 
 export const importTeamsByCountry = (country, season) =>
   n8n.post("/import-teams-by-country", { country, season });
@@ -100,3 +100,6 @@ export const importPrematch = (fixtureId) =>
 
 export const importPlayerStatistics = (matchId) =>
   n8n.post("/player-statistics", { match_id: matchId });
+
+export const importMatchesForTeam = (teamId, leagueId, season) =>
+  n8n.post("/import-matches", { teamId, leagueId, season });

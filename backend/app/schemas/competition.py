@@ -62,8 +62,6 @@ class CompetitionUpdate(BaseModel):
 
 
 class CompetitionResponse(BaseModel):
-    """Partner API-compatible response schema. uid is auto-generated on create."""
-
     model_config = ConfigDict(
         from_attributes=True,
         populate_by_name=True,
@@ -73,6 +71,7 @@ class CompetitionResponse(BaseModel):
     sport: str
     id: int
     uid: UUID
+    external_id: Optional[int] = None  # ← neu
     title: Optional[str] = None
     localized_title: Optional[dict] = None
     short_title: Optional[str] = None
