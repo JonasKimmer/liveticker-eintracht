@@ -1,10 +1,7 @@
 // ============================================================
 // StartScreen.jsx
-// Zustand 1 – kein Match ausgewählt
-// Kaskadierende Selects: Land → Team → Wettbewerb → Spieltag → Spiel
-// Sobald Spiel gewählt → onMatchChange aufgerufen → LiveTicker wechselt
 // ============================================================
-import React from "react";
+import { useState, useRef, useEffect } from "react";
 import config from "../../../config/whitelabel";
 
 export function StartScreen({
@@ -35,97 +32,165 @@ export function StartScreen({
         <p className="lt-start__sub">Choose a match to open the live ticker</p>
 
         <div className="lt-start__selects">
-          <StartSelect
-            label="Land"
-            disabled={!countries.length}
-            value={selCountry ?? ""}
-            onChange={(v) => onCountryChange(v)}
-          >
-            <option value="" disabled>
-              Land wählen…
-            </option>
-            {countries.map((c) => (
-              <option key={c} value={c}>
-                {c}
-              </option>
-            ))}
-          </StartSelect>
+          {/* Land – Textfeld mit Autocomplete */}
+          <div className="lt-start__select-wrap">
+            <label className="lt-start__label">Land</label>
+            <input
+              className="lt-start__select lt-start__country-input"
+              list="lt-countries-list"
+              placeholder="Search country…"
+              value={selCountry ?? ""}
+              onChange={(e) => {
+                const val = e.target.value;
+                if (countries.includes(val)) onCountryChange(val);
+                else onCountryChange(val); // live update for display
+              }}
+              onBlur={(e) => {
+                if (!countries.includes(e.target.value)) onCountryChange(null);
+              }}
+            />
+            <datalist id="lt-countries-list">
+              {countries.map((c) => (
+                <option key={c} value={c} />
+              ))}
+            </datalist>
+          </div>
 
           <StartSelect
-            label={teamsLoading ? "Team (importiert…)" : "Team"}
+            label={teamsLoading ? "Team (lädt…)" : "Team"}
             disabled={!selCountry || !teams.length}
             value={selTeamId ?? ""}
             onChange={(v) => onTeamChange(parseInt(v))}
           >
-            <option value="" disabled>
-              {teamsLoading ? "Importiere Teams…" : "Team wählen…"}
-            </option>
+            <option value="" disabled>Select a Team</option>
             {teams.map((t) => (
-              <option key={t.id} value={t.id}>
-                {t.name}
-              </option>
+              <option key={t.id} value={t.id}>{t.name}</option>
             ))}
           </StartSelect>
 
           <StartSelect
-            label={competitionsLoading ? "Wettbewerb (importiert…)" : "Wettbewerb"}
+            label={competitionsLoading ? "Wettbewerb (lädt…)" : "Wettbewerb"}
             disabled={!selTeamId || !competitions.length}
             value={selCompetitionId ?? ""}
             onChange={(v) => onCompetitionChange(parseInt(v))}
           >
-            <option value="" disabled>
-              Wettbewerb wählen…
-            </option>
+            <option value="" disabled>Select Wettbewerb</option>
             {competitions.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.title}
-              </option>
-            ))}
-          </StartSelect>
-
-          <StartSelect
-            label={
-              matchdaysLoading
-                ? "Spieltag (lädt…)"
-                : matchdaysError
-                  ? "Spieltag (Fehler)"
-                  : "Spieltag"
-            }
-            disabled={!selCompetitionId || !matchdays.length}
-            value={selRound ?? ""}
-            onChange={(v) => onRoundChange(v)}
-          >
-            <option value="" disabled>
-              Spieltag wählen…
-            </option>
-            {matchdays.map((r) => (
-              <option key={r} value={r}>
-                {r}
-              </option>
-            ))}
-          </StartSelect>
-
-          <StartSelect
-            label="Spiel"
-            disabled={!selRound || !matches.length}
-            value=""
-            onChange={(v) => onMatchChange(parseInt(v))}
-          >
-            <option value="" disabled>
-              Spiel wählen…
-            </option>
-            {matches.map((m) => (
-              <option key={m.id} value={m.id}>
-                {m.homeTeam?.name} vs {m.awayTeam?.name}
-              </option>
+              <option key={c.id} value={c.id}>{c.title}</option>
             ))}
           </StartSelect>
         </div>
+
+        <MatchdayPicker
+          matchdays={matchdays}
+          matchdaysLoading={matchdaysLoading}
+          matchdaysError={matchdaysError}
+          selRound={selRound}
+          onRoundChange={onRoundChange}
+          matches={matches}
+          onMatchChange={onMatchChange}
+          disabled={!selCompetitionId}
+        />
 
         <div className="lt-start__hint">
           Wähle ein Spiel — der Ticker startet automatisch
         </div>
       </div>
+    </div>
+  );
+}
+
+function MatchdayPicker({
+  matchdays,
+  matchdaysLoading,
+  matchdaysError,
+  selRound,
+  onRoundChange,
+  matches,
+  onMatchChange,
+  disabled,
+}) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef(null);
+  const roundLabel = (r) => String(r).match(/\d+/)?.[0] ?? String(r);
+
+  useEffect(() => {
+    const handler = (e) => {
+      if (ref.current && !ref.current.contains(e.target)) setOpen(false);
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
+
+  const label = matchdaysLoading
+    ? "Spieltag (lädt…)"
+    : matchdaysError
+    ? "Spieltag (Fehler)"
+    : selRound
+    ? `Spieltag ${roundLabel(selRound)}`
+    : "Select Spieltag";
+
+  return (
+    <div className="lt-mdp" ref={ref}>
+      <div className="lt-start__select-wrap">
+        <label className="lt-start__label">Spieltag</label>
+        <button
+          className={`lt-mdp__trigger lt-start__select${open ? " lt-mdp__trigger--open" : ""}`}
+          disabled={disabled || matchdaysLoading || !matchdays.length}
+          onClick={() => setOpen((v) => !v)}
+        >
+          <span>{label}</span>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d={open ? "M18 15l-6-6-6 6" : "M6 9l6 6 6-6"} />
+          </svg>
+        </button>
+      </div>
+
+      {open && (
+        <div className="lt-mdp__panel">
+          {matchdays.length > 0 && (
+            <div className="lt-mdp__grid">
+              {matchdays.map((r) => (
+                <button
+                  key={r}
+                  className={`lt-mdp__day${selRound === r ? " lt-mdp__day--active" : ""}`}
+                  onClick={() => onRoundChange(r)}
+                >
+                  {roundLabel(r)}
+                </button>
+              ))}
+            </div>
+          )}
+
+          {selRound && (
+            <div className="lt-mdp__matches">
+              {matches.length === 0 ? (
+                <div className="lt-mdp__empty">Keine Spiele für diesen Spieltag</div>
+              ) : (
+                matches.map((m) => (
+                  <button
+                    key={m.id}
+                    className="lt-mdp__match"
+                    onClick={() => { onMatchChange(m.id); setOpen(false); }}
+                  >
+                    <span className="lt-mdp__match-team lt-mdp__match-team--home">
+                      {m.homeTeam?.name ?? "–"}
+                    </span>
+                    <span className="lt-mdp__match-score">
+                      {m.homeScore != null && m.awayScore != null
+                        ? `${m.homeScore} : ${m.awayScore}`
+                        : "vs"}
+                    </span>
+                    <span className="lt-mdp__match-team lt-mdp__match-team--away">
+                      {m.awayTeam?.name ?? "–"}
+                    </span>
+                  </button>
+                ))
+              )}
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }

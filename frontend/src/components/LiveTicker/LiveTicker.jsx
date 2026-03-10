@@ -11,7 +11,7 @@ import { useTickerMode } from "../../hooks/useTickerMode";
 import { TickerModeContext } from "../../context/TickerModeContext";
 import config from "../../config/whitelabel";
 
-import { POLL_LIVE_MS } from "./constants";
+import { POLL_LIVE_MS, NAV_TABS } from "./constants";
 import { LoadingScreen } from "./components/LoadingScreen";
 import { MatchHeader } from "./components/MatchHeader";
 import { ModeSelector } from "./components/ModeSelector";
@@ -261,7 +261,6 @@ export default function LiveTicker() {
             const r2 = await api.fetchTeamsByCountry(selCountry);
             if (!controller.signal.aborted) {
               setTeams(r2.data);
-              if (r2.data.length > 0) setSelTeamId(r2.data[0].id);
             }
           } catch (err) {
             console.error("importTeamsByCountry error:", err);
@@ -270,7 +269,6 @@ export default function LiveTicker() {
           }
         } else {
           setTeams(r.data);
-          if (r.data.length > 0) setSelTeamId(r.data[0].id);
         }
       })
       .catch((err) => {
@@ -305,7 +303,6 @@ export default function LiveTicker() {
           let competitions = r2.data.length > 0 ? r2.data : r.data;
           if (!controller.signal.aborted) {
             setCompetitions(competitions);
-            if (competitions.length > 0) setSelCompetitionId(competitions[0].id);
             // 2. Matches immer importieren
             await Promise.all(
               competitions
@@ -507,9 +504,22 @@ export default function LiveTicker() {
           <Breadcrumb
             match={match}
             competition={curCompetition}
+            country={selCountry}
+            team={teams.find((t) => t.id === selTeamId)}
+            round={selRound}
             onOpen={() => setModalOpen(true)}
           />
           <div className="lt-header__status">
+            {NAV_TABS.filter((t) => t.id !== "teams").map(({ id, label }) => (
+              <button
+                key={id}
+                className={`lt-header__nav-tab${activeTab === id ? " lt-header__nav-tab--active" : ""}`}
+                onClick={() => { handleTabChange(id); setModalOpen(true); }}
+              >
+                {label}
+              </button>
+            ))}
+            <span className="lt-header__sep">|</span>
             <div
               className={`lt-header__dot${isMatchLive ? " lt-header__dot--live" : ""}`}
             />

@@ -34,9 +34,14 @@ export function MatchHeader({ match, leagueSeason, favorites, onToggleFav }) {
 
         {/* Score */}
         <div className="lt-match-header__score-wrap">
-          <span className="lt-match-header__score">{match.teamHomeScore}</span>
-          <span className="lt-match-header__score-sep">–</span>
-          <span className="lt-match-header__score">{match.teamAwayScore}</span>
+          <span className={`lt-match-header__status lt-match-header__status--${status}`}>
+            {match.matchState}
+          </span>
+          <div className="lt-match-header__scores-row">
+            <span className="lt-match-header__score">{match.teamHomeScore}</span>
+            <span className="lt-match-header__score-sep">–</span>
+            <span className="lt-match-header__score">{match.teamAwayScore}</span>
+          </div>
         </div>
 
         {/* Away */}
@@ -56,19 +61,13 @@ export function MatchHeader({ match, leagueSeason, favorites, onToggleFav }) {
         </div>
       </div>
 
-      <div className="lt-match-header__meta">
-        <span>
-          {leagueSeason?.league?.name} {leagueSeason?.season?.year}
-        </span>
-        <span className="lt-match-header__meta-sep">·</span>
-        <span>{match.matchday}</span>
-        <span className="lt-match-header__meta-sep">·</span>
-        <span
-          className={`lt-match-header__status lt-match-header__status--${status}`}
-        >
-          {match.matchState}
-        </span>
-      </div>
+      {(leagueSeason?.league?.name || leagueSeason?.season?.year) && (
+        <div className="lt-match-header__meta">
+          <span>
+            {leagueSeason?.league?.name} {leagueSeason?.season?.year}
+          </span>
+        </div>
+      )}
     </div>
   );
 }
