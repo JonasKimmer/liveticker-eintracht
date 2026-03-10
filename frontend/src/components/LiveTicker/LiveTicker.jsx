@@ -447,8 +447,13 @@ export default function LiveTicker() {
     const handler = (e) => {
       if (e.key === "?" && !e.ctrlKey && !e.metaKey) setShowHints((s) => !s);
     };
+    const imgHandler = () => setShowHints(true);
     window.addEventListener("keydown", handler);
-    return () => window.removeEventListener("keydown", handler);
+    window.addEventListener("lt-show-hints", imgHandler);
+    return () => {
+      window.removeEventListener("keydown", handler);
+      window.removeEventListener("lt-show-hints", imgHandler);
+    };
   }, []);
 
   // ── Shared Nav Props ──────────────────────────────────────

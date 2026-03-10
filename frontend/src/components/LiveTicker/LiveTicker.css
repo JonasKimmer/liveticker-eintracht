@@ -635,6 +635,15 @@
   margin-bottom: 6px;
   border: 1px solid var(--lt-border);
   display: block;
+  cursor: zoom-in;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transform-origin: top left;
+}
+.lt-entry__image:hover {
+  transform: scale(1.35);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.45);
+  z-index: 10;
+  position: relative;
 }
 .lt-entry__meta {
   font-family: var(--lt-font-mono);

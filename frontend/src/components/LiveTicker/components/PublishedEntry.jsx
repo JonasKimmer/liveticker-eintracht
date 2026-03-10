@@ -38,6 +38,7 @@ export const PublishedEntry = memo(function PublishedEntry({
               alt="Ticker-Bild"
               className="lt-entry__image"
               loading="lazy"
+              onDoubleClick={() => window.dispatchEvent(new CustomEvent("lt-show-hints"))}
             />
           )}
           <div className="lt-entry__text">{tickerText?.text}</div>
