@@ -20,6 +20,7 @@ class TickerSource(str, Enum):
 class TickerEntryCreate(BaseModel):
     match_id: int = Field(..., gt=0)
     event_id: Optional[int] = Field(None, gt=0)
+    synthetic_event_id: Optional[int] = Field(None, gt=0)
     text: str = Field(..., min_length=1)
     style: Optional[str] = Field(None, max_length=50)
     icon: Optional[str] = Field(None, max_length=50)
@@ -27,6 +28,7 @@ class TickerEntryCreate(BaseModel):
     status: TickerStatus = TickerStatus.draft
     source: TickerSource = TickerSource.ai
     minute: Optional[int] = None
+    phase: Optional[str] = Field(None, max_length=50)
 
 
 class TickerEntryUpdate(BaseModel):
@@ -49,5 +51,6 @@ class TickerEntryResponse(BaseModel):
     status: str
     source: str
     minute: Optional[int] = None
+    phase: Optional[str] = None
     image_url: Optional[str] = None
     created_at: datetime

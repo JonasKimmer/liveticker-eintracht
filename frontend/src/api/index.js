@@ -38,18 +38,23 @@ export const fetchLiveStats = (matchId) =>
   api.get(`/matches/${matchId}/statistics`);
 export const generateTicker = (eventId, style, instance = "ef_whitelabel") =>
   api.post(`/ticker/generate/${eventId}`, { style, instance });
-export const createManualTicker = (matchId, text, icon = "📝", minute) =>
+export const createManualTicker = (matchId, text, icon = "📝", minute, phase) =>
   api.post("/ticker/manual", {
     match_id: matchId,
     text,
     icon,
     minute: minute ?? null,
+    phase: phase ?? null,
   });
 export const publishTicker = (entryId, text) =>
   api.patch(`/ticker/${entryId}`, { text, status: "published" });
 export const updateTicker = (entryId, data) =>
   api.patch(`/ticker/${entryId}`, data);
 export const deleteTicker = (entryId) => api.delete(`/ticker/${entryId}`);
+export const generateSyntheticBatch = (matchId, style = "neutral", instance = "ef_whitelabel") =>
+  api.post(`/ticker/generate-synthetic-batch/${matchId}`, { style, instance, auto_publish: true });
+export const generateMatchPhases = (matchId, style = "neutral", instance = "ef_whitelabel") =>
+  api.post(`/ticker/generate-match-phases/${matchId}`, { style, instance, auto_publish: true });
 
 // ── Stats / Lineups ────────────────────────────────────
 export const fetchLineups = (matchId) => api.get(`/matches/${matchId}/lineup`);
@@ -77,6 +82,10 @@ export const addFavorite = (teamId) =>
 export const removeFavorite = (teamId) =>
   api.delete(`/favorites/${teamId}?user_id=1`);
 
+// ── Media ───────────────────────────────────────────────
+export const generateMediaCaption = (mediaId, style = "neutral", instance = "ef_whitelabel") =>
+  api.post(`/media/generate-caption/${mediaId}`, { style, instance });
+
 // ── n8n Webhooks ───────────────────────────────────────
 export const importCountries = () => n8n.post("/import-countries");
 
@@ -103,3 +112,8 @@ export const importPlayerStatistics = (matchId) =>
 
 export const importMatchesForTeam = (teamId, leagueId, season) =>
   n8n.post("/import-matches", { teamId, leagueId, season });
+
+export const triggerMatchStatus = (fixtureId, status, minute) =>
+  n8n.post("/match-status", { fixture_id: fixtureId, status, minute: minute ?? null });
+export const triggerMatchPhases = (fixtureId, minute) =>
+  n8n.post("/match-phases", { fixture_id: fixtureId, minute: minute ?? null });

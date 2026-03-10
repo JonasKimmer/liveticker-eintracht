@@ -75,6 +75,7 @@ class ManualEntryRequest(BaseModel):
     style: Optional[str] = None
     icon: Optional[str] = None
     minute: Optional[int] = None
+    phase: Optional[str] = Field(None, max_length=50)
 
 
 # ──────────────────────────────────────────────
@@ -285,6 +286,7 @@ def create_manual_entry(
             style=data.style,
             icon=data.icon,
             minute=data.minute,
+            phase=data.phase,
             status="published",
         )
     )
@@ -443,16 +445,224 @@ async def generate_for_synthetic_event(
 
     entry_status = "published" if data.auto_publish else "draft"
 
+    event_type = synthetic.type or ""
+    _phase_map = {
+        "match_kickoff":        "FirstHalf",
+        "match_halftime":       "FirstHalfBreak",
+        "match_second_half":    "SecondHalf",
+        "match_fulltime":       "After",
+        "match_extra_kickoff":  "ExtraFirstHalf",
+        "match_extra_halftime": "ExtraBreak",
+        "match_penalties":      "PenaltyShootout",
+        "match_fulltime_aet":   "After",
+        "match_fulltime_pen":   "After",
+    }
+    if event_type.startswith("pre_match"):
+        phase = "Before"
+    elif event_type.startswith("post_match"):
+        phase = "After"
+    else:
+        phase = _phase_map.get(event_type)
+
     return TickerEntryRepository(db).create(
         TickerEntryCreate(
             match_id=synthetic.match_id,
+            synthetic_event_id=synthetic.id,
             text=text,
             source="ai",
             style=data.style,
             llm_model=model_used,
+            phase=phase,
             status=entry_status,
         )
     )
+
+
+# ──────────────────────────────────────────────
+# POST: Alle Synthetic Events eines Spiels generieren (Auto-Trigger)
+# ──────────────────────────────────────────────
+
+
+class GenerateSyntheticBatchRequest(BaseModel):
+    style: Literal["neutral", "euphorisch", "kritisch"] = "neutral"
+    language: str = Field(default="de", max_length=5)
+    instance: Literal["generic", "ef_whitelabel"] = "ef_whitelabel"
+    auto_publish: bool = True
+
+
+@router.post(
+    "/generate-synthetic-batch/{match_id}",
+    response_model=list[TickerEntryResponse],
+    status_code=status.HTTP_201_CREATED,
+    summary="Alle ungenierierten Synthetic Events eines Spiels generieren",
+)
+async def generate_synthetic_batch(
+    match_id: int,
+    data: GenerateSyntheticBatchRequest = Body(default_factory=GenerateSyntheticBatchRequest),
+    db: Session = Depends(get_db),
+) -> list[TickerEntryResponse]:
+    synthetics = (
+        db.query(SyntheticEvent)
+        .filter(SyntheticEvent.match_id == match_id)
+        .all()
+    )
+    if not synthetics:
+        return []
+
+    # Bereits generierte synthetic_event_ids ermitteln
+    from app.models.ticker_entry import TickerEntry
+    existing_ids = {
+        r.synthetic_event_id
+        for r in db.query(TickerEntry.synthetic_event_id)
+        .filter(
+            TickerEntry.match_id == match_id,
+            TickerEntry.synthetic_event_id.isnot(None),
+        )
+        .all()
+    }
+
+    match = db.query(Match).filter(Match.id == match_id).first()
+    repo = TickerEntryRepository(db)
+    results = []
+
+    for synthetic in synthetics:
+        if synthetic.id in existing_ids:
+            continue  # schon generiert
+
+        match_context = _build_match_context(match, synthetic.minute)
+        try:
+            text, model_used = await generate_ticker_text(
+                event_type=synthetic.type or "comment",
+                event_detail="",
+                minute=synthetic.minute,
+                style=data.style,
+                language=data.language,
+                context_data=synthetic.data or {},
+                match_context=match_context,
+                db=db,
+                instance=data.instance,
+            )
+        except Exception:
+            logger.exception("Batch synthetic generation failed for id=%s", synthetic.id)
+            continue
+
+        event_type = synthetic.type or ""
+        _phase_map = {
+            "match_kickoff":     "FirstHalf",
+            "match_halftime":    "FirstHalfBreak",
+            "match_second_half": "SecondHalf",
+            "match_fulltime":    "After",
+        }
+        if event_type.startswith("pre_match"):
+            phase = "Before"
+        elif event_type.startswith("post_match"):
+            phase = "After"
+        else:
+            phase = _phase_map.get(event_type)
+
+        entry = repo.create(
+            TickerEntryCreate(
+                match_id=match_id,
+                synthetic_event_id=synthetic.id,
+                text=text,
+                source="ai",
+                style=data.style,
+                llm_model=model_used,
+                phase=phase,
+                status="published" if data.auto_publish else "draft",
+            )
+        )
+        results.append(entry)
+
+    return results
+
+
+# ──────────────────────────────────────────────
+# POST: Alle Match-Phasen eines Spiels generieren
+# ──────────────────────────────────────────────
+
+STANDARD_PHASES = [
+    ("match_kickoff",     "FirstHalf"),
+    ("match_halftime",    "FirstHalfBreak"),
+    ("match_second_half", "SecondHalf"),
+    ("match_fulltime",    "After"),
+]
+
+
+@router.post(
+    "/generate-match-phases/{match_id}",
+    response_model=list[TickerEntryResponse],
+    status_code=status.HTTP_201_CREATED,
+    summary="Alle 4 Standard-Spielphasen generieren (Anpfiff, HZ, 2. HZ, Abpfiff)",
+)
+async def generate_match_phases(
+    match_id: int,
+    data: GenerateSyntheticBatchRequest = Body(default_factory=GenerateSyntheticBatchRequest),
+    db: Session = Depends(get_db),
+) -> list[TickerEntryResponse]:
+    match = db.query(Match).filter(Match.id == match_id).first()
+    if not match:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Match not found")
+
+    from app.models.ticker_entry import TickerEntry
+
+    repo = TickerEntryRepository(db)
+    results = []
+
+    for event_type, phase in STANDARD_PHASES:
+        # ticker_entry bereits für diese Phase vorhanden?
+        phase_exists = (
+            db.query(TickerEntry)
+            .filter(TickerEntry.match_id == match_id, TickerEntry.phase == phase)
+            .first()
+        )
+        if phase_exists:
+            continue
+
+        # synthetic_event holen oder anlegen
+        synthetic = (
+            db.query(SyntheticEvent)
+            .filter(SyntheticEvent.match_id == match_id, SyntheticEvent.type == event_type)
+            .first()
+        )
+        if not synthetic:
+            synthetic = SyntheticEvent(match_id=match_id, type=event_type, data={})
+            db.add(synthetic)
+            db.flush()
+
+        match_context = _build_match_context(match, None)
+        try:
+            text, model_used = await generate_ticker_text(
+                event_type=event_type,
+                event_detail="",
+                minute=None,
+                style=data.style,
+                language=data.language,
+                context_data={},
+                match_context=match_context,
+                db=db,
+                instance=data.instance,
+            )
+        except Exception:
+            logger.exception("Phase generation failed for match_id=%s type=%s", match_id, event_type)
+            continue
+
+        entry = repo.create(
+            TickerEntryCreate(
+                match_id=match_id,
+                synthetic_event_id=synthetic.id,
+                text=text,
+                source="ai",
+                style=data.style,
+                llm_model=model_used,
+                phase=phase,
+                status="published" if data.auto_publish else "draft",
+            )
+        )
+        results.append(entry)
+
+    db.commit()
+    return results
 
 
 # ──────────────────────────────────────────────

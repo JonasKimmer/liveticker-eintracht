@@ -14,6 +14,9 @@ class TickerEntry(Base):
     event_id = Column(
         Integer, ForeignKey("events.id", ondelete="SET NULL"), nullable=True
     )
+    synthetic_event_id = Column(
+        Integer, ForeignKey("synthetic_events.id", ondelete="SET NULL"), nullable=True
+    )
     text = Column(Text, nullable=False)
     style = Column(String(50), nullable=True)
     icon = Column(String(50), nullable=True)
@@ -23,6 +26,7 @@ class TickerEntry(Base):
     )  # draft|published|rejected
     source = Column(String(20), nullable=False, default="ai")  # ai|manual
     minute = Column(Integer, nullable=True)
+    phase = Column(String(50), nullable=True)
     image_url = Column(Text, nullable=True)
     created_at = Column(TIMESTAMP(timezone=True), server_default=func.now())
 

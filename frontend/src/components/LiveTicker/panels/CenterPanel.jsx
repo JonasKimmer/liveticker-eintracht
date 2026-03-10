@@ -285,9 +285,9 @@ export function CenterPanel({
           <EntryEditor
             value={editorValue}
             onChange={setEditorValue}
-            onPublish={async ({ icon, minute } = {}) => {
+            onPublish={async ({ icon, minute, phase } = {}) => {
               if (!editorValue.trim()) return;
-              await onManualPublish(editorValue.trim(), icon, minute);
+              await onManualPublish(editorValue.trim(), icon, minute, phase);
               setEditorValue("");
             }}
             mode={mode}

@@ -10,6 +10,20 @@ export const LeftPanel = memo(function LeftPanel({
     (t) => t.status === "published" || t.status == null,
   );
 
+  // Phasen-Reihenfolge für Sortierung
+  const PHASE_SORT = {
+    Before: -1, FirstHalf: null, FirstHalfBreak: 45.5,
+    SecondHalf: null, SecondHalfBreak: 90.5,
+    ExtraFirstHalf: null, ExtraBreak: 105.5,
+    ExtraSecondHalf: null, ExtraSecondHalfBreak: 120.5,
+    PenaltyShootout: null, After: 999,
+  };
+  const sortMinute = (t) => {
+    if (!t.phase) return t.minute ?? 0;
+    const ps = PHASE_SORT[t.phase];
+    return ps !== null ? ps : (t.minute ?? 0);
+  };
+
   // Alle Einträge in eine gemeinsame Liste zusammenführen und nach Minute sortieren
   const allEntries = [
     // Manuelle Einträge (event_id === null)
@@ -17,7 +31,7 @@ export const LeftPanel = memo(function LeftPanel({
       .filter((t) => !t.event_id)
       .map((t) => ({
         key: `man-${t.id}`,
-        minute: t.minute ?? 0,
+        minute: sortMinute(t),
         type: "manual",
         data: t,
       })),

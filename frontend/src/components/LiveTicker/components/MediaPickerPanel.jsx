@@ -4,9 +4,11 @@
 // Flow: Bilder laden → Doppelklick → Modal → Veröffentlichen
 // ============================================================
 
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { createPortal } from "react-dom";
 import { useMediaWebSocket } from "../../../hooks/useMediaWebSocket";
+import { generateMediaCaption } from "../../../api";
+import { parseCommand } from "../utils/parseCommand";
 import config from "../../../config/whitelabel";
 
 const API_BASE = config.apiBase;
@@ -54,8 +56,16 @@ function PublishModal({ image, matchId, onClose, onPublished }) {
   const [description, setDescription] = useState("");
   const [minute, setMinute] = useState("");
   const [loading, setLoading] = useState(false);
+  const [generating, setGenerating] = useState(false);
+  const [showCmds, setShowCmds] = useState(false);
   const [error, setError] = useState(null);
   const textareaRef = useRef(null);
+
+  const minuteNum = parseInt(minute, 10) || 0;
+  const preview = useMemo(() => {
+    if (!description.trim().startsWith("/")) return null;
+    return parseCommand(description, minuteNum);
+  }, [description, minuteNum]);
 
   useEffect(() => { textareaRef.current?.focus(); }, []);
   useEffect(() => {
@@ -63,6 +73,39 @@ function PublishModal({ image, matchId, onClose, onPublished }) {
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, [onClose]);
+
+  async function handleGenerate() {
+    setGenerating(true);
+    setError(null);
+    try {
+      const res = await generateMediaCaption(image.media_id);
+      setDescription(res.data.text);
+      textareaRef.current?.focus();
+    } catch (err) {
+      setError("KI-Generierung fehlgeschlagen.");
+    } finally {
+      setGenerating(false);
+    }
+  }
+
+  function handleKeyDown(e) {
+    if (e.key === "Enter" && description.trim() === "/g") {
+      e.preventDefault();
+      handleGenerate();
+      return;
+    }
+    if (e.key === "Enter" && !e.ctrlKey && !e.shiftKey && description.trim().startsWith("/")) {
+      if (preview?.isValid) {
+        e.preventDefault();
+        setDescription(preview.formatted);
+      }
+      return;
+    }
+    if (e.ctrlKey && e.key === "Enter") {
+      e.preventDefault();
+      handleSubmit(e);
+    }
+  }
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -129,26 +172,67 @@ function PublishModal({ image, matchId, onClose, onPublished }) {
           )}
 
           <div>
-            <label style={{ fontFamily: "var(--lt-font-mono)", fontSize: "0.65rem", color: "var(--lt-text-muted)", textTransform: "uppercase", letterSpacing: "0.08em", display: "block", marginBottom: 4 }}>
-              Ticker-Text
-            </label>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }}>
+              <label style={{ fontFamily: "var(--lt-font-mono)", fontSize: "0.65rem", color: "var(--lt-text-muted)", textTransform: "uppercase", letterSpacing: "0.08em" }}>
+                Ticker-Text
+              </label>
+              <button type="button" onClick={() => setShowCmds(s => !s)} style={{ fontFamily: "var(--lt-font-mono)", fontSize: "0.62rem", color: "var(--lt-accent)", background: "none", border: "none", cursor: "pointer", padding: 0 }}>
+                {showCmds ? "Commands ausblenden" : "⚡ Commands"}
+              </button>
+            </div>
+            {showCmds && (
+              <div style={{ marginBottom: 8, padding: "0.5rem 0.75rem", background: "var(--lt-bg-card-2)", borderRadius: 6, border: "1px solid var(--lt-border)", display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.4rem 0.75rem" }}>
+                {[
+                  ["/goal Müller FCB", `${minuteNum || "??"}'  ⚽ TOR`],
+                  ["/card Müller FCB yellow", `${minuteNum || "??"}'  🟨 KARTE`],
+                  ["/card Müller FCB red", `${minuteNum || "??"}'  🟥 ROTE KARTE`],
+                  ["/sub Kimmich Coman FCB", `${minuteNum || "??"}'  🔄 WECHSEL`],
+                  ["/note Ecke für FCB", `${minuteNum || "??"}'  — Notiz`],
+                  ["/g", "KI-Text generieren"],
+                ].map(([cmd, result]) => (
+                  <div key={cmd} style={{ cursor: "pointer" }} onClick={() => { setDescription(cmd); textareaRef.current?.focus(); setShowCmds(false); }}>
+                    <code style={{ fontFamily: "var(--lt-font-mono)", fontSize: "0.68rem", color: "var(--lt-accent)" }}>{cmd}</code>
+                    <div style={{ fontFamily: "var(--lt-font-mono)", fontSize: "0.6rem", color: "var(--lt-text-faint)" }}>{result}</div>
+                  </div>
+                ))}
+              </div>
+            )}
             <textarea
               ref={textareaRef}
-              placeholder="Text zum Bild im Liveticker..."
-              value={description}
+              placeholder="/goal Müller FCB · /card Müller FCB yellow · /g + Enter für KI-Text"
+              value={generating ? "✦ Generiere…" : description}
               onChange={(e) => setDescription(e.target.value)}
+              onKeyDown={handleKeyDown}
+              disabled={generating}
               rows={4}
               style={{
                 width: "100%", boxSizing: "border-box", resize: "none",
                 background: "var(--lt-bg-input)", border: "1px solid var(--lt-border)",
                 borderRadius: 6, padding: "0.6rem 0.75rem",
                 fontFamily: "var(--lt-font-mono)", fontSize: "0.82rem",
-                color: "var(--lt-text)", lineHeight: 1.5,
+                color: generating ? "var(--lt-text-muted)" : "var(--lt-text)", lineHeight: 1.5,
                 outline: "none", transition: "border-color 0.15s",
               }}
               onFocus={(e) => e.target.style.borderColor = "var(--lt-accent)"}
               onBlur={(e) => e.target.style.borderColor = "var(--lt-border)"}
             />
+            {!description.trim().startsWith("/") && (
+              <div style={{ fontFamily: "var(--lt-font-mono)", fontSize: "0.65rem", color: "var(--lt-text-faint)", marginTop: 4 }}>
+                Tippe <span style={{ color: "var(--lt-accent)" }}>/</span> für Commands · <kbd style={{ background: "var(--lt-bg-card-2)", border: "1px solid var(--lt-border)", borderRadius: 3, padding: "1px 4px", fontSize: "0.6rem" }}>Ctrl+Enter</kbd> zum Veröffentlichen
+              </div>
+            )}
+            {preview && (
+              <div style={{
+                marginTop: 6, padding: "0.4rem 0.6rem", borderRadius: 5,
+                background: preview.isValid ? "rgba(16,185,129,0.08)" : "rgba(245,158,11,0.08)",
+                border: `1px solid ${preview.isValid ? "rgba(16,185,129,0.25)" : "rgba(245,158,11,0.25)"}`,
+                fontFamily: "var(--lt-font-mono)", fontSize: "0.72rem",
+                color: preview.isValid ? "var(--lt-text)" : "var(--lt-text-muted)",
+              }}>
+                <span style={{ opacity: 0.6, fontSize: "0.62rem" }}>{preview.isValid ? "✓ " : "⚠ "}</span>
+                {preview.formatted}
+              </div>
+            )}
           </div>
 
           <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
@@ -245,59 +329,84 @@ function PublishModal({ image, matchId, onClose, onPublished }) {
 
 function MediaThumbnail({ item, onDoubleClick }) {
   const [hovered, setHovered] = useState(false);
+  const [previewStyle, setPreviewStyle] = useState(null);
+  const btnRef = useRef(null);
+
+  function handleMouseEnter() {
+    setHovered(true);
+    if (btnRef.current && item.thumbnail_url) {
+      const r = btnRef.current.getBoundingClientRect();
+      const spaceRight = window.innerWidth - r.right;
+      const previewW = 320;
+      const left = spaceRight >= previewW + 16 ? r.right + 8 : r.left - previewW - 8;
+      const top = Math.min(r.top, window.innerHeight - 220);
+      setPreviewStyle({ position: "fixed", top, left, width: previewW, zIndex: 9999 });
+    }
+  }
+
+  function handleMouseLeave() {
+    setHovered(false);
+    setPreviewStyle(null);
+  }
 
   return (
-    <button
-      onDoubleClick={() => onDoubleClick(item)}
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
-      title="Doppelklick zum Veröffentlichen"
-      style={{
-        position: "relative", overflow: "hidden", borderRadius: 6,
-        border: `1px solid ${hovered ? "var(--lt-accent)" : "var(--lt-border)"}`,
-        background: "var(--lt-bg-card-2)", cursor: "pointer", padding: 0,
-        aspectRatio: "16/9", display: "block", width: "100%",
-        transition: "border-color 0.15s, transform 0.15s",
-        transform: hovered ? "scale(1.02)" : "scale(1)",
-        outline: "none",
-      }}
-    >
-      {item.thumbnail_url ? (
-        <img
-          src={item.thumbnail_url}
-          alt={item.name || "Bild"}
-          style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
-          loading="lazy"
-        />
-      ) : (
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", width: "100%", height: "100%", color: "var(--lt-text-faint)", fontFamily: "var(--lt-font-mono)", fontSize: "0.65rem" }}>
-          kein Vorschaubild
+    <>
+      <button
+        ref={btnRef}
+        onDoubleClick={() => onDoubleClick(item)}
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
+        title="Doppelklick zum Veröffentlichen"
+        style={{
+          position: "relative", overflow: "hidden", borderRadius: 6,
+          border: `1px solid ${hovered ? "var(--lt-accent)" : "var(--lt-border)"}`,
+          background: "var(--lt-bg-card-2)", cursor: "pointer", padding: 0,
+          aspectRatio: "16/9", display: "block", width: "100%",
+          transition: "border-color 0.15s", outline: "none",
+        }}
+      >
+        {item.thumbnail_url ? (
+          <img
+            src={item.thumbnail_url}
+            alt={item.name || "Bild"}
+            style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+            loading="lazy"
+          />
+        ) : (
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", width: "100%", height: "100%", color: "var(--lt-text-faint)", fontFamily: "var(--lt-font-mono)", fontSize: "0.65rem" }}>
+            kein Vorschaubild
+          </div>
+        )}
+        {hovered && (
+          <div style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.35)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <span style={{ fontFamily: "var(--lt-font-mono)", fontSize: "0.65rem", fontWeight: 700, color: "var(--lt-accent)", background: "rgba(0,0,0,0.6)", padding: "3px 8px", borderRadius: 4, letterSpacing: "0.05em" }}>
+              DOPPELKLICK
+            </span>
+          </div>
+        )}
+        <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, background: "linear-gradient(transparent, rgba(0,0,0,0.7))", padding: "10px 6px 4px" }}>
+          <p style={{ fontFamily: "var(--lt-font-mono)", fontSize: "0.6rem", color: "var(--lt-text-muted)", margin: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+            {item.name || `ID ${item.media_id}`}
+          </p>
         </div>
+      </button>
+
+      {previewStyle && createPortal(
+        <div style={{ ...previewStyle, borderRadius: 8, overflow: "hidden", boxShadow: "0 16px 48px rgba(0,0,0,0.7)", border: "1px solid var(--lt-border)", pointerEvents: "none" }}>
+          <img
+            src={item.thumbnail_url}
+            alt={item.name || "Bild"}
+            style={{ width: "100%", display: "block", objectFit: "cover" }}
+          />
+          {item.name && (
+            <div style={{ background: "var(--lt-bg-card)", padding: "6px 10px", fontFamily: "var(--lt-font-mono)", fontSize: "0.65rem", color: "var(--lt-text-muted)" }}>
+              {item.name}
+            </div>
+          )}
+        </div>,
+        document.body
       )}
-      {hovered && (
-        <div style={{
-          position: "absolute", inset: 0, background: "rgba(0,0,0,0.45)",
-          display: "flex", alignItems: "center", justifyContent: "center",
-        }}>
-          <span style={{
-            fontFamily: "var(--lt-font-mono)", fontSize: "0.65rem", fontWeight: 700,
-            color: "var(--lt-accent)", background: "rgba(0,0,0,0.6)",
-            padding: "3px 8px", borderRadius: 4, letterSpacing: "0.05em",
-          }}>
-            DOPPELKLICK
-          </span>
-        </div>
-      )}
-      <div style={{
-        position: "absolute", bottom: 0, left: 0, right: 0,
-        background: "linear-gradient(transparent, rgba(0,0,0,0.7))",
-        padding: "10px 6px 4px",
-      }}>
-        <p style={{ fontFamily: "var(--lt-font-mono)", fontSize: "0.6rem", color: "var(--lt-text-muted)", margin: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-          {item.name || `ID ${item.media_id}`}
-        </p>
-      </div>
-    </button>
+    </>
   );
 }
 

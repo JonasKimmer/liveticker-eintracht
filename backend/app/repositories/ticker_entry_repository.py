@@ -13,13 +13,36 @@ class TickerEntryRepository:
     def __init__(self, db: Session) -> None:
         self.db = db
 
+    _PHASE_ORDER = {
+        "Before":               0,
+        "FirstHalf":            1,
+        "FirstHalfBreak":       2,
+        "SecondHalf":           3,
+        "SecondHalfBreak":      4,
+        "ExtraFirstHalf":       5,
+        "ExtraBreak":           6,
+        "ExtraSecondHalf":      7,
+        "ExtraSecondHalfBreak": 8,
+        "PenaltyShootout":      9,
+        "After":               10,
+    }
+
     def get_by_match(
         self, match_id: int, published_only: bool = True
     ) -> list[TickerEntry]:
         q = self.db.query(TickerEntry).filter(TickerEntry.match_id == match_id)
         if published_only:
             q = q.filter(TickerEntry.status == "published")
-        return q.order_by(TickerEntry.created_at.desc()).all()
+        entries = q.order_by(TickerEntry.created_at.desc()).all()
+        # Primär nach Phase-Reihenfolge sortieren, sekundär nach created_at desc
+        entries.sort(
+            key=lambda e: (
+                self._PHASE_ORDER.get(e.phase, 5) if e.phase else 5,
+                e.minute if e.minute is not None else 999,
+                e.created_at,
+            )
+        )
+        return entries
 
     def get_by_id(self, entry_id: int) -> Optional[TickerEntry]:
         return self.db.query(TickerEntry).filter(TickerEntry.id == entry_id).first()

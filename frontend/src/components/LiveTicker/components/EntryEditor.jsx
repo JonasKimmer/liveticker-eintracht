@@ -6,6 +6,21 @@ import React, { useState, useMemo, useRef } from "react";
 import { parseCommand } from "../utils/parseCommand";
 import { MODES, MANUAL_ICONS } from "../constants";
 
+// Phasen-Definitionen (offizielle API-Werte)
+const PHASES = [
+  { value: "Before",                label: "Vor",       hasMinute: false },
+  { value: "FirstHalf",             label: "1. HZ",     hasMinute: true  },
+  { value: "FirstHalfBreak",        label: "Halbzeit",  hasMinute: false },
+  { value: "SecondHalf",            label: "2. HZ",     hasMinute: true  },
+  { value: "SecondHalfBreak",       label: "Pause",     hasMinute: false },
+  { value: "ExtraFirstHalf",        label: "VZ 1",      hasMinute: true  },
+  { value: "ExtraBreak",            label: "VZ-Pause",  hasMinute: false },
+  { value: "ExtraSecondHalf",       label: "VZ 2",      hasMinute: true  },
+  { value: "ExtraSecondHalfBreak",  label: "Elfm.P",   hasMinute: false },
+  { value: "PenaltyShootout",       label: "Elfmeter",  hasMinute: true  },
+  { value: "After",                 label: "Nach",      hasMinute: false },
+];
+
 export function EntryEditor({
   value,
   onChange,
@@ -17,8 +32,11 @@ export function EntryEditor({
   const [showCmds, setShowCmds] = useState(false);
   const [manualIcon, setManualIcon] = useState("📝");
   const [manualMinute, setManualMinute] = useState("");
+  const [phase, setPhase] = useState("FirstHalf");
   const [error, setError] = useState("");
   const textareaRef = useRef(null);
+
+  const selectedPhase = PHASES.find((p) => p.value === phase) ?? PHASES[1];
 
   // Live-Preview des Commands
   const preview = useMemo(() => {
@@ -30,7 +48,6 @@ export function EntryEditor({
   }, [value, currentMinute, manualMinute]);
 
   const handleKeyDown = (e) => {
-    // Enter → Command formatieren (nicht senden)
     if (
       e.key === "Enter" &&
       !e.ctrlKey &&
@@ -43,7 +60,6 @@ export function EntryEditor({
       }
       return;
     }
-    // Ctrl+Enter → veröffentlichen
     if (e.ctrlKey && e.key === "Enter") {
       e.preventDefault();
       handlePublish();
@@ -53,22 +69,21 @@ export function EntryEditor({
   const handlePublish = () => {
     setError("");
     if (mode === MODES.MANUAL) {
-      const min = parseInt(manualMinute, 10);
-      if (!manualMinute || isNaN(min) || min < 1 || min > 120) {
-        setError("Bitte eine gültige Minute eingeben (1–120)");
-        return;
+      if (selectedPhase.hasMinute) {
+        const min = parseInt(manualMinute, 10);
+        if (!manualMinute || isNaN(min) || min < 1 || min > 200) {
+          setError("Bitte eine gültige Minute eingeben");
+          return;
+        }
       }
     }
+    const minute = selectedPhase.hasMinute ? parseInt(manualMinute, 10) : null;
     if (value.trim().startsWith("/") && preview?.isValid) {
       onChange(preview.formatted);
-      setTimeout(
-        () =>
-          onPublish?.({ icon: manualIcon, minute: parseInt(manualMinute, 10) }),
-        0,
-      );
+      setTimeout(() => onPublish?.({ icon: manualIcon, minute, phase }), 0);
       return;
     }
-    onPublish?.({ icon: manualIcon, minute: parseInt(manualMinute, 10) });
+    onPublish?.({ icon: manualIcon, minute, phase });
   };
 
   return (
@@ -99,6 +114,10 @@ export function EntryEditor({
                 `${currentMinute || "??"}'  🟨 KARTE — Müller (FCB)`,
               ],
               [
+                "/card Müller FCB red",
+                `${currentMinute || "??"}'  🟥 ROTE KARTE — Müller (FCB)`,
+              ],
+              [
                 "/sub Kimmich Coman FCB",
                 `${currentMinute || "??"}'  🔄 WECHSEL — Kimmich ↔ Coman (FCB)`,
               ],
@@ -116,32 +135,51 @@ export function EntryEditor({
         </div>
       )}
 
-      {/* Icon + Minute (nur MANUAL) */}
+      {/* Phase + Icon + Minute (nur MANUAL) */}
       {mode === MODES.MANUAL && (
-        <div className="lt-editor__icon-row">
-          {MANUAL_ICONS.map(({ icon, label }) => (
-            <button
-              key={icon}
-              className={`lt-editor__icon-btn${manualIcon === icon ? " lt-editor__icon-btn--active" : ""}`}
-              title={label}
-              onClick={() => setManualIcon(icon)}
-            >
-              {icon}
-            </button>
-          ))}
-          <input
-            className="lt-editor__minute-input"
-            type="number"
-            min={1}
-            max={120}
-            placeholder="Min."
-            value={manualMinute}
-            onChange={(e) => {
-              setManualMinute(e.target.value);
-              setError("");
-            }}
-          />
-        </div>
+        <>
+          {/* Phasen-Auswahl */}
+          <div className="lt-editor__phase-row">
+            {PHASES.map((p) => (
+              <button
+                key={p.value}
+                className={`lt-editor__phase-btn${phase === p.value ? " lt-editor__phase-btn--active" : ""}`}
+                onClick={() => { setPhase(p.value); setManualMinute(""); setError(""); }}
+                title={p.value}
+              >
+                {p.label}
+              </button>
+            ))}
+          </div>
+
+          {/* Icon + Minute */}
+          <div className="lt-editor__icon-row">
+            {MANUAL_ICONS.map(({ icon, label }) => (
+              <button
+                key={icon}
+                className={`lt-editor__icon-btn${manualIcon === icon ? " lt-editor__icon-btn--active" : ""}`}
+                title={label}
+                onClick={() => setManualIcon(icon)}
+              >
+                {icon}
+              </button>
+            ))}
+            {selectedPhase.hasMinute && (
+              <input
+                className="lt-editor__minute-input"
+                type="number"
+                min={1}
+                max={200}
+                placeholder="Min."
+                value={manualMinute}
+                onChange={(e) => {
+                  setManualMinute(e.target.value);
+                  setError("");
+                }}
+              />
+            )}
+          </div>
+        </>
       )}
 
       {error && <div className="lt-editor__error">{error}</div>}

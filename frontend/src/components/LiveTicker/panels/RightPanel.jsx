@@ -84,6 +84,11 @@ export function RightPanel({
       {homeStats && awayStats && (
         <div className="lt-right__section">
           <div className="lt-right__section-title">📊 Statistiken</div>
+          <div className="lt-stat-teams">
+            <span className="lt-stat-teams__home">{homeAbbr}</span>
+            <span />
+            <span className="lt-stat-teams__away">{awayAbbr}</span>
+          </div>
           <StatRow
             label="Ballbesitz"
             home={`${homeStats.possessionPercentage}%`}

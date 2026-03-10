@@ -30,6 +30,7 @@ export default function LiveTicker() {
   // ── UI State ──────────────────────────────────────────────
   const [modalOpen, setModalOpen] = useState(false);
   const [showHints, setShowHints] = useState(false);
+  const [showCommands, setShowCommands] = useState(false);
 
   // ── Resizable Panels ──────────────────────────────────────
   const [rightW, setRightW] = useState(380);
@@ -160,6 +161,35 @@ export default function LiveTicker() {
   const [importingTeams, setImportingTeams] = useState(false);
   const [importingCompetitions, setImportingCompetitions] = useState(false);
 
+  // ── Match-Status Webhook beim Match-Open ──────────────────
+  const matchStatusTriggeredRef = useRef(null);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    if (!selMatchId || !match?.matchState) return;
+    if (matchStatusTriggeredRef.current === selMatchId) return;
+    matchStatusTriggeredRef.current = selMatchId;
+
+    if (match.matchState === "FullTime") {
+      // Abgeschlossenes Spiel: alle 4 Phasen via n8n generieren
+      api
+        .triggerMatchPhases(match.externalId, match.minute ?? null)
+        .catch(() => {});
+    } else if (match?.externalId) {
+      // Laufendes Spiel: aktuellen Status via n8n-Webhook melden
+      const stateToStatus = {
+        PreMatch:    "NS",
+        Live:        match?.matchPhase === "SecondHalf" ? "2H" : "1H",
+        Interrupted: "1H",
+      };
+      const status = stateToStatus[match.matchState];
+      if (status) {
+        api
+          .triggerMatchStatus(match.externalId, status, match.minute ?? null)
+          .catch(() => {});
+      }
+    }
+  }, [selMatchId, match?.matchState]);
+
   // ── Auto-Imports beim Match-Select ────────────────────────
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
@@ -197,6 +227,12 @@ export default function LiveTicker() {
     api
       .importPrematch(match.externalId)
       .then(() => reload.loadPrematch())
+      .then(() =>
+        api
+          .generateSyntheticBatch(selMatchId, "neutral", instance)
+          .then(() => reload.loadTickerTexts())
+          .catch((err) => console.error("generateSyntheticBatch error:", err)),
+      )
       .catch((err) => console.error("importPrematch error:", err));
   }, [selMatchId, match?.externalId]);
 
@@ -431,9 +467,9 @@ export default function LiveTicker() {
 
   // ── Manueller Eintrag ─────────────────────────────────────
   const handleManualPublish = useCallback(
-    async (text, icon = "📝", minute) => {
+    async (text, icon = "📝", minute, phase) => {
       try {
-        await api.createManualTicker(selMatchId, text, icon, minute);
+        await api.createManualTicker(selMatchId, text, icon, minute, phase);
         await reload.loadTickerTexts();
       } catch (err) {
         console.error("manualPublish error:", err);
@@ -448,11 +484,14 @@ export default function LiveTicker() {
       if (e.key === "?" && !e.ctrlKey && !e.metaKey) setShowHints((s) => !s);
     };
     const imgHandler = () => setShowHints(true);
+    const cmdHandler = () => setShowCommands(true);
     window.addEventListener("keydown", handler);
     window.addEventListener("lt-show-hints", imgHandler);
+    window.addEventListener("lt-show-commands", cmdHandler);
     return () => {
       window.removeEventListener("keydown", handler);
       window.removeEventListener("lt-show-hints", imgHandler);
+      window.removeEventListener("lt-show-commands", cmdHandler);
     };
   }, []);
 
@@ -643,6 +682,39 @@ export default function LiveTicker() {
         )}
         {showHints && (
           <KeyboardHints mode={mode} onClose={() => setShowHints(false)} />
+        )}
+        {showCommands && (
+          <div
+            style={{ position: "fixed", inset: 0, zIndex: 200, background: "rgba(0,0,0,0.6)", backdropFilter: "blur(4px)", display: "flex", alignItems: "center", justifyContent: "center" }}
+            onClick={() => setShowCommands(false)}
+          >
+            <div
+              style={{ background: "var(--lt-bg-card)", border: "1px solid var(--lt-border)", borderRadius: 12, padding: "1.5rem", maxWidth: 420, width: "90%", boxShadow: "0 24px 48px rgba(0,0,0,0.5)" }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div style={{ fontFamily: "var(--lt-font-mono)", fontSize: "0.7rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--lt-text-muted)", marginBottom: "1rem" }}>
+                ⚡ Slash Commands
+              </div>
+              {[
+                ["/goal Müller FCB", "⚽ TOR — Müller (FCB)"],
+                ["/card Müller FCB yellow", "🟨 KARTE — Müller (FCB)"],
+                ["/card Müller FCB red", "🟥 ROTE KARTE — Müller (FCB)"],
+                ["/sub Kimmich Coman FCB", "🔄 WECHSEL — Kimmich ↔ Coman (FCB)"],
+                ["/note Ecke für FCB", "— Ecke für FCB"],
+              ].map(([cmd, result]) => (
+                <div key={cmd} style={{ marginBottom: "0.75rem" }}>
+                  <code style={{ fontFamily: "var(--lt-font-mono)", fontSize: "0.82rem", color: "var(--lt-accent)", background: "var(--lt-accent-dim)", padding: "2px 6px", borderRadius: 4 }}>{cmd}</code>
+                  <div style={{ fontFamily: "var(--lt-font-mono)", fontSize: "0.75rem", color: "var(--lt-text-muted)", marginTop: "0.2rem" }}>→ {result}</div>
+                </div>
+              ))}
+              <button
+                onClick={() => setShowCommands(false)}
+                style={{ marginTop: "0.5rem", width: "100%", padding: "0.5rem", background: "var(--lt-bg-card-2)", border: "1px solid var(--lt-border)", borderRadius: 6, color: "var(--lt-text-muted)", fontFamily: "var(--lt-font-mono)", fontSize: "0.75rem", cursor: "pointer" }}
+              >
+                Schließen
+              </button>
+            </div>
+          </div>
         )}
       </div>
     </TickerModeContext.Provider>

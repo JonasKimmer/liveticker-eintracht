@@ -14,6 +14,7 @@ Flow:
 import logging
 
 from fastapi import APIRouter, Depends, HTTPException, WebSocket, WebSocketDisconnect, status
+from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
@@ -21,6 +22,7 @@ from app.models.media_queue import MediaQueue
 from app.models.ticker_entry import TickerEntry
 from app.schemas.media_queue import MediaItemIn, MediaItemResponse, PublishMediaRequest
 from app.schemas.ticker_entry import TickerEntryResponse
+from app.services.llm_service import generate_ticker_text
 
 logger = logging.getLogger(__name__)
 
@@ -200,6 +202,41 @@ def media_publish(
     db.commit()
     db.refresh(ticker)
     return ticker
+
+
+# ──────────────────────────────────────────────
+# POST /media/generate-caption/{media_id}
+# ──────────────────────────────────────────────
+
+
+class GenerateCaptionRequest(BaseModel):
+    style: str = "neutral"
+    instance: str = "ef_whitelabel"
+
+
+@router.post(
+    "/generate-caption/{media_id}",
+    summary="KI-Bildunterschrift für ScorePlay-Bild generieren",
+)
+async def generate_media_caption(
+    media_id: int,
+    body: GenerateCaptionRequest = GenerateCaptionRequest(),
+    db: Session = Depends(get_db),
+) -> dict:
+    """Generiert per LLM einen Ticker-Text für ein ScorePlay-Bild."""
+    media = db.query(MediaQueue).filter(MediaQueue.media_id == media_id).first()
+    if not media:
+        raise HTTPException(status_code=404, detail="Bild nicht gefunden")
+
+    detail = media.name or f"ScorePlay Bild #{media_id}"
+    text, model = await generate_ticker_text(
+        event_type="comment",
+        event_detail=f"Foto: {detail}",
+        style=body.style,
+        instance=body.instance,
+        db=db,
+    )
+    return {"text": text, "model": model}
 
 
 # ──────────────────────────────────────────────

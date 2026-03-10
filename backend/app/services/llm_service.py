@@ -49,9 +49,23 @@ EVENT_TYPE_MAP: dict[str, str] = {
     "extra_time_start": "extra_time_start",
     "penalty_shootout": "penalty_shootout",
     "comment": "comment",
+    "match_kickoff": "kick_off",
+    "match_halftime": "halftime",
+    "match_second_half": "kick_off",
+    "match_fulltime": "fulltime",
+    "match_extra_kickoff": "extra_time_start",
+    "match_extra_halftime": "extra_halftime",
+    "match_penalties": "penalty_shootout",
+    "match_fulltime_aet": "fulltime_aet",
+    "match_fulltime_pen": "fulltime_pen",
     "pre_match": "pre_match",
+    "pre_match_prediction": "pre_match_prediction",
+    "pre_match_injuries": "pre_match_injuries",
+    "pre_match_h2h": "pre_match_h2h",
+    "pre_match_team_stats": "pre_match_team_stats",
     "post_match": "post_match",
     "halftime_comment": "halftime_comment",
+    "live_stats_update": "live_stats_update",
 }
 
 EVENT_TYPE_LABEL: dict[str, str] = {
@@ -65,11 +79,19 @@ EVENT_TYPE_LABEL: dict[str, str] = {
     "halftime": "Halbzeit",
     "fulltime": "Abpfiff",
     "extra_time_start": "Verlängerung beginnt",
+    "extra_halftime": "Halbzeitpause Verlängerung",
     "penalty_shootout": "Elfmeterschießen",
+    "fulltime_aet": "Abpfiff nach Verlängerung",
+    "fulltime_pen": "Abpfiff nach Elfmeterschießen",
     "comment": "Spielszene",
     "pre_match": "Vorbericht",
+    "pre_match_prediction": "Spielvorschau & Tipp",
+    "pre_match_injuries": "Verletzungsbericht",
+    "pre_match_h2h": "Direktvergleich",
+    "pre_match_team_stats": "Teamstatistik",
     "post_match": "Nachbericht",
     "halftime_comment": "Halbzeitkommentar",
+    "live_stats_update": "Live-Statistik-Update",
 }
 
 STYLE_DESC: dict[str, str] = {
@@ -233,6 +255,7 @@ class LLMService:
             f"- Nur der fertige Ticker-Text, keine Erklärungen\n"
             f"- Ellipsen und kurze Hauptsätze bevorzugen\n"
             f"- Präsens für laufende Szene, Perfekt für abgeschlossene Aktion\n"
+            f"- Bei Vorbericht/Spielvorschau/Direktvergleich/Verletzungsbericht/Teamstatistik: kompakten Analyse-Text schreiben (2–4 Sätze), KEIN Live-Kommentar\n"
             f"- Bei Tor: emotional, prägnant\n"
             f"- Das 'Verursachende Team' ist der Verein des handelnden Spielers – nicht zwingend das Heimteam\n"
             f"- Spielstand nur nennen wenn er im SPIELKONTEXT unter 'Stand nach diesem Tor' angegeben ist\n"
@@ -387,9 +410,12 @@ class LLMService:
             "halftime": {"neutral": ["Halbzeit! Pause nach 45 Minuten."]},
             "fulltime": {"neutral": ["Abpfiff! Das Spiel ist beendet."]},
             "extra_time_start": {"neutral": ["Die Verlängerung beginnt!"]},
+            "extra_halftime": {"neutral": ["Halbzeitpause in der Verlängerung."]},
             "penalty_shootout": {
                 "neutral": ["Elfmeterschießen! Es geht in die Entscheidung."]
             },
+            "fulltime_aet": {"neutral": ["Abpfiff nach Verlängerung!"]},
+            "fulltime_pen": {"neutral": ["Abpfiff! Die Entscheidung fällt im Elfmeterschießen."]},
         }
 
         pool = templates.get(event_type, {})

@@ -27,10 +27,21 @@ export const PublishedEntry = memo(function PublishedEntry({
   }
 
   if (isManual) {
+    const phaseLabel = {
+      Before: "i", After: "Nach",
+      FirstHalfBreak: "HZ", SecondHalfBreak: "Pause",
+      ExtraBreak: "VZ·P", ExtraSecondHalfBreak: "Elfm.P",
+      ExtraFirstHalf: "VZ1", ExtraSecondHalf: "VZ2",
+      PenaltyShootout: "Elfm.",
+    }[tickerText?.phase];
+    const minuteDisplay = phaseLabel
+      ?? (tickerText?.minute != null ? `${tickerText.minute}'` : "–");
     return (
       <div className="lt-entry lt-entry--manual">
-        <span className="lt-entry__minute">{tickerText?.minute ?? "–"}'</span>
-        <span className="lt-entry__icon">{tickerText?.image_url ? "📸" : (tickerText?.icon ?? "📝")}</span>
+        <span className="lt-entry__minute">{minuteDisplay}</span>
+        {tickerText?.phase !== "Before" && (
+          <span className="lt-entry__icon">{tickerText?.image_url ? "📸" : (tickerText?.icon ?? "📝")}</span>
+        )}
         <div className="lt-entry__body">
           {tickerText?.image_url && (
             <img
@@ -38,7 +49,8 @@ export const PublishedEntry = memo(function PublishedEntry({
               alt="Ticker-Bild"
               className="lt-entry__image"
               loading="lazy"
-              onDoubleClick={() => window.dispatchEvent(new CustomEvent("lt-show-hints"))}
+              onDoubleClick={() => window.dispatchEvent(new CustomEvent("lt-show-commands"))}
+              style={{ cursor: "pointer" }}
             />
           )}
           <div className="lt-entry__text">{tickerText?.text}</div>
