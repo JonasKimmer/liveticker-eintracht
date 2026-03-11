@@ -1613,6 +1613,43 @@
   line-height: 1.2;
 }
 
+.lt-formation-player__rating {
+  font-size: 0.55rem;
+  font-weight: 700;
+  color: #f5a623;
+  text-align: center;
+  line-height: 1;
+}
+
+/* Lineup Badges (⚽ 🟨 🟥 ↓) */
+.lt-lineup-badges {
+  display: flex;
+  gap: 1px;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-top: 1px;
+}
+.lt-lineup-badge {
+  font-size: 0.55rem;
+  line-height: 1;
+}
+.lt-lineup-badge--out {
+  font-size: 0.6rem;
+  color: #f97316;
+  font-weight: 700;
+}
+.lt-lineup-badge--in {
+  font-size: 0.6rem;
+  color: #22c55e;
+  font-weight: 700;
+}
+.lt-lineup-list li .lt-lineup-badges {
+  display: inline-flex;
+  margin-top: 0;
+  margin-left: 4px;
+  vertical-align: middle;
+}
+
 /* Kompakte Spieler-Karte für "Beste Spieler" */
 .lt-player--sm {
   padding: 0.2rem 0;

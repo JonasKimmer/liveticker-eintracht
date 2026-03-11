@@ -143,12 +143,14 @@ export function RightPanel({
             <FormationColumn
               lineup={homeStarters}
               playerName={playerName}
+              playerStats={playerStats}
               abbr={homeAbbr}
               labelClass="lt-lineup-team-label--home"
             />
             <FormationColumn
               lineup={awayStarters}
               playerName={playerName}
+              playerStats={playerStats}
               abbr={awayAbbr}
               labelClass="lt-lineup-team-label--away"
             />
@@ -178,6 +180,7 @@ export function RightPanel({
                           {playerName(p.playerId) ??
                             `#${p.jerseyNumber ?? "?"}`}
                         </span>
+                        <PlayerBadges entry={p} stat={playerStats.find((s) => s.playerId === p.playerId)} />
                       </li>
                     ))}
                 </ul>
@@ -197,6 +200,7 @@ export function RightPanel({
                           {playerName(p.playerId) ??
                             `#${p.jerseyNumber ?? "?"}`}
                         </span>
+                        <PlayerBadges entry={p} stat={playerStats.find((s) => s.playerId === p.playerId)} />
                       </li>
                     ))}
                 </ul>
@@ -350,7 +354,27 @@ export function RightPanel({
 }
 
 // Aufstellung als Formation-Rows (4-2-3-1 Stil)
-function FormationColumn({ lineup, playerName, abbr, labelClass }) {
+function PlayerBadges({ entry, stat }) {
+  const goals  = stat?.goals      ?? entry.numberOfGoals ?? 0;
+  const yellow = stat?.cardsYellow > 0 || entry.hasYellowCard;
+  const red    = stat?.cardsRed    > 0 || entry.hasRedCard;
+  const subOff = entry.isSubstituted || (entry.status === "Start" && stat?.minutes != null && stat.minutes < 85);
+  const subOn  = entry.status === "Sub" && stat?.minutes > 0;
+  if (!goals && !yellow && !red && !subOff && !subOn) return null;
+  return (
+    <span className="lt-lineup-badges">
+      {goals > 0 && Array.from({ length: goals }).map((_, i) => (
+        <span key={`g${i}`} className="lt-lineup-badge">⚽</span>
+      ))}
+      {yellow && <span className="lt-lineup-badge">🟨</span>}
+      {red    && <span className="lt-lineup-badge">🟥</span>}
+      {subOff && <span className="lt-lineup-badge lt-lineup-badge--out" title="Ausgewechselt">↓{stat?.minutes ? `${stat.minutes}'` : ""}</span>}
+      {subOn  && <span className="lt-lineup-badge lt-lineup-badge--in"  title="Eingewechselt">↑{stat?.minutes ? `${90 - stat.minutes}'` : ""}</span>}
+    </span>
+  );
+}
+
+function FormationColumn({ lineup, playerName, playerStats = [], abbr, labelClass }) {
   const formation = lineup[0]?.formation ?? "";
 
   const posOrder = { G: 0, D: 1, M: 2, F: 3 };
@@ -388,6 +412,7 @@ function FormationColumn({ lineup, playerName, abbr, labelClass }) {
           <div key={ri} className="lt-formation-row">
             {row.map((p) => {
               const name = playerName(p.playerId) ?? p.position ?? "–";
+              const stat = playerStats.find((s) => s.playerId === p.playerId);
               return (
                 <div key={p.id} className="lt-formation-player">
                   <div className="lt-formation-player__num">
@@ -396,6 +421,10 @@ function FormationColumn({ lineup, playerName, abbr, labelClass }) {
                   <div className="lt-formation-player__name" title={name}>
                     {name.length > 9 ? name.split(" ").pop() : name}
                   </div>
+                  {stat?.rating != null && (
+                    <div className="lt-formation-player__rating">{stat.rating.toFixed(1)}</div>
+                  )}
+                  <PlayerBadges entry={p} stat={stat} />
                 </div>
               );
             })}

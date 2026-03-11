@@ -22,6 +22,7 @@ import { RightPanel } from "./panels/RightPanel";
 import { StartScreen } from "./components/StartScreen";
 import { MatchSelectorModal } from "./components/MatchSelectorModal";
 import { Breadcrumb } from "./components/Breadcrumb";
+import { useApiStatus, API_STATUS_CFG } from "../../hooks/useApiStatus";
 
 export default function LiveTicker() {
   // ── App Loading ───────────────────────────────────────────
@@ -116,6 +117,9 @@ export default function LiveTicker() {
     playerStats,
     reload,
   } = useMatchData(selMatchId);
+
+  const apiStatus = useApiStatus();
+  const apiCfg    = API_STATUS_CFG[apiStatus];
 
   // ── Aktiver Draft ─────────────────────────────────────────
   const [activeDraftId, setActiveDraftId] = useState(null);
@@ -470,9 +474,6 @@ export default function LiveTicker() {
   };
 
   const curCompetition = competitions.find((c) => c.id === selCompetitionId);
-  const isMatchLive = match
-    ? ["1H", "2H", "HT", "ET", "live"].includes(match.status)
-    : false;
 
   // ── Render ────────────────────────────────────────────────
   if (appLoading) return <LoadingScreen />;
@@ -515,10 +516,8 @@ export default function LiveTicker() {
               </button>
             ))}
             <span className="lt-header__sep">|</span>
-            <div
-              className={`lt-header__dot${isMatchLive ? " lt-header__dot--live" : ""}`}
-            />
-            <span>API: {isMatchLive ? "Live" : "Bereit"}</span>
+            <div className="lt-header__dot" style={{ background: apiCfg.dot }} />
+            <span>Backend: {apiCfg.label}</span>
             <button
               className={`lt-header__hint${instance === "ef_whitelabel" ? " lt-header__hint--active" : ""}`}
               onClick={() =>
