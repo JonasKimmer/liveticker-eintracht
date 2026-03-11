@@ -17,7 +17,7 @@ export const PublishedEntry = memo(function PublishedEntry({
     return (
       <div className="lt-entry lt-entry--pre">
         <span className="lt-entry__minute lt-entry__minute--pre">Vor</span>
-        <span className="lt-entry__icon">📋</span>
+        <span className="lt-entry__icon">📣</span>
         <div className="lt-entry__body">
           <div className="lt-entry__text">{tickerText?.text}</div>
           <div className="lt-entry__meta">{tickerText?.llm_model}</div>
@@ -34,13 +34,19 @@ export const PublishedEntry = memo(function PublishedEntry({
       ExtraFirstHalf: "VZ1", ExtraSecondHalf: "VZ2",
       PenaltyShootout: "Elfm.",
     }[tickerText?.phase];
+    const phaseIcon = {
+      FirstHalf: "📣", SecondHalf: "📣",
+      ExtraFirstHalf: "📣", ExtraSecondHalf: "📣",
+      FirstHalfBreak: "🔔", SecondHalfBreak: "🔔", ExtraBreak: "🔔",
+      After: "📣", PenaltyShootout: "🥅",
+    }[tickerText?.phase] ?? icon ?? "•";
     const minuteDisplay = phaseLabel
       ?? (tickerText?.minute != null ? `${tickerText.minute}'` : "–");
     return (
       <div className="lt-entry lt-entry--manual">
         <span className="lt-entry__minute">{minuteDisplay}</span>
         {tickerText?.phase !== "Before" && (
-          <span className="lt-entry__icon">{tickerText?.image_url ? "📸" : (tickerText?.icon ?? "📝")}</span>
+          <span className="lt-entry__icon">{tickerText?.image_url ? "📸" : (tickerText?.icon ?? phaseIcon)}</span>
         )}
         <div className="lt-entry__body">
           {tickerText?.image_url && (

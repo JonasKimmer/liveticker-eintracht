@@ -18,18 +18,24 @@ export function MatchHeader({ match, leagueSeason, favorites, onToggleFav }) {
       <div className="lt-match-header__scores">
         {/* Home */}
         <div className="lt-match-header__team lt-match-header__team--home">
-          <div>
-            <div className="lt-match-header__team-abbr">{homeAbbr}</div>
-            <div className="lt-match-header__team-name">
-              {match.homeTeam.name}
-            </div>
+          <div className="lt-match-header__team-inner">
+            {match.homeTeam.logoUrl ? (
+              <img
+                className="lt-match-header__team-logo"
+                src={match.homeTeam.logoUrl}
+                alt={match.homeTeam.name}
+              />
+            ) : (
+              <div className="lt-match-header__team-abbr">{homeAbbr}</div>
+            )}
+            <div className="lt-match-header__team-name">{match.homeTeam.name}</div>
+            <button
+              className="lt-match-header__fav"
+              onClick={() => onToggleFav(match.teamHomeId)}
+            >
+              {isFavHome ? "⭐" : "☆"}
+            </button>
           </div>
-          <button
-            className="lt-match-header__fav"
-            onClick={() => onToggleFav(match.teamHomeId)}
-          >
-            {isFavHome ? "⭐" : "☆"}
-          </button>
         </div>
 
         {/* Score */}
@@ -46,17 +52,23 @@ export function MatchHeader({ match, leagueSeason, favorites, onToggleFav }) {
 
         {/* Away */}
         <div className="lt-match-header__team lt-match-header__team--away">
-          <button
-            className="lt-match-header__fav"
-            onClick={() => onToggleFav(match.teamAwayId)}
-          >
-            {isFavAway ? "⭐" : "☆"}
-          </button>
-          <div>
-            <div className="lt-match-header__team-abbr">{awayAbbr}</div>
-            <div className="lt-match-header__team-name">
-              {match.awayTeam.name}
-            </div>
+          <div className="lt-match-header__team-inner">
+            {match.awayTeam.logoUrl ? (
+              <img
+                className="lt-match-header__team-logo"
+                src={match.awayTeam.logoUrl}
+                alt={match.awayTeam.name}
+              />
+            ) : (
+              <div className="lt-match-header__team-abbr">{awayAbbr}</div>
+            )}
+            <div className="lt-match-header__team-name">{match.awayTeam.name}</div>
+            <button
+              className="lt-match-header__fav"
+              onClick={() => onToggleFav(match.teamAwayId)}
+            >
+              {isFavAway ? "⭐" : "☆"}
+            </button>
           </div>
         </div>
       </div>

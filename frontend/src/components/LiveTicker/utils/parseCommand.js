@@ -147,12 +147,12 @@ export function getEventMeta(eventType, detail = "") {
   if (t === "yellow_card") return { icon: "🟨", cssClass: "card" };
   if (t === "red_card") return { icon: "🟥", cssClass: "card" };
   if (t === "substitution") return { icon: "🔄", cssClass: "sub" };
-  if (t === "kick_off") return { icon: "🟢", cssClass: "" };
-  if (t === "halftime") return { icon: "🔔", cssClass: "" };
-  if (t === "fulltime") return { icon: "🏁", cssClass: "" };
+  if (t === "kick_off" || t === "match_kickoff" || t === "match_second_half" || t === "extra_time_start") return { icon: "📣", cssClass: "" };
+  if (t === "halftime" || t === "match_halftime" || t === "extra_halftime" || t === "halftime_comment") return { icon: "🔔", cssClass: "" };
+  if (t === "fulltime" || t === "match_fulltime" || t === "fulltime_aet" || t === "fulltime_pen") return { icon: "📣", cssClass: "" };
+  if (t === "match_penalties") return { icon: "🥅", cssClass: "" };
   if (t === "comment" || t === "var") return { icon: "📢", cssClass: "" };
-  if (t === "pre_match" || t === "post_match") return { icon: "📋", cssClass: "" };
-  if (t === "halftime_comment") return { icon: "🔔", cssClass: "" };
+  if (t === "pre_match" || t === "post_match") return { icon: "📣", cssClass: "" };
   // Legacy API-Football Typen
   if (eventType === "Goal") return { icon: "⚽", cssClass: "goal" };
   if (eventType === "Card")

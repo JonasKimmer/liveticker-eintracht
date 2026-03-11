@@ -2,6 +2,33 @@
 // panels/RightPanel.jsx
 // Stats, Aufstellung, Torschützen, Karten, Kader
 // ============================================================
+import { useState } from "react";
+
+function Collapsible({ title, defaultOpen = true, children }) {
+  const [open, setOpen] = useState(defaultOpen);
+  return (
+    <div className="lt-right__section">
+      <button className="lt-right__section-title lt-collapsible-hd" onClick={() => setOpen((o) => !o)}>
+        {title}
+        <span className="lt-collapsible-hd__arrow">{open ? "▲" : "▼"}</span>
+      </button>
+      <div style={{ display: open ? undefined : "none" }}>{children}</div>
+    </div>
+  );
+}
+
+function CollapsibleCat({ title, defaultOpen = true, children }) {
+  const [open, setOpen] = useState(defaultOpen);
+  return (
+    <div className="lt-pcat">
+      <button className="lt-pcat__hd-label lt-collapsible-hd" onClick={() => setOpen((o) => !o)}>
+        {title}
+        <span className="lt-collapsible-hd__arrow">{open ? "▲" : "▼"}</span>
+      </button>
+      {open && children}
+    </div>
+  );
+}
 
 export function RightPanel({
   match,
@@ -47,12 +74,12 @@ export function RightPanel({
   const topHome = playerStats
     .filter((s) => s.teamId === match.teamHomeId && s.rating != null)
     .sort((a, b) => b.rating - a.rating)
-    .slice(0, 5)
+    .slice(0, 3)
     .map((s) => ({ ...s, resolvedName: playerName(s.playerId) }));
   const topAway = playerStats
     .filter((s) => s.teamId === match.teamAwayId && s.rating != null)
     .sort((a, b) => b.rating - a.rating)
-    .slice(0, 5)
+    .slice(0, 3)
     .map((s) => ({ ...s, resolvedName: playerName(s.playerId) }));
 
   const topScorers = [...lineups]
@@ -82,8 +109,7 @@ export function RightPanel({
     <div className="lt-col lt-col--stats">
       {/* 1. Statistiken */}
       {homeStats && awayStats && (
-        <div className="lt-right__section">
-          <div className="lt-right__section-title">📊 Statistiken</div>
+        <Collapsible title="📊 Statistiken">
           <div className="lt-stat-teams">
             <span className="lt-stat-teams__home">{homeAbbr}</span>
             <span />
@@ -93,42 +119,26 @@ export function RightPanel({
             label="Ballbesitz"
             home={`${homeStats.possessionPercentage}%`}
             away={`${awayStats.possessionPercentage}%`}
+            homeVal={homeStats.possessionPercentage}
+            awayVal={awayStats.possessionPercentage}
+            standalone
           />
-          <div className="lt-stat-bar">
-            <div
-              className="lt-stat-bar__home"
-              style={{ width: `${homeStats.possessionPercentage}%` }}
-            />
-            <div
-              className="lt-stat-bar__away"
-              style={{ width: `${awayStats.possessionPercentage}%` }}
-            />
-          </div>
           {[
-            [
-              "Schüsse",
-              homeStats.goalScoringAttempt,
-              awayStats.goalScoringAttempt,
-            ],
-            [
-              "aufs Tor",
-              homeStats.goalOnTargetScoringAttempt,
-              awayStats.goalOnTargetScoringAttempt,
-            ],
+            ["Schüsse", homeStats.goalScoringAttempt, awayStats.goalScoringAttempt],
+            ["aufs Tor", homeStats.goalOnTargetScoringAttempt, awayStats.goalOnTargetScoringAttempt],
             ["Pässe", homeStats.totalPass, awayStats.totalPass],
             ["Ecken", homeStats.cornerTaken, awayStats.cornerTaken],
             ["Fouls", homeStats.fouls, awayStats.fouls],
             ["Abseits", homeStats.totalOffside, awayStats.totalOffside],
           ].map(([lbl, h, a]) => (
-            <StatRow key={lbl} label={lbl} home={h} away={a} />
+            <StatRow key={lbl} label={lbl} home={h} away={a} homeVal={h} awayVal={a} />
           ))}
-        </div>
+        </Collapsible>
       )}
 
       {/* 2. Aufstellung */}
       {(homeLineup.length > 0 || awayLineup.length > 0) && (
-        <div className="lt-right__section">
-          <div className="lt-right__section-title">📋 Aufstellung</div>
+        <Collapsible title="📋 Aufstellung">
           <div className="lt-lineup-grid">
             <FormationColumn
               lineup={homeStarters}
@@ -193,96 +203,63 @@ export function RightPanel({
               </div>
             </>
           )}
-        </div>
+        </Collapsible>
       )}
 
       {/* 3. Beste Spieler + Spieler-Statistiken */}
       {(topHome.length > 0 || topAway.length > 0) && (
-        <div className="lt-right__section">
-          <div className="lt-right__section-title">⭐ Beste Spieler</div>
-          <div className="lt-lineup-grid">
+        <Collapsible title="⭐ Beste Spieler">
+          <div className="lt-pcat__cols">
             <div>
-              <div className="lt-lineup-team-label lt-lineup-team-label--home">
-                {homeAbbr}
-              </div>
+              <div className="lt-pcat__col-hd lt-pcat__col-hd--home">{homeAbbr}</div>
               {topHome.map((p) => (
-                <div key={p.id} className="lt-player lt-player--sm">
-                  <span className="lt-player__rank" title="Rating">
-                    {p.rating?.toFixed(1)}
-                  </span>
-                  <div className="lt-player__info">
-                    <div className="lt-player__name">
+                <div key={p.id} className="lt-prow lt-prow--home">
+                  <div className="lt-prow__body">
+                    <span className="lt-prow__name">
                       {p.resolvedName ?? `#${p.jerseyNumber ?? "?"}`}
-                    </div>
-                    <div className="lt-player__meta">
-                      {p.minutes ?? 0}'{p.goals > 0 && ` ⚽${p.goals}`}
+                    </span>
+                    <span className="lt-prow__sub">
+                      {p.minutes ?? 0}'
+                      {p.goals > 0 && ` ⚽${p.goals}`}
                       {p.assists > 0 && ` 🅰️${p.assists}`}
                       {p.shotsOnTarget > 0 && ` 🎯${p.shotsOnTarget}`}
-                    </div>
+                      {p.cardsYellow > 0 && " 🟨"}
+                      {p.cardsRed > 0 && " 🟥"}
+                    </span>
                   </div>
-                  {p.cardsYellow > 0 && <span title="Gelb">🟨</span>}
-                  {p.cardsRed > 0 && <span title="Rot">🟥</span>}
+                  <span className="lt-prow__rating">{p.rating?.toFixed(1)}</span>
                 </div>
               ))}
             </div>
             <div>
-              <div className="lt-lineup-team-label lt-lineup-team-label--away">
-                {awayAbbr}
-              </div>
+              <div className="lt-pcat__col-hd lt-pcat__col-hd--away">{awayAbbr}</div>
               {topAway.map((p) => (
-                <div key={p.id} className="lt-player lt-player--sm">
-                  <span className="lt-player__rank" title="Rating">
-                    {p.rating?.toFixed(1)}
-                  </span>
-                  <div className="lt-player__info">
-                    <div className="lt-player__name">
+                <div key={p.id} className="lt-prow lt-prow--away">
+                  <div className="lt-prow__body">
+                    <span className="lt-prow__name">
                       {p.resolvedName ?? `#${p.jerseyNumber ?? "?"}`}
-                    </div>
-                    <div className="lt-player__meta">
-                      {p.minutes ?? 0}'{p.goals > 0 && ` ⚽${p.goals}`}
+                    </span>
+                    <span className="lt-prow__sub">
+                      {p.minutes ?? 0}'
+                      {p.goals > 0 && ` ⚽${p.goals}`}
                       {p.assists > 0 && ` 🅰️${p.assists}`}
                       {p.shotsOnTarget > 0 && ` 🎯${p.shotsOnTarget}`}
-                    </div>
+                      {p.cardsYellow > 0 && " 🟨"}
+                      {p.cardsRed > 0 && " 🟥"}
+                    </span>
                   </div>
-                  {p.cardsYellow > 0 && <span title="Gelb">🟨</span>}
-                  {p.cardsRed > 0 && <span title="Rot">🟥</span>}
+                  <span className="lt-prow__rating">{p.rating?.toFixed(1)}</span>
                 </div>
               ))}
             </div>
           </div>
 
-          {/* Spieler-Statistiken Top 3 pro Team */}
           {[
-            {
-              label: "⚽ Tore",
-              key: "goals",
-              filter: (p) => p.goals > 0,
-              fmt: (p) => p.goals,
-            },
-            {
-              label: "🅰️ Assists",
-              key: "assists",
-              filter: (p) => p.assists > 0,
-              fmt: (p) => p.assists,
-            },
-            {
-              label: "🎯 Schüsse aufs Tor",
-              key: "shotsOnTarget",
-              filter: (p) => p.shotsOnTarget > 0,
-              fmt: (p) => p.shotsOnTarget,
-            },
-            {
-              label: "🔑 Pässe",
-              key: "passesTotal",
-              filter: (p) => p.passesTotal > 0,
-              fmt: (p) => p.passesTotal,
-            },
-            {
-              label: "🛡️ Tackles",
-              key: "tacklesTotal",
-              filter: (p) => p.tacklesTotal > 0,
-              fmt: (p) => p.tacklesTotal,
-            },
+            { label: "⚽ Tore", key: "goals", filter: (p) => p.goals > 0, fmt: (p) => p.goals },
+            { label: "🅰️ Assists", key: "assists", filter: (p) => p.assists > 0, fmt: (p) => p.assists },
+            { label: "🎯 Schüsse", key: "shotsOnTarget", filter: (p) => p.shotsOnTarget > 0, fmt: (p) => p.shotsOnTarget },
+            { label: "🔑 Pässe", key: "passesTotal", filter: (p) => p.passesTotal > 0, fmt: (p) => p.passesTotal },
+            { label: "🛡️ Tackles", key: "tacklesTotal", filter: (p) => p.tacklesTotal > 0, fmt: (p) => p.tacklesTotal },
           ].map(({ label, key, filter, fmt }) => {
             const homeTop = [...playerStats]
               .filter((s) => s.teamId === match.teamHomeId && filter(s))
@@ -296,61 +273,40 @@ export function RightPanel({
               .map((s) => ({ ...s, resolvedName: playerName(s.playerId) }));
             if (homeTop.length === 0 && awayTop.length === 0) return null;
             return (
-              <div key={key} style={{ marginTop: "10px" }}>
-                <div
-                  className="lt-right__section-title"
-                  style={{ fontSize: "0.75rem" }}
-                >
-                  {label}
-                </div>
-                <div className="lt-lineup-grid">
+              <CollapsibleCat key={key} title={label}>
+                <div className="lt-pcat__cols">
                   <div>
-                    <div className="lt-lineup-team-label lt-lineup-team-label--home">
-                      {homeAbbr}
-                    </div>
-                    {homeTop.map((p, i) => (
-                      <div key={p.id} className="lt-player lt-player--sm">
-                        <span className="lt-player__rank">
-                          {["🥇", "🥈", "🥉"][i]}
+                    <div className="lt-pcat__col-hd lt-pcat__col-hd--home">{homeAbbr}</div>
+                    {homeTop.map((p) => (
+                      <div key={p.id} className="lt-pcat__row">
+                        <span className="lt-pcat__val">{fmt(p)}</span>
+                        <span className="lt-pcat__name">
+                          {p.resolvedName ?? `#${p.jerseyNumber ?? "?"}`}
                         </span>
-                        <div className="lt-player__info">
-                          <div className="lt-player__name">
-                            {p.resolvedName ?? `#${p.jerseyNumber ?? "?"}`}
-                          </div>
-                        </div>
-                        <span className="lt-player__rank">{fmt(p)}</span>
                       </div>
                     ))}
                   </div>
                   <div>
-                    <div className="lt-lineup-team-label lt-lineup-team-label--away">
-                      {awayAbbr}
-                    </div>
-                    {awayTop.map((p, i) => (
-                      <div key={p.id} className="lt-player lt-player--sm">
-                        <span className="lt-player__rank">
-                          {["🥇", "🥈", "🥉"][i]}
+                    <div className="lt-pcat__col-hd lt-pcat__col-hd--away">{awayAbbr}</div>
+                    {awayTop.map((p) => (
+                      <div key={p.id} className="lt-pcat__row lt-pcat__row--away">
+                        <span className="lt-pcat__name">
+                          {p.resolvedName ?? `#${p.jerseyNumber ?? "?"}`}
                         </span>
-                        <div className="lt-player__info">
-                          <div className="lt-player__name">
-                            {p.resolvedName ?? `#${p.jerseyNumber ?? "?"}`}
-                          </div>
-                        </div>
-                        <span className="lt-player__rank">{fmt(p)}</span>
+                        <span className="lt-pcat__val">{fmt(p)}</span>
                       </div>
                     ))}
                   </div>
                 </div>
-              </div>
+              </CollapsibleCat>
             );
           })}
-        </div>
+        </Collapsible>
       )}
 
       {/* 4. Torschützen */}
       {topScorers.length > 0 && (
-        <div className="lt-right__section">
-          <div className="lt-right__section-title">⚽ Torschützen</div>
+        <Collapsible title="⚽ Torschützen">
           {topScorers.map((p) => (
             <div key={p.id} className="lt-player">
               <span className="lt-player__rank">{p.numberOfGoals}×</span>
@@ -366,13 +322,12 @@ export function RightPanel({
               {p.hasRedCard && <span title="Rote Karte">🟥</span>}
             </div>
           ))}
-        </div>
+        </Collapsible>
       )}
 
       {/* 5. Karten */}
       {withCards.length > 0 && (
-        <div className="lt-right__section">
-          <div className="lt-right__section-title">🟨 Karten</div>
+        <Collapsible title="🟨 Karten">
           {withCards.map((p) => (
             <div key={p.id} className="lt-player">
               <span className="lt-player__rank">
@@ -388,7 +343,7 @@ export function RightPanel({
               </div>
             </div>
           ))}
-        </div>
+        </Collapsible>
       )}
     </div>
   );
@@ -451,12 +406,42 @@ function FormationColumn({ lineup, playerName, abbr, labelClass }) {
   );
 }
 
-function StatRow({ label, home, away }) {
+function StatRow({ label, home, away, homeVal, awayVal, standalone }) {
+  const hv = Number(homeVal ?? 0);
+  const av = Number(awayVal ?? 0);
+  const total = hv + av;
+  const homePct = total > 0 ? (hv / total) * 100 : 50;
+  const awayPct = total > 0 ? (av / total) * 100 : 50;
+
+  if (standalone) {
+    return (
+      <>
+        <div className="lt-stat-row">
+          <span className="lt-stat-val lt-stat-val--home">{home}</span>
+          <span className="lt-stat-lbl">{label}</span>
+          <span className="lt-stat-val lt-stat-val--away">{away}</span>
+        </div>
+        {homeVal != null && awayVal != null && (
+          <div className="lt-stat-bar">
+            <div className="lt-stat-bar__home" style={{ width: `${homePct}%` }} />
+            <div className="lt-stat-bar__away" style={{ width: `${awayPct}%` }} />
+          </div>
+        )}
+      </>
+    );
+  }
+
   return (
     <div className="lt-stat-row">
       <span className="lt-stat-val lt-stat-val--home">{home}</span>
       <span className="lt-stat-lbl">{label}</span>
       <span className="lt-stat-val lt-stat-val--away">{away}</span>
+      {homeVal != null && awayVal != null && (
+        <div className="lt-stat-bar lt-stat-bar--inline">
+          <div className="lt-stat-bar__home" style={{ width: `${homePct}%` }} />
+          <div className="lt-stat-bar__away" style={{ width: `${awayPct}%` }} />
+        </div>
+      )}
     </div>
   );
 }

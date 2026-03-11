@@ -234,7 +234,6 @@ export function CenterPanel({
               ) : (
                 <AIDraft
                   eventType={selectedEvent.liveTickerEventType}
-                  confidence={selectedDraft?.confidence ?? "medium"}
                   draftText={
                     selectedDraft?.text ??
                     "Kein Draft vorhanden – generiere einen Stil."

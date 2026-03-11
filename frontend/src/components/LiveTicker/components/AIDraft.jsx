@@ -4,7 +4,6 @@
 // ============================================================
 export function AIDraft({
   eventType,
-  confidence,
   draftText,
   onAccept,
   onReject,
@@ -16,13 +15,6 @@ export function AIDraft({
       <div className="lt-draft__header">
         <span style={{ fontSize: "0.9rem" }}>✦</span>
         <span className="lt-draft__label">AI Draft — {eventType}</span>
-        {confidence && (
-          <span
-            className={`lt-draft__confidence lt-draft__confidence--${confidence}`}
-          >
-            {confidence}
-          </span>
-        )}
       </div>
 
       <div
