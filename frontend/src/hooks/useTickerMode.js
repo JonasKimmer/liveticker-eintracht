@@ -43,17 +43,5 @@ export function useTickerMode(onAccept, onReject) {
     return () => window.removeEventListener("keydown", handler);
   }, [mode, acceptDraft, rejectDraft]);
 
-  // Alt+1/2/3 — Modus per Tastatur wechseln (alle Modi)
-  useEffect(() => {
-    const handler = (e) => {
-      if (!e.altKey) return;
-      if (e.key === "1") setMode(MODES.AUTO);
-      if (e.key === "2") setMode(MODES.COOP);
-      if (e.key === "3") setMode(MODES.MANUAL);
-    };
-    window.addEventListener("keydown", handler);
-    return () => window.removeEventListener("keydown", handler);
-  }, []);
-
   return { mode, setMode, acceptDraft, rejectDraft };
 }

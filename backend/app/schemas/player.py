@@ -97,6 +97,7 @@ class PlayerResponse(BaseModel):
     )
 
     id: int
+    external_id: Optional[int] = None
     sport: str
     team_id: Optional[int] = None
     first_name: Optional[str] = None

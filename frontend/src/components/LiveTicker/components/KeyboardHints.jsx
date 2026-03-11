@@ -17,9 +17,9 @@ export function KeyboardHints({ mode, onClose }) {
 
         <div className="lt-kb-modal__grid">
           <KbGroup title="Modus wechseln">
-            <KbItem keys={["Alt", "1"]} action="AUTO Modus" />
-            <KbItem keys={["Alt", "2"]} action="CO-OP Modus" />
-            <KbItem keys={["Alt", "3"]} action="MANUAL Modus" />
+            <KbItem keys={["Ctrl", "1"]} action="AUTO Modus" />
+            <KbItem keys={["Ctrl", "2"]} action="CO-OP Modus" />
+            <KbItem keys={["Ctrl", "3"]} action="MANUAL Modus" />
           </KbGroup>
 
           <KbGroup title="Veröffentlichen">
@@ -39,10 +39,26 @@ export function KeyboardHints({ mode, onClose }) {
 
           {mode !== MODES.AUTO && (
             <KbGroup title="Slash Commands">
-              <KbItem keys={["/goal"]} action="Tor-Template" />
-              <KbItem keys={["/card"]} action="Karten-Template" />
-              <KbItem keys={["/sub"]} action="Wechsel-Template" />
-              <KbItem keys={["/note"]} action="Notiz-Template" />
+              <KbItem keys={["/g"]}       action="Tor" />
+              <KbItem keys={["/og"]}      action="Eigentor" />
+              <KbItem keys={["/gelb"]}    action="Gelbe Karte" />
+              <KbItem keys={["/rot"]}     action="Rote Karte" />
+              <KbItem keys={["/ep"]}      action="Elfmeter verschossen" />
+              <KbItem keys={["/s"]}       action="Wechsel" />
+              <KbItem keys={["/n"]}       action="Notiz" />
+              <KbItem keys={["/anpfiff"]} action="Anpfiff" />
+              <KbItem keys={["/hz"]}      action="Halbzeit" />
+              <KbItem keys={["/2hz"]}     action="2. Halbzeit" />
+              <KbItem keys={["/abpfiff"]} action="Abpfiff" />
+            </KbGroup>
+          )}
+
+          {mode !== MODES.AUTO && (
+            <KbGroup title="Editor">
+              <KbItem keys={["↑", "↓"]}    action="In Vorschlägen navigieren" />
+              <KbItem keys={["Tab"]}        action="Vorschlag übernehmen" />
+              <KbItem keys={["Enter"]}      action="Command als Vorschau formatieren" />
+              <KbItem keys={["Esc"]}        action="Palette schließen" />
             </KbGroup>
           )}
         </div>

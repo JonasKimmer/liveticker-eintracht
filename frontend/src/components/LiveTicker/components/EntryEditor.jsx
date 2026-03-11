@@ -1,24 +1,29 @@
 // ============================================================
-// EntryEditor.jsx  — editierbares Textarea
-// (CO-OP nach "Bearbeiten" + MANUAL immer sichtbar)
+// EntryEditor.jsx  — Slash-Command Editor mit Autocomplete
 // ============================================================
-import React, { useState, useMemo, useRef } from "react";
+import React, { useState, useEffect, useMemo, useRef } from "react";
 import { parseCommand } from "../utils/parseCommand";
-import { MODES, MANUAL_ICONS } from "../constants";
+import { MODES } from "../constants";
 
-// Phasen-Definitionen (offizielle API-Werte)
-const PHASES = [
-  { value: "Before",                label: "Vor",       hasMinute: false },
-  { value: "FirstHalf",             label: "1. HZ",     hasMinute: true  },
-  { value: "FirstHalfBreak",        label: "Halbzeit",  hasMinute: false },
-  { value: "SecondHalf",            label: "2. HZ",     hasMinute: true  },
-  { value: "SecondHalfBreak",       label: "Pause",     hasMinute: false },
-  { value: "ExtraFirstHalf",        label: "VZ 1",      hasMinute: true  },
-  { value: "ExtraBreak",            label: "VZ-Pause",  hasMinute: false },
-  { value: "ExtraSecondHalf",       label: "VZ 2",      hasMinute: true  },
-  { value: "ExtraSecondHalfBreak",  label: "Elfm.P",   hasMinute: false },
-  { value: "PenaltyShootout",       label: "Elfmeter",  hasMinute: true  },
-  { value: "After",                 label: "Nach",      hasMinute: false },
+const COMMAND_PALETTE = [
+  { cmd: "/g",        desc: "Tor",                    icon: "⚽", hint: "Spieler Team" },
+  { cmd: "/og",       desc: "Eigentor",               icon: "⚽", hint: "Spieler Team" },
+  { cmd: "/gelb",     desc: "Gelbe Karte",            icon: "🟨", hint: "Spieler Team" },
+  { cmd: "/rot",      desc: "Rote Karte",             icon: "🟥", hint: "Spieler Team" },
+  { cmd: "/ep",       desc: "Elfmeter verschossen",   icon: "❌", hint: "Spieler Team" },
+  { cmd: "/s",        desc: "Wechsel",                icon: "🔄", hint: "Ein Aus Team" },
+  { cmd: "/n",        desc: "Notiz",                  icon: "📝", hint: "Text" },
+  null, // separator
+  { cmd: "/prematch", desc: "Prematch",               icon: "📣", hint: "" },
+  { cmd: "/anpfiff",  desc: "Anpfiff",                icon: "📣", hint: "Minute" },
+  { cmd: "/hz",       desc: "Halbzeit",               icon: "🔔", hint: "" },
+  { cmd: "/2hz",      desc: "2. Halbzeit",            icon: "📣", hint: "Minute" },
+  { cmd: "/pause",    desc: "Pause (2. HZ)",          icon: "🔔", hint: "" },
+  { cmd: "/vz1",      desc: "Verlängerung 1. HZ",     icon: "📣", hint: "Minute" },
+  { cmd: "/vzp",      desc: "VZ-Pause",               icon: "🔔", hint: "" },
+  { cmd: "/vz2",      desc: "Verlängerung 2. HZ",     icon: "📣", hint: "Minute" },
+  { cmd: "/elfmeter", desc: "Elfmeterschießen",       icon: "🥅", hint: "" },
+  { cmd: "/abpfiff",  desc: "Abpfiff",                icon: "📣", hint: "" },
 ];
 
 export function EntryEditor({
@@ -28,38 +33,134 @@ export function EntryEditor({
   onCancel,
   mode,
   currentMinute = 0,
+  playerNames = [],
 }) {
-  const [showCmds, setShowCmds] = useState(false);
-  const [manualIcon, setManualIcon] = useState("📝");
-  const [manualMinute, setManualMinute] = useState("");
-  const [phase, setPhase] = useState("FirstHalf");
-  const [error, setError] = useState("");
+  const [paletteOpen, setPaletteOpen] = useState(false);
+  const [paletteIdx, setPaletteIdx] = useState(0);
+  const [nameIdx, setNameIdx] = useState(0);
   const textareaRef = useRef(null);
 
-  const selectedPhase = PHASES.find((p) => p.value === phase) ?? PHASES[1];
+  // Live minute — starts from currentMinute, ticks every 60s, can be manually overridden
+  const [minute, setMinute] = useState(currentMinute);
+  const [minuteEditing, setMinuteEditing] = useState(false);
+  const [minuteOverride, setMinuteOverride] = useState(false);
+  const minuteRef = useRef(null);
 
-  // Live-Preview des Commands
+  // Sync from prop when not manually overridden
+  useEffect(() => {
+    if (!minuteOverride) setMinute(currentMinute);
+  }, [currentMinute, minuteOverride]);
+
+  // Tick up every 60s when minute > 0 and not overridden
+  useEffect(() => {
+    if (minuteOverride || minute === 0) return;
+    const id = setInterval(() => setMinute((m) => m + 1), 60000);
+    return () => clearInterval(id);
+  }, [minuteOverride, minute]);
+
+  // Which commands to show in palette (filter by typed prefix)
+  const cmdToken = value.startsWith("/") && !value.includes(" ")
+    ? value.toLowerCase()
+    : value === "/"
+      ? "/"
+      : null;
+
+  const filteredCmds = useMemo(() => {
+    if (!cmdToken) return [];
+    const items = COMMAND_PALETTE.filter(Boolean);
+    if (cmdToken === "/") return items;
+    return items.filter((c) => c.cmd.startsWith(cmdToken));
+  }, [cmdToken]);
+
+  const showPalette = paletteOpen && filteredCmds.length > 0;
+
+  // Live preview
   const preview = useMemo(() => {
     if (!value.trim().startsWith("/")) return null;
-    return parseCommand(
-      value,
-      currentMinute || parseInt(manualMinute, 10) || 0,
-    );
-  }, [value, currentMinute, manualMinute]);
+    return parseCommand(value.trim(), minute);
+  }, [value, minute]);
+
+  // Last typed word (for name autocomplete)
+  const lastWord = useMemo(() => {
+    if (value.startsWith("/") && !value.includes(" ")) return "";
+    const words = value.split(/\s+/);
+    return words[words.length - 1] ?? "";
+  }, [value]);
+
+  // Name suggestions: match full name OR any word within name
+  const nameSuggestions = useMemo(() => {
+    if (!lastWord) return [];
+    const q = lastWord.toLowerCase();
+    return playerNames
+      .filter((name) => {
+        const parts = name.toLowerCase().split(/\s+/);
+        return parts.some((part) => part.startsWith(q) && part !== q) ||
+               (name.toLowerCase().startsWith(q) && name.toLowerCase() !== q);
+      })
+      .slice(0, 6);
+  }, [lastWord, playerNames]);
+
+  const showNames = nameSuggestions.length > 0 && !showPalette;
+
+  // Reset name index when suggestions change
+  useEffect(() => { setNameIdx(0); }, [nameSuggestions]);
+
+  const selectName = (name) => {
+    // Replace the lastWord with the full name
+    const words = value.split(/\s+/);
+    words[words.length - 1] = name;
+    onChange(words.join(" ") + " ");
+    setTimeout(() => textareaRef.current?.focus(), 0);
+  };
+
+  const selectCmd = (cmd) => {
+    const needsArg = ["/anpfiff", "/2hz", "/vz1", "/vz2", "/g", "/og", "/gelb", "/rot", "/ep", "/c", "/s", "/n"].includes(cmd);
+    onChange(cmd + (needsArg ? " " : ""));
+    setPaletteOpen(false);
+    setTimeout(() => textareaRef.current?.focus(), 0);
+  };
+
+  const handleChange = (e) => {
+    const v = e.target.value;
+    onChange(v);
+    if (v.startsWith("/") && !v.includes(" ")) {
+      setPaletteOpen(true);
+      setPaletteIdx(0);
+    } else {
+      setPaletteOpen(false);
+    }
+  };
 
   const handleKeyDown = (e) => {
-    if (
-      e.key === "Enter" &&
-      !e.ctrlKey &&
-      !e.shiftKey &&
-      value.trim().startsWith("/")
-    ) {
-      if (preview?.isValid) {
+    // Command palette navigation
+    if (showPalette) {
+      if (e.key === "ArrowDown") { e.preventDefault(); setPaletteIdx((i) => Math.min(i + 1, filteredCmds.length - 1)); return; }
+      if (e.key === "ArrowUp")   { e.preventDefault(); setPaletteIdx((i) => Math.max(i - 1, 0)); return; }
+      if (e.key === "Tab" || e.key === "Enter") {
         e.preventDefault();
-        onChange(preview.formatted);
+        if (filteredCmds[paletteIdx]) selectCmd(filteredCmds[paletteIdx].cmd);
+        return;
       }
+      if (e.key === "Escape") { setPaletteOpen(false); return; }
+    }
+
+    // Name suggestions navigation
+    if (showNames) {
+      if (e.key === "ArrowDown") { e.preventDefault(); setNameIdx((i) => Math.min(i + 1, nameSuggestions.length - 1)); return; }
+      if (e.key === "ArrowUp")   { e.preventDefault(); setNameIdx((i) => Math.max(i - 1, 0)); return; }
+      if (e.key === "Tab" || e.key === "Enter") {
+        if (nameSuggestions[nameIdx]) { e.preventDefault(); selectName(nameSuggestions[nameIdx]); return; }
+      }
+      if (e.key === "Escape") { onChange(value); return; }
+    }
+
+    // Enter accepts command preview
+    if (e.key === "Enter" && !e.ctrlKey && !e.shiftKey && value.trim().startsWith("/")) {
+      if (preview?.isValid) { e.preventDefault(); onChange(preview.formatted); }
       return;
     }
+
+    // Ctrl+Enter = publish
     if (e.ctrlKey && e.key === "Enter") {
       e.preventDefault();
       handlePublish();
@@ -67,24 +168,26 @@ export function EntryEditor({
   };
 
   const handlePublish = () => {
-    setError("");
-    if (mode === MODES.MANUAL) {
-      if (selectedPhase.hasMinute) {
-        const min = parseInt(manualMinute, 10);
-        if (!manualMinute || isNaN(min) || min < 1 || min > 200) {
-          setError("Bitte eine gültige Minute eingeben");
-          return;
-        }
-      }
+    if (!value.trim()) return;
+    if (value.trim().startsWith("/")) {
+      if (!preview?.isValid) return;
+      const meta = preview.meta ?? {};
+      // Pass formatted text directly — no race condition with onChange
+      onPublish?.({
+        text: preview.formatted,
+        icon: meta.icon ?? "📣",
+        minute: meta.minute ?? minute ?? null,
+        phase: meta.phase ?? null,
+      });
+      onChange("");
+    } else {
+      onPublish?.({ text: value.trim(), icon: "📣", minute: minute || null, phase: null });
+      onChange("");
     }
-    const minute = selectedPhase.hasMinute ? parseInt(manualMinute, 10) : null;
-    if (value.trim().startsWith("/") && preview?.isValid) {
-      onChange(preview.formatted);
-      setTimeout(() => onPublish?.({ icon: manualIcon, minute, phase }), 0);
-      return;
-    }
-    onPublish?.({ icon: manualIcon, minute, phase });
   };
+
+  const publishDisabled = !value.trim() ||
+    (value.trim().startsWith("/") && !!preview && !preview.isValid);
 
   return (
     <div className="lt-editor">
@@ -92,149 +195,133 @@ export function EntryEditor({
         <span className="lt-editor__label">
           {mode === MODES.MANUAL ? "Manueller Eintrag" : "Entwurf bearbeiten"}
         </span>
-        <button
-          className="lt-editor__toggle-cmds"
-          onClick={() => setShowCmds((s) => !s)}
-        >
-          {showCmds ? "Commands ausblenden" : "Commands anzeigen"}
-        </button>
+        <div className="lt-editor__minute">
+          {minuteEditing ? (
+            <input
+              ref={minuteRef}
+              type="number"
+              className="lt-editor__minute-input"
+              value={minute}
+              min={0}
+              max={120}
+              onChange={(e) => {
+                setMinute(Number(e.target.value));
+                setMinuteOverride(true);
+              }}
+              onBlur={() => setMinuteEditing(false)}
+              onKeyDown={(e) => { if (e.key === "Enter" || e.key === "Escape") setMinuteEditing(false); }}
+              autoFocus
+            />
+          ) : (
+            <button
+              className={`lt-editor__minute-btn${minuteOverride ? " lt-editor__minute-btn--manual" : ""}`}
+              onClick={() => { setMinuteEditing(true); }}
+              title={minuteOverride ? "Manuell gesetzt – klicken zum Ändern" : "Live-Minute – klicken zum Überschreiben"}
+            >
+              {minute > 0 ? `${minute}'` : "–'"}
+              {!minuteOverride && <span className="lt-editor__minute-live" />}
+            </button>
+          )}
+          {minuteOverride && (
+            <button
+              className="lt-editor__minute-reset"
+              onClick={() => { setMinuteOverride(false); setMinute(currentMinute); }}
+              title="Auf Live-Minute zurücksetzen"
+            >↺</button>
+          )}
+        </div>
       </div>
 
-      {showCmds && (
-        <div className="lt-editor__cmd-guide">
-          <div className="lt-editor__cmd-title">⚡ Slash Commands</div>
-          <div className="lt-editor__cmd-grid">
-            {[
-              [
-                "/goal Müller FCB",
-                `${currentMinute || "??"}'  ⚽ TOR — Müller (FCB)`,
-              ],
-              [
-                "/card Müller FCB yellow",
-                `${currentMinute || "??"}'  🟨 KARTE — Müller (FCB)`,
-              ],
-              [
-                "/card Müller FCB red",
-                `${currentMinute || "??"}'  🟥 ROTE KARTE — Müller (FCB)`,
-              ],
-              [
-                "/sub Kimmich Coman FCB",
-                `${currentMinute || "??"}'  🔄 WECHSEL — Kimmich ↔ Coman (FCB)`,
-              ],
-              [
-                "/note Ecke für FCB",
-                `${currentMinute || "??"}'  — Ecke für FCB`,
-              ],
-            ].map(([cmd, result]) => (
-              <div key={cmd} className="lt-editor__cmd-item">
-                <code>{cmd}</code>
-                <p>→ {result}</p>
+      <div className="lt-editor__input-wrap">
+        {/* Command palette */}
+        {showPalette && (
+          <div className="lt-cmd-palette">
+            {filteredCmds.map((c, i) => (
+              <div
+                key={c.cmd}
+                className={`lt-cmd-palette__item${i === paletteIdx ? " lt-cmd-palette__item--active" : ""}`}
+                onMouseDown={(e) => { e.preventDefault(); selectCmd(c.cmd); }}
+              >
+                <span className="lt-cmd-palette__icon">{c.icon}</span>
+                <span className="lt-cmd-palette__cmd">{c.cmd}</span>
+                <span className="lt-cmd-palette__desc">{c.desc}</span>
+                {c.hint && <span className="lt-cmd-palette__hint">{c.hint}</span>}
               </div>
             ))}
           </div>
-        </div>
-      )}
+        )}
 
-      {/* Phase + Icon + Minute (nur MANUAL) */}
-      {mode === MODES.MANUAL && (
-        <>
-          {/* Phasen-Auswahl */}
-          <div className="lt-editor__phase-row">
-            {PHASES.map((p) => (
-              <button
-                key={p.value}
-                className={`lt-editor__phase-btn${phase === p.value ? " lt-editor__phase-btn--active" : ""}`}
-                onClick={() => { setPhase(p.value); setManualMinute(""); setError(""); }}
-                title={p.value}
-              >
-                {p.label}
-              </button>
-            ))}
+        {/* Name suggestions dropdown */}
+        {showNames && (
+          <div className="lt-cmd-palette lt-name-palette">
+            {nameSuggestions.map((name, i) => {
+              // Highlight the matching part
+              const q = lastWord.toLowerCase();
+              const lname = name.toLowerCase();
+              const matchIdx = lname.indexOf(q);
+              const before = name.slice(0, matchIdx);
+              const match = name.slice(matchIdx, matchIdx + q.length);
+              const after = name.slice(matchIdx + q.length);
+              return (
+                <div
+                  key={name}
+                  className={`lt-cmd-palette__item${i === nameIdx ? " lt-cmd-palette__item--active" : ""}`}
+                  onMouseDown={(e) => { e.preventDefault(); selectName(name); }}
+                >
+                  <span className="lt-cmd-palette__icon">👤</span>
+                  <span className="lt-cmd-palette__cmd">
+                    {before}<strong>{match}</strong>{after}
+                  </span>
+                </div>
+              );
+            })}
           </div>
+        )}
 
-          {/* Icon + Minute */}
-          <div className="lt-editor__icon-row">
-            {MANUAL_ICONS.map(({ icon, label }) => (
-              <button
-                key={icon}
-                className={`lt-editor__icon-btn${manualIcon === icon ? " lt-editor__icon-btn--active" : ""}`}
-                title={label}
-                onClick={() => setManualIcon(icon)}
-              >
-                {icon}
-              </button>
-            ))}
-            {selectedPhase.hasMinute && (
-              <input
-                className="lt-editor__minute-input"
-                type="number"
-                min={1}
-                max={200}
-                placeholder="Min."
-                value={manualMinute}
-                onChange={(e) => {
-                  setManualMinute(e.target.value);
-                  setError("");
-                }}
-              />
-            )}
-          </div>
-        </>
-      )}
-
-      {error && <div className="lt-editor__error">{error}</div>}
-
-      <div className="lt-editor__input-wrap">
         <textarea
           ref={textareaRef}
           className="lt-editor__textarea"
           value={value}
-          onChange={(e) => onChange(e.target.value)}
+          onChange={handleChange}
           onKeyDown={handleKeyDown}
-          placeholder="/goal Müller FCB  ·  /card Müller FCB yellow  ·  /sub Kimmich Coman FCB"
+          placeholder="/ für Commands  ·  Spielername tippen für Vorschläge"
           rows={3}
         />
-        {!value.trim().startsWith("/") && (
+
+        {!value && (
           <div className="lt-editor__hint">
-            Tippe <span>/</span> für Commands · <kbd>Ctrl+Enter</kbd> zum
-            Veröffentlichen
+            <span>/</span> Commands · Spielername Autocomplete · <span>↵</span> Vorschau · <span>Ctrl+↵</span> Veröffentlichen
           </div>
         )}
       </div>
 
       {/* Live Preview */}
       {preview && (
-        <div
-          className={`lt-editor__preview${preview.isValid ? " lt-editor__preview--valid" : ""}`}
-        >
+        <div className={`lt-editor__preview${preview.isValid ? " lt-editor__preview--valid" : ""}`}>
           <div className="lt-editor__preview-label">
             {preview.isValid ? "✓ Vorschau" : "⚠ Vorschau (unvollständig)"}
           </div>
-          <div
-            className={`lt-editor__preview-text${preview.isValid ? " lt-editor__preview-text--valid" : ""}`}
-          >
+          <div className={`lt-editor__preview-text${preview.isValid ? " lt-editor__preview-text--valid" : ""}`}>
+            {preview.meta?.minute ? <span style={{ opacity: 0.6, marginRight: "0.4rem" }}>{preview.meta.minute}'</span> : null}
+            {preview.meta?.icon && <span style={{ marginRight: "0.35rem" }}>{preview.meta.icon}</span>}
             {preview.formatted}
           </div>
           {preview.warnings.map((w, i) => (
-            <div key={i} className="lt-editor__preview-warning">
-              ⚠ {w}
-            </div>
+            <div key={i} className="lt-editor__preview-warning">⚠ {w}</div>
           ))}
         </div>
       )}
 
       <div className="lt-editor__actions">
         {onCancel && (
-          <button className="lt-btn lt-btn--ghost" onClick={onCancel}>
-            Abbrechen
-          </button>
+          <button className="lt-btn lt-btn--ghost" onClick={onCancel}>Abbrechen</button>
         )}
         <button
           className="lt-btn lt-btn--primary"
           onClick={handlePublish}
-          disabled={!value.trim()}
+          disabled={publishDisabled}
         >
-          Veröffentlichen <kbd className="lt-btn__kbd">Ctrl+↵</kbd>
+          Veröffentlichen
         </button>
       </div>
     </div>

@@ -8,6 +8,7 @@ from sqlalchemy.orm import Session, joinedload
 from app.models.lineup import Lineup
 from app.models.match import Match
 from app.models.match_statistic import MatchStatistic
+from app.models.player import Player
 from app.schemas.match import (
     LineupBulkUpdate,
     LineupPlayerInput,
@@ -209,12 +210,29 @@ class MatchRepository:
     # ------------------------------------------------------------------ #
 
     def get_lineup(self, match_id: int) -> list[Lineup]:
-        return (
+        lineups = (
             self.db.query(Lineup)
             .filter(Lineup.match_id == match_id)
             .order_by(Lineup.team_id, Lineup.formation_place)
             .all()
         )
+        # Fill missing player_name via external_id join with players table
+        missing = [l for l in lineups if not l.player_name and l.player_id]
+        if missing:
+            external_ids = [l.player_id for l in missing]
+            players = (
+                self.db.query(Player)
+                .filter(Player.external_id.in_(external_ids))
+                .all()
+            )
+            name_map = {
+                p.external_id: (p.known_name or p.display_name or
+                                f"{p.first_name or ''} {p.last_name or ''}".strip())
+                for p in players
+            }
+            for l in missing:
+                l.player_name = name_map.get(l.player_id) or None
+        return lineups
 
     def replace_lineup(
         self, match_id: int, match: Match, data: LineupBulkUpdate
@@ -230,6 +248,7 @@ class MatchRepository:
                     match_id=match_id,
                     team_id=team_id,
                     player_id=p.player_id,
+                    player_name=p.player_name,
                     jersey_number=p.jersey_number or p.shirt_number,
                     status=p.status.value,
                     formation_place=p.formation_place,

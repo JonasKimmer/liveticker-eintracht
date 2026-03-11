@@ -590,6 +590,8 @@ export default function LiveTicker() {
                 }}
                 reload={reload}
                 instance={instance}
+                lineups={lineups}
+                players={players}
               />
             </div>
           )}

@@ -233,6 +233,7 @@ class LineupPlayerInput(BaseModel):
     model_config = ConfigDict(populate_by_name=True, alias_generator=to_camel)
 
     player_id: int = Field(..., gt=0)
+    player_name: Optional[str] = None
     jersey_number: Optional[int] = Field(None, ge=1, le=99)
     shirt_number: Optional[int] = Field(None, ge=1, le=99)
     status: LineupPlayerStatus
@@ -267,6 +268,7 @@ class LineupPlayerResponse(BaseModel):
     match_id: int
     team_id: int
     player_id: Optional[int] = None
+    player_name: Optional[str] = None
     jersey_number: Optional[int] = None
     status: Optional[str] = None
     formation_place: Optional[int] = None

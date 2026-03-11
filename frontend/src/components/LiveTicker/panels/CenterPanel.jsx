@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef, memo } from "react";
+import React, { useState, useEffect, useCallback, useRef, memo, useMemo } from "react";
 import { AIDraft } from "../components/AIDraft";
 import { EntryEditor } from "../components/EntryEditor";
 import { MediaPickerPanel } from "../components/MediaPickerPanel";
@@ -20,8 +20,25 @@ export function CenterPanel({
   onDraftActive,
   reload,
   instance = "ef_whitelabel",
+  lineups = [],
+  players = [],
 }) {
   const { mode } = useTickerModeContext();
+
+  // Player + team names for autocomplete
+  const playerNames = useMemo(() => {
+    // Player names from lineup (backend joins player_name directly)
+    const fromLineup = lineups.map((l) => l.playerName).filter(Boolean);
+    const fromPlayers = fromLineup.length > 0 ? fromLineup : players
+      .map((p) => p.knownName || p.displayName || `${p.firstName ?? ""} ${p.lastName ?? ""}`.trim())
+      .filter(Boolean);
+
+    // Team names from match
+    const teamNames = [match?.homeTeam?.name, match?.awayTeam?.name].filter(Boolean);
+
+    // Deduplicate
+    return [...new Set([...fromPlayers, ...teamNames])];
+  }, [lineups, players, match]);
 
   const [selectedEventId, setSelectedEventId] = useState(null);
   const [editMode, setEditMode] = useState(false);
@@ -121,11 +138,12 @@ export function CenterPanel({
     }
   }, [pendingEvents, tickerTexts, match, reload, instance]);
 
-  const handleEditPublish = useCallback(async () => {
-    if (!selectedDraft || !editorValue.trim()) return;
+  const handleEditPublish = useCallback(async ({ text } = {}) => {
+    const textToPublish = text ?? editorValue.trim();
+    if (!selectedDraft || !textToPublish) return;
     setPublishing(true);
     try {
-      await api.publishTicker(selectedDraft.id, editorValue.trim());
+      await api.publishTicker(selectedDraft.id, textToPublish);
       await reload.loadTickerTexts();
       setEditorValue("");
       setEditMode(false);
@@ -230,6 +248,7 @@ export function CenterPanel({
                   onCancel={() => setEditMode(false)}
                   mode={mode}
                   currentMinute={selectedEvent.time}
+                  playerNames={playerNames}
                 />
               ) : (
                 <AIDraft
@@ -284,19 +303,21 @@ export function CenterPanel({
           <EntryEditor
             value={editorValue}
             onChange={setEditorValue}
-            onPublish={async ({ icon, minute, phase } = {}) => {
-              if (!editorValue.trim()) return;
-              await onManualPublish(editorValue.trim(), icon, minute, phase);
+            onPublish={async ({ text, icon, minute, phase } = {}) => {
+              const textToPublish = text ?? editorValue.trim();
+              if (!textToPublish) return;
+              await onManualPublish(textToPublish, icon, minute, phase);
               setEditorValue("");
             }}
             mode={mode}
             currentMinute={match?.minute ?? 0}
+            playerNames={playerNames}
           />
         )}
 
         {/* ── ScorePlay Bilder ─────────────────────────── */}
         <div style={{ marginTop: "1rem" }}>
-          <MediaPickerPanel matchId={match.id} />
+          <MediaPickerPanel matchId={match.id} playerNames={playerNames} currentMinute={match?.minute ?? 0} />
         </div>
       </div>
     </div>

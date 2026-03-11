@@ -15,6 +15,7 @@ class Lineup(Base):
         Integer, ForeignKey("teams.id", ondelete="CASCADE"), nullable=False
     )
     player_id = Column(Integer, nullable=True)  # Partner-API playerId
+    player_name = Column(String(200), nullable=True)
     jersey_number = Column(Integer, nullable=True)
     status = Column(String(10), nullable=True)  # Start | Sub
     formation_place = Column(Integer, nullable=True)

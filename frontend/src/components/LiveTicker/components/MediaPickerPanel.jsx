@@ -12,6 +12,22 @@ import { parseCommand } from "../utils/parseCommand";
 import config from "../../../config/whitelabel";
 
 const API_BASE = config.apiBase;
+
+const COMMAND_PALETTE = [
+  { cmd: "/g",        desc: "Tor",                    icon: "⚽", hint: "Spieler Team" },
+  { cmd: "/og",       desc: "Eigentor",               icon: "⚽", hint: "Spieler Team" },
+  { cmd: "/gelb",     desc: "Gelbe Karte",            icon: "🟨", hint: "Spieler Team" },
+  { cmd: "/rot",      desc: "Rote Karte",             icon: "🟥", hint: "Spieler Team" },
+  { cmd: "/ep",       desc: "Elfmeter verschossen",   icon: "❌", hint: "Spieler Team" },
+  { cmd: "/s",        desc: "Wechsel",                icon: "🔄", hint: "Ein Aus Team" },
+  { cmd: "/n",        desc: "Notiz",                  icon: "📝", hint: "Text" },
+  null,
+  { cmd: "/prematch", desc: "Prematch",               icon: "📣", hint: "" },
+  { cmd: "/anpfiff",  desc: "Anpfiff",                icon: "📣", hint: "Minute" },
+  { cmd: "/hz",       desc: "Halbzeit",               icon: "🔔", hint: "" },
+  { cmd: "/2hz",      desc: "2. Halbzeit",            icon: "📣", hint: "Minute" },
+  { cmd: "/abpfiff",  desc: "Abpfiff",                icon: "📣", hint: "" },
+];
 const N8N_WEBHOOK = `${config.n8nBase}/scoreplay-media`;
 
 // ── API ──────────────────────────────────────────────────────
@@ -52,27 +68,90 @@ async function publishMedia({ mediaId, description, matchId, minute }) {
 
 // ── Publish Modal ─────────────────────────────────────────────
 
-function PublishModal({ image, matchId, onClose, onPublished }) {
+function PublishModal({ image, matchId, onClose, onPublished, playerNames = [], currentMinute = 0 }) {
   const [description, setDescription] = useState("");
-  const [minute, setMinute] = useState("");
   const [loading, setLoading] = useState(false);
   const [generating, setGenerating] = useState(false);
-  const [showCmds, setShowCmds] = useState(false);
   const [error, setError] = useState(null);
   const textareaRef = useRef(null);
+  const minuteRef = useRef(null);
 
-  const minuteNum = parseInt(minute, 10) || 0;
+  // Live minute
+  const [minute, setMinute] = useState(currentMinute);
+  const [minuteEditing, setMinuteEditing] = useState(false);
+  const [minuteOverride, setMinuteOverride] = useState(false);
+
+  useEffect(() => { if (!minuteOverride) setMinute(currentMinute); }, [currentMinute, minuteOverride]);
+  useEffect(() => {
+    if (minuteOverride || minute === 0) return;
+    const id = setInterval(() => setMinute((m) => m + 1), 60000);
+    return () => clearInterval(id);
+  }, [minuteOverride, minute]);
+
+  // Command palette
+  const [paletteOpen, setPaletteOpen] = useState(false);
+  const [paletteIdx, setPaletteIdx] = useState(0);
+  const [nameIdx, setNameIdx] = useState(0);
+
+  const cmdToken = description.startsWith("/") && !description.includes(" ")
+    ? description.toLowerCase()
+    : description === "/" ? "/" : null;
+
+  const filteredCmds = useMemo(() => {
+    if (!cmdToken) return [];
+    const items = COMMAND_PALETTE.filter(Boolean);
+    if (cmdToken === "/") return items;
+    return items.filter((c) => c.cmd.startsWith(cmdToken));
+  }, [cmdToken]);
+
+  const showPalette = paletteOpen && filteredCmds.length > 0;
+
   const preview = useMemo(() => {
     if (!description.trim().startsWith("/")) return null;
-    return parseCommand(description, minuteNum);
-  }, [description, minuteNum]);
+    return parseCommand(description.trim(), minute);
+  }, [description, minute]);
 
+  const lastWord = useMemo(() => {
+    if (description.startsWith("/") && !description.includes(" ")) return "";
+    const words = description.split(/\s+/);
+    return words[words.length - 1] ?? "";
+  }, [description]);
+
+  const nameSuggestions = useMemo(() => {
+    if (!lastWord) return [];
+    const q = lastWord.toLowerCase();
+    return playerNames
+      .filter((name) => {
+        const parts = name.toLowerCase().split(/\s+/);
+        return parts.some((part) => part.startsWith(q) && part !== q) ||
+               (name.toLowerCase().startsWith(q) && name.toLowerCase() !== q);
+      })
+      .slice(0, 6);
+  }, [lastWord, playerNames]);
+
+  const showNames = nameSuggestions.length > 0 && !showPalette;
+
+  useEffect(() => { setNameIdx(0); }, [nameSuggestions]);
   useEffect(() => { textareaRef.current?.focus(); }, []);
   useEffect(() => {
-    const onKey = (e) => { if (e.key === "Escape") onClose(); };
+    const onKey = (e) => { if (e.key === "Escape" && !showPalette && !showNames) onClose(); };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [onClose]);
+  }, [onClose, showPalette, showNames]);
+
+  const selectCmd = (cmd) => {
+    const needsArg = ["/anpfiff", "/2hz", "/vz1", "/vz2", "/g", "/og", "/gelb", "/rot", "/ep", "/s", "/n"].includes(cmd);
+    setDescription(cmd + (needsArg ? " " : ""));
+    setPaletteOpen(false);
+    setTimeout(() => textareaRef.current?.focus(), 0);
+  };
+
+  const selectName = (name) => {
+    const words = description.split(/\s+/);
+    words[words.length - 1] = name;
+    setDescription(words.join(" ") + " ");
+    setTimeout(() => textareaRef.current?.focus(), 0);
+  };
 
   async function handleGenerate() {
     setGenerating(true);
@@ -88,38 +167,58 @@ function PublishModal({ image, matchId, onClose, onPublished }) {
     }
   }
 
-  function handleKeyDown(e) {
-    if (e.key === "Enter" && description.trim() === "/g") {
-      e.preventDefault();
-      handleGenerate();
-      return;
-    }
-    if (e.key === "Enter" && !e.ctrlKey && !e.shiftKey && description.trim().startsWith("/")) {
-      if (preview?.isValid) {
-        e.preventDefault();
-        setDescription(preview.formatted);
-      }
-      return;
-    }
-    if (e.ctrlKey && e.key === "Enter") {
-      e.preventDefault();
-      handleSubmit(e);
+  function handleChange(e) {
+    const v = e.target.value;
+    setDescription(v);
+    if (v.startsWith("/") && !v.includes(" ")) {
+      setPaletteOpen(true);
+      setPaletteIdx(0);
+    } else {
+      setPaletteOpen(false);
     }
   }
 
+  function handleKeyDown(e) {
+    if (showPalette) {
+      if (e.key === "ArrowDown") { e.preventDefault(); setPaletteIdx((i) => Math.min(i + 1, filteredCmds.length - 1)); return; }
+      if (e.key === "ArrowUp")   { e.preventDefault(); setPaletteIdx((i) => Math.max(i - 1, 0)); return; }
+      if (e.key === "Tab" || e.key === "Enter") { e.preventDefault(); if (filteredCmds[paletteIdx]) selectCmd(filteredCmds[paletteIdx].cmd); return; }
+      if (e.key === "Escape") { setPaletteOpen(false); return; }
+    }
+    if (showNames) {
+      if (e.key === "ArrowDown") { e.preventDefault(); setNameIdx((i) => Math.min(i + 1, nameSuggestions.length - 1)); return; }
+      if (e.key === "ArrowUp")   { e.preventDefault(); setNameIdx((i) => Math.max(i - 1, 0)); return; }
+      if (e.key === "Tab" || e.key === "Enter") { if (nameSuggestions[nameIdx]) { e.preventDefault(); selectName(nameSuggestions[nameIdx]); return; } }
+      if (e.key === "Escape") { return; }
+    }
+    if (e.key === "Enter" && !e.ctrlKey && !e.shiftKey && description.trim().startsWith("/")) {
+      if (preview?.isValid) { e.preventDefault(); setDescription(preview.formatted); }
+      return;
+    }
+    if (e.ctrlKey && e.key === "Enter") { e.preventDefault(); handleSubmit(); }
+  }
+
   async function handleSubmit(e) {
-    e.preventDefault();
-    if (!description.trim()) { setError("Text darf nicht leer sein."); return; }
+    e?.preventDefault();
+    let textToPublish = description.trim();
+    if (!textToPublish) { setError("Text darf nicht leer sein."); return; }
+    if (textToPublish.startsWith("/")) {
+      if (!preview?.isValid) { setError("Befehl unvollständig."); return; }
+      textToPublish = preview.formatted;
+    }
     setLoading(true);
     setError(null);
     try {
-      await publishMedia({ mediaId: image.media_id, description: description.trim(), matchId, minute: minute || null });
+      await publishMedia({ mediaId: image.media_id, description: textToPublish, matchId, minute: minute || null });
       onPublished(image.media_id);
     } catch (err) {
       setError(err.message);
       setLoading(false);
     }
   }
+
+  const publishDisabled = loading || !description.trim() ||
+    (description.trim().startsWith("/") && !!preview && !preview.isValid);
 
   return (
     <div
@@ -172,55 +271,130 @@ function PublishModal({ image, matchId, onClose, onPublished }) {
           )}
 
           <div>
+            {/* Label row with live minute */}
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }}>
-              <label style={{ fontFamily: "var(--lt-font-mono)", fontSize: "0.65rem", color: "var(--lt-text-muted)", textTransform: "uppercase", letterSpacing: "0.08em" }}>
-                Ticker-Text
-              </label>
-              <button type="button" onClick={() => setShowCmds(s => !s)} style={{ fontFamily: "var(--lt-font-mono)", fontSize: "0.62rem", color: "var(--lt-accent)", background: "none", border: "none", cursor: "pointer", padding: 0 }}>
-                {showCmds ? "Commands ausblenden" : "⚡ Commands"}
-              </button>
+              <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                <label style={{ fontFamily: "var(--lt-font-mono)", fontSize: "0.65rem", color: "var(--lt-text-muted)", textTransform: "uppercase", letterSpacing: "0.08em" }}>
+                  Ticker-Text
+                </label>
+                <button
+                  type="button"
+                  onClick={handleGenerate}
+                  disabled={generating}
+                  style={{ fontFamily: "var(--lt-font-mono)", fontSize: "0.62rem", color: "var(--lt-accent)", background: "none", border: "none", cursor: generating ? "not-allowed" : "pointer", padding: 0, opacity: generating ? 0.5 : 1 }}
+                >
+                  {generating ? "…" : "✦ KI-Text"}
+                </button>
+              </div>
+              <div className="lt-editor__minute">
+                {minuteEditing ? (
+                  <input
+                    ref={minuteRef}
+                    type="number"
+                    className="lt-editor__minute-input"
+                    value={minute}
+                    min={0} max={120}
+                    onChange={(e) => { setMinute(Number(e.target.value)); setMinuteOverride(true); }}
+                    onBlur={() => setMinuteEditing(false)}
+                    onKeyDown={(e) => { if (e.key === "Enter" || e.key === "Escape") setMinuteEditing(false); }}
+                    autoFocus
+                  />
+                ) : (
+                  <button
+                    type="button"
+                    className={`lt-editor__minute-btn${minuteOverride ? " lt-editor__minute-btn--manual" : ""}`}
+                    onClick={() => setMinuteEditing(true)}
+                    title={minuteOverride ? "Manuell gesetzt – klicken zum Ändern" : "Live-Minute – klicken zum Überschreiben"}
+                  >
+                    {minute > 0 ? `${minute}'` : "–'"}
+                    {!minuteOverride && <span className="lt-editor__minute-live" />}
+                  </button>
+                )}
+                {minuteOverride && (
+                  <button
+                    type="button"
+                    className="lt-editor__minute-reset"
+                    onClick={() => { setMinuteOverride(false); setMinute(currentMinute); }}
+                    title="Auf Live-Minute zurücksetzen"
+                  >↺</button>
+                )}
+              </div>
             </div>
-            {showCmds && (
-              <div style={{ marginBottom: 8, padding: "0.5rem 0.75rem", background: "var(--lt-bg-card-2)", borderRadius: 6, border: "1px solid var(--lt-border)", display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.4rem 0.75rem" }}>
-                {[
-                  ["/goal Müller FCB", `${minuteNum || "??"}'  ⚽ TOR`],
-                  ["/card Müller FCB yellow", `${minuteNum || "??"}'  🟨 KARTE`],
-                  ["/card Müller FCB red", `${minuteNum || "??"}'  🟥 ROTE KARTE`],
-                  ["/sub Kimmich Coman FCB", `${minuteNum || "??"}'  🔄 WECHSEL`],
-                  ["/note Ecke für FCB", `${minuteNum || "??"}'  — Notiz`],
-                  ["/g", "KI-Text generieren"],
-                ].map(([cmd, result]) => (
-                  <div key={cmd} style={{ cursor: "pointer" }} onClick={() => { setDescription(cmd); textareaRef.current?.focus(); setShowCmds(false); }}>
-                    <code style={{ fontFamily: "var(--lt-font-mono)", fontSize: "0.68rem", color: "var(--lt-accent)" }}>{cmd}</code>
-                    <div style={{ fontFamily: "var(--lt-font-mono)", fontSize: "0.6rem", color: "var(--lt-text-faint)" }}>{result}</div>
-                  </div>
-                ))}
-              </div>
-            )}
-            <textarea
-              ref={textareaRef}
-              placeholder="/goal Müller FCB · /card Müller FCB yellow · /g + Enter für KI-Text"
-              value={generating ? "✦ Generiere…" : description}
-              onChange={(e) => setDescription(e.target.value)}
-              onKeyDown={handleKeyDown}
-              disabled={generating}
-              rows={4}
-              style={{
-                width: "100%", boxSizing: "border-box", resize: "none",
-                background: "var(--lt-bg-input)", border: "1px solid var(--lt-border)",
-                borderRadius: 6, padding: "0.6rem 0.75rem",
-                fontFamily: "var(--lt-font-mono)", fontSize: "0.82rem",
-                color: generating ? "var(--lt-text-muted)" : "var(--lt-text)", lineHeight: 1.5,
-                outline: "none", transition: "border-color 0.15s",
-              }}
-              onFocus={(e) => e.target.style.borderColor = "var(--lt-accent)"}
-              onBlur={(e) => e.target.style.borderColor = "var(--lt-border)"}
-            />
-            {!description.trim().startsWith("/") && (
+
+            {/* Textarea with dropdowns */}
+            <div style={{ position: "relative" }}>
+              {/* Command palette */}
+              {showPalette && (
+                <div className="lt-cmd-palette">
+                  {filteredCmds.map((c, i) => (
+                    <div
+                      key={c.cmd}
+                      className={`lt-cmd-palette__item${i === paletteIdx ? " lt-cmd-palette__item--active" : ""}`}
+                      onMouseDown={(e) => { e.preventDefault(); selectCmd(c.cmd); }}
+                    >
+                      <span className="lt-cmd-palette__icon">{c.icon}</span>
+                      <span className="lt-cmd-palette__cmd">{c.cmd}</span>
+                      <span className="lt-cmd-palette__desc">{c.desc}</span>
+                      {c.hint && <span className="lt-cmd-palette__hint">{c.hint}</span>}
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Name suggestions */}
+              {showNames && (
+                <div className="lt-cmd-palette lt-name-palette">
+                  {nameSuggestions.map((name, i) => {
+                    const q = lastWord.toLowerCase();
+                    const lname = name.toLowerCase();
+                    const matchIdx = lname.indexOf(q);
+                    const before = name.slice(0, matchIdx);
+                    const match = name.slice(matchIdx, matchIdx + q.length);
+                    const after = name.slice(matchIdx + q.length);
+                    return (
+                      <div
+                        key={name}
+                        className={`lt-cmd-palette__item${i === nameIdx ? " lt-cmd-palette__item--active" : ""}`}
+                        onMouseDown={(e) => { e.preventDefault(); selectName(name); }}
+                      >
+                        <span className="lt-cmd-palette__icon">👤</span>
+                        <span className="lt-cmd-palette__cmd">
+                          {before}<strong>{match}</strong>{after}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+
+              <textarea
+                ref={textareaRef}
+                placeholder="/ für Commands  ·  Spielername tippen für Vorschläge"
+                value={generating ? "✦ Generiere…" : description}
+                onChange={handleChange}
+                onKeyDown={handleKeyDown}
+                disabled={generating}
+                rows={4}
+                style={{
+                  width: "100%", boxSizing: "border-box", resize: "none",
+                  background: "var(--lt-bg-input)", border: "1px solid var(--lt-border)",
+                  borderRadius: 6, padding: "0.6rem 0.75rem",
+                  fontFamily: "var(--lt-font-mono)", fontSize: "0.82rem",
+                  color: generating ? "var(--lt-text-muted)" : "var(--lt-text)", lineHeight: 1.5,
+                  outline: "none", transition: "border-color 0.15s",
+                }}
+                onFocus={(e) => e.target.style.borderColor = "var(--lt-accent)"}
+                onBlur={(e) => e.target.style.borderColor = "var(--lt-border)"}
+              />
+            </div>
+
+            {!description && (
               <div style={{ fontFamily: "var(--lt-font-mono)", fontSize: "0.65rem", color: "var(--lt-text-faint)", marginTop: 4 }}>
-                Tippe <span style={{ color: "var(--lt-accent)" }}>/</span> für Commands · <kbd style={{ background: "var(--lt-bg-card-2)", border: "1px solid var(--lt-border)", borderRadius: 3, padding: "1px 4px", fontSize: "0.6rem" }}>Ctrl+Enter</kbd> zum Veröffentlichen
+                <span style={{ color: "var(--lt-accent)" }}>/</span> Commands · Spielername Autocomplete · <span style={{ color: "var(--lt-accent)" }}>↵</span> Vorschau · <span style={{ color: "var(--lt-accent)" }}>Ctrl+↵</span> Veröffentlichen
               </div>
             )}
+
+            {/* Preview */}
             {preview && (
               <div style={{
                 marginTop: 6, padding: "0.4rem 0.6rem", borderRadius: 5,
@@ -230,36 +404,11 @@ function PublishModal({ image, matchId, onClose, onPublished }) {
                 color: preview.isValid ? "var(--lt-text)" : "var(--lt-text-muted)",
               }}>
                 <span style={{ opacity: 0.6, fontSize: "0.62rem" }}>{preview.isValid ? "✓ " : "⚠ "}</span>
+                {preview.meta?.minute ? <span style={{ opacity: 0.6, marginRight: "0.3rem" }}>{preview.meta.minute}'</span> : null}
+                {preview.meta?.icon && <span style={{ marginRight: "0.3rem" }}>{preview.meta.icon}</span>}
                 {preview.formatted}
               </div>
             )}
-          </div>
-
-          <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-            <div style={{ flex: "0 0 auto" }}>
-              <label style={{ fontFamily: "var(--lt-font-mono)", fontSize: "0.65rem", color: "var(--lt-text-muted)", textTransform: "uppercase", letterSpacing: "0.08em", display: "block", marginBottom: 4 }}>
-                Minute
-              </label>
-              <input
-                type="number"
-                placeholder="z.B. 23"
-                value={minute}
-                onChange={(e) => setMinute(e.target.value)}
-                min={0} max={120}
-                style={{
-                  width: 90,
-                  background: "var(--lt-bg-input)", border: "1px solid var(--lt-border)",
-                  borderRadius: 6, padding: "0.5rem 0.75rem",
-                  fontFamily: "var(--lt-font-mono)", fontSize: "0.82rem",
-                  color: "var(--lt-text)", outline: "none",
-                }}
-                onFocus={(e) => e.target.style.borderColor = "var(--lt-accent)"}
-                onBlur={(e) => e.target.style.borderColor = "var(--lt-border)"}
-              />
-            </div>
-            <span style={{ fontFamily: "var(--lt-font-mono)", fontSize: "0.7rem", color: "var(--lt-text-faint)", marginTop: 18 }}>
-              optional
-            </span>
           </div>
 
           <div style={{ display: "flex", gap: "0.5rem", paddingTop: 4 }}>
@@ -279,13 +428,13 @@ function PublishModal({ image, matchId, onClose, onPublished }) {
             </button>
             <button
               type="submit"
-              disabled={loading || !description.trim()}
+              disabled={publishDisabled}
               style={{
                 flex: 2, padding: "0.6rem", borderRadius: 6, border: "none",
-                background: description.trim() && !loading ? "var(--lt-accent)" : "var(--lt-bg-card-2)",
-                color: description.trim() && !loading ? "#0d0d0d" : "var(--lt-text-faint)",
+                background: !publishDisabled ? "var(--lt-accent)" : "var(--lt-bg-card-2)",
+                color: !publishDisabled ? "#0d0d0d" : "var(--lt-text-faint)",
                 fontFamily: "var(--lt-font-mono)", fontSize: "0.8rem", fontWeight: 700,
-                cursor: description.trim() && !loading ? "pointer" : "not-allowed",
+                cursor: !publishDisabled ? "pointer" : "not-allowed",
                 transition: "all 0.15s", display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
               }}
             >
@@ -412,7 +561,7 @@ function MediaThumbnail({ item, onDoubleClick }) {
 
 // ── Hauptkomponente ───────────────────────────────────────────
 
-export function MediaPickerPanel({ matchId, defaultOpen = false }) {
+export function MediaPickerPanel({ matchId, defaultOpen = false, playerNames = [], currentMinute = 0 }) {
   const [open, setOpen] = useState(defaultOpen);
   const [images, setImages] = useState([]);
   const [modalImage, setModalImage] = useState(null);
@@ -473,6 +622,8 @@ export function MediaPickerPanel({ matchId, defaultOpen = false }) {
           matchId={matchId}
           onClose={() => setModalImage(null)}
           onPublished={handlePublished}
+          playerNames={playerNames}
+          currentMinute={currentMinute}
         />,
         document.body
       )}
