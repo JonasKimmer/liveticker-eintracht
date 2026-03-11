@@ -24,8 +24,6 @@ export const fetchTeamMatchesByMatchday = (teamId, competitionId, round) =>
 
 // ── Matches ────────────────────────────────────────────
 export const fetchMatch = (id) => api.get(`/matches/${id}`);
-export const fetchTodayMatches = () => api.get("/matches/today");
-export const fetchLiveMatches = () => api.get("/matches/live");
 
 // ── Events ─────────────────────────────────────────────
 export const fetchEvents = (matchId) => api.get(`/matches/${matchId}/events`);
@@ -72,15 +70,6 @@ export const updatePlayer = (playerId, data) =>
 export const deletePlayer = (playerId) => api.delete(`/players/${playerId}`);
 export const updatePlayerStats = (playerId, statistics) =>
   api.patch(`/players/${playerId}/statistics`, { statistics });
-
-// ── Favorites ──────────────────────────────────────────
-export const fetchFavorites = () => api.get("/favorites/?user_id=1");
-export const fetchFavoriteMatches = () =>
-  api.get("/favorites/matches?user_id=1");
-export const addFavorite = (teamId) =>
-  api.post("/favorites/", { user_id: 1, team_id: teamId });
-export const removeFavorite = (teamId) =>
-  api.delete(`/favorites/${teamId}?user_id=1`);
 
 // ── Media ───────────────────────────────────────────────
 export const generateMediaCaption = (mediaId, style = "neutral", instance = "ef_whitelabel") =>

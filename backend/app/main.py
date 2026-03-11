@@ -8,7 +8,6 @@ from app.api.v1 import (
     events,
     ticker,
     seasons,
-    favorites,
     competitions,
     media,
     players,
@@ -24,7 +23,6 @@ from app.models import (  # noqa: F401
     match,
     event,
     ticker_entry,
-    user_favorite,
     synthetic_event,
     standing,
     competition_team,
@@ -68,7 +66,6 @@ app.include_router(teams.assignment_router, prefix=PREFIX)
 app.include_router(matches.router, prefix=PREFIX)
 app.include_router(events.router, prefix=PREFIX)
 app.include_router(ticker.router, prefix=PREFIX)
-app.include_router(favorites.router, prefix=PREFIX)
 app.include_router(media.router, prefix=PREFIX)
 app.include_router(media.ws_router)  # WebSocket ohne /api/v1 Prefix → /ws/media
 app.include_router(players.router, prefix=PREFIX)

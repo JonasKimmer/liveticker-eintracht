@@ -384,18 +384,6 @@
   word-break: break-word;
   max-width: 130px;
 }
-.lt-match-header__fav {
-  background: none;
-  border: none;
-  cursor: pointer;
-  font-size: 0.8rem;
-  transition: transform 0.2s;
-  line-height: 1;
-  color: var(--lt-text-faint);
-}
-.lt-match-header__fav:hover {
-  transform: scale(1.3);
-}
 
 .lt-match-header__score-wrap {
   display: flex;

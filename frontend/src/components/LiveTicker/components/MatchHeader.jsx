@@ -4,12 +4,10 @@
 import React from "react";
 import { normalizeMatchStatus } from "../utils/parseCommand";
 
-export function MatchHeader({ match, leagueSeason, favorites, onToggleFav }) {
+export function MatchHeader({ match, leagueSeason }) {
   if (!match || !match.homeTeam || !match.awayTeam) return null;
 
   const status = normalizeMatchStatus(match.matchState);
-  const isFavHome = favorites.some((f) => f.team_id === match.teamHomeId);
-  const isFavAway = favorites.some((f) => f.team_id === match.teamAwayId);
   const homeAbbr = match.homeTeam.name.substring(0, 3).toUpperCase();
   const awayAbbr = match.awayTeam.name.substring(0, 3).toUpperCase();
 
@@ -29,12 +27,6 @@ export function MatchHeader({ match, leagueSeason, favorites, onToggleFav }) {
               <div className="lt-match-header__team-abbr">{homeAbbr}</div>
             )}
             <div className="lt-match-header__team-name">{match.homeTeam.name}</div>
-            <button
-              className="lt-match-header__fav"
-              onClick={() => onToggleFav(match.teamHomeId)}
-            >
-              {isFavHome ? "⭐" : "☆"}
-            </button>
           </div>
         </div>
 
@@ -63,12 +55,6 @@ export function MatchHeader({ match, leagueSeason, favorites, onToggleFav }) {
               <div className="lt-match-header__team-abbr">{awayAbbr}</div>
             )}
             <div className="lt-match-header__team-name">{match.awayTeam.name}</div>
-            <button
-              className="lt-match-header__fav"
-              onClick={() => onToggleFav(match.teamAwayId)}
-            >
-              {isFavAway ? "⭐" : "☆"}
-            </button>
           </div>
         </div>
       </div>

@@ -52,7 +52,6 @@ class Team(Base):
         back_populates="away_team",
         lazy="select",
     )
-    favorites = relationship("UserFavorite", back_populates="team", lazy="select")
     competition_teams = relationship(
         "CompetitionTeam", back_populates="team", lazy="select"
     )

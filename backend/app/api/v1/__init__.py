@@ -7,7 +7,6 @@ from app.api.v1 import (
     matches,
     events,
     ticker,
-    favorites,
 )
 
 __all__ = [
@@ -19,5 +18,4 @@ __all__ = [
     "matches",
     "events",
     "ticker",
-    "favorites",
 ]

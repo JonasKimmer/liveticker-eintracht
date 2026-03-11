@@ -61,25 +61,6 @@ def get_matches(
     )
 
 
-@router.get(
-    "/live",
-    response_model=list[MatchResponse],
-    response_model_by_alias=True,
-    summary="Get live matches",
-)
-def get_live_matches(db: Session = Depends(get_db)) -> list[MatchResponse]:
-    return MatchRepository(db).get_live()
-
-
-@router.get(
-    "/today",
-    response_model=list[MatchResponse],
-    response_model_by_alias=True,
-    summary="Get today's matches",
-)
-def get_todays_matches(db: Session = Depends(get_db)) -> list[MatchResponse]:
-    return MatchRepository(db).get_today()
-
 
 @router.get(
     "/{matchId}",

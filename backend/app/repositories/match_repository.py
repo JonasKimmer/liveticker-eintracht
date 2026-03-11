@@ -1,5 +1,4 @@
 import logging
-from datetime import datetime, timezone
 from typing import Optional
 
 from sqlalchemy import distinct, func, or_
@@ -73,19 +72,6 @@ class MatchRepository:
     def get_by_id(self, match_id: int) -> Optional[Match]:
         return self._base_query().filter(Match.id == match_id).first()
 
-    def get_live(self) -> list[Match]:
-        return self._base_query().filter(Match.match_state == "Live").all()
-
-    def get_today(self) -> list[Match]:
-        now = datetime.now(timezone.utc)
-        start = now.replace(hour=0, minute=0, second=0, microsecond=0)
-        end = now.replace(hour=23, minute=59, second=59, microsecond=999999)
-        return (
-            self._base_query()
-            .filter(Match.starts_at >= start, Match.starts_at <= end)
-            .order_by(Match.starts_at)
-            .all()
-        )
 
     def exists(self, match_id: int) -> bool:
         return self.db.query(Match.id).filter(Match.id == match_id).scalar() is not None

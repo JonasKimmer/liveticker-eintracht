@@ -51,9 +51,6 @@ export const TICKER_STYLES = ["neutral", "euphorisch", "kritisch"];
 // ── Nav-Tabs ─────────────────────────────────────────────────
 export const NAV_TABS = [
   { id: "teams", label: "🏆 Teams" },
-  { id: "heute", label: "📅 Heute" },
-  { id: "live", label: "🔴 Live" },
-  { id: "favoriten", label: "⭐ Favoriten" },
 ];
 
 // ── Match-Status ─────────────────────────────────────────────
@@ -62,4 +59,3 @@ export const FINISHED_STATUSES = ["FT", "AET", "PEN", "finished"];
 
 // ── Polling-Intervalle (ms) ──────────────────────────────────
 export const POLL_EVENTS_MS = 5000;
-export const POLL_LIVE_MS = 10000;

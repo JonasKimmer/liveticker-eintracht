@@ -11,7 +11,7 @@ import { useTickerMode } from "../../hooks/useTickerMode";
 import { TickerModeContext } from "../../context/TickerModeContext";
 import config from "../../config/whitelabel";
 
-import { POLL_LIVE_MS, NAV_TABS } from "./constants";
+import { NAV_TABS } from "./constants";
 import { LoadingScreen } from "./components/LoadingScreen";
 import { MatchHeader } from "./components/MatchHeader";
 import { ModeSelector } from "./components/ModeSelector";
@@ -103,7 +103,6 @@ export default function LiveTicker() {
   const [selRound, setSelRound] = useState(null);
   const [matches, setMatches] = useState([]);
   const [selMatchId, setSelMatchId] = useState(null);
-  const [favorites, setFavorites] = useState([]);
 
   // ── Match-Daten ───────────────────────────────────────────
   const {
@@ -270,7 +269,6 @@ export default function LiveTicker() {
           if (r.data.length > 0) setSelCountry(r.data[0]);
         }
       }),
-      api.fetchFavorites().then((r) => setFavorites(r.data)),
     ]).finally(() => {
       if (!controller.signal.aborted) setAppLoading(false);
     });
@@ -398,56 +396,9 @@ export default function LiveTicker() {
     return () => controller.abort();
   }, [selTeamId, selCompetitionId, selRound]);
 
-  // ── Live-Tab Polling ──────────────────────────────────────
-  const liveIntervalRef = useRef(null);
-
-  const handleTabMatches = useCallback(async (tab) => {
+  const handleTabChange = useCallback((tab) => {
     setActiveTab(tab);
-    clearInterval(liveIntervalRef.current);
-    const load = async () => {
-      try {
-        let res;
-        if (tab === "heute") res = await api.fetchTodayMatches();
-        else if (tab === "live") res = await api.fetchLiveMatches();
-        else if (tab === "favoriten") res = await api.fetchFavoriteMatches();
-        if (res) setMatches(res.data);
-      } catch (err) {
-        console.error("handleTabMatches load error:", err);
-      }
-    };
-    await load();
-    if (tab === "live")
-      liveIntervalRef.current = setInterval(load, POLL_LIVE_MS);
   }, []);
-
-  useEffect(() => () => clearInterval(liveIntervalRef.current), []);
-
-  const handleTabChange = useCallback(
-    (tab) => {
-      if (tab === "teams") {
-        setActiveTab("teams");
-        return;
-      }
-      handleTabMatches(tab);
-    },
-    [handleTabMatches],
-  );
-
-  // ── Favoriten ─────────────────────────────────────────────
-  const toggleFav = useCallback(
-    async (teamId) => {
-      const isFav = favorites.some((f) => f.team_id === teamId);
-      try {
-        if (isFav) await api.removeFavorite(teamId);
-        else await api.addFavorite(teamId);
-        const r = await api.fetchFavorites();
-        setFavorites(r.data);
-      } catch (err) {
-        console.error("toggleFav error:", err);
-      }
-    },
-    [favorites],
-  );
 
   // ── Ticker generieren ─────────────────────────────────────
   const handleGenerate = useCallback(
@@ -597,8 +548,6 @@ export default function LiveTicker() {
           <MatchHeader
             match={match}
             leagueSeason={curCompetition}
-            favorites={favorites}
-            onToggleFav={toggleFav}
           />
         )}
         {match && <ModeSelector mode={mode} onModeChange={setMode} />}
