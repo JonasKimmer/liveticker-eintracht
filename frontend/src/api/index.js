@@ -49,6 +49,15 @@ export const publishTicker = (entryId, text) =>
 export const updateTicker = (entryId, data) =>
   api.patch(`/ticker/${entryId}`, data);
 export const deleteTicker = (entryId) => api.delete(`/ticker/${entryId}`);
+export const publishClipTicker = (matchId, text, videoUrl, thumbnailUrl, minute) =>
+  api.post("/ticker/manual", {
+    match_id: matchId,
+    text,
+    icon: "🎬",
+    minute: minute ?? null,
+    image_url: thumbnailUrl ?? null,
+    video_url: videoUrl ?? null,
+  });
 export const generateSyntheticBatch = (matchId, style = "neutral", instance = "ef_whitelabel") =>
   api.post(`/ticker/generate-synthetic-batch/${matchId}`, { style, instance, auto_publish: true });
 export const generateMatchPhases = (matchId, style = "neutral", instance = "ef_whitelabel") =>
@@ -98,6 +107,8 @@ export const importPrematch = (fixtureId) =>
 
 export const importPlayerStatistics = (matchId) =>
   n8n.post("/player-statistics", { match_id: matchId });
+
+export const fetchGoalClips = () => n8n.post("/Tor Clip");
 
 export const importMatchesForTeam = (teamId, leagueId, season) =>
   n8n.post("/import-matches", { teamId, leagueId, season });

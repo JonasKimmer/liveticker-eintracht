@@ -3,6 +3,7 @@
 // Stats, Aufstellung, Torschützen, Karten, Kader
 // ============================================================
 import { useState } from "react";
+import { fetchGoalClips } from "../../../api";
 
 function Collapsible({ title, defaultOpen = true, children }) {
   const [open, setOpen] = useState(defaultOpen);
@@ -36,6 +37,7 @@ export function RightPanel({
   players,
   playerStats = [],
   lineups,
+  events = [],
 }) {
   if (!match) {
     return (
@@ -55,6 +57,27 @@ export function RightPanel({
 
   const homeAbbr = match.homeTeam?.name.substring(0, 3).toUpperCase() ?? "HEI";
   const awayAbbr = match.awayTeam?.name.substring(0, 3).toUpperCase() ?? "GAS";
+
+  // extToInternal: partner API external_id → internal DB id
+  // Nötig weil: event description nutzt partner API IDs, lineups.playerId nutzt interne DB IDs
+  const extToInternal = {};
+  for (const pl of players) {
+    if (pl.externalId != null) extToInternal[pl.externalId] = pl.id;
+  }
+
+  // subMinuteMap: interne DB-ID → minute (aus Events)
+  // ev.liveTickerEventType = "substitution" (so in DB gespeichert)
+  const subMinuteMap = {};
+  for (const ev of events) {
+    if (ev.liveTickerEventType !== "substitution") continue;
+    try {
+      const d = typeof ev.description === "string" ? JSON.parse(ev.description) : ev.description;
+      const outId = extToInternal[d?.player_id];
+      const inId  = extToInternal[d?.assist_id];
+      if (outId && ev.time) subMinuteMap[outId] = ev.time;
+      if (inId  && ev.time) subMinuteMap[`in_${inId}`] = ev.time;
+    } catch { /* ignore */ }
+  }
 
   const playerName = (playerId) => {
     if (playerId) {
@@ -144,6 +167,7 @@ export function RightPanel({
               lineup={homeStarters}
               playerName={playerName}
               playerStats={playerStats}
+              subMinuteMap={subMinuteMap}
               abbr={homeAbbr}
               labelClass="lt-lineup-team-label--home"
             />
@@ -151,6 +175,7 @@ export function RightPanel({
               lineup={awayStarters}
               playerName={playerName}
               playerStats={playerStats}
+              subMinuteMap={subMinuteMap}
               abbr={awayAbbr}
               labelClass="lt-lineup-team-label--away"
             />
@@ -180,7 +205,7 @@ export function RightPanel({
                           {playerName(p.playerId) ??
                             `#${p.jerseyNumber ?? "?"}`}
                         </span>
-                        <PlayerBadges entry={p} stat={playerStats.find((s) => s.playerId === p.playerId)} />
+                        <PlayerBadges entry={p} stat={playerStats.find((s) => s.playerId === p.playerId)} subMinuteMap={subMinuteMap} />
                       </li>
                     ))}
                 </ul>
@@ -200,7 +225,7 @@ export function RightPanel({
                           {playerName(p.playerId) ??
                             `#${p.jerseyNumber ?? "?"}`}
                         </span>
-                        <PlayerBadges entry={p} stat={playerStats.find((s) => s.playerId === p.playerId)} />
+                        <PlayerBadges entry={p} stat={playerStats.find((s) => s.playerId === p.playerId)} subMinuteMap={subMinuteMap} />
                       </li>
                     ))}
                 </ul>
@@ -349,17 +374,115 @@ export function RightPanel({
           ))}
         </Collapsible>
       )}
+
+      {/* 6. Tor-Clips */}
+      <GoalClipsSection />
     </div>
   );
 }
 
+function GoalClipsSection() {
+  const [clips, setClips] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [selected, setSelected] = useState(null);
+
+  const load = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await fetchGoalClips();
+      const raw = res.data;
+      const list = Array.isArray(raw) ? raw : (raw?.items ?? []);
+      const all = list.map((item) => item?.json ?? item);
+      setClips(all);
+    } catch {
+      setError("Laden fehlgeschlagen");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <>
+      <Collapsible title="🎥 Tor-Clips" defaultOpen={false}>
+        {clips === null ? (
+          <button className="lt-clips-btn" onClick={load} disabled={loading}>
+            {loading ? "Laden…" : "Clips laden"}
+          </button>
+        ) : error ? (
+          <div className="lt-clips-error">{error}</div>
+        ) : clips.length === 0 ? (
+          <div className="lt-clips-empty">Keine Clips verfügbar</div>
+        ) : (
+          <div className="lt-clips">
+            {clips.map((c) => (
+              <button
+                key={c.vid}
+                className="lt-clip"
+                onClick={() => setSelected(c)}
+              >
+                <div className="lt-clip__thumb-wrap">
+                  <img src={c.thumbnail} alt={c.player} className="lt-clip__thumb" />
+                  <span className="lt-clip__play">▶</span>
+                </div>
+                <div className="lt-clip__info">
+                  <span className="lt-clip__player">{c.player}</span>
+                  <span className="lt-clip__score">
+                    {c.isOwnGoal && <span className="lt-clip__og">ET · </span>}
+                    {c.score} · Spieltag {c.matchday}
+                  </span>
+                </div>
+              </button>
+            ))}
+          </div>
+        )}
+      </Collapsible>
+
+      {selected && (
+        <div className="lt-clip-modal" onClick={() => setSelected(null)}>
+          <div className="lt-clip-modal__box" onClick={(e) => e.stopPropagation()}>
+            <button className="lt-clip-modal__close" onClick={() => setSelected(null)}>✕</button>
+            <iframe
+              src={`https://cdn.jwplayer.com/players/${selected.vid}.html`}
+              className="lt-clip-modal__player"
+              allowFullScreen
+              allow="autoplay; fullscreen"
+              style={{ border: "none" }}
+              title={selected.player}
+            />
+            <div className="lt-clip-modal__info">
+              <div className="lt-clip-modal__player-name">
+                {selected.isOwnGoal ? "⚽ Eigentor" : "⚽"} {selected.player}
+              </div>
+              <div className="lt-clip-modal__meta">
+                Spielstand: {selected.score} · Spieltag {selected.matchday}
+              </div>
+            </div>
+            <a
+              href={selected.videoUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="lt-clip-modal__btn"
+            >
+              ↗ Auf Bundesliga.com öffnen
+            </a>
+          </div>
+        </div>
+      )}
+    </>
+  );
+}
+
 // Aufstellung als Formation-Rows (4-2-3-1 Stil)
-function PlayerBadges({ entry, stat }) {
+function PlayerBadges({ entry, stat, subMinuteMap = {} }) {
   const goals  = stat?.goals      ?? entry.numberOfGoals ?? 0;
   const yellow = stat?.cardsYellow > 0 || entry.hasYellowCard;
   const red    = stat?.cardsRed    > 0 || entry.hasRedCard;
   const subOff = entry.isSubstituted || (entry.status === "Start" && stat?.minutes != null && stat.minutes < 85);
-  const subOn  = entry.status === "Sub" && stat?.minutes > 0;
+  const subOffMin = subMinuteMap[entry.playerId] ?? stat?.minutes ?? null;
+  const subOnMin  = subMinuteMap[`in_${entry.playerId}`] ?? null;
+  const subOn  = entry.status === "Sub" && (stat?.minutes > 0 || subOnMin != null);
   if (!goals && !yellow && !red && !subOff && !subOn) return null;
   return (
     <span className="lt-lineup-badges">
@@ -368,13 +491,13 @@ function PlayerBadges({ entry, stat }) {
       ))}
       {yellow && <span className="lt-lineup-badge">🟨</span>}
       {red    && <span className="lt-lineup-badge">🟥</span>}
-      {subOff && <span className="lt-lineup-badge lt-lineup-badge--out" title="Ausgewechselt">↓{stat?.minutes ? `${stat.minutes}'` : ""}</span>}
-      {subOn  && <span className="lt-lineup-badge lt-lineup-badge--in"  title="Eingewechselt">↑{stat?.minutes ? `${90 - stat.minutes}'` : ""}</span>}
+      {subOff && <span className="lt-lineup-badge lt-lineup-badge--out" title="Ausgewechselt">↓{subOffMin ? `${subOffMin}'` : ""}</span>}
+      {subOn  && <span className="lt-lineup-badge lt-lineup-badge--in"  title="Eingewechselt">↑{subOnMin ? `${subOnMin}'` : ""}</span>}
     </span>
   );
 }
 
-function FormationColumn({ lineup, playerName, playerStats = [], abbr, labelClass }) {
+function FormationColumn({ lineup, playerName, playerStats = [], subMinuteMap = {}, abbr, labelClass }) {
   const formation = lineup[0]?.formation ?? "";
 
   const posOrder = { G: 0, D: 1, M: 2, F: 3 };
@@ -424,7 +547,7 @@ function FormationColumn({ lineup, playerName, playerStats = [], abbr, labelClas
                   {stat?.rating != null && (
                     <div className="lt-formation-player__rating">{stat.rating.toFixed(1)}</div>
                   )}
-                  <PlayerBadges entry={p} stat={stat} />
+                  <PlayerBadges entry={p} stat={stat} subMinuteMap={subMinuteMap} />
                 </div>
               );
             })}

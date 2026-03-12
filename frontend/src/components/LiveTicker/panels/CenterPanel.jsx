@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback, useRef, memo, useMemo } from "
 import { AIDraft } from "../components/AIDraft";
 import { EntryEditor } from "../components/EntryEditor";
 import { MediaPickerPanel } from "../components/MediaPickerPanel";
+import { ClipPickerPanel } from "../components/ClipPickerPanel";
 import { MODES, TICKER_STYLES } from "../constants";
 import { useTickerModeContext } from "../../../context/TickerModeContext";
 import { getEventMeta, getRawEventText } from "../utils/parseCommand";
@@ -318,6 +319,11 @@ export function CenterPanel({
         {/* ── ScorePlay Bilder ─────────────────────────── */}
         <div style={{ marginTop: "1rem" }}>
           <MediaPickerPanel matchId={match.id} playerNames={playerNames} currentMinute={match?.minute ?? 0} />
+        </div>
+
+        {/* ── Tor-Clips ────────────────────────────────── */}
+        <div style={{ marginTop: "0.5rem" }}>
+          <ClipPickerPanel matchId={match.id} currentMinute={match?.minute ?? 0} />
         </div>
       </div>
     </div>

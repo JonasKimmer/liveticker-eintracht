@@ -76,6 +76,8 @@ class ManualEntryRequest(BaseModel):
     icon: Optional[str] = None
     minute: Optional[int] = None
     phase: Optional[str] = Field(None, max_length=50)
+    image_url: Optional[str] = None
+    video_url: Optional[str] = None
 
 
 # ──────────────────────────────────────────────
@@ -287,6 +289,8 @@ def create_manual_entry(
             icon=data.icon,
             minute=data.minute,
             phase=data.phase,
+            image_url=data.image_url,
+            video_url=data.video_url,
             status="published",
         )
     )

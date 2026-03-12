@@ -29,6 +29,8 @@ class TickerEntryCreate(BaseModel):
     source: TickerSource = TickerSource.ai
     minute: Optional[int] = None
     phase: Optional[str] = Field(None, max_length=50)
+    image_url: Optional[str] = None
+    video_url: Optional[str] = None
 
 
 class TickerEntryUpdate(BaseModel):
@@ -53,4 +55,5 @@ class TickerEntryResponse(BaseModel):
     minute: Optional[int] = None
     phase: Optional[str] = None
     image_url: Optional[str] = None
+    video_url: Optional[str] = None
     created_at: datetime

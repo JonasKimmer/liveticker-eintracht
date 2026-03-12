@@ -32,6 +32,7 @@ export default function LiveTicker() {
   const [modalOpen, setModalOpen] = useState(false);
   const [showHints, setShowHints] = useState(false);
   const [showCommands, setShowCommands] = useState(false);
+  const [mobilePanel, setMobilePanel] = useState("center"); // "left"|"center"|"right"
 
   // ── Resizable Panels ──────────────────────────────────────
   const [rightW, setRightW] = useState(380);
@@ -151,6 +152,12 @@ export default function LiveTicker() {
 
   const { mode, setMode } = useTickerMode(acceptDraft, rejectDraft);
   const [generatingId, setGeneratingId] = useState(null);
+
+  // ── Mobile Panel: Modus-abhängig wechseln ─────────────────
+  useEffect(() => {
+    if (mode === "auto") setMobilePanel("left");
+    else setMobilePanel("center");
+  }, [mode]);
 
   const tickerModeCtx = useMemo(
     () => ({ mode, setMode, acceptDraft, rejectDraft }),
@@ -561,7 +568,7 @@ export default function LiveTicker() {
           }}
         >
           {mode !== "auto" && (
-            <div style={{ position: "relative" }}>
+            <div className={`lt-panel-wrap${mobilePanel === "center" ? " lt-panel-wrap--active" : ""}`}>
               <div
                 onMouseDown={handleCenterResizeMouseDown}
                 title="Breite ziehen"
@@ -594,8 +601,10 @@ export default function LiveTicker() {
               />
             </div>
           )}
-          <LeftPanel events={events} tickerTexts={tickerTexts} match={match} />
-          <div style={{ position: "relative" }}>
+          <div className={`lt-panel-wrap lt-panel-wrap--left${mobilePanel === "left" ? " lt-panel-wrap--active" : ""}`}>
+            <LeftPanel events={events} tickerTexts={tickerTexts} match={match} />
+          </div>
+          <div className={`lt-panel-wrap${mobilePanel === "right" ? " lt-panel-wrap--active" : ""}`}>
             <div
               onMouseDown={handleResizeMouseDown}
               title="Breite ziehen"
@@ -609,7 +618,6 @@ export default function LiveTicker() {
                 zIndex: 20,
                 background: "transparent",
               }}
-              className="hover:bg-[var(--lt-accent)] transition-colors duration-150"
             />
             <RightPanel
               match={match}
@@ -618,9 +626,37 @@ export default function LiveTicker() {
               playerStats={playerStats}
               lineups={lineups}
               prematch={prematch}
+              events={events}
             />
           </div>
         </main>
+
+        {/* Mobile Bottom Tab Bar */}
+        <nav className="lt-mobile-tabs">
+          {mode !== "auto" && (
+            <button
+              className={`lt-mobile-tab${mobilePanel === "center" ? " lt-mobile-tab--active" : ""}`}
+              onClick={() => setMobilePanel("center")}
+            >
+              <span>✏️</span>
+              <span>Editor</span>
+            </button>
+          )}
+          <button
+            className={`lt-mobile-tab${mobilePanel === "left" ? " lt-mobile-tab--active" : ""}`}
+            onClick={() => setMobilePanel("left")}
+          >
+            <span>📋</span>
+            <span>Ticker</span>
+          </button>
+          <button
+            className={`lt-mobile-tab${mobilePanel === "right" ? " lt-mobile-tab--active" : ""}`}
+            onClick={() => setMobilePanel("right")}
+          >
+            <span>📊</span>
+            <span>Stats</span>
+          </button>
+        </nav>
 
         {modalOpen && (
           <MatchSelectorModal
