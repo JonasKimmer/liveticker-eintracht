@@ -4,23 +4,36 @@
 import { memo, useState, useRef } from "react";
 import { getEventMeta } from "../utils/parseCommand";
 
+// YouTube watch-URL → embed-URL umwandeln
+function toEmbedUrl(url) {
+  try {
+    const u = new URL(url);
+    if (u.hostname.includes("youtube.com") && u.searchParams.get("v")) {
+      return `https://www.youtube.com/embed/${u.searchParams.get("v")}?autoplay=1`;
+    }
+    if (u.hostname === "youtu.be") {
+      return `https://www.youtube.com/embed${u.pathname}?autoplay=1`;
+    }
+  } catch { /* noop */ }
+  return url;
+}
+
 // Inline video player: zeigt Thumbnail → Klick → iframe direkt im Eintrag
 function InlineVideo({ videoUrl, thumbnailUrl }) {
   const [playing, setPlaying] = useState(false);
+  const embedUrl = toEmbedUrl(videoUrl);
 
-  // Immer 16:9, maxWidth damit es nicht die volle Spalte füllt
   const wrapStyle = {
-    position: "relative", width: "100%", maxWidth: 320, paddingBottom: "56.25%",
+    position: "relative", width: "100%", maxWidth: 320, aspectRatio: "16/9",
     borderRadius: 6, overflow: "hidden", marginBottom: 4,
   };
-  const fill = { position: "absolute", inset: 0, width: "100%", height: "100%" };
 
   if (playing) {
     return (
       <div style={wrapStyle}>
         <iframe
-          src={videoUrl}
-          style={{ ...fill, border: "none", display: "block" }}
+          src={embedUrl}
+          style={{ width: "100%", height: "100%", border: "none", display: "block" }}
           allow="autoplay; fullscreen"
           allowFullScreen
         />
@@ -41,13 +54,13 @@ function InlineVideo({ videoUrl, thumbnailUrl }) {
   return (
     <div style={{ ...wrapStyle, cursor: "pointer" }} onClick={() => setPlaying(true)}>
       {thumbnailUrl ? (
-        <img src={thumbnailUrl} alt="Clip" style={{ ...fill, objectFit: "cover", display: "block" }} />
+        <img src={thumbnailUrl} alt="Clip" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
       ) : (
-        <div style={{ ...fill, background: "var(--lt-bg-card-2)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <div style={{ width: "100%", height: "100%", background: "var(--lt-bg-card-2)", display: "flex", alignItems: "center", justifyContent: "center" }}>
           <span style={{ fontSize: "1.5rem" }}>🎬</span>
         </div>
       )}
-      <div style={{ ...fill, display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(0,0,0,0.3)" }}>
+      <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(0,0,0,0.3)" }}>
         <div style={{ width: 36, height: 36, borderRadius: "50%", background: "rgba(0,0,0,0.65)", display: "flex", alignItems: "center", justifyContent: "center" }}>
           <span style={{ fontSize: "1rem", marginLeft: 3 }}>▶</span>
         </div>
@@ -98,10 +111,63 @@ export const PublishedEntry = memo(function PublishedEntry({
       <div className="lt-entry lt-entry--manual">
         <span className="lt-entry__minute">{minuteDisplay}</span>
         {tickerText?.phase !== "Before" && (
-          <span className="lt-entry__icon">{tickerText?.video_url ? "🎬" : (tickerText?.image_url ? "📸" : (tickerText?.icon ?? phaseIcon))}</span>
+          <span className="lt-entry__icon">{tickerText?.video_url && /x\.com|twitter\.com/.test(tickerText.video_url) ? "𝕏" : tickerText?.video_url && /instagram\.com/.test(tickerText.video_url) ? "📸" : tickerText?.video_url && /youtube\.com|youtu\.be/.test(tickerText.video_url) ? "▶" : tickerText?.video_url ? "🎬" : tickerText?.image_url ? "📸" : (tickerText?.icon ?? phaseIcon)}</span>
         )}
         <div className="lt-entry__body">
-          {tickerText?.video_url ? (
+          {tickerText?.video_url && /x\.com|twitter\.com/.test(tickerText.video_url) ? (
+            <a href={tickerText.video_url} target="_blank" rel="noopener noreferrer"
+              style={{ display: "inline-flex", alignItems: "center", gap: "0.35rem", fontFamily: "var(--lt-font-mono)", fontSize: "0.68rem", color: "var(--lt-accent)", textDecoration: "none", marginBottom: 4 }}>
+              <span style={{ fontSize: "0.8rem" }}>𝕏</span> Zum Tweet →
+            </a>
+          ) : tickerText?.video_url && /instagram\.com/.test(tickerText.video_url) ? (
+            <div>
+              {tickerText.image_url && (
+                <a href={tickerText.video_url} target="_blank" rel="noopener noreferrer" style={{ display: "block", marginBottom: 6 }}>
+                  <img
+                    src={tickerText.image_url}
+                    alt="Instagram"
+                    referrerPolicy="no-referrer"
+                    style={{ width: "100%", maxWidth: 280, borderRadius: 6, display: "block", objectFit: "cover" }}
+                    loading="lazy"
+                  />
+                </a>
+              )}
+              <a href={tickerText.video_url} target="_blank" rel="noopener noreferrer"
+                style={{ display: "inline-flex", alignItems: "center", gap: "0.35rem", fontFamily: "var(--lt-font-mono)", fontSize: "0.68rem", color: "var(--lt-accent)", textDecoration: "none", marginBottom: 4 }}>
+                <span style={{ fontSize: "0.8rem" }}>📸</span> Zum Instagram-Post →
+              </a>
+            </div>
+          ) : tickerText?.video_url && /youtube\.com|youtu\.be/.test(tickerText.video_url) ? (
+            <div>
+              {tickerText.image_url && (
+                <a href={tickerText.video_url} target="_blank" rel="noopener noreferrer"
+                  style={{ display: "inline-block", position: "relative", marginBottom: 6 }}>
+                  <img
+                    src={tickerText.image_url}
+                    alt="YouTube"
+                    style={{ width: 280, maxWidth: "100%", borderRadius: 6, display: "block", objectFit: "cover" }}
+                    loading="lazy"
+                  />
+                  <div style={{
+                    position: "absolute", top: "50%", left: "50%",
+                    transform: "translate(-50%, -50%)",
+                    width: 36, height: 36, borderRadius: "50%",
+                    background: "rgba(255,0,0,0.85)",
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                    pointerEvents: "none",
+                  }}>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="#fff" style={{ marginLeft: 2 }}>
+                      <path d="M8 5v14l11-7z"/>
+                    </svg>
+                  </div>
+                </a>
+              )}
+              <a href={tickerText.video_url} target="_blank" rel="noopener noreferrer"
+                style={{ display: "inline-flex", alignItems: "center", gap: "0.35rem", fontFamily: "var(--lt-font-mono)", fontSize: "0.68rem", color: "var(--lt-accent)", textDecoration: "none", marginBottom: 4 }}>
+                <span style={{ fontSize: "0.8rem" }}>▶</span> Zum YouTube-Video →
+              </a>
+            </div>
+          ) : tickerText?.video_url ? (
             <InlineVideo videoUrl={tickerText.video_url} thumbnailUrl={tickerText.image_url} />
           ) : tickerText?.image_url && (
             <img
@@ -114,7 +180,7 @@ export const PublishedEntry = memo(function PublishedEntry({
             />
           )}
           <div className="lt-entry__text">{tickerText?.text}</div>
-          <div className="lt-entry__meta">{tickerText?.video_url ? "clip · manuell" : (tickerText?.image_url ? "foto · manuell" : "manuell")}</div>
+          <div className="lt-entry__meta">{tickerText?.video_url && /x\.com|twitter\.com/.test(tickerText.video_url) ? "tweet · manuell" : tickerText?.video_url && /instagram\.com/.test(tickerText.video_url) ? "instagram · manuell" : tickerText?.video_url && /youtube\.com|youtu\.be/.test(tickerText.video_url) ? "youtube · manuell" : tickerText?.video_url ? "clip · manuell" : tickerText?.image_url ? "foto · manuell" : "manuell"}</div>
         </div>
       </div>
     );

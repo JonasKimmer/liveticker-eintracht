@@ -1,29 +1,54 @@
 // ============================================================
-// ClipPickerPanel.jsx — Persistente Tor-Clips aus DB
-// Flow: Clips aus DB laden → Klick → Modal mit KI-Entwurf → Ticker
+// YouTubePanel.jsx — YouTube-Videos von @Eintracht
+// Flow: n8n scrapet Kanal → DB → Klick → Modal → Ticker
 // ============================================================
 
 import { useState, useCallback, useEffect } from "react";
 import { createPortal } from "react-dom";
-import { fetchClips, fetchGoalClips, generateClipDraft, publishClip, deleteClip } from "../../../api";
+import {
+  fetchYoutubeClips,
+  triggerYoutubeScrape,
+  generateYoutubeDraft,
+  publishClip,
+  deleteClip,
+} from "../../../api";
 
-const STYLES = ["euphorisch", "neutral", "kritisch"];
+const STYLES = ["neutral", "euphorisch", "kritisch"];
+
+// YouTube Video-ID aus URL extrahieren
+function getYoutubeId(url) {
+  try {
+    return new URL(url).searchParams.get("v") ?? null;
+  } catch {
+    return null;
+  }
+}
+
+function getEmbedUrl(url) {
+  const id = getYoutubeId(url);
+  return id ? `https://www.youtube.com/embed/${id}?autoplay=1` : url;
+}
+
+function getThumbnail(clip) {
+  if (clip.thumbnail_url) return clip.thumbnail_url;
+  const id = getYoutubeId(clip.video_url);
+  return id ? `https://img.youtube.com/vi/${id}/mqdefault.jpg` : null;
+}
 
 // ── Publish Modal ─────────────────────────────────────────────
 
-function ClipPublishModal({ clip, matchId, currentMinute, onClose, onPublished }) {
+function YoutubePublishModal({ clip, matchId, currentMinute, onClose, onPublished }) {
   const [text, setText] = useState("");
   const [minute, setMinute] = useState(currentMinute ?? 0);
-  const [style, setStyle] = useState("euphorisch");
+  const [style, setStyle] = useState("neutral");
   const [generating, setGenerating] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  // KI-Entwurf direkt beim Öffnen generieren
   useEffect(() => {
-    if (!clip.player_name) return;
+    if (!clip.title) return;
     setGenerating(true);
-    generateClipDraft(clip.id, matchId, style)
+    generateYoutubeDraft(clip.id, style)
       .then((res) => setText(res.data.text ?? ""))
       .catch(() => {})
       .finally(() => setGenerating(false));
@@ -33,7 +58,7 @@ function ClipPublishModal({ clip, matchId, currentMinute, onClose, onPublished }
     setGenerating(true);
     setError(null);
     try {
-      const res = await generateClipDraft(clip.id, matchId, style);
+      const res = await generateYoutubeDraft(clip.id, style);
       setText(res.data.text ?? "");
     } catch {
       setError("KI-Generierung fehlgeschlagen.");
@@ -56,6 +81,8 @@ function ClipPublishModal({ clip, matchId, currentMinute, onClose, onPublished }
     }
   }
 
+  const thumbnail = getThumbnail(clip);
+
   return (
     <div
       onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
@@ -72,11 +99,11 @@ function ClipPublishModal({ clip, matchId, currentMinute, onClose, onPublished }
         boxShadow: "0 24px 48px rgba(0,0,0,0.7)", overflow: "hidden", position: "relative",
       }}>
         {/* Thumbnail */}
-        {clip.thumbnail_url && (
+        {thumbnail && (
           <div style={{ position: "relative", paddingBottom: "56.25%", overflow: "hidden" }}>
             <img
-              src={clip.thumbnail_url}
-              alt={clip.title ?? "Clip"}
+              src={thumbnail}
+              alt={clip.title ?? "YouTube"}
               style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", display: "block" }}
             />
             <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, var(--lt-bg-card) 0%, transparent 60%)" }} />
@@ -85,8 +112,7 @@ function ClipPublishModal({ clip, matchId, currentMinute, onClose, onPublished }
               fontFamily: "var(--lt-font-mono)", fontSize: "0.65rem",
               color: "var(--lt-text-muted)",
             }}>
-              {clip.player_name ? `⚽ ${clip.player_name}` : clip.title ?? "Clip"}
-              {clip.team_name && <span style={{ opacity: 0.7 }}> · {clip.team_name}</span>}
+              📺 {clip.title ?? "YouTube-Video"}
             </span>
           </div>
         )}
@@ -103,13 +129,11 @@ function ClipPublishModal({ clip, matchId, currentMinute, onClose, onPublished }
           )}
 
           <div>
-            {/* Label row */}
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }}>
               <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
                 <label style={{ fontFamily: "var(--lt-font-mono)", fontSize: "0.65rem", color: "var(--lt-text-muted)", textTransform: "uppercase", letterSpacing: "0.08em" }}>
                   Ticker-Text
                 </label>
-                {/* Style Picker + Regenerate */}
                 <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
                   <select
                     value={style}
@@ -137,7 +161,6 @@ function ClipPublishModal({ clip, matchId, currentMinute, onClose, onPublished }
                   </button>
                 </div>
               </div>
-              {/* Minute */}
               <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
                 <label style={{ fontFamily: "var(--lt-font-mono)", fontSize: "0.65rem", color: "var(--lt-text-muted)" }}>Min</label>
                 <input
@@ -169,7 +192,7 @@ function ClipPublishModal({ clip, matchId, currentMinute, onClose, onPublished }
                 borderRadius: 6, padding: "0.6rem 0.75rem",
                 fontFamily: "var(--lt-font-mono)", fontSize: "0.82rem",
                 color: generating ? "var(--lt-text-muted)" : "var(--lt-text)", lineHeight: 1.5,
-                outline: "none", transition: "border-color 0.15s",
+                outline: "none",
               }}
               onFocus={(e) => e.target.style.borderColor = "var(--lt-accent)"}
               onBlur={(e) => e.target.style.borderColor = "var(--lt-border)"}
@@ -202,7 +225,7 @@ function ClipPublishModal({ clip, matchId, currentMinute, onClose, onPublished }
                 cursor: loading || generating || !text.trim() ? "not-allowed" : "pointer",
               }}
             >
-              {loading ? "Publiziere…" : "🎬 Im Ticker veröffentlichen"}
+              {loading ? "Publiziere…" : "📺 Im Ticker veröffentlichen"}
             </button>
           </div>
         </form>
@@ -222,10 +245,12 @@ function ClipPublishModal({ clip, matchId, currentMinute, onClose, onPublished }
   );
 }
 
-// ── Clip Kachel ───────────────────────────────────────────────
+// ── Video-Kachel ──────────────────────────────────────────────
 
-function ClipThumbnail({ clip, onClick, onDelete }) {
+function YouTubeThumbnail({ clip, onClick, onDelete }) {
   const [hovered, setHovered] = useState(false);
+  const thumbnail = getThumbnail(clip);
+
   return (
     <div style={{ position: "relative" }}>
       <button
@@ -234,49 +259,44 @@ function ClipThumbnail({ clip, onClick, onDelete }) {
         onMouseLeave={() => setHovered(false)}
         style={{
           position: "relative", overflow: "hidden", borderRadius: 6,
-          border: `1px solid ${hovered ? "var(--lt-accent)" : "var(--lt-border)"}`,
+          border: `1px solid ${hovered ? "#ff0000" : "var(--lt-border)"}`,
           background: "var(--lt-bg-card-2)", cursor: "pointer", padding: 0,
           aspectRatio: "16/9", display: "block", width: "100%",
           transition: "border-color 0.15s", outline: "none",
         }}
       >
-        {clip.thumbnail_url ? (
+        {thumbnail ? (
           <img
-            src={clip.thumbnail_url}
-            alt={clip.player_name ?? "Clip"}
+            src={thumbnail}
+            alt={clip.title ?? "YouTube"}
             style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
             loading="lazy"
           />
         ) : (
           <div style={{ display: "flex", alignItems: "center", justifyContent: "center", width: "100%", height: "100%", color: "var(--lt-text-faint)", fontFamily: "var(--lt-font-mono)", fontSize: "0.65rem" }}>
-            🎬
+            📺
           </div>
         )}
+        {/* YouTube Play-Button Overlay */}
         <div style={{
           position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center",
-          background: hovered ? "rgba(0,0,0,0.45)" : "rgba(0,0,0,0.2)", transition: "background 0.15s",
+          background: hovered ? "rgba(0,0,0,0.35)" : "rgba(0,0,0,0.15)", transition: "background 0.15s",
         }}>
           <div style={{
-            width: 28, height: 28, borderRadius: "50%",
-            background: hovered ? "var(--lt-accent)" : "rgba(255,255,255,0.15)",
+            width: 32, height: 22, borderRadius: 6,
+            background: hovered ? "#ff0000" : "rgba(0,0,0,0.7)",
             display: "flex", alignItems: "center", justifyContent: "center",
             transition: "background 0.15s",
           }}>
-            <span style={{ fontSize: "0.7rem", marginLeft: 2, color: hovered ? "#0d0d0d" : "#fff" }}>▶</span>
+            <span style={{ fontSize: "0.55rem", marginLeft: 2, color: "#fff" }}>▶</span>
           </div>
         </div>
-        <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, background: "linear-gradient(transparent, rgba(0,0,0,0.8))", padding: "8px 6px 4px" }}>
-          <p style={{ fontFamily: "var(--lt-font-mono)", fontSize: "0.6rem", color: "#fff", margin: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-            {clip.player_name ?? clip.title ?? "Clip"}
+        <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, background: "linear-gradient(transparent, rgba(0,0,0,0.85))", padding: "8px 6px 4px" }}>
+          <p style={{ fontFamily: "var(--lt-font-mono)", fontSize: "0.58rem", color: "#fff", margin: 0, overflow: "hidden", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" }}>
+            {clip.title ?? "YouTube-Video"}
           </p>
-          {clip.team_name && (
-            <p style={{ fontFamily: "var(--lt-font-mono)", fontSize: "0.55rem", color: "rgba(255,255,255,0.6)", margin: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-              {clip.team_name}
-            </p>
-          )}
         </div>
       </button>
-      {/* Löschen-Button */}
       <button
         onClick={(e) => { e.stopPropagation(); onDelete(clip.id); }}
         style={{
@@ -287,7 +307,7 @@ function ClipThumbnail({ clip, onClick, onDelete }) {
           display: "flex", alignItems: "center", justifyContent: "center",
           opacity: hovered ? 1 : 0, transition: "opacity 0.15s",
         }}
-        title="Clip löschen"
+        title="Löschen"
       >✕</button>
     </div>
   );
@@ -295,74 +315,43 @@ function ClipThumbnail({ clip, onClick, onDelete }) {
 
 // ── Hauptkomponente ───────────────────────────────────────────
 
-export function ClipPickerPanel({ matchId, match, currentMinute = 0 }) {
+export function YouTubePanel({ matchId, currentMinute = 0 }) {
   const [open, setOpen] = useState(false);
   const [clips, setClips] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [importing, setImporting] = useState(false);
+  const [scraping, setScraping] = useState(false);
   const [modalClip, setModalClip] = useState(null);
   const [statusMsg, setStatusMsg] = useState(null);
-  const [teamFilter, setTeamFilter] = useState("");
 
-  // Clips laden: erst DB, bei leer/Fehler → n8n Fallback
   const loadClips = useCallback(async () => {
     setLoading(true);
     setStatusMsg(null);
     try {
-      const res = await fetchClips(matchId, teamFilter || undefined);
-      const dbClips = res.data ?? [];
-      if (dbClips.length > 0) {
-        setClips(dbClips);
-        setLoading(false);
-        return;
-      }
-    } catch { /* DB nicht erreichbar → n8n Fallback */ }
-
-    // Fallback: direkt von n8n laden (alter Workflow oder DB noch leer)
-    try {
-      const res = await fetchGoalClips(matchId);
-      const raw = res.data;
-      const list = Array.isArray(raw) ? raw : (raw?.items ?? []);
-      const n8nClips = list.map((item, i) => ({
-        id: `n8n_${i}`,
-        vid: item?.json?.vid ?? item?.vid,
-        video_url: item?.json?.vid ? `https://cdn.jwplayer.com/players/${item.json.vid}.html` : (item?.videoUrl ?? ""),
-        thumbnail_url: item?.json?.thumbnail ?? item?.thumbnail,
-        player_name: item?.json?.player ?? item?.player ?? item?.title,
-        title: item?.json?.player ?? item?.player ?? item?.title,
-        team_name: null,
-        published: false,
-        _fromN8n: true,
-      }));
-      setClips(n8nClips);
-      if (n8nClips.length > 0) {
-        setStatusMsg({ type: "success", text: "Clips aus n8n geladen – Backend neu starten um DB zu aktivieren" });
-      }
+      const res = await fetchYoutubeClips();
+      setClips(res.data ?? []);
     } catch {
-      setStatusMsg({ type: "error", text: "Keine Clips gefunden." });
+      setStatusMsg({ type: "error", text: "Fehler beim Laden der Videos." });
     } finally {
       setLoading(false);
     }
-  }, [matchId, teamFilter]);
+  }, []);
 
-  // Clips laden wenn Panel aufgeht
   useEffect(() => {
     if (!open) return;
     loadClips();
   }, [open, loadClips]);
 
-  // n8n-Workflow triggern → speichert direkt in DB (wenn n8n-Workflow aktualisiert)
-  async function handleImport() {
-    setImporting(true);
+  async function handleScrape() {
+    setScraping(true);
     setStatusMsg(null);
     try {
-      await fetchGoalClips(matchId);
-      setStatusMsg({ type: "success", text: "Import gestartet – lade Clips…" });
-      setTimeout(() => loadClips(), 2500);
+      await triggerYoutubeScrape();
+      setStatusMsg({ type: "success", text: "Scraping gestartet – lade in 5s neu…" });
+      setTimeout(() => loadClips(), 5000);
     } catch {
       setStatusMsg({ type: "error", text: "n8n-Workflow konnte nicht gestartet werden." });
     } finally {
-      setImporting(false);
+      setScraping(false);
     }
   }
 
@@ -382,13 +371,10 @@ export function ClipPickerPanel({ matchId, match, currentMinute = 0 }) {
     }
   }
 
-  // Team-Namen aus Match ableiten für Filter-Buttons
-  const teams = [match?.homeTeam?.name, match?.awayTeam?.name].filter(Boolean);
-
   return (
     <>
       {modalClip && createPortal(
-        <ClipPublishModal
+        <YoutubePublishModal
           clip={modalClip}
           matchId={matchId}
           currentMinute={currentMinute}
@@ -399,7 +385,6 @@ export function ClipPickerPanel({ matchId, match, currentMinute = 0 }) {
       )}
 
       <div style={{ borderRadius: 8, border: "1px solid var(--lt-border)", background: "var(--lt-bg-card)", overflow: "hidden" }}>
-        {/* Header */}
         <button
           onClick={() => setOpen((v) => !v)}
           style={{
@@ -411,10 +396,10 @@ export function ClipPickerPanel({ matchId, match, currentMinute = 0 }) {
           onMouseLeave={(e) => e.currentTarget.style.background = "transparent"}
         >
           <span style={{ display: "flex", alignItems: "center", gap: "0.5rem", fontFamily: "var(--lt-font-mono)", fontSize: "0.7rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--lt-text-muted)" }}>
-            <span>🎬</span>
-            <span>Tor-Clips</span>
+            <span>📺</span>
+            <span>YouTube · Eintracht</span>
             {clips.length > 0 && (
-              <span style={{ background: "var(--lt-accent)", color: "#0d0d0d", fontSize: "0.6rem", fontWeight: 700, borderRadius: 4, padding: "1px 6px", lineHeight: 1.4 }}>
+              <span style={{ background: "#ff0000", color: "#fff", fontSize: "0.6rem", fontWeight: 700, borderRadius: 4, padding: "1px 6px", lineHeight: 1.4 }}>
                 {clips.length}
               </span>
             )}
@@ -426,7 +411,6 @@ export function ClipPickerPanel({ matchId, match, currentMinute = 0 }) {
 
         {open && (
           <div style={{ padding: "0.75rem 1rem 1rem", borderTop: "1px solid var(--lt-border)", display: "flex", flexDirection: "column", gap: "0.75rem" }}>
-            {/* Status */}
             {statusMsg && (
               <div style={{
                 borderRadius: 6, padding: "0.4rem 0.75rem",
@@ -439,21 +423,20 @@ export function ClipPickerPanel({ matchId, match, currentMinute = 0 }) {
               </div>
             )}
 
-            {/* Toolbar: Import + Filter */}
-            <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", flexWrap: "wrap" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
               <button
-                onClick={handleImport}
-                disabled={importing}
+                onClick={handleScrape}
+                disabled={scraping}
                 style={{
                   flexShrink: 0, display: "inline-flex", alignItems: "center", gap: 5,
                   padding: "0.4rem 0.75rem", borderRadius: 6, border: "none",
-                  background: importing ? "var(--lt-bg-card-2)" : "var(--lt-accent)",
-                  color: importing ? "var(--lt-text-faint)" : "#0d0d0d",
+                  background: scraping ? "var(--lt-bg-card-2)" : "#ff0000",
+                  color: scraping ? "var(--lt-text-faint)" : "#fff",
                   fontFamily: "var(--lt-font-mono)", fontSize: "0.72rem", fontWeight: 700,
-                  cursor: importing ? "not-allowed" : "pointer",
+                  cursor: scraping ? "not-allowed" : "pointer",
                 }}
               >
-                {importing ? "Importiert…" : "↓ Clips importieren"}
+                {scraping ? "Scrapt…" : "▶ Kanal scrapen"}
               </button>
               <button
                 onClick={loadClips}
@@ -468,41 +451,8 @@ export function ClipPickerPanel({ matchId, match, currentMinute = 0 }) {
               >
                 ↺
               </button>
-              {/* Team-Filter */}
-              {teams.length > 0 && (
-                <div style={{ display: "flex", gap: 4 }}>
-                  <button
-                    onClick={() => { setTeamFilter(""); setTimeout(loadClips, 0); }}
-                    style={{
-                      padding: "0.3rem 0.6rem", borderRadius: 4, border: "1px solid var(--lt-border)",
-                      background: !teamFilter ? "var(--lt-accent)" : "transparent",
-                      color: !teamFilter ? "#0d0d0d" : "var(--lt-text-muted)",
-                      fontFamily: "var(--lt-font-mono)", fontSize: "0.62rem", cursor: "pointer",
-                    }}
-                  >
-                    Alle
-                  </button>
-                  {teams.map((t) => (
-                    <button
-                      key={t}
-                      onClick={() => { setTeamFilter(t); setTimeout(loadClips, 0); }}
-                      style={{
-                        padding: "0.3rem 0.6rem", borderRadius: 4, border: "1px solid var(--lt-border)",
-                        background: teamFilter === t ? "var(--lt-accent)" : "transparent",
-                        color: teamFilter === t ? "#0d0d0d" : "var(--lt-text-muted)",
-                        fontFamily: "var(--lt-font-mono)", fontSize: "0.62rem", cursor: "pointer",
-                        maxWidth: 80, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
-                      }}
-                      title={t}
-                    >
-                      {t}
-                    </button>
-                  ))}
-                </div>
-              )}
             </div>
 
-            {/* Grid */}
             {loading && (
               <p style={{ textAlign: "center", padding: "1rem 0", fontFamily: "var(--lt-font-mono)", fontSize: "0.72rem", color: "var(--lt-text-faint)" }}>
                 Lädt…
@@ -510,7 +460,7 @@ export function ClipPickerPanel({ matchId, match, currentMinute = 0 }) {
             )}
             {!loading && clips.length === 0 && (
               <p style={{ textAlign: "center", padding: "1rem 0", fontFamily: "var(--lt-font-mono)", fontSize: "0.72rem", color: "var(--lt-text-faint)" }}>
-                Keine Clips – erst importieren
+                Keine Videos – erst Kanal scrapen
               </p>
             )}
             {!loading && clips.length > 0 && (
@@ -520,7 +470,7 @@ export function ClipPickerPanel({ matchId, match, currentMinute = 0 }) {
                 </p>
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.5rem" }}>
                   {clips.map((clip) => (
-                    <ClipThumbnail key={clip.id} clip={clip} onClick={setModalClip} onDelete={handleDelete} />
+                    <YouTubeThumbnail key={clip.id} clip={clip} onClick={setModalClip} onDelete={handleDelete} />
                   ))}
                 </div>
               </>

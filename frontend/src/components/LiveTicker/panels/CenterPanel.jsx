@@ -3,6 +3,9 @@ import { AIDraft } from "../components/AIDraft";
 import { EntryEditor } from "../components/EntryEditor";
 import { MediaPickerPanel } from "../components/MediaPickerPanel";
 import { ClipPickerPanel } from "../components/ClipPickerPanel";
+import { YouTubePanel } from "../components/YouTubePanel";
+import { TwitterPanel } from "../components/TwitterPanel";
+import { InstagramPanel } from "../components/InstagramPanel";
 import { MODES, TICKER_STYLES } from "../constants";
 import { useTickerModeContext } from "../../../context/TickerModeContext";
 import { getEventMeta, getRawEventText } from "../utils/parseCommand";
@@ -323,7 +326,22 @@ export function CenterPanel({
 
         {/* ── Tor-Clips ────────────────────────────────── */}
         <div style={{ marginTop: "0.5rem" }}>
-          <ClipPickerPanel matchId={match.id} currentMinute={match?.minute ?? 0} />
+          <ClipPickerPanel matchId={match.id} match={match} currentMinute={match?.minute ?? 0} />
+        </div>
+
+        {/* ── YouTube-Videos ───────────────────────────── */}
+        <div style={{ marginTop: "0.5rem" }}>
+          <YouTubePanel matchId={match.id} currentMinute={match?.minute ?? 0} />
+        </div>
+
+        {/* ── Twitter/X-Posts ──────────────────────────── */}
+        <div style={{ marginTop: "0.5rem" }}>
+          <TwitterPanel matchId={match.id} currentMinute={match?.minute ?? 0} />
+        </div>
+
+        {/* ── Instagram-Posts ───────────────────────────── */}
+        <div style={{ marginTop: "0.5rem" }}>
+          <InstagramPanel matchId={match.id} currentMinute={match?.minute ?? 0} />
         </div>
       </div>
     </div>

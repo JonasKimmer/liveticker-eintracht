@@ -15,12 +15,15 @@ from app.models.season import Season
 from app.models.match import Match
 from app.models.event import Event
 from app.models.ticker_entry import TickerEntry
-from app.models.user_favorite import UserFavorite
 from app.models.synthetic_event import SyntheticEvent
 from app.models.standing import Standing
 from app.models.competition_team import CompetitionTeam
 from app.models.lineup import Lineup
 from app.models.match_statistic import MatchStatistic
+from app.models.media_queue import MediaQueue
+from app.models.player import Player
+from app.models.player_statistic import PlayerStatistic
+from app.models.media_clip import MediaClip
 
 config = context.config
 

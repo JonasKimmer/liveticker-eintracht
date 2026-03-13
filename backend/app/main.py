@@ -1,5 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+import os
 
 from app.api.v1 import (
     countries,
@@ -11,6 +13,7 @@ from app.api.v1 import (
     competitions,
     media,
     players,
+    clips,
 )
 from app.core.config import settings
 from app.core.database import Base, engine, check_database_connection
@@ -31,9 +34,13 @@ from app.models import (  # noqa: F401
     media_queue,
     player,
     player_statistic,
+    media_clip,
 )
 
 Base.metadata.create_all(bind=engine)
+
+STATIC_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "static")
+os.makedirs(os.path.join(STATIC_DIR, "thumbnails"), exist_ok=True)
 
 app = FastAPI(
     title="Liveticker AI Backend",
@@ -69,6 +76,10 @@ app.include_router(ticker.router, prefix=PREFIX)
 app.include_router(media.router, prefix=PREFIX)
 app.include_router(media.ws_router)  # WebSocket ohne /api/v1 Prefix → /ws/media
 app.include_router(players.router, prefix=PREFIX)
+app.include_router(clips.router, prefix=PREFIX)
+
+
+app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 
 
 @app.get("/", tags=["Meta"])

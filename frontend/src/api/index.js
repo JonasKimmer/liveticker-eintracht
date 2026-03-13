@@ -108,7 +108,24 @@ export const importPrematch = (fixtureId) =>
 export const importPlayerStatistics = (matchId) =>
   n8n.post("/player-statistics", { match_id: matchId });
 
-export const fetchGoalClips = () => n8n.post("/Tor Clip");
+export const fetchGoalClips = (matchId) => n8n.post("/Tor Clip", matchId ? { match_id: matchId } : {});
+export const triggerYoutubeScrape = () => n8n.post("/3555f418-e7a5-4d9b-ac87-5b591b4bc0d0");
+export const triggerTwitterImport = () => n8n.post("/d76610a7-a103-4dfd-b40d-dec3caa8a9f4");
+export const triggerInstagramImport = () => n8n.post("/149b541b-34f0-44f8-b3ce-c66bd3d75714");
+
+// ── Clips (persistent DB) ───────────────────────────────────
+export const fetchClips = (matchId, teamName) =>
+  api.get(`/clips/match/${matchId}${teamName ? `?team_name=${encodeURIComponent(teamName)}` : ""}`);
+export const fetchYoutubeClips = () => api.get("/clips/youtube");
+export const fetchTwitterPosts = () => api.get("/clips/twitter");
+export const fetchInstagramPosts = () => api.get("/clips/instagram");
+export const generateClipDraft = (clipId, matchId, style = "euphorisch") =>
+  api.post(`/clips/${clipId}/draft?match_id=${matchId}&style=${style}`);
+export const generateYoutubeDraft = (clipId, style = "neutral") =>
+  api.post(`/clips/${clipId}/draft?match_id=0&style=${style}`);
+export const publishClip = (clipId, matchId, text, minute) =>
+  api.post(`/clips/${clipId}/publish`, { match_id: matchId, text, minute: minute ?? null });
+export const deleteClip = (clipId) => api.delete(`/clips/${clipId}`);
 
 export const importMatchesForTeam = (teamId, leagueId, season) =>
   n8n.post("/import-matches", { teamId, leagueId, season });
