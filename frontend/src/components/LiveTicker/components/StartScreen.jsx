@@ -23,16 +23,21 @@ export function StartScreen({
   onRoundChange,
   matches,
   onMatchChange,
+  compact = false,
 }) {
   return (
-    <div className="lt-start">
+    <div className={compact ? "lt-start lt-start--compact" : "lt-start"}>
       <div className="lt-start__inner">
-        <div className="lt-start__logo">{config.clubName}</div>
-        <h1 className="lt-start__title">Select a Match to Start</h1>
-        <p className="lt-start__sub">Choose a match to open the live ticker</p>
+        {!compact && (
+          <>
+            <div className="lt-start__logo">{config.clubName}</div>
+            <h1 className="lt-start__title">Select a Match to Start</h1>
+            <p className="lt-start__sub">Choose a match to open the live ticker</p>
+          </>
+        )}
 
         <div className="lt-start__selects">
-          {/* Land – Textfeld mit Autocomplete */}
+          {/* Land */}
           <div className="lt-start__select-wrap">
             <label className="lt-start__label">Land</label>
             <input
@@ -42,8 +47,7 @@ export function StartScreen({
               value={selCountry ?? ""}
               onChange={(e) => {
                 const val = e.target.value;
-                if (countries.includes(val)) onCountryChange(val);
-                else onCountryChange(val); // live update for display
+                onCountryChange(val);
               }}
               onBlur={(e) => {
                 if (!countries.includes(e.target.value)) onCountryChange(null);
@@ -56,29 +60,25 @@ export function StartScreen({
             </datalist>
           </div>
 
-          <StartSelect
+          <Dropdown
             label={teamsLoading ? "Team (lädt…)" : "Team"}
             disabled={!selCountry || !teams.length}
-            value={selTeamId ?? ""}
-            onChange={(v) => onTeamChange(parseInt(v))}
-          >
-            <option value="" disabled>Select a Team</option>
-            {teams.map((t) => (
-              <option key={t.id} value={t.id}>{t.name}</option>
-            ))}
-          </StartSelect>
+            value={selTeamId}
+            placeholder="Team auswählen"
+            displayValue={teams.find((t) => t.id === selTeamId)?.name}
+            items={teams.map((t) => ({ value: t.id, label: t.name }))}
+            onSelect={(v) => onTeamChange(parseInt(v))}
+          />
 
-          <StartSelect
+          <Dropdown
             label={competitionsLoading ? "Wettbewerb (lädt…)" : "Wettbewerb"}
             disabled={!selTeamId || !competitions.length}
-            value={selCompetitionId ?? ""}
-            onChange={(v) => onCompetitionChange(parseInt(v))}
-          >
-            <option value="" disabled>Select Wettbewerb</option>
-            {competitions.map((c) => (
-              <option key={c.id} value={c.id}>{c.title}</option>
-            ))}
-          </StartSelect>
+            value={selCompetitionId}
+            placeholder="Wettbewerb auswählen"
+            displayValue={competitions.find((c) => c.id === selCompetitionId)?.title}
+            items={competitions.map((c) => ({ value: c.id, label: c.title }))}
+            onSelect={(v) => onCompetitionChange(parseInt(v))}
+          />
         </div>
 
         <MatchdayPicker
@@ -92,10 +92,71 @@ export function StartScreen({
           disabled={!selCompetitionId}
         />
 
-        <div className="lt-start__hint">
-          Wähle ein Spiel — der Ticker startet automatisch
-        </div>
+        {!compact && (
+          <div className="lt-start__hint">
+            Wähle ein Spiel — der Ticker startet automatisch
+          </div>
+        )}
       </div>
+    </div>
+  );
+}
+
+function Dropdown({ label, disabled, value, placeholder, displayValue, items, onSelect }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef(null);
+
+  useEffect(() => {
+    const handler = (e) => {
+      if (ref.current && !ref.current.contains(e.target)) setOpen(false);
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
+
+  return (
+    <div className="lt-start__select-wrap" ref={ref} style={{ position: "relative" }}>
+      <label className="lt-start__label">{label}</label>
+      <button
+        className={`lt-start__select lt-dropdown__trigger${open ? " lt-dropdown__trigger--open" : ""}`}
+        disabled={disabled}
+        onClick={() => setOpen((v) => !v)}
+        style={{ textAlign: "left", display: "flex", alignItems: "center", justifyContent: "space-between" }}
+      >
+        <span style={{ color: displayValue ? "inherit" : "var(--lt-text-muted)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+          {displayValue ?? placeholder}
+        </span>
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ flexShrink: 0, marginLeft: 8, transition: "transform 0.15s", transform: open ? "rotate(180deg)" : "rotate(0deg)" }}>
+          <path d="M6 9l6 6 6-6" />
+        </svg>
+      </button>
+
+      {open && (
+        <div style={{
+          position: "absolute", top: "100%", left: 0, right: 0, zIndex: 50,
+          background: "var(--lt-bg-card-2)", border: "1px solid var(--lt-border)",
+          borderRadius: 8, marginTop: 4, maxHeight: 220, overflowY: "auto",
+          boxShadow: "0 8px 24px rgba(0,0,0,0.4)",
+        }}>
+          {items.map((item) => (
+            <button
+              key={item.value}
+              onClick={() => { onSelect(item.value); setOpen(false); }}
+              style={{
+                width: "100%", textAlign: "left", padding: "0.55rem 0.85rem",
+                background: item.value === value ? "var(--lt-accent-dim)" : "transparent",
+                border: "none", color: item.value === value ? "var(--lt-accent)" : "var(--lt-text)",
+                fontFamily: "var(--lt-font-mono)", fontSize: "0.78rem", cursor: "pointer",
+                display: "flex", alignItems: "center", gap: 8,
+                borderBottom: "1px solid var(--lt-border)",
+              }}
+            >
+              {item.value === value && <span style={{ color: "var(--lt-accent)" }}>✓</span>}
+              {item.label}
+            </button>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
@@ -128,7 +189,7 @@ function MatchdayPicker({
     ? "Spieltag (Fehler)"
     : selRound
     ? `Spieltag ${roundLabel(selRound)}`
-    : "Select Spieltag";
+    : "Spieltag auswählen";
 
   return (
     <div className="lt-mdp" ref={ref}>
@@ -138,10 +199,11 @@ function MatchdayPicker({
           className={`lt-mdp__trigger lt-start__select${open ? " lt-mdp__trigger--open" : ""}`}
           disabled={disabled || matchdaysLoading || !matchdays.length}
           onClick={() => setOpen((v) => !v)}
+          style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}
         >
           <span>{label}</span>
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d={open ? "M18 15l-6-6-6 6" : "M6 9l6 6 6-6"} />
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ flexShrink: 0, transition: "transform 0.15s", transform: open ? "rotate(180deg)" : "rotate(0deg)" }}>
+            <path d="M6 9l6 6 6-6" />
           </svg>
         </button>
       </div>
@@ -191,22 +253,6 @@ function MatchdayPicker({
           )}
         </div>
       )}
-    </div>
-  );
-}
-
-function StartSelect({ label, disabled, value, onChange, children }) {
-  return (
-    <div className="lt-start__select-wrap">
-      <label className="lt-start__label">{label}</label>
-      <select
-        className="lt-start__select"
-        disabled={disabled}
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-      >
-        {children}
-      </select>
     </div>
   );
 }

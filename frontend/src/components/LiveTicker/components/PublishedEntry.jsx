@@ -74,7 +74,27 @@ export const PublishedEntry = memo(function PublishedEntry({
   tickerText,
   isManual,
   isPrematch,
+  onEdit,
+  onDelete,
 }) {
+  const [editing, setEditing] = useState(false);
+  const [editText, setEditText] = useState("");
+  const [saving, setSaving] = useState(false);
+  const textareaRef = useRef(null);
+
+  const startEdit = () => {
+    setEditText(tickerText?.text ?? "");
+    setEditing(true);
+    setTimeout(() => textareaRef.current?.focus(), 0);
+  };
+  const cancelEdit = () => setEditing(false);
+  const saveEdit = async () => {
+    if (!onEdit || !tickerText?.id) return;
+    setSaving(true);
+    try { await onEdit(tickerText.id, editText); setEditing(false); }
+    finally { setSaving(false); }
+  };
+
   const eventType = entry?.liveTickerEventType ?? entry?.event_type ?? entry?.type;
   const { icon, cssClass } = getEventMeta(eventType, entry?.detail);
 
@@ -179,7 +199,40 @@ export const PublishedEntry = memo(function PublishedEntry({
               style={{ cursor: "pointer" }}
             />
           )}
-          <div className="lt-entry__text">{tickerText?.text}</div>
+          {editing ? (
+            <div style={{ display: "flex", flexDirection: "column", gap: 6, marginTop: 4 }}>
+              <textarea
+                ref={textareaRef}
+                value={editText}
+                onChange={(e) => setEditText(e.target.value)}
+                rows={3}
+                style={{
+                  width: "100%", background: "var(--lt-bg-card-2)", border: "1px solid var(--lt-accent)",
+                  borderRadius: 6, color: "var(--lt-text)", fontFamily: "var(--lt-font-mono)",
+                  fontSize: "0.82rem", padding: "0.5rem 0.6rem", resize: "vertical", outline: "none",
+                }}
+                onKeyDown={(e) => { if (e.key === "Escape") cancelEdit(); if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) saveEdit(); }}
+              />
+              <div style={{ display: "flex", gap: 6 }}>
+                <button onClick={saveEdit} disabled={saving} style={{ padding: "0.25rem 0.7rem", borderRadius: 5, background: "var(--lt-accent)", border: "none", color: "#000", fontFamily: "var(--lt-font-mono)", fontSize: "0.72rem", fontWeight: 700, cursor: "pointer", opacity: saving ? 0.6 : 1 }}>
+                  {saving ? "…" : "Speichern"}
+                </button>
+                <button onClick={cancelEdit} style={{ padding: "0.25rem 0.7rem", borderRadius: 5, background: "transparent", border: "1px solid var(--lt-border)", color: "var(--lt-text-muted)", fontFamily: "var(--lt-font-mono)", fontSize: "0.72rem", cursor: "pointer" }}>
+                  Abbrechen
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="lt-entry__text" style={{ position: "relative" }}>
+              {tickerText?.text}
+              {onEdit && (
+                <button onClick={startEdit} title="Bearbeiten" style={{ marginLeft: 6, background: "none", border: "none", color: "var(--lt-text-faint)", cursor: "pointer", fontSize: "0.75rem", padding: 0, verticalAlign: "middle", opacity: 0.5 }}>✎</button>
+              )}
+              {onDelete && (
+                <button onClick={() => { if (window.confirm("Eintrag löschen?")) onDelete(tickerText?.id); }} title="Löschen" style={{ marginLeft: 4, background: "none", border: "none", color: "var(--lt-text-faint)", cursor: "pointer", fontSize: "0.72rem", padding: 0, verticalAlign: "middle", opacity: 0.4 }}>✕</button>
+              )}
+            </div>
+          )}
           <div className="lt-entry__meta">{tickerText?.video_url && /x\.com|twitter\.com/.test(tickerText.video_url) ? "tweet · manuell" : tickerText?.video_url && /instagram\.com/.test(tickerText.video_url) ? "instagram · manuell" : tickerText?.video_url && /youtube\.com|youtu\.be/.test(tickerText.video_url) ? "youtube · manuell" : tickerText?.video_url ? "clip · manuell" : tickerText?.image_url ? "foto · manuell" : "manuell"}</div>
         </div>
       </div>
@@ -193,7 +246,40 @@ export const PublishedEntry = memo(function PublishedEntry({
       <span className="lt-entry__minute">{entry.time ?? entry.minute}'</span>
       <span className="lt-entry__icon">{icon}</span>
       <div className="lt-entry__body">
-        <div className="lt-entry__text">{tickerText.text}</div>
+        {editing ? (
+          <div style={{ display: "flex", flexDirection: "column", gap: 6, marginTop: 4 }}>
+            <textarea
+              ref={textareaRef}
+              value={editText}
+              onChange={(e) => setEditText(e.target.value)}
+              rows={3}
+              style={{
+                width: "100%", background: "var(--lt-bg-card-2)", border: "1px solid var(--lt-accent)",
+                borderRadius: 6, color: "var(--lt-text)", fontFamily: "var(--lt-font-mono)",
+                fontSize: "0.82rem", padding: "0.5rem 0.6rem", resize: "vertical", outline: "none",
+              }}
+              onKeyDown={(e) => { if (e.key === "Escape") cancelEdit(); if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) saveEdit(); }}
+            />
+            <div style={{ display: "flex", gap: 6 }}>
+              <button onClick={saveEdit} disabled={saving} style={{ padding: "0.25rem 0.7rem", borderRadius: 5, background: "var(--lt-accent)", border: "none", color: "#000", fontFamily: "var(--lt-font-mono)", fontSize: "0.72rem", fontWeight: 700, cursor: "pointer", opacity: saving ? 0.6 : 1 }}>
+                {saving ? "…" : "Speichern"}
+              </button>
+              <button onClick={cancelEdit} style={{ padding: "0.25rem 0.7rem", borderRadius: 5, background: "transparent", border: "1px solid var(--lt-border)", color: "var(--lt-text-muted)", fontFamily: "var(--lt-font-mono)", fontSize: "0.72rem", cursor: "pointer" }}>
+                Abbrechen
+              </button>
+            </div>
+          </div>
+        ) : (
+          <div className="lt-entry__text" style={{ position: "relative" }}>
+            {tickerText.text}
+            {onEdit && (
+              <button onClick={startEdit} title="Bearbeiten" style={{ marginLeft: 6, background: "none", border: "none", color: "var(--lt-text-faint)", cursor: "pointer", fontSize: "0.75rem", padding: 0, verticalAlign: "middle", opacity: 0.5 }}>✎</button>
+            )}
+            {onDelete && (
+              <button onClick={() => { if (window.confirm("Eintrag löschen?")) onDelete(tickerText?.id); }} title="Löschen" style={{ marginLeft: 4, background: "none", border: "none", color: "var(--lt-text-faint)", cursor: "pointer", fontSize: "0.72rem", padding: 0, verticalAlign: "middle", opacity: 0.4 }}>✕</button>
+            )}
+          </div>
+        )}
         <div className="lt-entry__meta">
           {tickerText.style} · {tickerText.llm_model}
         </div>

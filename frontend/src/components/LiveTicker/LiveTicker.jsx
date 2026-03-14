@@ -20,7 +20,6 @@ import { LeftPanel } from "./panels/LeftPanel";
 import { CenterPanel } from "./panels/CenterPanel";
 import { RightPanel } from "./panels/RightPanel";
 import { StartScreen } from "./components/StartScreen";
-import { MatchSelectorModal } from "./components/MatchSelectorModal";
 import { Breadcrumb } from "./components/Breadcrumb";
 import { useApiStatus, API_STATUS_CFG } from "../../hooks/useApiStatus";
 
@@ -599,7 +598,19 @@ export default function LiveTicker() {
             </div>
           )}
           <div className={`lt-panel-wrap lt-panel-wrap--left${mobilePanel === "left" ? " lt-panel-wrap--active" : ""}`}>
-            <LeftPanel events={events} tickerTexts={tickerTexts} match={match} />
+            <LeftPanel
+              events={events}
+              tickerTexts={tickerTexts}
+              match={match}
+              onEditEntry={async (id, text) => {
+                await api.updateTicker(id, { text });
+                await reload.loadTickerTexts();
+              }}
+              onDeleteEntry={async (id) => {
+                await api.deleteTicker(id);
+                await reload.loadTickerTexts();
+              }}
+            />
           </div>
           <div className={`lt-panel-wrap${mobilePanel === "right" ? " lt-panel-wrap--active" : ""}`}>
             <div
@@ -655,14 +666,58 @@ export default function LiveTicker() {
           </button>
         </nav>
 
-        {modalOpen && (
-          <MatchSelectorModal
-            {...navProps}
-            onClose={() => setModalOpen(false)}
-            activeTab={activeTab}
-            onTabChange={handleTabChange}
-          />
-        )}
+        {/* Drawer Overlay */}
+        <div
+          onClick={() => setModalOpen(false)}
+          style={{
+            position: "fixed", inset: 0, zIndex: 100,
+            background: "rgba(0,0,0,0.55)", backdropFilter: "blur(3px)",
+            opacity: modalOpen ? 1 : 0,
+            pointerEvents: modalOpen ? "auto" : "none",
+            transition: "opacity 0.25s ease",
+          }}
+        />
+        {/* Drawer Panel */}
+        <div style={{
+          position: "fixed", top: 0, right: 0, bottom: 0, zIndex: 101,
+          width: "min(420px, 100vw)",
+          background: "var(--lt-bg-card)",
+          borderLeft: "1px solid var(--lt-border)",
+          boxShadow: "-12px 0 40px rgba(0,0,0,0.5)",
+          transform: modalOpen ? "translateX(0)" : "translateX(100%)",
+          transition: "transform 0.28s cubic-bezier(0.32,0,0.24,1)",
+          overflowY: "auto",
+          display: "flex", flexDirection: "column",
+        }}>
+          {/* Drawer Header */}
+          <div style={{
+            display: "flex", alignItems: "center", justifyContent: "space-between",
+            padding: "1rem 1.25rem",
+            borderBottom: "1px solid var(--lt-border)",
+            flexShrink: 0,
+          }}>
+            <span style={{ fontFamily: "var(--lt-font-mono)", fontSize: "0.75rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--lt-text-muted)" }}>
+              Match wechseln
+            </span>
+            <button
+              onClick={() => setModalOpen(false)}
+              style={{
+                width: 30, height: 30, borderRadius: "50%",
+                background: "var(--lt-bg-card-2)", border: "1px solid var(--lt-border)",
+                color: "var(--lt-text-muted)", cursor: "pointer", fontSize: "0.85rem",
+                display: "flex", alignItems: "center", justifyContent: "center",
+              }}
+            >✕</button>
+          </div>
+          {/* Drawer Content */}
+          <div style={{ flex: 1, overflowY: "auto" }}>
+            <StartScreen
+              {...navProps}
+              compact
+              onMatchChange={(id) => { navProps.onMatchChange(id); setModalOpen(false); }}
+            />
+          </div>
+        </div>
         {showHints && (
           <KeyboardHints mode={mode} onClose={() => setShowHints(false)} />
         )}

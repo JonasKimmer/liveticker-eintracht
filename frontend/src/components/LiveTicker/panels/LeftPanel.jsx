@@ -5,6 +5,8 @@ export const LeftPanel = memo(function LeftPanel({
   events,
   tickerTexts,
   match,
+  onEditEntry,
+  onDeleteEntry,
 }) {
   const publishedTexts = tickerTexts.filter(
     (t) => t.status === "published" || t.status == null,
@@ -78,7 +80,7 @@ export const LeftPanel = memo(function LeftPanel({
       {allEntries.map((entry) => {
         if (entry.type === "manual") {
           return (
-            <PublishedEntry key={entry.key} tickerText={entry.data} isManual />
+            <PublishedEntry key={entry.key} tickerText={entry.data} isManual onEdit={onEditEntry} onDelete={onDeleteEntry} />
           );
         }
         if (entry.type === "event") {
@@ -87,6 +89,8 @@ export const LeftPanel = memo(function LeftPanel({
               key={entry.key}
               entry={entry.data.event}
               tickerText={entry.data.tickerText}
+              onEdit={onEditEntry}
+              onDelete={onDeleteEntry}
             />
           );
         }

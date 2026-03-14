@@ -49,16 +49,29 @@ export function CenterPanel({
   const [editorValue, setEditorValue] = useState("");
   const [publishing, setPublishing] = useState(false); // eslint-disable-line no-unused-vars
   const [bulkGenerating, setBulkGenerating] = useState(false);
+  const [dismissedIds, setDismissedIds] = useState(new Set());
 
   // Set mit Event-IDs die gerade auto-prozessiert werden → kein Doppel-Trigger
   const processingRef = useRef(new Set());
 
   const pendingEvents = events.filter(
     (ev) =>
+      !dismissedIds.has(ev.id) &&
       !tickerTexts.find(
-        (t) => t.event_id === ev.id && (t.status === "published" || !t.status),
+        (t) => t.event_id === ev.id &&
+               (t.status === "published" || t.status === "rejected" || !t.status),
       ),
   );
+
+  const handleDismissEvent = useCallback(async (ev, draft) => {
+    if (draft) {
+      await api.updateTicker(draft.id, { status: "rejected" });
+      await reload.loadTickerTexts();
+    } else {
+      setDismissedIds((prev) => new Set([...prev, ev.id]));
+    }
+    if (selectedEventId === ev.id) setSelectedEventId(null);
+  }, [selectedEventId, reload]);
   const selectedEvent =
     pendingEvents.find((e) => e.id === selectedEventId) ??
     pendingEvents[0] ??
@@ -225,21 +238,25 @@ export function CenterPanel({
                     </button>
                   )}
                 </div>
-                {pendingEvents.map((ev) => (
-                  <EventCard
-                    key={ev.id}
-                    event={ev}
-                    draft={tickerTexts.find((t) => t.event_id === ev.id)}
-                    isSelected={selectedEvent?.id === ev.id}
-                    generatingId={generatingId}
-                    onGenerate={onGenerate}
-                    onSelect={() => {
-                      setSelectedEventId(ev.id);
-                      setEditMode(false);
-                    }}
-                    showGenButtons
-                  />
-                ))}
+                {pendingEvents.map((ev) => {
+                  const draft = tickerTexts.find((t) => t.event_id === ev.id);
+                  return (
+                    <EventCard
+                      key={ev.id}
+                      event={ev}
+                      draft={draft}
+                      isSelected={selectedEvent?.id === ev.id}
+                      generatingId={generatingId}
+                      onGenerate={onGenerate}
+                      onSelect={() => {
+                        setSelectedEventId(ev.id);
+                        setEditMode(false);
+                      }}
+                      onDismiss={() => handleDismissEvent(ev, draft)}
+                      showGenButtons
+                    />
+                  );
+                })}
               </div>
             )}
 
@@ -355,6 +372,7 @@ const EventCard = memo(function EventCard({
   generatingId,
   onGenerate,
   onSelect,
+  onDismiss,
   showGenButtons,
 }) {
   const { icon, cssClass } = getEventMeta(event.liveTickerEventType, null);
@@ -372,6 +390,13 @@ const EventCard = memo(function EventCard({
         <span className="lt-event-card__raw">
           {draft?.text ?? getRawEventText(event)}
         </span>
+        {onDismiss && (
+          <button
+            onClick={(e) => { e.stopPropagation(); if (window.confirm("Event entfernen?")) onDismiss(); }}
+            title="Entfernen"
+            style={{ marginLeft: "auto", flexShrink: 0, background: "none", border: "none", color: "var(--lt-text-faint)", cursor: "pointer", fontSize: "0.75rem", padding: "0 2px", opacity: 0.5 }}
+          >✕</button>
+        )}
       </div>
 
       {showGenButtons && !draft && (
