@@ -331,7 +331,6 @@ export default function LiveTicker() {
     setMatches([]);
     setSelCompetitionId(null);
     setSelRound(null);
-    setSelMatchId(null);
 
     const team = teams.find((t) => t.id === selTeamId);
     const apiTeamId = team?.externalId ?? selTeamId;
@@ -381,20 +380,18 @@ export default function LiveTicker() {
     if (!selCompetitionId) return;
     setMatches([]);
     setSelRound(null);
-    setSelMatchId(null);
   }, [selCompetitionId]);
 
-  // ── Matchdays → letzten vorauswählen ─────────────────────
+  // ── Matchdays → letzten vorauswählen (nur wenn noch kein Round gesetzt) ──
   useEffect(() => {
-    if (matchdays.length > 0) setSelRound(matchdays[matchdays.length - 1]);
-  }, [matchdays]);
+    if (matchdays.length > 0 && selRound == null) setSelRound(matchdays[matchdays.length - 1]);
+  }, [matchdays, selRound]);
 
   // ── Spieltag → Matches ────────────────────────────────────
   useEffect(() => {
     if (!selTeamId || !selCompetitionId || !selRound) return;
     const controller = new AbortController();
     setMatches([]);
-    setSelMatchId(null);
     api
       .fetchTeamMatchesByMatchday(selTeamId, selCompetitionId, selRound)
       .then((r) => {
