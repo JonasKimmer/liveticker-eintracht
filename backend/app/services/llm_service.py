@@ -216,7 +216,8 @@ class LLMService:
         lang = "Deutsch" if language == "de" else "English"
         style_desc = STYLE_DESC.get(style, STYLE_DESC["neutral"])
         minute_str = f"{minute}. Minute" if minute else "Vor/Nach dem Spiel"
-        event_label = EVENT_TYPE_LABEL.get(event_type, event_type)
+        _et = "pre_match_injuries" if event_type.startswith("pre_match_injuries") else event_type
+        event_label = EVENT_TYPE_LABEL.get(_et, event_type)
 
         event_lines = [f"Ereignistyp: {event_label}"]
         if event_detail:
@@ -244,18 +245,35 @@ class LLMService:
                 f"{examples}\n"
             )
 
+        is_prematch = event_type.startswith("pre_match")
+        prematch_instruction = (
+            "=== VOR-BERICHT – KEIN SPIEL LÄUFT ===\n"
+            "Du schreibst einen VORSCHAU-Text. Das Spiel hat NOCH NICHT begonnen.\n"
+            "ABSOLUT VERBOTEN: Spielszenen, Angriffe, Abschlüsse, Tore, Pässe, Zweikämpfe, Schüsse, Elfmeter, Einwürfe, Ecken – jede Art von Live-Kommentar.\n"
+            "Schreibe NUR sachliche Fakten aus dem KONTEXT unten (2–3 Sätze). Nichts erfinden!\n"
+            "=======================================\n\n"
+            if is_prematch else ""
+        )
+
+        prematch_rule = (
+            "- VOR-BERICHT: Nur Vorschau/Analyse – KEINE Spielszenen, KEINE Aktionen, KEINE Live-Beschreibungen\n"
+            if is_prematch else ""
+        )
+
         return (
+            f"{prematch_instruction}"
             f"Du bist ein Fußball-Liveticker-Redakteur. "
-            f"Schreibe einen Ticker-Eintrag (1–2 Sätze) auf {lang}.\n\n"
+            f"Schreibe einen Ticker-Eintrag auf {lang}.\n\n"
             f"### STIL\n{style_desc}\n\n"
             f"### FAKTEN\n{chr(10).join(event_lines)}\n"
             f"{context_block}"
             f"{few_shot_block}\n"
             f"### REGELN\n"
+            f"{prematch_rule}"
             f"- Nur der fertige Ticker-Text, keine Erklärungen\n"
             f"- Ellipsen und kurze Hauptsätze bevorzugen\n"
             f"- Präsens für laufende Szene, Perfekt für abgeschlossene Aktion\n"
-            f"- Bei Vorbericht/Spielvorschau/Direktvergleich/Verletzungsbericht/Teamstatistik: kompakten Analyse-Text schreiben (2–4 Sätze), KEIN Live-Kommentar\n"
+            f"- Bei Vorbericht/Spielvorschau/Direktvergleich/Verletzungsbericht/Teamstatistik: kompakten Analyse-Text schreiben (2–3 Sätze), KEIN Live-Kommentar\n"
             f"- Bei Tor: emotional, prägnant\n"
             f"- Das 'Verursachende Team' ist der Verein des handelnden Spielers – nicht zwingend das Heimteam\n"
             f"- Spielstand nur nennen wenn er im SPIELKONTEXT unter 'Stand nach diesem Tor' angegeben ist\n"
@@ -269,14 +287,20 @@ class LLMService:
         if "home_team" in context_data:
             return self._ctx_match_info(context_data)
 
+        # pre_match_injuries_<team_id> → normalisieren
+        normalized_type = event_type
+        if event_type.startswith("pre_match_injuries"):
+            normalized_type = "pre_match_injuries"
+
         builders = {
             "pre_match_injuries": self._ctx_injuries,
             "pre_match_prediction": self._ctx_prediction,
             "pre_match_h2h": self._ctx_h2h,
             "pre_match_team_stats": self._ctx_team_stats,
+            "pre_match_standings": self._ctx_standings,
             "live_stats_update": self._ctx_live_stats,
         }
-        builder = builders.get(event_type)
+        builder = builders.get(normalized_type)
         if builder:
             return builder(context_data)
 
@@ -327,6 +351,18 @@ class LLMService:
             f"Formation: {d.get('most_used_formation')}\n"
             f"Clean Sheets: {d.get('clean_sheets')}\n"
         )
+
+    def _ctx_standings(self, d: dict) -> str:
+        league = d.get("league_name", "Liga")
+        lines = [f"Tabelle ({league}):"]
+        for t in d.get("standings", []):
+            lines.append(
+                f"  - {t.get('team_name')}: Platz {t.get('rank')}, "
+                f"{t.get('points')} Pkt, "
+                f"{t.get('wins')}S/{t.get('draws')}U/{t.get('losses')}N, "
+                f"Tore: {t.get('goals_for')}:{t.get('goals_against')}"
+            )
+        return "\n### KONTEXT\n" + "\n".join(lines) + "\n"
 
     def _ctx_live_stats(self, d: dict) -> str:
         return (

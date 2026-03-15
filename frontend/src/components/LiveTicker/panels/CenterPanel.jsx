@@ -338,28 +338,27 @@ export function CenterPanel({
 
         {/* ── ScorePlay Bilder ─────────────────────────── */}
         <div style={{ marginTop: "1rem" }}>
-          <MediaPickerPanel matchId={match.id} playerNames={playerNames} currentMinute={match?.minute ?? 0} />
+          <MediaPickerPanel match={match} matchId={match.id} playerNames={playerNames} currentMinute={match?.minute ?? 0} lineups={lineups} />
         </div>
 
         {/* ── Tor-Clips ────────────────────────────────── */}
         <div style={{ marginTop: "0.5rem" }}>
-          <ClipPickerPanel matchId={match.id} match={match} currentMinute={match?.minute ?? 0} />
+          <ClipPickerPanel matchId={match.id} match={match} currentMinute={match?.minute ?? 0} onPublished={() => reload.loadTickerTexts()} />
         </div>
 
-        {/* ── YouTube-Videos ───────────────────────────── */}
-        <div style={{ marginTop: "0.5rem" }}>
-          <YouTubePanel matchId={match.id} currentMinute={match?.minute ?? 0} />
-        </div>
-
-        {/* ── Twitter/X-Posts ──────────────────────────── */}
-        <div style={{ marginTop: "0.5rem" }}>
-          <TwitterPanel matchId={match.id} currentMinute={match?.minute ?? 0} />
-        </div>
-
-        {/* ── Instagram-Posts ───────────────────────────── */}
-        <div style={{ marginTop: "0.5rem" }}>
-          <InstagramPanel matchId={match.id} currentMinute={match?.minute ?? 0} />
-        </div>
+        {/* ── YouTube / X / Instagram – nur bei Frankfurt-Spielen ── */}
+        {(match?.homeTeam?.name?.toLowerCase().includes("frankfurt") ||
+          match?.awayTeam?.name?.toLowerCase().includes("frankfurt")) && (<>
+          <div style={{ marginTop: "0.5rem" }}>
+            <YouTubePanel matchId={match.id} currentMinute={match?.minute ?? 0} />
+          </div>
+          <div style={{ marginTop: "0.5rem" }}>
+            <TwitterPanel matchId={match.id} currentMinute={match?.minute ?? 0} />
+          </div>
+          <div style={{ marginTop: "0.5rem" }}>
+            <InstagramPanel matchId={match.id} currentMinute={match?.minute ?? 0} />
+          </div>
+        </>)}
       </div>
     </div>
   );

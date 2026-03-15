@@ -3,7 +3,6 @@
 // Stats, Aufstellung, Torschützen, Karten, Kader
 // ============================================================
 import { useState } from "react";
-import { fetchGoalClips } from "../../../api";
 
 function Collapsible({ title, defaultOpen = true, children }) {
   const [open, setOpen] = useState(defaultOpen);
@@ -431,102 +430,7 @@ export function RightPanel({
         </Collapsible>
       )}
 
-      {/* 6. Tor-Clips */}
-      <GoalClipsSection />
     </div>
-  );
-}
-
-function GoalClipsSection() {
-  const [clips, setClips] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
-  const [selected, setSelected] = useState(null);
-
-  const load = async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const res = await fetchGoalClips();
-      const raw = res.data;
-      const list = Array.isArray(raw) ? raw : (raw?.items ?? []);
-      const all = list.map((item) => item?.json ?? item);
-      setClips(all);
-    } catch {
-      setError("Laden fehlgeschlagen");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  return (
-    <>
-      <Collapsible title="🎥 Tor-Clips" defaultOpen={false}>
-        {clips === null ? (
-          <button className="lt-clips-btn" onClick={load} disabled={loading}>
-            {loading ? "Laden…" : "Clips laden"}
-          </button>
-        ) : error ? (
-          <div className="lt-clips-error">{error}</div>
-        ) : clips.length === 0 ? (
-          <div className="lt-clips-empty">Keine Clips verfügbar</div>
-        ) : (
-          <div className="lt-clips">
-            {clips.map((c) => (
-              <button
-                key={c.vid}
-                className="lt-clip"
-                onClick={() => setSelected(c)}
-              >
-                <div className="lt-clip__thumb-wrap">
-                  <img src={c.thumbnail} alt={c.player} className="lt-clip__thumb" />
-                  <span className="lt-clip__play">▶</span>
-                </div>
-                <div className="lt-clip__info">
-                  <span className="lt-clip__player">{c.player}</span>
-                  <span className="lt-clip__score">
-                    {c.isOwnGoal && <span className="lt-clip__og">ET · </span>}
-                    {c.score} · Spieltag {c.matchday}
-                  </span>
-                </div>
-              </button>
-            ))}
-          </div>
-        )}
-      </Collapsible>
-
-      {selected && (
-        <div className="lt-clip-modal" onClick={() => setSelected(null)}>
-          <div className="lt-clip-modal__box" onClick={(e) => e.stopPropagation()}>
-            <button className="lt-clip-modal__close" onClick={() => setSelected(null)}>✕</button>
-            <iframe
-              src={`https://cdn.jwplayer.com/players/${selected.vid}.html`}
-              className="lt-clip-modal__player"
-              allowFullScreen
-              allow="autoplay; fullscreen"
-              style={{ border: "none" }}
-              title={selected.player}
-            />
-            <div className="lt-clip-modal__info">
-              <div className="lt-clip-modal__player-name">
-                {selected.isOwnGoal ? "⚽ Eigentor" : "⚽"} {selected.player}
-              </div>
-              <div className="lt-clip-modal__meta">
-                Spielstand: {selected.score} · Spieltag {selected.matchday}
-              </div>
-            </div>
-            <a
-              href={selected.videoUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="lt-clip-modal__btn"
-            >
-              ↗ Auf Bundesliga.com öffnen
-            </a>
-          </div>
-        </div>
-      )}
-    </>
   );
 }
 

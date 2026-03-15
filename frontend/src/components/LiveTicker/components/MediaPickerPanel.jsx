@@ -38,8 +38,10 @@ async function fetchQueue() {
   return res.json();
 }
 
-async function triggerN8nWebhook(playerId) {
-  const body = playerId ? { player_id: Number(playerId) } : {};
+async function triggerN8nWebhook(player) {
+  const body = player
+    ? { player_id: player.playerId, jersey_number: player.jerseyNumber, player_name: player.playerName }
+    : {};
   const res = await fetch(N8N_WEBHOOK, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -561,12 +563,26 @@ function MediaThumbnail({ item, onDoubleClick }) {
 
 // ── Hauptkomponente ───────────────────────────────────────────
 
-export function MediaPickerPanel({ matchId, defaultOpen = false, playerNames = [], currentMinute = 0 }) {
+export function MediaPickerPanel({ match, matchId, defaultOpen = false, playerNames = [], currentMinute = 0, lineups = [] }) {
   const [open, setOpen] = useState(defaultOpen);
   const [images, setImages] = useState([]);
   const [modalImage, setModalImage] = useState(null);
-  const [playerId, setPlayerId] = useState("");
+  const [selectedPlayer, setSelectedPlayer] = useState(null);
+  const [playerQuery, setPlayerQuery] = useState("");
   const [loadingTrigger, setLoadingTrigger] = useState(false);
+
+  // Eintracht-Spieler aus dem Lineup (Heim oder Auswärts), sortiert nach Trikot#
+  const eintrachtTeamId = useMemo(() => {
+    if (!match) return null;
+    if (match?.homeTeam?.name?.toLowerCase().includes("frankfurt")) return match.teamHomeId;
+    if (match?.awayTeam?.name?.toLowerCase().includes("frankfurt")) return match.teamAwayId;
+    return null;
+  }, [match]);
+  const lineupPlayers = useMemo(() => {
+    return [...lineups]
+      .filter((l) => l.playerName && (!eintrachtTeamId || l.teamId === eintrachtTeamId))
+      .sort((a, b) => (a.jerseyNumber ?? 99) - (b.jerseyNumber ?? 99));
+  }, [lineups, eintrachtTeamId]);
   const [statusMsg, setStatusMsg] = useState(null);
 
   useEffect(() => {
@@ -587,10 +603,14 @@ export function MediaPickerPanel({ matchId, defaultOpen = false, playerNames = [
   async function handleLoadImages() {
     setLoadingTrigger(true);
     setStatusMsg(null);
+    if (selectedPlayer) {
+      setImages([]);
+      try { await fetch(`${API_BASE}/media/queue`, { method: "DELETE" }); } catch (_) {}
+    }
     try {
-      await triggerN8nWebhook(playerId);
+      await triggerN8nWebhook(selectedPlayer);
       setStatusMsg({ type: "success", text: "Workflow gestartet – Bilder erscheinen gleich..." });
-      setTimeout(async () => { try { setImages(await fetchQueue()); } catch (_) {} }, 2500);
+      setTimeout(async () => { try { setImages(await fetchQueue()); } catch (_) {} }, 4000);
     } catch (e) {
       setStatusMsg({ type: "error", text: e.message });
     } finally {
@@ -613,6 +633,11 @@ export function MediaPickerPanel({ matchId, defaultOpen = false, playerNames = [
     style.textContent = "@keyframes spin { to { transform: rotate(360deg); } }";
     document.head.appendChild(style);
   }, []);
+
+  // Nur bei Frankfurt-Spielen anzeigen (Heim oder Auswärts)
+  const isEintracht = match?.homeTeam?.name?.toLowerCase().includes("frankfurt") ||
+    match?.awayTeam?.name?.toLowerCase().includes("frankfurt");
+  if (match && !isEintracht) return null;
 
   return (
     <>
@@ -681,23 +706,86 @@ export function MediaPickerPanel({ matchId, defaultOpen = false, playerNames = [
               </div>
             )}
 
-            {/* Controls */}
+            {/* Spieler-Suche */}
+            {lineupPlayers.length > 0 && (
+              <div style={{ position: "relative" }}>
+                <div style={{ position: "relative" }}>
+                  <input
+                    type="text"
+                    placeholder="# oder Name suchen…"
+                    value={playerQuery}
+                    onChange={(e) => setPlayerQuery(e.target.value)}
+                    onKeyDown={(e) => { if (e.key === "Escape") { setPlayerQuery(""); setSelectedPlayer(null); } }}
+                    style={{
+                      width: "100%", boxSizing: "border-box",
+                      background: "var(--lt-bg-input)", border: `1px solid ${selectedPlayer ? "var(--lt-accent)" : "var(--lt-border)"}`,
+                      borderRadius: 6, padding: "0.4rem 2rem 0.4rem 0.65rem",
+                      fontFamily: "var(--lt-font-mono)", fontSize: "0.75rem",
+                      color: "var(--lt-text)", outline: "none",
+                    }}
+                  />
+                  {selectedPlayer ? (
+                    <button
+                      onClick={() => { setSelectedPlayer(null); setPlayerQuery(""); }}
+                      style={{
+                        position: "absolute", right: 6, top: "50%", transform: "translateY(-50%)",
+                        background: "none", border: "none", cursor: "pointer",
+                        color: "var(--lt-text-muted)", fontSize: "0.7rem", padding: 0, lineHeight: 1,
+                      }}
+                    >✕</button>
+                  ) : playerQuery && (
+                    <span style={{ position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)", color: "var(--lt-text-faint)", fontSize: "0.65rem", pointerEvents: "none" }}>↵</span>
+                  )}
+                </div>
+
+                {/* Vorschläge */}
+                {playerQuery && !selectedPlayer && (() => {
+                  const q = playerQuery.toLowerCase();
+                  const matches = lineupPlayers.filter((p) =>
+                    p.playerName?.toLowerCase().includes(q) ||
+                    String(p.jerseyNumber ?? "").startsWith(q)
+                  ).slice(0, 8);
+                  if (!matches.length) return null;
+                  return (
+                    <div style={{
+                      position: "absolute", top: "calc(100% + 4px)", left: 0, right: 0, zIndex: 50,
+                      background: "var(--lt-bg-card)", border: "1px solid var(--lt-border)",
+                      borderRadius: 6, overflow: "hidden", boxShadow: "0 8px 24px rgba(0,0,0,0.4)",
+                    }}>
+                      {matches.map((p) => (
+                        <button
+                          key={p.playerId ?? p.jerseyNumber}
+                          onMouseDown={(e) => { e.preventDefault(); setSelectedPlayer(p); setPlayerQuery(`#${p.jerseyNumber} ${p.playerName}`); }}
+                          style={{
+                            width: "100%", display: "flex", alignItems: "center", gap: "0.5rem",
+                            padding: "0.4rem 0.65rem", background: "transparent", border: "none",
+                            cursor: "pointer", textAlign: "left",
+                            borderBottom: "1px solid var(--lt-border)",
+                          }}
+                          onMouseEnter={(e) => e.currentTarget.style.background = "var(--lt-bg-card-2)"}
+                          onMouseLeave={(e) => e.currentTarget.style.background = "transparent"}
+                        >
+                          {p.jerseyNumber != null && (
+                            <span style={{
+                              fontFamily: "var(--lt-font-mono)", fontSize: "0.68rem", fontWeight: 700,
+                              color: "var(--lt-accent)", minWidth: 22, textAlign: "right",
+                            }}>
+                              {p.jerseyNumber}
+                            </span>
+                          )}
+                          <span style={{ fontFamily: "var(--lt-font-mono)", fontSize: "0.75rem", color: "var(--lt-text)" }}>
+                            {p.playerName}
+                          </span>
+                        </button>
+                      ))}
+                    </div>
+                  );
+                })()}
+              </div>
+            )}
+
+            {/* Laden-Button */}
             <div style={{ display: "flex", gap: "0.5rem" }}>
-              <input
-                type="number"
-                placeholder="Player ID (optional)"
-                value={playerId}
-                onChange={(e) => setPlayerId(e.target.value)}
-                style={{
-                  flex: 1, minWidth: 0,
-                  background: "var(--lt-bg-input)", border: "1px solid var(--lt-border)",
-                  borderRadius: 6, padding: "0.45rem 0.75rem",
-                  fontFamily: "var(--lt-font-mono)", fontSize: "0.78rem",
-                  color: "var(--lt-text)", outline: "none",
-                }}
-                onFocus={(e) => e.target.style.borderColor = "var(--lt-accent)"}
-                onBlur={(e) => e.target.style.borderColor = "var(--lt-border)"}
-              />
               <button
                 onClick={handleLoadImages}
                 disabled={loadingTrigger}

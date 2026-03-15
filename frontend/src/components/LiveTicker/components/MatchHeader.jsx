@@ -32,7 +32,7 @@ export function MatchHeader({ match, leagueSeason }) {
         {/* Score */}
         <div className="lt-match-header__score-wrap">
           <span className={`lt-match-header__status lt-match-header__status--${status}`}>
-            {match.matchState}
+            {status === "live" && match.minute ? `${match.minute}'` : match.matchState}
           </span>
           <div className="lt-match-header__scores-row">
             <span className="lt-match-header__score">{match.teamHomeScore}</span>

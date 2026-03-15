@@ -113,7 +113,7 @@ export const PublishedEntry = memo(function PublishedEntry({
 
   if (isManual) {
     const phaseLabel = {
-      Before: "i", After: "i",
+      Before: "i", After: "i", Halftime: "i",
       FirstHalfBreak: "i", SecondHalfBreak: "Pause",
       ExtraBreak: "VZ·P", ExtraSecondHalfBreak: "Elfm.P",
       ExtraFirstHalf: "VZ1", ExtraSecondHalf: "VZ2",
@@ -128,9 +128,7 @@ export const PublishedEntry = memo(function PublishedEntry({
     // Dedup-Keys (z.B. "pass_h_90") sind kein Emoji → Fallback auf 📊
     const isCodeKey = tickerText?.icon && /^[a-z0-9_]+$/i.test(tickerText.icon);
     const displayIcon = isCodeKey ? "📊" : (tickerText?.icon ?? phaseIcon);
-    const minuteDisplay = tickerText?.minute != null
-      ? `${tickerText.minute}'`
-      : (phaseLabel ?? "–");
+    const minuteDisplay = phaseLabel ?? (tickerText?.minute != null ? `${tickerText.minute}'` : "–");
     return (
       <div className="lt-entry lt-entry--manual">
         <span className="lt-entry__minute">{minuteDisplay}</span>

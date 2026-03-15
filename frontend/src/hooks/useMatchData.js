@@ -171,6 +171,7 @@ export function useMatchData(selectedMatchId) {
       loadEvents();
       loadTickerTexts();
       loadLiveStats();
+      loadInjuries();
     }, 5000);
 
     return () => {

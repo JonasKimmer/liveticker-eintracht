@@ -3,7 +3,7 @@
 // Flow: n8n scrapet Kanal → DB → Klick → Modal → Ticker
 // ============================================================
 
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import {
   fetchYoutubeClips,
@@ -14,6 +14,13 @@ import {
 } from "../../../api";
 
 const STYLES = ["neutral", "euphorisch", "kritisch"];
+
+const PHASES = [
+  { value: "", label: "Spielminute" },
+  { value: "Before", label: "Pre Match" },
+  { value: "Halftime", label: "Halbzeit" },
+  { value: "After", label: "After Match" },
+];
 
 // YouTube Video-ID aus URL extrahieren
 function getYoutubeId(url) {
@@ -40,6 +47,7 @@ function getThumbnail(clip) {
 function YoutubePublishModal({ clip, matchId, currentMinute, onClose, onPublished }) {
   const [text, setText] = useState("");
   const [minute, setMinute] = useState(currentMinute ?? 0);
+  const [phase, setPhase] = useState("");
   const [style, setStyle] = useState("neutral");
   const [generating, setGenerating] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -73,10 +81,12 @@ function YoutubePublishModal({ clip, matchId, currentMinute, onClose, onPublishe
     setLoading(true);
     setError(null);
     try {
-      await publishClip(clip.id, matchId, text.trim(), minute || null);
+      const publishMinute = phase === "Halftime" ? 45 : phase ? null : (minute || null);
+      await publishClip(clip.id, matchId, text.trim(), publishMinute, phase || null);
       onPublished(clip.id);
     } catch (err) {
-      setError(err?.response?.data?.detail ?? err.message ?? "Fehler");
+      const detail = err?.response?.data?.detail;
+      setError(typeof detail === "string" ? detail : detail ? JSON.stringify(detail) : (err.message ?? "Fehler"));
       setLoading(false);
     }
   }
@@ -162,19 +172,32 @@ function YoutubePublishModal({ clip, matchId, currentMinute, onClose, onPublishe
                 </div>
               </div>
               <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
-                <label style={{ fontFamily: "var(--lt-font-mono)", fontSize: "0.65rem", color: "var(--lt-text-muted)" }}>Min</label>
-                <input
-                  type="number"
-                  value={minute}
-                  min={0} max={120}
-                  onChange={(e) => setMinute(Number(e.target.value))}
+                <select
+                  value={phase}
+                  onChange={(e) => setPhase(e.target.value)}
                   style={{
-                    width: 46, background: "var(--lt-bg-input)", border: "1px solid var(--lt-border)",
+                    background: "var(--lt-bg-input)", border: "1px solid var(--lt-border)",
                     borderRadius: 4, padding: "2px 4px",
-                    fontFamily: "var(--lt-font-mono)", fontSize: "0.78rem",
-                    color: "var(--lt-text)", outline: "none", textAlign: "center",
+                    fontFamily: "var(--lt-font-mono)", fontSize: "0.62rem",
+                    color: "var(--lt-text)", outline: "none",
                   }}
-                />
+                >
+                  {PHASES.map((p) => <option key={p.value} value={p.value}>{p.label}</option>)}
+                </select>
+                {!phase && (
+                  <input
+                    type="number"
+                    value={minute}
+                    min={0} max={120}
+                    onChange={(e) => setMinute(Number(e.target.value))}
+                    style={{
+                      width: 46, background: "var(--lt-bg-input)", border: "1px solid var(--lt-border)",
+                      borderRadius: 4, padding: "2px 4px",
+                      fontFamily: "var(--lt-font-mono)", fontSize: "0.78rem",
+                      color: "var(--lt-text)", outline: "none", textAlign: "center",
+                    }}
+                  />
+                )}
               </div>
             </div>
 
@@ -245,18 +268,39 @@ function YoutubePublishModal({ clip, matchId, currentMinute, onClose, onPublishe
   );
 }
 
-// ── Video-Kachel ──────────────────────────────────────────────
+// ── Video-Kachel (ScorePlay-Style: Hover-Preview + Doppelklick) ─
 
 function YouTubeThumbnail({ clip, onClick, onDelete }) {
   const [hovered, setHovered] = useState(false);
+  const [previewStyle, setPreviewStyle] = useState(null);
+  const btnRef = useRef(null);
   const thumbnail = getThumbnail(clip);
 
+  function handleMouseEnter() {
+    setHovered(true);
+    if (btnRef.current && thumbnail) {
+      const r = btnRef.current.getBoundingClientRect();
+      const spaceRight = window.innerWidth - r.right;
+      const previewW = 320;
+      const left = spaceRight >= previewW + 16 ? r.right + 8 : r.left - previewW - 8;
+      const top = Math.min(r.top, window.innerHeight - 220);
+      setPreviewStyle({ position: "fixed", top, left, width: previewW, zIndex: 9999 });
+    }
+  }
+
+  function handleMouseLeave() {
+    setHovered(false);
+    setPreviewStyle(null);
+  }
+
   return (
-    <div style={{ position: "relative" }}>
+    <>
       <button
-        onClick={() => onClick(clip)}
-        onMouseEnter={() => setHovered(true)}
-        onMouseLeave={() => setHovered(false)}
+        ref={btnRef}
+        onDoubleClick={() => onClick(clip)}
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
+        title="Doppelklick zum Veröffentlichen"
         style={{
           position: "relative", overflow: "hidden", borderRadius: 6,
           border: `1px solid ${hovered ? "#ff0000" : "var(--lt-border)"}`,
@@ -277,39 +321,55 @@ function YouTubeThumbnail({ clip, onClick, onDelete }) {
             📺
           </div>
         )}
-        {/* YouTube Play-Button Overlay */}
-        <div style={{
-          position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center",
-          background: hovered ? "rgba(0,0,0,0.35)" : "rgba(0,0,0,0.15)", transition: "background 0.15s",
-        }}>
-          <div style={{
-            width: 32, height: 22, borderRadius: 6,
-            background: hovered ? "#ff0000" : "rgba(0,0,0,0.7)",
-            display: "flex", alignItems: "center", justifyContent: "center",
-            transition: "background 0.15s",
-          }}>
-            <span style={{ fontSize: "0.55rem", marginLeft: 2, color: "#fff" }}>▶</span>
+
+        {/* Hover overlay */}
+        {hovered && (
+          <div style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.35)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <span style={{ fontFamily: "var(--lt-font-mono)", fontSize: "0.6rem", fontWeight: 700, color: "#ff0000", background: "rgba(0,0,0,0.65)", padding: "3px 8px", borderRadius: 4, letterSpacing: "0.05em" }}>
+              DOPPELKLICK
+            </span>
           </div>
-        </div>
+        )}
+
         <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, background: "linear-gradient(transparent, rgba(0,0,0,0.85))", padding: "8px 6px 4px" }}>
-          <p style={{ fontFamily: "var(--lt-font-mono)", fontSize: "0.58rem", color: "#fff", margin: 0, overflow: "hidden", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" }}>
+          <p style={{ fontFamily: "var(--lt-font-mono)", fontSize: "0.58rem", color: "#fff", margin: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
             {clip.title ?? "YouTube-Video"}
           </p>
         </div>
+
+        {/* Delete */}
+        <button
+          onDoubleClick={(e) => e.stopPropagation()}
+          onClick={(e) => { e.stopPropagation(); onDelete(clip.id); }}
+          style={{
+            position: "absolute", top: 4, right: 4,
+            width: 20, height: 20, borderRadius: "50%",
+            background: "rgba(0,0,0,0.6)", border: "none",
+            color: "rgba(255,255,255,0.6)", cursor: "pointer", fontSize: "0.6rem",
+            display: "flex", alignItems: "center", justifyContent: "center",
+            opacity: hovered ? 1 : 0, transition: "opacity 0.15s",
+          }}
+          title="Löschen"
+        >✕</button>
       </button>
-      <button
-        onClick={(e) => { e.stopPropagation(); onDelete(clip.id); }}
-        style={{
-          position: "absolute", top: 4, right: 4,
-          width: 20, height: 20, borderRadius: "50%",
-          background: "rgba(0,0,0,0.6)", border: "none",
-          color: "rgba(255,255,255,0.6)", cursor: "pointer", fontSize: "0.6rem",
-          display: "flex", alignItems: "center", justifyContent: "center",
-          opacity: hovered ? 1 : 0, transition: "opacity 0.15s",
-        }}
-        title="Löschen"
-      >✕</button>
-    </div>
+
+      {/* Hover-Preview Portal */}
+      {previewStyle && thumbnail && createPortal(
+        <div style={{ ...previewStyle, borderRadius: 8, overflow: "hidden", boxShadow: "0 16px 48px rgba(0,0,0,0.7)", border: "1px solid var(--lt-border)", pointerEvents: "none" }}>
+          <img
+            src={thumbnail}
+            alt={clip.title ?? "YouTube"}
+            style={{ width: "100%", display: "block", objectFit: "cover" }}
+          />
+          {clip.title && (
+            <div style={{ background: "var(--lt-bg-card)", padding: "6px 10px", fontFamily: "var(--lt-font-mono)", fontSize: "0.62rem", color: "var(--lt-text-muted)", lineHeight: 1.4 }}>
+              {clip.title.slice(0, 100)}{clip.title.length > 100 ? "…" : ""}
+            </div>
+          )}
+        </div>,
+        document.body
+      )}
+    </>
   );
 }
 
@@ -466,7 +526,7 @@ export function YouTubePanel({ matchId, currentMinute = 0 }) {
             {!loading && clips.length > 0 && (
               <>
                 <p style={{ fontFamily: "var(--lt-font-mono)", fontSize: "0.62rem", color: "var(--lt-text-faint)", letterSpacing: "0.04em", margin: 0 }}>
-                  Klick → KI-Entwurf + Veröffentlichen
+                  Doppelklick zum Veröffentlichen
                 </p>
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.5rem" }}>
                   {clips.map((clip) => (

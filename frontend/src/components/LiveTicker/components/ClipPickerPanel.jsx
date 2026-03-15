@@ -5,9 +5,87 @@
 
 import { useState, useCallback, useEffect } from "react";
 import { createPortal } from "react-dom";
-import { fetchClips, fetchGoalClips, generateClipDraft, publishClip, deleteClip } from "../../../api";
+import { fetchClips, fetchGoalClips, generateClipDraft, publishClip, publishClipTicker, deleteClip } from "../../../api";
 
 const STYLES = ["euphorisch", "neutral", "kritisch"];
+
+// ── Video Player / Thumbnail ──────────────────────────────────
+
+function VideoOrThumb({ clip }) {
+  const [playing, setPlaying] = useState(false);
+
+  if (playing && clip.video_url) {
+    return (
+      <div style={{ position: "relative", paddingBottom: "56.25%", background: "#000" }}>
+        <iframe
+          src={clip.video_url}
+          allow="autoplay; fullscreen"
+          allowFullScreen
+          style={{ position: "absolute", inset: 0, width: "100%", height: "100%", border: "none" }}
+        />
+        <div
+          onClick={() => setPlaying(false)}
+          style={{
+            position: "absolute", top: 6, right: 6, zIndex: 10,
+            width: 26, height: 26, borderRadius: "50%",
+            background: "rgba(0,0,0,0.6)", color: "#fff",
+            display: "flex", alignItems: "center", justifyContent: "center",
+            cursor: "pointer", fontSize: "0.75rem",
+          }}
+        >✕</div>
+      </div>
+    );
+  }
+
+  return (
+    <div
+      onClick={() => clip.video_url && setPlaying(true)}
+      style={{ position: "relative", paddingBottom: "56.25%", overflow: "hidden", cursor: clip.video_url ? "pointer" : "default" }}
+    >
+      {clip.thumbnail_url && (
+        <img
+          src={clip.thumbnail_url}
+          alt={clip.title ?? "Clip"}
+          style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+        />
+      )}
+      <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, var(--lt-bg-card) 0%, transparent 60%)" }} />
+      {clip.video_url && (
+        <div style={{
+          position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", gap: 10,
+        }}>
+          <div style={{
+            width: 44, height: 44, borderRadius: "50%",
+            background: "rgba(0,0,0,0.65)", border: "2px solid rgba(255,255,255,0.8)",
+            display: "flex", alignItems: "center", justifyContent: "center",
+          }}>
+            <span style={{ color: "#fff", fontSize: "1.1rem", marginLeft: 3 }}>▶</span>
+          </div>
+          <a
+            href={clip.video_url}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              width: 32, height: 32, borderRadius: "50%",
+              background: "rgba(0,0,0,0.65)", border: "2px solid rgba(255,255,255,0.5)",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              color: "#fff", fontSize: "0.75rem", textDecoration: "none",
+            }}
+            title="In neuem Tab öffnen"
+          >↗</a>
+        </div>
+      )}
+      <span style={{
+        position: "absolute", bottom: 8, left: 12,
+        fontFamily: "var(--lt-font-mono)", fontSize: "0.65rem", color: "var(--lt-text-muted)",
+      }}>
+        {clip.player_name ? `⚽ ${clip.player_name}` : clip.title ?? "Clip"}
+        {clip.team_name && <span style={{ opacity: 0.7 }}> · {clip.team_name}</span>}
+      </span>
+    </div>
+  );
+}
 
 // ── Publish Modal ─────────────────────────────────────────────
 
@@ -48,10 +126,15 @@ function ClipPublishModal({ clip, matchId, currentMinute, onClose, onPublished }
     setLoading(true);
     setError(null);
     try {
-      await publishClip(clip.id, matchId, text.trim(), minute || null);
+      if (clip._fromN8n) {
+        await publishClipTicker(matchId, text.trim(), clip.video_url, clip.thumbnail_url, minute || null);
+      } else {
+        await publishClip(clip.id, matchId, text.trim(), minute || null);
+      }
       onPublished(clip.id);
     } catch (err) {
-      setError(err?.response?.data?.detail ?? err.message ?? "Fehler");
+      const detail = err?.response?.data?.detail;
+      setError(typeof detail === "string" ? detail : detail ? JSON.stringify(detail) : (err.message ?? "Fehler"));
       setLoading(false);
     }
   }
@@ -71,24 +154,9 @@ function ClipPublishModal({ clip, matchId, currentMinute, onClose, onPublished }
         background: "var(--lt-bg-card)", border: "1px solid var(--lt-border)",
         boxShadow: "0 24px 48px rgba(0,0,0,0.7)", overflow: "hidden", position: "relative",
       }}>
-        {/* Thumbnail */}
-        {clip.thumbnail_url && (
-          <div style={{ position: "relative", paddingBottom: "56.25%", overflow: "hidden" }}>
-            <img
-              src={clip.thumbnail_url}
-              alt={clip.title ?? "Clip"}
-              style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", display: "block" }}
-            />
-            <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, var(--lt-bg-card) 0%, transparent 60%)" }} />
-            <span style={{
-              position: "absolute", bottom: 8, left: 12,
-              fontFamily: "var(--lt-font-mono)", fontSize: "0.65rem",
-              color: "var(--lt-text-muted)",
-            }}>
-              {clip.player_name ? `⚽ ${clip.player_name}` : clip.title ?? "Clip"}
-              {clip.team_name && <span style={{ opacity: 0.7 }}> · {clip.team_name}</span>}
-            </span>
-          </div>
+        {/* Video / Thumbnail */}
+        {(clip.video_url || clip.thumbnail_url) && (
+          <VideoOrThumb clip={clip} />
         )}
 
         <form onSubmit={handleSubmit} style={{ padding: "1rem", display: "flex", flexDirection: "column", gap: "0.75rem" }}>
@@ -295,7 +363,7 @@ function ClipThumbnail({ clip, onClick, onDelete }) {
 
 // ── Hauptkomponente ───────────────────────────────────────────
 
-export function ClipPickerPanel({ matchId, match, currentMinute = 0 }) {
+export function ClipPickerPanel({ matchId, match, currentMinute = 0, onPublished }) {
   const [open, setOpen] = useState(false);
   const [clips, setClips] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -369,11 +437,17 @@ export function ClipPickerPanel({ matchId, match, currentMinute = 0 }) {
   function handlePublished(clipId) {
     setClips((prev) => prev.filter((c) => c.id !== clipId));
     setModalClip(null);
+    onPublished?.();
     setStatusMsg({ type: "success", text: "✓ Im Liveticker veröffentlicht!" });
     setTimeout(() => setStatusMsg(null), 3000);
   }
 
   async function handleDelete(clipId) {
+    const clip = clips.find((c) => c.id === clipId);
+    if (clip?._fromN8n) {
+      setClips((prev) => prev.filter((c) => c.id !== clipId));
+      return;
+    }
     try {
       await deleteClip(clipId);
       setClips((prev) => prev.filter((c) => c.id !== clipId));

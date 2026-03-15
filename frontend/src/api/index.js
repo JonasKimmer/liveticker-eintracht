@@ -125,8 +125,8 @@ export const generateClipDraft = (clipId, matchId, style = "euphorisch") =>
   api.post(`/clips/${clipId}/draft?match_id=${matchId}&style=${style}`);
 export const generateYoutubeDraft = (clipId, style = "neutral") =>
   api.post(`/clips/${clipId}/draft?match_id=0&style=${style}`);
-export const publishClip = (clipId, matchId, text, minute) =>
-  api.post(`/clips/${clipId}/publish`, { match_id: matchId, text, minute: minute ?? null });
+export const publishClip = (clipId, matchId, text, minute, phase) =>
+  api.post(`/clips/${clipId}/publish`, { match_id: matchId, text, minute: minute ?? null, phase: phase ?? null });
 export const deleteClip = (clipId) => api.delete(`/clips/${clipId}`);
 
 export const importMatchesForTeam = (teamId, leagueId, season) =>

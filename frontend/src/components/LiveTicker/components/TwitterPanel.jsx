@@ -7,11 +7,19 @@ import { useState, useCallback, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { fetchTwitterPosts, triggerTwitterImport, publishClip, deleteClip } from "../../../api";
 
+const PHASES = [
+  { value: "", label: "Spielminute" },
+  { value: "Before", label: "Pre Match" },
+  { value: "Halftime", label: "Halbzeit" },
+  { value: "After", label: "After Match" },
+];
+
 // ── Publish Modal ─────────────────────────────────────────────
 
 function TwitterPublishModal({ post, matchId, currentMinute, onClose, onPublished }) {
   const [text, setText] = useState(post.title ?? "");
   const [minute, setMinute] = useState(currentMinute ?? 0);
+  const [phase, setPhase] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
@@ -21,10 +29,12 @@ function TwitterPublishModal({ post, matchId, currentMinute, onClose, onPublishe
     setLoading(true);
     setError(null);
     try {
-      await publishClip(post.id, matchId, text.trim(), minute || null);
+      const publishMinute = phase === "Halftime" ? 45 : phase ? null : (minute || null);
+      await publishClip(post.id, matchId, text.trim(), publishMinute, phase || null);
       onPublished(post.id);
     } catch (err) {
-      setError(err?.response?.data?.detail ?? err.message ?? "Fehler");
+      const detail = err?.response?.data?.detail;
+      setError(typeof detail === "string" ? detail : detail ? JSON.stringify(detail) : (err.message ?? "Fehler"));
       setLoading(false);
     }
   }
@@ -80,19 +90,32 @@ function TwitterPublishModal({ post, matchId, currentMinute, onClose, onPublishe
                 Ticker-Text
               </label>
               <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
-                <label style={{ fontFamily: "var(--lt-font-mono)", fontSize: "0.65rem", color: "var(--lt-text-muted)" }}>Min</label>
-                <input
-                  type="number"
-                  value={minute}
-                  min={0} max={120}
-                  onChange={(e) => setMinute(Number(e.target.value))}
+                <select
+                  value={phase}
+                  onChange={(e) => setPhase(e.target.value)}
                   style={{
-                    width: 46, background: "var(--lt-bg-input)", border: "1px solid var(--lt-border)",
+                    background: "var(--lt-bg-input)", border: "1px solid var(--lt-border)",
                     borderRadius: 4, padding: "2px 4px",
-                    fontFamily: "var(--lt-font-mono)", fontSize: "0.78rem",
-                    color: "var(--lt-text)", outline: "none", textAlign: "center",
+                    fontFamily: "var(--lt-font-mono)", fontSize: "0.62rem",
+                    color: "var(--lt-text)", outline: "none",
                   }}
-                />
+                >
+                  {PHASES.map((p) => <option key={p.value} value={p.value}>{p.label}</option>)}
+                </select>
+                {!phase && (
+                  <input
+                    type="number"
+                    value={minute}
+                    min={0} max={120}
+                    onChange={(e) => setMinute(Number(e.target.value))}
+                    style={{
+                      width: 46, background: "var(--lt-bg-input)", border: "1px solid var(--lt-border)",
+                      borderRadius: 4, padding: "2px 4px",
+                      fontFamily: "var(--lt-font-mono)", fontSize: "0.78rem",
+                      color: "var(--lt-text)", outline: "none", textAlign: "center",
+                    }}
+                  />
+                )}
               </div>
             </div>
             <textarea

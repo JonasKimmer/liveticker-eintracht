@@ -284,7 +284,12 @@ export default function LiveTicker() {
       .then(() =>
         api
           .generateSyntheticBatch(selMatchId, "neutral", instance)
-          .then(() => reload.loadTickerTexts())
+          .then(() => {
+            // LLM läuft async im Hintergrund – mehrfach nachladen
+            [3000, 8000, 15000, 25000, 40000].forEach((delay) => {
+              setTimeout(() => reload.loadTickerTexts(), delay);
+            });
+          })
           .catch((err) => console.error("generateSyntheticBatch error:", err)),
       )
       .catch((err) => console.error("importPrematch error:", err));

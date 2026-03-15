@@ -154,6 +154,21 @@ def media_queue(db: Session = Depends(get_db)) -> list[MediaItemResponse]:
 
 
 # ──────────────────────────────────────────────
+# DELETE /media/queue
+# ──────────────────────────────────────────────
+
+
+@router.delete(
+    "/queue",
+    status_code=status.HTTP_204_NO_CONTENT,
+    summary="Alle pending Bilder aus der Queue löschen",
+)
+def clear_media_queue(db: Session = Depends(get_db)) -> None:
+    db.query(MediaQueue).filter(MediaQueue.status == "pending").delete()
+    db.commit()
+
+
+# ──────────────────────────────────────────────
 # POST /media/publish
 # ──────────────────────────────────────────────
 

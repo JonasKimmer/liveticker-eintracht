@@ -3,17 +3,25 @@
 // Flow: n8n RSS → DB → Klick → Modal → Ticker
 // ============================================================
 
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import { fetchInstagramPosts, triggerInstagramImport, publishClip, deleteClip } from "../../../api";
 
 const INSTA_GRADIENT = "linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888)";
+
+const PHASES = [
+  { value: "", label: "Spielminute" },
+  { value: "Before", label: "Pre Match" },
+  { value: "Halftime", label: "Halbzeit" },
+  { value: "After", label: "After Match" },
+];
 
 // ── Publish Modal ─────────────────────────────────────────────
 
 function InstaPublishModal({ post, matchId, currentMinute, onClose, onPublished }) {
   const [text, setText] = useState(post.title ?? "");
   const [minute, setMinute] = useState(currentMinute ?? 0);
+  const [phase, setPhase] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
@@ -23,10 +31,12 @@ function InstaPublishModal({ post, matchId, currentMinute, onClose, onPublished 
     setLoading(true);
     setError(null);
     try {
-      await publishClip(post.id, matchId, text.trim(), minute || null);
+      const publishMinute = phase === "Halftime" ? 45 : phase ? null : (minute || null);
+      await publishClip(post.id, matchId, text.trim(), publishMinute, phase || null);
       onPublished(post.id);
     } catch (err) {
-      setError(err?.response?.data?.detail ?? err.message ?? "Fehler");
+      const detail = err?.response?.data?.detail;
+      setError(typeof detail === "string" ? detail : detail ? JSON.stringify(detail) : (err.message ?? "Fehler"));
       setLoading(false);
     }
   }
@@ -82,19 +92,32 @@ function InstaPublishModal({ post, matchId, currentMinute, onClose, onPublished 
                 Ticker-Text
               </label>
               <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
-                <label style={{ fontFamily: "var(--lt-font-mono)", fontSize: "0.65rem", color: "var(--lt-text-muted)" }}>Min</label>
-                <input
-                  type="number"
-                  value={minute}
-                  min={0} max={120}
-                  onChange={(e) => setMinute(Number(e.target.value))}
+                <select
+                  value={phase}
+                  onChange={(e) => setPhase(e.target.value)}
                   style={{
-                    width: 46, background: "var(--lt-bg-input)", border: "1px solid var(--lt-border)",
+                    background: "var(--lt-bg-input)", border: "1px solid var(--lt-border)",
                     borderRadius: 4, padding: "2px 4px",
-                    fontFamily: "var(--lt-font-mono)", fontSize: "0.78rem",
-                    color: "var(--lt-text)", outline: "none", textAlign: "center",
+                    fontFamily: "var(--lt-font-mono)", fontSize: "0.62rem",
+                    color: "var(--lt-text)", outline: "none",
                   }}
-                />
+                >
+                  {PHASES.map((p) => <option key={p.value} value={p.value}>{p.label}</option>)}
+                </select>
+                {!phase && (
+                  <input
+                    type="number"
+                    value={minute}
+                    min={0} max={120}
+                    onChange={(e) => setMinute(Number(e.target.value))}
+                    style={{
+                      width: 46, background: "var(--lt-bg-input)", border: "1px solid var(--lt-border)",
+                      borderRadius: 4, padding: "2px 4px",
+                      fontFamily: "var(--lt-font-mono)", fontSize: "0.78rem",
+                      color: "var(--lt-text)", outline: "none", textAlign: "center",
+                    }}
+                  />
+                )}
               </div>
             </div>
             <textarea
@@ -161,72 +184,83 @@ function InstaPublishModal({ post, matchId, currentMinute, onClose, onPublished 
   );
 }
 
-// ── Post-Karte ────────────────────────────────────────────────
+// ── Post-Karte (ScorePlay-Style: Hover-Preview + Doppelklick) ─
 
 function InstaCard({ post, onClick, onDelete }) {
   const [hovered, setHovered] = useState(false);
-  const hasThumbnail = !!post.thumbnail_url;
+  const [previewStyle, setPreviewStyle] = useState(null);
+  const btnRef = useRef(null);
 
-  if (hasThumbnail) {
-    return (
-      <div
-        style={{ position: "relative", borderRadius: 6, overflow: "hidden" }}
-        onMouseEnter={() => setHovered(true)}
-        onMouseLeave={() => setHovered(false)}
+  function handleMouseEnter() {
+    setHovered(true);
+    if (btnRef.current && post.thumbnail_url) {
+      const r = btnRef.current.getBoundingClientRect();
+      const spaceRight = window.innerWidth - r.right;
+      const previewW = 280;
+      const left = spaceRight >= previewW + 16 ? r.right + 8 : r.left - previewW - 8;
+      const top = Math.min(r.top, window.innerHeight - 300);
+      setPreviewStyle({ position: "fixed", top, left, width: previewW, zIndex: 9999 });
+    }
+  }
+
+  function handleMouseLeave() {
+    setHovered(false);
+    setPreviewStyle(null);
+  }
+
+  return (
+    <>
+      <button
+        ref={btnRef}
+        onDoubleClick={() => onClick(post)}
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
+        title="Doppelklick zum Veröffentlichen"
+        style={{
+          position: "relative", overflow: "hidden", borderRadius: 6,
+          border: `1px solid ${hovered ? "#e6683c" : "var(--lt-border)"}`,
+          background: "var(--lt-bg-card-2)", cursor: "pointer", padding: 0,
+          aspectRatio: "1/1", display: "block", width: "100%",
+          transition: "border-color 0.15s", outline: "none",
+        }}
       >
-        <button
-          onClick={() => onClick(post)}
-          style={{
-            width: "100%", padding: 0, border: "none", background: "none",
-            cursor: "pointer", display: "block", outline: "none",
-          }}
-        >
-          {/* Thumbnail */}
-          <div style={{ position: "relative", paddingTop: "100%", background: "var(--lt-bg-card-2)" }}>
-            <img
-              src={post.thumbnail_url}
-              alt={post.title}
-              referrerPolicy="no-referrer"
-              style={{
-                position: "absolute", inset: 0, width: "100%", height: "100%",
-                objectFit: "cover",
-                transition: "transform 0.2s",
-                transform: hovered ? "scale(1.04)" : "scale(1)",
-              }}
-            />
-            {/* Gradient overlay on hover */}
-            <div style={{
-              position: "absolute", inset: 0,
-              background: hovered
-                ? "linear-gradient(to top, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0.1) 50%, transparent 100%)"
-                : "linear-gradient(to top, rgba(0,0,0,0.5) 0%, transparent 60%)",
-              transition: "background 0.2s",
-            }} />
-            {/* Instagram gradient border on hover */}
-            {hovered && (
-              <div style={{
-                position: "absolute", inset: 0,
-                boxShadow: `inset 0 0 0 2px transparent`,
-                borderRadius: 6,
-                background: "none",
-                outline: "2px solid #e6683c",
-                outlineOffset: "-2px",
-              }} />
-            )}
-            {/* Caption */}
-            <p style={{
-              position: "absolute", bottom: 0, left: 0, right: 0,
-              margin: 0, padding: "0.4rem 0.5rem",
-              fontFamily: "var(--lt-font-mono)", fontSize: "0.6rem", color: "#fff",
-              lineHeight: 1.4,
-              display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden",
-            }}>
-              {post.title}
-            </p>
+        {post.thumbnail_url ? (
+          <img
+            src={post.thumbnail_url}
+            alt={post.title ?? "Instagram"}
+            referrerPolicy="no-referrer"
+            style={{
+              width: "100%", height: "100%", objectFit: "cover", display: "block",
+              transition: "transform 0.2s",
+              transform: hovered ? "scale(1.04)" : "scale(1)",
+            }}
+            loading="lazy"
+          />
+        ) : (
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", width: "100%", height: "100%", color: "var(--lt-text-faint)", fontFamily: "var(--lt-font-mono)", fontSize: "0.62rem", padding: "0.5rem", boxSizing: "border-box", textAlign: "center" }}>
+            {post.title}
           </div>
-        </button>
+        )}
 
+        {/* Hover overlay */}
+        {hovered && (
+          <div style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.35)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <span style={{ fontFamily: "var(--lt-font-mono)", fontSize: "0.6rem", fontWeight: 700, color: "#e6683c", background: "rgba(0,0,0,0.65)", padding: "3px 8px", borderRadius: 4, letterSpacing: "0.05em" }}>
+              DOPPELKLICK
+            </span>
+          </div>
+        )}
+
+        {/* Caption */}
+        <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, background: "linear-gradient(transparent, rgba(0,0,0,0.7))", padding: "10px 6px 4px" }}>
+          <p style={{ fontFamily: "var(--lt-font-mono)", fontSize: "0.58rem", color: "var(--lt-text-muted)", margin: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+            {post.title ?? `ID ${post.id}`}
+          </p>
+        </div>
+
+        {/* Delete */}
         <button
+          onDoubleClick={(e) => e.stopPropagation()}
           onClick={(e) => { e.stopPropagation(); onDelete(post.id); }}
           style={{
             position: "absolute", top: 4, right: 4,
@@ -238,79 +272,26 @@ function InstaCard({ post, onClick, onDelete }) {
           }}
           title="Löschen"
         >✕</button>
-      </div>
-    );
-  }
-
-  // Text-only fallback (no thumbnail)
-  return (
-    <div
-      style={{ position: "relative" }}
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
-    >
-      <button
-        onClick={() => onClick(post)}
-        style={{
-          width: "100%", textAlign: "left", display: "block",
-          borderRadius: 6,
-          border: hovered ? "1px solid transparent" : "1px solid var(--lt-border)",
-          backgroundImage: hovered ? INSTA_GRADIENT : "none",
-          backgroundOrigin: "border-box",
-          background: hovered ? undefined : "var(--lt-bg-card-2)",
-          padding: hovered ? "1px" : "0",
-          cursor: "pointer", outline: "none",
-          transition: "border-color 0.15s",
-        }}
-      >
-        <div style={{
-          background: "var(--lt-bg-card-2)", borderRadius: hovered ? 5 : 6,
-          padding: "0.6rem 0.75rem",
-        }}>
-          <div style={{ display: "flex", alignItems: "center", gap: "0.4rem", marginBottom: "0.35rem" }}>
-            <span style={{ fontSize: "0.75rem" }}>📸</span>
-            <span style={{ fontFamily: "var(--lt-font-mono)", fontSize: "0.6rem", color: "var(--lt-text-muted)" }}>
-              @EintrachtFrankfurt
-            </span>
-          </div>
-          <p style={{
-            fontFamily: "var(--lt-font-mono)", fontSize: "0.68rem", color: "var(--lt-text)",
-            margin: 0, lineHeight: 1.5,
-            display: "-webkit-box", WebkitLineClamp: 3, WebkitBoxOrient: "vertical", overflow: "hidden",
-          }}>
-            {post.title}
-          </p>
-          {post.video_url && (
-            <a
-              href={post.video_url}
-              target="_blank"
-              rel="noopener noreferrer"
-              onClick={(e) => e.stopPropagation()}
-              style={{
-                display: "inline-block", marginTop: "0.3rem",
-                fontFamily: "var(--lt-font-mono)", fontSize: "0.58rem",
-                color: "var(--lt-accent)", textDecoration: "none",
-              }}
-            >
-              → Original ansehen
-            </a>
-          )}
-        </div>
       </button>
 
-      <button
-        onClick={(e) => { e.stopPropagation(); onDelete(post.id); }}
-        style={{
-          position: "absolute", top: 4, right: 4,
-          width: 20, height: 20, borderRadius: "50%",
-          background: "rgba(0,0,0,0.6)", border: "none",
-          color: "rgba(255,255,255,0.6)", cursor: "pointer", fontSize: "0.6rem",
-          display: "flex", alignItems: "center", justifyContent: "center",
-          opacity: hovered ? 1 : 0, transition: "opacity 0.15s",
-        }}
-        title="Löschen"
-      >✕</button>
-    </div>
+      {/* Hover-Preview Portal */}
+      {previewStyle && post.thumbnail_url && createPortal(
+        <div style={{ ...previewStyle, borderRadius: 8, overflow: "hidden", boxShadow: "0 16px 48px rgba(0,0,0,0.7)", border: "1px solid var(--lt-border)", pointerEvents: "none" }}>
+          <img
+            src={post.thumbnail_url}
+            alt={post.title ?? "Instagram"}
+            referrerPolicy="no-referrer"
+            style={{ width: "100%", display: "block", objectFit: "cover" }}
+          />
+          {post.title && (
+            <div style={{ background: "var(--lt-bg-card)", padding: "6px 10px", fontFamily: "var(--lt-font-mono)", fontSize: "0.62rem", color: "var(--lt-text-muted)", lineHeight: 1.4 }}>
+              {post.title.slice(0, 100)}{post.title.length > 100 ? "…" : ""}
+            </div>
+          )}
+        </div>,
+        document.body
+      )}
+    </>
   );
 }
 
@@ -471,21 +452,13 @@ export function InstagramPanel({ matchId, currentMinute = 0 }) {
             {!loading && posts.length > 0 && (
               <>
                 <p style={{ fontFamily: "var(--lt-font-mono)", fontSize: "0.62rem", color: "var(--lt-text-faint)", letterSpacing: "0.04em", margin: 0 }}>
-                  Klick → Text bearbeiten + veröffentlichen
+                  Doppelklick zum Veröffentlichen
                 </p>
-                {posts.some((p) => p.thumbnail_url) ? (
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.4rem" }}>
-                    {posts.map((post) => (
-                      <InstaCard key={post.id} post={post} onClick={setModalPost} onDelete={handleDelete} />
-                    ))}
-                  </div>
-                ) : (
-                  <div style={{ display: "flex", flexDirection: "column", gap: "0.4rem" }}>
-                    {posts.map((post) => (
-                      <InstaCard key={post.id} post={post} onClick={setModalPost} onDelete={handleDelete} />
-                    ))}
-                  </div>
-                )}
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.5rem" }}>
+                  {posts.map((post) => (
+                    <InstaCard key={post.id} post={post} onClick={setModalPost} onDelete={handleDelete} />
+                  ))}
+                </div>
               </>
             )}
           </div>

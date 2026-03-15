@@ -38,4 +38,5 @@ class ClipPublishRequest(BaseModel):
     match_id: int
     text: str = Field(..., min_length=1)
     minute: Optional[int] = None
+    phase: Optional[str] = None
     icon: Optional[str] = "🎬"

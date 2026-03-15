@@ -14,7 +14,7 @@ export const LeftPanel = memo(function LeftPanel({
 
   // Phasen-Reihenfolge für Sortierung
   const PHASE_SORT = {
-    Before: -1, FirstHalf: null, FirstHalfBreak: 45.5,
+    Before: -1, FirstHalf: null, FirstHalfBreak: 45.5, Halftime: 45.5,
     SecondHalf: null, SecondHalfBreak: 90.5,
     ExtraFirstHalf: null, ExtraBreak: 105.5,
     ExtraSecondHalf: null, ExtraSecondHalfBreak: 120.5,
@@ -31,17 +31,18 @@ export const LeftPanel = memo(function LeftPanel({
     return ps !== null ? ps : (t.minute ?? PHASE_MINUTE_DEFAULT[t.phase] ?? 0);
   };
 
+  const manualEntries = publishedTexts
+    .filter((t) => !t.event_id)
+    .map((t) => ({
+      key: `man-${t.id}`,
+      minute: sortMinute(t),
+      type: "manual",
+      data: t,
+    }));
+
   // Alle Einträge in eine gemeinsame Liste zusammenführen und nach Minute sortieren
   const allEntries = [
-    // Manuelle + AI-Phasen-Einträge (kein event_id)
-    ...publishedTexts
-      .filter((t) => !t.event_id)
-      .map((t) => ({
-        key: `man-${t.id}`,
-        minute: sortMinute(t),
-        type: "manual",
-        data: t,
-      })),
+    ...manualEntries,
     // Event-basierte Einträge (CO-OP / AUTO)
     ...events
       .map((ev) => {
@@ -63,9 +64,7 @@ export const LeftPanel = memo(function LeftPanel({
     <div className="lt-col lt-col--ticker">
       <div className="lt-left__header">
         <span>Published Entries</span>
-        <span className="lt-left__count">
-          {allEntries.filter((e) => e.type !== "prematch").length}
-        </span>
+        <span className="lt-left__count">{allEntries.length}</span>
       </div>
 
       {!match && (

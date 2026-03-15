@@ -276,7 +276,7 @@ def create_manual_entry(
     data: ManualEntryRequest,
     db: Session = Depends(get_db),
 ) -> TickerEntryResponse:
-    if data.icon:
+    if data.icon and not data.video_url and not data.image_url:
         existing = (
             db.query(TickerEntry)
             .filter(

@@ -255,6 +255,7 @@ def publish_clip(
             source="manual",
             icon=data.icon or "🎬",
             minute=data.minute,
+            phase=data.phase,
             image_url=clip.thumbnail_url,
             video_url=clip.video_url,
             status="published",
