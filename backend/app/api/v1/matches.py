@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session
 
 from app.core.database import get_db
 from app.models.player_statistic import PlayerStatistic
+from app.models.synthetic_event import SyntheticEvent
 from app.repositories.match_repository import MatchRepository
 from app.schemas.match import (
     LineupBulkUpdate,
@@ -266,3 +267,31 @@ def get_player_statistics(
         .all()
     )
     return [PlayerStatisticResponse.model_validate(r) for r in rows]
+
+
+# ------------------------------------------------------------------ #
+# Injuries sub-resource                                                #
+# ------------------------------------------------------------------ #
+
+
+@router.get(
+    "/{matchId}/injuries",
+    summary="Get pre-match injury data for a match",
+)
+def get_injuries(
+    matchId: int, db: Session = Depends(get_db)
+) -> list[dict]:
+    repo = MatchRepository(db)
+    if not repo.exists(matchId):
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Match not found"
+        )
+    rows = (
+        db.query(SyntheticEvent)
+        .filter(
+            SyntheticEvent.match_id == matchId,
+            SyntheticEvent.type.like("pre_match_injuries%"),
+        )
+        .all()
+    )
+    return [r.data for r in rows if r.data]

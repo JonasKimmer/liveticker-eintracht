@@ -11,6 +11,7 @@ export function useMatchData(selectedMatchId) {
   const [matchStats, setMatchStats] = useState([]);
   const [players, setPlayers] = useState([]);
   const [playerStats, setPlayerStats] = useState([]);
+  const [injuries, setInjuries] = useState([]);
   const [loading, setLoading] = useState(false);
   const intervalRef = useRef(null);
   // Ref hält aktuelle Match-Daten synchron für loadPlayers
@@ -98,6 +99,16 @@ export function useMatchData(selectedMatchId) {
     }
   }, [selectedMatchId]);
 
+  const loadInjuries = useCallback(async () => {
+    if (!selectedMatchId) return;
+    try {
+      const res = await api.fetchInjuries(selectedMatchId);
+      setInjuries(res.data ?? []);
+    } catch (err) {
+      console.error("loadInjuries error:", err);
+    }
+  }, [selectedMatchId]);
+
   // loadPlayers liest Team-IDs aus matchRef (setzt loadMatch voraus)
   const loadPlayers = useCallback(async () => {
     const m = matchRef.current;
@@ -125,6 +136,7 @@ export function useMatchData(selectedMatchId) {
     setMatchStats([]);
     setPlayers([]);
     setPlayerStats([]);
+    setInjuries([]);
     setLoading(true);
 
     // loadMatch zuerst, dann loadPlayers (braucht teamIds aus Match)
@@ -139,6 +151,7 @@ export function useMatchData(selectedMatchId) {
       loadLineups(),
       loadMatchStats(),
       loadPlayerStats(),
+      loadInjuries(),
     ]).finally(() => setLoading(false));
 
     const t1 = setTimeout(() => {
@@ -177,6 +190,7 @@ export function useMatchData(selectedMatchId) {
     matchStats,
     players,
     playerStats,
+    injuries,
     loading,
     reload: { loadEvents, loadTickerTexts, loadPrematch, loadLiveStats, loadLineups, loadMatchStats, loadPlayers, loadPlayerStats },
   };

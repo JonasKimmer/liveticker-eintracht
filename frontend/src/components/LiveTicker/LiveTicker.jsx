@@ -115,6 +115,7 @@ export default function LiveTicker() {
     matchStats,
     players,
     playerStats,
+    injuries,
     reload,
   } = useMatchData(selMatchId);
 
@@ -170,34 +171,78 @@ export default function LiveTicker() {
   const [importingTeams, setImportingTeams] = useState(false);
   const [importingCompetitions, setImportingCompetitions] = useState(false);
 
+  // ── Match-Summary via n8n (Halbzeit / Abpfiff) ────────────
+  const summaryTriggeredRef = useRef(new Set());
+  useEffect(() => {
+    if (!selMatchId || !match || !tickerTexts) return;
+
+    const phasesToCheck = [];
+    if (match.matchPhase === "FirstHalfBreak" || match.matchState === "FullTime") {
+      phasesToCheck.push("FirstHalfBreak");
+    }
+    if (match.matchState === "FullTime") {
+      phasesToCheck.push("After");
+    }
+    if (phasesToCheck.length === 0) return;
+
+    for (const phase of phasesToCheck) {
+      const key = `${selMatchId}-${phase}`;
+      if (summaryTriggeredRef.current.has(key)) continue;
+      summaryTriggeredRef.current.add(key);
+      const exists = tickerTexts.some(
+        (t) => t.phase === phase && (t.status === "published" || t.status == null),
+      );
+      if (!exists) {
+        api.generateMatchSummary(selMatchId, phase).catch(() => {});
+      }
+    }
+  }, [selMatchId, match?.matchPhase, match?.matchState, tickerTexts]);
+
+  // ── Live Stats Monitor (alle 5 Min bei laufendem oder beendetem Spiel) ───
+  useEffect(() => {
+    if (!selMatchId || !match?.matchState) return;
+    if (match.matchState === "PreMatch") return;
+    api.triggerLiveStatsMonitor(selMatchId).catch(() => {});
+    if (match.matchState !== "Live") return; // kein Polling bei FullTime
+    const interval = setInterval(() => {
+      api.triggerLiveStatsMonitor(selMatchId).catch(() => {});
+    }, 5 * 60 * 1000);
+    return () => clearInterval(interval);
+  }, [selMatchId, match?.matchState]);
+
   // ── Match-Status Webhook beim Match-Open ──────────────────
   const matchStatusTriggeredRef = useRef(null);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
-    if (!selMatchId || !match?.matchState) return;
+    if (!selMatchId || !match?.matchState || !match?.externalId) return;
     if (matchStatusTriggeredRef.current === selMatchId) return;
     matchStatusTriggeredRef.current = selMatchId;
 
+    // Alle Spielzustände über denselben match-status Webhook routen
+    const phaseToStatus = {
+      FirstHalf:             "1H",
+      FirstHalfBreak:        "HT",
+      SecondHalf:            "2H",
+      ExtraFirstHalf:        "ET",
+      ExtraBreak:            "BT",
+      ExtraSecondHalf:       "ET",
+      ExtraSecondHalfBreak:  "BT",
+      PenaltyShootout:       "P",
+    };
+
+    let status = null;
     if (match.matchState === "FullTime") {
-      // Abgeschlossenes Spiel: alle 4 Phasen via n8n generieren
-      api
-        .triggerMatchPhases(match.externalId, match.minute ?? null)
-        .catch(() => {});
-    } else if (match?.externalId) {
-      // Laufendes Spiel: aktuellen Status via n8n-Webhook melden
-      const stateToStatus = {
-        PreMatch:    "NS",
-        Live:        match?.matchPhase === "SecondHalf" ? "2H" : "1H",
-        Interrupted: "1H",
-      };
-      const status = stateToStatus[match.matchState];
-      if (status) {
-        api
-          .triggerMatchStatus(match.externalId, status, match.minute ?? null)
-          .catch(() => {});
-      }
+      status = "FT";
+    } else if (match.matchState === "Live") {
+      status = phaseToStatus[match.matchPhase] ?? "1H";
     }
-  }, [selMatchId, match?.matchState]);
+
+    if (status) {
+      api
+        .triggerMatchStatus(match.externalId, status, match.minute ?? null)
+        .catch(() => {});
+    }
+  }, [selMatchId, match?.matchState, match?.matchPhase]);
 
   // ── Auto-Imports beim Match-Select ────────────────────────
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -635,6 +680,7 @@ export default function LiveTicker() {
               lineups={lineups}
               prematch={prematch}
               events={events}
+              injuries={injuries}
             />
           </div>
         </main>

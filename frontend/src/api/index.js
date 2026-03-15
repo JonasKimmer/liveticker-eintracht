@@ -69,6 +69,8 @@ export const fetchMatchStats = (matchId) =>
   api.get(`/matches/${matchId}/statistics`);
 export const fetchPlayerStats = (matchId) =>
   api.get(`/matches/${matchId}/player-statistics`);
+export const fetchInjuries = (matchId) =>
+  api.get(`/matches/${matchId}/injuries`);
 
 // ── Players ────────────────────────────────────────────
 export const fetchPlayers = (teamId) =>
@@ -134,3 +136,8 @@ export const triggerMatchStatus = (fixtureId, status, minute) =>
   n8n.post("/match-status", { fixture_id: fixtureId, status, minute: minute ?? null });
 export const triggerMatchPhases = (fixtureId, minute) =>
   n8n.post("/match-phases", { fixture_id: fixtureId, minute: minute ?? null });
+export const generateMatchSummary = (matchId, phase, style = "emotional") =>
+  n8n.post("/match-summary", { match_id: matchId, phase, style });
+
+export const triggerLiveStatsMonitor = (matchId) =>
+  n8n.post("/live-stats-monitor", { match_id: matchId });

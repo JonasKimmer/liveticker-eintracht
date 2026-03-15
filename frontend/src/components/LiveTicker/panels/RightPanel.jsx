@@ -38,6 +38,7 @@ export function RightPanel({
   playerStats = [],
   lineups,
   events = [],
+  injuries = [],
 }) {
   if (!match) {
     return (
@@ -55,8 +56,8 @@ export function RightPanel({
   const homeLineup = lineups.filter((l) => l.teamId === match.teamHomeId);
   const awayLineup = lineups.filter((l) => l.teamId === match.teamAwayId);
 
-  const homeAbbr = match.homeTeam?.name.substring(0, 3).toUpperCase() ?? "HEI";
-  const awayAbbr = match.awayTeam?.name.substring(0, 3).toUpperCase() ?? "GAS";
+  const homeAbbr = match.homeTeam?.name ?? "Heim";
+  const awayAbbr = match.awayTeam?.name ?? "Gast";
 
   // extToInternal: partner API external_id → internal DB id
   // Nötig weil: event description nutzt partner API IDs, lineups.playerId nutzt interne DB IDs
@@ -125,8 +126,10 @@ export function RightPanel({
 
   const homeStarters = homeLineup.filter((p) => p.status === "Start");
   const homeSubs = homeLineup.filter((p) => p.status === "Sub");
+  const homeCoach = homeLineup.find((p) => p.status === "Coach");
   const awayStarters = awayLineup.filter((p) => p.status === "Start");
   const awaySubs = awayLineup.filter((p) => p.status === "Sub");
+  const awayCoach = awayLineup.find((p) => p.status === "Coach");
 
   return (
     <div className="lt-col lt-col--stats">
@@ -180,6 +183,17 @@ export function RightPanel({
               labelClass="lt-lineup-team-label--away"
             />
           </div>
+          {(homeCoach || awayCoach) && (
+            <div className="lt-lineup-grid" style={{ marginTop: 10, marginBottom: 2 }}>
+              <div style={{ fontFamily: "var(--lt-font-mono)", fontSize: "0.72rem", color: "var(--lt-text-muted)" }}>
+                {homeCoach && <span>🧑‍💼 {homeCoach.playerName}</span>}
+              </div>
+              <div style={{ fontFamily: "var(--lt-font-mono)", fontSize: "0.72rem", color: "var(--lt-text-muted)", textAlign: "right" }}>
+                {awayCoach && <span>{awayCoach.playerName} 🧑‍💼</span>}
+              </div>
+            </div>
+          )}
+
           {(homeSubs.length > 0 || awaySubs.length > 0) && (
             <>
               <div
@@ -232,6 +246,48 @@ export function RightPanel({
               </div>
             </>
           )}
+
+          {injuries.length > 0 && (() => {
+            const homeInj = injuries.find((g) => g.team_id === match.homeTeam?.externalId || g.team_name === match.homeTeam?.name);
+            const awayInj = injuries.find((g) => g.team_id === match.awayTeam?.externalId || g.team_name === match.awayTeam?.name);
+            const homePlayers = homeInj?.players ?? [];
+            const awayPlayers = awayInj?.players ?? [];
+            const homeName = homeInj?.team_name ?? homeAbbr;
+            const awayName = awayInj?.team_name ?? awayAbbr;
+            return (
+              <>
+                <div className="lt-right__section-title" style={{ marginTop: "12px" }}>
+                  🤕 Verletzt / Fraglich
+                </div>
+                <div className="lt-lineup-grid">
+                  <div>
+                    <div className="lt-pcat__col-hd lt-pcat__col-hd--home">{homeName}</div>
+                    <ul className="lt-lineup-list">
+                      {homePlayers.map((p, i) => (
+                        <li key={i} style={{ color: "var(--lt-text-muted)", fontSize: "0.78rem" }}>
+                          <span>{p.player_name ?? p.name}</span>
+                          {p.reason && <span style={{ marginLeft: 4, opacity: 0.7 }}>· {p.reason}</span>}
+                        </li>
+                      ))}
+                      {homePlayers.length === 0 && <li style={{ color: "var(--lt-text-muted)", fontSize: "0.78rem", opacity: 0.5 }}>–</li>}
+                    </ul>
+                  </div>
+                  <div>
+                    <div className="lt-pcat__col-hd lt-pcat__col-hd--away">{awayName}</div>
+                    <ul className="lt-lineup-list">
+                      {awayPlayers.map((p, i) => (
+                        <li key={i} style={{ color: "var(--lt-text-muted)", fontSize: "0.78rem" }}>
+                          <span>{p.player_name ?? p.name}</span>
+                          {p.reason && <span style={{ marginLeft: 4, opacity: 0.7 }}>· {p.reason}</span>}
+                        </li>
+                      ))}
+                      {awayPlayers.length === 0 && <li style={{ color: "var(--lt-text-muted)", fontSize: "0.78rem", opacity: 0.5 }}>–</li>}
+                    </ul>
+                  </div>
+                </div>
+              </>
+            );
+          })()}
         </Collapsible>
       )}
 

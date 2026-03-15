@@ -113,8 +113,8 @@ export const PublishedEntry = memo(function PublishedEntry({
 
   if (isManual) {
     const phaseLabel = {
-      Before: "i", After: "Nach",
-      FirstHalfBreak: "HZ", SecondHalfBreak: "Pause",
+      Before: "i", After: "i",
+      FirstHalfBreak: "i", SecondHalfBreak: "Pause",
       ExtraBreak: "VZ·P", ExtraSecondHalfBreak: "Elfm.P",
       ExtraFirstHalf: "VZ1", ExtraSecondHalf: "VZ2",
       PenaltyShootout: "Elfm.",
@@ -125,13 +125,17 @@ export const PublishedEntry = memo(function PublishedEntry({
       FirstHalfBreak: "🔔", SecondHalfBreak: "🔔", ExtraBreak: "🔔",
       After: "📣", PenaltyShootout: "🥅",
     }[tickerText?.phase] ?? icon ?? "•";
-    const minuteDisplay = phaseLabel
-      ?? (tickerText?.minute != null ? `${tickerText.minute}'` : "–");
+    // Dedup-Keys (z.B. "pass_h_90") sind kein Emoji → Fallback auf 📊
+    const isCodeKey = tickerText?.icon && /^[a-z0-9_]+$/i.test(tickerText.icon);
+    const displayIcon = isCodeKey ? "📊" : (tickerText?.icon ?? phaseIcon);
+    const minuteDisplay = tickerText?.minute != null
+      ? `${tickerText.minute}'`
+      : (phaseLabel ?? "–");
     return (
       <div className="lt-entry lt-entry--manual">
         <span className="lt-entry__minute">{minuteDisplay}</span>
         {tickerText?.phase !== "Before" && (
-          <span className="lt-entry__icon">{tickerText?.video_url && /x\.com|twitter\.com/.test(tickerText.video_url) ? "𝕏" : tickerText?.video_url && /instagram\.com/.test(tickerText.video_url) ? "📸" : tickerText?.video_url && /youtube\.com|youtu\.be/.test(tickerText.video_url) ? "▶" : tickerText?.video_url ? "🎬" : tickerText?.image_url ? "📸" : (tickerText?.icon ?? phaseIcon)}</span>
+          <span className="lt-entry__icon">{tickerText?.video_url && /x\.com|twitter\.com/.test(tickerText.video_url) ? "𝕏" : tickerText?.video_url && /instagram\.com/.test(tickerText.video_url) ? "📸" : tickerText?.video_url && /youtube\.com|youtu\.be/.test(tickerText.video_url) ? "▶" : tickerText?.video_url ? "🎬" : tickerText?.image_url ? "📸" : displayIcon}</span>
         )}
         <div className="lt-entry__body">
           {tickerText?.video_url && /x\.com|twitter\.com/.test(tickerText.video_url) ? (

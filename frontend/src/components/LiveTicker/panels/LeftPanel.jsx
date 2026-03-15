@@ -20,15 +20,20 @@ export const LeftPanel = memo(function LeftPanel({
     ExtraSecondHalf: null, ExtraSecondHalfBreak: 120.5,
     PenaltyShootout: null, After: 999,
   };
+  // Fallback-Minuten wenn minute: null aber Phase bekannt
+  const PHASE_MINUTE_DEFAULT = {
+    FirstHalf: 1, SecondHalf: 46,
+    ExtraFirstHalf: 91, ExtraSecondHalf: 106, PenaltyShootout: 121,
+  };
   const sortMinute = (t) => {
     if (!t.phase) return t.minute ?? 0;
     const ps = PHASE_SORT[t.phase];
-    return ps !== null ? ps : (t.minute ?? 0);
+    return ps !== null ? ps : (t.minute ?? PHASE_MINUTE_DEFAULT[t.phase] ?? 0);
   };
 
   // Alle Einträge in eine gemeinsame Liste zusammenführen und nach Minute sortieren
   const allEntries = [
-    // Manuelle Einträge (event_id === null)
+    // Manuelle + AI-Phasen-Einträge (kein event_id)
     ...publishedTexts
       .filter((t) => !t.event_id)
       .map((t) => ({
