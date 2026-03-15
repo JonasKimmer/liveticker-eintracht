@@ -175,6 +175,11 @@ function MatchdayPicker({
   const ref = useRef(null);
   const roundLabel = (r) => String(r).match(/\d+/)?.[0] ?? String(r);
 
+  // Auto-aufklappen wenn Spieltage geladen sind
+  useEffect(() => {
+    if (matchdays.length > 0) setOpen(true);
+  }, [matchdays]);
+
   useEffect(() => {
     const handler = (e) => {
       if (ref.current && !ref.current.contains(e.target)) setOpen(false);

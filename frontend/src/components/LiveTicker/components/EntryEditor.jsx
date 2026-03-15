@@ -154,13 +154,22 @@ export function EntryEditor({
       if (e.key === "Escape") { onChange(value); return; }
     }
 
-    // Enter accepts command preview
-    if (e.key === "Enter" && !e.ctrlKey && !e.shiftKey && value.trim().startsWith("/")) {
-      if (preview?.isValid) { e.preventDefault(); onChange(preview.formatted); }
+    // Enter: valid event command → format first; phase cmd with extra text or invalid → publish directly
+    if (e.key === "Enter" && !e.ctrlKey && !e.shiftKey) {
+      const trimmed = value.trim();
+      const afterCmd = trimmed.replace(/^\/\w+\s*/, "");
+      const isPhaseWithText = trimmed.startsWith("/") && preview?.isValid && preview.meta?.phase != null && afterCmd;
+      if (trimmed.startsWith("/") && preview?.isValid && !isPhaseWithText) {
+        e.preventDefault();
+        onChange(preview.formatted);
+      } else {
+        e.preventDefault();
+        handlePublish();
+      }
       return;
     }
 
-    // Ctrl+Enter = publish
+    // Ctrl+Enter = publish (immer)
     if (e.ctrlKey && e.key === "Enter") {
       e.preventDefault();
       handlePublish();
@@ -169,25 +178,33 @@ export function EntryEditor({
 
   const handlePublish = () => {
     if (!value.trim()) return;
-    if (value.trim().startsWith("/")) {
-      if (!preview?.isValid) return;
+    const trimmed = value.trim();
+    const afterCmd = trimmed.replace(/^\/\w+\s*/, "");
+    if (trimmed.startsWith("/") && preview?.isValid) {
       const meta = preview.meta ?? {};
-      // Pass formatted text directly — no race condition with onChange
-      onPublish?.({
-        text: preview.formatted,
-        icon: meta.icon ?? "📣",
-        minute: meta.minute ?? minute ?? null,
-        phase: meta.phase ?? null,
-      });
-      onChange("");
+      // Phase commands (e.g. /prematch, /elfmeter) with extra text → free text mode
+      if (meta.phase != null && afterCmd) {
+        onPublish?.({ text: afterCmd, icon: meta.icon ?? "📣", minute: minute != null ? minute : null, phase: null });
+      } else {
+        // Valid event command or no-arg phase command → use template
+        onPublish?.({
+          text: preview.formatted,
+          icon: meta.icon ?? "📣",
+          minute: meta.minute ?? minute ?? null,
+          phase: meta.phase ?? null,
+        });
+      }
+    } else if (trimmed.startsWith("/")) {
+      // Invalid command → free text with command icon, strip prefix
+      const icon = preview?.meta?.icon ?? "📣";
+      onPublish?.({ text: afterCmd || trimmed, icon, minute: minute != null ? minute : null, phase: null });
     } else {
-      onPublish?.({ text: value.trim(), icon: "📣", minute: minute || null, phase: null });
-      onChange("");
+      onPublish?.({ text: trimmed, icon: "📣", minute: minute != null ? minute : null, phase: null });
     }
+    onChange("");
   };
 
-  const publishDisabled = !value.trim() ||
-    (value.trim().startsWith("/") && !!preview && !preview.isValid);
+  const publishDisabled = !value.trim();
 
   return (
     <div className="lt-editor">
@@ -284,33 +301,39 @@ export function EntryEditor({
           value={value}
           onChange={handleChange}
           onKeyDown={handleKeyDown}
-          placeholder="/ für Commands  ·  Spielername tippen für Vorschläge"
+          placeholder="Freitext tippen + Enter  ·  / für Commands  ·  Spielername für Vorschläge"
           rows={3}
         />
 
         {!value && (
           <div className="lt-editor__hint">
-            <span>/</span> Commands · Spielername Autocomplete · <span>↵</span> Vorschau · <span>Ctrl+↵</span> Veröffentlichen
+            Freitext: <span>↵</span> Veröffentlichen · <span>/</span> Commands · <span>Ctrl+↵</span> immer
           </div>
         )}
       </div>
 
       {/* Live Preview */}
-      {preview && (
-        <div className={`lt-editor__preview${preview.isValid ? " lt-editor__preview--valid" : ""}`}>
+      {preview && (() => {
+        const afterCmd = value.trim().replace(/^\/\w+\s*/, "");
+        const isPhaseWithText = preview.isValid && preview.meta?.phase != null && afterCmd;
+        const isFreeTextMode = !preview.isValid || isPhaseWithText;
+        const displayText = isFreeTextMode ? (afterCmd || value.trim()) : preview.formatted;
+        return (
+        <div className={`lt-editor__preview${!isFreeTextMode ? " lt-editor__preview--valid" : ""}`}>
           <div className="lt-editor__preview-label">
-            {preview.isValid ? "✓ Vorschau" : "⚠ Vorschau (unvollständig)"}
+            {!isFreeTextMode ? "✓ Vorschau" : `✎ Freitext mit ${preview.meta?.icon ?? "📣"}`}
           </div>
-          <div className={`lt-editor__preview-text${preview.isValid ? " lt-editor__preview-text--valid" : ""}`}>
+          <div className={`lt-editor__preview-text${!isFreeTextMode ? " lt-editor__preview-text--valid" : ""}`}>
             {preview.meta?.minute ? <span style={{ opacity: 0.6, marginRight: "0.4rem" }}>{preview.meta.minute}'</span> : null}
             {preview.meta?.icon && <span style={{ marginRight: "0.35rem" }}>{preview.meta.icon}</span>}
-            {preview.formatted}
+            {displayText}
           </div>
           {preview.warnings.map((w, i) => (
             <div key={i} className="lt-editor__preview-warning">⚠ {w}</div>
           ))}
         </div>
-      )}
+        );
+      })()}
 
       <div className="lt-editor__actions">
         {onCancel && (
