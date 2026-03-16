@@ -1,12 +1,32 @@
 // ============================================================
 // MatchHeader.jsx
 // ============================================================
+import { useEffect } from "react";
 import { normalizeMatchStatus } from "../utils/parseCommand";
+import { useLiveMinute } from "../../../hooks/useLiveMinute";
+import * as api from "../../../api";
 
-export function MatchHeader({ match, leagueSeason }) {
+export function MatchHeader({ match, leagueSeason, onMinuteSync }) {
+  const status = normalizeMatchStatus(match?.matchState);
+  const liveMinute = useLiveMinute(match);
+
+  useEffect(() => {
+    console.log("[MatchHeader] sync effect", { status, externalId: match?.externalId, currentMinute: match?.minute });
+    if (status !== "live" || !match?.externalId) return;
+    const sync = () =>
+      api.triggerMinuteUpdate(match.externalId)
+        .then((res) => {
+          console.log("[MatchHeader] webhook ok, calling loadMatch", res?.data);
+          return onMinuteSync?.();
+        })
+        .then(() => console.log("[MatchHeader] loadMatch done, match.minute =", match?.minute))
+        .catch((e) => console.error("[MatchHeader] sync error", e));
+    sync();
+    const id = setInterval(sync, 60000);
+    return () => clearInterval(id);
+  }, [status, match?.externalId]);
+
   if (!match || !match.homeTeam || !match.awayTeam) return null;
-
-  const status = normalizeMatchStatus(match.matchState);
   const homeAbbr = match.homeTeam.name.substring(0, 3).toUpperCase();
   const awayAbbr = match.awayTeam.name.substring(0, 3).toUpperCase();
 
@@ -32,7 +52,11 @@ export function MatchHeader({ match, leagueSeason }) {
         {/* Score */}
         <div className="lt-match-header__score-wrap">
           <span className={`lt-match-header__status lt-match-header__status--${status}`}>
-            {status === "live" && match.minute ? `${match.minute}'` : match.matchState}
+            {status === "live"
+              ? (["FirstHalfBreak", "HalfTime", "ExtraBreak"].includes(match.matchPhase)
+                  ? "HZ"
+                  : liveMinute > 0 ? `${liveMinute}'` : match.matchState)
+              : match.matchState}
           </span>
           <div className="lt-match-header__scores-row">
             <span className="lt-match-header__score">{match.teamHomeScore}</span>

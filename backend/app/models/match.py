@@ -51,6 +51,7 @@ class Match(Base):
     match_phase = Column(
         String(30), nullable=True
     )  # Undefined|PreMatch|FullTime|PostPoned|FirstHalf|SecondHalf
+    minute = Column(Integer, nullable=True)  # current live minute
     is_scheduled = Column(Boolean, nullable=False, default=False)
     is_kickoff_confirmed = Column(Boolean, nullable=False, default=False)
     number_of_goal_scorers = Column(Integer, nullable=True)

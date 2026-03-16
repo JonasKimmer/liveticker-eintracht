@@ -68,7 +68,7 @@ export function EntryEditor({
   const filteredCmds = useMemo(() => {
     if (!cmdToken) return [];
     const items = COMMAND_PALETTE.filter(Boolean);
-    if (cmdToken === "/") return items;
+    if (cmdToken === "/" || cmdToken === "/?") return items;
     return items.filter((c) => c.cmd.startsWith(cmdToken));
   }, [cmdToken]);
 
@@ -301,13 +301,13 @@ export function EntryEditor({
           value={value}
           onChange={handleChange}
           onKeyDown={handleKeyDown}
-          placeholder="Freitext tippen + Enter  ·  / für Commands  ·  Spielername für Vorschläge"
+          placeholder="Ticker-Eintrag …"
           rows={3}
         />
 
         {!value && (
           <div className="lt-editor__hint">
-            Freitext: <span>↵</span> Veröffentlichen · <span>/</span> Commands · <span>Ctrl+↵</span> immer
+            <span>↵</span> Veröffentlichen · <span>/?</span> alle Commands
           </div>
         )}
       </div>

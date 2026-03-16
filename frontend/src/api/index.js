@@ -24,6 +24,7 @@ export const fetchTeamMatchesByMatchday = (teamId, competitionId, round) =>
 
 // ── Matches ────────────────────────────────────────────
 export const fetchMatch = (id) => api.get(`/matches/${id}`);
+export const syncLiveMatch = (id) => api.post(`/matches/${id}/sync-live`);
 
 // ── Events ─────────────────────────────────────────────
 export const fetchEvents = (matchId) => api.get(`/matches/${matchId}/events`);
@@ -141,3 +142,6 @@ export const generateMatchSummary = (matchId, phase, style = "emotional") =>
 
 export const triggerLiveStatsMonitor = (matchId) =>
   n8n.post("/live-stats-monitor", { match_id: matchId });
+
+export const triggerMinuteUpdate = (fixtureId) =>
+  n8n.post("/update-minute", { fixture_id: fixtureId });

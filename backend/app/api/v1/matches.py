@@ -1,10 +1,12 @@
 import logging
 from typing import Optional
 
+import httpx
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
+from app.core.config import settings
 from app.core.database import get_db
 from app.models.player_statistic import PlayerStatistic
 from app.models.synthetic_event import SyntheticEvent
@@ -143,6 +145,79 @@ def delete_match(matchId: int, db: Session = Depends(get_db)) -> None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Match not found"
         )
+
+
+# ------------------------------------------------------------------ #
+# Football API live sync                                               #
+# ------------------------------------------------------------------ #
+
+_PHASE_MAP = {
+    "1H": "FirstHalf",
+    "2H": "SecondHalf",
+    "HT": "FirstHalfBreak",
+    "ET": "SecondHalf",   # extra time – treat as second half for display
+    "BT": "FirstHalfBreak",  # break before extra time
+    "P":  "SecondHalf",
+    "FT": "FullTime",
+    "AET": "FullTime",
+    "PEN": "FullTime",
+}
+
+
+@router.post(
+    "/{matchId}/sync-live",
+    response_model=MatchResponse,
+    response_model_by_alias=True,
+    summary="Sync live minute and phase from Football API",
+)
+def sync_live(matchId: int, db: Session = Depends(get_db)) -> MatchResponse:
+    repo = MatchRepository(db)
+    match = repo.get_by_id(matchId)
+    if not match:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Match not found")
+
+    if not match.external_id:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="Match has no external_id – cannot sync with Football API",
+        )
+    if not settings.API_FOOTBALL_KEY:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="API_FOOTBALL_KEY not configured",
+        )
+
+    try:
+        resp = httpx.get(
+            f"{settings.API_FOOTBALL_BASE_URL}/fixtures",
+            params={"id": match.external_id},
+            headers={"x-apisports-key": settings.API_FOOTBALL_KEY},
+            timeout=5,
+        )
+        resp.raise_for_status()
+        fixtures = resp.json().get("response", [])
+    except httpx.HTTPError as exc:
+        logger.error("Football API request failed: %s", exc)
+        raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail="Football API unavailable")
+
+    if not fixtures:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Fixture not found in Football API")
+
+    fixture_status = fixtures[0].get("fixture", {}).get("status", {})
+    elapsed: Optional[int] = fixture_status.get("elapsed")
+    short: Optional[str] = fixture_status.get("short")
+
+    update_data: dict = {}
+    if elapsed is not None:
+        update_data["minute"] = elapsed
+    if short and short in _PHASE_MAP:
+        update_data["match_phase"] = _PHASE_MAP[short]
+
+    if update_data:
+        updated = repo.update(matchId, MatchUpdate(**update_data))
+        return updated
+
+    return match
 
 
 # ------------------------------------------------------------------ #

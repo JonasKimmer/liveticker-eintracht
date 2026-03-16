@@ -266,8 +266,8 @@ export function getRawEventText(event) {
  * Hilfsfunktion: Match-Status normalisieren.
  */
 export function normalizeMatchStatus(status) {
-  const LIVE = ["1H", "2H", "HT", "ET", "live"];
-  const FINISHED = ["FT", "AET", "PEN", "finished"];
+  const LIVE = ["1H", "2H", "HT", "ET", "live", "Live"];
+  const FINISHED = ["FT", "AET", "PEN", "finished", "FullTime"];
   if (LIVE.includes(status)) return "live";
   if (FINISHED.includes(status)) return "finished";
   return "scheduled";

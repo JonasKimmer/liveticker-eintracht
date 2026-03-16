@@ -140,7 +140,9 @@ export function useMatchData(selectedMatchId) {
     setLoading(true);
 
     // loadMatch zuerst, dann loadPlayers (braucht teamIds aus Match)
-    const matchAndPlayers = loadMatch().then(() => loadPlayers());
+    const matchAndPlayers = loadMatch().then(() => {
+      loadPlayers();
+    });
 
     Promise.all([
       matchAndPlayers,
@@ -172,6 +174,7 @@ export function useMatchData(selectedMatchId) {
       loadTickerTexts();
       loadLiveStats();
       loadInjuries();
+      loadMatch();
     }, 5000);
 
     return () => {
@@ -193,6 +196,6 @@ export function useMatchData(selectedMatchId) {
     playerStats,
     injuries,
     loading,
-    reload: { loadEvents, loadTickerTexts, loadPrematch, loadLiveStats, loadLineups, loadMatchStats, loadPlayers, loadPlayerStats },
+    reload: { loadMatch, loadEvents, loadTickerTexts, loadPrematch, loadLiveStats, loadLineups, loadMatchStats, loadPlayers, loadPlayerStats },
   };
 }

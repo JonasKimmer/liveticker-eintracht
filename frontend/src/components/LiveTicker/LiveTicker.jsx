@@ -6,6 +6,7 @@ import "./LiveTicker.css";
 
 import * as api from "../../api";
 import { useMatchData } from "../../hooks/useMatchData";
+import { useLiveMinute } from "../../hooks/useLiveMinute";
 import { usePollingMatchdays } from "../../hooks/usePollingMatchdays";
 import { useTickerMode } from "../../hooks/useTickerMode";
 import { TickerModeContext } from "../../context/TickerModeContext";
@@ -119,6 +120,7 @@ export default function LiveTicker() {
     reload,
   } = useMatchData(selMatchId);
 
+  const liveMinute = useLiveMinute(match);
   const apiStatus = useApiStatus();
   const apiCfg    = API_STATUS_CFG[apiStatus];
 
@@ -600,6 +602,7 @@ export default function LiveTicker() {
           <MatchHeader
             match={match}
             leagueSeason={curCompetition}
+            onMinuteSync={reload.loadMatch}
           />
         )}
         {match && <ModeSelector mode={mode} onModeChange={setMode} />}
@@ -631,6 +634,7 @@ export default function LiveTicker() {
               />
               <CenterPanel
                 match={match}
+                currentMinute={liveMinute}
                 events={events}
                 tickerTexts={tickerTexts}
                 generatingId={generatingId}
