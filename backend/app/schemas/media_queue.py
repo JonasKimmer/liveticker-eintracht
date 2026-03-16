@@ -36,3 +36,4 @@ class PublishMediaRequest(BaseModel):
     description: str
     match_id: int
     minute: Optional[int] = None
+    icon: Optional[str] = None

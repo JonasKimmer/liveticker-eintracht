@@ -226,7 +226,13 @@ export const PublishedEntry = memo(function PublishedEntry({
             </div>
           ) : (
             <div className="lt-entry__text" style={{ position: "relative" }}>
-              {tickerText?.text}
+              {(() => {
+                const hasMedia = tickerText?.video_url || tickerText?.image_url;
+                const mediaDefaults = ["🎬", "📷", "📸"];
+                const isCodeKey = tickerText?.icon && /^[a-z0-9_]+$/i.test(tickerText.icon);
+                const hasCustomIcon = hasMedia && !isCodeKey && tickerText?.icon && !mediaDefaults.includes(tickerText.icon);
+                return hasCustomIcon ? tickerText.icon : tickerText?.text;
+              })()}
               {onEdit && (
                 <button onClick={startEdit} title="Bearbeiten" style={{ marginLeft: 6, background: "none", border: "none", color: "var(--lt-text-faint)", cursor: "pointer", fontSize: "0.75rem", padding: 0, verticalAlign: "middle", opacity: 0.5 }}>✎</button>
               )}

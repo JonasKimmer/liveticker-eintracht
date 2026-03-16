@@ -206,6 +206,7 @@ def media_publish(
         text=data.description,
         source="manual",
         status="published",
+        icon=data.icon or "📷",
         minute=data.minute,
         image_url=media.compressed_url or media.original_url or media.thumbnail_url,
     )

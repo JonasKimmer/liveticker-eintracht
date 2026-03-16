@@ -9,25 +9,11 @@ import { createPortal } from "react-dom";
 import { useMediaWebSocket } from "../../../hooks/useMediaWebSocket";
 import { generateMediaCaption } from "../../../api";
 import { parseCommand } from "../utils/parseCommand";
+import { COMMAND_PALETTE, CommandPalettePortal, resolvePublishPayload } from "../utils/commandPalette";
 import config from "../../../config/whitelabel";
 
 const API_BASE = config.apiBase;
 
-const COMMAND_PALETTE = [
-  { cmd: "/g",        desc: "Tor",                    icon: "⚽", hint: "Spieler Team" },
-  { cmd: "/og",       desc: "Eigentor",               icon: "⚽", hint: "Spieler Team" },
-  { cmd: "/gelb",     desc: "Gelbe Karte",            icon: "🟨", hint: "Spieler Team" },
-  { cmd: "/rot",      desc: "Rote Karte",             icon: "🟥", hint: "Spieler Team" },
-  { cmd: "/ep",       desc: "Elfmeter verschossen",   icon: "❌", hint: "Spieler Team" },
-  { cmd: "/s",        desc: "Wechsel",                icon: "🔄", hint: "Ein Aus Team" },
-  { cmd: "/n",        desc: "Notiz",                  icon: "📝", hint: "Text" },
-  null,
-  { cmd: "/prematch", desc: "Prematch",               icon: "📣", hint: "" },
-  { cmd: "/anpfiff",  desc: "Anpfiff",                icon: "📣", hint: "Minute" },
-  { cmd: "/hz",       desc: "Halbzeit",               icon: "🔔", hint: "" },
-  { cmd: "/2hz",      desc: "2. Halbzeit",            icon: "📣", hint: "Minute" },
-  { cmd: "/abpfiff",  desc: "Abpfiff",                icon: "📣", hint: "" },
-];
 const N8N_WEBHOOK = `${config.n8nBase}/scoreplay-media`;
 
 // ── API ──────────────────────────────────────────────────────
@@ -50,7 +36,7 @@ async function triggerN8nWebhook(player) {
   if (!res.ok) throw new Error(`n8n Webhook fehlgeschlagen (${res.status})`);
 }
 
-async function publishMedia({ mediaId, description, matchId, minute }) {
+async function publishMedia({ mediaId, description, matchId, minute, icon }) {
   const res = await fetch(`${API_BASE}/media/publish`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -59,6 +45,7 @@ async function publishMedia({ mediaId, description, matchId, minute }) {
       description,
       match_id: matchId,
       minute: minute ? Number(minute) : null,
+      icon: icon ?? null,
     }),
   });
   if (!res.ok) {
@@ -102,7 +89,7 @@ function PublishModal({ image, matchId, onClose, onPublished, playerNames = [], 
   const filteredCmds = useMemo(() => {
     if (!cmdToken) return [];
     const items = COMMAND_PALETTE.filter(Boolean);
-    if (cmdToken === "/") return items;
+    if (cmdToken === "/" || cmdToken === "/?") return items;
     return items.filter((c) => c.cmd.startsWith(cmdToken));
   }, [cmdToken]);
 
@@ -202,16 +189,12 @@ function PublishModal({ image, matchId, onClose, onPublished, playerNames = [], 
 
   async function handleSubmit(e) {
     e?.preventDefault();
-    let textToPublish = description.trim();
-    if (!textToPublish) { setError("Text darf nicht leer sein."); return; }
-    if (textToPublish.startsWith("/")) {
-      if (!preview?.isValid) { setError("Befehl unvollständig."); return; }
-      textToPublish = preview.formatted;
-    }
+    if (!description.trim()) { setError("Text darf nicht leer sein."); return; }
+    const { text: textToPublish, icon } = resolvePublishPayload(description, minute);
     setLoading(true);
     setError(null);
     try {
-      await publishMedia({ mediaId: image.media_id, description: textToPublish, matchId, minute: minute || null });
+      await publishMedia({ mediaId: image.media_id, description: textToPublish, matchId, minute: minute || null, icon });
       onPublished(image.media_id);
     } catch (err) {
       setError(err.message);
@@ -219,8 +202,7 @@ function PublishModal({ image, matchId, onClose, onPublished, playerNames = [], 
     }
   }
 
-  const publishDisabled = loading || !description.trim() ||
-    (description.trim().startsWith("/") && !!preview && !preview.isValid);
+  const publishDisabled = loading || !description.trim();
 
   return (
     <div
@@ -326,22 +308,13 @@ function PublishModal({ image, matchId, onClose, onPublished, playerNames = [], 
             {/* Textarea with dropdowns */}
             <div style={{ position: "relative" }}>
               {/* Command palette */}
-              {showPalette && (
-                <div className="lt-cmd-palette">
-                  {filteredCmds.map((c, i) => (
-                    <div
-                      key={c.cmd}
-                      className={`lt-cmd-palette__item${i === paletteIdx ? " lt-cmd-palette__item--active" : ""}`}
-                      onMouseDown={(e) => { e.preventDefault(); selectCmd(c.cmd); }}
-                    >
-                      <span className="lt-cmd-palette__icon">{c.icon}</span>
-                      <span className="lt-cmd-palette__cmd">{c.cmd}</span>
-                      <span className="lt-cmd-palette__desc">{c.desc}</span>
-                      {c.hint && <span className="lt-cmd-palette__hint">{c.hint}</span>}
-                    </div>
-                  ))}
-                </div>
-              )}
+              <CommandPalettePortal
+                show={showPalette}
+                items={filteredCmds}
+                activeIdx={paletteIdx}
+                anchorRef={textareaRef}
+                onSelect={(cmd) => { selectCmd(cmd); setTimeout(() => textareaRef.current?.focus(), 0); }}
+              />
 
               {/* Name suggestions */}
               {showNames && (
@@ -371,7 +344,7 @@ function PublishModal({ image, matchId, onClose, onPublished, playerNames = [], 
 
               <textarea
                 ref={textareaRef}
-                placeholder="/ für Commands  ·  Spielername tippen für Vorschläge"
+                placeholder="Ticker-Eintrag …"
                 value={generating ? "✦ Generiere…" : description}
                 onChange={handleChange}
                 onKeyDown={handleKeyDown}
@@ -392,7 +365,7 @@ function PublishModal({ image, matchId, onClose, onPublished, playerNames = [], 
 
             {!description && (
               <div style={{ fontFamily: "var(--lt-font-mono)", fontSize: "0.65rem", color: "var(--lt-text-faint)", marginTop: 4 }}>
-                <span style={{ color: "var(--lt-accent)" }}>/</span> Commands · Spielername Autocomplete · <span style={{ color: "var(--lt-accent)" }}>↵</span> Vorschau · <span style={{ color: "var(--lt-accent)" }}>Ctrl+↵</span> Veröffentlichen
+                <span style={{ color: "var(--lt-accent)" }}>↵</span> Veröffentlichen · <span style={{ color: "var(--lt-accent)" }}>/?</span> alle Commands
               </div>
             )}
 

@@ -491,7 +491,8 @@ export default function LiveTicker() {
   // ── Keyboard: ? → Hints ───────────────────────────────────
   useEffect(() => {
     const handler = (e) => {
-      if (e.key === "?" && !e.ctrlKey && !e.metaKey) setShowHints((s) => !s);
+      const tag = e.target?.tagName;
+      if (e.key === "?" && !e.ctrlKey && !e.metaKey && tag !== "TEXTAREA" && tag !== "INPUT") setShowHints((s) => !s);
     };
     const imgHandler = () => setShowHints(true);
     const cmdHandler = () => setShowCommands(true);

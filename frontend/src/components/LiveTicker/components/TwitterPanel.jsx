@@ -3,9 +3,10 @@
 // Flow: n8n RSS → DB → Klick → Modal → Ticker
 // ============================================================
 
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import { fetchTwitterPosts, triggerTwitterImport, publishClip, deleteClip } from "../../../api";
+import { useCommandPalette, CommandPalettePortal, resolvePublishPayload } from "../utils/commandPalette";
 
 const PHASES = [
   { value: "", label: "Spielminute" },
@@ -22,6 +23,8 @@ function TwitterPublishModal({ post, matchId, currentMinute, onClose, onPublishe
   const [phase, setPhase] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const textareaRef = useRef(null);
+  const { showPalette, paletteIdx, filteredCmds, onValueChange, selectCmd, handlePaletteKeyDown } = useCommandPalette(text);
 
   async function handleSubmit(e) {
     e?.preventDefault();
@@ -30,7 +33,8 @@ function TwitterPublishModal({ post, matchId, currentMinute, onClose, onPublishe
     setError(null);
     try {
       const publishMinute = phase === "Halftime" ? 45 : phase ? null : (minute || null);
-      await publishClip(post.id, matchId, text.trim(), publishMinute, phase || null);
+      const { text: publishText, icon } = resolvePublishPayload(text, publishMinute);
+      await publishClip(post.id, matchId, publishText, publishMinute, phase || null, icon);
       onPublished(post.id);
     } catch (err) {
       const detail = err?.response?.data?.detail;
@@ -118,11 +122,23 @@ function TwitterPublishModal({ post, matchId, currentMinute, onClose, onPublishe
                 )}
               </div>
             </div>
+            <CommandPalettePortal
+              show={showPalette}
+              items={filteredCmds}
+              activeIdx={paletteIdx}
+              anchorRef={textareaRef}
+              onSelect={(cmd) => { selectCmd(cmd, setText); setTimeout(() => textareaRef.current?.focus(), 0); }}
+            />
             <textarea
+              ref={textareaRef}
               autoFocus
+              placeholder="Ticker-Eintrag …"
               value={text}
-              onChange={(e) => setText(e.target.value)}
-              onKeyDown={(e) => { if (e.ctrlKey && e.key === "Enter") handleSubmit(); }}
+              onChange={(e) => { setText(e.target.value); onValueChange(e.target.value); }}
+              onKeyDown={(e) => {
+                if (handlePaletteKeyDown(e, setText)) return;
+                if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleSubmit(); }
+              }}
               rows={4}
               style={{
                 width: "100%", boxSizing: "border-box", resize: "none",
@@ -135,7 +151,7 @@ function TwitterPublishModal({ post, matchId, currentMinute, onClose, onPublishe
               onBlur={(e) => e.target.style.borderColor = "var(--lt-border)"}
             />
             <div style={{ fontFamily: "var(--lt-font-mono)", fontSize: "0.65rem", color: "var(--lt-text-faint)", marginTop: 3 }}>
-              <span style={{ color: "var(--lt-accent)" }}>Ctrl+↵</span> Veröffentlichen
+              <span style={{ color: "var(--lt-accent)" }}>↵</span> Veröffentlichen · <span style={{ color: "var(--lt-accent)" }}>/?</span> alle Commands
             </div>
           </div>
 
