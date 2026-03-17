@@ -8,8 +8,8 @@ const config = {
   darkBorder: "#2a2a2a",
   darkText: "#e0e0e0",
   darkMuted: "#888",
-  apiBase: "http://localhost:8001/api/v1",
-  n8nBase: "http://localhost:5678/webhook",
+  apiBase: process.env.REACT_APP_API_BASE || "http://localhost:8001/api/v1",
+  n8nBase: process.env.REACT_APP_N8N_BASE || "http://localhost:5678/webhook",
 };
 
 export default config;

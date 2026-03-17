@@ -10,7 +10,7 @@ class Country(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String(100), nullable=False, unique=True, index=True)
-    code = Column(String(3), nullable=True)
+    code = Column(String(10), nullable=True)
     flag_url = Column(String(500), nullable=True)
     created_at = Column(
         TIMESTAMP(timezone=True), server_default=func.now(), nullable=False
