@@ -56,7 +56,18 @@ export const LeftPanel = memo(function LeftPanel({
         };
       })
       .filter(Boolean),
-  ].sort((a, b) => b.minute - a.minute); // neueste Minute zuerst
+  ].sort((a, b) => {
+    if (b.minute !== a.minute) return b.minute - a.minute; // neueste Minute zuerst
+    // Innerhalb gleicher Minute: Phase-Start-Events (Anpfiff, 2HZ) zuletzt
+    const PHASE_START = new Set(["FirstHalf", "SecondHalf", "ExtraFirstHalf", "ExtraSecondHalf", "PenaltyShootout"]);
+    const aPhase = a.type === "manual" ? a.data?.phase : a.data?.tickerText?.phase;
+    const bPhase = b.type === "manual" ? b.data?.phase : b.data?.tickerText?.phase;
+    const aStart = PHASE_START.has(aPhase);
+    const bStart = PHASE_START.has(bPhase);
+    if (aStart && !bStart) return 1;
+    if (!aStart && bStart) return -1;
+    return 0;
+  });
 
   const hasContent = allEntries.length > 0;
 

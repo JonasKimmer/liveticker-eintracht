@@ -35,10 +35,15 @@ class TickerEntryRepository:
             q = q.filter(TickerEntry.status == "published")
         entries = q.order_by(TickerEntry.created_at.desc()).all()
         # Primär nach Phase-Reihenfolge sortieren, sekundär nach created_at desc
+        # Phase-Start-Events (Anpfiff, 2. HZ) → zuerst in ihrer Minute (0)
+        # Phase-End-Events (HZ, Abpfiff) haben eigene Phase-Order → already correct
+        # Alle anderen Events → 1
+        _PHASE_FIRST = {"FirstHalf", "SecondHalf", "ExtraFirstHalf", "ExtraSecondHalf", "PenaltyShootout"}
         entries.sort(
             key=lambda e: (
                 self._PHASE_ORDER.get(e.phase, 5) if e.phase else 5,
                 e.minute if e.minute is not None else 999,
+                0 if (e.synthetic_event_id is not None and e.phase in _PHASE_FIRST) else 1,
                 e.created_at,
             )
         )

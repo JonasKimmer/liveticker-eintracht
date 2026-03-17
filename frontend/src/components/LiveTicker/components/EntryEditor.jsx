@@ -185,14 +185,17 @@ export function EntryEditor({
       // Phase commands (e.g. /prematch, /elfmeter) with extra text → free text mode
       if (meta.phase != null && afterCmd) {
         onPublish?.({ text: afterCmd, icon: meta.icon ?? "📣", minute: minute != null ? minute : null, phase: null });
-      } else {
-        // Valid event command or no-arg phase command → use template
+      } else if (meta.phase != null) {
+        // Phase command ohne extra Text → Template + Phase
         onPublish?.({
           text: preview.formatted,
           icon: meta.icon ?? "📣",
           minute: meta.minute ?? minute ?? null,
-          phase: meta.phase ?? null,
+          phase: meta.phase,
         });
+      } else {
+        // Event command (/g, /gelb etc.) → freier Text nach Prefix + Icon
+        onPublish?.({ text: afterCmd || trimmed, icon: meta.icon ?? "📣", minute: meta.minute ?? minute ?? null, phase: null });
       }
     } else if (trimmed.startsWith("/")) {
       // Invalid command → free text with command icon, strip prefix

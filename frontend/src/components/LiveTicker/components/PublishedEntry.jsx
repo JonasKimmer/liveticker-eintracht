@@ -163,25 +163,13 @@ export const PublishedEntry = memo(function PublishedEntry({
             <div>
               {tickerText.image_url && (
                 <a href={tickerText.video_url} target="_blank" rel="noopener noreferrer"
-                  style={{ display: "inline-block", position: "relative", marginBottom: 6 }}>
+                  style={{ display: "block", position: "relative", marginBottom: 6 }}>
                   <img
                     src={tickerText.image_url}
                     alt="YouTube"
-                    style={{ width: 280, maxWidth: "100%", borderRadius: 6, display: "block", objectFit: "cover" }}
+                    style={{ width: "100%", maxWidth: 280, borderRadius: 6, display: "block", objectFit: "cover" }}
                     loading="lazy"
                   />
-                  <div style={{
-                    position: "absolute", top: "50%", left: "50%",
-                    transform: "translate(-50%, -50%)",
-                    width: 36, height: 36, borderRadius: "50%",
-                    background: "rgba(255,0,0,0.85)",
-                    display: "flex", alignItems: "center", justifyContent: "center",
-                    pointerEvents: "none",
-                  }}>
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="#fff" style={{ marginLeft: 2 }}>
-                      <path d="M8 5v14l11-7z"/>
-                    </svg>
-                  </div>
                 </a>
               )}
               <a href={tickerText.video_url} target="_blank" rel="noopener noreferrer"
@@ -231,7 +219,7 @@ export const PublishedEntry = memo(function PublishedEntry({
                 const mediaDefaults = ["🎬", "📷", "📸"];
                 const isCodeKey = tickerText?.icon && /^[a-z0-9_]+$/i.test(tickerText.icon);
                 const hasCustomIcon = hasMedia && !isCodeKey && tickerText?.icon && !mediaDefaults.includes(tickerText.icon);
-                return hasCustomIcon ? tickerText.icon : tickerText?.text;
+                return hasCustomIcon ? `${tickerText.icon} ${tickerText?.text}` : tickerText?.text;
               })()}
               {onEdit && (
                 <button onClick={startEdit} title="Bearbeiten" style={{ marginLeft: 6, background: "none", border: "none", color: "var(--lt-text-faint)", cursor: "pointer", fontSize: "0.75rem", padding: 0, verticalAlign: "middle", opacity: 0.5 }}>✎</button>

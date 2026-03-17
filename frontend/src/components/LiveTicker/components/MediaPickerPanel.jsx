@@ -9,7 +9,7 @@ import { createPortal } from "react-dom";
 import { useMediaWebSocket } from "../../../hooks/useMediaWebSocket";
 import { generateMediaCaption } from "../../../api";
 import { parseCommand } from "../utils/parseCommand";
-import { COMMAND_PALETTE, CommandPalettePortal, resolvePublishPayload } from "../utils/commandPalette";
+import { COMMAND_PALETTE, CommandPalettePortal } from "../utils/commandPalette";
 import config from "../../../config/whitelabel";
 
 const API_BASE = config.apiBase;
@@ -190,7 +190,14 @@ function PublishModal({ image, matchId, onClose, onPublished, playerNames = [], 
   async function handleSubmit(e) {
     e?.preventDefault();
     if (!description.trim()) { setError("Text darf nicht leer sein."); return; }
-    const { text: textToPublish, icon } = resolvePublishPayload(description, minute);
+    const raw = description.trim();
+    let textToPublish = raw;
+    let icon = null;
+    if (raw.startsWith("/")) {
+      const parsed = parseCommand(raw, minute);
+      icon = parsed.meta?.icon ?? null;
+      textToPublish = raw.replace(/^\/\w+\s*/, "").trim() || raw;
+    }
     setLoading(true);
     setError(null);
     try {
@@ -369,21 +376,6 @@ function PublishModal({ image, matchId, onClose, onPublished, playerNames = [], 
               </div>
             )}
 
-            {/* Preview */}
-            {preview && (
-              <div style={{
-                marginTop: 6, padding: "0.4rem 0.6rem", borderRadius: 5,
-                background: preview.isValid ? "rgba(16,185,129,0.08)" : "rgba(245,158,11,0.08)",
-                border: `1px solid ${preview.isValid ? "rgba(16,185,129,0.25)" : "rgba(245,158,11,0.25)"}`,
-                fontFamily: "var(--lt-font-mono)", fontSize: "0.72rem",
-                color: preview.isValid ? "var(--lt-text)" : "var(--lt-text-muted)",
-              }}>
-                <span style={{ opacity: 0.6, fontSize: "0.62rem" }}>{preview.isValid ? "✓ " : "⚠ "}</span>
-                {preview.meta?.minute ? <span style={{ opacity: 0.6, marginRight: "0.3rem" }}>{preview.meta.minute}'</span> : null}
-                {preview.meta?.icon && <span style={{ marginRight: "0.3rem" }}>{preview.meta.icon}</span>}
-                {preview.formatted}
-              </div>
-            )}
           </div>
 
           <div style={{ display: "flex", gap: "0.5rem", paddingTop: 4 }}>
