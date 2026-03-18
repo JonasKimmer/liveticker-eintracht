@@ -122,7 +122,7 @@ export default function LiveTicker() {
 
   const liveMinute = useLiveMinute(match);
   const apiStatus = useApiStatus();
-  const apiCfg    = API_STATUS_CFG[apiStatus];
+  const apiCfg = API_STATUS_CFG[apiStatus];
 
   // ── Aktiver Draft ─────────────────────────────────────────
   const [activeDraftId, setActiveDraftId] = useState(null);
@@ -179,7 +179,10 @@ export default function LiveTicker() {
     if (!selMatchId || !match || !tickerTexts) return;
 
     const phasesToCheck = [];
-    if (match.matchPhase === "FirstHalfBreak" || match.matchState === "FullTime") {
+    if (
+      match.matchPhase === "FirstHalfBreak" ||
+      match.matchState === "FullTime"
+    ) {
       phasesToCheck.push("FirstHalfBreak");
     }
     if (match.matchState === "FullTime") {
@@ -192,7 +195,8 @@ export default function LiveTicker() {
       if (summaryTriggeredRef.current.has(key)) continue;
       summaryTriggeredRef.current.add(key);
       const exists = tickerTexts.some(
-        (t) => t.phase === phase && (t.status === "published" || t.status == null),
+        (t) =>
+          t.phase === phase && (t.status === "published" || t.status == null),
       );
       if (!exists) {
         api.generateMatchSummary(selMatchId, phase).catch(() => {});
@@ -206,9 +210,12 @@ export default function LiveTicker() {
     if (match.matchState === "PreMatch") return;
     api.triggerLiveStatsMonitor(selMatchId).catch(() => {});
     if (match.matchState !== "Live") return; // kein Polling bei FullTime
-    const interval = setInterval(() => {
-      api.triggerLiveStatsMonitor(selMatchId).catch(() => {});
-    }, 5 * 60 * 1000);
+    const interval = setInterval(
+      () => {
+        api.triggerLiveStatsMonitor(selMatchId).catch(() => {});
+      },
+      5 * 60 * 1000,
+    );
     return () => clearInterval(interval);
   }, [selMatchId, match?.matchState]);
 
@@ -222,14 +229,14 @@ export default function LiveTicker() {
 
     // Alle Spielzustände über denselben match-status Webhook routen
     const phaseToStatus = {
-      FirstHalf:             "1H",
-      FirstHalfBreak:        "HT",
-      SecondHalf:            "2H",
-      ExtraFirstHalf:        "ET",
-      ExtraBreak:            "BT",
-      ExtraSecondHalf:       "ET",
-      ExtraSecondHalfBreak:  "BT",
-      PenaltyShootout:       "P",
+      FirstHalf: "1H",
+      FirstHalfBreak: "HT",
+      SecondHalf: "2H",
+      ExtraFirstHalf: "ET",
+      ExtraBreak: "BT",
+      ExtraSecondHalf: "ET",
+      ExtraSecondHalfBreak: "BT",
+      PenaltyShootout: "P",
     };
 
     let status = null;
@@ -340,21 +347,25 @@ export default function LiveTicker() {
   // ── Land → Teams ──────────────────────────────────────────
   useEffect(() => {
     if (!selCountry) return;
+    const selectedCountry = countries.find(
+      (c) => c.toLowerCase() === selCountry.trim().toLowerCase(),
+    );
+    if (!selectedCountry) return;
     const controller = new AbortController();
     setTeams([]);
     setSelTeamId(null);
     api
-      .fetchTeamsByCountry(selCountry)
+      .fetchTeamsByCountry(selectedCountry)
       .then(async (r) => {
         if (controller.signal.aborted) return;
         if (r.data.length === 0) {
           setImportingTeams(true);
           try {
             await api.importTeamsByCountry(
-              selCountry,
+              selectedCountry,
               new Date().getFullYear(),
             );
-            const r2 = await api.fetchTeamsByCountry(selCountry);
+            const r2 = await api.fetchTeamsByCountry(selectedCountry);
             if (!controller.signal.aborted) {
               setTeams(r2.data);
             }
@@ -371,7 +382,7 @@ export default function LiveTicker() {
         if (!controller.signal.aborted) console.error(err);
       });
     return () => controller.abort();
-  }, [selCountry]);
+  }, [selCountry, countries]);
 
   // ── Team → Competitions + Matches importieren ─────────────
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -435,7 +446,8 @@ export default function LiveTicker() {
 
   // ── Matchdays → letzten vorauswählen (nur wenn noch kein Round gesetzt) ──
   useEffect(() => {
-    if (matchdays.length > 0 && selRound == null) setSelRound(matchdays[matchdays.length - 1]);
+    if (matchdays.length > 0 && selRound == null)
+      setSelRound(matchdays[matchdays.length - 1]);
   }, [matchdays, selRound]);
 
   // ── Spieltag → Matches ────────────────────────────────────
@@ -492,7 +504,14 @@ export default function LiveTicker() {
   useEffect(() => {
     const handler = (e) => {
       const tag = e.target?.tagName;
-      if (e.key === "?" && !e.ctrlKey && !e.metaKey && tag !== "TEXTAREA" && tag !== "INPUT") setShowHints((s) => !s);
+      if (
+        e.key === "?" &&
+        !e.ctrlKey &&
+        !e.metaKey &&
+        tag !== "TEXTAREA" &&
+        tag !== "INPUT"
+      )
+        setShowHints((s) => !s);
     };
     const imgHandler = () => setShowHints(true);
     const cmdHandler = () => setShowCommands(true);
@@ -566,13 +585,19 @@ export default function LiveTicker() {
               <button
                 key={id}
                 className={`lt-header__nav-tab${activeTab === id ? " lt-header__nav-tab--active" : ""}`}
-                onClick={() => { handleTabChange(id); setModalOpen(true); }}
+                onClick={() => {
+                  handleTabChange(id);
+                  setModalOpen(true);
+                }}
               >
                 {label}
               </button>
             ))}
             <span className="lt-header__sep">|</span>
-            <div className="lt-header__dot" style={{ background: apiCfg.dot }} />
+            <div
+              className="lt-header__dot"
+              style={{ background: apiCfg.dot }}
+            />
             <span>Backend: {apiCfg.label}</span>
             <button
               className={`lt-header__hint${instance === "ef_whitelabel" ? " lt-header__hint--active" : ""}`}
@@ -618,7 +643,9 @@ export default function LiveTicker() {
           }}
         >
           {mode !== "auto" && (
-            <div className={`lt-panel-wrap${mobilePanel === "center" ? " lt-panel-wrap--active" : ""}`}>
+            <div
+              className={`lt-panel-wrap${mobilePanel === "center" ? " lt-panel-wrap--active" : ""}`}
+            >
               <div
                 onMouseDown={handleCenterResizeMouseDown}
                 title="Breite ziehen"
@@ -652,7 +679,9 @@ export default function LiveTicker() {
               />
             </div>
           )}
-          <div className={`lt-panel-wrap lt-panel-wrap--left${mobilePanel === "left" ? " lt-panel-wrap--active" : ""}`}>
+          <div
+            className={`lt-panel-wrap lt-panel-wrap--left${mobilePanel === "left" ? " lt-panel-wrap--active" : ""}`}
+          >
             <LeftPanel
               events={events}
               tickerTexts={tickerTexts}
@@ -667,7 +696,9 @@ export default function LiveTicker() {
               }}
             />
           </div>
-          <div className={`lt-panel-wrap${mobilePanel === "right" ? " lt-panel-wrap--active" : ""}`}>
+          <div
+            className={`lt-panel-wrap${mobilePanel === "right" ? " lt-panel-wrap--active" : ""}`}
+          >
             <div
               onMouseDown={handleResizeMouseDown}
               title="Breite ziehen"
@@ -726,51 +757,86 @@ export default function LiveTicker() {
         <div
           onClick={() => setModalOpen(false)}
           style={{
-            position: "fixed", inset: 0, zIndex: 100,
-            background: "rgba(0,0,0,0.55)", backdropFilter: "blur(3px)",
+            position: "fixed",
+            inset: 0,
+            zIndex: 100,
+            background: "rgba(0,0,0,0.55)",
+            backdropFilter: "blur(3px)",
             opacity: modalOpen ? 1 : 0,
             pointerEvents: modalOpen ? "auto" : "none",
             transition: "opacity 0.25s ease",
           }}
         />
         {/* Drawer Panel */}
-        <div style={{
-          position: "fixed", top: 0, right: 0, bottom: 0, zIndex: 101,
-          width: "min(420px, 100vw)",
-          background: "var(--lt-bg-card)",
-          borderLeft: "1px solid var(--lt-border)",
-          boxShadow: "-12px 0 40px rgba(0,0,0,0.5)",
-          transform: modalOpen ? "translateX(0)" : "translateX(100%)",
-          transition: "transform 0.28s cubic-bezier(0.32,0,0.24,1)",
-          overflowY: "auto",
-          display: "flex", flexDirection: "column",
-        }}>
+        <div
+          style={{
+            position: "fixed",
+            top: 0,
+            right: 0,
+            bottom: 0,
+            zIndex: 101,
+            width: "min(420px, 100vw)",
+            background: "var(--lt-bg-card)",
+            borderLeft: "1px solid var(--lt-border)",
+            boxShadow: "-12px 0 40px rgba(0,0,0,0.5)",
+            transform: modalOpen ? "translateX(0)" : "translateX(100%)",
+            transition: "transform 0.28s cubic-bezier(0.32,0,0.24,1)",
+            overflowY: "auto",
+            display: "flex",
+            flexDirection: "column",
+          }}
+        >
           {/* Drawer Header */}
-          <div style={{
-            display: "flex", alignItems: "center", justifyContent: "space-between",
-            padding: "1rem 1.25rem",
-            borderBottom: "1px solid var(--lt-border)",
-            flexShrink: 0,
-          }}>
-            <span style={{ fontFamily: "var(--lt-font-mono)", fontSize: "0.75rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--lt-text-muted)" }}>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              padding: "1rem 1.25rem",
+              borderBottom: "1px solid var(--lt-border)",
+              flexShrink: 0,
+            }}
+          >
+            <span
+              style={{
+                fontFamily: "var(--lt-font-mono)",
+                fontSize: "0.75rem",
+                fontWeight: 700,
+                textTransform: "uppercase",
+                letterSpacing: "0.1em",
+                color: "var(--lt-text-muted)",
+              }}
+            >
               Match wechseln
             </span>
             <button
               onClick={() => setModalOpen(false)}
               style={{
-                width: 30, height: 30, borderRadius: "50%",
-                background: "var(--lt-bg-card-2)", border: "1px solid var(--lt-border)",
-                color: "var(--lt-text-muted)", cursor: "pointer", fontSize: "0.85rem",
-                display: "flex", alignItems: "center", justifyContent: "center",
+                width: 30,
+                height: 30,
+                borderRadius: "50%",
+                background: "var(--lt-bg-card-2)",
+                border: "1px solid var(--lt-border)",
+                color: "var(--lt-text-muted)",
+                cursor: "pointer",
+                fontSize: "0.85rem",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
               }}
-            >✕</button>
+            >
+              ✕
+            </button>
           </div>
           {/* Drawer Content */}
           <div style={{ flex: 1, overflowY: "auto" }}>
             <StartScreen
               {...navProps}
               compact
-              onMatchChange={(id) => { navProps.onMatchChange(id); setModalOpen(false); }}
+              onMatchChange={(id) => {
+                navProps.onMatchChange(id);
+                setModalOpen(false);
+              }}
             />
           </div>
         </div>
@@ -779,31 +845,92 @@ export default function LiveTicker() {
         )}
         {showCommands && (
           <div
-            style={{ position: "fixed", inset: 0, zIndex: 200, background: "rgba(0,0,0,0.6)", backdropFilter: "blur(4px)", display: "flex", alignItems: "center", justifyContent: "center" }}
+            style={{
+              position: "fixed",
+              inset: 0,
+              zIndex: 200,
+              background: "rgba(0,0,0,0.6)",
+              backdropFilter: "blur(4px)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
             onClick={() => setShowCommands(false)}
           >
             <div
-              style={{ background: "var(--lt-bg-card)", border: "1px solid var(--lt-border)", borderRadius: 12, padding: "1.5rem", maxWidth: 420, width: "90%", boxShadow: "0 24px 48px rgba(0,0,0,0.5)" }}
+              style={{
+                background: "var(--lt-bg-card)",
+                border: "1px solid var(--lt-border)",
+                borderRadius: 12,
+                padding: "1.5rem",
+                maxWidth: 420,
+                width: "90%",
+                boxShadow: "0 24px 48px rgba(0,0,0,0.5)",
+              }}
               onClick={(e) => e.stopPropagation()}
             >
-              <div style={{ fontFamily: "var(--lt-font-mono)", fontSize: "0.7rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--lt-text-muted)", marginBottom: "1rem" }}>
+              <div
+                style={{
+                  fontFamily: "var(--lt-font-mono)",
+                  fontSize: "0.7rem",
+                  fontWeight: 700,
+                  textTransform: "uppercase",
+                  letterSpacing: "0.1em",
+                  color: "var(--lt-text-muted)",
+                  marginBottom: "1rem",
+                }}
+              >
                 ⚡ Slash Commands
               </div>
               {[
                 ["/goal Müller FCB", "⚽ TOR — Müller (FCB)"],
                 ["/card Müller FCB yellow", "🟨 KARTE — Müller (FCB)"],
                 ["/card Müller FCB red", "🟥 ROTE KARTE — Müller (FCB)"],
-                ["/sub Kimmich Coman FCB", "🔄 WECHSEL — Kimmich ↔ Coman (FCB)"],
+                [
+                  "/sub Kimmich Coman FCB",
+                  "🔄 WECHSEL — Kimmich ↔ Coman (FCB)",
+                ],
                 ["/note Ecke für FCB", "— Ecke für FCB"],
               ].map(([cmd, result]) => (
                 <div key={cmd} style={{ marginBottom: "0.75rem" }}>
-                  <code style={{ fontFamily: "var(--lt-font-mono)", fontSize: "0.82rem", color: "var(--lt-accent)", background: "var(--lt-accent-dim)", padding: "2px 6px", borderRadius: 4 }}>{cmd}</code>
-                  <div style={{ fontFamily: "var(--lt-font-mono)", fontSize: "0.75rem", color: "var(--lt-text-muted)", marginTop: "0.2rem" }}>→ {result}</div>
+                  <code
+                    style={{
+                      fontFamily: "var(--lt-font-mono)",
+                      fontSize: "0.82rem",
+                      color: "var(--lt-accent)",
+                      background: "var(--lt-accent-dim)",
+                      padding: "2px 6px",
+                      borderRadius: 4,
+                    }}
+                  >
+                    {cmd}
+                  </code>
+                  <div
+                    style={{
+                      fontFamily: "var(--lt-font-mono)",
+                      fontSize: "0.75rem",
+                      color: "var(--lt-text-muted)",
+                      marginTop: "0.2rem",
+                    }}
+                  >
+                    → {result}
+                  </div>
                 </div>
               ))}
               <button
                 onClick={() => setShowCommands(false)}
-                style={{ marginTop: "0.5rem", width: "100%", padding: "0.5rem", background: "var(--lt-bg-card-2)", border: "1px solid var(--lt-border)", borderRadius: 6, color: "var(--lt-text-muted)", fontFamily: "var(--lt-font-mono)", fontSize: "0.75rem", cursor: "pointer" }}
+                style={{
+                  marginTop: "0.5rem",
+                  width: "100%",
+                  padding: "0.5rem",
+                  background: "var(--lt-bg-card-2)",
+                  border: "1px solid var(--lt-border)",
+                  borderRadius: 6,
+                  color: "var(--lt-text-muted)",
+                  fontFamily: "var(--lt-font-mono)",
+                  fontSize: "0.75rem",
+                  cursor: "pointer",
+                }}
               >
                 Schließen
               </button>
