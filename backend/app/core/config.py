@@ -32,7 +32,10 @@ class Settings(BaseSettings):
     OPENROUTER_API_KEY: Optional[str] = None
 
     # CORS
-    CORS_ORIGINS: list[str] = ["http://localhost:3000"]
+    CORS_ORIGINS: list[str] = [
+        "http://localhost:3000",
+        "https://liveticker-eintracht-frontend.onrender.com",
+    ]
 
     # WebSocket
     WS_HEARTBEAT_INTERVAL: int = 30
@@ -48,18 +51,18 @@ class Settings(BaseSettings):
     API_FOOTBALL_RATE_LIMIT: int = 100
 
     # n8n Webhooks
-    N8N_WEBHOOK_LINEUP: str = "http://localhost:5678/webhook/lineups"
-    N8N_WEBHOOK_EVENTS: str = "http://localhost:5678/webhook/Events"
-    N8N_WEBHOOK_STATISTICS: str = "http://localhost:5678/webhook/statistics"
+    N8N_WEBHOOK_LINEUP: str = "https://5c068710.sge.de/webhook/lineups"
+    N8N_WEBHOOK_EVENTS: str = "https://5c068710.sge.de/webhook/Events"
+    N8N_WEBHOOK_STATISTICS: str = "https://5c068710.sge.de/webhook/statistics"
     N8N_WEBHOOK_PLAYER_STATISTICS: str = (
-        "http://localhost:5678/webhook/Player-Statistics"
+        "https://5c068710.sge.de/webhook/Player-Statistics"
     )
-    N8N_WEBHOOK_PREMATCH: str = "http://localhost:5678/webhook/import-prematch"
+    N8N_WEBHOOK_PREMATCH: str = "https://5c068710.sge.de/webhook/import-prematch"
     N8N_WEBHOOK_COMPETITIONS: str = (
-        "http://localhost:5678/webhook/import-team-competitions"
+        "https://5c068710.sge.de/webhook/import-team-competitions"
     )
-    N8N_WEBHOOK_MATCHES: str = "http://localhost:5678/webhook/import-matches"
-    N8N_WEBHOOK_COUNTRY: str = "http://localhost:5678/webhook/import-country"
+    N8N_WEBHOOK_MATCHES: str = "https://5c068710.sge.de/webhook/import-matches"
+    N8N_WEBHOOK_COUNTRY: str = "https://5c068710.sge.de/webhook/import-country"
 
     model_config = SettingsConfigDict(
         env_file=".env",
