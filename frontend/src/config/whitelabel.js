@@ -11,7 +11,9 @@ const config = {
   apiBase:
     process.env.REACT_APP_API_BASE ||
     "https://liveticker-eintracht-2.onrender.com/api/v1",
-  n8nBase: process.env.REACT_APP_N8N_BASE || "https://5c068710.sge.de/webhook",
+  n8nBase:
+    process.env.REACT_APP_N8N_BASE ||
+    "https://n8n-service-98du.onrender.com/webhook",
 };
 
 export default config;

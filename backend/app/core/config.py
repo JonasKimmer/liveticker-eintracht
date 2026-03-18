@@ -51,18 +51,26 @@ class Settings(BaseSettings):
     API_FOOTBALL_RATE_LIMIT: int = 100
 
     # n8n Webhooks
-    N8N_WEBHOOK_LINEUP: str = "https://5c068710.sge.de/webhook/lineups"
-    N8N_WEBHOOK_EVENTS: str = "https://5c068710.sge.de/webhook/Events"
-    N8N_WEBHOOK_STATISTICS: str = "https://5c068710.sge.de/webhook/statistics"
+    N8N_WEBHOOK_LINEUP: str = "https://n8n-service-98du.onrender.com/webhook/lineups"
+    N8N_WEBHOOK_EVENTS: str = "https://n8n-service-98du.onrender.com/webhook/Events"
+    N8N_WEBHOOK_STATISTICS: str = (
+        "https://n8n-service-98du.onrender.com/webhook/statistics"
+    )
     N8N_WEBHOOK_PLAYER_STATISTICS: str = (
-        "https://5c068710.sge.de/webhook/Player-Statistics"
+        "https://n8n-service-98du.onrender.com/webhook/Player-Statistics"
     )
-    N8N_WEBHOOK_PREMATCH: str = "https://5c068710.sge.de/webhook/import-prematch"
+    N8N_WEBHOOK_PREMATCH: str = (
+        "https://n8n-service-98du.onrender.com/webhook/import-prematch"
+    )
     N8N_WEBHOOK_COMPETITIONS: str = (
-        "https://5c068710.sge.de/webhook/import-team-competitions"
+        "https://n8n-service-98du.onrender.com/webhook/import-team-competitions"
     )
-    N8N_WEBHOOK_MATCHES: str = "https://5c068710.sge.de/webhook/import-matches"
-    N8N_WEBHOOK_COUNTRY: str = "https://5c068710.sge.de/webhook/import-country"
+    N8N_WEBHOOK_MATCHES: str = (
+        "https://n8n-service-98du.onrender.com/webhook/import-matches"
+    )
+    N8N_WEBHOOK_COUNTRY: str = (
+        "https://n8n-service-98du.onrender.com/webhook/import-countries"
+    )
 
     model_config = SettingsConfigDict(
         env_file=".env",
