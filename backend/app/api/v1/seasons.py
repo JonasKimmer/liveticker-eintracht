@@ -1,3 +1,9 @@
+"""
+Seasons Router
+==============
+Endpunkte für Saisons, Spieltage und Tabellenabfragen.
+"""
+
 import logging
 from typing import Literal
 

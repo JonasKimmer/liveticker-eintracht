@@ -1,3 +1,9 @@
+"""
+CompetitionTeams Router
+=======================
+Endpunkte für Verein-Liga-Zuordnungen.
+"""
+
 import logging
 
 from fastapi import APIRouter, Depends, HTTPException, status

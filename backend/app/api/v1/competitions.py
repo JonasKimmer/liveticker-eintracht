@@ -1,3 +1,9 @@
+"""
+Competitions Router
+===================
+Endpunkte für Wettbewerbe (Ligen, Pokale) und zugehörige Saisons.
+"""
+
 import logging
 from typing import Optional
 

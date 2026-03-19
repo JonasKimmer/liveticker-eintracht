@@ -1,3 +1,9 @@
+"""
+Teams Router
+============
+Endpunkte für Vereinsverwaltung inkl. Paginierung und externer ID-Suche.
+"""
+
 import logging
 from typing import Optional
 

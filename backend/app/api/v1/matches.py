@@ -1,3 +1,9 @@
+"""
+Matches Router
+==============
+Endpunkte für Spielabruf, Spieltag-Navigation, Lineup und Statistiken.
+"""
+
 import logging
 from typing import Optional
 

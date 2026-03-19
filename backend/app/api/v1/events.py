@@ -1,3 +1,9 @@
+"""
+Events Router
+=============
+Endpunkte für Match-Events (Tore, Karten, Wechsel) inkl. Upsert.
+"""
+
 import logging
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status

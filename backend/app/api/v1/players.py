@@ -1,3 +1,9 @@
+"""
+Players Router
+==============
+Endpunkte für Spielerdaten und Statistiken.
+"""
+
 import logging
 from typing import Optional
 

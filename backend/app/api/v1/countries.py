@@ -1,3 +1,9 @@
+"""
+Countries Router
+================
+Endpunkte für Länderdaten (CRUD).
+"""
+
 import logging
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
