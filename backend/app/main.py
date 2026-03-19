@@ -1,3 +1,10 @@
+"""
+Liveticker AI Backend — FastAPI Application Entry Point
+=======================================================
+Registriert alle Router, Middleware (CORS) und Static Files.
+Die OpenAPI-Dokumentation ist unter /api/docs erreichbar.
+"""
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
