@@ -669,6 +669,7 @@ async def generate_ticker_text(
             )
         except Exception:
             logger.warning("Stilreferenzen konnten nicht geladen werden", exc_info=True)
+            db.rollback()
 
     resolved_minute = (match_context.get("minute") if match_context else None) or minute
     resolved_team = team_name or (
