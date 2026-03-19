@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef, memo, useMemo } from "react";
+import { useState, useEffect, useCallback, useRef, memo, useMemo } from "react";
 import PropTypes from "prop-types";
 import { AIDraft } from "../components/AIDraft";
 import { EntryEditor } from "../components/EntryEditor";

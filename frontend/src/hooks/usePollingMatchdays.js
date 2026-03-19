@@ -27,7 +27,7 @@ export function usePollingMatchdays(teamId, competitionId) {
     setLoading(true);
     clearTimeout(timeoutRef.current);
 
-    const fetch = async () => {
+    const fetchMatchdays = async () => {
       try {
         const res = await api.fetchTeamMatchdays(teamId, competitionId);
         return res.data;
@@ -38,14 +38,14 @@ export function usePollingMatchdays(teamId, competitionId) {
     };
 
     // Initialer Fetch — triggert Backend-Webhook
-    fetch().then((data) => {
+    fetchMatchdays().then((data) => {
       if (data) setMatchdays(data);
       setLoading(false);
     });
 
     // Einmaliger Refresh nach 25s — holt importierte Daten
     timeoutRef.current = setTimeout(async () => {
-      const data = await fetch();
+      const data = await fetchMatchdays();
       if (data && data.length > 0) setMatchdays(data);
     }, 25000);
 

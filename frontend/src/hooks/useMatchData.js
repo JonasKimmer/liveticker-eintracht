@@ -34,6 +34,18 @@ export function useMatchData(selectedMatchId) {
   // Ref hält aktuelle Match-Daten synchron für loadPlayers
   const matchRef = useRef(null);
 
+  // Generic loader: fetches data and sets state, with optional transform
+  const _load = useCallback(async (fetchFn, setFn, transform) => {
+    if (!selectedMatchId) return;
+    try {
+      const res = await fetchFn(selectedMatchId);
+      setFn(transform ? transform(res.data) : res.data);
+    } catch (err) {
+      logger.error(`[useMatchData] ${fetchFn.name} failed:`, err);
+    }
+  }, [selectedMatchId]);
+
+  // loadMatch is separate: it also updates matchRef for loadPlayers
   const loadMatch = useCallback(async () => {
     if (!selectedMatchId) return;
     try {
@@ -41,80 +53,17 @@ export function useMatchData(selectedMatchId) {
       matchRef.current = res.data;
       setMatch(res.data);
     } catch (err) {
-      logger.error("loadMatch error:", err);
+      logger.error("[useMatchData] fetchMatch failed:", err);
     }
   }, [selectedMatchId]);
 
-  const loadEvents = useCallback(async () => {
-    if (!selectedMatchId) return;
-    try {
-      const res = await api.fetchEvents(selectedMatchId);
-      const items = res.data?.items ?? res.data ?? [];
-      setEvents([...items].reverse());
-    } catch (err) {
-      logger.error("loadEvents error:", err);
-    }
-  }, [selectedMatchId]);
-
-  const loadTickerTexts = useCallback(async () => {
-    if (!selectedMatchId) return;
-    try {
-      const res = await api.fetchTickerTexts(selectedMatchId);
-      setTickerTexts(res.data);
-    } catch (err) {
-      logger.error("loadTickerTexts error:", err);
-    }
-  }, [selectedMatchId]);
-
-  const loadPrematch = useCallback(async () => {
-    if (!selectedMatchId) return;
-    try {
-      const res = await api.fetchPrematch(selectedMatchId);
-      setPrematch(res.data);
-    } catch (err) {
-      logger.error("loadPrematch error:", err);
-    }
-  }, [selectedMatchId]);
-
-  const loadLineups = useCallback(async () => {
-    if (!selectedMatchId) return;
-    try {
-      const res = await api.fetchLineups(selectedMatchId);
-      setLineups(res.data);
-    } catch (err) {
-      logger.error("loadLineups error:", err);
-    }
-  }, [selectedMatchId]);
-
-  const loadMatchStats = useCallback(async () => {
-    if (!selectedMatchId) return;
-    try {
-      const res = await api.fetchMatchStats(selectedMatchId);
-      setMatchStats(res.data);
-    } catch (err) {
-      logger.error("loadMatchStats error:", err);
-    }
-  }, [selectedMatchId]);
-
-  const loadPlayerStats = useCallback(async () => {
-    if (!selectedMatchId) return;
-    try {
-      const res = await api.fetchPlayerStats(selectedMatchId);
-      setPlayerStats(res.data);
-    } catch (err) {
-      logger.error("loadPlayerStats error:", err);
-    }
-  }, [selectedMatchId]);
-
-  const loadInjuries = useCallback(async () => {
-    if (!selectedMatchId) return;
-    try {
-      const res = await api.fetchInjuries(selectedMatchId);
-      setInjuries(res.data ?? []);
-    } catch (err) {
-      logger.error("loadInjuries error:", err);
-    }
-  }, [selectedMatchId]);
+  const loadEvents      = useCallback(() => _load(api.fetchEvents,     setEvents,     (d) => [...(d?.items ?? d ?? [])].reverse()), [_load]);
+  const loadTickerTexts = useCallback(() => _load(api.fetchTickerTexts, setTickerTexts), [_load]);
+  const loadPrematch    = useCallback(() => _load(api.fetchPrematch,    setPrematch),    [_load]);
+  const loadLineups     = useCallback(() => _load(api.fetchLineups,     setLineups),     [_load]);
+  const loadMatchStats  = useCallback(() => _load(api.fetchMatchStats,  setMatchStats),  [_load]);
+  const loadPlayerStats = useCallback(() => _load(api.fetchPlayerStats, setPlayerStats), [_load]);
+  const loadInjuries    = useCallback(() => _load(api.fetchInjuries,    setInjuries,   (d) => d ?? []), [_load]);
 
   // loadPlayers liest Team-IDs aus matchRef (setzt loadMatch voraus)
   const loadPlayers = useCallback(async () => {
@@ -201,6 +150,6 @@ export function useMatchData(selectedMatchId) {
     playerStats,
     injuries,
     loading,
-    reload: { loadMatch, loadEvents, loadTickerTexts, loadPrematch, loadLineups, loadMatchStats, loadPlayers, loadPlayerStats },
+    reload: { loadMatch, loadEvents, loadTickerTexts, loadPrematch, loadLineups, loadMatchStats, loadPlayers, loadPlayerStats, loadInjuries },
   };
 }
