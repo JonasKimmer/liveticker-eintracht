@@ -89,6 +89,52 @@ def test_cohens_kappa_near_zero_for_random_like_agreement() -> None:
     assert cohens_kappa(a, b) == pytest.approx(0.0, abs=1e-9)
 
 
+def test_summarize_distribution_single_value_has_zero_std_dev() -> None:
+    summary = summarize_distribution([42.0])
+    assert summary.n == 1
+    assert summary.std_dev == pytest.approx(0.0)
+    assert summary.min == summary.max == summary.mean == 42.0
+
+
+def test_summarize_distribution_raises_on_empty() -> None:
+    with pytest.raises(ValueError):
+        summarize_distribution([])
+
+
+def test_calculate_ttp_seconds_zero_delta_is_valid() -> None:
+    t = datetime(2026, 3, 18, 18, 0, tzinfo=timezone.utc)
+    assert calculate_ttp_seconds(t, t) == pytest.approx(0.0)
+
+
+def test_cliffs_delta_raises_on_empty_sample() -> None:
+    with pytest.raises(ValueError):
+        cliffs_delta([], [1, 2])
+    with pytest.raises(ValueError):
+        cliffs_delta([1, 2], [])
+
+
+def test_bootstrap_mean_diff_ci_raises_on_too_few_iterations() -> None:
+    with pytest.raises(ValueError):
+        bootstrap_mean_diff_ci([1, 2], [3, 4], iterations=50)
+
+
+def test_cohens_kappa_raises_on_length_mismatch() -> None:
+    with pytest.raises(ValueError):
+        cohens_kappa([1, 2], [1])
+
+
+def test_aggregate_quality_by_group_raises_on_missing_group_key() -> None:
+    rows = [{"mode": "a", "correctness": 4, "tone": 4, "readability": 4}]
+    with pytest.raises(ValueError, match="missing group key"):
+        aggregate_quality_by_group(rows, group_key="model")
+
+
+def test_aggregate_quality_by_group_raises_on_missing_dimension() -> None:
+    rows = [{"mode": "a", "correctness": 4, "tone": 4}]
+    with pytest.raises(ValueError, match="missing dimension"):
+        aggregate_quality_by_group(rows, group_key="mode")
+
+
 def test_aggregate_quality_by_group_builds_table_ready_scores() -> None:
     rows = [
         {"mode": "manual", "correctness": 4, "tone": 4, "readability": 4},
