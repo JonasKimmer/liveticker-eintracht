@@ -4,6 +4,7 @@
 // ============================================================
 
 import { memo, useState, useCallback, useEffect, useRef } from "react";
+import PropTypes from "prop-types";
 import { createPortal } from "react-dom";
 import { fetchTwitterPosts, triggerTwitterImport, publishClip, deleteClip } from "../../../api";
 import { useCommandPalette, CommandPalettePortal, resolvePublishPayload } from "../utils/commandPalette";
@@ -521,3 +522,8 @@ export const TwitterPanel = memo(function TwitterPanel({ matchId, currentMinute 
     </>
   );
 });
+
+TwitterPanel.propTypes = {
+  matchId: PropTypes.number.isRequired,
+  currentMinute: PropTypes.number,
+};

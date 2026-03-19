@@ -4,6 +4,7 @@
 // ============================================================
 
 import { memo, useState, useCallback, useEffect, useRef } from "react";
+import PropTypes from "prop-types";
 import { createPortal } from "react-dom";
 import { useCommandPalette, CommandPalettePortal, resolvePublishPayload } from "../utils/commandPalette";
 import {
@@ -556,3 +557,8 @@ export const YouTubePanel = memo(function YouTubePanel({ matchId, currentMinute 
     </>
   );
 });
+
+YouTubePanel.propTypes = {
+  matchId: PropTypes.number.isRequired,
+  currentMinute: PropTypes.number,
+};

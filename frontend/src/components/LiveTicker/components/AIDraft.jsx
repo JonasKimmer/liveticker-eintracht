@@ -3,6 +3,7 @@
 // (CO-OP: TAB = annehmen, ESC = ablehnen, "Bearbeiten" öffnet EntryEditor)
 // ============================================================
 import { memo } from "react";
+import PropTypes from "prop-types";
 
 export const AIDraft = memo(function AIDraft({
   eventType,
@@ -44,3 +45,12 @@ export const AIDraft = memo(function AIDraft({
     </div>
   );
 });
+
+AIDraft.propTypes = {
+  eventType: PropTypes.string.isRequired,
+  draftText: PropTypes.string,
+  onAccept: PropTypes.func,
+  onReject: PropTypes.func,
+  onEdit: PropTypes.func,
+  onTextClick: PropTypes.func,
+};

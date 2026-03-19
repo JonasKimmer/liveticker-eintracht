@@ -2,6 +2,7 @@
 // MatchHeader.jsx
 // ============================================================
 import { memo, useEffect } from "react";
+import PropTypes from "prop-types";
 import { normalizeMatchStatus } from "../utils/parseCommand";
 import { useLiveMinute } from "../../../hooks/useLiveMinute";
 import * as api from "../../../api";
@@ -85,3 +86,26 @@ export const MatchHeader = memo(function MatchHeader({ match, leagueSeason, onMi
     </div>
   );
 });
+
+MatchHeader.propTypes = {
+  match: PropTypes.shape({
+    externalId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    matchState: PropTypes.string,
+    matchPhase: PropTypes.string,
+    homeTeam: PropTypes.shape({
+      name: PropTypes.string.isRequired,
+      logoUrl: PropTypes.string,
+    }),
+    awayTeam: PropTypes.shape({
+      name: PropTypes.string.isRequired,
+      logoUrl: PropTypes.string,
+    }),
+    teamHomeScore: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    teamAwayScore: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+  }),
+  leagueSeason: PropTypes.shape({
+    league: PropTypes.shape({ name: PropTypes.string }),
+    season: PropTypes.shape({ year: PropTypes.oneOfType([PropTypes.string, PropTypes.number]) }),
+  }),
+  onMinuteSync: PropTypes.func,
+};

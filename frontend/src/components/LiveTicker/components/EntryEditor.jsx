@@ -2,6 +2,7 @@
 // EntryEditor.jsx  — Slash-Command Editor mit Autocomplete
 // ============================================================
 import { memo, useState, useEffect, useMemo, useCallback, useRef } from "react";
+import PropTypes from "prop-types";
 import { parseCommand } from "../utils/parseCommand";
 import { COMMAND_PALETTE } from "../utils/commandPalette";
 import { MODES } from "../constants";
@@ -338,3 +339,13 @@ export const EntryEditor = memo(function EntryEditor({
     </div>
   );
 });
+
+EntryEditor.propTypes = {
+  value: PropTypes.string.isRequired,
+  onChange: PropTypes.func.isRequired,
+  onPublish: PropTypes.func,
+  onCancel: PropTypes.func,
+  mode: PropTypes.string.isRequired,
+  currentMinute: PropTypes.number,
+  playerNames: PropTypes.arrayOf(PropTypes.string),
+};

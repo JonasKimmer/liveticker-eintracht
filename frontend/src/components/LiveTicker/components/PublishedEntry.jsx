@@ -2,6 +2,7 @@
 // PublishedEntry.jsx  (React.memo — rendert oft)
 // ============================================================
 import { memo, useState, useCallback, useRef } from "react";
+import PropTypes from "prop-types";
 import { getEventMeta } from "../utils/parseCommand";
 
 const URL_PATTERNS = {
@@ -75,6 +76,11 @@ function InlineVideo({ videoUrl, thumbnailUrl }) {
   );
 }
 
+InlineVideo.propTypes = {
+  videoUrl: PropTypes.string.isRequired,
+  thumbnailUrl: PropTypes.string,
+};
+
 function EditForm({ textareaRef, value, onChange, onSave, onCancel, saving }) {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 6, marginTop: 4 }}>
@@ -101,6 +107,15 @@ function EditForm({ textareaRef, value, onChange, onSave, onCancel, saving }) {
     </div>
   );
 }
+
+EditForm.propTypes = {
+  textareaRef: PropTypes.object.isRequired,
+  value: PropTypes.string.isRequired,
+  onChange: PropTypes.func.isRequired,
+  onSave: PropTypes.func.isRequired,
+  onCancel: PropTypes.func.isRequired,
+  saving: PropTypes.bool.isRequired,
+};
 
 export const PublishedEntry = memo(function PublishedEntry({
   entry,
@@ -274,3 +289,29 @@ export const PublishedEntry = memo(function PublishedEntry({
     </div>
   );
 });
+
+PublishedEntry.propTypes = {
+  entry: PropTypes.shape({
+    liveTickerEventType: PropTypes.string,
+    event_type: PropTypes.string,
+    type: PropTypes.string,
+    detail: PropTypes.string,
+    time: PropTypes.number,
+    minute: PropTypes.number,
+  }),
+  tickerText: PropTypes.shape({
+    id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    text: PropTypes.string,
+    style: PropTypes.string,
+    llm_model: PropTypes.string,
+    phase: PropTypes.string,
+    minute: PropTypes.number,
+    icon: PropTypes.string,
+    video_url: PropTypes.string,
+    image_url: PropTypes.string,
+  }),
+  isManual: PropTypes.bool,
+  isPrematch: PropTypes.bool,
+  onEdit: PropTypes.func,
+  onDelete: PropTypes.func,
+};

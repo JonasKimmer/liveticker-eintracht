@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef, memo, useMemo } from "react";
+import PropTypes from "prop-types";
 import { AIDraft } from "../components/AIDraft";
 import { EntryEditor } from "../components/EntryEditor";
 import { MediaPickerPanel } from "../components/MediaPickerPanel";
@@ -374,6 +375,27 @@ export const CenterPanel = memo(function CenterPanel({
   );
 });
 
+CenterPanel.propTypes = {
+  match: PropTypes.shape({
+    id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    homeTeam: PropTypes.shape({ name: PropTypes.string }),
+    awayTeam: PropTypes.shape({ name: PropTypes.string }),
+  }),
+  currentMinute: PropTypes.number,
+  events: PropTypes.array.isRequired,
+  tickerTexts: PropTypes.array.isRequired,
+  generatingId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+  onGenerate: PropTypes.func.isRequired,
+  onManualPublish: PropTypes.func.isRequired,
+  onDraftActive: PropTypes.func,
+  reload: PropTypes.shape({
+    loadTickerTexts: PropTypes.func.isRequired,
+  }).isRequired,
+  instance: PropTypes.string,
+  lineups: PropTypes.array,
+  players: PropTypes.array,
+};
+
 const EventCard = memo(function EventCard({
   event,
   draft,
@@ -428,3 +450,21 @@ const EventCard = memo(function EventCard({
     </div>
   );
 });
+
+EventCard.propTypes = {
+  event: PropTypes.shape({
+    id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
+    time: PropTypes.number,
+    liveTickerEventType: PropTypes.string,
+  }).isRequired,
+  draft: PropTypes.shape({
+    id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    text: PropTypes.string,
+  }),
+  isSelected: PropTypes.bool,
+  generatingId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+  onGenerate: PropTypes.func.isRequired,
+  onSelect: PropTypes.func,
+  onDismiss: PropTypes.func,
+  showGenButtons: PropTypes.bool.isRequired,
+};

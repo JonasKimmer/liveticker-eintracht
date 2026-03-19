@@ -1,4 +1,5 @@
 import { memo, useState, useMemo } from "react";
+import PropTypes from "prop-types";
 import { createPortal } from "react-dom";
 import { parseCommand } from "./parseCommand";
 
@@ -119,6 +120,19 @@ export const CommandPalettePortal = memo(function CommandPalettePortal({ show, i
     document.body
   );
 });
+
+CommandPalettePortal.propTypes = {
+  show: PropTypes.bool.isRequired,
+  items: PropTypes.arrayOf(PropTypes.shape({
+    cmd: PropTypes.string.isRequired,
+    desc: PropTypes.string.isRequired,
+    icon: PropTypes.string.isRequired,
+    hint: PropTypes.string,
+  })).isRequired,
+  activeIdx: PropTypes.number.isRequired,
+  anchorRef: PropTypes.shape({ current: PropTypes.instanceOf(Element) }).isRequired,
+  onSelect: PropTypes.func.isRequired,
+};
 
 /**
  * Gibt { text, icon } für einen Publish-Vorgang zurück.

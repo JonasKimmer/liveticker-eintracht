@@ -4,6 +4,7 @@
 // Klick → onOpen() öffnet MatchSelectorModal
 // ============================================================
 import { memo, Fragment } from "react";
+import PropTypes from "prop-types";
 
 export const Breadcrumb = memo(function Breadcrumb({ match, competition, country, team, round, onOpen }) {
   if (!match || !competition) return null;
@@ -34,3 +35,19 @@ export const Breadcrumb = memo(function Breadcrumb({ match, competition, country
     </button>
   );
 });
+
+Breadcrumb.propTypes = {
+  match: PropTypes.shape({
+    homeTeam: PropTypes.shape({ name: PropTypes.string }),
+    awayTeam: PropTypes.shape({ name: PropTypes.string }),
+  }),
+  competition: PropTypes.shape({
+    title: PropTypes.string.isRequired,
+  }),
+  country: PropTypes.string,
+  team: PropTypes.shape({
+    name: PropTypes.string,
+  }),
+  round: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+  onOpen: PropTypes.func,
+};

@@ -4,6 +4,7 @@
 // ============================================================
 
 import { memo, useState, useCallback, useEffect } from "react";
+import PropTypes from "prop-types";
 import { createPortal } from "react-dom";
 import { fetchClips, fetchGoalClips, generateClipDraft, publishClip, publishClipTicker, deleteClip } from "../../../api";
 
@@ -616,3 +617,10 @@ export const ClipPickerPanel = memo(function ClipPickerPanel({ matchId, match, c
     </>
   );
 });
+
+ClipPickerPanel.propTypes = {
+  matchId: PropTypes.number.isRequired,
+  match: PropTypes.object,
+  currentMinute: PropTypes.number,
+  onPublished: PropTypes.func,
+};

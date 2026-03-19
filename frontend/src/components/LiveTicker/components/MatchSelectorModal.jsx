@@ -2,6 +2,7 @@
 // MatchSelectorModal.jsx
 // ============================================================
 import { memo, useEffect, useRef, useState } from "react";
+import PropTypes from "prop-types";
 import { useClickOutside } from "../../../hooks/useClickOutside";
 
 export const MatchSelectorModal = memo(function MatchSelectorModal({
@@ -259,3 +260,27 @@ function MsmSelect({ label, disabled, value, onChange, children }) {
     </div>
   );
 }
+
+MatchSelectorModal.propTypes = {
+  onClose: PropTypes.func.isRequired,
+  activeTab: PropTypes.string.isRequired,
+  countries: PropTypes.arrayOf(PropTypes.string).isRequired,
+  selCountry: PropTypes.string,
+  onCountryChange: PropTypes.func.isRequired,
+  teams: PropTypes.arrayOf(PropTypes.object).isRequired,
+  teamsLoading: PropTypes.bool.isRequired,
+  selTeamId: PropTypes.number,
+  onTeamChange: PropTypes.func.isRequired,
+  competitions: PropTypes.arrayOf(PropTypes.object).isRequired,
+  competitionsLoading: PropTypes.bool.isRequired,
+  selCompetitionId: PropTypes.number,
+  onCompetitionChange: PropTypes.func.isRequired,
+  matchdays: PropTypes.arrayOf(PropTypes.oneOfType([PropTypes.string, PropTypes.number])).isRequired,
+  matchdaysLoading: PropTypes.bool.isRequired,
+  matchdaysError: PropTypes.any,
+  selRound: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+  onRoundChange: PropTypes.func.isRequired,
+  matches: PropTypes.arrayOf(PropTypes.object).isRequired,
+  selMatchId: PropTypes.number,
+  onMatchChange: PropTypes.func.isRequired,
+};

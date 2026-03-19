@@ -3,6 +3,7 @@
 // Wiederverwendbare Unter-Komponenten für RightPanel
 // ============================================================
 import { memo, useState } from "react";
+import PropTypes from "prop-types";
 
 export const Collapsible = memo(function Collapsible({ title, defaultOpen = true, children }) {
   const [open, setOpen] = useState(defaultOpen);
@@ -17,6 +18,12 @@ export const Collapsible = memo(function Collapsible({ title, defaultOpen = true
   );
 });
 
+Collapsible.propTypes = {
+  title: PropTypes.string.isRequired,
+  defaultOpen: PropTypes.bool,
+  children: PropTypes.node,
+};
+
 export const CollapsibleCat = memo(function CollapsibleCat({ title, defaultOpen = true, children }) {
   const [open, setOpen] = useState(defaultOpen);
   return (
@@ -29,6 +36,12 @@ export const CollapsibleCat = memo(function CollapsibleCat({ title, defaultOpen 
     </div>
   );
 });
+
+CollapsibleCat.propTypes = {
+  title: PropTypes.string.isRequired,
+  defaultOpen: PropTypes.bool,
+  children: PropTypes.node,
+};
 
 export const PlayerBadges = memo(function PlayerBadges({ entry, stat, subMinuteMap = {} }) {
   const goals  = stat?.goals      ?? entry.numberOfGoals ?? 0;
@@ -51,6 +64,25 @@ export const PlayerBadges = memo(function PlayerBadges({ entry, stat, subMinuteM
     </span>
   );
 });
+
+PlayerBadges.propTypes = {
+  entry: PropTypes.shape({
+    playerId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    numberOfGoals: PropTypes.number,
+    hasYellowCard: PropTypes.bool,
+    hasRedCard: PropTypes.bool,
+    isSubstituted: PropTypes.bool,
+    status: PropTypes.string,
+  }).isRequired,
+  stat: PropTypes.shape({
+    goals: PropTypes.number,
+    cardsYellow: PropTypes.number,
+    cardsRed: PropTypes.number,
+    minutes: PropTypes.number,
+    rating: PropTypes.number,
+  }),
+  subMinuteMap: PropTypes.object,
+};
 
 export const FormationColumn = memo(function FormationColumn({ lineup, playerName, playerStats = [], subMinuteMap = {}, abbr, labelClass }) {
   const formation = lineup[0]?.formation ?? "";
@@ -113,6 +145,21 @@ export const FormationColumn = memo(function FormationColumn({ lineup, playerNam
   );
 });
 
+FormationColumn.propTypes = {
+  lineup: PropTypes.arrayOf(PropTypes.shape({
+    id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    playerId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    position: PropTypes.string,
+    jerseyNumber: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    formation: PropTypes.string,
+  })).isRequired,
+  playerName: PropTypes.func.isRequired,
+  playerStats: PropTypes.array,
+  subMinuteMap: PropTypes.object,
+  abbr: PropTypes.string,
+  labelClass: PropTypes.string,
+};
+
 export const StatRow = memo(function StatRow({ label, home, away, homeVal, awayVal, standalone }) {
   const hv = Number(homeVal ?? 0);
   const av = Number(awayVal ?? 0);
@@ -152,3 +199,12 @@ export const StatRow = memo(function StatRow({ label, home, away, homeVal, awayV
     </div>
   );
 });
+
+StatRow.propTypes = {
+  label: PropTypes.string.isRequired,
+  home: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+  away: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+  homeVal: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+  awayVal: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+  standalone: PropTypes.bool,
+};

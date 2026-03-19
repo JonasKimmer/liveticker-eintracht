@@ -4,6 +4,7 @@
 // ============================================================
 
 import { memo, useState, useCallback, useEffect, useRef } from "react";
+import PropTypes from "prop-types";
 import { createPortal } from "react-dom";
 import { fetchInstagramPosts, triggerInstagramImport, publishClip, deleteClip } from "../../../api";
 import { useCommandPalette, CommandPalettePortal, resolvePublishPayload } from "../utils/commandPalette";
@@ -483,3 +484,8 @@ export const InstagramPanel = memo(function InstagramPanel({ matchId, currentMin
     </>
   );
 });
+
+InstagramPanel.propTypes = {
+  matchId: PropTypes.number.isRequired,
+  currentMinute: PropTypes.number,
+};

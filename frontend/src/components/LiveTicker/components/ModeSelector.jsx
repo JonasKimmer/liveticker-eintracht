@@ -2,6 +2,7 @@
 // ModeSelector.jsx — Popover-Design mit Toast + Status-Dot
 // ============================================================
 import { memo, useState, useRef, useEffect, useCallback } from "react";
+import PropTypes from "prop-types";
 import { createPortal } from "react-dom";
 import { MODES } from "../constants";
 
@@ -208,3 +209,8 @@ export const ModeSelector = memo(function ModeSelector({ mode, onModeChange }) {
     </>
   );
 });
+
+ModeSelector.propTypes = {
+  mode: PropTypes.string.isRequired,
+  onModeChange: PropTypes.func.isRequired,
+};

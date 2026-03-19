@@ -1,4 +1,5 @@
 import { memo, useMemo } from "react";
+import PropTypes from "prop-types";
 import { PublishedEntry } from "../components/PublishedEntry";
 
 // Phasen-Reihenfolge für Sortierung (außerhalb Komponente — unveränderlich)
@@ -112,3 +113,11 @@ export const LeftPanel = memo(function LeftPanel({
     </div>
   );
 });
+
+LeftPanel.propTypes = {
+  events: PropTypes.arrayOf(PropTypes.object).isRequired,
+  tickerTexts: PropTypes.arrayOf(PropTypes.object).isRequired,
+  match: PropTypes.object,
+  onEditEntry: PropTypes.func.isRequired,
+  onDeleteEntry: PropTypes.func.isRequired,
+};

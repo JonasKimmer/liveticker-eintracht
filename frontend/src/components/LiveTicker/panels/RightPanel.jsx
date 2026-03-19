@@ -3,6 +3,7 @@
 // Stats, Aufstellung, Torschützen, Karten, Kader
 // ============================================================
 import { memo, useMemo, useCallback } from "react";
+import PropTypes from "prop-types";
 import {
   Collapsible,
   CollapsibleCat,
@@ -384,3 +385,13 @@ export const RightPanel = memo(function RightPanel({
     </div>
   );
 });
+
+RightPanel.propTypes = {
+  match: PropTypes.object,
+  matchStats: PropTypes.arrayOf(PropTypes.object).isRequired,
+  players: PropTypes.arrayOf(PropTypes.object).isRequired,
+  playerStats: PropTypes.arrayOf(PropTypes.object),
+  lineups: PropTypes.arrayOf(PropTypes.object).isRequired,
+  events: PropTypes.arrayOf(PropTypes.object),
+  injuries: PropTypes.arrayOf(PropTypes.object),
+};

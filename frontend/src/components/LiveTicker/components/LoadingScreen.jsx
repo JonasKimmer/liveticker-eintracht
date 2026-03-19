@@ -2,6 +2,7 @@
 // LoadingScreen.jsx
 // ============================================================
 import { memo } from "react";
+import PropTypes from "prop-types";
 
 export const LoadingScreen = memo(function LoadingScreen() {
   return (
@@ -11,3 +12,5 @@ export const LoadingScreen = memo(function LoadingScreen() {
     </div>
   );
 });
+
+LoadingScreen.propTypes = {};

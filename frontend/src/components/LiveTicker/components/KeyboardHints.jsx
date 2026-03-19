@@ -2,6 +2,7 @@
 // KeyboardHints.jsx  — Modal (?-Taste)
 // ============================================================
 import { memo, Fragment } from "react";
+import PropTypes from "prop-types";
 import { MODES } from "../constants";
 
 export const KeyboardHints = memo(function KeyboardHints({ mode, onClose }) {
@@ -71,6 +72,11 @@ export const KeyboardHints = memo(function KeyboardHints({ mode, onClose }) {
   );
 });
 
+KeyboardHints.propTypes = {
+  mode: PropTypes.string.isRequired,
+  onClose: PropTypes.func.isRequired,
+};
+
 function KbGroup({ title, children }) {
   return (
     <div>
@@ -79,6 +85,11 @@ function KbGroup({ title, children }) {
     </div>
   );
 }
+
+KbGroup.propTypes = {
+  title: PropTypes.string.isRequired,
+  children: PropTypes.node,
+};
 
 function KbItem({ keys, action, accent }) {
   return (
@@ -99,3 +110,9 @@ function KbItem({ keys, action, accent }) {
     </div>
   );
 }
+
+KbItem.propTypes = {
+  keys: PropTypes.arrayOf(PropTypes.string).isRequired,
+  action: PropTypes.string.isRequired,
+  accent: PropTypes.bool,
+};
