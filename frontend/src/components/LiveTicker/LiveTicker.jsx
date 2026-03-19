@@ -383,7 +383,7 @@ export default function LiveTicker() {
   }, []);
 
   // ── Shared Nav Props ──────────────────────────────────────
-  const navProps = {
+  const navProps = useMemo(() => ({
     countries,
     selCountry,
     onCountryChange: setSelCountry,
@@ -403,9 +403,29 @@ export default function LiveTicker() {
     matches,
     selMatchId,
     onMatchChange: setSelMatchId,
-  };
+  }), [countries, selCountry, teams, importingTeams, selTeamId, competitions,
+       importingCompetitions, selCompetitionId, matchdays, matchdaysLoading,
+       matchdaysError, selRound, matches, selMatchId]);
 
-  const curCompetition = competitions.find((c) => c.id === selCompetitionId);
+  const curCompetition = useMemo(
+    () => competitions.find((c) => c.id === selCompetitionId),
+    [competitions, selCompetitionId],
+  );
+
+  const handleDraftActive = useCallback((id, text) => {
+    setActiveDraftId(id);
+    setActiveDraftText(text);
+  }, []);
+
+  const handleEditEntry = useCallback(async (id, text) => {
+    await api.updateTicker(id, { text });
+    await reload.loadTickerTexts();
+  }, [reload]);
+
+  const handleDeleteEntry = useCallback(async (id) => {
+    await api.deleteTicker(id);
+    await reload.loadTickerTexts();
+  }, [reload]);
 
   // ── Render ────────────────────────────────────────────────
   if (appLoading) return <LoadingScreen />;
@@ -518,10 +538,7 @@ export default function LiveTicker() {
                   generatingId={generatingId}
                   onGenerate={handleGenerate}
                   onManualPublish={handleManualPublish}
-                  onDraftActive={(id, text) => {
-                    setActiveDraftId(id);
-                    setActiveDraftText(text);
-                  }}
+                  onDraftActive={handleDraftActive}
                   reload={reload}
                   instance={instance}
                   lineups={lineups}
@@ -536,14 +553,8 @@ export default function LiveTicker() {
                 events={events}
                 tickerTexts={tickerTexts}
                 match={match}
-                onEditEntry={async (id, text) => {
-                  await api.updateTicker(id, { text });
-                  await reload.loadTickerTexts();
-                }}
-                onDeleteEntry={async (id) => {
-                  await api.deleteTicker(id);
-                  await reload.loadTickerTexts();
-                }}
+                onEditEntry={handleEditEntry}
+                onDeleteEntry={handleDeleteEntry}
               />
             </ErrorBoundary>
           </div>
