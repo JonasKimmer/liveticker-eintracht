@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import * as api from "../api";
+import logger from "../utils/logger";
 
 /**
  * Gibt das Polling-Intervall in ms basierend auf dem Spielstatus zurück.
@@ -40,7 +41,7 @@ export function useMatchData(selectedMatchId) {
       matchRef.current = res.data;
       setMatch(res.data);
     } catch (err) {
-      console.error("loadMatch error:", err);
+      logger.error("loadMatch error:", err);
     }
   }, [selectedMatchId]);
 
@@ -51,7 +52,7 @@ export function useMatchData(selectedMatchId) {
       const items = res.data?.items ?? res.data ?? [];
       setEvents([...items].reverse());
     } catch (err) {
-      console.error("loadEvents error:", err);
+      logger.error("loadEvents error:", err);
     }
   }, [selectedMatchId]);
 
@@ -61,7 +62,7 @@ export function useMatchData(selectedMatchId) {
       const res = await api.fetchTickerTexts(selectedMatchId);
       setTickerTexts(res.data);
     } catch (err) {
-      console.error("loadTickerTexts error:", err);
+      logger.error("loadTickerTexts error:", err);
     }
   }, [selectedMatchId]);
 
@@ -71,7 +72,7 @@ export function useMatchData(selectedMatchId) {
       const res = await api.fetchPrematch(selectedMatchId);
       setPrematch(res.data);
     } catch (err) {
-      console.error("loadPrematch error:", err);
+      logger.error("loadPrematch error:", err);
     }
   }, [selectedMatchId]);
 
@@ -81,7 +82,7 @@ export function useMatchData(selectedMatchId) {
       const res = await api.fetchLineups(selectedMatchId);
       setLineups(res.data);
     } catch (err) {
-      console.error("loadLineups error:", err);
+      logger.error("loadLineups error:", err);
     }
   }, [selectedMatchId]);
 
@@ -91,7 +92,7 @@ export function useMatchData(selectedMatchId) {
       const res = await api.fetchMatchStats(selectedMatchId);
       setMatchStats(res.data);
     } catch (err) {
-      console.error("loadMatchStats error:", err);
+      logger.error("loadMatchStats error:", err);
     }
   }, [selectedMatchId]);
 
@@ -101,7 +102,7 @@ export function useMatchData(selectedMatchId) {
       const res = await api.fetchPlayerStats(selectedMatchId);
       setPlayerStats(res.data);
     } catch (err) {
-      console.error("loadPlayerStats error:", err);
+      logger.error("loadPlayerStats error:", err);
     }
   }, [selectedMatchId]);
 
@@ -111,7 +112,7 @@ export function useMatchData(selectedMatchId) {
       const res = await api.fetchInjuries(selectedMatchId);
       setInjuries(res.data ?? []);
     } catch (err) {
-      console.error("loadInjuries error:", err);
+      logger.error("loadInjuries error:", err);
     }
   }, [selectedMatchId]);
 
@@ -125,7 +126,7 @@ export function useMatchData(selectedMatchId) {
       const allPlayers = results.flatMap((r) => r.data?.items ?? []);
       setPlayers(allPlayers);
     } catch (err) {
-      console.error("loadPlayers error:", err);
+      logger.error("loadPlayers error:", err);
     }
   }, []);
 

@@ -1,5 +1,6 @@
 import { useEffect, useRef, useCallback } from "react";
 import config from "../config/whitelabel";
+import logger from "../utils/logger";
 
 // http://localhost:8001/api/v1 → ws://localhost:8001/ws/media
 const WS_URL = config.apiBase.replace(/^http/, "ws").replace(/\/api\/v1.*$/, "") + "/ws/media";
@@ -75,7 +76,7 @@ export function useMediaWebSocket(onNewMedia, enabled = true) {
         ws.close(); // löst onclose → reconnect aus
       };
     } catch (err) {
-      console.error("[MediaWS] Verbindung fehlgeschlagen:", err);
+      logger.error("[MediaWS] Verbindung fehlgeschlagen:", err);
     }
   }, [enabled]); // eslint-disable-line react-hooks/exhaustive-deps
 

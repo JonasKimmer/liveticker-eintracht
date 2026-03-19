@@ -8,6 +8,7 @@ import { YouTubePanel } from "../components/YouTubePanel";
 import { TwitterPanel } from "../components/TwitterPanel";
 import { InstagramPanel } from "../components/InstagramPanel";
 import { MODES, TICKER_STYLES } from "../constants";
+import logger from "../../../utils/logger";
 import { useTickerModeContext } from "../../../context/TickerModeContext";
 import { getEventMeta, getRawEventText } from "../utils/parseCommand";
 import * as api from "../../../api";
@@ -105,7 +106,7 @@ export const CenterPanel = memo(function CenterPanel({
         api
           .publishTicker(existingDraft.id, existingDraft.text)
           .then(() => reload.loadTickerTexts())
-          .catch((err) => console.error("auto publish failed", err))
+          .catch((err) => logger.error("auto publish failed", err))
           .finally(() => processingRef.current.delete(ev.id));
       } else if (!existingDraft) {
         // Noch kein Draft → generieren, dann publishen
@@ -123,7 +124,7 @@ export const CenterPanel = memo(function CenterPanel({
               await reload.loadTickerTexts();
             }
           })
-          .catch((err) => console.error("auto generate+publish failed", err))
+          .catch((err) => logger.error("auto generate+publish failed", err))
           .finally(() => processingRef.current.delete(ev.id));
       }
     }
@@ -159,7 +160,7 @@ export const CenterPanel = memo(function CenterPanel({
 
       await reload.loadTickerTexts();
     } catch (err) {
-      console.error("bulkGenerate failed", err);
+      logger.error("bulkGenerate failed", err);
     } finally {
       setBulkGenerating(false);
     }
@@ -200,7 +201,7 @@ export const CenterPanel = memo(function CenterPanel({
       setEditMode(false);
       setSelectedEventId(null);
     } catch (err) {
-      console.error("editPublish failed", err);
+      logger.error("editPublish failed", err);
     } finally {
       setPublishing(false);
     }

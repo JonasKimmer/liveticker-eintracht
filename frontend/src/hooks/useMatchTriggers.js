@@ -17,16 +17,18 @@
  */
 import { useEffect, useRef } from "react";
 import * as api from "../api";
+import logger from "../utils/logger";
+import { MATCH_PHASES } from "../components/LiveTicker/utils/constants";
 
 const PHASE_TO_STATUS = {
-  FirstHalf:            "1H",
-  FirstHalfBreak:       "HT",
-  SecondHalf:           "2H",
-  ExtraFirstHalf:       "ET",
-  ExtraBreak:           "BT",
-  ExtraSecondHalf:      "ET",
-  ExtraSecondHalfBreak: "BT",
-  PenaltyShootout:      "P",
+  [MATCH_PHASES.FIRST_HALF]:              "1H",
+  [MATCH_PHASES.FIRST_HALF_BREAK]:        "HT",
+  [MATCH_PHASES.SECOND_HALF]:             "2H",
+  [MATCH_PHASES.EXTRA_FIRST_HALF]:        "ET",
+  [MATCH_PHASES.EXTRA_BREAK]:             "BT",
+  [MATCH_PHASES.EXTRA_SECOND_HALF]:       "ET",
+  [MATCH_PHASES.EXTRA_SECOND_HALF_BREAK]: "BT",
+  [MATCH_PHASES.PENALTY_SHOOTOUT]:        "P",
 };
 
 export function useMatchTriggers({
@@ -45,11 +47,11 @@ export function useMatchTriggers({
     if (!selMatchId || !match || !tickerTexts) return;
 
     const phasesToCheck = [];
-    if (match.matchPhase === "FirstHalfBreak" || match.matchState === "FullTime") {
-      phasesToCheck.push("FirstHalfBreak");
+    if (match.matchPhase === MATCH_PHASES.FIRST_HALF_BREAK || match.matchState === MATCH_PHASES.FULL_TIME) {
+      phasesToCheck.push(MATCH_PHASES.FIRST_HALF_BREAK);
     }
-    if (match.matchState === "FullTime") {
-      phasesToCheck.push("After");
+    if (match.matchState === MATCH_PHASES.FULL_TIME) {
+      phasesToCheck.push(MATCH_PHASES.AFTER);
     }
     if (phasesToCheck.length === 0) return;
 
@@ -115,7 +117,7 @@ export function useMatchTriggers({
     api
       .importEvents(match.externalId)
       .then(() => reload.loadEvents())
-      .catch((err) => console.error("[useMatchTriggers] importEvents error:", err));
+      .catch((err) => logger.error("[useMatchTriggers] importEvents error:", err));
   }, [selMatchId, match?.externalId, events.length]);
 
   // ── Auto-Import: Lineups ──────────────────────────────────
@@ -125,7 +127,7 @@ export function useMatchTriggers({
     api
       .importLineups(selMatchId)
       .then(() => reload.loadLineups())
-      .catch((err) => console.error("[useMatchTriggers] importLineups error:", err));
+      .catch((err) => logger.error("[useMatchTriggers] importLineups error:", err));
   }, [selMatchId, lineups.length]);
 
   // ── Auto-Import: Match-Statistiken ───────────────────────
@@ -135,7 +137,7 @@ export function useMatchTriggers({
     api
       .importMatchStats(selMatchId)
       .then(() => reload.loadMatchStats())
-      .catch((err) => console.error("[useMatchTriggers] importMatchStats error:", err));
+      .catch((err) => logger.error("[useMatchTriggers] importMatchStats error:", err));
   }, [selMatchId, matchStats.length]);
 
   // ── Auto-Import: Prematch + Synthetic Batch ───────────────
@@ -157,9 +159,9 @@ export function useMatchTriggers({
               setTimeout(() => reload.loadTickerTexts(), delay);
             });
           })
-          .catch((err) => console.error("[useMatchTriggers] generateSyntheticBatch error:", err)),
+          .catch((err) => logger.error("[useMatchTriggers] generateSyntheticBatch error:", err)),
       )
-      .catch((err) => console.error("[useMatchTriggers] importPrematch error:", err));
+      .catch((err) => logger.error("[useMatchTriggers] importPrematch error:", err));
   }, [selMatchId, match?.externalId]);
 
   // ── Auto-Import: Spieler-Statistiken ─────────────────────
@@ -172,6 +174,6 @@ export function useMatchTriggers({
     api
       .importPlayerStatistics(selMatchId)
       .then(() => reload.loadPlayerStats())
-      .catch((err) => console.error("[useMatchTriggers] importPlayerStatistics error:", err));
+      .catch((err) => logger.error("[useMatchTriggers] importPlayerStatistics error:", err));
   }, [selMatchId]);
 }

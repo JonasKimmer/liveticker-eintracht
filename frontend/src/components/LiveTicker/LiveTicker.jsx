@@ -3,6 +3,7 @@
 // ============================================================
 import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import "./LiveTicker.css";
+import logger from "../../utils/logger";
 
 import * as api from "../../api";
 import { useMatchData } from "../../hooks/useMatchData";
@@ -145,7 +146,7 @@ export default function LiveTicker() {
       setActiveDraftId(null);
       setActiveDraftText("");
     } catch (err) {
-      console.error("acceptDraft error:", err);
+      logger.error("acceptDraft error:", err);
     }
   }, [activeDraftId, activeDraftText, reload]);
 
@@ -157,7 +158,7 @@ export default function LiveTicker() {
       setActiveDraftId(null);
       setActiveDraftText("");
     } catch (err) {
-      console.error("rejectDraft error:", err);
+      logger.error("rejectDraft error:", err);
     }
   }, [activeDraftId, reload]);
 
@@ -200,7 +201,7 @@ export default function LiveTicker() {
               if (r2.data.length > 0) setSelCountry(r2.data[0]);
             }
           } catch (err) {
-            console.error("importCountries error:", err);
+            logger.error("importCountries error:", err);
           }
         } else {
           setCountries(r.data);
@@ -235,7 +236,7 @@ export default function LiveTicker() {
               setTeams(r2.data);
             }
           } catch (err) {
-            console.error("importTeamsByCountry error:", err);
+            logger.error("importTeamsByCountry error:", err);
           } finally {
             if (!controller.signal.aborted) setImportingTeams(false);
           }
@@ -244,7 +245,7 @@ export default function LiveTicker() {
         }
       })
       .catch((err) => {
-        if (!controller.signal.aborted) console.error(err);
+        if (!controller.signal.aborted) logger.error(err);
       });
     return () => controller.abort();
   }, [selCountry]);
@@ -282,7 +283,7 @@ export default function LiveTicker() {
                   api
                     .importMatchesForTeam(apiTeamId, c.externalId, CURRENT_YEAR)
                     .catch((err) =>
-                      console.error(
+                      logger.error(
                         `importMatchesForTeam error (league ${c.externalId}):`,
                         err,
                       ),
@@ -291,13 +292,13 @@ export default function LiveTicker() {
             );
           }
         } catch (err) {
-          console.error("importCompetitionsForTeam error:", err);
+          logger.error("importCompetitionsForTeam error:", err);
         } finally {
           if (!controller.signal.aborted) setImportingCompetitions(false);
         }
       })
       .catch((err) => {
-        if (!controller.signal.aborted) console.error(err);
+        if (!controller.signal.aborted) logger.error(err);
       });
     return () => controller.abort();
   }, [selTeamId]);
@@ -326,7 +327,7 @@ export default function LiveTicker() {
         setMatches(r.data);
       })
       .catch((err) => {
-        if (!controller.signal.aborted) console.error(err);
+        if (!controller.signal.aborted) logger.error(err);
       });
     return () => controller.abort();
   }, [selTeamId, selCompetitionId, selRound]);
@@ -343,7 +344,7 @@ export default function LiveTicker() {
         await api.generateTicker(eventId, style, instance);
         await reload.loadTickerTexts();
       } catch (err) {
-        console.error("generateTicker error:", err);
+        logger.error("generateTicker error:", err);
       } finally {
         setGeneratingId(null);
       }
@@ -358,7 +359,7 @@ export default function LiveTicker() {
         await api.createManualTicker(selMatchId, text, icon, minute, phase);
         await reload.loadTickerTexts();
       } catch (err) {
-        console.error("manualPublish error:", err);
+        logger.error("manualPublish error:", err);
       }
     },
     [selMatchId, reload],
