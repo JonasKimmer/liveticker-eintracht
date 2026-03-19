@@ -64,7 +64,7 @@ export function useMatchTriggers({
       );
       if (!exists) {
         api.generateMatchSummary(selMatchId, phase).catch((err) =>
-          console.warn("[useMatchTriggers] generateMatchSummary silenced:", err?.message)
+          logger.warn("[useMatchTriggers] generateMatchSummary silenced:", err?.message)
         );
       }
     }
@@ -75,12 +75,12 @@ export function useMatchTriggers({
     if (!selMatchId || !match?.matchState) return;
     if (match.matchState === "PreMatch") return;
     api.triggerLiveStatsMonitor(selMatchId).catch((err) =>
-      console.warn("[useMatchTriggers] triggerLiveStatsMonitor silenced:", err?.message)
+      logger.warn("[useMatchTriggers] triggerLiveStatsMonitor silenced:", err?.message)
     );
     if (match.matchState !== "Live") return;
     const interval = setInterval(() => {
       api.triggerLiveStatsMonitor(selMatchId).catch((err) =>
-        console.warn("[useMatchTriggers] triggerLiveStatsMonitor silenced:", err?.message)
+        logger.warn("[useMatchTriggers] triggerLiveStatsMonitor silenced:", err?.message)
       );
     }, 5 * 60 * 1000);
     return () => clearInterval(interval);
@@ -105,7 +105,7 @@ export function useMatchTriggers({
       api
         .triggerMatchStatus(match.externalId, status, match.minute ?? null)
         .catch((err) =>
-          console.warn("[useMatchTriggers] triggerMatchStatus silenced:", err?.message)
+          logger.warn("[useMatchTriggers] triggerMatchStatus silenced:", err?.message)
         );
     }
   }, [selMatchId, match?.matchState, match?.matchPhase]);

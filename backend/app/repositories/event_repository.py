@@ -21,6 +21,15 @@ class EventRepository:
     def __init__(self, db: Session) -> None:
         self.db = db
 
+    @staticmethod
+    def _serialize(data: EventCreate | EventUpdate, *, exclude_source_id: bool = False) -> dict:
+        """Dump event schema to dict, stripping non-column fields."""
+        d = data.model_dump(exclude_unset=True, by_alias=False)
+        d.pop("players", None)
+        if exclude_source_id:
+            d.pop("source_id", None)
+        return d
+
     def get_by_match_paginated(
         self, match_id: int, page: int = 1, page_size: int = 50
     ) -> tuple[list[Event], int]:
@@ -44,10 +53,7 @@ class EventRepository:
         if data.source_id:
             existing = self.get_by_source_id(data.source_id)
             if existing:
-                update_data = data.model_dump(exclude_unset=True, by_alias=False)
-                update_data.pop("source_id", None)
-                update_data.pop("players", None)
-                for field, value in update_data.items():
+                for field, value in self._serialize(data, exclude_source_id=True).items():
                     setattr(existing, field, value)
                 try:
                     self.db.commit()
@@ -57,9 +63,7 @@ class EventRepository:
                     raise
                 return existing, False
 
-        data_dict = data.model_dump(exclude_unset=True, by_alias=False)
-        data_dict.pop("players", None)
-        event = Event(match_id=match_id, **data_dict)
+        event = Event(match_id=match_id, **self._serialize(data))
         self.db.add(event)
         try:
             self.db.commit()
@@ -74,9 +78,7 @@ class EventRepository:
         event = self.get_by_source_id(source_id)
         if not event:
             return None
-        update_data = data.model_dump(exclude_unset=True, by_alias=False)
-        update_data.pop("players", None)
-        for field, value in update_data.items():
+        for field, value in self._serialize(data).items():
             setattr(event, field, value)
         self.db.commit()
         self.db.refresh(event)

@@ -13,10 +13,9 @@ import {
   generateYoutubeDraft,
   deleteClip,
 } from "../../../api";
-import { PUBLISH_PHASES as PHASES } from "../constants";
+import { PUBLISH_PHASES as PHASES, TICKER_STYLES } from "../constants";
 import { useMediaPublishForm } from "../hooks/useMediaPublishForm";
-
-const STYLES = ["neutral", "euphorisch", "kritisch"];
+import logger from "../../../utils/logger";
 
 // YouTube Video-ID aus URL extrahieren
 function getYoutubeId(url) {
@@ -53,7 +52,7 @@ function YoutubePublishModal({ clip, matchId, currentMinute, onClose, onPublishe
     setGenerating(true);
     generateYoutubeDraft(clip.id, style)
       .then((res) => setText(res.data.text ?? ""))
-      .catch((err) => console.warn("[YouTubePanel] generateYoutubeDraft silenced:", err?.message))
+      .catch((err) => logger.warn("[YouTubePanel] generateYoutubeDraft silenced:", err?.message))
       .finally(() => setGenerating(false));
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -139,7 +138,7 @@ function YoutubePublishModal({ clip, matchId, currentMinute, onClose, onPublishe
                       color: "var(--lt-text)", outline: "none",
                     }}
                   >
-                    {STYLES.map((s) => <option key={s} value={s}>{s}</option>)}
+                    {TICKER_STYLES.map((s) => <option key={s} value={s}>{s}</option>)}
                   </select>
                   <button
                     type="button"

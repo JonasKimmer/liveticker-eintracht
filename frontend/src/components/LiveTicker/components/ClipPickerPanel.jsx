@@ -7,8 +7,8 @@ import { memo, useState, useCallback, useEffect } from "react";
 import PropTypes from "prop-types";
 import { createPortal } from "react-dom";
 import { fetchClips, fetchGoalClips, generateClipDraft, publishClip, publishClipTicker, deleteClip } from "../../../api";
-
-const STYLES = ["euphorisch", "neutral", "kritisch"];
+import { TICKER_STYLES } from "../constants";
+import logger from "../../../utils/logger";
 
 // ── Video Player / Thumbnail ──────────────────────────────────
 
@@ -104,7 +104,7 @@ function ClipPublishModal({ clip, matchId, currentMinute, onClose, onPublished }
     setGenerating(true);
     generateClipDraft(clip.id, matchId, style)
       .then((res) => setText(res.data.text ?? ""))
-      .catch((err) => console.warn("[ClipPickerPanel] generateClipDraft silenced:", err?.message))
+      .catch((err) => logger.warn("[ClipPickerPanel] generateClipDraft silenced:", err?.message))
       .finally(() => setGenerating(false));
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -190,7 +190,7 @@ function ClipPublishModal({ clip, matchId, currentMinute, onClose, onPublished }
                       color: "var(--lt-text)", outline: "none",
                     }}
                   >
-                    {STYLES.map((s) => <option key={s} value={s}>{s}</option>)}
+                    {TICKER_STYLES.map((s) => <option key={s} value={s}>{s}</option>)}
                   </select>
                   <button
                     type="button"

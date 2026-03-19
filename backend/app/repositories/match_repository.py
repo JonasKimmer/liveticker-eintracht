@@ -80,7 +80,6 @@ class MatchRepository:
     def get_by_id(self, match_id: int) -> Optional[Match]:
         return self._base_query().filter(Match.id == match_id).first()
 
-
     def exists(self, match_id: int) -> bool:
         return self.db.query(Match.id).filter(Match.id == match_id).scalar() is not None
 

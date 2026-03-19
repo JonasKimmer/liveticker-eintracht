@@ -12,7 +12,7 @@ Endpunkte:
 """
 
 import logging
-import os
+from pathlib import Path
 from typing import Optional
 
 import httpx
@@ -20,6 +20,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
+from app.core.config import settings
 from app.core.database import get_db
 from app.models.match import Match
 from app.models.media_clip import MediaClip
@@ -35,6 +36,21 @@ from app.services.llm_service import generate_ticker_text
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/clips", tags=["Clips"])
+
+
+# ──────────────────────────────────────────────
+# Internal helpers
+# ──────────────────────────────────────────────
+
+
+def _get_clips_by_source(
+    source: str, include_published: bool, db: Session
+) -> list:
+    """Return MediaClip rows filtered by source, optionally including published ones."""
+    q = db.query(MediaClip).filter(MediaClip.source == source)
+    if not include_published:
+        q = q.filter(MediaClip.published.is_(False))
+    return q.order_by(MediaClip.created_at.desc()).all()
 
 
 # ──────────────────────────────────────────────
@@ -126,10 +142,7 @@ def get_youtube_clips(
     include_published: bool = False,
     db: Session = Depends(get_db),
 ) -> list[MediaClipResponse]:
-    q = db.query(MediaClip).filter(MediaClip.source == "youtube")
-    if not include_published:
-        q = q.filter(MediaClip.published.is_(False))
-    return q.order_by(MediaClip.created_at.desc()).all()
+    return _get_clips_by_source("youtube", include_published, db)
 
 
 # ──────────────────────────────────────────────
@@ -146,10 +159,7 @@ def get_twitter_posts(
     include_published: bool = False,
     db: Session = Depends(get_db),
 ) -> list[MediaClipResponse]:
-    q = db.query(MediaClip).filter(MediaClip.source == "twitter")
-    if not include_published:
-        q = q.filter(MediaClip.published.is_(False))
-    return q.order_by(MediaClip.created_at.desc()).all()
+    return _get_clips_by_source("twitter", include_published, db)
 
 
 # ──────────────────────────────────────────────
@@ -166,10 +176,7 @@ def get_instagram_posts(
     include_published: bool = False,
     db: Session = Depends(get_db),
 ) -> list[MediaClipResponse]:
-    q = db.query(MediaClip).filter(MediaClip.source == "instagram")
-    if not include_published:
-        q = q.filter(MediaClip.published.is_(False))
-    return q.order_by(MediaClip.created_at.desc()).all()
+    return _get_clips_by_source("instagram", include_published, db)
 
 
 # ──────────────────────────────────────────────
@@ -293,10 +300,7 @@ def delete_clip(
 # CACHE THUMBNAIL
 # ──────────────────────────────────────────────
 
-THUMBNAILS_DIR = os.path.join(
-    os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(__file__)))),
-    "static", "thumbnails"
-)
+THUMBNAILS_DIR = Path(__file__).parents[3] / "static" / "thumbnails"
 
 
 class CacheThumbnailRequest(BaseModel):
@@ -309,10 +313,9 @@ def cache_thumbnail(
     req: CacheThumbnailRequest,
     db: Session = Depends(get_db),
 ) -> dict:
-    os.makedirs(THUMBNAILS_DIR, exist_ok=True)
-    ext = ".jpg"
-    filename = f"{req.vid}{ext}"
-    filepath = os.path.join(THUMBNAILS_DIR, filename)
+    THUMBNAILS_DIR.mkdir(parents=True, exist_ok=True)
+    filename = f"{req.vid}.jpg"
+    filepath = THUMBNAILS_DIR / filename
 
     try:
         with httpx.Client(follow_redirects=True, timeout=15) as client:
@@ -321,12 +324,11 @@ def cache_thumbnail(
                 headers={"Referer": "https://www.instagram.com/"},
             )
             resp.raise_for_status()
-            with open(filepath, "wb") as f:
-                f.write(resp.content)
+            filepath.write_bytes(resp.content)
     except Exception as e:
         raise HTTPException(status_code=502, detail=f"Download fehlgeschlagen: {e}")
 
-    local_url = f"http://localhost:8001/static/thumbnails/{filename}"
+    local_url = f"{settings.PUBLIC_BASE_URL}/static/thumbnails/{filename}"
 
     clip = db.query(MediaClip).filter(MediaClip.vid == req.vid).first()
     if clip:

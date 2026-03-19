@@ -19,6 +19,10 @@ from app.schemas.team import PaginatedTeamResponse, TeamCreate, TeamResponse, Te
 logger = logging.getLogger(__name__)
 
 
+def _str_or_none(value: object) -> str | None:
+    return str(value) if value else None
+
+
 class TeamRepository:
     def __init__(self, db: Session) -> None:
         self.db = db
@@ -97,7 +101,7 @@ class TeamRepository:
             initials=data.initials,
             short_name=data.short_name,
             category=data.category.model_dump() if data.category else None,
-            logo_url=str(data.logo_url) if data.logo_url else None,
+            logo_url=_str_or_none(data.logo_url),
             is_partner_team=data.is_partner_team,
             position=data.position,
             hidden=data.hidden,
@@ -119,8 +123,8 @@ class TeamRepository:
             return None
 
         update_data = data.model_dump(exclude_unset=True)
-        if "logo_url" in update_data and update_data["logo_url"] is not None:
-            update_data["logo_url"] = str(update_data["logo_url"])
+        if "logo_url" in update_data:
+            update_data["logo_url"] = _str_or_none(update_data["logo_url"])
         if "category" in update_data and update_data["category"] is not None:
             update_data["category"] = data.category.model_dump(exclude_none=True)
 

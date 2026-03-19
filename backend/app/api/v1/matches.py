@@ -70,7 +70,6 @@ def get_matches(
     )
 
 
-
 @router.get(
     "/{matchId}",
     response_model=MatchResponse,

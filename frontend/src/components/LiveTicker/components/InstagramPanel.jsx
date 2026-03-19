@@ -3,13 +3,14 @@
 // Flow: n8n RSS → DB → Klick → Modal → Ticker
 // ============================================================
 
-import { memo, useState, useCallback, useEffect, useRef } from "react";
+import { memo, useState, useRef } from "react";
 import PropTypes from "prop-types";
 import { createPortal } from "react-dom";
-import { fetchInstagramPosts, triggerInstagramImport, deleteClip } from "../../../api";
+import { fetchInstagramPosts, triggerInstagramImport } from "../../../api";
 import { useCommandPalette, CommandPalettePortal } from "../utils/commandPalette";
 import { PUBLISH_PHASES as PHASES } from "../constants";
 import { useMediaPublishForm } from "../hooks/useMediaPublishForm";
+import { useSocialPanel } from "../hooks/useSocialPanel";
 
 const INSTA_GRADIENT = "linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888)";
 
@@ -295,66 +296,11 @@ function InstaCard({ post, onClick, onDelete }) {
 // ── Hauptkomponente ───────────────────────────────────────────
 
 export const InstagramPanel = memo(function InstagramPanel({ matchId, currentMinute = 0 }) {
-  const [open, setOpen] = useState(false);
-  const [posts, setPosts] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [importing, setImporting] = useState(false);
-  const [modalPost, setModalPost] = useState(null);
-  const [statusMsg, setStatusMsg] = useState(null);
-
-  const loadPosts = useCallback(async () => {
-    setLoading(true);
-    setStatusMsg(null);
-    try {
-      const res = await fetchInstagramPosts();
-      setPosts(res.data ?? []);
-    } catch {
-      setStatusMsg({ type: "error", text: "Fehler beim Laden der Posts." });
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    if (!open) return;
-    loadPosts();
-  }, [open, loadPosts]);
-
-  const handleImport = useCallback(async () => {
-    setImporting(true);
-    setStatusMsg(null);
-    try {
-      await triggerInstagramImport();
-      setStatusMsg({ type: "success", text: "Import gestartet – lade in 3s neu…" });
-      setTimeout(() => loadPosts(), 3000);
-    } catch {
-      setStatusMsg({ type: "error", text: "n8n-Workflow konnte nicht gestartet werden." });
-    } finally {
-      setImporting(false);
-    }
-  }, [loadPosts]);
-
-  const handlePublished = useCallback((postId) => {
-    setPosts((prev) => prev.filter((p) => p.id !== postId));
-    setModalPost(null);
-    setStatusMsg({ type: "success", text: "✓ Im Liveticker veröffentlicht!" });
-  }, []);
-
-  const handleDelete = useCallback(async (postId) => {
-    try {
-      await deleteClip(postId);
-      setPosts((prev) => prev.filter((p) => p.id !== postId));
-    } catch {
-      setStatusMsg({ type: "error", text: "Löschen fehlgeschlagen." });
-    }
-  }, []);
-
-  // Auto-dismiss Status-Meldung nach 3s
-  useEffect(() => {
-    if (!statusMsg || statusMsg.type !== "success") return;
-    const id = setTimeout(() => setStatusMsg(null), 3000);
-    return () => clearTimeout(id);
-  }, [statusMsg]);
+  const {
+    open, setOpen, posts, loading, importing,
+    modalPost, setModalPost, statusMsg,
+    loadPosts, handleImport, handlePublished, handleDelete,
+  } = useSocialPanel(fetchInstagramPosts, triggerInstagramImport);
 
   return (
     <>

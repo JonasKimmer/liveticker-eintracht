@@ -35,27 +35,17 @@ class StyleReferenceRepository:
         ]
 
         if league:
-            results = (
-                self.db.query(StyleReference)
-                .filter(*base_filters, StyleReference.league == league)
-                .order_by(func.random())
-                .limit(limit)
-                .all()
-            )
+            results = self._random_sample(base_filters + [StyleReference.league == league], limit)
             if len(results) >= limit:
                 return results
             # Fallback: ohne League-Filter
-            return (
-                self.db.query(StyleReference)
-                .filter(*base_filters)
-                .order_by(func.random())
-                .limit(limit)
-                .all()
-            )
 
+        return self._random_sample(base_filters, limit)
+
+    def _random_sample(self, filters: list, limit: int) -> list[StyleReference]:
         return (
             self.db.query(StyleReference)
-            .filter(*base_filters)
+            .filter(*filters)
             .order_by(func.random())
             .limit(limit)
             .all()

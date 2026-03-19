@@ -515,61 +515,15 @@ class LLMService:
     def _generate_openai_text(self, **kwargs) -> str:
         return self._generate_openai_compatible_text(**kwargs)
 
-    def _generate_gemini_text(
-        self,
-        event_type,
-        event_detail,
-        minute,
-        player_name,
-        assist_name,
-        team_name,
-        style,
-        language,
-        context_data,
-        style_references,
-    ) -> str:
-        prompt = self._build_prompt(
-            event_type,
-            event_detail,
-            minute,
-            player_name,
-            assist_name,
-            team_name,
-            style,
-            language,
-            context_data,
-            style_references,
-        )
+    def _generate_gemini_text(self, **kwargs) -> str:
+        prompt = self._build_prompt(**kwargs)
         response = self._client.models.generate_content(
             model=self.model, contents=prompt
         )
         return response.text.strip()
 
-    def _generate_anthropic_text(
-        self,
-        event_type,
-        event_detail,
-        minute,
-        player_name,
-        assist_name,
-        team_name,
-        style,
-        language,
-        context_data,
-        style_references,
-    ) -> str:
-        prompt = self._build_prompt(
-            event_type,
-            event_detail,
-            minute,
-            player_name,
-            assist_name,
-            team_name,
-            style,
-            language,
-            context_data,
-            style_references,
-        )
+    def _generate_anthropic_text(self, **kwargs) -> str:
+        prompt = self._build_prompt(**kwargs)
         response = self._client.messages.create(
             model=self.model,
             max_tokens=200,
@@ -588,26 +542,10 @@ from app.core.config import settings
 
 def _build_singleton() -> LLMService:
     candidates = [
-        (
-            "openrouter",
-            getattr(settings, "OPENROUTER_API_KEY", None),
-            getattr(settings, "OPENROUTER_MODEL", "google/gemini-2.0-flash-lite-001"),
-        ),
-        (
-            "gemini",
-            getattr(settings, "GEMINI_API_KEY", None),
-            getattr(settings, "GEMINI_MODEL", "gemini-2.0-flash-lite-001"),
-        ),
-        (
-            "openai",
-            getattr(settings, "OPENAI_API_KEY", None),
-            getattr(settings, "OPENAI_MODEL", "gpt-4o-mini"),
-        ),
-        (
-            "anthropic",
-            getattr(settings, "ANTHROPIC_API_KEY", None),
-            getattr(settings, "ANTHROPIC_MODEL", "claude-haiku-4-5-20251001"),
-        ),
+        ("openrouter", settings.OPENROUTER_API_KEY, settings.OPENROUTER_MODEL),
+        ("gemini",     settings.GEMINI_API_KEY,     "gemini-2.0-flash-lite-001"),
+        ("openai",     settings.OPENAI_API_KEY,     "gpt-4o-mini"),
+        ("anthropic",  settings.ANTHROPIC_API_KEY,  "claude-haiku-4-5-20251001"),
     ]
     for provider, key, model in candidates:
         if key:
@@ -679,10 +617,10 @@ async def generate_ticker_text(
     # Provider/Model Override (Evaluation)
     if provider and provider != _provider:
         key_map = {
-            "openrouter": getattr(settings, "OPENROUTER_API_KEY", None),
-            "gemini": getattr(settings, "GEMINI_API_KEY", None),
-            "openai": getattr(settings, "OPENAI_API_KEY", None),
-            "anthropic": getattr(settings, "ANTHROPIC_API_KEY", None),
+            "openrouter": settings.OPENROUTER_API_KEY,
+            "gemini":     settings.GEMINI_API_KEY,
+            "openai":     settings.OPENAI_API_KEY,
+            "anthropic":  settings.ANTHROPIC_API_KEY,
         }
         active_service = LLMService(
             provider=provider, api_key=key_map.get(provider), model=model

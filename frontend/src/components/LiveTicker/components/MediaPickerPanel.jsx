@@ -4,13 +4,14 @@
 // Flow: Bilder laden → Doppelklick → Modal → Veröffentlichen
 // ============================================================
 
-import { useState, useCallback, useRef, useMemo } from "react";
+import { useState, useCallback, useRef, useMemo, useEffect } from "react";
 import { useLiveMinuteEditor } from "../hooks/useLiveMinuteEditor";
 import { createPortal } from "react-dom";
 import { useMediaWebSocket } from "../../../hooks/useMediaWebSocket";
 import { generateMediaCaption } from "../../../api";
 import { parseCommand } from "../utils/parseCommand";
 import { COMMAND_PALETTE, CommandPalettePortal } from "../utils/commandPalette";
+import { MinuteEditor } from "./MinuteEditor";
 import config from "../../../config/whitelabel";
 
 const API_BASE = config.apiBase;
@@ -64,7 +65,6 @@ function PublishModal({ image, matchId, onClose, onPublished, playerNames = [], 
   const [generating, setGenerating] = useState(false);
   const [error, setError] = useState(null);
   const textareaRef = useRef(null);
-  const minuteRef = useRef(null);
 
   // Live minute — syncs from prop, ticks every 60s, can be manually overridden
   const { minute, setMinute, minuteEditing, setMinuteEditing, minuteOverride, setMinuteOverride } = useLiveMinuteEditor(currentMinute);
@@ -269,39 +269,15 @@ function PublishModal({ image, matchId, onClose, onPublished, playerNames = [], 
                   {generating ? "…" : "✦ KI-Text"}
                 </button>
               </div>
-              <div className="lt-editor__minute">
-                {minuteEditing ? (
-                  <input
-                    ref={minuteRef}
-                    type="number"
-                    className="lt-editor__minute-input"
-                    value={minute}
-                    min={0} max={120}
-                    onChange={(e) => { setMinute(Number(e.target.value)); setMinuteOverride(true); }}
-                    onBlur={() => setMinuteEditing(false)}
-                    onKeyDown={(e) => { if (e.key === "Enter" || e.key === "Escape") setMinuteEditing(false); }}
-                    autoFocus
-                  />
-                ) : (
-                  <button
-                    type="button"
-                    className={`lt-editor__minute-btn${minuteOverride ? " lt-editor__minute-btn--manual" : ""}`}
-                    onClick={() => setMinuteEditing(true)}
-                    title={minuteOverride ? "Manuell gesetzt – klicken zum Ändern" : "Live-Minute – klicken zum Überschreiben"}
-                  >
-                    {minute > 0 ? `${minute}'` : "–'"}
-                    {!minuteOverride && <span className="lt-editor__minute-live" />}
-                  </button>
-                )}
-                {minuteOverride && (
-                  <button
-                    type="button"
-                    className="lt-editor__minute-reset"
-                    onClick={() => { setMinuteOverride(false); setMinute(currentMinute); }}
-                    title="Auf Live-Minute zurücksetzen"
-                  >↺</button>
-                )}
-              </div>
+              <MinuteEditor
+                minute={minute}
+                setMinute={setMinute}
+                minuteEditing={minuteEditing}
+                setMinuteEditing={setMinuteEditing}
+                minuteOverride={minuteOverride}
+                setMinuteOverride={setMinuteOverride}
+                currentMinute={currentMinute}
+              />
             </div>
 
             {/* Textarea with dropdowns */}

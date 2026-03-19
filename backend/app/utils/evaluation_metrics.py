@@ -145,7 +145,7 @@ def cohens_kappa(rater_a: Iterable[int], rater_b: Iterable[int]) -> float:
     counts_a = Counter(a)
     counts_b = Counter(b)
     labels = set(counts_a) | set(counts_b)
-    expected = sum((counts_a[l] / len(a)) * (counts_b[l] / len(b)) for l in labels)
+    expected = sum((counts_a[label] / len(a)) * (counts_b[label] / len(b)) for label in labels)
 
     if expected == 1.0:
         return 1.0
@@ -172,7 +172,7 @@ def aggregate_quality_by_group(
 
     result: dict[str, dict[str, float]] = {}
     for group, scores in grouped.items():
-        out: dict[str, float] = {"n": float(len(next(iter(scores.values()))))}
+        out: dict[str, float] = {"n": float(len(scores[dimensions[0]]))}
         dim_means = []
         for dim in dimensions:
             dim_mean = mean(scores[dim])

@@ -7,6 +7,7 @@ import { parseCommand } from "../utils/parseCommand";
 import { COMMAND_PALETTE } from "../utils/commandPalette";
 import { MODES } from "../constants";
 import { useLiveMinuteEditor } from "../hooks/useLiveMinuteEditor";
+import { MinuteEditor } from "./MinuteEditor";
 
 const COMMAND_PREFIX_REGEX = /^\/\w+\s*/;
 
@@ -26,8 +27,6 @@ export const EntryEditor = memo(function EntryEditor({
 
   // Live minute — syncs from prop, ticks every 60s, can be manually overridden
   const { minute, setMinute, minuteEditing, setMinuteEditing, minuteOverride, setMinuteOverride } = useLiveMinuteEditor(currentMinute);
-  const minuteRef = useRef(null);
-
   // Which commands to show in palette (filter by typed prefix)
   const cmdToken = value.startsWith("/") && !value.includes(" ")
     ? value.toLowerCase()
@@ -123,9 +122,10 @@ export const EntryEditor = memo(function EntryEditor({
         onPublish?.({ text: afterCmd || trimmed, icon: meta.icon ?? "📣", minute: meta.minute ?? minute ?? null, phase: null });
       }
     } else if (trimmed.startsWith("/")) {
-      // Invalid command → free text with command icon, strip prefix
+      // Invalid/incomplete command → use command icon if known, strip prefix
       const icon = preview?.meta?.icon ?? "📣";
-      onPublish?.({ text: afterCmd || trimmed, icon, minute: minute != null ? minute : null, phase: null });
+      const text = (preview?.meta?.icon && afterCmd) ? afterCmd : (afterCmd || trimmed);
+      onPublish?.({ text, icon, minute: minute != null ? minute : null, phase: null });
     } else {
       onPublish?.({ text: trimmed, icon: "📣", minute: minute != null ? minute : null, phase: null });
     }
@@ -194,41 +194,15 @@ export const EntryEditor = memo(function EntryEditor({
         <span className="lt-editor__label">
           {mode === MODES.MANUAL ? "Manueller Eintrag" : "Entwurf bearbeiten"}
         </span>
-        <div className="lt-editor__minute">
-          {minuteEditing ? (
-            <input
-              ref={minuteRef}
-              type="number"
-              className="lt-editor__minute-input"
-              value={minute}
-              min={0}
-              max={120}
-              onChange={(e) => {
-                setMinute(Number(e.target.value));
-                setMinuteOverride(true);
-              }}
-              onBlur={() => setMinuteEditing(false)}
-              onKeyDown={(e) => { if (e.key === "Enter" || e.key === "Escape") setMinuteEditing(false); }}
-              autoFocus
-            />
-          ) : (
-            <button
-              className={`lt-editor__minute-btn${minuteOverride ? " lt-editor__minute-btn--manual" : ""}`}
-              onClick={() => { setMinuteEditing(true); }}
-              title={minuteOverride ? "Manuell gesetzt – klicken zum Ändern" : "Live-Minute – klicken zum Überschreiben"}
-            >
-              {minute > 0 ? `${minute}'` : "–'"}
-              {!minuteOverride && <span className="lt-editor__minute-live" />}
-            </button>
-          )}
-          {minuteOverride && (
-            <button
-              className="lt-editor__minute-reset"
-              onClick={() => { setMinuteOverride(false); setMinute(currentMinute); }}
-              title="Auf Live-Minute zurücksetzen"
-            >↺</button>
-          )}
-        </div>
+        <MinuteEditor
+          minute={minute}
+          setMinute={setMinute}
+          minuteEditing={minuteEditing}
+          setMinuteEditing={setMinuteEditing}
+          minuteOverride={minuteOverride}
+          setMinuteOverride={setMinuteOverride}
+          currentMinute={currentMinute}
+        />
       </div>
 
       <div className="lt-editor__input-wrap">
@@ -298,7 +272,7 @@ export const EntryEditor = memo(function EntryEditor({
       {preview && previewDisplay && (
         <div className={`lt-editor__preview${!previewDisplay.isFreeTextMode ? " lt-editor__preview--valid" : ""}`}>
           <div className="lt-editor__preview-label">
-            {!previewDisplay.isFreeTextMode ? "✓ Vorschau" : `✎ Freitext mit ${preview.meta?.icon ?? "📣"}`}
+            {!previewDisplay.isFreeTextMode ? "✓ Vorschau" : `✎ Freitext mit ${preview.meta?.icon ?? "📣"} – Icon wird übernommen`}
           </div>
           <div className={`lt-editor__preview-text${!previewDisplay.isFreeTextMode ? " lt-editor__preview-text--valid" : ""}`}>
             {preview.meta?.minute ? <span style={{ opacity: 0.6, marginRight: "0.4rem" }}>{preview.meta.minute}'</span> : null}

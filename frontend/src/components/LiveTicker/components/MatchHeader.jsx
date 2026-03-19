@@ -6,6 +6,7 @@ import PropTypes from "prop-types";
 import { normalizeMatchStatus } from "../utils/parseCommand";
 import { useLiveMinute } from "../../../hooks/useLiveMinute";
 import * as api from "../../../api";
+import logger from "../../../utils/logger";
 
 export const MatchHeader = memo(function MatchHeader({ match, leagueSeason, onMinuteSync }) {
   const status = normalizeMatchStatus(match?.matchState);
@@ -16,7 +17,7 @@ export const MatchHeader = memo(function MatchHeader({ match, leagueSeason, onMi
     const sync = () =>
       api.triggerMinuteUpdate(match.externalId)
         .then(() => onMinuteSync?.())
-        .catch((e) => console.warn("[MatchHeader] sync error", e));
+        .catch((e) => logger.warn("[MatchHeader] sync error", e));
     sync();
     const id = setInterval(sync, 60000);
     return () => clearInterval(id);

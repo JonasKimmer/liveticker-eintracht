@@ -40,7 +40,7 @@ export function useMediaWebSocket(onNewMedia, enabled = true) {
       ws.onopen = () => {
         if (!mountedRef.current) return;
         retryCountRef.current = 0;
-        console.debug("[MediaWS] Verbunden.");
+        logger.debug("[MediaWS] Verbunden.");
       };
 
       ws.onmessage = (evt) => {
@@ -51,7 +51,7 @@ export function useMediaWebSocket(onNewMedia, enabled = true) {
             onNewMediaRef.current(msg.items);
           }
         } catch (e) {
-          console.warn("[MediaWS] Nachricht konnte nicht geparst werden:", e);
+          logger.warn("[MediaWS] Nachricht konnte nicht geparst werden:", e);
         }
       };
 
@@ -64,7 +64,7 @@ export function useMediaWebSocket(onNewMedia, enabled = true) {
           MAX_DELAY_MS
         );
         retryCountRef.current += 1;
-        console.debug(`[MediaWS] Verbindung getrennt – Reconnect in ${delay}ms`);
+        logger.debug(`[MediaWS] Verbindung getrennt – Reconnect in ${delay}ms`);
 
         retryTimerRef.current = setTimeout(() => {
           if (mountedRef.current) connect();
@@ -72,7 +72,7 @@ export function useMediaWebSocket(onNewMedia, enabled = true) {
       };
 
       ws.onerror = (err) => {
-        console.warn("[MediaWS] Fehler:", err);
+        logger.warn("[MediaWS] Fehler:", err);
         ws.close(); // löst onclose → reconnect aus
       };
     } catch (err) {

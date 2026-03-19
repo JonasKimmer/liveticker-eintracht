@@ -21,19 +21,9 @@ export const RightPanel = memo(function RightPanel({
   events = [],
   injuries = [],
 }) {
-  if (!match) {
-    return (
-      <div className="lt-col lt-col--stats">
-        <div className="lt-empty">
-          <div className="lt-empty__icon">📊</div>
-          Kein Spiel ausgewählt
-        </div>
-      </div>
-    );
-  }
-
-  const homeAbbr = match.homeTeam?.name ?? "Heim";
-  const awayAbbr = match.awayTeam?.name ?? "Gast";
+  // All hooks must run unconditionally — guard against null match with optional chaining
+  const homeAbbr = match?.homeTeam?.name ?? "Heim";
+  const awayAbbr = match?.awayTeam?.name ?? "Gast";
 
   // extToInternal: partner API external_id → internal DB id
   const extToInternal = useMemo(() => {
@@ -67,15 +57,14 @@ export const RightPanel = memo(function RightPanel({
     return p.knownName || p.displayName || `${p.firstName ?? ""} ${p.lastName ?? ""}`.trim() || null;
   }, [players]);
 
-  const homeStats = useMemo(() => matchStats.find((s) => s.teamId === match.teamHomeId), [matchStats, match]);
-  const awayStats = useMemo(() => matchStats.find((s) => s.teamId === match.teamAwayId), [matchStats, match]);
-
-  const homeLineup = useMemo(() => lineups.filter((l) => l.teamId === match.teamHomeId), [lineups, match]);
-  const awayLineup = useMemo(() => lineups.filter((l) => l.teamId === match.teamAwayId), [lineups, match]);
+  const homeStats    = useMemo(() => matchStats.find((s) => s.teamId === match?.teamHomeId), [matchStats, match]);
+  const awayStats    = useMemo(() => matchStats.find((s) => s.teamId === match?.teamAwayId), [matchStats, match]);
+  const homeLineup   = useMemo(() => lineups.filter((l) => l.teamId === match?.teamHomeId),  [lineups, match]);
+  const awayLineup   = useMemo(() => lineups.filter((l) => l.teamId === match?.teamAwayId),  [lineups, match]);
 
   const topHome = useMemo(() =>
     playerStats
-      .filter((s) => s.teamId === match.teamHomeId && s.rating != null)
+      .filter((s) => s.teamId === match?.teamHomeId && s.rating != null)
       .sort((a, b) => b.rating - a.rating)
       .slice(0, 3)
       .map((s) => ({ ...s, resolvedName: playerName(s.playerId) })),
@@ -83,7 +72,7 @@ export const RightPanel = memo(function RightPanel({
 
   const topAway = useMemo(() =>
     playerStats
-      .filter((s) => s.teamId === match.teamAwayId && s.rating != null)
+      .filter((s) => s.teamId === match?.teamAwayId && s.rating != null)
       .sort((a, b) => b.rating - a.rating)
       .slice(0, 3)
       .map((s) => ({ ...s, resolvedName: playerName(s.playerId) })),
@@ -97,7 +86,7 @@ export const RightPanel = memo(function RightPanel({
       .map((l) => ({
         ...l,
         resolvedName: playerName(l.playerId),
-        teamAbbr: l.teamId === match.teamHomeId ? homeAbbr : awayAbbr,
+        teamAbbr: l.teamId === match?.teamHomeId ? homeAbbr : awayAbbr,
       })),
     [lineups, match, playerName, homeAbbr, awayAbbr]);
 
@@ -107,7 +96,7 @@ export const RightPanel = memo(function RightPanel({
       .map((l) => ({
         ...l,
         resolvedName: playerName(l.playerId),
-        teamAbbr: l.teamId === match.teamHomeId ? homeAbbr : awayAbbr,
+        teamAbbr: l.teamId === match?.teamHomeId ? homeAbbr : awayAbbr,
       })),
     [lineups, match, playerName, homeAbbr, awayAbbr]);
 
@@ -119,7 +108,7 @@ export const RightPanel = memo(function RightPanel({
   const awayCoach    = useMemo(() => awayLineup.find((p)  => p.status === "Coach"),  [awayLineup]);
 
   const injuriesBlock = useMemo(() => {
-    if (!injuries.length) return null;
+    if (!injuries.length || !match) return null;
     const homeInj = injuries.find((g) => g.team_id === match.homeTeam?.externalId || g.team_name === match.homeTeam?.name);
     const awayInj = injuries.find((g) => g.team_id === match.awayTeam?.externalId || g.team_name === match.awayTeam?.name);
     const homePlayers = homeInj?.players ?? [];
@@ -128,6 +117,17 @@ export const RightPanel = memo(function RightPanel({
     const awayName = awayInj?.team_name ?? awayAbbr;
     return { homePlayers, awayPlayers, homeName, awayName };
   }, [injuries, match, homeAbbr, awayAbbr]);
+
+  if (!match) {
+    return (
+      <div className="lt-col lt-col--stats">
+        <div className="lt-empty">
+          <div className="lt-empty__icon">📊</div>
+          Kein Spiel ausgewählt
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="lt-col lt-col--stats">

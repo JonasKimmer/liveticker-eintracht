@@ -81,6 +81,7 @@ def db():
     import app.models.player  # noqa: F401
     import app.models.player_statistic  # noqa: F401
     import app.models.media_clip  # noqa: F401
+    import app.models.style_reference  # noqa: F401
 
     Base.metadata.create_all(bind=engine)
     TestSession = sessionmaker(autocommit=False, autoflush=False, bind=engine)

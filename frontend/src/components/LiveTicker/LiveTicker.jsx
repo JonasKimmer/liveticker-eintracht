@@ -1,7 +1,7 @@
 // ============================================================
 // LiveTicker.jsx — Hauptkomponente
 // ============================================================
-import { useState, useEffect, useCallback, useRef, useMemo } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import "./LiveTicker.css";
 import logger from "../../utils/logger";
 
@@ -25,12 +25,9 @@ import { StartScreen } from "./components/StartScreen";
 import { Breadcrumb } from "./components/Breadcrumb";
 import { useApiStatus, API_STATUS_CFG } from "../../hooks/useApiStatus";
 import { useMatchTriggers } from "../../hooks/useMatchTriggers";
+import { usePanelResize } from "../../hooks/usePanelResize";
+import { CommandsModal } from "./components/CommandsModal";
 import ErrorBoundary from "../ErrorBoundary";
-
-const PANEL_RIGHT_MIN = 280;
-const PANEL_RIGHT_MAX = 700;
-const PANEL_CENTER_MIN = 240;
-const PANEL_CENTER_MAX = 600;
 
 const CURRENT_YEAR = new Date().getFullYear();
 
@@ -45,57 +42,7 @@ export default function LiveTicker() {
   const [mobilePanel, setMobilePanel] = useState("center"); // "left"|"center"|"right"
 
   // ── Resizable Panels ──────────────────────────────────────
-  const [rightW, setRightW] = useState(380);
-  const [centerW, setCenterW] = useState(320);
-  const draggingPanel = useRef(null);
-  const dragStartX = useRef(0);
-  const dragStartW = useRef(0);
-
-  const handleResizeMouseDown = useCallback(
-    (e) => {
-      draggingPanel.current = "right";
-      dragStartX.current = e.clientX;
-      dragStartW.current = rightW;
-      document.body.style.cursor = "col-resize";
-      document.body.style.userSelect = "none";
-    },
-    [rightW],
-  );
-
-  const handleCenterResizeMouseDown = useCallback(
-    (e) => {
-      draggingPanel.current = "center";
-      dragStartX.current = e.clientX;
-      dragStartW.current = centerW;
-      document.body.style.cursor = "col-resize";
-      document.body.style.userSelect = "none";
-    },
-    [centerW],
-  );
-
-  useEffect(() => {
-    const onMove = (e) => {
-      if (!draggingPanel.current) return;
-      const delta = e.clientX - dragStartX.current;
-      if (draggingPanel.current === "right") {
-        setRightW(Math.min(PANEL_RIGHT_MAX, Math.max(PANEL_RIGHT_MIN, dragStartW.current - delta)));
-      } else {
-        setCenterW(Math.min(PANEL_CENTER_MAX, Math.max(PANEL_CENTER_MIN, dragStartW.current + delta)));
-      }
-    };
-    const onUp = () => {
-      if (!draggingPanel.current) return;
-      draggingPanel.current = null;
-      document.body.style.cursor = "";
-      document.body.style.userSelect = "";
-    };
-    window.addEventListener("mousemove", onMove);
-    window.addEventListener("mouseup", onUp);
-    return () => {
-      window.removeEventListener("mousemove", onMove);
-      window.removeEventListener("mouseup", onUp);
-    };
-  }, []);
+  const { rightW, centerW, handleResizeMouseDown, handleCenterResizeMouseDown } = usePanelResize();
 
   // ── Navigation State ──────────────────────────────────────
   const [activeTab, setActiveTab] = useState("teams");
@@ -671,39 +618,7 @@ export default function LiveTicker() {
         {showHints && (
           <KeyboardHints mode={mode} onClose={() => setShowHints(false)} />
         )}
-        {showCommands && (
-          <div
-            style={{ position: "fixed", inset: 0, zIndex: 200, background: "rgba(0,0,0,0.6)", backdropFilter: "blur(4px)", display: "flex", alignItems: "center", justifyContent: "center" }}
-            onClick={() => setShowCommands(false)}
-          >
-            <div
-              style={{ background: "var(--lt-bg-card)", border: "1px solid var(--lt-border)", borderRadius: 12, padding: "1.5rem", maxWidth: 420, width: "90%", boxShadow: "0 24px 48px rgba(0,0,0,0.5)" }}
-              onClick={(e) => e.stopPropagation()}
-            >
-              <div style={{ fontFamily: "var(--lt-font-mono)", fontSize: "0.7rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--lt-text-muted)", marginBottom: "1rem" }}>
-                ⚡ Slash Commands
-              </div>
-              {[
-                ["/goal Müller FCB", "⚽ TOR — Müller (FCB)"],
-                ["/card Müller FCB yellow", "🟨 KARTE — Müller (FCB)"],
-                ["/card Müller FCB red", "🟥 ROTE KARTE — Müller (FCB)"],
-                ["/sub Kimmich Coman FCB", "🔄 WECHSEL — Kimmich ↔ Coman (FCB)"],
-                ["/note Ecke für FCB", "— Ecke für FCB"],
-              ].map(([cmd, result]) => (
-                <div key={cmd} style={{ marginBottom: "0.75rem" }}>
-                  <code style={{ fontFamily: "var(--lt-font-mono)", fontSize: "0.82rem", color: "var(--lt-accent)", background: "var(--lt-accent-dim)", padding: "2px 6px", borderRadius: 4 }}>{cmd}</code>
-                  <div style={{ fontFamily: "var(--lt-font-mono)", fontSize: "0.75rem", color: "var(--lt-text-muted)", marginTop: "0.2rem" }}>→ {result}</div>
-                </div>
-              ))}
-              <button
-                onClick={() => setShowCommands(false)}
-                style={{ marginTop: "0.5rem", width: "100%", padding: "0.5rem", background: "var(--lt-bg-card-2)", border: "1px solid var(--lt-border)", borderRadius: 6, color: "var(--lt-text-muted)", fontFamily: "var(--lt-font-mono)", fontSize: "0.75rem", cursor: "pointer" }}
-              >
-                Schließen
-              </button>
-            </div>
-          </div>
-        )}
+        {showCommands && <CommandsModal onClose={() => setShowCommands(false)} />}
       </div>
     </TickerModeContext.Provider>
   );

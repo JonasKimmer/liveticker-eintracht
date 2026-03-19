@@ -34,6 +34,9 @@ class Settings(BaseSettings):
     # CORS
     CORS_ORIGINS: list[str] = ["http://localhost:3000"]
 
+    # Server
+    PUBLIC_BASE_URL: str = "http://localhost:8001"
+
     # WebSocket
     WS_HEARTBEAT_INTERVAL: int = 30
 

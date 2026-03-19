@@ -138,6 +138,53 @@ def _build_match_context(match: Optional[Match], event_minute: Optional[int]) ->
     }
 
 
+def _build_context_data(
+    match_context: dict,
+    instance: str,
+    score_str: Optional[str] = None,
+) -> dict:
+    """Build the context_data dict passed to generate_ticker_text.
+
+    For ef_whitelabel instances, includes team names and optional score.
+    For generic instances, includes only the score (if available).
+    """
+    score_part = {"score": score_str} if score_str else {}
+    if instance == "ef_whitelabel":
+        return {
+            "home_team": match_context.get("home_team"),
+            "away_team": match_context.get("away_team"),
+            **score_part,
+        }
+    return score_part
+
+
+def _make_ai_entry(
+    match_id: int,
+    text: str,
+    model_used: str,
+    style: str,
+    *,
+    status: str = "draft",
+    event_id: Optional[int] = None,
+    synthetic_event_id: Optional[int] = None,
+    phase: Optional[str] = None,
+    minute: Optional[int] = None,
+) -> TickerEntryCreate:
+    """Build a TickerEntryCreate for an AI-generated entry."""
+    return TickerEntryCreate(
+        match_id=match_id,
+        event_id=event_id,
+        synthetic_event_id=synthetic_event_id,
+        text=text,
+        source="ai",
+        style=style,
+        llm_model=model_used,
+        phase=phase,
+        minute=minute,
+        status=status,
+    )
+
+
 # ──────────────────────────────────────────────
 # GET
 # ──────────────────────────────────────────────
@@ -370,13 +417,7 @@ async def generate_for_event(
             team_name=team_name,
             style=data.style,
             language=data.language,
-            context_data={
-                "home_team": match_context.get("home_team"),
-                "away_team": match_context.get("away_team"),
-                **({"score": score_str} if score_str else {}),
-            }
-            if data.instance == "ef_whitelabel"
-            else ({"score": score_str} if score_str else {}),
+            context_data=_build_context_data(match_context, data.instance, score_str),
             match_context=match_context,
             provider=data.provider,
             model=data.model,
@@ -390,13 +431,9 @@ async def generate_for_event(
         )
 
     return repo.create(
-        TickerEntryCreate(
-            match_id=event.match_id,
+        _make_ai_entry(
+            event.match_id, text, model_used, data.style,
             event_id=event_id,
-            text=text,
-            source="ai",
-            style=data.style,
-            llm_model=model_used,
             status="published" if data.auto_publish else "draft",
         )
     )
@@ -463,13 +500,9 @@ async def generate_for_synthetic_event(
         pass
 
     return TickerEntryRepository(db).create(
-        TickerEntryCreate(
-            match_id=synthetic.match_id,
+        _make_ai_entry(
+            synthetic.match_id, text, model_used, data.style,
             synthetic_event_id=synthetic.id,
-            text=text,
-            source="ai",
-            style=data.style,
-            llm_model=model_used,
             phase=phase,
             minute=event_minute,
             status="published" if data.auto_publish else "draft",
@@ -549,13 +582,9 @@ async def generate_synthetic_batch(
         phase = resolve_phase(synthetic.type or "")
 
         entry = repo.create(
-            TickerEntryCreate(
-                match_id=match_id,
+            _make_ai_entry(
+                match_id, text, model_used, data.style,
                 synthetic_event_id=synthetic.id,
-                text=text,
-                source="ai",
-                style=data.style,
-                llm_model=model_used,
                 phase=phase,
                 status="published" if data.auto_publish else "draft",
             )
@@ -644,13 +673,9 @@ async def generate_match_phases(
             continue
 
         entry = repo.create(
-            TickerEntryCreate(
-                match_id=match_id,
+            _make_ai_entry(
+                match_id, text, model_used, data.style,
                 synthetic_event_id=synthetic.id,
-                text=text,
-                source="ai",
-                style=data.style,
-                llm_model=model_used,
                 phase=phase,
                 minute=default_minute,
                 status="published" if data.auto_publish else "draft",
@@ -698,12 +723,7 @@ async def generate_bulk_for_match(
                 minute=event.time,
                 style=data.style,
                 language=data.language,
-                context_data={
-                    "home_team": match_context.get("home_team"),
-                    "away_team": match_context.get("away_team"),
-                }
-                if data.instance == "ef_whitelabel"
-                else {},
+                context_data=_build_context_data(match_context, data.instance),
                 match_context=match_context,
                 provider=data.provider,
                 model=data.model,
@@ -711,13 +731,9 @@ async def generate_bulk_for_match(
                 instance=data.instance,
             )
             entry = repo.create(
-                TickerEntryCreate(
-                    match_id=match_id,
+                _make_ai_entry(
+                    match_id, text, model_used, data.style,
                     event_id=event.id,
-                    text=text,
-                    source="ai",
-                    style=data.style,
-                    llm_model=model_used,
                     status="draft",
                 )
             )

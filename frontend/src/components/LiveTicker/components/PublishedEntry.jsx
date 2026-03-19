@@ -4,6 +4,7 @@
 import { memo, useState, useCallback, useRef } from "react";
 import PropTypes from "prop-types";
 import { getEventMeta } from "../utils/parseCommand";
+import { MATCH_PHASES } from "../constants";
 
 const URL_PATTERNS = {
   twitter: /x\.com|twitter\.com/,
@@ -139,6 +140,15 @@ MediaContent.propTypes = {
   imageUrl: PropTypes.string,
 };
 
+const MEDIA_DEFAULT_ICONS = ["🎬", "📷", "📸"];
+
+function getDisplayText(tickerText) {
+  const hasMedia = tickerText?.video_url || tickerText?.image_url;
+  const isCodeKey = tickerText?.icon && /^[a-z0-9_]+$/i.test(tickerText.icon);
+  const hasCustomIcon = hasMedia && !isCodeKey && tickerText?.icon && !MEDIA_DEFAULT_ICONS.includes(tickerText.icon);
+  return hasCustomIcon ? `${tickerText.icon} ${tickerText?.text}` : tickerText?.text;
+}
+
 function EditForm({ textareaRef, value, onChange, onSave, onCancel, saving }) {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 6, marginTop: 4 }}>
@@ -219,17 +229,27 @@ export const PublishedEntry = memo(function PublishedEntry({
 
   if (isManual) {
     const phaseLabel = {
-      Before: "i", After: "i", Halftime: "i",
-      FirstHalfBreak: "i", SecondHalfBreak: "Pause",
-      ExtraBreak: "VZ·P", ExtraSecondHalfBreak: "Elfm.P",
-      ExtraFirstHalf: "VZ1", ExtraSecondHalf: "VZ2",
-      PenaltyShootout: "Elfm.",
+      [MATCH_PHASES.BEFORE]: "i",
+      [MATCH_PHASES.AFTER]: "i",
+      [MATCH_PHASES.HALFTIME]: "i",
+      [MATCH_PHASES.FIRST_HALF_BREAK]: "i",
+      [MATCH_PHASES.SECOND_HALF_BREAK]: "Pause",
+      [MATCH_PHASES.EXTRA_BREAK]: "VZ·P",
+      [MATCH_PHASES.EXTRA_SECOND_HALF_BREAK]: "Elfm.P",
+      [MATCH_PHASES.EXTRA_FIRST_HALF]: "VZ1",
+      [MATCH_PHASES.EXTRA_SECOND_HALF]: "VZ2",
+      [MATCH_PHASES.PENALTY_SHOOTOUT]: "Elfm.",
     }[tickerText?.phase];
     const phaseIcon = {
-      FirstHalf: "📣", SecondHalf: "📣",
-      ExtraFirstHalf: "📣", ExtraSecondHalf: "📣",
-      FirstHalfBreak: "🔔", SecondHalfBreak: "🔔", ExtraBreak: "🔔",
-      After: "📣", PenaltyShootout: "🥅",
+      [MATCH_PHASES.FIRST_HALF]: "📣",
+      [MATCH_PHASES.SECOND_HALF]: "📣",
+      [MATCH_PHASES.EXTRA_FIRST_HALF]: "📣",
+      [MATCH_PHASES.EXTRA_SECOND_HALF]: "📣",
+      [MATCH_PHASES.FIRST_HALF_BREAK]: "🔔",
+      [MATCH_PHASES.SECOND_HALF_BREAK]: "🔔",
+      [MATCH_PHASES.EXTRA_BREAK]: "🔔",
+      [MATCH_PHASES.AFTER]: "📣",
+      [MATCH_PHASES.PENALTY_SHOOTOUT]: "🥅",
     }[tickerText?.phase] ?? icon ?? "•";
     // Dedup-Keys (z.B. "pass_h_90") sind kein Emoji → Fallback auf 📊
     const isCodeKey = tickerText?.icon && /^[a-z0-9_]+$/i.test(tickerText.icon);
@@ -247,13 +267,7 @@ export const PublishedEntry = memo(function PublishedEntry({
             <EditForm textareaRef={textareaRef} value={editText} onChange={setEditText} onSave={saveEdit} onCancel={cancelEdit} saving={saving} />
           ) : (
             <div className="lt-entry__text" style={{ position: "relative" }}>
-              {(() => {
-                const hasMedia = tickerText?.video_url || tickerText?.image_url;
-                const mediaDefaults = ["🎬", "📷", "📸"];
-                const isCodeKey = tickerText?.icon && /^[a-z0-9_]+$/i.test(tickerText.icon);
-                const hasCustomIcon = hasMedia && !isCodeKey && tickerText?.icon && !mediaDefaults.includes(tickerText.icon);
-                return hasCustomIcon ? `${tickerText.icon} ${tickerText?.text}` : tickerText?.text;
-              })()}
+              {getDisplayText(tickerText)}
               {onEdit && (
                 <button onClick={startEdit} title="Bearbeiten" style={{ marginLeft: 6, background: "none", border: "none", color: "var(--lt-text-faint)", cursor: "pointer", fontSize: "0.75rem", padding: 0, verticalAlign: "middle", opacity: 0.5 }}>✎</button>
               )}
