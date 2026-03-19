@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { normalizeMatchStatus } from "../components/LiveTicker/utils/parseCommand";
+import { MATCH_PHASES } from "../components/LiveTicker/utils/constants";
 
 /**
  * Berechnet die aktuelle Spielminute basierend auf Matchstatus und Anstoßzeit.
@@ -33,7 +34,7 @@ export function useLiveMinute(match) {
   const elapsedMin = Math.floor((now - kickoffMs) / 60000);
   if (elapsedMin < 0) return 0;
 
-  if (match.matchPhase === "SecondHalf") {
+  if (match.matchPhase === MATCH_PHASES.SECOND_HALF) {
     // elapsed ~60 min = start of 2nd half (45' + ~15' break)
     return Math.max(elapsedMin - 60 + 46, 46);
   }

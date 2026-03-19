@@ -95,7 +95,7 @@ export function useMatchTriggers({
     matchStatusTriggeredRef.current = selMatchId;
 
     let status = null;
-    if (match.matchState === "FullTime") {
+    if (match.matchState === MATCH_PHASES.FULL_TIME) {
       status = "FT";
     } else if (match.matchState === "Live") {
       status = PHASE_TO_STATUS[match.matchPhase] ?? "1H";
