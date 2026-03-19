@@ -1,3 +1,12 @@
+"""
+evaluation_metrics
+==================
+Statistische Hilfsfunktionen für die empirische Evaluation (Kapitel 6).
+
+Enthält: Zeitdauer-Berechnung (TTP), Verteilungsstatistiken, Cliffs Delta,
+Bootstrap-CI, Cohens Kappa und Qualitäts-Aggregation nach Gruppen.
+"""
+
 from __future__ import annotations
 
 from collections import Counter, defaultdict
