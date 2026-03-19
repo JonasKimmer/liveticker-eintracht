@@ -1,3 +1,9 @@
+"""
+CountryRepository
+=================
+Datenbankzugriff für Länderdaten (CRUD + Suche nach ISO-Code).
+"""
+
 import logging
 from typing import Optional
 

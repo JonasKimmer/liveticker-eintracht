@@ -1,3 +1,9 @@
+"""
+SeasonRepository
+================
+Datenbankzugriff für Saisons inkl. Spieltag-Navigation und Tabellenabfragen.
+"""
+
 import logging
 import math
 from typing import Literal, Optional

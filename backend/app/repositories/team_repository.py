@@ -1,3 +1,9 @@
+"""
+TeamRepository
+==============
+Datenbankzugriff für Vereinsdaten inkl. Paginierung und externer ID-Suche.
+"""
+
 import logging
 import math
 from typing import Optional
