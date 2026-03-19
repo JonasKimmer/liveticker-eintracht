@@ -3,7 +3,7 @@
 // Zeigt: Liga › Saison › Spieltag › Heim vs Gast
 // Klick → onOpen() öffnet MatchSelectorModal
 // ============================================================
-import { memo } from "react";
+import { memo, Fragment } from "react";
 
 export const Breadcrumb = memo(function Breadcrumb({ match, competition, country, team, round, onOpen }) {
   if (!match || !competition) return null;
@@ -22,10 +22,10 @@ export const Breadcrumb = memo(function Breadcrumb({ match, competition, country
   return (
     <button className="lt-breadcrumb" onClick={onOpen} title="Match wechseln">
       {segments.map((seg, i) => (
-        <React.Fragment key={i}>
+        <Fragment key={i}>
           <span className="lt-breadcrumb__seg">{seg}</span>
           <span className="lt-breadcrumb__sep">›</span>
-        </React.Fragment>
+        </Fragment>
       ))}
       <span className="lt-breadcrumb__seg lt-breadcrumb__seg--match">
         {match.homeTeam?.name} vs {match.awayTeam?.name}
