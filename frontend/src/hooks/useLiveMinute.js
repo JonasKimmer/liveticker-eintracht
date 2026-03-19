@@ -1,6 +1,13 @@
 import { useState, useEffect } from "react";
 import { normalizeMatchStatus } from "../components/LiveTicker/utils/parseCommand";
 
+/**
+ * Berechnet die aktuelle Spielminute basierend auf Matchstatus und Anstoßzeit.
+ * Aktualisiert sich alle 30 Sekunden während eines Live-Spiels.
+ *
+ * @param {object|null} match - Match-Objekt aus der API
+ * @returns {number} Aktuelle Spielminute (0 wenn kein Live-Spiel)
+ */
 export function useLiveMinute(match) {
   const [now, setNow] = useState(Date.now());
   const status = normalizeMatchStatus(match?.matchState);

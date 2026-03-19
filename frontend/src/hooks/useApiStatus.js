@@ -3,6 +3,11 @@ import config from "../config/whitelabel";
 
 const HEALTH_URL = config.apiBase.split("/api")[0] + "/health";
 
+/**
+ * Überwacht den Backend-Gesundheitsstatus durch regelmäßige Polling-Anfragen.
+ *
+ * @returns {"checking"|"ok"|"degraded"|"offline"} Aktueller API-Status
+ */
 export function useApiStatus() {
   const [apiStatus, setApiStatus] = useState("checking");
 

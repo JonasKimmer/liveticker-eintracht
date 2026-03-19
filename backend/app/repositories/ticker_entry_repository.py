@@ -1,3 +1,15 @@
+"""
+TickerEntryRepository
+=====================
+Datenbankzugriff für Ticker-Einträge (CRUD + spezifische Abfragen).
+
+Sortierung:
+- Primär nach Phase-Reihenfolge (Before → After)
+- Sekundär nach Spielminute
+- Phase-Start-Events (Anpfiff, 2. HZ) erscheinen innerhalb ihrer Minute
+  zuerst im Backend — das Frontend kehrt die Reihenfolge um (ganz unten).
+"""
+
 import logging
 from typing import Optional
 
