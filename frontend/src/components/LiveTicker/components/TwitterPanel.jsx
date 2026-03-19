@@ -7,13 +7,7 @@ import { useState, useCallback, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import { fetchTwitterPosts, triggerTwitterImport, publishClip, deleteClip } from "../../../api";
 import { useCommandPalette, CommandPalettePortal, resolvePublishPayload } from "../utils/commandPalette";
-
-const PHASES = [
-  { value: "", label: "Spielminute" },
-  { value: "Before", label: "Pre Match" },
-  { value: "Halftime", label: "Halbzeit" },
-  { value: "After", label: "After Match" },
-];
+import { PUBLISH_PHASES as PHASES } from "../constants";
 
 // ── Publish Modal ─────────────────────────────────────────────
 
@@ -373,7 +367,7 @@ export function TwitterPanel({ matchId, currentMinute = 0 }) {
     loadPosts();
   }, [open, loadPosts]);
 
-  async function handleImport() {
+  const handleImport = useCallback(async () => {
     setImporting(true);
     setStatusMsg(null);
     try {
@@ -385,23 +379,29 @@ export function TwitterPanel({ matchId, currentMinute = 0 }) {
     } finally {
       setImporting(false);
     }
-  }
+  }, [loadPosts]);
 
-  function handlePublished(postId) {
+  const handlePublished = useCallback((postId) => {
     setPosts((prev) => prev.filter((p) => p.id !== postId));
     setModalPost(null);
     setStatusMsg({ type: "success", text: "✓ Im Liveticker veröffentlicht!" });
-    setTimeout(() => setStatusMsg(null), 3000);
-  }
+  }, []);
 
-  async function handleDelete(postId) {
+  const handleDelete = useCallback(async (postId) => {
     try {
       await deleteClip(postId);
       setPosts((prev) => prev.filter((p) => p.id !== postId));
     } catch {
       setStatusMsg({ type: "error", text: "Löschen fehlgeschlagen." });
     }
-  }
+  }, []);
+
+  // Auto-dismiss Status-Meldung nach 3s
+  useEffect(() => {
+    if (!statusMsg || statusMsg.type !== "success") return;
+    const id = setTimeout(() => setStatusMsg(null), 3000);
+    return () => clearTimeout(id);
+  }, [statusMsg]);
 
   return (
     <>

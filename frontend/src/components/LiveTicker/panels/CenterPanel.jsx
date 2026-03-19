@@ -10,6 +10,7 @@ import { MODES, TICKER_STYLES } from "../constants";
 import { useTickerModeContext } from "../../../context/TickerModeContext";
 import { getEventMeta, getRawEventText } from "../utils/parseCommand";
 import * as api from "../../../api";
+import config from "../../../config/whitelabel";
 
 // Welcher Stil im AUTO-Modus verwendet wird
 const AUTO_STYLE = TICKER_STYLES[0];
@@ -48,7 +49,7 @@ export function CenterPanel({
   const [selectedEventId, setSelectedEventId] = useState(null);
   const [editMode, setEditMode] = useState(false);
   const [editorValue, setEditorValue] = useState("");
-  const [publishing, setPublishing] = useState(false); // eslint-disable-line no-unused-vars
+  const [publishing, setPublishing] = useState(false);
   const [bulkGenerating, setBulkGenerating] = useState(false);
   const [dismissedIds, setDismissedIds] = useState(new Set());
 
@@ -347,9 +348,9 @@ export function CenterPanel({
           <ClipPickerPanel matchId={match.id} match={match} currentMinute={currentMinute} onPublished={() => reload.loadTickerTexts()} />
         </div>
 
-        {/* ── YouTube / X / Instagram – nur bei Frankfurt-Spielen ── */}
-        {(match?.homeTeam?.name?.toLowerCase().includes("frankfurt") ||
-          match?.awayTeam?.name?.toLowerCase().includes("frankfurt")) && (<>
+        {/* ── YouTube / X / Instagram – nur bei Team-Spielen ── */}
+        {(match?.homeTeam?.name?.toLowerCase().includes(config.teamKeyword) ||
+          match?.awayTeam?.name?.toLowerCase().includes(config.teamKeyword)) && (<>
           <div style={{ marginTop: "0.5rem" }}>
             <YouTubePanel matchId={match.id} currentMinute={currentMinute} />
           </div>

@@ -1,8 +1,14 @@
 // ============================================================
 // PublishedEntry.jsx  (React.memo — rendert oft)
 // ============================================================
-import { memo, useState, useRef } from "react";
+import { memo, useState, useCallback, useRef } from "react";
 import { getEventMeta } from "../utils/parseCommand";
+
+const URL_PATTERNS = {
+  twitter: /x\.com|twitter\.com/,
+  instagram: /instagram\.com/,
+  youtube: /youtube\.com|youtu\.be/,
+};
 
 // YouTube watch-URL → embed-URL umwandeln
 function toEmbedUrl(url) {
@@ -69,6 +75,33 @@ function InlineVideo({ videoUrl, thumbnailUrl }) {
   );
 }
 
+function EditForm({ textareaRef, value, onChange, onSave, onCancel, saving }) {
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 6, marginTop: 4 }}>
+      <textarea
+        ref={textareaRef}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        rows={3}
+        style={{
+          width: "100%", background: "var(--lt-bg-card-2)", border: "1px solid var(--lt-accent)",
+          borderRadius: 6, color: "var(--lt-text)", fontFamily: "var(--lt-font-mono)",
+          fontSize: "0.82rem", padding: "0.5rem 0.6rem", resize: "vertical", outline: "none",
+        }}
+        onKeyDown={(e) => { if (e.key === "Escape") onCancel(); if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) onSave(); }}
+      />
+      <div style={{ display: "flex", gap: 6 }}>
+        <button onClick={onSave} disabled={saving} style={{ padding: "0.25rem 0.7rem", borderRadius: 5, background: "var(--lt-accent)", border: "none", color: "#000", fontFamily: "var(--lt-font-mono)", fontSize: "0.72rem", fontWeight: 700, cursor: "pointer", opacity: saving ? 0.6 : 1 }}>
+          {saving ? "…" : "Speichern"}
+        </button>
+        <button onClick={onCancel} style={{ padding: "0.25rem 0.7rem", borderRadius: 5, background: "transparent", border: "1px solid var(--lt-border)", color: "var(--lt-text-muted)", fontFamily: "var(--lt-font-mono)", fontSize: "0.72rem", cursor: "pointer" }}>
+          Abbrechen
+        </button>
+      </div>
+    </div>
+  );
+}
+
 export const PublishedEntry = memo(function PublishedEntry({
   entry,
   tickerText,
@@ -82,18 +115,18 @@ export const PublishedEntry = memo(function PublishedEntry({
   const [saving, setSaving] = useState(false);
   const textareaRef = useRef(null);
 
-  const startEdit = () => {
+  const startEdit = useCallback(() => {
     setEditText(tickerText?.text ?? "");
     setEditing(true);
     setTimeout(() => textareaRef.current?.focus(), 0);
-  };
-  const cancelEdit = () => setEditing(false);
-  const saveEdit = async () => {
+  }, [tickerText?.text]);
+  const cancelEdit = useCallback(() => setEditing(false), []);
+  const saveEdit = useCallback(async () => {
     if (!onEdit || !tickerText?.id) return;
     setSaving(true);
     try { await onEdit(tickerText.id, editText); setEditing(false); }
     finally { setSaving(false); }
-  };
+  }, [onEdit, tickerText?.id, editText]);
 
   const eventType = entry?.liveTickerEventType ?? entry?.event_type ?? entry?.type;
   const { icon, cssClass } = getEventMeta(eventType, entry?.detail);
@@ -133,15 +166,15 @@ export const PublishedEntry = memo(function PublishedEntry({
       <div className="lt-entry lt-entry--manual">
         <span className="lt-entry__minute">{minuteDisplay}</span>
         {tickerText?.phase !== "Before" && (
-          <span className="lt-entry__icon">{tickerText?.video_url && /x\.com|twitter\.com/.test(tickerText.video_url) ? "𝕏" : tickerText?.video_url && /instagram\.com/.test(tickerText.video_url) ? "📸" : tickerText?.video_url && /youtube\.com|youtu\.be/.test(tickerText.video_url) ? "▶" : tickerText?.video_url ? "🎬" : tickerText?.image_url ? "📸" : displayIcon}</span>
+          <span className="lt-entry__icon">{tickerText?.video_url && URL_PATTERNS.twitter.test(tickerText.video_url) ? "𝕏" : tickerText?.video_url && URL_PATTERNS.instagram.test(tickerText.video_url) ? "📸" : tickerText?.video_url && URL_PATTERNS.youtube.test(tickerText.video_url) ? "▶" : tickerText?.video_url ? "🎬" : tickerText?.image_url ? "📸" : displayIcon}</span>
         )}
         <div className="lt-entry__body">
-          {tickerText?.video_url && /x\.com|twitter\.com/.test(tickerText.video_url) ? (
+          {tickerText?.video_url && URL_PATTERNS.twitter.test(tickerText.video_url) ? (
             <a href={tickerText.video_url} target="_blank" rel="noopener noreferrer"
               style={{ display: "inline-flex", alignItems: "center", gap: "0.35rem", fontFamily: "var(--lt-font-mono)", fontSize: "0.68rem", color: "var(--lt-accent)", textDecoration: "none", marginBottom: 4 }}>
               <span style={{ fontSize: "0.8rem" }}>𝕏</span> Zum Tweet →
             </a>
-          ) : tickerText?.video_url && /instagram\.com/.test(tickerText.video_url) ? (
+          ) : tickerText?.video_url && URL_PATTERNS.instagram.test(tickerText.video_url) ? (
             <div>
               {tickerText.image_url && (
                 <a href={tickerText.video_url} target="_blank" rel="noopener noreferrer" style={{ display: "block", marginBottom: 6 }}>
@@ -159,7 +192,7 @@ export const PublishedEntry = memo(function PublishedEntry({
                 <span style={{ fontSize: "0.8rem" }}>📸</span> Zum Instagram-Post →
               </a>
             </div>
-          ) : tickerText?.video_url && /youtube\.com|youtu\.be/.test(tickerText.video_url) ? (
+          ) : tickerText?.video_url && URL_PATTERNS.youtube.test(tickerText.video_url) ? (
             <div>
               {tickerText.image_url && (
                 <a href={tickerText.video_url} target="_blank" rel="noopener noreferrer"
@@ -190,28 +223,7 @@ export const PublishedEntry = memo(function PublishedEntry({
             />
           )}
           {editing ? (
-            <div style={{ display: "flex", flexDirection: "column", gap: 6, marginTop: 4 }}>
-              <textarea
-                ref={textareaRef}
-                value={editText}
-                onChange={(e) => setEditText(e.target.value)}
-                rows={3}
-                style={{
-                  width: "100%", background: "var(--lt-bg-card-2)", border: "1px solid var(--lt-accent)",
-                  borderRadius: 6, color: "var(--lt-text)", fontFamily: "var(--lt-font-mono)",
-                  fontSize: "0.82rem", padding: "0.5rem 0.6rem", resize: "vertical", outline: "none",
-                }}
-                onKeyDown={(e) => { if (e.key === "Escape") cancelEdit(); if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) saveEdit(); }}
-              />
-              <div style={{ display: "flex", gap: 6 }}>
-                <button onClick={saveEdit} disabled={saving} style={{ padding: "0.25rem 0.7rem", borderRadius: 5, background: "var(--lt-accent)", border: "none", color: "#000", fontFamily: "var(--lt-font-mono)", fontSize: "0.72rem", fontWeight: 700, cursor: "pointer", opacity: saving ? 0.6 : 1 }}>
-                  {saving ? "…" : "Speichern"}
-                </button>
-                <button onClick={cancelEdit} style={{ padding: "0.25rem 0.7rem", borderRadius: 5, background: "transparent", border: "1px solid var(--lt-border)", color: "var(--lt-text-muted)", fontFamily: "var(--lt-font-mono)", fontSize: "0.72rem", cursor: "pointer" }}>
-                  Abbrechen
-                </button>
-              </div>
-            </div>
+            <EditForm textareaRef={textareaRef} value={editText} onChange={setEditText} onSave={saveEdit} onCancel={cancelEdit} saving={saving} />
           ) : (
             <div className="lt-entry__text" style={{ position: "relative" }}>
               {(() => {
@@ -229,7 +241,7 @@ export const PublishedEntry = memo(function PublishedEntry({
               )}
             </div>
           )}
-          <div className="lt-entry__meta">{tickerText?.video_url && /x\.com|twitter\.com/.test(tickerText.video_url) ? "tweet · manuell" : tickerText?.video_url && /instagram\.com/.test(tickerText.video_url) ? "instagram · manuell" : tickerText?.video_url && /youtube\.com|youtu\.be/.test(tickerText.video_url) ? "youtube · manuell" : tickerText?.video_url ? "clip · manuell" : tickerText?.image_url ? "foto · manuell" : "manuell"}</div>
+          <div className="lt-entry__meta">{tickerText?.video_url && URL_PATTERNS.twitter.test(tickerText.video_url) ? "tweet · manuell" : tickerText?.video_url && URL_PATTERNS.instagram.test(tickerText.video_url) ? "instagram · manuell" : tickerText?.video_url && URL_PATTERNS.youtube.test(tickerText.video_url) ? "youtube · manuell" : tickerText?.video_url ? "clip · manuell" : tickerText?.image_url ? "foto · manuell" : "manuell"}</div>
         </div>
       </div>
     );
@@ -243,28 +255,7 @@ export const PublishedEntry = memo(function PublishedEntry({
       <span className="lt-entry__icon">{icon}</span>
       <div className="lt-entry__body">
         {editing ? (
-          <div style={{ display: "flex", flexDirection: "column", gap: 6, marginTop: 4 }}>
-            <textarea
-              ref={textareaRef}
-              value={editText}
-              onChange={(e) => setEditText(e.target.value)}
-              rows={3}
-              style={{
-                width: "100%", background: "var(--lt-bg-card-2)", border: "1px solid var(--lt-accent)",
-                borderRadius: 6, color: "var(--lt-text)", fontFamily: "var(--lt-font-mono)",
-                fontSize: "0.82rem", padding: "0.5rem 0.6rem", resize: "vertical", outline: "none",
-              }}
-              onKeyDown={(e) => { if (e.key === "Escape") cancelEdit(); if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) saveEdit(); }}
-            />
-            <div style={{ display: "flex", gap: 6 }}>
-              <button onClick={saveEdit} disabled={saving} style={{ padding: "0.25rem 0.7rem", borderRadius: 5, background: "var(--lt-accent)", border: "none", color: "#000", fontFamily: "var(--lt-font-mono)", fontSize: "0.72rem", fontWeight: 700, cursor: "pointer", opacity: saving ? 0.6 : 1 }}>
-                {saving ? "…" : "Speichern"}
-              </button>
-              <button onClick={cancelEdit} style={{ padding: "0.25rem 0.7rem", borderRadius: 5, background: "transparent", border: "1px solid var(--lt-border)", color: "var(--lt-text-muted)", fontFamily: "var(--lt-font-mono)", fontSize: "0.72rem", cursor: "pointer" }}>
-                Abbrechen
-              </button>
-            </div>
-          </div>
+          <EditForm textareaRef={textareaRef} value={editText} onChange={setEditText} onSave={saveEdit} onCancel={cancelEdit} saving={saving} />
         ) : (
           <div className="lt-entry__text" style={{ position: "relative" }}>
             {tickerText.text}

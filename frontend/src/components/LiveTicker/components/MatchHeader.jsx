@@ -11,16 +11,11 @@ export function MatchHeader({ match, leagueSeason, onMinuteSync }) {
   const liveMinute = useLiveMinute(match);
 
   useEffect(() => {
-    console.log("[MatchHeader] sync effect", { status, externalId: match?.externalId, currentMinute: match?.minute });
     if (status !== "live" || !match?.externalId) return;
     const sync = () =>
       api.triggerMinuteUpdate(match.externalId)
-        .then((res) => {
-          console.log("[MatchHeader] webhook ok, calling loadMatch", res?.data);
-          return onMinuteSync?.();
-        })
-        .then(() => console.log("[MatchHeader] loadMatch done, match.minute =", match?.minute))
-        .catch((e) => console.error("[MatchHeader] sync error", e));
+        .then(() => onMinuteSync?.())
+        .catch((e) => console.warn("[MatchHeader] sync error", e));
     sync();
     const id = setInterval(sync, 60000);
     return () => clearInterval(id);

@@ -16,7 +16,6 @@ export function useMatchData(selectedMatchId) {
   const [events, setEvents] = useState([]);
   const [tickerTexts, setTickerTexts] = useState([]);
   const [prematch, setPrematch] = useState([]);
-  const [liveStats, setLiveStats] = useState([]);
   const [lineups, setLineups] = useState([]);
   const [matchStats, setMatchStats] = useState([]);
   const [players, setPlayers] = useState([]);
@@ -66,16 +65,6 @@ export function useMatchData(selectedMatchId) {
       setPrematch(res.data);
     } catch (err) {
       console.error("loadPrematch error:", err);
-    }
-  }, [selectedMatchId]);
-
-  const loadLiveStats = useCallback(async () => {
-    if (!selectedMatchId) return;
-    try {
-      const res = await api.fetchLiveStats(selectedMatchId);
-      setLiveStats(res.data);
-    } catch (err) {
-      console.error("loadLiveStats error:", err);
     }
   }, [selectedMatchId]);
 
@@ -141,7 +130,6 @@ export function useMatchData(selectedMatchId) {
     setEvents([]);
     setTickerTexts([]);
     setPrematch([]);
-    setLiveStats([]);
     setLineups([]);
     setMatchStats([]);
     setPlayers([]);
@@ -159,9 +147,8 @@ export function useMatchData(selectedMatchId) {
       loadEvents(),
       loadTickerTexts(),
       loadPrematch(),
-      loadLiveStats(),
-      loadLineups(),
       loadMatchStats(),
+      loadLineups(),
       loadPlayerStats(),
       loadInjuries(),
     ]).finally(() => setLoading(false));
@@ -183,7 +170,7 @@ export function useMatchData(selectedMatchId) {
     intervalRef.current = setInterval(() => {
       loadEvents();
       loadTickerTexts();
-      loadLiveStats();
+      loadMatchStats();
       loadInjuries();
       loadMatch();
     }, pollInterval);
@@ -200,13 +187,12 @@ export function useMatchData(selectedMatchId) {
     events,
     tickerTexts,
     prematch,
-    liveStats,
     lineups,
     matchStats,
     players,
     playerStats,
     injuries,
     loading,
-    reload: { loadMatch, loadEvents, loadTickerTexts, loadPrematch, loadLiveStats, loadLineups, loadMatchStats, loadPlayers, loadPlayerStats },
+    reload: { loadMatch, loadEvents, loadTickerTexts, loadPrematch, loadLineups, loadMatchStats, loadPlayers, loadPlayerStats },
   };
 }

@@ -59,3 +59,11 @@ export const FINISHED_STATUSES = ["FT", "AET", "PEN", "finished"];
 
 // ── Polling-Intervalle (ms) ──────────────────────────────────
 export const POLL_EVENTS_MS = 5000;
+
+// ── Publish-Phasen (Social-Media Panels) ─────────────────────
+export const PUBLISH_PHASES = [
+  { value: "",          label: "Spielminute" },
+  { value: "Before",   label: "Pre Match"   },
+  { value: "Halftime", label: "Halbzeit"    },
+  { value: "After",    label: "After Match" },
+];

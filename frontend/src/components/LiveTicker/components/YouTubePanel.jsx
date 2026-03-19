@@ -13,15 +13,9 @@ import {
   publishClip,
   deleteClip,
 } from "../../../api";
+import { PUBLISH_PHASES as PHASES } from "../constants";
 
 const STYLES = ["neutral", "euphorisch", "kritisch"];
-
-const PHASES = [
-  { value: "", label: "Spielminute" },
-  { value: "Before", label: "Pre Match" },
-  { value: "Halftime", label: "Halbzeit" },
-  { value: "After", label: "After Match" },
-];
 
 // YouTube Video-ID aus URL extrahieren
 function getYoutubeId(url) {
@@ -416,7 +410,7 @@ export function YouTubePanel({ matchId, currentMinute = 0 }) {
     loadClips();
   }, [open, loadClips]);
 
-  async function handleScrape() {
+  const handleScrape = useCallback(async () => {
     setScraping(true);
     setStatusMsg(null);
     try {
@@ -428,23 +422,29 @@ export function YouTubePanel({ matchId, currentMinute = 0 }) {
     } finally {
       setScraping(false);
     }
-  }
+  }, [loadClips]);
 
-  function handlePublished(clipId) {
+  const handlePublished = useCallback((clipId) => {
     setClips((prev) => prev.filter((c) => c.id !== clipId));
     setModalClip(null);
     setStatusMsg({ type: "success", text: "✓ Im Liveticker veröffentlicht!" });
-    setTimeout(() => setStatusMsg(null), 3000);
-  }
+  }, []);
 
-  async function handleDelete(clipId) {
+  const handleDelete = useCallback(async (clipId) => {
     try {
       await deleteClip(clipId);
       setClips((prev) => prev.filter((c) => c.id !== clipId));
     } catch {
       setStatusMsg({ type: "error", text: "Löschen fehlgeschlagen." });
     }
-  }
+  }, []);
+
+  // Auto-dismiss Status-Meldung nach 3s
+  useEffect(() => {
+    if (!statusMsg || statusMsg.type !== "success") return;
+    const id = setTimeout(() => setStatusMsg(null), 3000);
+    return () => clearTimeout(id);
+  }, [statusMsg]);
 
   return (
     <>

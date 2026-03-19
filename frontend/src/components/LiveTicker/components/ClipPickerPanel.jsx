@@ -419,8 +419,7 @@ export function ClipPickerPanel({ matchId, match, currentMinute = 0, onPublished
     loadClips();
   }, [open, loadClips]);
 
-  // n8n-Workflow triggern → speichert direkt in DB (wenn n8n-Workflow aktualisiert)
-  async function handleImport() {
+  const handleImport = useCallback(async () => {
     setImporting(true);
     setStatusMsg(null);
     try {
@@ -432,17 +431,16 @@ export function ClipPickerPanel({ matchId, match, currentMinute = 0, onPublished
     } finally {
       setImporting(false);
     }
-  }
+  }, [matchId, loadClips]);
 
-  function handlePublished(clipId) {
+  const handlePublished = useCallback((clipId) => {
     setClips((prev) => prev.filter((c) => c.id !== clipId));
     setModalClip(null);
     onPublished?.();
     setStatusMsg({ type: "success", text: "✓ Im Liveticker veröffentlicht!" });
-    setTimeout(() => setStatusMsg(null), 3000);
-  }
+  }, [onPublished]);
 
-  async function handleDelete(clipId) {
+  const handleDelete = useCallback(async (clipId) => {
     const clip = clips.find((c) => c.id === clipId);
     if (clip?._fromN8n) {
       setClips((prev) => prev.filter((c) => c.id !== clipId));
@@ -454,7 +452,20 @@ export function ClipPickerPanel({ matchId, match, currentMinute = 0, onPublished
     } catch {
       setStatusMsg({ type: "error", text: "Löschen fehlgeschlagen." });
     }
-  }
+  }, [clips]);
+
+  // Auto-dismiss Status-Meldung nach 3s
+  useEffect(() => {
+    if (!statusMsg || statusMsg.type !== "success") return;
+    const id = setTimeout(() => setStatusMsg(null), 3000);
+    return () => clearTimeout(id);
+  }, [statusMsg]);
+
+  // Team-Filter neu laden wenn Filter sich ändert
+  useEffect(() => {
+    if (!open) return;
+    loadClips();
+  }, [teamFilter]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Team-Namen aus Match ableiten für Filter-Buttons
   const teams = [match?.homeTeam?.name, match?.awayTeam?.name].filter(Boolean);
@@ -546,7 +557,7 @@ export function ClipPickerPanel({ matchId, match, currentMinute = 0, onPublished
               {teams.length > 0 && (
                 <div style={{ display: "flex", gap: 4 }}>
                   <button
-                    onClick={() => { setTeamFilter(""); setTimeout(loadClips, 0); }}
+                    onClick={() => setTeamFilter("")}
                     style={{
                       padding: "0.3rem 0.6rem", borderRadius: 4, border: "1px solid var(--lt-border)",
                       background: !teamFilter ? "var(--lt-accent)" : "transparent",
@@ -559,7 +570,7 @@ export function ClipPickerPanel({ matchId, match, currentMinute = 0, onPublished
                   {teams.map((t) => (
                     <button
                       key={t}
-                      onClick={() => { setTeamFilter(t); setTimeout(loadClips, 0); }}
+                      onClick={() => setTeamFilter(t)}
                       style={{
                         padding: "0.3rem 0.6rem", borderRadius: 4, border: "1px solid var(--lt-border)",
                         background: teamFilter === t ? "var(--lt-accent)" : "transparent",

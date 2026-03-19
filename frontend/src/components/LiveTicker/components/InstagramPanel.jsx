@@ -7,15 +7,9 @@ import { useState, useCallback, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import { fetchInstagramPosts, triggerInstagramImport, publishClip, deleteClip } from "../../../api";
 import { useCommandPalette, CommandPalettePortal, resolvePublishPayload } from "../utils/commandPalette";
+import { PUBLISH_PHASES as PHASES } from "../constants";
 
 const INSTA_GRADIENT = "linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888)";
-
-const PHASES = [
-  { value: "", label: "Spielminute" },
-  { value: "Before", label: "Pre Match" },
-  { value: "Halftime", label: "Halbzeit" },
-  { value: "After", label: "After Match" },
-];
 
 // ── Publish Modal ─────────────────────────────────────────────
 
@@ -339,7 +333,7 @@ export function InstagramPanel({ matchId, currentMinute = 0 }) {
     loadPosts();
   }, [open, loadPosts]);
 
-  async function handleImport() {
+  const handleImport = useCallback(async () => {
     setImporting(true);
     setStatusMsg(null);
     try {
@@ -351,23 +345,29 @@ export function InstagramPanel({ matchId, currentMinute = 0 }) {
     } finally {
       setImporting(false);
     }
-  }
+  }, [loadPosts]);
 
-  function handlePublished(postId) {
+  const handlePublished = useCallback((postId) => {
     setPosts((prev) => prev.filter((p) => p.id !== postId));
     setModalPost(null);
     setStatusMsg({ type: "success", text: "✓ Im Liveticker veröffentlicht!" });
-    setTimeout(() => setStatusMsg(null), 3000);
-  }
+  }, []);
 
-  async function handleDelete(postId) {
+  const handleDelete = useCallback(async (postId) => {
     try {
       await deleteClip(postId);
       setPosts((prev) => prev.filter((p) => p.id !== postId));
     } catch {
       setStatusMsg({ type: "error", text: "Löschen fehlgeschlagen." });
     }
-  }
+  }, []);
+
+  // Auto-dismiss Status-Meldung nach 3s
+  useEffect(() => {
+    if (!statusMsg || statusMsg.type !== "success") return;
+    const id = setTimeout(() => setStatusMsg(null), 3000);
+    return () => clearTimeout(id);
+  }, [statusMsg]);
 
   return (
     <>

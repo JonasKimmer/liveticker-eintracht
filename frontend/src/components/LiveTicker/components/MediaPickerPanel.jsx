@@ -128,35 +128,35 @@ function PublishModal({ image, matchId, onClose, onPublished, playerNames = [], 
     return () => window.removeEventListener("keydown", onKey);
   }, [onClose, showPalette, showNames]);
 
-  const selectCmd = (cmd) => {
+  const selectCmd = useCallback((cmd) => {
     const needsArg = ["/anpfiff", "/2hz", "/vz1", "/vz2", "/g", "/og", "/gelb", "/rot", "/ep", "/s", "/n"].includes(cmd);
     setDescription(cmd + (needsArg ? " " : ""));
     setPaletteOpen(false);
     setTimeout(() => textareaRef.current?.focus(), 0);
-  };
+  }, []);
 
-  const selectName = (name) => {
+  const selectName = useCallback((name) => {
     const words = description.split(/\s+/);
     words[words.length - 1] = name;
     setDescription(words.join(" ") + " ");
     setTimeout(() => textareaRef.current?.focus(), 0);
-  };
+  }, [description]);
 
-  async function handleGenerate() {
+  const handleGenerate = useCallback(async () => {
     setGenerating(true);
     setError(null);
     try {
       const res = await generateMediaCaption(image.media_id);
       setDescription(res.data.text);
       textareaRef.current?.focus();
-    } catch (err) {
+    } catch {
       setError("KI-Generierung fehlgeschlagen.");
     } finally {
       setGenerating(false);
     }
-  }
+  }, [image.media_id]);
 
-  function handleChange(e) {
+  const handleChange = useCallback((e) => {
     const v = e.target.value;
     setDescription(v);
     if (v.startsWith("/") && !v.includes(" ")) {
@@ -165,29 +165,9 @@ function PublishModal({ image, matchId, onClose, onPublished, playerNames = [], 
     } else {
       setPaletteOpen(false);
     }
-  }
+  }, []);
 
-  function handleKeyDown(e) {
-    if (showPalette) {
-      if (e.key === "ArrowDown") { e.preventDefault(); setPaletteIdx((i) => Math.min(i + 1, filteredCmds.length - 1)); return; }
-      if (e.key === "ArrowUp")   { e.preventDefault(); setPaletteIdx((i) => Math.max(i - 1, 0)); return; }
-      if (e.key === "Tab" || e.key === "Enter") { e.preventDefault(); if (filteredCmds[paletteIdx]) selectCmd(filteredCmds[paletteIdx].cmd); return; }
-      if (e.key === "Escape") { setPaletteOpen(false); return; }
-    }
-    if (showNames) {
-      if (e.key === "ArrowDown") { e.preventDefault(); setNameIdx((i) => Math.min(i + 1, nameSuggestions.length - 1)); return; }
-      if (e.key === "ArrowUp")   { e.preventDefault(); setNameIdx((i) => Math.max(i - 1, 0)); return; }
-      if (e.key === "Tab" || e.key === "Enter") { if (nameSuggestions[nameIdx]) { e.preventDefault(); selectName(nameSuggestions[nameIdx]); return; } }
-      if (e.key === "Escape") { return; }
-    }
-    if (e.key === "Enter" && !e.ctrlKey && !e.shiftKey && description.trim().startsWith("/")) {
-      if (preview?.isValid) { e.preventDefault(); setDescription(preview.formatted); }
-      return;
-    }
-    if (e.ctrlKey && e.key === "Enter") { e.preventDefault(); handleSubmit(); }
-  }
-
-  async function handleSubmit(e) {
+  const handleSubmit = useCallback(async (e) => {
     e?.preventDefault();
     if (!description.trim()) { setError("Text darf nicht leer sein."); return; }
     const raw = description.trim();
@@ -207,7 +187,27 @@ function PublishModal({ image, matchId, onClose, onPublished, playerNames = [], 
       setError(err.message);
       setLoading(false);
     }
-  }
+  }, [description, minute, image.media_id, matchId, onPublished]);
+
+  const handleKeyDown = useCallback((e) => {
+    if (showPalette) {
+      if (e.key === "ArrowDown") { e.preventDefault(); setPaletteIdx((i) => Math.min(i + 1, filteredCmds.length - 1)); return; }
+      if (e.key === "ArrowUp")   { e.preventDefault(); setPaletteIdx((i) => Math.max(i - 1, 0)); return; }
+      if (e.key === "Tab" || e.key === "Enter") { e.preventDefault(); if (filteredCmds[paletteIdx]) selectCmd(filteredCmds[paletteIdx].cmd); return; }
+      if (e.key === "Escape") { setPaletteOpen(false); return; }
+    }
+    if (showNames) {
+      if (e.key === "ArrowDown") { e.preventDefault(); setNameIdx((i) => Math.min(i + 1, nameSuggestions.length - 1)); return; }
+      if (e.key === "ArrowUp")   { e.preventDefault(); setNameIdx((i) => Math.max(i - 1, 0)); return; }
+      if (e.key === "Tab" || e.key === "Enter") { if (nameSuggestions[nameIdx]) { e.preventDefault(); selectName(nameSuggestions[nameIdx]); return; } }
+      if (e.key === "Escape") { return; }
+    }
+    if (e.key === "Enter" && !e.ctrlKey && !e.shiftKey && description.trim().startsWith("/")) {
+      if (preview?.isValid) { e.preventDefault(); setDescription(preview.formatted); }
+      return;
+    }
+    if (e.ctrlKey && e.key === "Enter") { e.preventDefault(); handleSubmit(); }
+  }, [showPalette, showNames, filteredCmds, paletteIdx, nameSuggestions, nameIdx, description, preview, selectCmd, selectName, handleSubmit]);
 
   const publishDisabled = loading || !description.trim();
 
@@ -539,8 +539,8 @@ export function MediaPickerPanel({ match, matchId, defaultOpen = false, playerNa
   // Eintracht-Spieler aus dem Lineup (Heim oder Auswärts), sortiert nach Trikot#
   const eintrachtTeamId = useMemo(() => {
     if (!match) return null;
-    if (match?.homeTeam?.name?.toLowerCase().includes("frankfurt")) return match.teamHomeId;
-    if (match?.awayTeam?.name?.toLowerCase().includes("frankfurt")) return match.teamAwayId;
+    if (match?.homeTeam?.name?.toLowerCase().includes(config.teamKeyword)) return match.teamHomeId;
+    if (match?.awayTeam?.name?.toLowerCase().includes(config.teamKeyword)) return match.teamAwayId;
     return null;
   }, [match]);
   const lineupPlayers = useMemo(() => {
@@ -549,6 +549,16 @@ export function MediaPickerPanel({ match, matchId, defaultOpen = false, playerNa
       .sort((a, b) => (a.jerseyNumber ?? 99) - (b.jerseyNumber ?? 99));
   }, [lineups, eintrachtTeamId]);
   const [statusMsg, setStatusMsg] = useState(null);
+
+  // Spieler-Vorschläge für Suche (memoized)
+  const playerSuggestions = useMemo(() => {
+    if (!playerQuery || selectedPlayer) return [];
+    const q = playerQuery.toLowerCase();
+    return lineupPlayers.filter((p) =>
+      p.playerName?.toLowerCase().includes(q) ||
+      String(p.jerseyNumber ?? "").startsWith(q)
+    ).slice(0, 8);
+  }, [playerQuery, selectedPlayer, lineupPlayers]);
 
   useEffect(() => {
     if (!open) return;
@@ -565,7 +575,7 @@ export function MediaPickerPanel({ match, matchId, defaultOpen = false, playerNa
 
   useMediaWebSocket(handleNewMedia, open);
 
-  async function handleLoadImages() {
+  const handleLoadImages = useCallback(async () => {
     setLoadingTrigger(true);
     setStatusMsg(null);
     if (selectedPlayer) {
@@ -581,14 +591,20 @@ export function MediaPickerPanel({ match, matchId, defaultOpen = false, playerNa
     } finally {
       setLoadingTrigger(false);
     }
-  }
+  }, [selectedPlayer]);
 
-  function handlePublished(mediaId) {
+  const handlePublished = useCallback((mediaId) => {
     setImages((prev) => prev.filter((img) => img.media_id !== mediaId));
     setModalImage(null);
     setStatusMsg({ type: "success", text: "✓ Im Liveticker veröffentlicht!" });
-    setTimeout(() => setStatusMsg(null), 3000);
-  }
+  }, []);
+
+  // Auto-dismiss Status-Meldung nach 3s
+  useEffect(() => {
+    if (!statusMsg || statusMsg.type !== "success") return;
+    const id = setTimeout(() => setStatusMsg(null), 3000);
+    return () => clearTimeout(id);
+  }, [statusMsg]);
 
   // Spin-Keyframe (einmalig via style-Tag)
   useEffect(() => {
@@ -599,9 +615,9 @@ export function MediaPickerPanel({ match, matchId, defaultOpen = false, playerNa
     document.head.appendChild(style);
   }, []);
 
-  // Nur bei Frankfurt-Spielen anzeigen (Heim oder Auswärts)
-  const isEintracht = match?.homeTeam?.name?.toLowerCase().includes("frankfurt") ||
-    match?.awayTeam?.name?.toLowerCase().includes("frankfurt");
+  // Nur bei Team-Spielen anzeigen (Heim oder Auswärts)
+  const isEintracht = match?.homeTeam?.name?.toLowerCase().includes(config.teamKeyword) ||
+    match?.awayTeam?.name?.toLowerCase().includes(config.teamKeyword);
   if (match && !isEintracht) return null;
 
   return (
@@ -704,48 +720,40 @@ export function MediaPickerPanel({ match, matchId, defaultOpen = false, playerNa
                 </div>
 
                 {/* Vorschläge */}
-                {playerQuery && !selectedPlayer && (() => {
-                  const q = playerQuery.toLowerCase();
-                  const matches = lineupPlayers.filter((p) =>
-                    p.playerName?.toLowerCase().includes(q) ||
-                    String(p.jerseyNumber ?? "").startsWith(q)
-                  ).slice(0, 8);
-                  if (!matches.length) return null;
-                  return (
-                    <div style={{
-                      position: "absolute", top: "calc(100% + 4px)", left: 0, right: 0, zIndex: 50,
-                      background: "var(--lt-bg-card)", border: "1px solid var(--lt-border)",
-                      borderRadius: 6, overflow: "hidden", boxShadow: "0 8px 24px rgba(0,0,0,0.4)",
-                    }}>
-                      {matches.map((p) => (
-                        <button
-                          key={p.playerId ?? p.jerseyNumber}
-                          onMouseDown={(e) => { e.preventDefault(); setSelectedPlayer(p); setPlayerQuery(`#${p.jerseyNumber} ${p.playerName}`); }}
-                          style={{
-                            width: "100%", display: "flex", alignItems: "center", gap: "0.5rem",
-                            padding: "0.4rem 0.65rem", background: "transparent", border: "none",
-                            cursor: "pointer", textAlign: "left",
-                            borderBottom: "1px solid var(--lt-border)",
-                          }}
-                          onMouseEnter={(e) => e.currentTarget.style.background = "var(--lt-bg-card-2)"}
-                          onMouseLeave={(e) => e.currentTarget.style.background = "transparent"}
-                        >
-                          {p.jerseyNumber != null && (
-                            <span style={{
-                              fontFamily: "var(--lt-font-mono)", fontSize: "0.68rem", fontWeight: 700,
-                              color: "var(--lt-accent)", minWidth: 22, textAlign: "right",
-                            }}>
-                              {p.jerseyNumber}
-                            </span>
-                          )}
-                          <span style={{ fontFamily: "var(--lt-font-mono)", fontSize: "0.75rem", color: "var(--lt-text)" }}>
-                            {p.playerName}
+                {playerSuggestions.length > 0 && (
+                  <div style={{
+                    position: "absolute", top: "calc(100% + 4px)", left: 0, right: 0, zIndex: 50,
+                    background: "var(--lt-bg-card)", border: "1px solid var(--lt-border)",
+                    borderRadius: 6, overflow: "hidden", boxShadow: "0 8px 24px rgba(0,0,0,0.4)",
+                  }}>
+                    {playerSuggestions.map((p) => (
+                      <button
+                        key={p.playerId ?? p.jerseyNumber}
+                        onMouseDown={(e) => { e.preventDefault(); setSelectedPlayer(p); setPlayerQuery(`#${p.jerseyNumber} ${p.playerName}`); }}
+                        style={{
+                          width: "100%", display: "flex", alignItems: "center", gap: "0.5rem",
+                          padding: "0.4rem 0.65rem", background: "transparent", border: "none",
+                          cursor: "pointer", textAlign: "left",
+                          borderBottom: "1px solid var(--lt-border)",
+                        }}
+                        onMouseEnter={(e) => e.currentTarget.style.background = "var(--lt-bg-card-2)"}
+                        onMouseLeave={(e) => e.currentTarget.style.background = "transparent"}
+                      >
+                        {p.jerseyNumber != null && (
+                          <span style={{
+                            fontFamily: "var(--lt-font-mono)", fontSize: "0.68rem", fontWeight: 700,
+                            color: "var(--lt-accent)", minWidth: 22, textAlign: "right",
+                          }}>
+                            {p.jerseyNumber}
                           </span>
-                        </button>
-                      ))}
-                    </div>
-                  );
-                })()}
+                        )}
+                        <span style={{ fontFamily: "var(--lt-font-mono)", fontSize: "0.75rem", color: "var(--lt-text)" }}>
+                          {p.playerName}
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
             )}
 

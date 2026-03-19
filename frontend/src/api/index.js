@@ -33,8 +33,6 @@ export const fetchEvents = (matchId) => api.get(`/matches/${matchId}/events`);
 export const fetchTickerTexts = (matchId) =>
   api.get(`/ticker/match/${matchId}?all_entries=true`);
 export const fetchPrematch = (matchId) => api.get(`/ticker/match/${matchId}`);
-export const fetchLiveStats = (matchId) =>
-  api.get(`/matches/${matchId}/statistics`);
 export const generateTicker = (eventId, style, instance = "ef_whitelabel") =>
   api.post(`/ticker/generate/${eventId}`, { style, instance });
 export const createManualTicker = (matchId, text, icon = "📝", minute, phase) =>

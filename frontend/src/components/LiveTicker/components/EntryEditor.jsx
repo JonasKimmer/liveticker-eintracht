@@ -1,9 +1,11 @@
 // ============================================================
 // EntryEditor.jsx  — Slash-Command Editor mit Autocomplete
 // ============================================================
-import React, { useState, useEffect, useMemo, useRef } from "react";
+import React, { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import { parseCommand } from "../utils/parseCommand";
 import { MODES } from "../constants";
+
+const COMMAND_PREFIX_REGEX = /^\/\w+\s*/;
 
 const COMMAND_PALETTE = [
   { cmd: "/g",        desc: "Tor",                    icon: "⚽", hint: "Spieler Team" },
@@ -105,22 +107,22 @@ export function EntryEditor({
   // Reset name index when suggestions change
   useEffect(() => { setNameIdx(0); }, [nameSuggestions]);
 
-  const selectName = (name) => {
+  const selectName = useCallback((name) => {
     // Replace the lastWord with the full name
     const words = value.split(/\s+/);
     words[words.length - 1] = name;
     onChange(words.join(" ") + " ");
     setTimeout(() => textareaRef.current?.focus(), 0);
-  };
+  }, [value, onChange]);
 
-  const selectCmd = (cmd) => {
+  const selectCmd = useCallback((cmd) => {
     const needsArg = ["/anpfiff", "/2hz", "/vz1", "/vz2", "/g", "/og", "/gelb", "/rot", "/ep", "/c", "/s", "/n"].includes(cmd);
     onChange(cmd + (needsArg ? " " : ""));
     setPaletteOpen(false);
     setTimeout(() => textareaRef.current?.focus(), 0);
-  };
+  }, [onChange]);
 
-  const handleChange = (e) => {
+  const handleChange = useCallback((e) => {
     const v = e.target.value;
     onChange(v);
     if (v.startsWith("/") && !v.includes(" ")) {
@@ -129,57 +131,12 @@ export function EntryEditor({
     } else {
       setPaletteOpen(false);
     }
-  };
+  }, [onChange]);
 
-  const handleKeyDown = (e) => {
-    // Command palette navigation
-    if (showPalette) {
-      if (e.key === "ArrowDown") { e.preventDefault(); setPaletteIdx((i) => Math.min(i + 1, filteredCmds.length - 1)); return; }
-      if (e.key === "ArrowUp")   { e.preventDefault(); setPaletteIdx((i) => Math.max(i - 1, 0)); return; }
-      if (e.key === "Tab" || e.key === "Enter") {
-        e.preventDefault();
-        if (filteredCmds[paletteIdx]) selectCmd(filteredCmds[paletteIdx].cmd);
-        return;
-      }
-      if (e.key === "Escape") { setPaletteOpen(false); return; }
-    }
-
-    // Name suggestions navigation
-    if (showNames) {
-      if (e.key === "ArrowDown") { e.preventDefault(); setNameIdx((i) => Math.min(i + 1, nameSuggestions.length - 1)); return; }
-      if (e.key === "ArrowUp")   { e.preventDefault(); setNameIdx((i) => Math.max(i - 1, 0)); return; }
-      if (e.key === "Tab" || e.key === "Enter") {
-        if (nameSuggestions[nameIdx]) { e.preventDefault(); selectName(nameSuggestions[nameIdx]); return; }
-      }
-      if (e.key === "Escape") { onChange(value); return; }
-    }
-
-    // Enter: valid event command → format first; phase cmd with extra text or invalid → publish directly
-    if (e.key === "Enter" && !e.ctrlKey && !e.shiftKey) {
-      const trimmed = value.trim();
-      const afterCmd = trimmed.replace(/^\/\w+\s*/, "");
-      const isPhaseWithText = trimmed.startsWith("/") && preview?.isValid && preview.meta?.phase != null && afterCmd;
-      if (trimmed.startsWith("/") && preview?.isValid && !isPhaseWithText) {
-        e.preventDefault();
-        onChange(preview.formatted);
-      } else {
-        e.preventDefault();
-        handlePublish();
-      }
-      return;
-    }
-
-    // Ctrl+Enter = publish (immer)
-    if (e.ctrlKey && e.key === "Enter") {
-      e.preventDefault();
-      handlePublish();
-    }
-  };
-
-  const handlePublish = () => {
+  const handlePublish = useCallback(() => {
     if (!value.trim()) return;
     const trimmed = value.trim();
-    const afterCmd = trimmed.replace(/^\/\w+\s*/, "");
+    const afterCmd = trimmed.replace(COMMAND_PREFIX_REGEX, "");
     if (trimmed.startsWith("/") && preview?.isValid) {
       const meta = preview.meta ?? {};
       // Phase commands (e.g. /prematch, /elfmeter) with extra text → free text mode
@@ -205,7 +162,52 @@ export function EntryEditor({
       onPublish?.({ text: trimmed, icon: "📣", minute: minute != null ? minute : null, phase: null });
     }
     onChange("");
-  };
+  }, [value, preview, minute, onPublish, onChange]);
+
+  const handleKeyDown = useCallback((e) => {
+    // Command palette navigation
+    if (showPalette) {
+      if (e.key === "ArrowDown") { e.preventDefault(); setPaletteIdx((i) => Math.min(i + 1, filteredCmds.length - 1)); return; }
+      if (e.key === "ArrowUp")   { e.preventDefault(); setPaletteIdx((i) => Math.max(i - 1, 0)); return; }
+      if (e.key === "Tab" || e.key === "Enter") {
+        e.preventDefault();
+        if (filteredCmds[paletteIdx]) selectCmd(filteredCmds[paletteIdx].cmd);
+        return;
+      }
+      if (e.key === "Escape") { setPaletteOpen(false); return; }
+    }
+
+    // Name suggestions navigation
+    if (showNames) {
+      if (e.key === "ArrowDown") { e.preventDefault(); setNameIdx((i) => Math.min(i + 1, nameSuggestions.length - 1)); return; }
+      if (e.key === "ArrowUp")   { e.preventDefault(); setNameIdx((i) => Math.max(i - 1, 0)); return; }
+      if (e.key === "Tab" || e.key === "Enter") {
+        if (nameSuggestions[nameIdx]) { e.preventDefault(); selectName(nameSuggestions[nameIdx]); return; }
+      }
+      if (e.key === "Escape") { onChange(value); return; }
+    }
+
+    // Enter: valid event command → format first; phase cmd with extra text or invalid → publish directly
+    if (e.key === "Enter" && !e.ctrlKey && !e.shiftKey) {
+      const trimmed = value.trim();
+      const afterCmd = trimmed.replace(COMMAND_PREFIX_REGEX, "");
+      const isPhaseWithText = trimmed.startsWith("/") && preview?.isValid && preview.meta?.phase != null && afterCmd;
+      if (trimmed.startsWith("/") && preview?.isValid && !isPhaseWithText) {
+        e.preventDefault();
+        onChange(preview.formatted);
+      } else {
+        e.preventDefault();
+        handlePublish();
+      }
+      return;
+    }
+
+    // Ctrl+Enter = publish (immer)
+    if (e.ctrlKey && e.key === "Enter") {
+      e.preventDefault();
+      handlePublish();
+    }
+  }, [showPalette, showNames, filteredCmds, paletteIdx, nameSuggestions, nameIdx, value, preview, onChange, handlePublish, selectCmd, selectName]);
 
   const publishDisabled = !value.trim();
 
@@ -317,7 +319,7 @@ export function EntryEditor({
 
       {/* Live Preview */}
       {preview && (() => {
-        const afterCmd = value.trim().replace(/^\/\w+\s*/, "");
+        const afterCmd = value.trim().replace(COMMAND_PREFIX_REGEX, "");
         const isPhaseWithText = preview.isValid && preview.meta?.phase != null && afterCmd;
         const isFreeTextMode = !preview.isValid || isPhaseWithText;
         const displayText = isFreeTextMode ? (afterCmd || value.trim()) : preview.formatted;

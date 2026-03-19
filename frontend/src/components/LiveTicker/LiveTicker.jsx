@@ -23,7 +23,15 @@ import { RightPanel } from "./panels/RightPanel";
 import { StartScreen } from "./components/StartScreen";
 import { Breadcrumb } from "./components/Breadcrumb";
 import { useApiStatus, API_STATUS_CFG } from "../../hooks/useApiStatus";
+import { useMatchTriggers } from "../../hooks/useMatchTriggers";
 import ErrorBoundary from "../ErrorBoundary";
+
+const PANEL_RIGHT_MIN = 280;
+const PANEL_RIGHT_MAX = 700;
+const PANEL_CENTER_MIN = 240;
+const PANEL_CENTER_MAX = 600;
+
+const CURRENT_YEAR = new Date().getFullYear();
 
 export default function LiveTicker() {
   // ── App Loading ───────────────────────────────────────────
@@ -69,9 +77,9 @@ export default function LiveTicker() {
       if (!draggingPanel.current) return;
       const delta = e.clientX - dragStartX.current;
       if (draggingPanel.current === "right") {
-        setRightW(Math.min(700, Math.max(280, dragStartW.current - delta)));
+        setRightW(Math.min(PANEL_RIGHT_MAX, Math.max(PANEL_RIGHT_MIN, dragStartW.current - delta)));
       } else {
-        setCenterW(Math.min(600, Math.max(240, dragStartW.current + delta)));
+        setCenterW(Math.min(PANEL_CENTER_MAX, Math.max(PANEL_CENTER_MIN, dragStartW.current + delta)));
       }
     };
     const onUp = () => {
@@ -174,149 +182,8 @@ export default function LiveTicker() {
   const [importingTeams, setImportingTeams] = useState(false);
   const [importingCompetitions, setImportingCompetitions] = useState(false);
 
-  // ── Match-Summary via n8n (Halbzeit / Abpfiff) ────────────
-  const summaryTriggeredRef = useRef(new Set());
-  useEffect(() => {
-    if (!selMatchId || !match || !tickerTexts) return;
-
-    const phasesToCheck = [];
-    if (match.matchPhase === "FirstHalfBreak" || match.matchState === "FullTime") {
-      phasesToCheck.push("FirstHalfBreak");
-    }
-    if (match.matchState === "FullTime") {
-      phasesToCheck.push("After");
-    }
-    if (phasesToCheck.length === 0) return;
-
-    for (const phase of phasesToCheck) {
-      const key = `${selMatchId}-${phase}`;
-      if (summaryTriggeredRef.current.has(key)) continue;
-      summaryTriggeredRef.current.add(key);
-      const exists = tickerTexts.some(
-        (t) => t.phase === phase && (t.status === "published" || t.status == null),
-      );
-      if (!exists) {
-        api.generateMatchSummary(selMatchId, phase).catch((err) =>
-          console.warn("[LiveTicker] generateMatchSummary silenced:", err?.message)
-        );
-      }
-    }
-  }, [selMatchId, match?.matchPhase, match?.matchState, tickerTexts]);
-
-  // ── Live Stats Monitor (alle 5 Min bei laufendem oder beendetem Spiel) ───
-  useEffect(() => {
-    if (!selMatchId || !match?.matchState) return;
-    if (match.matchState === "PreMatch") return;
-    api.triggerLiveStatsMonitor(selMatchId).catch((err) =>
-      console.warn("[LiveTicker] triggerLiveStatsMonitor silenced:", err?.message)
-    );
-    if (match.matchState !== "Live") return; // kein Polling bei FullTime
-    const interval = setInterval(() => {
-      api.triggerLiveStatsMonitor(selMatchId).catch((err) =>
-        console.warn("[LiveTicker] triggerLiveStatsMonitor silenced:", err?.message)
-      );
-    }, 5 * 60 * 1000);
-    return () => clearInterval(interval);
-  }, [selMatchId, match?.matchState]);
-
-  // ── Match-Status Webhook beim Match-Open ──────────────────
-  const matchStatusTriggeredRef = useRef(null);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(() => {
-    if (!selMatchId || !match?.matchState || !match?.externalId) return;
-    if (matchStatusTriggeredRef.current === selMatchId) return;
-    matchStatusTriggeredRef.current = selMatchId;
-
-    // Alle Spielzustände über denselben match-status Webhook routen
-    const phaseToStatus = {
-      FirstHalf:             "1H",
-      FirstHalfBreak:        "HT",
-      SecondHalf:            "2H",
-      ExtraFirstHalf:        "ET",
-      ExtraBreak:            "BT",
-      ExtraSecondHalf:       "ET",
-      ExtraSecondHalfBreak:  "BT",
-      PenaltyShootout:       "P",
-    };
-
-    let status = null;
-    if (match.matchState === "FullTime") {
-      status = "FT";
-    } else if (match.matchState === "Live") {
-      status = phaseToStatus[match.matchPhase] ?? "1H";
-    }
-
-    if (status) {
-      api
-        .triggerMatchStatus(match.externalId, status, match.minute ?? null)
-        .catch((err) =>
-          console.warn("[LiveTicker] triggerMatchStatus silenced:", err?.message)
-        );
-    }
-  }, [selMatchId, match?.matchState, match?.matchPhase]);
-
-  // ── Auto-Imports beim Match-Select ────────────────────────
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(() => {
-    if (!selMatchId || !match?.externalId || events.length > 0) return;
-    api
-      .importEvents(match.externalId)
-      .then(() => reload.loadEvents())
-      .catch((err) => console.error("importEvents error:", err));
-  }, [selMatchId, match?.externalId, events.length]);
-
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(() => {
-    if (!selMatchId || lineups.length > 0) return;
-    api
-      .importLineups(selMatchId)
-      .then(() => reload.loadLineups())
-      .catch((err) => console.error("importLineups error:", err));
-  }, [selMatchId, lineups.length]);
-
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(() => {
-    if (!selMatchId || matchStats.length > 0) return;
-    api
-      .importMatchStats(selMatchId)
-      .then(() => reload.loadMatchStats())
-      .catch((err) => console.error("importMatchStats error:", err));
-  }, [selMatchId, matchStats.length]);
-
-  const prematchImportedRef = useRef(null);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(() => {
-    if (!selMatchId || !match?.externalId) return;
-    if (prematchImportedRef.current === selMatchId) return;
-    prematchImportedRef.current = selMatchId;
-    api
-      .importPrematch(match.externalId)
-      .then(() => reload.loadPrematch())
-      .then(() =>
-        api
-          .generateSyntheticBatch(selMatchId, "neutral", instance)
-          .then(() => {
-            // LLM läuft async im Hintergrund – mehrfach nachladen
-            [3000, 8000, 15000, 25000, 40000].forEach((delay) => {
-              setTimeout(() => reload.loadTickerTexts(), delay);
-            });
-          })
-          .catch((err) => console.error("generateSyntheticBatch error:", err)),
-      )
-      .catch((err) => console.error("importPrematch error:", err));
-  }, [selMatchId, match?.externalId]);
-
-  const playerStatsImportedRef = useRef(null);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(() => {
-    if (!selMatchId) return;
-    if (playerStatsImportedRef.current === selMatchId) return;
-    playerStatsImportedRef.current = selMatchId;
-    api
-      .importPlayerStatistics(selMatchId)
-      .then(() => reload.loadPlayerStats())
-      .catch((err) => console.error("importPlayerStatistics error:", err));
-  }, [selMatchId]);
+  // ── n8n Webhooks + Auto-Imports (ausgelagert in useMatchTriggers) ────────
+  useMatchTriggers({ selMatchId, match, events, lineups, matchStats, tickerTexts, instance, reload });
 
   // ── Init ──────────────────────────────────────────────────
   useEffect(() => {
@@ -402,7 +269,7 @@ export default function LiveTicker() {
         setImportingCompetitions(true);
         try {
           // 1. Competitions immer importieren (holt ggf. neue dazu)
-          await api.importCompetitionsForTeam(apiTeamId, 2025);
+          await api.importCompetitionsForTeam(apiTeamId, CURRENT_YEAR);
           const r2 = await api.fetchTeamCompetitions(selTeamId);
           let competitions = r2.data.length > 0 ? r2.data : r.data;
           if (!controller.signal.aborted) {
@@ -413,7 +280,7 @@ export default function LiveTicker() {
                 .filter((c) => c.externalId)
                 .map((c) =>
                   api
-                    .importMatchesForTeam(apiTeamId, c.externalId, 2025)
+                    .importMatchesForTeam(apiTeamId, c.externalId, CURRENT_YEAR)
                     .catch((err) =>
                       console.error(
                         `importMatchesForTeam error (league ${c.externalId}):`,
