@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { normalizeMatchStatus } from "../components/LiveTicker/utils/parseCommand";
-import { MATCH_PHASES } from "../components/LiveTicker/utils/constants";
+import { MATCH_PHASES } from "../components/LiveTicker/constants";
 
 /**
  * Berechnet die aktuelle Spielminute basierend auf Matchstatus und Anstoßzeit.

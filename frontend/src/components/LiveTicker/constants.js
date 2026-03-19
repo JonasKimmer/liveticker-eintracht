@@ -67,3 +67,20 @@ export const PUBLISH_PHASES = [
   { value: "Halftime", label: "Halbzeit"    },
   { value: "After",    label: "After Match" },
 ];
+
+// ── Match-Phasen (alle API-Werte) ────────────────────────────
+export const MATCH_PHASES = {
+  BEFORE:                  "Before",
+  FIRST_HALF:              "FirstHalf",
+  FIRST_HALF_BREAK:        "FirstHalfBreak",
+  SECOND_HALF:             "SecondHalf",
+  SECOND_HALF_BREAK:       "SecondHalfBreak",
+  HALFTIME:                "Halftime",
+  AFTER:                   "After",
+  EXTRA_FIRST_HALF:        "ExtraFirstHalf",
+  EXTRA_BREAK:             "ExtraBreak",
+  EXTRA_SECOND_HALF:       "ExtraSecondHalf",
+  EXTRA_SECOND_HALF_BREAK: "ExtraSecondHalfBreak",
+  PENALTY_SHOOTOUT:        "PenaltyShootout",
+  FULL_TIME:               "FullTime",
+};

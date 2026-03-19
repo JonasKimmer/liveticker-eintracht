@@ -4,7 +4,8 @@
 // Flow: Bilder laden → Doppelklick → Modal → Veröffentlichen
 // ============================================================
 
-import { useState, useEffect, useCallback, useRef, useMemo } from "react";
+import { useState, useCallback, useRef, useMemo } from "react";
+import { useLiveMinuteEditor } from "../hooks/useLiveMinuteEditor";
 import { createPortal } from "react-dom";
 import { useMediaWebSocket } from "../../../hooks/useMediaWebSocket";
 import { generateMediaCaption } from "../../../api";
@@ -65,17 +66,8 @@ function PublishModal({ image, matchId, onClose, onPublished, playerNames = [], 
   const textareaRef = useRef(null);
   const minuteRef = useRef(null);
 
-  // Live minute
-  const [minute, setMinute] = useState(currentMinute);
-  const [minuteEditing, setMinuteEditing] = useState(false);
-  const [minuteOverride, setMinuteOverride] = useState(false);
-
-  useEffect(() => { if (!minuteOverride) setMinute(currentMinute); }, [currentMinute, minuteOverride]);
-  useEffect(() => {
-    if (minuteOverride || minute === 0) return;
-    const id = setInterval(() => setMinute((m) => m + 1), 60000);
-    return () => clearInterval(id);
-  }, [minuteOverride, minute]);
+  // Live minute — syncs from prop, ticks every 60s, can be manually overridden
+  const { minute, setMinute, minuteEditing, setMinuteEditing, minuteOverride, setMinuteOverride } = useLiveMinuteEditor(currentMinute);
 
   // Command palette
   const [paletteOpen, setPaletteOpen] = useState(false);

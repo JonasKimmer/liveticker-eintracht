@@ -6,6 +6,7 @@ import PropTypes from "prop-types";
 import { parseCommand } from "../utils/parseCommand";
 import { COMMAND_PALETTE } from "../utils/commandPalette";
 import { MODES } from "../constants";
+import { useLiveMinuteEditor } from "../hooks/useLiveMinuteEditor";
 
 const COMMAND_PREFIX_REGEX = /^\/\w+\s*/;
 
@@ -23,23 +24,9 @@ export const EntryEditor = memo(function EntryEditor({
   const [nameIdx, setNameIdx] = useState(0);
   const textareaRef = useRef(null);
 
-  // Live minute — starts from currentMinute, ticks every 60s, can be manually overridden
-  const [minute, setMinute] = useState(currentMinute);
-  const [minuteEditing, setMinuteEditing] = useState(false);
-  const [minuteOverride, setMinuteOverride] = useState(false);
+  // Live minute — syncs from prop, ticks every 60s, can be manually overridden
+  const { minute, setMinute, minuteEditing, setMinuteEditing, minuteOverride, setMinuteOverride } = useLiveMinuteEditor(currentMinute);
   const minuteRef = useRef(null);
-
-  // Sync from prop when not manually overridden
-  useEffect(() => {
-    if (!minuteOverride) setMinute(currentMinute);
-  }, [currentMinute, minuteOverride]);
-
-  // Tick up every 60s when minute > 0 and not overridden
-  useEffect(() => {
-    if (minuteOverride || minute === 0) return;
-    const id = setInterval(() => setMinute((m) => m + 1), 60000);
-    return () => clearInterval(id);
-  }, [minuteOverride, minute]);
 
   // Which commands to show in palette (filter by typed prefix)
   const cmdToken = value.startsWith("/") && !value.includes(" ")

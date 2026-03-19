@@ -18,7 +18,7 @@
 import { useEffect, useRef } from "react";
 import * as api from "../api";
 import logger from "../utils/logger";
-import { MATCH_PHASES } from "../components/LiveTicker/utils/constants";
+import { MATCH_PHASES } from "../components/LiveTicker/constants";
 
 const PHASE_TO_STATUS = {
   [MATCH_PHASES.FIRST_HALF]:              "1H",
