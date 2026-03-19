@@ -6,15 +6,15 @@
 import { memo, useState, useCallback, useEffect, useRef } from "react";
 import PropTypes from "prop-types";
 import { createPortal } from "react-dom";
-import { useCommandPalette, CommandPalettePortal, resolvePublishPayload } from "../utils/commandPalette";
+import { useCommandPalette, CommandPalettePortal } from "../utils/commandPalette";
 import {
   fetchYoutubeClips,
   triggerYoutubeScrape,
   generateYoutubeDraft,
-  publishClip,
   deleteClip,
 } from "../../../api";
 import { PUBLISH_PHASES as PHASES } from "../constants";
+import { useMediaPublishForm } from "../hooks/useMediaPublishForm";
 
 const STYLES = ["neutral", "euphorisch", "kritisch"];
 
@@ -42,13 +42,10 @@ function getThumbnail(clip) {
 
 function YoutubePublishModal({ clip, matchId, currentMinute, onClose, onPublished }) {
   const [text, setText] = useState("");
-  const [minute, setMinute] = useState(currentMinute ?? 0);
-  const [phase, setPhase] = useState("");
   const [style, setStyle] = useState("neutral");
   const [generating, setGenerating] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
   const textareaRef = useRef(null);
+  const { minute, setMinute, phase, setPhase, loading, error, setError, submit } = useMediaPublishForm(currentMinute);
   const { showPalette, paletteIdx, filteredCmds, onValueChange, selectCmd, handlePaletteKeyDown } = useCommandPalette(text);
 
   useEffect(() => {
@@ -75,19 +72,7 @@ function YoutubePublishModal({ clip, matchId, currentMinute, onClose, onPublishe
 
   async function handleSubmit(e) {
     e?.preventDefault();
-    if (!text.trim()) { setError("Text darf nicht leer sein."); return; }
-    setLoading(true);
-    setError(null);
-    try {
-      const publishMinute = phase === "Halftime" ? 45 : phase ? null : (minute || null);
-      const { text: publishText, icon } = resolvePublishPayload(text, publishMinute);
-      await publishClip(clip.id, matchId, publishText, publishMinute, phase || null, icon);
-      onPublished(clip.id);
-    } catch (err) {
-      const detail = err?.response?.data?.detail;
-      setError(typeof detail === "string" ? detail : detail ? JSON.stringify(detail) : (err.message ?? "Fehler"));
-      setLoading(false);
-    }
+    await submit(clip.id, matchId, text, onPublished);
   }
 
   const thumbnail = getThumbnail(clip);

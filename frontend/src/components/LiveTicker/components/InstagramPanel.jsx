@@ -6,9 +6,10 @@
 import { memo, useState, useCallback, useEffect, useRef } from "react";
 import PropTypes from "prop-types";
 import { createPortal } from "react-dom";
-import { fetchInstagramPosts, triggerInstagramImport, publishClip, deleteClip } from "../../../api";
-import { useCommandPalette, CommandPalettePortal, resolvePublishPayload } from "../utils/commandPalette";
+import { fetchInstagramPosts, triggerInstagramImport, deleteClip } from "../../../api";
+import { useCommandPalette, CommandPalettePortal } from "../utils/commandPalette";
 import { PUBLISH_PHASES as PHASES } from "../constants";
+import { useMediaPublishForm } from "../hooks/useMediaPublishForm";
 
 const INSTA_GRADIENT = "linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888)";
 
@@ -16,28 +17,13 @@ const INSTA_GRADIENT = "linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc236
 
 function InstaPublishModal({ post, matchId, currentMinute, onClose, onPublished }) {
   const [text, setText] = useState(post.title ?? "");
-  const [minute, setMinute] = useState(currentMinute ?? 0);
-  const [phase, setPhase] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
   const textareaRef = useRef(null);
+  const { minute, setMinute, phase, setPhase, loading, error, setError, submit } = useMediaPublishForm(currentMinute);
   const { showPalette, paletteIdx, filteredCmds, onValueChange, selectCmd, handlePaletteKeyDown } = useCommandPalette(text);
 
   async function handleSubmit(e) {
     e?.preventDefault();
-    if (!text.trim()) { setError("Text darf nicht leer sein."); return; }
-    setLoading(true);
-    setError(null);
-    try {
-      const publishMinute = phase === "Halftime" ? 45 : phase ? null : (minute || null);
-      const { text: publishText, icon } = resolvePublishPayload(text, publishMinute);
-      await publishClip(post.id, matchId, publishText, publishMinute, phase || null, icon);
-      onPublished(post.id);
-    } catch (err) {
-      const detail = err?.response?.data?.detail;
-      setError(typeof detail === "string" ? detail : detail ? JSON.stringify(detail) : (err.message ?? "Fehler"));
-      setLoading(false);
-    }
+    await submit(post.id, matchId, text, onPublished);
   }
 
   return (
