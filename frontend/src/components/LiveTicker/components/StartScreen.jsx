@@ -1,10 +1,11 @@
 // ============================================================
 // StartScreen.jsx
 // ============================================================
-import { useState, useRef, useEffect } from "react";
+import { memo, useState, useRef, useEffect } from "react";
 import config from "../../../config/whitelabel";
+import { useClickOutside } from "../../../hooks/useClickOutside";
 
-export function StartScreen({
+export const StartScreen = memo(function StartScreen({
   countries,
   selCountry,
   onCountryChange,
@@ -45,10 +46,7 @@ export function StartScreen({
               list="lt-countries-list"
               placeholder="Search country…"
               value={selCountry ?? ""}
-              onChange={(e) => {
-                const val = e.target.value;
-                onCountryChange(val);
-              }}
+              onChange={(e) => onCountryChange(e.target.value)}
               onBlur={(e) => {
                 if (!countries.includes(e.target.value)) onCountryChange(null);
               }}
@@ -100,19 +98,13 @@ export function StartScreen({
       </div>
     </div>
   );
-}
+});
 
 function Dropdown({ label, disabled, value, placeholder, displayValue, items, onSelect }) {
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
 
-  useEffect(() => {
-    const handler = (e) => {
-      if (ref.current && !ref.current.contains(e.target)) setOpen(false);
-    };
-    document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
-  }, []);
+  useClickOutside(ref, () => setOpen(false));
 
   return (
     <div className="lt-start__select-wrap" ref={ref} style={{ position: "relative" }}>
@@ -180,13 +172,7 @@ function MatchdayPicker({
     if (matchdays.length > 0) setOpen(true);
   }, [matchdays]);
 
-  useEffect(() => {
-    const handler = (e) => {
-      if (ref.current && !ref.current.contains(e.target)) setOpen(false);
-    };
-    document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
-  }, []);
+  useClickOutside(ref, () => setOpen(false));
 
   const label = matchdaysLoading
     ? "Spieltag (lädt…)"

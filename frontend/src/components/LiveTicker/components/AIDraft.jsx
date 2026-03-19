@@ -2,7 +2,9 @@
 // AIDraft.jsx  — read-only Anzeige des AI-generierten Texts
 // (CO-OP: TAB = annehmen, ESC = ablehnen, "Bearbeiten" öffnet EntryEditor)
 // ============================================================
-export function AIDraft({
+import { memo } from "react";
+
+export const AIDraft = memo(function AIDraft({
   eventType,
   draftText,
   onAccept,
@@ -41,4 +43,4 @@ export function AIDraft({
       </div>
     </div>
   );
-}
+});
