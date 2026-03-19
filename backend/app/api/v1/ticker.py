@@ -33,6 +33,7 @@ from app.schemas.ticker_entry import (
     TickerEntryResponse,
 )
 from app.services.llm_service import generate_ticker_text
+from app.core.constants import resolve_phase
 
 logger = logging.getLogger(__name__)
 
@@ -451,24 +452,7 @@ async def generate_for_synthetic_event(
             status_code=status.HTTP_502_BAD_GATEWAY, detail=f"LLM error: {e}"
         )
 
-    _phase_map = {
-        "match_kickoff": "FirstHalf",
-        "match_halftime": "FirstHalfBreak",
-        "match_second_half": "SecondHalf",
-        "match_fulltime": "After",
-        "match_extra_kickoff": "ExtraFirstHalf",
-        "match_extra_halftime": "ExtraBreak",
-        "match_penalties": "PenaltyShootout",
-        "match_fulltime_aet": "After",
-        "match_fulltime_pen": "After",
-    }
-    event_type = synthetic.type or ""
-    if event_type.startswith("pre_match"):
-        phase = "Before"
-    elif event_type.startswith("post_match"):
-        phase = "After"
-    else:
-        phase = _phase_map.get(event_type)
+    phase = resolve_phase(synthetic.type or "")
 
     event_minute: Optional[int] = None
     try:
@@ -561,19 +545,8 @@ async def generate_synthetic_batch(
             )
             continue
 
-        _phase_map = {
-            "match_kickoff": "FirstHalf",
-            "match_halftime": "FirstHalfBreak",
-            "match_second_half": "SecondHalf",
-            "match_fulltime": "After",
-        }
-        event_type = synthetic.type or ""
-        if event_type.startswith("pre_match"):
-            phase = "Before"
-        elif event_type.startswith("post_match"):
-            phase = "After"
-        else:
-            phase = _phase_map.get(event_type)
+        # resolve_phase covers all phases including extra-time and penalties
+        phase = resolve_phase(synthetic.type or "")
 
         entry = repo.create(
             TickerEntryCreate(

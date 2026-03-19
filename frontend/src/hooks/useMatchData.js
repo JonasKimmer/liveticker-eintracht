@@ -1,6 +1,16 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import * as api from "../api";
 
+/**
+ * Gibt das Polling-Intervall in ms basierend auf dem Spielstatus zurück.
+ * Live-Spiele werden aggressiv gepollert, Pre- und Post-Match deutlich seltener.
+ */
+function resolvePollingInterval(matchState) {
+  if (matchState === "Live") return 5_000;
+  if (matchState === "FullTime") return 30_000;
+  return 60_000; // PreMatch, Cancelled, etc.
+}
+
 export function useMatchData(selectedMatchId) {
   const [match, setMatch] = useState(null);
   const [events, setEvents] = useState([]);
@@ -169,13 +179,14 @@ export function useMatchData(selectedMatchId) {
       loadPrematch();
     }, 15000);
 
+    const pollInterval = resolvePollingInterval(matchRef.current?.matchState);
     intervalRef.current = setInterval(() => {
       loadEvents();
       loadTickerTexts();
       loadLiveStats();
       loadInjuries();
       loadMatch();
-    }, 5000);
+    }, pollInterval);
 
     return () => {
       clearInterval(intervalRef.current);

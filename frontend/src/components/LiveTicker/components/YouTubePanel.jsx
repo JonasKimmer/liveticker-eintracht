@@ -61,7 +61,7 @@ function YoutubePublishModal({ clip, matchId, currentMinute, onClose, onPublishe
     setGenerating(true);
     generateYoutubeDraft(clip.id, style)
       .then((res) => setText(res.data.text ?? ""))
-      .catch(() => {})
+      .catch((err) => console.warn("[YouTubePanel] generateYoutubeDraft silenced:", err?.message))
       .finally(() => setGenerating(false));
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 

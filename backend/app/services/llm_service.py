@@ -216,7 +216,11 @@ class LLMService:
         lang = "Deutsch" if language == "de" else "English"
         style_desc = STYLE_DESC.get(style, STYLE_DESC["neutral"])
         minute_str = f"{minute}. Minute" if minute else "Vor/Nach dem Spiel"
-        _et = "pre_match_injuries" if event_type.startswith("pre_match_injuries") else event_type
+        _et = (
+            "pre_match_injuries"
+            if event_type.startswith("pre_match_injuries")
+            else event_type
+        )
         event_label = EVENT_TYPE_LABEL.get(_et, event_type)
 
         event_lines = [f"Ereignistyp: {event_label}"]
@@ -232,7 +236,9 @@ class LLMService:
             )
             event_lines.append(f"{label}: {assist_name}")
         if team_name:
-            event_lines.append(f"Verursachendes Team (Spieler gehört zu diesem Verein): {team_name}")
+            event_lines.append(
+                f"Verursachendes Team (Spieler gehört zu diesem Verein): {team_name}"
+            )
 
         context_block = self._build_context_str(event_type, context_data)
 
@@ -252,12 +258,14 @@ class LLMService:
             "ABSOLUT VERBOTEN: Spielszenen, Angriffe, Abschlüsse, Tore, Pässe, Zweikämpfe, Schüsse, Elfmeter, Einwürfe, Ecken – jede Art von Live-Kommentar.\n"
             "Schreibe NUR sachliche Fakten aus dem KONTEXT unten (2–3 Sätze). Nichts erfinden!\n"
             "=======================================\n\n"
-            if is_prematch else ""
+            if is_prematch
+            else ""
         )
 
         prematch_rule = (
             "- VOR-BERICHT: Nur Vorschau/Analyse – KEINE Spielszenen, KEINE Aktionen, KEINE Live-Beschreibungen\n"
-            if is_prematch else ""
+            if is_prematch
+            else ""
         )
 
         return (
@@ -451,7 +459,9 @@ class LLMService:
                 "neutral": ["Elfmeterschießen! Es geht in die Entscheidung."]
             },
             "fulltime_aet": {"neutral": ["Abpfiff nach Verlängerung!"]},
-            "fulltime_pen": {"neutral": ["Abpfiff! Die Entscheidung fällt im Elfmeterschießen."]},
+            "fulltime_pen": {
+                "neutral": ["Abpfiff! Die Entscheidung fällt im Elfmeterschießen."]
+            },
         }
 
         pool = templates.get(event_type, {})

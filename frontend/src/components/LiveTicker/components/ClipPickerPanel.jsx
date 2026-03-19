@@ -103,7 +103,7 @@ function ClipPublishModal({ clip, matchId, currentMinute, onClose, onPublished }
     setGenerating(true);
     generateClipDraft(clip.id, matchId, style)
       .then((res) => setText(res.data.text ?? ""))
-      .catch(() => {})
+      .catch((err) => console.warn("[ClipPickerPanel] generateClipDraft silenced:", err?.message))
       .finally(() => setGenerating(false));
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 

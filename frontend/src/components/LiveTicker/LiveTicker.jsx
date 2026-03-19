@@ -23,6 +23,7 @@ import { RightPanel } from "./panels/RightPanel";
 import { StartScreen } from "./components/StartScreen";
 import { Breadcrumb } from "./components/Breadcrumb";
 import { useApiStatus, API_STATUS_CFG } from "../../hooks/useApiStatus";
+import ErrorBoundary from "../ErrorBoundary";
 
 export default function LiveTicker() {
   // ── App Loading ───────────────────────────────────────────
@@ -195,7 +196,9 @@ export default function LiveTicker() {
         (t) => t.phase === phase && (t.status === "published" || t.status == null),
       );
       if (!exists) {
-        api.generateMatchSummary(selMatchId, phase).catch(() => {});
+        api.generateMatchSummary(selMatchId, phase).catch((err) =>
+          console.warn("[LiveTicker] generateMatchSummary silenced:", err?.message)
+        );
       }
     }
   }, [selMatchId, match?.matchPhase, match?.matchState, tickerTexts]);
@@ -204,10 +207,14 @@ export default function LiveTicker() {
   useEffect(() => {
     if (!selMatchId || !match?.matchState) return;
     if (match.matchState === "PreMatch") return;
-    api.triggerLiveStatsMonitor(selMatchId).catch(() => {});
+    api.triggerLiveStatsMonitor(selMatchId).catch((err) =>
+      console.warn("[LiveTicker] triggerLiveStatsMonitor silenced:", err?.message)
+    );
     if (match.matchState !== "Live") return; // kein Polling bei FullTime
     const interval = setInterval(() => {
-      api.triggerLiveStatsMonitor(selMatchId).catch(() => {});
+      api.triggerLiveStatsMonitor(selMatchId).catch((err) =>
+        console.warn("[LiveTicker] triggerLiveStatsMonitor silenced:", err?.message)
+      );
     }, 5 * 60 * 1000);
     return () => clearInterval(interval);
   }, [selMatchId, match?.matchState]);
@@ -242,7 +249,9 @@ export default function LiveTicker() {
     if (status) {
       api
         .triggerMatchStatus(match.externalId, status, match.minute ?? null)
-        .catch(() => {});
+        .catch((err) =>
+          console.warn("[LiveTicker] triggerMatchStatus silenced:", err?.message)
+        );
     }
   }, [selMatchId, match?.matchState, match?.matchPhase]);
 
@@ -633,39 +642,43 @@ export default function LiveTicker() {
                   background: "transparent",
                 }}
               />
-              <CenterPanel
-                match={match}
-                currentMinute={liveMinute}
-                events={events}
-                tickerTexts={tickerTexts}
-                generatingId={generatingId}
-                onGenerate={handleGenerate}
-                onManualPublish={handleManualPublish}
-                onDraftActive={(id, text) => {
-                  setActiveDraftId(id);
-                  setActiveDraftText(text);
-                }}
-                reload={reload}
-                instance={instance}
-                lineups={lineups}
-                players={players}
-              />
+              <ErrorBoundary>
+                <CenterPanel
+                  match={match}
+                  currentMinute={liveMinute}
+                  events={events}
+                  tickerTexts={tickerTexts}
+                  generatingId={generatingId}
+                  onGenerate={handleGenerate}
+                  onManualPublish={handleManualPublish}
+                  onDraftActive={(id, text) => {
+                    setActiveDraftId(id);
+                    setActiveDraftText(text);
+                  }}
+                  reload={reload}
+                  instance={instance}
+                  lineups={lineups}
+                  players={players}
+                />
+              </ErrorBoundary>
             </div>
           )}
           <div className={`lt-panel-wrap lt-panel-wrap--left${mobilePanel === "left" ? " lt-panel-wrap--active" : ""}`}>
-            <LeftPanel
-              events={events}
-              tickerTexts={tickerTexts}
-              match={match}
-              onEditEntry={async (id, text) => {
-                await api.updateTicker(id, { text });
-                await reload.loadTickerTexts();
-              }}
-              onDeleteEntry={async (id) => {
-                await api.deleteTicker(id);
-                await reload.loadTickerTexts();
-              }}
-            />
+            <ErrorBoundary>
+              <LeftPanel
+                events={events}
+                tickerTexts={tickerTexts}
+                match={match}
+                onEditEntry={async (id, text) => {
+                  await api.updateTicker(id, { text });
+                  await reload.loadTickerTexts();
+                }}
+                onDeleteEntry={async (id) => {
+                  await api.deleteTicker(id);
+                  await reload.loadTickerTexts();
+                }}
+              />
+            </ErrorBoundary>
           </div>
           <div className={`lt-panel-wrap${mobilePanel === "right" ? " lt-panel-wrap--active" : ""}`}>
             <div
@@ -682,16 +695,18 @@ export default function LiveTicker() {
                 background: "transparent",
               }}
             />
-            <RightPanel
-              match={match}
-              matchStats={matchStats}
-              players={players}
-              playerStats={playerStats}
-              lineups={lineups}
-              prematch={prematch}
-              events={events}
-              injuries={injuries}
-            />
+            <ErrorBoundary>
+              <RightPanel
+                match={match}
+                matchStats={matchStats}
+                players={players}
+                playerStats={playerStats}
+                lineups={lineups}
+                prematch={prematch}
+                events={events}
+                injuries={injuries}
+              />
+            </ErrorBoundary>
           </div>
         </main>
 
