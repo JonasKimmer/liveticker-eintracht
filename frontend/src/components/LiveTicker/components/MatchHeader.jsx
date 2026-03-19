@@ -21,7 +21,7 @@ export const MatchHeader = memo(function MatchHeader({ match, leagueSeason, onMi
     sync();
     const id = setInterval(sync, 60000);
     return () => clearInterval(id);
-  }, [status, match?.externalId]);
+  }, [status, match?.externalId, onMinuteSync]);
 
   if (!match || !match.homeTeam || !match.awayTeam) return null;
   const homeAbbr = match.homeTeam.name.substring(0, 3).toUpperCase();

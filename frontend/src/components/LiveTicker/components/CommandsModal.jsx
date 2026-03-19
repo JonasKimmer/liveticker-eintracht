@@ -6,11 +6,15 @@
 import PropTypes from "prop-types";
 
 const COMMANDS = [
-  ["/goal Müller FCB",          "⚽ TOR — Müller (FCB)"],
-  ["/card Müller FCB yellow",   "🟨 KARTE — Müller (FCB)"],
-  ["/card Müller FCB red",      "🟥 ROTE KARTE — Müller (FCB)"],
-  ["/sub Kimmich Coman FCB",    "🔄 WECHSEL — Kimmich ↔ Coman (FCB)"],
-  ["/note Ecke für FCB",        "— Ecke für FCB"],
+  ["/g Müller EF",           "⚽ TOR — Müller (Eintracht)"],
+  ["/og Müller EF",          "⚽ EIGENTOR — Müller (Eintracht)"],
+  ["/gelb Müller EF",        "🟨 GELBE KARTE — Müller (Eintracht)"],
+  ["/rot Müller EF",         "🟥 ROTE KARTE — Müller (Eintracht)"],
+  ["/ep Müller EF",          "❌ ELFMETER verschossen — Müller"],
+  ["/s Kimmich Coman EF",    "🔄 WECHSEL — Kimmich ↔ Coman"],
+  ["/n Ecke für Eintracht",  "📝 Ecke für Eintracht"],
+  ["/anpfiff 45",            "📣 Anpfiff — 45. Minute"],
+  ["/hz",                    "🔔 Halbzeit"],
 ];
 
 export function CommandsModal({ onClose }) {
