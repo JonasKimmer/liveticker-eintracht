@@ -242,7 +242,7 @@ async def generate_media_caption(
     """Generiert per LLM einen Ticker-Text für ein ScorePlay-Bild."""
     media = db.query(MediaQueue).filter(MediaQueue.media_id == media_id).first()
     if not media:
-        raise HTTPException(status_code=404, detail="Bild nicht gefunden")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Bild nicht gefunden")
 
     detail = media.name or f"ScorePlay Bild #{media_id}"
     text, model = await generate_ticker_text(
