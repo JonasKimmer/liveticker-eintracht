@@ -8,6 +8,7 @@ import logging
 from typing import Optional
 
 from sqlalchemy import distinct, func, or_
+from sqlalchemy.orm import Query
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session, joinedload
 
@@ -35,7 +36,7 @@ class MatchRepository:
     # Internal helpers                                                     #
     # ------------------------------------------------------------------ #
 
-    def _base_query(self):
+    def _base_query(self) -> Query:
         return self.db.query(Match).options(
             joinedload(Match.home_team),
             joinedload(Match.away_team),
@@ -97,7 +98,7 @@ class MatchRepository:
         )
         return [r[0] for r in rows]
 
-    def get_competitions_for_team(self, team_id: int) -> list:
+    def get_competitions_for_team(self, team_id: int) -> list["Competition"]:
         """Return distinct Competition objects derived from matches the team plays in."""
         from app.models.competition import Competition
 

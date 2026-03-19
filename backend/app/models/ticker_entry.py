@@ -9,7 +9,7 @@ class TickerEntry(Base):
 
     id = Column(Integer, primary_key=True)
     match_id = Column(
-        Integer, ForeignKey("matches.id", ondelete="CASCADE"), nullable=False
+        Integer, ForeignKey("matches.id", ondelete="CASCADE"), nullable=False, index=True
     )
     event_id = Column(
         Integer, ForeignKey("events.id", ondelete="SET NULL"), nullable=True
@@ -29,7 +29,7 @@ class TickerEntry(Base):
     phase = Column(String(50), nullable=True)
     image_url = Column(Text, nullable=True)
     video_url = Column(Text, nullable=True)
-    created_at = Column(TIMESTAMP(timezone=True), server_default=func.now())
+    created_at = Column(TIMESTAMP(timezone=True), server_default=func.now(), nullable=False)
 
     match = relationship("Match", back_populates="ticker_entries")
     event = relationship("Event", back_populates="ticker_entries")

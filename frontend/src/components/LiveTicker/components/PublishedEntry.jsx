@@ -11,6 +11,24 @@ const URL_PATTERNS = {
   youtube: /youtube\.com|youtu\.be/,
 };
 
+function getMediaIcon(videoUrl, imageUrl, fallback) {
+  if (!videoUrl && !imageUrl) return fallback;
+  if (videoUrl && URL_PATTERNS.twitter.test(videoUrl)) return "𝕏";
+  if (videoUrl && URL_PATTERNS.instagram.test(videoUrl)) return "📸";
+  if (videoUrl && URL_PATTERNS.youtube.test(videoUrl)) return "▶";
+  if (videoUrl) return "🎬";
+  return "📸";
+}
+
+function getMediaLabel(videoUrl, imageUrl) {
+  if (videoUrl && URL_PATTERNS.twitter.test(videoUrl)) return "tweet · manuell";
+  if (videoUrl && URL_PATTERNS.instagram.test(videoUrl)) return "instagram · manuell";
+  if (videoUrl && URL_PATTERNS.youtube.test(videoUrl)) return "youtube · manuell";
+  if (videoUrl) return "clip · manuell";
+  if (imageUrl) return "foto · manuell";
+  return "manuell";
+}
+
 // YouTube watch-URL → embed-URL umwandeln
 function toEmbedUrl(url) {
   try {
@@ -79,6 +97,46 @@ function InlineVideo({ videoUrl, thumbnailUrl }) {
 InlineVideo.propTypes = {
   videoUrl: PropTypes.string.isRequired,
   thumbnailUrl: PropTypes.string,
+};
+
+const LINK_STYLE = { display: "inline-flex", alignItems: "center", gap: "0.35rem", fontFamily: "var(--lt-font-mono)", fontSize: "0.68rem", color: "var(--lt-accent)", textDecoration: "none", marginBottom: 4 };
+const THUMB_STYLE = { width: "100%", maxWidth: 280, borderRadius: 6, display: "block", objectFit: "cover" };
+
+function MediaContent({ videoUrl, imageUrl }) {
+  if (!videoUrl && !imageUrl) return null;
+  if (videoUrl && URL_PATTERNS.twitter.test(videoUrl)) {
+    return <a href={videoUrl} target="_blank" rel="noopener noreferrer" style={LINK_STYLE}><span style={{ fontSize: "0.8rem" }}>𝕏</span> Zum Tweet →</a>;
+  }
+  if (videoUrl && URL_PATTERNS.instagram.test(videoUrl)) {
+    return (
+      <div>
+        {imageUrl && <a href={videoUrl} target="_blank" rel="noopener noreferrer" style={{ display: "block", marginBottom: 6 }}><img src={imageUrl} alt="Instagram" referrerPolicy="no-referrer" style={THUMB_STYLE} loading="lazy" /></a>}
+        <a href={videoUrl} target="_blank" rel="noopener noreferrer" style={LINK_STYLE}><span style={{ fontSize: "0.8rem" }}>📸</span> Zum Instagram-Post →</a>
+      </div>
+    );
+  }
+  if (videoUrl && URL_PATTERNS.youtube.test(videoUrl)) {
+    return (
+      <div>
+        {imageUrl && <a href={videoUrl} target="_blank" rel="noopener noreferrer" style={{ display: "block", position: "relative", marginBottom: 6 }}><img src={imageUrl} alt="YouTube" style={THUMB_STYLE} loading="lazy" /></a>}
+        <a href={videoUrl} target="_blank" rel="noopener noreferrer" style={LINK_STYLE}><span style={{ fontSize: "0.8rem" }}>▶</span> Zum YouTube-Video →</a>
+      </div>
+    );
+  }
+  if (videoUrl) {
+    return <InlineVideo videoUrl={videoUrl} thumbnailUrl={imageUrl} />;
+  }
+  return (
+    <img src={imageUrl} alt="Ticker-Bild" className="lt-entry__image" loading="lazy"
+      onDoubleClick={() => window.dispatchEvent(new CustomEvent("lt-show-commands"))}
+      style={{ cursor: "pointer" }}
+    />
+  );
+}
+
+MediaContent.propTypes = {
+  videoUrl: PropTypes.string,
+  imageUrl: PropTypes.string,
 };
 
 function EditForm({ textareaRef, value, onChange, onSave, onCancel, saving }) {
@@ -181,62 +239,10 @@ export const PublishedEntry = memo(function PublishedEntry({
       <div className="lt-entry lt-entry--manual">
         <span className="lt-entry__minute">{minuteDisplay}</span>
         {tickerText?.phase !== "Before" && (
-          <span className="lt-entry__icon">{tickerText?.video_url && URL_PATTERNS.twitter.test(tickerText.video_url) ? "𝕏" : tickerText?.video_url && URL_PATTERNS.instagram.test(tickerText.video_url) ? "📸" : tickerText?.video_url && URL_PATTERNS.youtube.test(tickerText.video_url) ? "▶" : tickerText?.video_url ? "🎬" : tickerText?.image_url ? "📸" : displayIcon}</span>
+          <span className="lt-entry__icon">{getMediaIcon(tickerText?.video_url, tickerText?.image_url, displayIcon)}</span>
         )}
         <div className="lt-entry__body">
-          {tickerText?.video_url && URL_PATTERNS.twitter.test(tickerText.video_url) ? (
-            <a href={tickerText.video_url} target="_blank" rel="noopener noreferrer"
-              style={{ display: "inline-flex", alignItems: "center", gap: "0.35rem", fontFamily: "var(--lt-font-mono)", fontSize: "0.68rem", color: "var(--lt-accent)", textDecoration: "none", marginBottom: 4 }}>
-              <span style={{ fontSize: "0.8rem" }}>𝕏</span> Zum Tweet →
-            </a>
-          ) : tickerText?.video_url && URL_PATTERNS.instagram.test(tickerText.video_url) ? (
-            <div>
-              {tickerText.image_url && (
-                <a href={tickerText.video_url} target="_blank" rel="noopener noreferrer" style={{ display: "block", marginBottom: 6 }}>
-                  <img
-                    src={tickerText.image_url}
-                    alt="Instagram"
-                    referrerPolicy="no-referrer"
-                    style={{ width: "100%", maxWidth: 280, borderRadius: 6, display: "block", objectFit: "cover" }}
-                    loading="lazy"
-                  />
-                </a>
-              )}
-              <a href={tickerText.video_url} target="_blank" rel="noopener noreferrer"
-                style={{ display: "inline-flex", alignItems: "center", gap: "0.35rem", fontFamily: "var(--lt-font-mono)", fontSize: "0.68rem", color: "var(--lt-accent)", textDecoration: "none", marginBottom: 4 }}>
-                <span style={{ fontSize: "0.8rem" }}>📸</span> Zum Instagram-Post →
-              </a>
-            </div>
-          ) : tickerText?.video_url && URL_PATTERNS.youtube.test(tickerText.video_url) ? (
-            <div>
-              {tickerText.image_url && (
-                <a href={tickerText.video_url} target="_blank" rel="noopener noreferrer"
-                  style={{ display: "block", position: "relative", marginBottom: 6 }}>
-                  <img
-                    src={tickerText.image_url}
-                    alt="YouTube"
-                    style={{ width: "100%", maxWidth: 280, borderRadius: 6, display: "block", objectFit: "cover" }}
-                    loading="lazy"
-                  />
-                </a>
-              )}
-              <a href={tickerText.video_url} target="_blank" rel="noopener noreferrer"
-                style={{ display: "inline-flex", alignItems: "center", gap: "0.35rem", fontFamily: "var(--lt-font-mono)", fontSize: "0.68rem", color: "var(--lt-accent)", textDecoration: "none", marginBottom: 4 }}>
-                <span style={{ fontSize: "0.8rem" }}>▶</span> Zum YouTube-Video →
-              </a>
-            </div>
-          ) : tickerText?.video_url ? (
-            <InlineVideo videoUrl={tickerText.video_url} thumbnailUrl={tickerText.image_url} />
-          ) : tickerText?.image_url && (
-            <img
-              src={tickerText.image_url}
-              alt="Ticker-Bild"
-              className="lt-entry__image"
-              loading="lazy"
-              onDoubleClick={() => window.dispatchEvent(new CustomEvent("lt-show-commands"))}
-              style={{ cursor: "pointer" }}
-            />
-          )}
+          <MediaContent videoUrl={tickerText?.video_url} imageUrl={tickerText?.image_url} />
           {editing ? (
             <EditForm textareaRef={textareaRef} value={editText} onChange={setEditText} onSave={saveEdit} onCancel={cancelEdit} saving={saving} />
           ) : (
@@ -256,7 +262,7 @@ export const PublishedEntry = memo(function PublishedEntry({
               )}
             </div>
           )}
-          <div className="lt-entry__meta">{tickerText?.video_url && URL_PATTERNS.twitter.test(tickerText.video_url) ? "tweet · manuell" : tickerText?.video_url && URL_PATTERNS.instagram.test(tickerText.video_url) ? "instagram · manuell" : tickerText?.video_url && URL_PATTERNS.youtube.test(tickerText.video_url) ? "youtube · manuell" : tickerText?.video_url ? "clip · manuell" : tickerText?.image_url ? "foto · manuell" : "manuell"}</div>
+          <div className="lt-entry__meta">{getMediaLabel(tickerText?.video_url, tickerText?.image_url)}</div>
         </div>
       </div>
     );
