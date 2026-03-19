@@ -95,18 +95,19 @@ async def media_incoming(
     Speichert neue Bilder (ON CONFLICT wird über unique-Check gelöst),
     broadcasted sie via WebSocket an alle verbundenen Redakteur-Clients.
     """
+    incoming_ids = [item.media_id for item in items]
+    existing_ids = {
+        row[0]
+        for row in db.query(MediaQueue.media_id)
+        .filter(MediaQueue.media_id.in_(incoming_ids))
+        .all()
+    }
+
     saved: list[MediaItemIn] = []
-
     for item in items:
-        exists = (
-            db.query(MediaQueue)
-            .filter(MediaQueue.media_id == item.media_id)
-            .first()
-        )
-        if exists:
+        if item.media_id in existing_ids:
             continue
-
-        entry = MediaQueue(
+        db.add(MediaQueue(
             media_id=item.media_id,
             name=item.name,
             thumbnail_url=item.thumbnail_url,
@@ -114,8 +115,7 @@ async def media_incoming(
             original_url=item.original_url,
             event_id=item.event_id,
             status="pending",
-        )
-        db.add(entry)
+        ))
         saved.append(item)
 
     if saved:
