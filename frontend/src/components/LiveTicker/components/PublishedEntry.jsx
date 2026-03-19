@@ -142,6 +142,19 @@ MediaContent.propTypes = {
 
 const MEDIA_DEFAULT_ICONS = ["🎬", "📷", "📸"];
 
+function EntryActions({ onEdit, onDelete, tickerTextId, startEdit }) {
+  return (
+    <>
+      {onEdit && (
+        <button onClick={startEdit} title="Bearbeiten" style={{ marginLeft: 6, background: "none", border: "none", color: "var(--lt-text-faint)", cursor: "pointer", fontSize: "0.75rem", padding: 0, verticalAlign: "middle", opacity: 0.5 }}>✎</button>
+      )}
+      {onDelete && (
+        <button onClick={() => { if (window.confirm("Eintrag löschen?")) onDelete(tickerTextId); }} title="Löschen" style={{ marginLeft: 4, background: "none", border: "none", color: "var(--lt-text-faint)", cursor: "pointer", fontSize: "0.72rem", padding: 0, verticalAlign: "middle", opacity: 0.4 }}>✕</button>
+      )}
+    </>
+  );
+}
+
 function getDisplayText(tickerText) {
   const hasMedia = tickerText?.video_url || tickerText?.image_url;
   const isCodeKey = tickerText?.icon && /^[a-z0-9_]+$/i.test(tickerText.icon);
@@ -268,12 +281,7 @@ export const PublishedEntry = memo(function PublishedEntry({
           ) : (
             <div className="lt-entry__text" style={{ position: "relative" }}>
               {getDisplayText(tickerText)}
-              {onEdit && (
-                <button onClick={startEdit} title="Bearbeiten" style={{ marginLeft: 6, background: "none", border: "none", color: "var(--lt-text-faint)", cursor: "pointer", fontSize: "0.75rem", padding: 0, verticalAlign: "middle", opacity: 0.5 }}>✎</button>
-              )}
-              {onDelete && (
-                <button onClick={() => { if (window.confirm("Eintrag löschen?")) onDelete(tickerText?.id); }} title="Löschen" style={{ marginLeft: 4, background: "none", border: "none", color: "var(--lt-text-faint)", cursor: "pointer", fontSize: "0.72rem", padding: 0, verticalAlign: "middle", opacity: 0.4 }}>✕</button>
-              )}
+              <EntryActions onEdit={onEdit} onDelete={onDelete} tickerTextId={tickerText?.id} startEdit={startEdit} />
             </div>
           )}
           <div className="lt-entry__meta">{getMediaLabel(tickerText?.video_url, tickerText?.image_url)}</div>
@@ -294,12 +302,7 @@ export const PublishedEntry = memo(function PublishedEntry({
         ) : (
           <div className="lt-entry__text" style={{ position: "relative" }}>
             {tickerText.text}
-            {onEdit && (
-              <button onClick={startEdit} title="Bearbeiten" style={{ marginLeft: 6, background: "none", border: "none", color: "var(--lt-text-faint)", cursor: "pointer", fontSize: "0.75rem", padding: 0, verticalAlign: "middle", opacity: 0.5 }}>✎</button>
-            )}
-            {onDelete && (
-              <button onClick={() => { if (window.confirm("Eintrag löschen?")) onDelete(tickerText?.id); }} title="Löschen" style={{ marginLeft: 4, background: "none", border: "none", color: "var(--lt-text-faint)", cursor: "pointer", fontSize: "0.72rem", padding: 0, verticalAlign: "middle", opacity: 0.4 }}>✕</button>
-            )}
+            <EntryActions onEdit={onEdit} onDelete={onDelete} tickerTextId={tickerText?.id} startEdit={startEdit} />
           </div>
         )}
         <div className="lt-entry__meta">

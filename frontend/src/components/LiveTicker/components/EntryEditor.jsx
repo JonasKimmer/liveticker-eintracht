@@ -4,7 +4,7 @@
 import { memo, useState, useEffect, useMemo, useCallback, useRef } from "react";
 import PropTypes from "prop-types";
 import { parseCommand } from "../utils/parseCommand";
-import { COMMAND_PALETTE } from "../utils/commandPalette";
+import { COMMAND_PALETTE, NEEDS_ARG } from "../utils/commandPalette";
 import { MODES } from "../constants";
 import { useLiveMinuteEditor } from "../hooks/useLiveMinuteEditor";
 import { MinuteEditor } from "./MinuteEditor";
@@ -83,8 +83,7 @@ export const EntryEditor = memo(function EntryEditor({
   }, [value, onChange]);
 
   const selectCmd = useCallback((cmd) => {
-    const needsArg = ["/anpfiff", "/2hz", "/vz1", "/vz2", "/g", "/og", "/gelb", "/rot", "/ep", "/c", "/s", "/n"].includes(cmd);
-    onChange(cmd + (needsArg ? " " : ""));
+    onChange(cmd + (NEEDS_ARG.includes(cmd) ? " " : ""));
     setPaletteOpen(false);
     setTimeout(() => textareaRef.current?.focus(), 0);
   }, [onChange]);

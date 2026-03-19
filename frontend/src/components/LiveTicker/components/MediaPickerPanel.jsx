@@ -10,7 +10,7 @@ import { createPortal } from "react-dom";
 import { useMediaWebSocket } from "../../../hooks/useMediaWebSocket";
 import { generateMediaCaption } from "../../../api";
 import { parseCommand } from "../utils/parseCommand";
-import { COMMAND_PALETTE, CommandPalettePortal } from "../utils/commandPalette";
+import { useCommandPalette, CommandPalettePortal } from "../utils/commandPalette";
 import { MinuteEditor } from "./MinuteEditor";
 import config from "../../../config/whitelabel";
 
@@ -69,23 +69,8 @@ function PublishModal({ image, matchId, onClose, onPublished, playerNames = [], 
   // Live minute — syncs from prop, ticks every 60s, can be manually overridden
   const { minute, setMinute, minuteEditing, setMinuteEditing, minuteOverride, setMinuteOverride } = useLiveMinuteEditor(currentMinute);
 
-  // Command palette
-  const [paletteOpen, setPaletteOpen] = useState(false);
-  const [paletteIdx, setPaletteIdx] = useState(0);
+  const { showPalette, paletteIdx, filteredCmds, onValueChange, selectCmd: selectCmdPalette, handlePaletteKeyDown } = useCommandPalette(description);
   const [nameIdx, setNameIdx] = useState(0);
-
-  const cmdToken = description.startsWith("/") && !description.includes(" ")
-    ? description.toLowerCase()
-    : description === "/" ? "/" : null;
-
-  const filteredCmds = useMemo(() => {
-    if (!cmdToken) return [];
-    const items = COMMAND_PALETTE.filter(Boolean);
-    if (cmdToken === "/" || cmdToken === "/?") return items;
-    return items.filter((c) => c.cmd.startsWith(cmdToken));
-  }, [cmdToken]);
-
-  const showPalette = paletteOpen && filteredCmds.length > 0;
 
   const preview = useMemo(() => {
     if (!description.trim().startsWith("/")) return null;
@@ -120,13 +105,6 @@ function PublishModal({ image, matchId, onClose, onPublished, playerNames = [], 
     return () => window.removeEventListener("keydown", onKey);
   }, [onClose, showPalette, showNames]);
 
-  const selectCmd = useCallback((cmd) => {
-    const needsArg = ["/anpfiff", "/2hz", "/vz1", "/vz2", "/g", "/og", "/gelb", "/rot", "/ep", "/s", "/n"].includes(cmd);
-    setDescription(cmd + (needsArg ? " " : ""));
-    setPaletteOpen(false);
-    setTimeout(() => textareaRef.current?.focus(), 0);
-  }, []);
-
   const selectName = useCallback((name) => {
     const words = description.split(/\s+/);
     words[words.length - 1] = name;
@@ -151,13 +129,8 @@ function PublishModal({ image, matchId, onClose, onPublished, playerNames = [], 
   const handleChange = useCallback((e) => {
     const v = e.target.value;
     setDescription(v);
-    if (v.startsWith("/") && !v.includes(" ")) {
-      setPaletteOpen(true);
-      setPaletteIdx(0);
-    } else {
-      setPaletteOpen(false);
-    }
-  }, []);
+    onValueChange(v);
+  }, [onValueChange]);
 
   const handleSubmit = useCallback(async (e) => {
     e?.preventDefault();
@@ -182,12 +155,7 @@ function PublishModal({ image, matchId, onClose, onPublished, playerNames = [], 
   }, [description, minute, image.media_id, matchId, onPublished]);
 
   const handleKeyDown = useCallback((e) => {
-    if (showPalette) {
-      if (e.key === "ArrowDown") { e.preventDefault(); setPaletteIdx((i) => Math.min(i + 1, filteredCmds.length - 1)); return; }
-      if (e.key === "ArrowUp")   { e.preventDefault(); setPaletteIdx((i) => Math.max(i - 1, 0)); return; }
-      if (e.key === "Tab" || e.key === "Enter") { e.preventDefault(); if (filteredCmds[paletteIdx]) selectCmd(filteredCmds[paletteIdx].cmd); return; }
-      if (e.key === "Escape") { setPaletteOpen(false); return; }
-    }
+    if (handlePaletteKeyDown(e, setDescription)) return;
     if (showNames) {
       if (e.key === "ArrowDown") { e.preventDefault(); setNameIdx((i) => Math.min(i + 1, nameSuggestions.length - 1)); return; }
       if (e.key === "ArrowUp")   { e.preventDefault(); setNameIdx((i) => Math.max(i - 1, 0)); return; }
@@ -199,7 +167,7 @@ function PublishModal({ image, matchId, onClose, onPublished, playerNames = [], 
       return;
     }
     if (e.ctrlKey && e.key === "Enter") { e.preventDefault(); handleSubmit(); }
-  }, [showPalette, showNames, filteredCmds, paletteIdx, nameSuggestions, nameIdx, description, preview, selectCmd, selectName, handleSubmit]);
+  }, [handlePaletteKeyDown, showNames, nameSuggestions, nameIdx, description, preview, selectName, handleSubmit]);
 
   const publishDisabled = loading || !description.trim();
 
@@ -288,7 +256,7 @@ function PublishModal({ image, matchId, onClose, onPublished, playerNames = [], 
                 items={filteredCmds}
                 activeIdx={paletteIdx}
                 anchorRef={textareaRef}
-                onSelect={(cmd) => { selectCmd(cmd); setTimeout(() => textareaRef.current?.focus(), 0); }}
+                onSelect={(cmd) => { selectCmdPalette(cmd, setDescription); setTimeout(() => textareaRef.current?.focus(), 0); }}
               />
 
               {/* Name suggestions */}

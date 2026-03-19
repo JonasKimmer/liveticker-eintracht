@@ -24,7 +24,7 @@ export const COMMAND_PALETTE = [
   { cmd: "/abpfiff",  desc: "Abpfiff",                icon: "📣", hint: "" },
 ];
 
-const NEEDS_ARG = ["/anpfiff", "/2hz", "/vz1", "/vz2", "/g", "/og", "/gelb", "/rot", "/ep", "/s", "/n"];
+export const NEEDS_ARG = ["/anpfiff", "/2hz", "/vz1", "/vz2", "/g", "/og", "/gelb", "/rot", "/ep", "/c", "/s", "/n"];
 
 export function useCommandPalette(value) {
   const [paletteOpen, setPaletteOpen] = useState(false);
