@@ -3,7 +3,7 @@
 // Flow: n8n scrapet Kanal → DB → Klick → Modal → Ticker
 // ============================================================
 
-import { useState, useCallback, useEffect, useRef } from "react";
+import { memo, useState, useCallback, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import { useCommandPalette, CommandPalettePortal, resolvePublishPayload } from "../utils/commandPalette";
 import {
@@ -384,7 +384,7 @@ function YouTubeThumbnail({ clip, onClick, onDelete }) {
 
 // ── Hauptkomponente ───────────────────────────────────────────
 
-export function YouTubePanel({ matchId, currentMinute = 0 }) {
+export const YouTubePanel = memo(function YouTubePanel({ matchId, currentMinute = 0 }) {
   const [open, setOpen] = useState(false);
   const [clips, setClips] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -555,4 +555,4 @@ export function YouTubePanel({ matchId, currentMinute = 0 }) {
       </div>
     </>
   );
-}
+});

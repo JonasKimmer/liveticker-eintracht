@@ -3,9 +3,9 @@
 // Zeigt: Liga › Saison › Spieltag › Heim vs Gast
 // Klick → onOpen() öffnet MatchSelectorModal
 // ============================================================
-import React from "react";
+import { memo } from "react";
 
-export function Breadcrumb({ match, competition, country, team, round, onOpen }) {
+export const Breadcrumb = memo(function Breadcrumb({ match, competition, country, team, round, onOpen }) {
   if (!match || !competition) return null;
 
   const roundLabel = round
@@ -33,4 +33,4 @@ export function Breadcrumb({ match, competition, country, team, round, onOpen })
       <span className="lt-breadcrumb__edit">✎</span>
     </button>
   );
-}
+});

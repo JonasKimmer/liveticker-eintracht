@@ -1,12 +1,12 @@
 // ============================================================
 // MatchHeader.jsx
 // ============================================================
-import { useEffect } from "react";
+import { memo, useEffect } from "react";
 import { normalizeMatchStatus } from "../utils/parseCommand";
 import { useLiveMinute } from "../../../hooks/useLiveMinute";
 import * as api from "../../../api";
 
-export function MatchHeader({ match, leagueSeason, onMinuteSync }) {
+export const MatchHeader = memo(function MatchHeader({ match, leagueSeason, onMinuteSync }) {
   const status = normalizeMatchStatus(match?.matchState);
   const liveMinute = useLiveMinute(match);
 
@@ -84,4 +84,4 @@ export function MatchHeader({ match, leagueSeason, onMinuteSync }) {
       )}
     </div>
   );
-}
+});

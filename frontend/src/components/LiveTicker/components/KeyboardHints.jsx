@@ -1,10 +1,10 @@
 // ============================================================
 // KeyboardHints.jsx  — Modal (?-Taste)
 // ============================================================
-import React from "react";
+import { memo, Fragment } from "react";
 import { MODES } from "../constants";
 
-export function KeyboardHints({ mode, onClose }) {
+export const KeyboardHints = memo(function KeyboardHints({ mode, onClose }) {
   return (
     <div className="lt-kb-overlay" onClick={onClose}>
       <div className="lt-kb-modal" onClick={(e) => e.stopPropagation()}>
@@ -69,7 +69,7 @@ export function KeyboardHints({ mode, onClose }) {
       </div>
     </div>
   );
-}
+});
 
 function KbGroup({ title, children }) {
   return (
@@ -85,14 +85,14 @@ function KbItem({ keys, action, accent }) {
     <div className="lt-kb-item">
       <div className="lt-kb-item__keys">
         {keys.map((k, i) => (
-          <React.Fragment key={k}>
+          <Fragment key={k}>
             <kbd
               className={`lt-kb-item__key${accent ? " lt-kb-item__key--accent" : ""}`}
             >
               {k}
             </kbd>
             {i < keys.length - 1 && <span className="lt-kb-item__sep">+</span>}
-          </React.Fragment>
+          </Fragment>
         ))}
       </div>
       <span className="lt-kb-item__action">{action}</span>

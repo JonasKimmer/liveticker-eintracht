@@ -1,7 +1,7 @@
 // ============================================================
 // EntryEditor.jsx  — Slash-Command Editor mit Autocomplete
 // ============================================================
-import React, { useState, useEffect, useMemo, useCallback, useRef } from "react";
+import { memo, useState, useEffect, useMemo, useCallback, useRef } from "react";
 import { parseCommand } from "../utils/parseCommand";
 import { MODES } from "../constants";
 
@@ -28,7 +28,7 @@ const COMMAND_PALETTE = [
   { cmd: "/abpfiff",  desc: "Abpfiff",                icon: "📣", hint: "" },
 ];
 
-export function EntryEditor({
+export const EntryEditor = memo(function EntryEditor({
   value,
   onChange,
   onPublish,
@@ -357,4 +357,4 @@ export function EntryEditor({
       </div>
     </div>
   );
-}
+});

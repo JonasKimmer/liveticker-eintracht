@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { memo, useState, useMemo } from "react";
 import { createPortal } from "react-dom";
 import { parseCommand } from "./parseCommand";
 
@@ -72,7 +72,7 @@ export function useCommandPalette(value) {
   return { showPalette, paletteIdx, filteredCmds, setPaletteOpen, onValueChange, selectCmd, handlePaletteKeyDown };
 }
 
-export function CommandPalettePortal({ show, items, activeIdx, anchorRef, onSelect }) {
+export const CommandPalettePortal = memo(function CommandPalettePortal({ show, items, activeIdx, anchorRef, onSelect }) {
   if (!show || !items.length || !anchorRef?.current) return null;
 
   const rect = anchorRef.current.getBoundingClientRect();
@@ -118,7 +118,7 @@ export function CommandPalettePortal({ show, items, activeIdx, anchorRef, onSele
     </div>,
     document.body
   );
-}
+});
 
 /**
  * Gibt { text, icon } für einen Publish-Vorgang zurück.

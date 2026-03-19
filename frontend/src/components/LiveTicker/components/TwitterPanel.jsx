@@ -3,7 +3,7 @@
 // Flow: n8n RSS → DB → Klick → Modal → Ticker
 // ============================================================
 
-import { useState, useCallback, useEffect, useRef } from "react";
+import { memo, useState, useCallback, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import { fetchTwitterPosts, triggerTwitterImport, publishClip, deleteClip } from "../../../api";
 import { useCommandPalette, CommandPalettePortal, resolvePublishPayload } from "../utils/commandPalette";
@@ -341,7 +341,7 @@ function TweetCard({ post, onClick, onDelete }) {
 
 // ── Hauptkomponente ───────────────────────────────────────────
 
-export function TwitterPanel({ matchId, currentMinute = 0 }) {
+export const TwitterPanel = memo(function TwitterPanel({ matchId, currentMinute = 0 }) {
   const [open, setOpen] = useState(false);
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -520,4 +520,4 @@ export function TwitterPanel({ matchId, currentMinute = 0 }) {
       </div>
     </>
   );
-}
+});

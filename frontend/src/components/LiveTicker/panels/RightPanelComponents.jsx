@@ -2,9 +2,9 @@
 // RightPanelComponents.jsx
 // Wiederverwendbare Unter-Komponenten für RightPanel
 // ============================================================
-import { useState } from "react";
+import { memo, useState } from "react";
 
-export function Collapsible({ title, defaultOpen = true, children }) {
+export const Collapsible = memo(function Collapsible({ title, defaultOpen = true, children }) {
   const [open, setOpen] = useState(defaultOpen);
   return (
     <div className="lt-right__section">
@@ -15,9 +15,9 @@ export function Collapsible({ title, defaultOpen = true, children }) {
       <div style={{ display: open ? undefined : "none" }}>{children}</div>
     </div>
   );
-}
+});
 
-export function CollapsibleCat({ title, defaultOpen = true, children }) {
+export const CollapsibleCat = memo(function CollapsibleCat({ title, defaultOpen = true, children }) {
   const [open, setOpen] = useState(defaultOpen);
   return (
     <div className="lt-pcat">
@@ -28,9 +28,9 @@ export function CollapsibleCat({ title, defaultOpen = true, children }) {
       {open && children}
     </div>
   );
-}
+});
 
-export function PlayerBadges({ entry, stat, subMinuteMap = {} }) {
+export const PlayerBadges = memo(function PlayerBadges({ entry, stat, subMinuteMap = {} }) {
   const goals  = stat?.goals      ?? entry.numberOfGoals ?? 0;
   const yellow = stat?.cardsYellow > 0 || entry.hasYellowCard;
   const red    = stat?.cardsRed    > 0 || entry.hasRedCard;
@@ -50,9 +50,9 @@ export function PlayerBadges({ entry, stat, subMinuteMap = {} }) {
       {subOn  && <span className="lt-lineup-badge lt-lineup-badge--in"  title="Eingewechselt">↑{subOnMin ? `${subOnMin}'` : ""}</span>}
     </span>
   );
-}
+});
 
-export function FormationColumn({ lineup, playerName, playerStats = [], subMinuteMap = {}, abbr, labelClass }) {
+export const FormationColumn = memo(function FormationColumn({ lineup, playerName, playerStats = [], subMinuteMap = {}, abbr, labelClass }) {
   const formation = lineup[0]?.formation ?? "";
 
   const posOrder = { G: 0, D: 1, M: 2, F: 3 };
@@ -111,9 +111,9 @@ export function FormationColumn({ lineup, playerName, playerStats = [], subMinut
       </div>
     </div>
   );
-}
+});
 
-export function StatRow({ label, home, away, homeVal, awayVal, standalone }) {
+export const StatRow = memo(function StatRow({ label, home, away, homeVal, awayVal, standalone }) {
   const hv = Number(homeVal ?? 0);
   const av = Number(awayVal ?? 0);
   const total = hv + av;
@@ -151,4 +151,4 @@ export function StatRow({ label, home, away, homeVal, awayVal, standalone }) {
       )}
     </div>
   );
-}
+});

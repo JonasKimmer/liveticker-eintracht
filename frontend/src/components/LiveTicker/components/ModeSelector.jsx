@@ -1,7 +1,7 @@
 // ============================================================
 // ModeSelector.jsx — Popover-Design mit Toast + Status-Dot
 // ============================================================
-import React, { useState, useRef, useEffect, useCallback } from "react";
+import { memo, useState, useRef, useEffect, useCallback } from "react";
 import { createPortal } from "react-dom";
 import { MODES } from "../constants";
 
@@ -38,7 +38,7 @@ const MODE_CFG = {
   },
 };
 
-export function ModeSelector({ mode, onModeChange }) {
+export const ModeSelector = memo(function ModeSelector({ mode, onModeChange }) {
   const [pending, setPending] = useState(null);
   const [popPos, setPopPos]   = useState(null);
   const [toast, setToast]     = useState(null);
@@ -207,4 +207,4 @@ export function ModeSelector({ mode, onModeChange }) {
       )}
     </>
   );
-}
+});

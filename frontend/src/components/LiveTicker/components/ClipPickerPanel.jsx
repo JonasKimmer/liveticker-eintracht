@@ -3,7 +3,7 @@
 // Flow: Clips aus DB laden → Klick → Modal mit KI-Entwurf → Ticker
 // ============================================================
 
-import { useState, useCallback, useEffect } from "react";
+import { memo, useState, useCallback, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { fetchClips, fetchGoalClips, generateClipDraft, publishClip, publishClipTicker, deleteClip } from "../../../api";
 
@@ -363,7 +363,7 @@ function ClipThumbnail({ clip, onClick, onDelete }) {
 
 // ── Hauptkomponente ───────────────────────────────────────────
 
-export function ClipPickerPanel({ matchId, match, currentMinute = 0, onPublished }) {
+export const ClipPickerPanel = memo(function ClipPickerPanel({ matchId, match, currentMinute = 0, onPublished }) {
   const [open, setOpen] = useState(false);
   const [clips, setClips] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -615,4 +615,4 @@ export function ClipPickerPanel({ matchId, match, currentMinute = 0, onPublished
       </div>
     </>
   );
-}
+});
