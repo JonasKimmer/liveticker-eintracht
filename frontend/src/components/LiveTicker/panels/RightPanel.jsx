@@ -2,6 +2,7 @@
 // panels/RightPanel.jsx
 // Stats, Aufstellung, Torschützen, Karten, Kader
 // ============================================================
+import { memo, useMemo, useCallback } from "react";
 import {
   Collapsible,
   CollapsibleCat,
@@ -10,7 +11,7 @@ import {
   StatRow,
 } from "./RightPanelComponents";
 
-export function RightPanel({
+export const RightPanel = memo(function RightPanel({
   match,
   matchStats,
   players,
@@ -30,85 +31,102 @@ export function RightPanel({
     );
   }
 
-  const homeStats = matchStats.find((s) => s.teamId === match.teamHomeId);
-  const awayStats = matchStats.find((s) => s.teamId === match.teamAwayId);
-  const homeLineup = lineups.filter((l) => l.teamId === match.teamHomeId);
-  const awayLineup = lineups.filter((l) => l.teamId === match.teamAwayId);
-
   const homeAbbr = match.homeTeam?.name ?? "Heim";
   const awayAbbr = match.awayTeam?.name ?? "Gast";
 
   // extToInternal: partner API external_id → internal DB id
-  // Nötig weil: event description nutzt partner API IDs, lineups.playerId nutzt interne DB IDs
-  const extToInternal = {};
-  for (const pl of players) {
-    if (pl.externalId != null) extToInternal[pl.externalId] = pl.id;
-  }
+  const extToInternal = useMemo(() => {
+    const map = {};
+    for (const pl of players) {
+      if (pl.externalId != null) map[pl.externalId] = pl.id;
+    }
+    return map;
+  }, [players]);
 
   // subMinuteMap: interne DB-ID → minute (aus Events)
-  // ev.liveTickerEventType = "substitution" (so in DB gespeichert)
-  const subMinuteMap = {};
-  for (const ev of events) {
-    if (ev.liveTickerEventType !== "substitution") continue;
-    try {
-      const d = typeof ev.description === "string" ? JSON.parse(ev.description) : ev.description;
-      const outId = extToInternal[d?.player_id];
-      const inId  = extToInternal[d?.assist_id];
-      if (outId && ev.time) subMinuteMap[outId] = ev.time;
-      if (inId  && ev.time) subMinuteMap[`in_${inId}`] = ev.time;
-    } catch { /* ignore */ }
-  }
-
-  const playerName = (playerId) => {
-    if (playerId) {
-      const p = players.find((pl) => pl.id === playerId);
-      if (p) {
-        return (
-          p.knownName ||
-          p.displayName ||
-          `${p.firstName ?? ""} ${p.lastName ?? ""}`.trim() ||
-          null
-        );
-      }
+  const subMinuteMap = useMemo(() => {
+    const map = {};
+    for (const ev of events) {
+      if (ev.liveTickerEventType !== "substitution") continue;
+      try {
+        const d = typeof ev.description === "string" ? JSON.parse(ev.description) : ev.description;
+        const outId = extToInternal[d?.player_id];
+        const inId  = extToInternal[d?.assist_id];
+        if (outId && ev.time) map[outId] = ev.time;
+        if (inId  && ev.time) map[`in_${inId}`] = ev.time;
+      } catch { /* ignore */ }
     }
-    return null;
-  };
+    return map;
+  }, [events, extToInternal]);
 
-  const topHome = playerStats
-    .filter((s) => s.teamId === match.teamHomeId && s.rating != null)
-    .sort((a, b) => b.rating - a.rating)
-    .slice(0, 3)
-    .map((s) => ({ ...s, resolvedName: playerName(s.playerId) }));
-  const topAway = playerStats
-    .filter((s) => s.teamId === match.teamAwayId && s.rating != null)
-    .sort((a, b) => b.rating - a.rating)
-    .slice(0, 3)
-    .map((s) => ({ ...s, resolvedName: playerName(s.playerId) }));
+  const playerName = useCallback((playerId) => {
+    if (!playerId) return null;
+    const p = players.find((pl) => pl.id === playerId);
+    if (!p) return null;
+    return p.knownName || p.displayName || `${p.firstName ?? ""} ${p.lastName ?? ""}`.trim() || null;
+  }, [players]);
 
-  const topScorers = [...lineups]
-    .filter((l) => l.numberOfGoals > 0)
-    .sort((a, b) => b.numberOfGoals - a.numberOfGoals)
-    .slice(0, 5)
-    .map((l) => ({
-      ...l,
-      resolvedName: playerName(l.playerId),
-      teamAbbr: l.teamId === match.teamHomeId ? homeAbbr : awayAbbr,
-    }));
+  const homeStats = useMemo(() => matchStats.find((s) => s.teamId === match.teamHomeId), [matchStats, match]);
+  const awayStats = useMemo(() => matchStats.find((s) => s.teamId === match.teamAwayId), [matchStats, match]);
 
-  const withCards = lineups
-    .filter((l) => l.hasYellowCard || l.hasRedCard)
-    .map((l) => ({
-      ...l,
-      resolvedName: playerName(l.playerId),
-      teamAbbr: l.teamId === match.teamHomeId ? homeAbbr : awayAbbr,
-    }));
+  const homeLineup = useMemo(() => lineups.filter((l) => l.teamId === match.teamHomeId), [lineups, match]);
+  const awayLineup = useMemo(() => lineups.filter((l) => l.teamId === match.teamAwayId), [lineups, match]);
 
-  const homeStarters = homeLineup.filter((p) => p.status === "Start");
-  const homeSubs = homeLineup.filter((p) => p.status === "Sub");
-  const homeCoach = homeLineup.find((p) => p.status === "Coach");
-  const awayStarters = awayLineup.filter((p) => p.status === "Start");
-  const awaySubs = awayLineup.filter((p) => p.status === "Sub");
-  const awayCoach = awayLineup.find((p) => p.status === "Coach");
+  const topHome = useMemo(() =>
+    playerStats
+      .filter((s) => s.teamId === match.teamHomeId && s.rating != null)
+      .sort((a, b) => b.rating - a.rating)
+      .slice(0, 3)
+      .map((s) => ({ ...s, resolvedName: playerName(s.playerId) })),
+    [playerStats, match, playerName]);
+
+  const topAway = useMemo(() =>
+    playerStats
+      .filter((s) => s.teamId === match.teamAwayId && s.rating != null)
+      .sort((a, b) => b.rating - a.rating)
+      .slice(0, 3)
+      .map((s) => ({ ...s, resolvedName: playerName(s.playerId) })),
+    [playerStats, match, playerName]);
+
+  const topScorers = useMemo(() =>
+    [...lineups]
+      .filter((l) => l.numberOfGoals > 0)
+      .sort((a, b) => b.numberOfGoals - a.numberOfGoals)
+      .slice(0, 5)
+      .map((l) => ({
+        ...l,
+        resolvedName: playerName(l.playerId),
+        teamAbbr: l.teamId === match.teamHomeId ? homeAbbr : awayAbbr,
+      })),
+    [lineups, match, playerName, homeAbbr, awayAbbr]);
+
+  const withCards = useMemo(() =>
+    lineups
+      .filter((l) => l.hasYellowCard || l.hasRedCard)
+      .map((l) => ({
+        ...l,
+        resolvedName: playerName(l.playerId),
+        teamAbbr: l.teamId === match.teamHomeId ? homeAbbr : awayAbbr,
+      })),
+    [lineups, match, playerName, homeAbbr, awayAbbr]);
+
+  const homeStarters = useMemo(() => homeLineup.filter((p) => p.status === "Start"), [homeLineup]);
+  const homeSubs     = useMemo(() => homeLineup.filter((p) => p.status === "Sub"),   [homeLineup]);
+  const homeCoach    = useMemo(() => homeLineup.find((p)  => p.status === "Coach"),  [homeLineup]);
+  const awayStarters = useMemo(() => awayLineup.filter((p) => p.status === "Start"), [awayLineup]);
+  const awaySubs     = useMemo(() => awayLineup.filter((p) => p.status === "Sub"),   [awayLineup]);
+  const awayCoach    = useMemo(() => awayLineup.find((p)  => p.status === "Coach"),  [awayLineup]);
+
+  const injuriesBlock = useMemo(() => {
+    if (!injuries.length) return null;
+    const homeInj = injuries.find((g) => g.team_id === match.homeTeam?.externalId || g.team_name === match.homeTeam?.name);
+    const awayInj = injuries.find((g) => g.team_id === match.awayTeam?.externalId || g.team_name === match.awayTeam?.name);
+    const homePlayers = homeInj?.players ?? [];
+    const awayPlayers = awayInj?.players ?? [];
+    const homeName = homeInj?.team_name ?? homeAbbr;
+    const awayName = awayInj?.team_name ?? awayAbbr;
+    return { homePlayers, awayPlayers, homeName, awayName };
+  }, [injuries, match, homeAbbr, awayAbbr]);
 
   return (
     <div className="lt-col lt-col--stats">
@@ -175,49 +193,28 @@ export function RightPanel({
 
           {(homeSubs.length > 0 || awaySubs.length > 0) && (
             <>
-              <div
-                className="lt-right__section-title"
-                style={{ marginTop: "12px" }}
-              >
+              <div className="lt-right__section-title" style={{ marginTop: "12px" }}>
                 🔄 Einwechslungen
               </div>
               <div className="lt-lineup-grid">
                 <ul className="lt-lineup-list">
                   {homeSubs
-                    .sort(
-                      (a, b) => (a.jerseyNumber ?? 99) - (b.jerseyNumber ?? 99),
-                    )
+                    .sort((a, b) => (a.jerseyNumber ?? 99) - (b.jerseyNumber ?? 99))
                     .map((p) => (
                       <li key={p.id}>
-                        {p.jerseyNumber != null && (
-                          <span className="lt-lineup-num">
-                            #{p.jerseyNumber}
-                          </span>
-                        )}
-                        <span>
-                          {playerName(p.playerId) ??
-                            `#${p.jerseyNumber ?? "?"}`}
-                        </span>
+                        {p.jerseyNumber != null && <span className="lt-lineup-num">#{p.jerseyNumber}</span>}
+                        <span>{playerName(p.playerId) ?? `#${p.jerseyNumber ?? "?"}`}</span>
                         <PlayerBadges entry={p} stat={playerStats.find((s) => s.playerId === p.playerId)} subMinuteMap={subMinuteMap} />
                       </li>
                     ))}
                 </ul>
                 <ul className="lt-lineup-list">
                   {awaySubs
-                    .sort(
-                      (a, b) => (a.jerseyNumber ?? 99) - (b.jerseyNumber ?? 99),
-                    )
+                    .sort((a, b) => (a.jerseyNumber ?? 99) - (b.jerseyNumber ?? 99))
                     .map((p) => (
                       <li key={p.id}>
-                        {p.jerseyNumber != null && (
-                          <span className="lt-lineup-num">
-                            #{p.jerseyNumber}
-                          </span>
-                        )}
-                        <span>
-                          {playerName(p.playerId) ??
-                            `#${p.jerseyNumber ?? "?"}`}
-                        </span>
+                        {p.jerseyNumber != null && <span className="lt-lineup-num">#{p.jerseyNumber}</span>}
+                        <span>{playerName(p.playerId) ?? `#${p.jerseyNumber ?? "?"}`}</span>
                         <PlayerBadges entry={p} stat={playerStats.find((s) => s.playerId === p.playerId)} subMinuteMap={subMinuteMap} />
                       </li>
                     ))}
@@ -226,47 +223,39 @@ export function RightPanel({
             </>
           )}
 
-          {injuries.length > 0 && (() => {
-            const homeInj = injuries.find((g) => g.team_id === match.homeTeam?.externalId || g.team_name === match.homeTeam?.name);
-            const awayInj = injuries.find((g) => g.team_id === match.awayTeam?.externalId || g.team_name === match.awayTeam?.name);
-            const homePlayers = homeInj?.players ?? [];
-            const awayPlayers = awayInj?.players ?? [];
-            const homeName = homeInj?.team_name ?? homeAbbr;
-            const awayName = awayInj?.team_name ?? awayAbbr;
-            return (
-              <>
-                <div className="lt-right__section-title" style={{ marginTop: "12px" }}>
-                  🤕 Verletzt / Fraglich
+          {injuriesBlock && (
+            <>
+              <div className="lt-right__section-title" style={{ marginTop: "12px" }}>
+                🤕 Verletzt / Fraglich
+              </div>
+              <div className="lt-lineup-grid">
+                <div>
+                  <div className="lt-pcat__col-hd lt-pcat__col-hd--home">{injuriesBlock.homeName}</div>
+                  <ul className="lt-lineup-list">
+                    {injuriesBlock.homePlayers.map((p, i) => (
+                      <li key={i} style={{ color: "var(--lt-text-muted)", fontSize: "0.78rem" }}>
+                        <span>{p.player_name ?? p.name}</span>
+                        {p.reason && <span style={{ marginLeft: 4, opacity: 0.7 }}>· {p.reason}</span>}
+                      </li>
+                    ))}
+                    {injuriesBlock.homePlayers.length === 0 && <li style={{ color: "var(--lt-text-muted)", fontSize: "0.78rem", opacity: 0.5 }}>–</li>}
+                  </ul>
                 </div>
-                <div className="lt-lineup-grid">
-                  <div>
-                    <div className="lt-pcat__col-hd lt-pcat__col-hd--home">{homeName}</div>
-                    <ul className="lt-lineup-list">
-                      {homePlayers.map((p, i) => (
-                        <li key={i} style={{ color: "var(--lt-text-muted)", fontSize: "0.78rem" }}>
-                          <span>{p.player_name ?? p.name}</span>
-                          {p.reason && <span style={{ marginLeft: 4, opacity: 0.7 }}>· {p.reason}</span>}
-                        </li>
-                      ))}
-                      {homePlayers.length === 0 && <li style={{ color: "var(--lt-text-muted)", fontSize: "0.78rem", opacity: 0.5 }}>–</li>}
-                    </ul>
-                  </div>
-                  <div>
-                    <div className="lt-pcat__col-hd lt-pcat__col-hd--away">{awayName}</div>
-                    <ul className="lt-lineup-list">
-                      {awayPlayers.map((p, i) => (
-                        <li key={i} style={{ color: "var(--lt-text-muted)", fontSize: "0.78rem" }}>
-                          <span>{p.player_name ?? p.name}</span>
-                          {p.reason && <span style={{ marginLeft: 4, opacity: 0.7 }}>· {p.reason}</span>}
-                        </li>
-                      ))}
-                      {awayPlayers.length === 0 && <li style={{ color: "var(--lt-text-muted)", fontSize: "0.78rem", opacity: 0.5 }}>–</li>}
-                    </ul>
-                  </div>
+                <div>
+                  <div className="lt-pcat__col-hd lt-pcat__col-hd--away">{injuriesBlock.awayName}</div>
+                  <ul className="lt-lineup-list">
+                    {injuriesBlock.awayPlayers.map((p, i) => (
+                      <li key={i} style={{ color: "var(--lt-text-muted)", fontSize: "0.78rem" }}>
+                        <span>{p.player_name ?? p.name}</span>
+                        {p.reason && <span style={{ marginLeft: 4, opacity: 0.7 }}>· {p.reason}</span>}
+                      </li>
+                    ))}
+                    {injuriesBlock.awayPlayers.length === 0 && <li style={{ color: "var(--lt-text-muted)", fontSize: "0.78rem", opacity: 0.5 }}>–</li>}
+                  </ul>
                 </div>
-              </>
-            );
-          })()}
+              </div>
+            </>
+          )}
         </Collapsible>
       )}
 
@@ -279,9 +268,7 @@ export function RightPanel({
               {topHome.map((p) => (
                 <div key={p.id} className="lt-prow lt-prow--home">
                   <div className="lt-prow__body">
-                    <span className="lt-prow__name">
-                      {p.resolvedName ?? `#${p.jerseyNumber ?? "?"}`}
-                    </span>
+                    <span className="lt-prow__name">{p.resolvedName ?? `#${p.jerseyNumber ?? "?"}`}</span>
                     <span className="lt-prow__sub">
                       {p.minutes ?? 0}'
                       {p.goals > 0 && ` ⚽${p.goals}`}
@@ -300,9 +287,7 @@ export function RightPanel({
               {topAway.map((p) => (
                 <div key={p.id} className="lt-prow lt-prow--away">
                   <div className="lt-prow__body">
-                    <span className="lt-prow__name">
-                      {p.resolvedName ?? `#${p.jerseyNumber ?? "?"}`}
-                    </span>
+                    <span className="lt-prow__name">{p.resolvedName ?? `#${p.jerseyNumber ?? "?"}`}</span>
                     <span className="lt-prow__sub">
                       {p.minutes ?? 0}'
                       {p.goals > 0 && ` ⚽${p.goals}`}
@@ -319,11 +304,11 @@ export function RightPanel({
           </div>
 
           {[
-            { label: "⚽ Tore", key: "goals", filter: (p) => p.goals > 0, fmt: (p) => p.goals },
-            { label: "🅰️ Assists", key: "assists", filter: (p) => p.assists > 0, fmt: (p) => p.assists },
-            { label: "🎯 Schüsse", key: "shotsOnTarget", filter: (p) => p.shotsOnTarget > 0, fmt: (p) => p.shotsOnTarget },
-            { label: "🔑 Pässe", key: "passesTotal", filter: (p) => p.passesTotal > 0, fmt: (p) => p.passesTotal },
-            { label: "🛡️ Tackles", key: "tacklesTotal", filter: (p) => p.tacklesTotal > 0, fmt: (p) => p.tacklesTotal },
+            { label: "⚽ Tore",     key: "goals",        filter: (p) => p.goals > 0,        fmt: (p) => p.goals },
+            { label: "🅰️ Assists",  key: "assists",      filter: (p) => p.assists > 0,      fmt: (p) => p.assists },
+            { label: "🎯 Schüsse",  key: "shotsOnTarget",filter: (p) => p.shotsOnTarget > 0,fmt: (p) => p.shotsOnTarget },
+            { label: "🔑 Pässe",    key: "passesTotal",  filter: (p) => p.passesTotal > 0,  fmt: (p) => p.passesTotal },
+            { label: "🛡️ Tackles",  key: "tacklesTotal", filter: (p) => p.tacklesTotal > 0, fmt: (p) => p.tacklesTotal },
           ].map(({ label, key, filter, fmt }) => {
             const homeTop = [...playerStats]
               .filter((s) => s.teamId === match.teamHomeId && filter(s))
@@ -344,9 +329,7 @@ export function RightPanel({
                     {homeTop.map((p) => (
                       <div key={p.id} className="lt-pcat__row">
                         <span className="lt-pcat__val">{fmt(p)}</span>
-                        <span className="lt-pcat__name">
-                          {p.resolvedName ?? `#${p.jerseyNumber ?? "?"}`}
-                        </span>
+                        <span className="lt-pcat__name">{p.resolvedName ?? `#${p.jerseyNumber ?? "?"}`}</span>
                       </div>
                     ))}
                   </div>
@@ -354,9 +337,7 @@ export function RightPanel({
                     <div className="lt-pcat__col-hd lt-pcat__col-hd--away">{awayAbbr}</div>
                     {awayTop.map((p) => (
                       <div key={p.id} className="lt-pcat__row lt-pcat__row--away">
-                        <span className="lt-pcat__name">
-                          {p.resolvedName ?? `#${p.jerseyNumber ?? "?"}`}
-                        </span>
+                        <span className="lt-pcat__name">{p.resolvedName ?? `#${p.jerseyNumber ?? "?"}`}</span>
                         <span className="lt-pcat__val">{fmt(p)}</span>
                       </div>
                     ))}
@@ -375,12 +356,8 @@ export function RightPanel({
             <div key={p.id} className="lt-player">
               <span className="lt-player__rank">{p.numberOfGoals}×</span>
               <div className="lt-player__info">
-                <div className="lt-player__name">
-                  {p.resolvedName ?? `#${p.jerseyNumber}`}
-                </div>
-                <div className="lt-player__meta">
-                  {p.teamAbbr} · {p.position ?? "–"} · #{p.jerseyNumber}
-                </div>
+                <div className="lt-player__name">{p.resolvedName ?? `#${p.jerseyNumber}`}</div>
+                <div className="lt-player__meta">{p.teamAbbr} · {p.position ?? "–"} · #{p.jerseyNumber}</div>
               </div>
               {p.hasYellowCard && <span title="Gelbe Karte">🟨</span>}
               {p.hasRedCard && <span title="Rote Karte">🟥</span>}
@@ -394,16 +371,10 @@ export function RightPanel({
         <Collapsible title="🟨 Karten">
           {withCards.map((p) => (
             <div key={p.id} className="lt-player">
-              <span className="lt-player__rank">
-                {p.hasRedCard ? "🟥" : "🟨"}
-              </span>
+              <span className="lt-player__rank">{p.hasRedCard ? "🟥" : "🟨"}</span>
               <div className="lt-player__info">
-                <div className="lt-player__name">
-                  {p.resolvedName ?? `#${p.jerseyNumber}`}
-                </div>
-                <div className="lt-player__meta">
-                  {p.teamAbbr} · #{p.jerseyNumber}
-                </div>
+                <div className="lt-player__name">{p.resolvedName ?? `#${p.jerseyNumber}`}</div>
+                <div className="lt-player__meta">{p.teamAbbr} · #{p.jerseyNumber}</div>
               </div>
             </div>
           ))}
@@ -412,5 +383,4 @@ export function RightPanel({
 
     </div>
   );
-}
-
+});

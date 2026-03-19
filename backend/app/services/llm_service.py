@@ -472,7 +472,7 @@ class LLMService:
         )
         return random.choice(choices)
 
-    def _generate_openrouter_text(
+    def _generate_openai_compatible_text(
         self,
         event_type,
         event_detail,
@@ -485,6 +485,7 @@ class LLMService:
         context_data,
         style_references,
     ) -> str:
+        """Shared implementation for OpenAI-compatible APIs (openai, openrouter)."""
         prompt = self._build_prompt(
             event_type,
             event_detail,
@@ -505,38 +506,11 @@ class LLMService:
         )
         return response.choices[0].message.content.strip()
 
-    def _generate_openai_text(
-        self,
-        event_type,
-        event_detail,
-        minute,
-        player_name,
-        assist_name,
-        team_name,
-        style,
-        language,
-        context_data,
-        style_references,
-    ) -> str:
-        prompt = self._build_prompt(
-            event_type,
-            event_detail,
-            minute,
-            player_name,
-            assist_name,
-            team_name,
-            style,
-            language,
-            context_data,
-            style_references,
-        )
-        response = self._client.chat.completions.create(
-            model=self.model,
-            messages=[{"role": "user", "content": prompt}],
-            max_tokens=200,
-            temperature=0.3,
-        )
-        return response.choices[0].message.content.strip()
+    def _generate_openrouter_text(self, **kwargs) -> str:
+        return self._generate_openai_compatible_text(**kwargs)
+
+    def _generate_openai_text(self, **kwargs) -> str:
+        return self._generate_openai_compatible_text(**kwargs)
 
     def _generate_gemini_text(
         self,

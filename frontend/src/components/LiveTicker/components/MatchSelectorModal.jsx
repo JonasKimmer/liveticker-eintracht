@@ -1,9 +1,10 @@
 // ============================================================
 // MatchSelectorModal.jsx
 // ============================================================
-import { useEffect, useRef, useState } from "react";
+import { memo, useEffect, useRef, useState } from "react";
+import { useClickOutside } from "../../../hooks/useClickOutside";
 
-export function MatchSelectorModal({
+export const MatchSelectorModal = memo(function MatchSelectorModal({
   onClose,
   activeTab,
   countries,
@@ -126,7 +127,7 @@ export function MatchSelectorModal({
       </div>
     </div>
   );
-}
+});
 
 function MsmMatchdayPicker({
   matchdays, matchdaysLoading, matchdaysError,
@@ -136,13 +137,7 @@ function MsmMatchdayPicker({
   const ref = useRef(null);
   const roundLabel = (r) => String(r).match(/\d+/)?.[0] ?? String(r);
 
-  useEffect(() => {
-    const handler = (e) => {
-      if (ref.current && !ref.current.contains(e.target)) setOpen(false);
-    };
-    document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
-  }, []);
+  useClickOutside(ref, () => setOpen(false));
 
   const label = matchdaysLoading
     ? "Spieltag (lädt…)"
@@ -211,13 +206,7 @@ function MsmDropdown({ label, disabled, value, displayValue, placeholder, onSele
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
 
-  useEffect(() => {
-    const handler = (e) => {
-      if (ref.current && !ref.current.contains(e.target)) setOpen(false);
-    };
-    document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
-  }, []);
+  useClickOutside(ref, () => setOpen(false));
 
   return (
     <div className="lt-msm__mdp" ref={ref}>

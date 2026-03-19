@@ -211,6 +211,15 @@ export function EntryEditor({
 
   const publishDisabled = !value.trim();
 
+  const previewDisplay = useMemo(() => {
+    if (!preview) return null;
+    const afterCmd = value.trim().replace(COMMAND_PREFIX_REGEX, "");
+    const isPhaseWithText = preview.isValid && preview.meta?.phase != null && afterCmd;
+    const isFreeTextMode = !preview.isValid || isPhaseWithText;
+    const displayText = isFreeTextMode ? (afterCmd || value.trim()) : preview.formatted;
+    return { isFreeTextMode, displayText };
+  }, [preview, value]);
+
   return (
     <div className="lt-editor">
       <div className="lt-editor__toolbar">
@@ -318,27 +327,21 @@ export function EntryEditor({
       </div>
 
       {/* Live Preview */}
-      {preview && (() => {
-        const afterCmd = value.trim().replace(COMMAND_PREFIX_REGEX, "");
-        const isPhaseWithText = preview.isValid && preview.meta?.phase != null && afterCmd;
-        const isFreeTextMode = !preview.isValid || isPhaseWithText;
-        const displayText = isFreeTextMode ? (afterCmd || value.trim()) : preview.formatted;
-        return (
-        <div className={`lt-editor__preview${!isFreeTextMode ? " lt-editor__preview--valid" : ""}`}>
+      {preview && previewDisplay && (
+        <div className={`lt-editor__preview${!previewDisplay.isFreeTextMode ? " lt-editor__preview--valid" : ""}`}>
           <div className="lt-editor__preview-label">
-            {!isFreeTextMode ? "✓ Vorschau" : `✎ Freitext mit ${preview.meta?.icon ?? "📣"}`}
+            {!previewDisplay.isFreeTextMode ? "✓ Vorschau" : `✎ Freitext mit ${preview.meta?.icon ?? "📣"}`}
           </div>
-          <div className={`lt-editor__preview-text${!isFreeTextMode ? " lt-editor__preview-text--valid" : ""}`}>
+          <div className={`lt-editor__preview-text${!previewDisplay.isFreeTextMode ? " lt-editor__preview-text--valid" : ""}`}>
             {preview.meta?.minute ? <span style={{ opacity: 0.6, marginRight: "0.4rem" }}>{preview.meta.minute}'</span> : null}
             {preview.meta?.icon && <span style={{ marginRight: "0.35rem" }}>{preview.meta.icon}</span>}
-            {displayText}
+            {previewDisplay.displayText}
           </div>
           {preview.warnings.map((w, i) => (
             <div key={i} className="lt-editor__preview-warning">⚠ {w}</div>
           ))}
         </div>
-        );
-      })()}
+      )}
 
       <div className="lt-editor__actions">
         {onCancel && (
