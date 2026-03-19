@@ -1,4 +1,5 @@
 from datetime import date, datetime
+from decimal import Decimal
 from enum import Enum
 from math import ceil
 from typing import Any, Optional
@@ -291,7 +292,7 @@ class LineupPlayerResponse(BaseModel):
 class TeamStatisticsInput(BaseModel):
     model_config = ConfigDict(populate_by_name=True, alias_generator=to_camel)
 
-    possession_percentage: Optional[str] = Field(None, max_length=10)
+    possession_percentage: Optional[Decimal] = Field(None, ge=0, le=100)
     total_pass: Optional[int] = Field(None, ge=0)
     accurate_pass: Optional[int] = Field(None, ge=0)
     duel_won: Optional[int] = Field(None, ge=0)
@@ -330,7 +331,7 @@ class MatchStatisticResponse(BaseModel):
     id: int
     match_id: int
     team_id: int
-    possession_percentage: Optional[str] = None
+    possession_percentage: Optional[Decimal] = None
     total_pass: Optional[int] = None
     accurate_pass: Optional[int] = None
     duel_won: Optional[int] = None
