@@ -15,7 +15,7 @@ import config from "../../../config/whitelabel";
 // Welcher Stil im AUTO-Modus verwendet wird
 const AUTO_STYLE = TICKER_STYLES[0];
 
-export function CenterPanel({
+export const CenterPanel = memo(function CenterPanel({
   match,
   currentMinute = 0,
   events,
@@ -56,14 +56,16 @@ export function CenterPanel({
   // Set mit Event-IDs die gerade auto-prozessiert werden → kein Doppel-Trigger
   const processingRef = useRef(new Set());
 
-  const pendingEvents = events.filter(
-    (ev) =>
-      !dismissedIds.has(ev.id) &&
-      !tickerTexts.find(
-        (t) => t.event_id === ev.id &&
-               (t.status === "published" || t.status === "rejected" || !t.status),
-      ),
-  );
+  const pendingEvents = useMemo(() =>
+    events.filter(
+      (ev) =>
+        !dismissedIds.has(ev.id) &&
+        !tickerTexts.find(
+          (t) => t.event_id === ev.id &&
+                 (t.status === "published" || t.status === "rejected" || !t.status),
+        ),
+    ),
+  [events, dismissedIds, tickerTexts]);
 
   const handleDismissEvent = useCallback(async (ev, draft) => {
     if (draft) {
@@ -74,13 +76,18 @@ export function CenterPanel({
     }
     if (selectedEventId === ev.id) setSelectedEventId(null);
   }, [selectedEventId, reload]);
-  const selectedEvent =
-    pendingEvents.find((e) => e.id === selectedEventId) ??
-    pendingEvents[0] ??
-    null;
-  const selectedDraft = selectedEvent
-    ? tickerTexts.find((t) => t.event_id === selectedEvent.id)
-    : null;
+  const selectedEvent = useMemo(() =>
+    pendingEvents.find((e) => e.id === selectedEventId) ?? pendingEvents[0] ?? null,
+  [pendingEvents, selectedEventId]);
+
+  const selectedDraft = useMemo(() =>
+    selectedEvent ? tickerTexts.find((t) => t.event_id === selectedEvent.id) : null,
+  [selectedEvent, tickerTexts]);
+
+  const isOurTeam = useMemo(() =>
+    match?.homeTeam?.name?.toLowerCase().includes(config.teamKeyword) ||
+    match?.awayTeam?.name?.toLowerCase().includes(config.teamKeyword),
+  [match]);
 
   // ── AUTO-Modus: generate → publish ──────────────────────
   useEffect(() => {
@@ -156,6 +163,30 @@ export function CenterPanel({
       setBulkGenerating(false);
     }
   }, [pendingEvents, tickerTexts, match, reload, instance]);
+
+  const handleAcceptDraft = useCallback(async () => {
+    if (!selectedDraft) return;
+    await api.publishTicker(selectedDraft.id, selectedDraft.text);
+    await reload.loadTickerTexts();
+  }, [selectedDraft, reload]);
+
+  const handleRejectDraft = useCallback(async () => {
+    if (!selectedDraft) return;
+    await api.deleteTicker(selectedDraft.id);
+    await reload.loadTickerTexts();
+  }, [selectedDraft, reload]);
+
+  const handleOpenEdit = useCallback(() => {
+    setEditorValue(selectedDraft?.text ?? "");
+    setEditMode(true);
+  }, [selectedDraft]);
+
+  const handleManualPublish = useCallback(async ({ text, icon, minute, phase } = {}) => {
+    const textToPublish = text ?? editorValue.trim();
+    if (!textToPublish) return;
+    await onManualPublish(textToPublish, icon, minute, phase);
+    setEditorValue("");
+  }, [editorValue, onManualPublish]);
 
   const handleEditPublish = useCallback(async ({ text } = {}) => {
     const textToPublish = text ?? editorValue.trim();
@@ -276,28 +307,11 @@ export function CenterPanel({
               ) : (
                 <AIDraft
                   eventType={selectedEvent.liveTickerEventType}
-                  draftText={
-                    selectedDraft?.text ??
-                    "Kein Draft vorhanden – generiere einen Stil."
-                  }
-                  onAccept={async () => {
-                    if (!selectedDraft) return;
-                    await api.publishTicker(selectedDraft.id, selectedDraft.text);
-                    await reload.loadTickerTexts();
-                  }}
-                  onReject={async () => {
-                    if (!selectedDraft) return;
-                    await api.deleteTicker(selectedDraft.id);
-                    await reload.loadTickerTexts();
-                  }}
-                  onEdit={() => {
-                    setEditorValue(selectedDraft?.text ?? "");
-                    setEditMode(true);
-                  }}
-                  onTextClick={() => {
-                    setEditorValue(selectedDraft?.text ?? "");
-                    setEditMode(true);
-                  }}
+                  draftText={selectedDraft?.text ?? "Kein Draft vorhanden – generiere einen Stil."}
+                  onAccept={handleAcceptDraft}
+                  onReject={handleRejectDraft}
+                  onEdit={handleOpenEdit}
+                  onTextClick={handleOpenEdit}
                 />
               ))}
 
@@ -326,12 +340,7 @@ export function CenterPanel({
           <EntryEditor
             value={editorValue}
             onChange={setEditorValue}
-            onPublish={async ({ text, icon, minute, phase } = {}) => {
-              const textToPublish = text ?? editorValue.trim();
-              if (!textToPublish) return;
-              await onManualPublish(textToPublish, icon, minute, phase);
-              setEditorValue("");
-            }}
+            onPublish={handleManualPublish}
             mode={mode}
             currentMinute={currentMinute}
             playerNames={playerNames}
@@ -349,8 +358,7 @@ export function CenterPanel({
         </div>
 
         {/* ── YouTube / X / Instagram – nur bei Team-Spielen ── */}
-        {(match?.homeTeam?.name?.toLowerCase().includes(config.teamKeyword) ||
-          match?.awayTeam?.name?.toLowerCase().includes(config.teamKeyword)) && (<>
+        {isOurTeam && (<>
           <div style={{ marginTop: "0.5rem" }}>
             <YouTubePanel matchId={match.id} currentMinute={currentMinute} />
           </div>
@@ -364,7 +372,7 @@ export function CenterPanel({
       </div>
     </div>
   );
-}
+});
 
 const EventCard = memo(function EventCard({
   event,
