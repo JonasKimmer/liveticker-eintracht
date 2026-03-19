@@ -4,6 +4,16 @@
  * Kapselt alle fire-and-forget n8n-Webhook-Trigger und Auto-Import-Effekte,
  * die beim Öffnen eines Matches oder bei Spielstandsänderungen ausgelöst werden.
  * Dadurch bleibt LiveTicker.jsx fokussiert auf UI-Logik.
+ *
+ * @param {object} params
+ * @param {number|null} params.selMatchId - Aktuell ausgewählte Match-ID.
+ * @param {object|null} params.match - Match-Objekt mit externalId und matchPhase.
+ * @param {object[]} params.events - Liste der Spielereignisse.
+ * @param {object[]} params.lineups - Aufstellungsdaten.
+ * @param {object[]} params.matchStats - Spielstatistiken.
+ * @param {object[]} params.tickerTexts - Bestehende Ticker-Einträge.
+ * @param {string} params.instance - LLM-Instanz ("generic" | "ef_whitelabel").
+ * @param {() => void} params.reload - Callback zum Neu-Laden der Spieldaten.
  */
 import { useEffect, useRef } from "react";
 import * as api from "../api";

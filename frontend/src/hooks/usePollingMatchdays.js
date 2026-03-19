@@ -5,6 +5,10 @@ import * as api from "../api";
  * Lädt Matchdays für ein Team + Competition.
  * - Sofortiger Fetch (triggert Backend-Webhook einmalig)
  * - Ein verzögerter Refresh nach 25s (holt neue Daten nach Import)
+ *
+ * @param {number|null} teamId - Interne Team-ID.
+ * @param {number|null} competitionId - Interne Competition-ID.
+ * @returns {{ matchdays: object[], loading: boolean, error: Error|null }}
  */
 export function usePollingMatchdays(teamId, competitionId) {
   const [matchdays, setMatchdays] = useState([]);

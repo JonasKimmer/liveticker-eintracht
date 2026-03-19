@@ -11,6 +11,13 @@ function resolvePollingInterval(matchState) {
   return 60_000; // PreMatch, Cancelled, etc.
 }
 
+/**
+ * Lädt alle Daten für ein Spiel (Match, Events, Ticker, Lineup, Statistiken)
+ * und pollt sie je nach Spielstatus automatisch in Echtzeit.
+ *
+ * @param {number|null} selectedMatchId - Interne Match-ID oder null.
+ * @returns {{ match, events, tickerTexts, prematch, lineups, matchStats, players, playerStats, leagueSeason, reload: () => void }}
+ */
 export function useMatchData(selectedMatchId) {
   const [match, setMatch] = useState(null);
   const [events, setEvents] = useState([]);
