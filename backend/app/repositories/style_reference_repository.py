@@ -1,3 +1,10 @@
+"""
+StyleReferenceRepository
+========================
+Datenbankzugriff für Few-Shot Stilreferenzen.
+Liefert zufällige Beispieltexte nach Event-Typ und Instanz (generic / ef_whitelabel).
+"""
+
 from sqlalchemy.orm import Session
 from sqlalchemy.sql import func
 from app.models.style_reference import StyleReference

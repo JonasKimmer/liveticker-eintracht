@@ -6,7 +6,10 @@ Few-Shot: Stilreferenzen aus PostgreSQL (style_references)
 
 import logging
 import random
-from typing import Optional, Literal
+from typing import TYPE_CHECKING, Optional, Literal
+
+if TYPE_CHECKING:
+    from sqlalchemy.orm import Session
 
 logger = logging.getLogger(__name__)
 
@@ -637,7 +640,7 @@ async def generate_ticker_text(
     match_context: Optional[dict] = None,
     provider: Optional[str] = None,
     model: Optional[str] = None,
-    db=None,
+    db: Optional["Session"] = None,
     instance: str = "ef_whitelabel",
 ) -> tuple[str, str]:
     # Few-Shot Stilreferenzen aus DB holen

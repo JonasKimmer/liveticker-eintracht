@@ -1,3 +1,9 @@
+"""
+MatchRepository
+===============
+Datenbankzugriff für Spiele (Match) inkl. Lineup, Statistiken und Spieltag-Navigation.
+"""
+
 import logging
 from typing import Optional
 

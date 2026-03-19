@@ -1,3 +1,10 @@
+"""
+EventRepository
+===============
+Datenbankzugriff für Match-Events (Tore, Karten, Wechsel etc.).
+Unterstützt Upsert-Logik für idempotente Partner-API-Synchronisierung.
+"""
+
 import logging
 from typing import Optional
 

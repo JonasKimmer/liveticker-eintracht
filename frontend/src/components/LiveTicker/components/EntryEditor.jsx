@@ -3,30 +3,10 @@
 // ============================================================
 import { memo, useState, useEffect, useMemo, useCallback, useRef } from "react";
 import { parseCommand } from "../utils/parseCommand";
+import { COMMAND_PALETTE } from "../utils/commandPalette";
 import { MODES } from "../constants";
 
 const COMMAND_PREFIX_REGEX = /^\/\w+\s*/;
-
-const COMMAND_PALETTE = [
-  { cmd: "/g",        desc: "Tor",                    icon: "⚽", hint: "Spieler Team" },
-  { cmd: "/og",       desc: "Eigentor",               icon: "⚽", hint: "Spieler Team" },
-  { cmd: "/gelb",     desc: "Gelbe Karte",            icon: "🟨", hint: "Spieler Team" },
-  { cmd: "/rot",      desc: "Rote Karte",             icon: "🟥", hint: "Spieler Team" },
-  { cmd: "/ep",       desc: "Elfmeter verschossen",   icon: "❌", hint: "Spieler Team" },
-  { cmd: "/s",        desc: "Wechsel",                icon: "🔄", hint: "Ein Aus Team" },
-  { cmd: "/n",        desc: "Notiz",                  icon: "📝", hint: "Text" },
-  null, // separator
-  { cmd: "/prematch", desc: "Prematch",               icon: "📣", hint: "" },
-  { cmd: "/anpfiff",  desc: "Anpfiff",                icon: "📣", hint: "Minute" },
-  { cmd: "/hz",       desc: "Halbzeit",               icon: "🔔", hint: "" },
-  { cmd: "/2hz",      desc: "2. Halbzeit",            icon: "📣", hint: "Minute" },
-  { cmd: "/pause",    desc: "Pause (2. HZ)",          icon: "🔔", hint: "" },
-  { cmd: "/vz1",      desc: "Verlängerung 1. HZ",     icon: "📣", hint: "Minute" },
-  { cmd: "/vzp",      desc: "VZ-Pause",               icon: "🔔", hint: "" },
-  { cmd: "/vz2",      desc: "Verlängerung 2. HZ",     icon: "📣", hint: "Minute" },
-  { cmd: "/elfmeter", desc: "Elfmeterschießen",       icon: "🥅", hint: "" },
-  { cmd: "/abpfiff",  desc: "Abpfiff",                icon: "📣", hint: "" },
-];
 
 export const EntryEditor = memo(function EntryEditor({
   value,
