@@ -8,23 +8,15 @@ import { useState, useCallback, useRef, useMemo, useEffect } from "react";
 import { useLiveMinuteEditor } from "../hooks/useLiveMinuteEditor";
 import { createPortal } from "react-dom";
 import { useMediaWebSocket } from "../../../hooks/useMediaWebSocket";
-import { generateMediaCaption } from "../../../api";
+import { generateMediaCaption, fetchMediaQueue, clearMediaQueue, publishMedia } from "../../../api";
 import { parseCommand } from "../utils/parseCommand";
 import { useCommandPalette, CommandPalettePortal } from "../utils/commandPalette";
 import { MinuteEditor } from "./MinuteEditor";
 import config from "../../../config/whitelabel";
 
-const API_BASE = config.apiBase;
-
 const N8N_WEBHOOK = `${config.n8nBase}/scoreplay-media`;
 
 // ── API ──────────────────────────────────────────────────────
-
-async function fetchQueue() {
-  const res = await fetch(`${API_BASE}/media/queue`);
-  if (!res.ok) throw new Error(`Queue laden fehlgeschlagen (${res.status})`);
-  return res.json();
-}
 
 async function triggerN8nWebhook(player) {
   const body = player
@@ -36,25 +28,6 @@ async function triggerN8nWebhook(player) {
     body: JSON.stringify(body),
   });
   if (!res.ok) throw new Error(`n8n Webhook fehlgeschlagen (${res.status})`);
-}
-
-async function publishMedia({ mediaId, description, matchId, minute, icon }) {
-  const res = await fetch(`${API_BASE}/media/publish`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      media_id: mediaId,
-      description,
-      match_id: matchId,
-      minute: minute ? Number(minute) : null,
-      icon: icon ?? null,
-    }),
-  });
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({}));
-    throw new Error(err.detail || `Veröffentlichen fehlgeschlagen (${res.status})`);
-  }
-  return res.json();
 }
 
 // ── Publish Modal ─────────────────────────────────────────────
@@ -149,7 +122,7 @@ function PublishModal({ image, matchId, onClose, onPublished, playerNames = [], 
       await publishMedia({ mediaId: image.media_id, description: textToPublish, matchId, minute: minute || null, icon });
       onPublished(image.media_id);
     } catch (err) {
-      setError(err.message);
+      setError(err.response?.data?.detail || err.message);
       setLoading(false);
     }
   }, [description, minute, image.media_id, matchId, onPublished]);
@@ -498,7 +471,9 @@ export function MediaPickerPanel({ match, matchId, defaultOpen = false, playerNa
 
   useEffect(() => {
     if (!open) return;
-    fetchQueue().then(setImages).catch((e) => setStatusMsg({ type: "error", text: e.message }));
+    fetchMediaQueue()
+      .then((res) => setImages(res.data))
+      .catch((e) => setStatusMsg({ type: "error", text: e.message }));
   }, [open]);
 
   const handleNewMedia = useCallback((newItems) => {
@@ -516,12 +491,12 @@ export function MediaPickerPanel({ match, matchId, defaultOpen = false, playerNa
     setStatusMsg(null);
     if (selectedPlayer) {
       setImages([]);
-      try { await fetch(`${API_BASE}/media/queue`, { method: "DELETE" }); } catch (_) {}
+      try { await clearMediaQueue(); } catch (_) {}
     }
     try {
       await triggerN8nWebhook(selectedPlayer);
       setStatusMsg({ type: "success", text: "Workflow gestartet – Bilder erscheinen gleich..." });
-      setTimeout(async () => { try { setImages(await fetchQueue()); } catch (_) {} }, 4000);
+      setTimeout(async () => { try { setImages((await fetchMediaQueue()).data); } catch (_) {} }, 4000);
     } catch (e) {
       setStatusMsg({ type: "error", text: e.message });
     } finally {

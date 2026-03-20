@@ -84,6 +84,16 @@ export const updatePlayerStats = (playerId, statistics) =>
 // ── Media ───────────────────────────────────────────────
 export const generateMediaCaption = (mediaId, style = "neutral", instance = "ef_whitelabel") =>
   api.post(`/media/generate-caption/${mediaId}`, { style, instance });
+export const fetchMediaQueue = () => api.get("/media/queue");
+export const clearMediaQueue = () => api.delete("/media/queue");
+export const publishMedia = ({ mediaId, description, matchId, minute, icon }) =>
+  api.post("/media/publish", {
+    media_id: mediaId,
+    description,
+    match_id: matchId,
+    minute: minute ? Number(minute) : null,
+    icon: icon ?? null,
+  });
 
 // ── n8n Webhooks ───────────────────────────────────────
 export const importCountries = () => n8n.post("/import-countries");

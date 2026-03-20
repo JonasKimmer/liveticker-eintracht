@@ -4,6 +4,7 @@ Provider: Mock, OpenAI, Anthropic, Gemini, OpenRouter
 Few-Shot: Stilreferenzen aus PostgreSQL (style_references)
 """
 
+import asyncio
 import logging
 import random
 from typing import TYPE_CHECKING, Optional, Literal
@@ -628,18 +629,32 @@ async def generate_ticker_text(
     else:
         active_service = llm_service
 
-    text = active_service.generate_ticker_text(
-        event_type=event_type,
-        event_detail=event_detail,
-        minute=resolved_minute,
-        player_name=player_name,
-        assist_name=assist_name,
-        team_name=resolved_team,
-        style=style,
-        language=language,
-        context_data=context_data,
-        style_references=style_references,
-    )
+    last_exc: Exception | None = None
+    for attempt in range(3):
+        try:
+            text = await asyncio.to_thread(
+                active_service.generate_ticker_text,
+                event_type=event_type,
+                event_detail=event_detail,
+                minute=resolved_minute,
+                player_name=player_name,
+                assist_name=assist_name,
+                team_name=resolved_team,
+                style=style,
+                language=language,
+                context_data=context_data,
+                style_references=style_references,
+            )
+            model_used = model or _model or _provider
+            return text, model_used
+        except Exception as exc:
+            last_exc = exc
+            if attempt < 2:
+                wait = 2 ** attempt  # 1s, 2s
+                logger.warning(
+                    "LLM attempt %d/3 failed (%s), retrying in %ds…",
+                    attempt + 1, exc, wait,
+                )
+                await asyncio.sleep(wait)
 
-    model_used = model or _model or _provider
-    return text, model_used
+    raise last_exc
