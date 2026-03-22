@@ -3,7 +3,7 @@
 // Flow: n8n RSS → DB → Klick → Modal → Ticker
 // ============================================================
 
-import { memo, useState } from "react";
+import { memo, useState, useRef } from "react";
 import PropTypes from "prop-types";
 import { createPortal } from "react-dom";
 import { fetchInstagramPosts, triggerInstagramImport } from "../../../api";
