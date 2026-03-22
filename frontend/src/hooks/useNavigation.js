@@ -96,7 +96,6 @@ export function useNavigation() {
   }, [selCountry]);
 
   // ── Team → Competitions + Matches importieren ───────────────
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (!selTeamId) return;
     const controller = new AbortController();
@@ -139,7 +138,7 @@ export function useNavigation() {
       })
       .catch((err) => { if (!controller.signal.aborted) logger.error(err); });
     return () => controller.abort();
-  }, [selTeamId]);
+  }, [selTeamId, teams]);
 
   // ── Competition → Reset ─────────────────────────────────────
   useEffect(() => {
