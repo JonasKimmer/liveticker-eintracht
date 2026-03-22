@@ -851,6 +851,7 @@
   color: var(--lt-text);
   line-height: 1.5;
   word-break: break-word;
+  position: relative;
 }
 .lt-entry__image {
   width: 400px;
@@ -860,6 +861,7 @@
   margin-bottom: 6px;
   border: 1px solid var(--lt-border);
   display: block;
+  cursor: pointer;
 }
 .lt-entry__meta {
   font-family: var(--lt-font-mono);
@@ -867,6 +869,158 @@
   color: var(--lt-text-faint);
   margin-top: 0.2rem;
 }
+
+/* Entry action buttons (edit / delete) */
+.lt-entry__action-btn {
+  background: none;
+  border: none;
+  color: var(--lt-text-faint);
+  cursor: pointer;
+  padding: 0;
+  vertical-align: middle;
+}
+.lt-entry__action-btn--edit {
+  margin-left: 6px;
+  font-size: 0.75rem;
+  opacity: 0.5;
+}
+.lt-entry__action-btn--delete {
+  margin-left: 4px;
+  font-size: 0.72rem;
+  opacity: 0.4;
+}
+
+/* Inline edit form */
+.lt-entry__edit-form {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 4px;
+}
+.lt-entry__edit-textarea {
+  width: 100%;
+  background: var(--lt-bg-card-2);
+  border: 1px solid var(--lt-accent);
+  border-radius: 6px;
+  color: var(--lt-text);
+  font-family: var(--lt-font-mono);
+  font-size: 0.82rem;
+  padding: 0.5rem 0.6rem;
+  resize: vertical;
+  outline: none;
+  box-sizing: border-box;
+}
+.lt-entry__edit-actions {
+  display: flex;
+  gap: 6px;
+}
+.lt-entry__edit-save {
+  padding: 0.25rem 0.7rem;
+  border-radius: 5px;
+  background: var(--lt-accent);
+  border: none;
+  color: #000;
+  font-family: var(--lt-font-mono);
+  font-size: 0.72rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+.lt-entry__edit-save:disabled { opacity: 0.6; }
+.lt-entry__edit-cancel {
+  padding: 0.25rem 0.7rem;
+  border-radius: 5px;
+  background: transparent;
+  border: 1px solid var(--lt-border);
+  color: var(--lt-text-muted);
+  font-family: var(--lt-font-mono);
+  font-size: 0.72rem;
+  cursor: pointer;
+}
+
+/* Inline video player */
+.lt-video-wrap {
+  position: relative;
+  width: 100%;
+  max-width: 320px;
+  aspect-ratio: 16 / 9;
+  border-radius: 6px;
+  overflow: hidden;
+  margin-bottom: 4px;
+}
+.lt-video-wrap--clickable { cursor: pointer; }
+.lt-video-wrap__iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+  display: block;
+}
+.lt-video-wrap__close {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  z-index: 1;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.65);
+  border: none;
+  color: #fff;
+  cursor: pointer;
+  font-size: 0.7rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.lt-video-wrap__placeholder {
+  width: 100%;
+  height: 100%;
+  background: var(--lt-bg-card-2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.lt-video-wrap__overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.3);
+}
+.lt-video-wrap__play {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.65);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.lt-video-wrap__play-icon {
+  font-size: 1rem;
+  margin-left: 3px;
+}
+
+/* Media links & thumbnails inside entries */
+.lt-entry__media-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-family: var(--lt-font-mono);
+  font-size: 0.68rem;
+  color: var(--lt-accent);
+  text-decoration: none;
+  margin-bottom: 4px;
+}
+.lt-entry__media-link-icon { font-size: 0.8rem; }
+.lt-entry__media-thumb {
+  width: 100%;
+  max-width: 280px;
+  border-radius: 6px;
+  display: block;
+  object-fit: cover;
+}
+.lt-entry__media-thumb--linked { display: block; margin-bottom: 6px; }
 
 /* ============================================================
    CENTER PANEL

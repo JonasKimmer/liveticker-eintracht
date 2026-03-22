@@ -49,46 +49,27 @@ function InlineVideo({ videoUrl, thumbnailUrl }) {
   const [playing, setPlaying] = useState(false);
   const embedUrl = toEmbedUrl(videoUrl);
 
-  const wrapStyle = {
-    position: "relative", width: "100%", maxWidth: 320, aspectRatio: "16/9",
-    borderRadius: 6, overflow: "hidden", marginBottom: 4,
-  };
-
   if (playing) {
     return (
-      <div style={wrapStyle}>
-        <iframe
-          src={embedUrl}
-          style={{ width: "100%", height: "100%", border: "none", display: "block" }}
-          allow="autoplay; fullscreen"
-          allowFullScreen
-        />
-        <button
-          onClick={() => setPlaying(false)}
-          style={{
-            position: "absolute", top: 6, right: 6, zIndex: 1,
-            width: 26, height: 26, borderRadius: "50%",
-            background: "rgba(0,0,0,0.65)", border: "none",
-            color: "#fff", cursor: "pointer", fontSize: "0.7rem",
-            display: "flex", alignItems: "center", justifyContent: "center",
-          }}
-        >✕</button>
+      <div className="lt-video-wrap">
+        <iframe src={embedUrl} className="lt-video-wrap__iframe" allow="autoplay; fullscreen" allowFullScreen />
+        <button onClick={() => setPlaying(false)} className="lt-video-wrap__close">✕</button>
       </div>
     );
   }
 
   return (
-    <div style={{ ...wrapStyle, cursor: "pointer" }} onClick={() => setPlaying(true)}>
+    <div className="lt-video-wrap lt-video-wrap--clickable" onClick={() => setPlaying(true)}>
       {thumbnailUrl ? (
         <img src={thumbnailUrl} alt="Clip" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
       ) : (
-        <div style={{ width: "100%", height: "100%", background: "var(--lt-bg-card-2)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <div className="lt-video-wrap__placeholder">
           <span style={{ fontSize: "1.5rem" }}>🎬</span>
         </div>
       )}
-      <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(0,0,0,0.3)" }}>
-        <div style={{ width: 36, height: 36, borderRadius: "50%", background: "rgba(0,0,0,0.65)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-          <span style={{ fontSize: "1rem", marginLeft: 3 }}>▶</span>
+      <div className="lt-video-wrap__overlay">
+        <div className="lt-video-wrap__play">
+          <span className="lt-video-wrap__play-icon">▶</span>
         </div>
       </div>
     </div>
@@ -100,27 +81,24 @@ InlineVideo.propTypes = {
   thumbnailUrl: PropTypes.string,
 };
 
-const LINK_STYLE = { display: "inline-flex", alignItems: "center", gap: "0.35rem", fontFamily: "var(--lt-font-mono)", fontSize: "0.68rem", color: "var(--lt-accent)", textDecoration: "none", marginBottom: 4 };
-const THUMB_STYLE = { width: "100%", maxWidth: 280, borderRadius: 6, display: "block", objectFit: "cover" };
-
 function MediaContent({ videoUrl, imageUrl }) {
   if (!videoUrl && !imageUrl) return null;
   if (videoUrl && URL_PATTERNS.twitter.test(videoUrl)) {
-    return <a href={videoUrl} target="_blank" rel="noopener noreferrer" style={LINK_STYLE}><span style={{ fontSize: "0.8rem" }}>𝕏</span> Zum Tweet →</a>;
+    return <a href={videoUrl} target="_blank" rel="noopener noreferrer" className="lt-entry__media-link"><span className="lt-entry__media-link-icon">𝕏</span> Zum Tweet →</a>;
   }
   if (videoUrl && URL_PATTERNS.instagram.test(videoUrl)) {
     return (
       <div>
-        {imageUrl && <a href={videoUrl} target="_blank" rel="noopener noreferrer" style={{ display: "block", marginBottom: 6 }}><img src={imageUrl} alt="Instagram" referrerPolicy="no-referrer" style={THUMB_STYLE} loading="lazy" /></a>}
-        <a href={videoUrl} target="_blank" rel="noopener noreferrer" style={LINK_STYLE}><span style={{ fontSize: "0.8rem" }}>📸</span> Zum Instagram-Post →</a>
+        {imageUrl && <a href={videoUrl} target="_blank" rel="noopener noreferrer" className="lt-entry__media-thumb--linked"><img src={imageUrl} alt="Instagram" referrerPolicy="no-referrer" className="lt-entry__media-thumb" loading="lazy" /></a>}
+        <a href={videoUrl} target="_blank" rel="noopener noreferrer" className="lt-entry__media-link"><span className="lt-entry__media-link-icon">📸</span> Zum Instagram-Post →</a>
       </div>
     );
   }
   if (videoUrl && URL_PATTERNS.youtube.test(videoUrl)) {
     return (
       <div>
-        {imageUrl && <a href={videoUrl} target="_blank" rel="noopener noreferrer" style={{ display: "block", position: "relative", marginBottom: 6 }}><img src={imageUrl} alt="YouTube" style={THUMB_STYLE} loading="lazy" /></a>}
-        <a href={videoUrl} target="_blank" rel="noopener noreferrer" style={LINK_STYLE}><span style={{ fontSize: "0.8rem" }}>▶</span> Zum YouTube-Video →</a>
+        {imageUrl && <a href={videoUrl} target="_blank" rel="noopener noreferrer" className="lt-entry__media-thumb--linked"><img src={imageUrl} alt="YouTube" className="lt-entry__media-thumb" loading="lazy" /></a>}
+        <a href={videoUrl} target="_blank" rel="noopener noreferrer" className="lt-entry__media-link"><span className="lt-entry__media-link-icon">▶</span> Zum YouTube-Video →</a>
       </div>
     );
   }
@@ -130,7 +108,6 @@ function MediaContent({ videoUrl, imageUrl }) {
   return (
     <img src={imageUrl} alt="Ticker-Bild" className="lt-entry__image" loading="lazy"
       onDoubleClick={() => window.dispatchEvent(new CustomEvent("lt-show-commands"))}
-      style={{ cursor: "pointer" }}
     />
   );
 }
@@ -146,10 +123,10 @@ function EntryActions({ onEdit, onDelete, tickerTextId, startEdit }) {
   return (
     <>
       {onEdit && (
-        <button onClick={startEdit} title="Bearbeiten" style={{ marginLeft: 6, background: "none", border: "none", color: "var(--lt-text-faint)", cursor: "pointer", fontSize: "0.75rem", padding: 0, verticalAlign: "middle", opacity: 0.5 }}>✎</button>
+        <button onClick={startEdit} title="Bearbeiten" className="lt-entry__action-btn lt-entry__action-btn--edit">✎</button>
       )}
       {onDelete && (
-        <button onClick={() => { if (window.confirm("Eintrag löschen?")) onDelete(tickerTextId); }} title="Löschen" style={{ marginLeft: 4, background: "none", border: "none", color: "var(--lt-text-faint)", cursor: "pointer", fontSize: "0.72rem", padding: 0, verticalAlign: "middle", opacity: 0.4 }}>✕</button>
+        <button onClick={() => { if (window.confirm("Eintrag löschen?")) onDelete(tickerTextId); }} title="Löschen" className="lt-entry__action-btn lt-entry__action-btn--delete">✕</button>
       )}
     </>
   );
@@ -164,26 +141,20 @@ function getDisplayText(tickerText) {
 
 function EditForm({ textareaRef, value, onChange, onSave, onCancel, saving }) {
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 6, marginTop: 4 }}>
+    <div className="lt-entry__edit-form">
       <textarea
         ref={textareaRef}
         value={value}
         onChange={(e) => onChange(e.target.value)}
         rows={3}
-        style={{
-          width: "100%", background: "var(--lt-bg-card-2)", border: "1px solid var(--lt-accent)",
-          borderRadius: 6, color: "var(--lt-text)", fontFamily: "var(--lt-font-mono)",
-          fontSize: "0.82rem", padding: "0.5rem 0.6rem", resize: "vertical", outline: "none",
-        }}
+        className="lt-entry__edit-textarea"
         onKeyDown={(e) => { if (e.key === "Escape") onCancel(); if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) onSave(); }}
       />
-      <div style={{ display: "flex", gap: 6 }}>
-        <button onClick={onSave} disabled={saving} style={{ padding: "0.25rem 0.7rem", borderRadius: 5, background: "var(--lt-accent)", border: "none", color: "#000", fontFamily: "var(--lt-font-mono)", fontSize: "0.72rem", fontWeight: 700, cursor: "pointer", opacity: saving ? 0.6 : 1 }}>
+      <div className="lt-entry__edit-actions">
+        <button onClick={onSave} disabled={saving} className="lt-entry__edit-save">
           {saving ? "…" : "Speichern"}
         </button>
-        <button onClick={onCancel} style={{ padding: "0.25rem 0.7rem", borderRadius: 5, background: "transparent", border: "1px solid var(--lt-border)", color: "var(--lt-text-muted)", fontFamily: "var(--lt-font-mono)", fontSize: "0.72rem", cursor: "pointer" }}>
-          Abbrechen
-        </button>
+        <button onClick={onCancel} className="lt-entry__edit-cancel">Abbrechen</button>
       </div>
     </div>
   );
@@ -279,7 +250,7 @@ export const PublishedEntry = memo(function PublishedEntry({
           {editing ? (
             <EditForm textareaRef={textareaRef} value={editText} onChange={setEditText} onSave={saveEdit} onCancel={cancelEdit} saving={saving} />
           ) : (
-            <div className="lt-entry__text" style={{ position: "relative" }}>
+            <div className="lt-entry__text">
               {getDisplayText(tickerText)}
               <EntryActions onEdit={onEdit} onDelete={onDelete} tickerTextId={tickerText?.id} startEdit={startEdit} />
             </div>
@@ -300,7 +271,7 @@ export const PublishedEntry = memo(function PublishedEntry({
         {editing ? (
           <EditForm textareaRef={textareaRef} value={editText} onChange={setEditText} onSave={saveEdit} onCancel={cancelEdit} saving={saving} />
         ) : (
-          <div className="lt-entry__text" style={{ position: "relative" }}>
+          <div className="lt-entry__text">
             {tickerText.text}
             <EntryActions onEdit={onEdit} onDelete={onDelete} tickerTextId={tickerText?.id} startEdit={startEdit} />
           </div>
