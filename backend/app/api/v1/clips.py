@@ -18,6 +18,7 @@ from typing import Optional
 import httpx
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from app.core.config import settings
@@ -70,7 +71,6 @@ def import_clips(
 ) -> list[MediaClipResponse]:
     results = []
     for c in data.clips:
-        # Upsert: wenn vid bekannt, nur aktualisieren
         existing = None
         if c.vid:
             existing = db.query(MediaClip).filter(MediaClip.vid == c.vid).first()
@@ -95,8 +95,19 @@ def import_clips(
                 source=c.source or "bundesliga",
             )
             db.add(clip)
-            db.flush()
-            results.append(clip)
+            try:
+                db.flush()
+                results.append(clip)
+            except IntegrityError:
+                # Race condition: paralleler Import hat dasselbe vid bereits eingefügt
+                db.rollback()
+                if c.vid:
+                    winner = db.query(MediaClip).filter(MediaClip.vid == c.vid).first()
+                    if winner:
+                        logger.debug("Clip race resolved: vid=%s already exists as id=%s", c.vid, winner.id)
+                        results.append(winner)
+                        continue
+                raise
 
     db.commit()
     for r in results:
