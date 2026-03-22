@@ -16,7 +16,7 @@ Instanzen:
 import asyncio
 import json
 import logging
-from typing import Optional, Literal
+from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Body, status
 from pydantic import BaseModel, Field
@@ -33,6 +33,8 @@ from app.schemas.ticker_entry import (
     TickerEntryUpdate,
     TickerEntryResponse,
     TickerStatus,
+    TickerStyle,
+    TickerInstance,
 )
 from app.services.llm_service import generate_ticker_text
 from app.core.constants import resolve_phase
@@ -52,9 +54,9 @@ _llm_semaphore = asyncio.Semaphore(settings.LLM_CONCURRENCY)
 
 
 class GenerateEventRequest(BaseModel):
-    style: Literal["neutral", "euphorisch", "kritisch"] = "neutral"
+    style: TickerStyle = "neutral"
     language: str = Field(default="de", max_length=5)
-    instance: Literal["generic", "ef_whitelabel"] = "ef_whitelabel"
+    instance: TickerInstance = "ef_whitelabel"
     provider: Optional[str] = Field(
         default=None, description="Provider override für Evaluation"
     )
@@ -68,9 +70,9 @@ class GenerateEventRequest(BaseModel):
 
 class GenerateSyntheticRequest(BaseModel):
     synthetic_event_id: int
-    style: Literal["neutral", "euphorisch", "kritisch"] = "neutral"
+    style: TickerStyle = "neutral"
     language: str = Field(default="de", max_length=5)
-    instance: Literal["generic", "ef_whitelabel"] = "ef_whitelabel"
+    instance: TickerInstance = "ef_whitelabel"
     provider: Optional[str] = None
     model: Optional[str] = None
     auto_publish: bool = False

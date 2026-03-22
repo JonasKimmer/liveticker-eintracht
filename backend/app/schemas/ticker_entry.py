@@ -1,9 +1,13 @@
 from datetime import datetime
 from enum import Enum
-from typing import Optional
+from typing import Literal, Optional
 from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field
+
+# Shared Literal types – used in ticker.py request schemas
+TickerStyle = Literal["neutral", "euphorisch", "kritisch"]
+TickerInstance = Literal["generic", "ef_whitelabel"]
 
 
 class TickerStatus(str, Enum):
