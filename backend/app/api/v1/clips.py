@@ -30,7 +30,7 @@ from app.schemas.media_clip import (
     MediaClipResponse,
     ClipPublishRequest,
 )
-from app.schemas.ticker_entry import TickerEntryCreate, TickerEntryResponse
+from app.schemas.ticker_entry import TickerEntryCreate, TickerEntryResponse, TickerStatus
 from app.repositories.ticker_entry_repository import TickerEntryRepository
 from app.services.llm_service import generate_ticker_text
 
@@ -276,7 +276,7 @@ def publish_clip(
             phase=data.phase,
             image_url=clip.thumbnail_url,
             video_url=clip.video_url,
-            status="published",
+            status=TickerStatus.published,
         )
     )
 

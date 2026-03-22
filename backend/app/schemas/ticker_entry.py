@@ -50,8 +50,8 @@ class TickerEntryResponse(BaseModel):
     style: Optional[str] = None
     icon: Optional[str] = None
     llm_model: Optional[str] = None
-    status: str
-    source: str
+    status: TickerStatus
+    source: TickerSource
     minute: Optional[int] = None
     phase: Optional[str] = None
     image_url: Optional[str] = None

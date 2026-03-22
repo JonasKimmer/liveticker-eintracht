@@ -16,7 +16,7 @@ from typing import Optional
 from sqlalchemy.orm import Session
 
 from app.models.ticker_entry import TickerEntry
-from app.schemas.ticker_entry import TickerEntryCreate, TickerEntryUpdate
+from app.schemas.ticker_entry import TickerEntryCreate, TickerEntryUpdate, TickerStatus
 
 logger = logging.getLogger(__name__)
 
@@ -47,7 +47,7 @@ class TickerEntryRepository:
     ) -> list[TickerEntry]:
         q = self.db.query(TickerEntry).filter(TickerEntry.match_id == match_id)
         if published_only:
-            q = q.filter(TickerEntry.status == "published")
+            q = q.filter(TickerEntry.status == TickerStatus.published)
         entries = q.order_by(TickerEntry.created_at.desc()).all()
         entries.sort(
             key=lambda e: (

@@ -32,6 +32,7 @@ from app.schemas.ticker_entry import (
     TickerEntryCreate,
     TickerEntryUpdate,
     TickerEntryResponse,
+    TickerStatus,
 )
 from app.services.llm_service import generate_ticker_text
 from app.core.constants import resolve_phase
@@ -219,7 +220,7 @@ def _make_ai_entry(
     model_used: str,
     style: str,
     *,
-    status: str = "draft",
+    status: TickerStatus = TickerStatus.draft,
     event_id: Optional[int] = None,
     synthetic_event_id: Optional[int] = None,
     phase: Optional[str] = None,
@@ -341,9 +342,9 @@ def publish_ticker_entry(
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Entry not found"
         )
-    if entry.status == "published":
+    if entry.status == TickerStatus.published:
         return entry
-    return repo.update(entry_id, TickerEntryUpdate(status="published"))
+    return repo.update(entry_id, TickerEntryUpdate(status=TickerStatus.published))
 
 
 @router.patch(
@@ -361,7 +362,7 @@ def reject_ticker_entry(
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Entry not found"
         )
-    return repo.update(entry_id, TickerEntryUpdate(status="rejected"))
+    return repo.update(entry_id, TickerEntryUpdate(status=TickerStatus.rejected))
 
 
 # ──────────────────────────────────────────────
@@ -403,7 +404,7 @@ def create_manual_entry(
             phase=data.phase,
             image_url=data.image_url,
             video_url=data.video_url,
-            status="published",
+            status=TickerStatus.published,
         )
     )
 
@@ -489,7 +490,7 @@ async def generate_for_event(
         _make_ai_entry(
             event.match_id, text, model_used, data.style,
             event_id=event_id,
-            status="published" if data.auto_publish else "draft",
+            status=TickerStatus.published if data.auto_publish else TickerStatus.draft,
         )
     )
 
@@ -560,7 +561,7 @@ async def generate_for_synthetic_event(
             synthetic_event_id=synthetic.id,
             phase=phase,
             minute=event_minute,
-            status="published" if data.auto_publish else "draft",
+            status=TickerStatus.published if data.auto_publish else TickerStatus.draft,
         )
     )
 
@@ -641,7 +642,7 @@ async def generate_synthetic_batch(
                 match_id, text, model_used, data.style,
                 synthetic_event_id=synthetic.id,
                 phase=phase,
-                status="published" if data.auto_publish else "draft",
+                status=TickerStatus.published if data.auto_publish else TickerStatus.draft,
             )
         )
         results.append(entry)
@@ -733,7 +734,7 @@ async def generate_match_phases(
                 synthetic_event_id=synthetic.id,
                 phase=phase,
                 minute=default_minute,
-                status="published" if data.auto_publish else "draft",
+                status=TickerStatus.published if data.auto_publish else TickerStatus.draft,
             )
         )
         results.append(entry)
@@ -789,7 +790,7 @@ async def generate_bulk_for_match(
                 _make_ai_entry(
                     match_id, text, model_used, data.style,
                     event_id=event.id,
-                    status="draft",
+                    status=TickerStatus.draft,
                 )
             )
             results.append(entry)

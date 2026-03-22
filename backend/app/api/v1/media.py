@@ -21,7 +21,7 @@ from app.core.database import get_db
 from app.models.media_queue import MediaQueue
 from app.models.ticker_entry import TickerEntry
 from app.schemas.media_queue import MediaItemIn, MediaItemResponse, PublishMediaRequest
-from app.schemas.ticker_entry import TickerEntryResponse
+from app.schemas.ticker_entry import TickerEntryResponse, TickerStatus
 from app.services.llm_service import generate_ticker_text
 
 logger = logging.getLogger(__name__)
@@ -205,7 +205,7 @@ def media_publish(
         match_id=data.match_id,
         text=data.description,
         source="manual",
-        status="published",
+        status=TickerStatus.published,
         icon=data.icon or "📷",
         minute=data.minute,
         image_url=media.compressed_url or media.original_url or media.thumbnail_url,
