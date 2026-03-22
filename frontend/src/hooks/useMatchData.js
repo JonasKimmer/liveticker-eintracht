@@ -79,7 +79,6 @@ export function useMatchData(selectedMatchId) {
     }
   }, []);
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (!selectedMatchId) return;
     matchRef.current = null;
@@ -127,6 +126,7 @@ export function useMatchData(selectedMatchId) {
       clearTimeout(t1);
       clearTimeout(t2);
     };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedMatchId]);
 
   // Polling-Interval wird vom Match-State abhängig gemacht.
