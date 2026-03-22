@@ -19,7 +19,6 @@ import logging
 from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Body, status
-from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
@@ -28,12 +27,14 @@ from app.repositories.match_repository import MatchRepository
 from app.repositories.synthetic_event_repository import SyntheticEventRepository
 from app.repositories.ticker_entry_repository import TickerEntryRepository
 from app.schemas.ticker_entry import (
+    GenerateEventRequest,
+    GenerateSyntheticBatchRequest,
+    GenerateSyntheticRequest,
+    ManualEntryRequest,
     TickerEntryCreate,
     TickerEntryUpdate,
     TickerEntryResponse,
     TickerStatus,
-    TickerStyle,
-    TickerInstance,
 )
 from app.services.llm_service import generate_ticker_text
 from app.core.constants import resolve_phase
@@ -45,48 +46,6 @@ router = APIRouter(prefix="/ticker", tags=["Ticker"])
 
 # Limit concurrent LLM calls to prevent thread pool saturation (konfigurierbar via LLM_CONCURRENCY)
 _llm_semaphore = asyncio.Semaphore(settings.LLM_CONCURRENCY)
-
-
-# ──────────────────────────────────────────────
-# Request Schemas
-# ──────────────────────────────────────────────
-
-
-class GenerateEventRequest(BaseModel):
-    style: TickerStyle = "neutral"
-    language: str = Field(default="de", max_length=5)
-    instance: TickerInstance = "ef_whitelabel"
-    provider: Optional[str] = Field(
-        default=None, description="Provider override für Evaluation"
-    )
-    model: Optional[str] = Field(
-        default=None, description="Modell override für Evaluation"
-    )
-    auto_publish: bool = Field(
-        default=False, description="Modus 2: direkt publizieren ohne Review"
-    )
-
-
-class GenerateSyntheticRequest(BaseModel):
-    synthetic_event_id: int
-    style: TickerStyle = "neutral"
-    language: str = Field(default="de", max_length=5)
-    instance: TickerInstance = "ef_whitelabel"
-    provider: Optional[str] = None
-    model: Optional[str] = None
-    auto_publish: bool = False
-
-
-class ManualEntryRequest(BaseModel):
-    match_id: int
-    text: str = Field(..., min_length=1, max_length=2000)
-    event_id: Optional[int] = None
-    style: Optional[str] = None
-    icon: Optional[str] = None
-    minute: Optional[int] = None
-    phase: Optional[str] = Field(None, max_length=50)
-    image_url: Optional[str] = None
-    video_url: Optional[str] = None
 
 
 # ──────────────────────────────────────────────
@@ -537,13 +496,6 @@ async def generate_for_synthetic_event(
 # ──────────────────────────────────────────────
 # POST: Alle Synthetic Events eines Spiels generieren (Auto-Trigger)
 # ──────────────────────────────────────────────
-
-
-class GenerateSyntheticBatchRequest(BaseModel):
-    style: TickerStyle = "neutral"
-    language: str = Field(default="de", max_length=5)
-    instance: TickerInstance = "ef_whitelabel"
-    auto_publish: bool = True
 
 
 @router.post(

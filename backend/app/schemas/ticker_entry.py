@@ -44,6 +44,48 @@ class TickerEntryUpdate(BaseModel):
     icon: Optional[str] = Field(None, max_length=50)
 
 
+class BaseGenerateRequest(BaseModel):
+    """Gemeinsame Felder für alle KI-Generierungs-Requests."""
+    style: TickerStyle = "neutral"
+    language: str = Field(default="de", max_length=5)
+    instance: TickerInstance = "ef_whitelabel"
+    auto_publish: bool = False
+
+
+class GenerateEventRequest(BaseGenerateRequest):
+    provider: Optional[str] = Field(
+        default=None, description="Provider override für Evaluation"
+    )
+    model: Optional[str] = Field(
+        default=None, description="Modell override für Evaluation"
+    )
+    auto_publish: bool = Field(
+        default=False, description="Modus 2: direkt publizieren ohne Review"
+    )
+
+
+class GenerateSyntheticRequest(BaseGenerateRequest):
+    synthetic_event_id: int
+    provider: Optional[str] = None
+    model: Optional[str] = None
+
+
+class GenerateSyntheticBatchRequest(BaseGenerateRequest):
+    auto_publish: bool = True
+
+
+class ManualEntryRequest(BaseModel):
+    match_id: int
+    text: str = Field(..., min_length=1, max_length=2000)
+    event_id: Optional[int] = None
+    style: Optional[str] = None
+    icon: Optional[str] = None
+    minute: Optional[int] = None
+    phase: Optional[str] = Field(None, max_length=50)
+    image_url: Optional[str] = None
+    video_url: Optional[str] = None
+
+
 class TickerEntryResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
