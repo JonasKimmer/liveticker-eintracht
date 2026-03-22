@@ -30,6 +30,34 @@ class EventRepository:
             d.pop("source_id", None)
         return d
 
+    def get_by_match(self, match_id: int) -> list[Event]:
+        return (
+            self.db.query(Event)
+            .filter(Event.match_id == match_id)
+            .order_by(Event.position, Event.time)
+            .all()
+        )
+
+    def get_goals_up_to(
+        self, match_id: int, *, position: Optional[int], event_id: int
+    ) -> list[Event]:
+        """Alle Tor-Events bis einschließlich der gegebenen Position oder Event-ID."""
+        if position is not None:
+            cutoff_col = Event.position
+            cutoff = position
+        else:
+            cutoff_col = Event.id
+            cutoff = event_id
+        return (
+            self.db.query(Event)
+            .filter(
+                Event.match_id == match_id,
+                Event.event_type.in_(["goal", "own_goal"]),
+                cutoff_col <= cutoff,
+            )
+            .all()
+        )
+
     def get_by_match_paginated(
         self, match_id: int, page: int = 1, page_size: int = 50
     ) -> tuple[list[Event], int]:

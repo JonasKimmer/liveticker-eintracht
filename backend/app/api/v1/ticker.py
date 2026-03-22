@@ -20,13 +20,12 @@ from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Body, status
 from pydantic import BaseModel, Field
-from sqlalchemy.orm import Session, joinedload
+from sqlalchemy.orm import Session
 
 from app.core.database import get_db
-from app.models.event import Event
-from app.models.match import Match
-from app.models.synthetic_event import SyntheticEvent
-from app.models.ticker_entry import TickerEntry
+from app.repositories.event_repository import EventRepository
+from app.repositories.match_repository import MatchRepository
+from app.repositories.synthetic_event_repository import SyntheticEventRepository
 from app.repositories.ticker_entry_repository import TickerEntryRepository
 from app.schemas.ticker_entry import (
     TickerEntryCreate,
@@ -95,22 +94,16 @@ class ManualEntryRequest(BaseModel):
 # ──────────────────────────────────────────────
 
 
-def _score_at_event(db: Session, event: Event, match: Optional[Match]) -> Optional[str]:
+def _score_at_event(event_repo: EventRepository, event, match) -> Optional[str]:
     if not match or not match.home_team or not match.away_team:
         return None
     home_ext = match.home_team.external_id
     away_ext = match.away_team.external_id
 
-    order_col = Event.position if event.position is not None else Event.id
-    cutoff = event.position if event.position is not None else event.id
-    goals = (
-        db.query(Event)
-        .filter(
-            Event.match_id == match.id,
-            Event.event_type.in_(["goal", "own_goal"]),
-            order_col <= cutoff,
-        )
-        .all()
+    goals = event_repo.get_goals_up_to(
+        match.id,
+        position=event.position,
+        event_id=event.id,
     )
     home_score = away_score = 0
     for g in goals:
@@ -132,7 +125,7 @@ def _score_at_event(db: Session, event: Event, match: Optional[Match]) -> Option
     return f"{home_score}:{away_score}"
 
 
-def _build_match_context(match: Optional[Match], event_minute: Optional[int]) -> dict:
+def _build_match_context(match, event_minute: Optional[int]) -> dict:
     if not match:
         return {}
     return {
@@ -151,11 +144,7 @@ def _build_context_data(
     instance: str,
     score_str: Optional[str] = None,
 ) -> dict:
-    """Build the context_data dict passed to generate_ticker_text.
-
-    For ef_whitelabel instances, includes team names and optional score.
-    For generic instances, includes only the score (if available).
-    """
+    """Build the context_data dict passed to generate_ticker_text."""
     score_part = {"score": score_str} if score_str else {}
     if instance == "ef_whitelabel":
         return {
@@ -164,20 +153,6 @@ def _build_context_data(
             **score_part,
         }
     return score_part
-
-
-def _load_match(db: Session, match_id: int) -> Optional[Match]:
-    """Eager-load Match with home/away teams and competition in one query."""
-    return (
-        db.query(Match)
-        .options(
-            joinedload(Match.home_team),
-            joinedload(Match.away_team),
-            joinedload(Match.competition),
-        )
-        .filter(Match.id == match_id)
-        .first()
-    )
 
 
 async def _call_llm(
@@ -383,19 +358,13 @@ def create_manual_entry(
     data: ManualEntryRequest,
     db: Session = Depends(get_db),
 ) -> TickerEntryResponse:
+    ticker_repo = TickerEntryRepository(db)
     if data.phase and data.icon and not data.video_url and not data.image_url:
-        existing = (
-            db.query(TickerEntry)
-            .filter(
-                TickerEntry.match_id == data.match_id,
-                TickerEntry.phase == data.phase,
-            )
-            .first()
-        )
+        existing = ticker_repo.get_by_phase(data.match_id, data.phase)
         if existing:
             return existing
 
-    return TickerEntryRepository(db).create(
+    return ticker_repo.create(
         TickerEntryCreate(
             match_id=data.match_id,
             event_id=data.event_id,
@@ -428,18 +397,18 @@ async def generate_for_event(
     data: GenerateEventRequest = Body(default_factory=GenerateEventRequest),
     db: Session = Depends(get_db),
 ) -> TickerEntryResponse:
-    event = db.query(Event).filter(Event.id == event_id).first()
+    event = EventRepository(db).get_by_id(event_id)
     if not event:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Event not found"
         )
 
-    repo = TickerEntryRepository(db)
-    existing = repo.get_by_event(event_id)
+    ticker_repo = TickerEntryRepository(db)
+    existing = ticker_repo.get_by_event(event_id)
     if existing:
         return existing
 
-    match = _load_match(db, event.match_id)
+    match = MatchRepository(db).load_with_teams(event.match_id)
     match_context = _build_match_context(match, event.time)
 
     try:
@@ -464,7 +433,7 @@ async def generate_for_event(
 
     score_str = None
     if event.event_type in ("goal", "own_goal"):
-        score_str = _score_at_event(db, event, match)
+        score_str = _score_at_event(EventRepository(db), event, match)
 
     try:
         text, model_used = await _call_llm(
@@ -489,7 +458,7 @@ async def generate_for_event(
             status_code=status.HTTP_502_BAD_GATEWAY, detail=f"LLM error: {e}"
         )
 
-    return repo.create(
+    return ticker_repo.create(
         _make_ai_entry(
             event.match_id, text, model_used, data.style,
             event_id=event_id,
@@ -513,17 +482,13 @@ async def generate_for_synthetic_event(
     data: GenerateSyntheticRequest,
     db: Session = Depends(get_db),
 ) -> TickerEntryResponse:
-    synthetic = (
-        db.query(SyntheticEvent)
-        .filter(SyntheticEvent.id == data.synthetic_event_id)
-        .first()
-    )
+    synthetic = SyntheticEventRepository(db).get_by_id(data.synthetic_event_id)
     if not synthetic:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="SyntheticEvent not found"
         )
 
-    match = _load_match(db, synthetic.match_id)
+    match = MatchRepository(db).load_with_teams(synthetic.match_id)
     match_context = _build_match_context(match, synthetic.minute)
 
     try:
@@ -594,24 +559,14 @@ async def generate_synthetic_batch(
     ),
     db: Session = Depends(get_db),
 ) -> list[TickerEntryResponse]:
-    synthetics = (
-        db.query(SyntheticEvent).filter(SyntheticEvent.match_id == match_id).all()
-    )
+    synth_repo = SyntheticEventRepository(db)
+    synthetics = synth_repo.get_by_match(match_id)
     if not synthetics:
         return []
 
-    existing_ids = {
-        r.synthetic_event_id
-        for r in db.query(TickerEntry.synthetic_event_id)
-        .filter(
-            TickerEntry.match_id == match_id,
-            TickerEntry.synthetic_event_id.isnot(None),
-        )
-        .all()
-    }
-
-    match = _load_match(db, match_id)
-    repo = TickerEntryRepository(db)
+    ticker_repo = TickerEntryRepository(db)
+    existing_ids = ticker_repo.get_existing_synthetic_ids(match_id)
+    match = MatchRepository(db).load_with_teams(match_id)
     results = []
 
     for synthetic in synthetics:
@@ -637,10 +592,9 @@ async def generate_synthetic_batch(
             )
             continue
 
-        # resolve_phase covers all phases including extra-time and penalties
         phase = resolve_phase(synthetic.type or "")
 
-        entry = repo.create(
+        entry = ticker_repo.create(
             _make_ai_entry(
                 match_id, text, model_used, data.style,
                 synthetic_event_id=synthetic.id,
@@ -678,39 +632,23 @@ async def generate_match_phases(
     ),
     db: Session = Depends(get_db),
 ) -> list[TickerEntryResponse]:
-    match = _load_match(db, match_id)
+    match = MatchRepository(db).load_with_teams(match_id)
     if not match:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Match not found"
         )
 
-    repo = TickerEntryRepository(db)
+    ticker_repo = TickerEntryRepository(db)
+    synth_repo = SyntheticEventRepository(db)
     results = []
 
     for event_type, phase, default_minute in STANDARD_PHASES:
-        phase_exists = (
-            db.query(TickerEntry)
-            .filter(TickerEntry.match_id == match_id, TickerEntry.phase == phase)
-            .first()
-        )
-        if phase_exists:
+        if ticker_repo.get_by_phase(match_id, phase):
             continue
 
-        synthetic = (
-            db.query(SyntheticEvent)
-            .filter(
-                SyntheticEvent.match_id == match_id, SyntheticEvent.type == event_type
-            )
-            .first()
+        synthetic = synth_repo.get_or_create_flush(
+            match_id, event_type, {"minute": default_minute}
         )
-        if not synthetic:
-            synthetic = SyntheticEvent(
-                match_id=match_id,
-                type=event_type,
-                data={"minute": default_minute},
-            )
-            db.add(synthetic)
-            db.flush()
 
         match_context = _build_match_context(match, default_minute)
         try:
@@ -731,7 +669,7 @@ async def generate_match_phases(
             )
             continue
 
-        entry = repo.create(
+        entry = ticker_repo.create(
             _make_ai_entry(
                 match_id, text, model_used, data.style,
                 synthetic_event_id=synthetic.id,
@@ -762,15 +700,15 @@ async def generate_bulk_for_match(
     data: GenerateEventRequest = Body(default_factory=GenerateEventRequest),
     db: Session = Depends(get_db),
 ) -> list[TickerEntryResponse]:
-    events = db.query(Event).filter(Event.match_id == match_id).all()
+    events = EventRepository(db).get_by_match(match_id)
     if not events:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Keine Events für dieses Spiel",
         )
 
-    match = _load_match(db, match_id)
-    repo = TickerEntryRepository(db)
+    match = MatchRepository(db).load_with_teams(match_id)
+    ticker_repo = TickerEntryRepository(db)
     results = []
 
     for event in events:
@@ -789,7 +727,7 @@ async def generate_bulk_for_match(
                 db=db,
                 instance=data.instance,
             )
-            entry = repo.create(
+            entry = ticker_repo.create(
                 _make_ai_entry(
                     match_id, text, model_used, data.style,
                     event_id=event.id,

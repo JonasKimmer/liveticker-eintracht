@@ -15,9 +15,8 @@ from sqlalchemy.orm import Session
 from app.core.config import settings
 from app.core.constants import FOOTBALL_API_PHASE_MAP
 from app.core.database import get_db
-from app.models.player_statistic import PlayerStatistic
-from app.models.synthetic_event import SyntheticEvent
 from app.repositories.match_repository import MatchRepository
+from app.repositories.synthetic_event_repository import SyntheticEventRepository
 from app.schemas.match import (
     LineupBulkUpdate,
     LineupPlayerResponse,
@@ -330,12 +329,7 @@ def get_player_statistics(
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Match not found"
         )
-    rows = (
-        db.query(PlayerStatistic)
-        .filter(PlayerStatistic.match_id == matchId)
-        .order_by(PlayerStatistic.rating.desc().nulls_last(), PlayerStatistic.minutes.desc())
-        .all()
-    )
+    rows = repo.get_player_statistics(matchId)
     return [PlayerStatisticResponse.model_validate(r) for r in rows]
 
 
@@ -356,12 +350,5 @@ def get_injuries(
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Match not found"
         )
-    rows = (
-        db.query(SyntheticEvent)
-        .filter(
-            SyntheticEvent.match_id == matchId,
-            SyntheticEvent.type.like("pre_match_injuries%"),
-        )
-        .all()
-    )
+    rows = SyntheticEventRepository(db).get_injuries(matchId)
     return [r.data for r in rows if r.data]

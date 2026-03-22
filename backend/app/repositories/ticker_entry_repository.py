@@ -59,6 +59,26 @@ class TickerEntryRepository:
         )
         return entries
 
+    def get_by_phase(self, match_id: int, phase: str) -> Optional[TickerEntry]:
+        """Gibt den ersten Ticker-Eintrag für eine Phase zurück (Duplikat-Check)."""
+        return (
+            self.db.query(TickerEntry)
+            .filter(TickerEntry.match_id == match_id, TickerEntry.phase == phase)
+            .first()
+        )
+
+    def get_existing_synthetic_ids(self, match_id: int) -> set[int]:
+        """Gibt die Menge bereits generierter synthetic_event_ids für ein Spiel zurück."""
+        rows = (
+            self.db.query(TickerEntry.synthetic_event_id)
+            .filter(
+                TickerEntry.match_id == match_id,
+                TickerEntry.synthetic_event_id.isnot(None),
+            )
+            .all()
+        )
+        return {r.synthetic_event_id for r in rows}
+
     def get_by_id(self, entry_id: int) -> Optional[TickerEntry]:
         return self.db.query(TickerEntry).filter(TickerEntry.id == entry_id).first()
 

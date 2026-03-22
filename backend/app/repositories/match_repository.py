@@ -16,6 +16,7 @@ from app.models.lineup import Lineup
 from app.models.match import Match
 from app.models.match_statistic import MatchStatistic
 from app.models.player import Player
+from app.models.player_statistic import PlayerStatistic
 from app.schemas.match import (
     LineupBulkUpdate,
     LineupPlayerInput,
@@ -78,6 +79,10 @@ class MatchRepository:
         return items, total
 
     def get_by_id(self, match_id: int) -> Optional[Match]:
+        return self._base_query().filter(Match.id == match_id).first()
+
+    def load_with_teams(self, match_id: int) -> Optional[Match]:
+        """Eager-load Match mit Home/Away-Teams und Wettbewerb (für LLM-Kontext)."""
         return self._base_query().filter(Match.id == match_id).first()
 
     def exists(self, match_id: int) -> bool:
@@ -330,3 +335,11 @@ class MatchRepository:
         self.db.refresh(away_stat)
         logger.debug("Statistics upserted for match id=%s", match_id)
         return [home_stat, away_stat]
+
+    def get_player_statistics(self, match_id: int) -> list[PlayerStatistic]:
+        return (
+            self.db.query(PlayerStatistic)
+            .filter(PlayerStatistic.match_id == match_id)
+            .order_by(PlayerStatistic.rating.desc().nulls_last(), PlayerStatistic.minutes.desc())
+            .all()
+        )
