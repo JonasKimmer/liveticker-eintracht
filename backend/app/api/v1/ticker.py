@@ -480,7 +480,7 @@ async def generate_for_synthetic_event(
         d = raw if isinstance(raw, dict) else json.loads(raw or "{}")
         event_minute = d.get("minute")
     except Exception:
-        pass
+        logger.debug("Could not parse minute from synthetic data id=%s", synthetic.id)
 
     return TickerEntryRepository(db).create(
         _make_ai_entry(

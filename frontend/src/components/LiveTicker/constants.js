@@ -59,6 +59,9 @@ export const FINISHED_STATUSES = ["FT", "AET", "PEN", "finished"];
 
 // ── Polling-Intervalle (ms) ──────────────────────────────────
 export const POLL_EVENTS_MS = 5000;
+export const POLL_MATCH_REFRESH_MS = 15000;  // zweites Refresh-Intervall nach Kick-off
+export const SYNC_MATCH_INTERVAL_MS = 60000; // Live-Minuten-Sync (MatchHeader)
+export const TOAST_DURATION_MS = 2200;       // Toast-Anzeige (ModeSelector)
 
 // ── Publish-Phasen (Social-Media Panels) ─────────────────────
 export const PUBLISH_PHASES = [
@@ -67,6 +70,25 @@ export const PUBLISH_PHASES = [
   { value: "Halftime", label: "Halbzeit"    },
   { value: "After",    label: "After Match" },
 ];
+
+// ── Phasen-Sortierung (für Frontend-Ticker-Reihenfolge) ──────
+// Fester Minuten-Wert für Phasen-Events; null = sortiere nach t.minute
+export const PHASE_SORT = {
+  Before: -1, FirstHalf: null, FirstHalfBreak: 45.5, Halftime: 45.5,
+  SecondHalf: null, SecondHalfBreak: 90.5,
+  ExtraFirstHalf: null, ExtraBreak: 105.5,
+  ExtraSecondHalf: null, ExtraSecondHalfBreak: 120.5,
+  PenaltyShootout: null, After: 999,
+};
+// Fallback-Minuten wenn minute: null aber Phase bekannt
+export const PHASE_MINUTE_DEFAULT = {
+  FirstHalf: 1, SecondHalf: 46,
+  ExtraFirstHalf: 91, ExtraSecondHalf: 106, PenaltyShootout: 121,
+};
+// Phasen, die einen Spielabschnitt starten (erscheinen zuerst in ihrer Minute)
+export const PHASE_START = new Set([
+  "FirstHalf", "SecondHalf", "ExtraFirstHalf", "ExtraSecondHalf", "PenaltyShootout",
+]);
 
 // ── Match-Phasen (alle API-Werte) ────────────────────────────
 export const MATCH_PHASES = {

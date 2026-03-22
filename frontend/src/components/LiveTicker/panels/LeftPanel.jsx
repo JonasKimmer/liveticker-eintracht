@@ -1,21 +1,7 @@
 import { memo, useMemo } from "react";
 import PropTypes from "prop-types";
 import { PublishedEntry } from "../components/PublishedEntry";
-
-// Phasen-Reihenfolge für Sortierung (außerhalb Komponente — unveränderlich)
-const PHASE_SORT = {
-  Before: -1, FirstHalf: null, FirstHalfBreak: 45.5, Halftime: 45.5,
-  SecondHalf: null, SecondHalfBreak: 90.5,
-  ExtraFirstHalf: null, ExtraBreak: 105.5,
-  ExtraSecondHalf: null, ExtraSecondHalfBreak: 120.5,
-  PenaltyShootout: null, After: 999,
-};
-// Fallback-Minuten wenn minute: null aber Phase bekannt
-const PHASE_MINUTE_DEFAULT = {
-  FirstHalf: 1, SecondHalf: 46,
-  ExtraFirstHalf: 91, ExtraSecondHalf: 106, PenaltyShootout: 121,
-};
-const PHASE_START = new Set(["FirstHalf", "SecondHalf", "ExtraFirstHalf", "ExtraSecondHalf", "PenaltyShootout"]);
+import { PHASE_SORT, PHASE_MINUTE_DEFAULT, PHASE_START } from "../constants";
 
 const sortMinute = (t) => {
   if (!t.phase) return t.minute ?? 0;

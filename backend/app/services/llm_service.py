@@ -9,6 +9,7 @@ import logging
 import random
 from typing import TYPE_CHECKING, Optional, Literal
 
+from app.core.constants import EVENT_TYPE_LABEL, STYLE_DESC
 from app.services.llm_context_builders import build_context_str
 
 if TYPE_CHECKING:
@@ -74,37 +75,6 @@ EVENT_TYPE_MAP: dict[str, str] = {
     "live_stats_update": "live_stats_update",
 }
 
-EVENT_TYPE_LABEL: dict[str, str] = {
-    "goal": "Tor",
-    "own_goal": "Eigentor",
-    "missed_penalty": "Elfmeter verschossen",
-    "yellow_card": "Gelbe Karte",
-    "red_card": "Rote Karte",
-    "substitution": "Spielerwechsel",
-    "kick_off": "Anstoß",
-    "halftime": "Halbzeit",
-    "fulltime": "Abpfiff",
-    "extra_time_start": "Verlängerung beginnt",
-    "extra_halftime": "Halbzeitpause Verlängerung",
-    "penalty_shootout": "Elfmeterschießen",
-    "fulltime_aet": "Abpfiff nach Verlängerung",
-    "fulltime_pen": "Abpfiff nach Elfmeterschießen",
-    "comment": "Spielszene",
-    "pre_match": "Vorbericht",
-    "pre_match_prediction": "Spielvorschau & Tipp",
-    "pre_match_injuries": "Verletzungsbericht",
-    "pre_match_h2h": "Direktvergleich",
-    "pre_match_team_stats": "Teamstatistik",
-    "post_match": "Nachbericht",
-    "halftime_comment": "Halbzeitkommentar",
-    "live_stats_update": "Live-Statistik-Update",
-}
-
-STYLE_DESC: dict[str, str] = {
-    "neutral": "sachlich und neutral – keine Vereinspräferenz",
-    "euphorisch": "begeistert und emotional – aus Sicht der Heimfans",
-    "kritisch": "analytisch und kritisch",
-}
 
 # ──────────────────────────────────────────────
 # LLM Service

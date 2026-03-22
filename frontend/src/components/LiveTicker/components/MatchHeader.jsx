@@ -5,6 +5,7 @@ import { memo, useEffect } from "react";
 import PropTypes from "prop-types";
 import { normalizeMatchStatus } from "../utils/parseCommand";
 import { useLiveMinute } from "../../../hooks/useLiveMinute";
+import { SYNC_MATCH_INTERVAL_MS } from "../constants";
 import * as api from "../../../api";
 import logger from "../../../utils/logger";
 
@@ -19,7 +20,7 @@ export const MatchHeader = memo(function MatchHeader({ match, leagueSeason, onMi
         .then(() => onMinuteSync?.())
         .catch((e) => logger.warn("[MatchHeader] sync error", e));
     sync();
-    const id = setInterval(sync, 60000);
+    const id = setInterval(sync, SYNC_MATCH_INTERVAL_MS);
     return () => clearInterval(id);
   }, [status, match?.externalId, onMinuteSync]);
 

@@ -4,7 +4,7 @@
 import { memo, useState, useRef, useEffect, useCallback } from "react";
 import PropTypes from "prop-types";
 import { createPortal } from "react-dom";
-import { MODES } from "../constants";
+import { MODES, TOAST_DURATION_MS } from "../constants";
 
 const MODE_CFG = {
   [MODES.AUTO]: {
@@ -59,7 +59,7 @@ export const ModeSelector = memo(function ModeSelector({ mode, onModeChange }) {
     setPopPos(null);
     setToast({ text: `${cfg.icon} Modus gewechselt: ${cfg.label}`, color: cfg.color });
     clearTimeout(toastTimer.current);
-    toastTimer.current = setTimeout(() => setToast(null), 2200);
+    toastTimer.current = setTimeout(() => setToast(null), TOAST_DURATION_MS);
   }, [pending, onModeChange]);
 
   const requestSwitch = useCallback((m) => {

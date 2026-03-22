@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import * as api from "../api";
 import logger from "../utils/logger";
+import { POLL_EVENTS_MS, POLL_MATCH_REFRESH_MS } from "../components/LiveTicker/constants";
 
 /**
  * Gibt das Polling-Intervall in ms basierend auf dem Spielstatus zurück.
@@ -114,13 +115,13 @@ export function useMatchData(selectedMatchId) {
       loadMatchStats();
       loadMatch().then(() => loadPlayers());
       loadPrematch();
-    }, 5000);
+    }, POLL_EVENTS_MS);
     const t2 = setTimeout(() => {
       loadLineups();
       loadMatchStats();
       loadMatch().then(() => loadPlayers());
       loadPrematch();
-    }, 15000);
+    }, POLL_MATCH_REFRESH_MS);
 
     return () => {
       clearTimeout(t1);
