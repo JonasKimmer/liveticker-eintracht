@@ -1,4 +1,5 @@
 import React from "react";
+import logger from "../utils/logger";
 
 /**
  * ErrorBoundary
@@ -25,7 +26,7 @@ class ErrorBoundary extends React.Component {
   }
 
   componentDidCatch(error, info) {
-    console.error("[ErrorBoundary] Uncaught error:", error, info.componentStack);
+    logger.error("[ErrorBoundary] Uncaught error:", error, info.componentStack);
   }
 
   handleReset() {
