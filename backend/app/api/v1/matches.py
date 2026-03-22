@@ -13,7 +13,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from app.core.config import settings
-from app.core.constants import FOOTBALL_APIFOOTBALL_API_PHASE_MAP
+from app.core.constants import FOOTBALL_API_PHASE_MAP
 from app.core.database import get_db
 from app.models.player_statistic import PlayerStatistic
 from app.models.synthetic_event import SyntheticEvent

@@ -575,9 +575,9 @@ async def generate_for_synthetic_event(
 
 
 class GenerateSyntheticBatchRequest(BaseModel):
-    style: Literal["neutral", "euphorisch", "kritisch"] = "neutral"
+    style: TickerStyle = "neutral"
     language: str = Field(default="de", max_length=5)
-    instance: Literal["generic", "ef_whitelabel"] = "ef_whitelabel"
+    instance: TickerInstance = "ef_whitelabel"
     auto_publish: bool = True
 
 
