@@ -58,16 +58,22 @@ export const CenterPanel = memo(function CenterPanel({
   // Set mit Event-IDs die gerade auto-prozessiert werden → kein Doppel-Trigger
   const processingRef = useRef(new Set());
 
-  const pendingEvents = useMemo(() =>
-    events.filter(
-      (ev) =>
-        !dismissedIds.has(ev.id) &&
-        !tickerTexts.find(
-          (t) => t.event_id === ev.id &&
-                 (t.status === "published" || t.status === "rejected" || !t.status),
-        ),
-    ),
-  [events, dismissedIds, tickerTexts]);
+  const pendingEvents = useMemo(() => {
+    const seenSourceIds = new Set();
+    return events.filter((ev) => {
+      if (dismissedIds.has(ev.id)) return false;
+      if (tickerTexts.find(
+        (t) => t.event_id === ev.id &&
+               (t.status === "published" || t.status === "rejected" || !t.status),
+      )) return false;
+      // Deduplicate events imported multiple times (same sourceId, different DB id)
+      if (ev.sourceId) {
+        if (seenSourceIds.has(ev.sourceId)) return false;
+        seenSourceIds.add(ev.sourceId);
+      }
+      return true;
+    });
+  }, [events, dismissedIds, tickerTexts]);
 
   const handleDismissEvent = useCallback(async (ev, draft) => {
     if (draft) {

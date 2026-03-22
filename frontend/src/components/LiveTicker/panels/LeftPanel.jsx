@@ -31,8 +31,19 @@ export const LeftPanel = memo(function LeftPanel({
   onDeleteEntry,
 }) {
   const allEntries = useMemo(() => {
-    const publishedTexts = tickerTexts.filter(
+    // Deduplicate: if multiple ticker entries share the same event_id (race-condition
+    // duplicates from parallel n8n imports), keep only the one with the highest id.
+    const publishedAll = tickerTexts.filter(
       (t) => t.status === "published" || t.status == null,
+    );
+    const latestByEventId = new Map();
+    for (const t of publishedAll) {
+      if (!t.event_id) continue;
+      const prev = latestByEventId.get(t.event_id);
+      if (!prev || t.id > prev.id) latestByEventId.set(t.event_id, t);
+    }
+    const publishedTexts = publishedAll.filter(
+      (t) => !t.event_id || latestByEventId.get(t.event_id)?.id === t.id,
     );
 
     const manualEntries = publishedTexts

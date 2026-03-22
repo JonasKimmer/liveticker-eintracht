@@ -49,7 +49,12 @@ class EventRepository:
         return self.db.query(Event).filter(Event.source_id == source_id).first()
 
     def upsert(self, match_id: int, data: EventCreate) -> tuple[Event, bool]:
-        """Insert or update by source_id. Falls back to insert if no source_id."""
+        """Insert or update by source_id. Falls back to insert if no source_id.
+
+        Handles the parallel-import race condition: if two requests both miss
+        the initial SELECT and one fails with IntegrityError on INSERT, the
+        loser retries with SELECT to return the winner's row.
+        """
         if data.source_id:
             existing = self.get_by_source_id(data.source_id)
             if existing:
@@ -69,10 +74,20 @@ class EventRepository:
             self.db.commit()
             self.db.refresh(event)
             logger.debug("Event created: id=%s source_id=%s", event.id, event.source_id)
+            return event, True
         except IntegrityError:
             self.db.rollback()
+            # Race condition: another request inserted the same source_id first.
+            # Fetch the winning row and return it instead.
+            if data.source_id:
+                existing = self.get_by_source_id(data.source_id)
+                if existing:
+                    logger.debug(
+                        "Event race resolved: source_id=%s already exists as id=%s",
+                        data.source_id, existing.id,
+                    )
+                    return existing, False
             raise
-        return event, True
 
     def update_by_source_id(self, source_id: str, data: EventUpdate) -> Optional[Event]:
         event = self.get_by_source_id(source_id)
