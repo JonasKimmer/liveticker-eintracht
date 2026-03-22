@@ -633,6 +633,11 @@ async def generate_ticker_text(
     else:
         active_service = llm_service
 
+    def _is_rate_limit(exc: Exception) -> bool:
+        """Erkennt 429-RateLimit-Fehler aller unterstützten Provider."""
+        msg = str(exc).lower()
+        return "429" in msg or "rate limit" in msg or "rate_limit" in msg or "too many requests" in msg
+
     last_exc: Exception | None = None
     for attempt in range(3):
         try:
@@ -654,7 +659,9 @@ async def generate_ticker_text(
         except Exception as exc:
             last_exc = exc
             if attempt < 2:
-                wait = 2 ** attempt  # 1s, 2s
+                # RateLimit: deutlich länger warten (30s / 60s)
+                # Andere transiente Fehler: kurzes Backoff (1s / 2s)
+                wait = 30 * (attempt + 1) if _is_rate_limit(exc) else 2 ** attempt
                 logger.warning(
                     "LLM attempt %d/3 failed (%s), retrying in %ds…",
                     attempt + 1, exc, wait,

@@ -36,13 +36,14 @@ from app.schemas.ticker_entry import (
 )
 from app.services.llm_service import generate_ticker_text
 from app.core.constants import resolve_phase
+from app.core.config import settings
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/ticker", tags=["Ticker"])
 
-# Limit concurrent LLM calls to prevent thread pool saturation
-_llm_semaphore = asyncio.Semaphore(8)
+# Limit concurrent LLM calls to prevent thread pool saturation (konfigurierbar via LLM_CONCURRENCY)
+_llm_semaphore = asyncio.Semaphore(settings.LLM_CONCURRENCY)
 
 
 # ──────────────────────────────────────────────

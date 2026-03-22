@@ -45,6 +45,7 @@ class Settings(BaseSettings):
     LLM_TEMPERATURE: float = 0.7
     LLM_MAX_TOKENS: int = 100
     OPENROUTER_MODEL: Optional[str] = "google/gemini-2.0-flash-lite"
+    LLM_CONCURRENCY: int = 8  # Max gleichzeitige LLM-Requests (Semaphore)
 
     # API-Football Settings
     API_FOOTBALL_BASE_URL: str = "https://v3.football.api-sports.io"
