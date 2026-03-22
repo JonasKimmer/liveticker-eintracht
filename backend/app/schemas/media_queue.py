@@ -37,3 +37,9 @@ class PublishMediaRequest(BaseModel):
     match_id: int
     minute: Optional[int] = None
     icon: Optional[str] = None
+
+
+class GenerateCaptionRequest(BaseModel):
+    """Request Body für POST /media/generate-caption/{media_id}."""
+    style: str = "neutral"
+    instance: str = "ef_whitelabel"
