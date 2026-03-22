@@ -5,6 +5,7 @@
 // ============================================================
 
 import { useState, useCallback, useRef, useMemo, useEffect } from "react";
+import PropTypes from "prop-types";
 import { useLiveMinuteEditor } from "../hooks/useLiveMinuteEditor";
 import { createPortal } from "react-dom";
 import { useMediaWebSocket } from "../../../hooks/useMediaWebSocket";
@@ -715,3 +716,12 @@ export function MediaPickerPanel({ match, matchId, defaultOpen = false, playerNa
     </>
   );
 }
+
+MediaPickerPanel.propTypes = {
+  match: PropTypes.object,
+  matchId: PropTypes.number.isRequired,
+  defaultOpen: PropTypes.bool,
+  playerNames: PropTypes.arrayOf(PropTypes.string),
+  currentMinute: PropTypes.number,
+  lineups: PropTypes.array,
+};
