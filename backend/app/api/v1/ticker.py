@@ -35,7 +35,7 @@ from app.schemas.ticker_entry import (
     TickerEntryResponse,
     TickerStatus,
 )
-from app.core.constants import resolve_phase
+from app.core.constants import resolve_phase, STANDARD_PHASES
 from app.services import ticker_service as ts
 
 logger = logging.getLogger(__name__)
@@ -429,14 +429,6 @@ async def generate_synthetic_batch(
 # POST: Alle Match-Phasen eines Spiels generieren
 # ──────────────────────────────────────────────
 
-STANDARD_PHASES = [
-    ("match_kickoff",    "FirstHalf",      1),
-    ("match_halftime",   "FirstHalfBreak", 45),
-    ("match_second_half","SecondHalf",     46),
-    ("match_fulltime",   "After",          90),
-]
-
-
 @router.post(
     "/generate-match-phases/{match_id}",
     response_model=list[TickerEntryResponse],
@@ -498,7 +490,6 @@ async def generate_match_phases(
         )
         results.append(entry)
 
-    db.commit()
     return results
 
 

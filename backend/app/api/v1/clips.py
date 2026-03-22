@@ -56,15 +56,7 @@ def import_clips(
     data: MediaClipImportRequest,
     db: Session = Depends(get_db),
 ) -> list[MediaClipResponse]:
-    repo = MediaClipRepository(db)
-    results = []
-    for c in data.clips:
-        clip = repo.upsert(data.match_id, c)
-        results.append(clip)
-    db.commit()
-    for r in results:
-        db.refresh(r)
-    return results
+    return MediaClipRepository(db).upsert_batch(data.match_id, data.clips)
 
 
 # ──────────────────────────────────────────────

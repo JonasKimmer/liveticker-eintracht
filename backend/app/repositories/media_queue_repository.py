@@ -55,6 +55,12 @@ class MediaQueueRepository:
         self.db.add(obj)
         return obj
 
+    def save_batch(self, items) -> list:
+        """Add multiple items and commit once."""
+        objs = [self.save(item) for item in items]
+        self.db.commit()
+        return objs
+
     def clear_pending(self) -> None:
         self.db.query(MediaQueue).filter(MediaQueue.status == "pending").delete()
         self.db.commit()
@@ -62,3 +68,4 @@ class MediaQueueRepository:
     def publish(self, media: MediaQueue, description: str) -> None:
         media.status = "published"
         media.description = description
+        self.db.commit()

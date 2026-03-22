@@ -87,6 +87,14 @@ class MediaClipRepository:
                     return winner
             raise
 
+    def upsert_batch(self, match_id, clips_data) -> list[MediaClip]:
+        """Upsert multiple clips and commit once."""
+        results = [self.upsert(match_id, c) for c in clips_data]
+        self.db.commit()
+        for r in results:
+            self.db.refresh(r)
+        return results
+
     def publish(self, clip: MediaClip) -> None:
         clip.published = True
         self.db.commit()

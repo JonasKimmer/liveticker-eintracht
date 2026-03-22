@@ -103,15 +103,10 @@ async def media_incoming(
     incoming_ids = [item.media_id for item in items]
     existing_ids = repo.get_existing_ids(incoming_ids)
 
-    saved: list[MediaItemIn] = []
-    for item in items:
-        if item.media_id in existing_ids:
-            continue
-        repo.save(item)
-        saved.append(item)
+    saved = [item for item in items if item.media_id not in existing_ids]
 
     if saved:
-        db.commit()
+        repo.save_batch(saved)
         payload = {
             "type": "new_media",
             "items": [i.model_dump() for i in saved],
@@ -196,7 +191,6 @@ def media_publish(
         )
     )
     media_repo.publish(media, data.description)
-    db.commit()
     return entry
 
 
