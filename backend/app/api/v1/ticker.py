@@ -162,6 +162,57 @@ def _build_context_data(
     return score_part
 
 
+def _load_match(db: Session, match_id: int) -> Optional[Match]:
+    """Eager-load Match with home/away teams and competition in one query."""
+    return (
+        db.query(Match)
+        .options(
+            joinedload(Match.home_team),
+            joinedload(Match.away_team),
+            joinedload(Match.competition),
+        )
+        .filter(Match.id == match_id)
+        .first()
+    )
+
+
+async def _call_llm(
+    *,
+    event_type: str,
+    event_detail: str = "",
+    minute: Optional[int] = None,
+    player_name: Optional[str] = None,
+    assist_name: Optional[str] = None,
+    team_name: Optional[str] = None,
+    style: str,
+    language: str,
+    context_data: dict,
+    match_context: dict,
+    db: Session,
+    instance: str,
+    provider: Optional[str] = None,
+    model: Optional[str] = None,
+) -> tuple[str, str]:
+    """Run LLM text generation with semaphore guard."""
+    async with _llm_semaphore:
+        return await generate_ticker_text(
+            event_type=event_type,
+            event_detail=event_detail,
+            minute=minute,
+            player_name=player_name,
+            assist_name=assist_name,
+            team_name=team_name,
+            style=style,
+            language=language,
+            context_data=context_data,
+            match_context=match_context,
+            provider=provider,
+            model=model,
+            db=db,
+            instance=instance,
+        )
+
+
 def _make_ai_entry(
     match_id: int,
     text: str,
@@ -384,12 +435,7 @@ async def generate_for_event(
     if existing:
         return existing
 
-    match = (
-        db.query(Match)
-        .options(joinedload(Match.home_team), joinedload(Match.away_team), joinedload(Match.competition))
-        .filter(Match.id == event.match_id)
-        .first()
-    )
+    match = _load_match(db, event.match_id)
     match_context = _build_match_context(match, event.time)
 
     try:
@@ -417,23 +463,22 @@ async def generate_for_event(
         score_str = _score_at_event(db, event, match)
 
     try:
-        async with _llm_semaphore:
-            text, model_used = await generate_ticker_text(
-                event_type=event.event_type or "comment",
-                event_detail=event_detail,
-                minute=event.time,
-                player_name=player_name,
-                assist_name=assist_name,
-                team_name=team_name,
-                style=data.style,
-                language=data.language,
-                context_data=_build_context_data(match_context, data.instance, score_str),
-                match_context=match_context,
-                provider=data.provider,
-                model=data.model,
-                db=db,
-                instance=data.instance,
-            )
+        text, model_used = await _call_llm(
+            event_type=event.event_type or "comment",
+            event_detail=event_detail,
+            minute=event.time,
+            player_name=player_name,
+            assist_name=assist_name,
+            team_name=team_name,
+            style=data.style,
+            language=data.language,
+            context_data=_build_context_data(match_context, data.instance, score_str),
+            match_context=match_context,
+            provider=data.provider,
+            model=data.model,
+            db=db,
+            instance=data.instance,
+        )
     except Exception as e:
         logger.exception("LLM generation failed for event_id=%s", event_id)
         raise HTTPException(
@@ -474,29 +519,23 @@ async def generate_for_synthetic_event(
             status_code=status.HTTP_404_NOT_FOUND, detail="SyntheticEvent not found"
         )
 
-    match = (
-        db.query(Match)
-        .options(joinedload(Match.home_team), joinedload(Match.away_team), joinedload(Match.competition))
-        .filter(Match.id == synthetic.match_id)
-        .first()
-    )
+    match = _load_match(db, synthetic.match_id)
     match_context = _build_match_context(match, synthetic.minute)
 
     try:
-        async with _llm_semaphore:
-            text, model_used = await generate_ticker_text(
-                event_type=synthetic.type or "comment",
-                event_detail="",
-                minute=synthetic.minute,
-                style=data.style,
-                language=data.language,
-                context_data=synthetic.data or {},
-                match_context=match_context,
-                provider=data.provider,
-                model=data.model,
-                db=db,
-                instance=data.instance,
-            )
+        text, model_used = await _call_llm(
+            event_type=synthetic.type or "comment",
+            event_detail="",
+            minute=synthetic.minute,
+            style=data.style,
+            language=data.language,
+            context_data=synthetic.data or {},
+            match_context=match_context,
+            provider=data.provider,
+            model=data.model,
+            db=db,
+            instance=data.instance,
+        )
     except Exception as e:
         logger.exception(
             "LLM generation failed for synthetic_event_id=%s", data.synthetic_event_id
@@ -567,12 +606,7 @@ async def generate_synthetic_batch(
         .all()
     }
 
-    match = (
-        db.query(Match)
-        .options(joinedload(Match.home_team), joinedload(Match.away_team), joinedload(Match.competition))
-        .filter(Match.id == match_id)
-        .first()
-    )
+    match = _load_match(db, match_id)
     repo = TickerEntryRepository(db)
     results = []
 
@@ -582,18 +616,17 @@ async def generate_synthetic_batch(
 
         match_context = _build_match_context(match, synthetic.minute)
         try:
-            async with _llm_semaphore:
-                text, model_used = await generate_ticker_text(
-                    event_type=synthetic.type or "comment",
-                    event_detail="",
-                    minute=synthetic.minute,
-                    style=data.style,
-                    language=data.language,
-                    context_data=synthetic.data or {},
-                    match_context=match_context,
-                    db=db,
-                    instance=data.instance,
-                )
+            text, model_used = await _call_llm(
+                event_type=synthetic.type or "comment",
+                event_detail="",
+                minute=synthetic.minute,
+                style=data.style,
+                language=data.language,
+                context_data=synthetic.data or {},
+                match_context=match_context,
+                db=db,
+                instance=data.instance,
+            )
         except Exception:
             logger.exception(
                 "Batch synthetic generation failed for id=%s", synthetic.id
@@ -641,7 +674,7 @@ async def generate_match_phases(
     ),
     db: Session = Depends(get_db),
 ) -> list[TickerEntryResponse]:
-    match = db.query(Match).filter(Match.id == match_id).first()
+    match = _load_match(db, match_id)
     if not match:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Match not found"
@@ -677,18 +710,17 @@ async def generate_match_phases(
 
         match_context = _build_match_context(match, default_minute)
         try:
-            async with _llm_semaphore:
-                text, model_used = await generate_ticker_text(
-                    event_type=event_type,
-                    event_detail="",
-                    minute=default_minute,
-                    style=data.style,
-                    language=data.language,
-                    context_data={},
-                    match_context=match_context,
-                    db=db,
-                    instance=data.instance,
-                )
+            text, model_used = await _call_llm(
+                event_type=event_type,
+                event_detail="",
+                minute=default_minute,
+                style=data.style,
+                language=data.language,
+                context_data={},
+                match_context=match_context,
+                db=db,
+                instance=data.instance,
+            )
         except Exception:
             logger.exception(
                 "Phase generation failed for match_id=%s type=%s", match_id, event_type
@@ -733,32 +765,26 @@ async def generate_bulk_for_match(
             detail="Keine Events für dieses Spiel",
         )
 
-    match = (
-        db.query(Match)
-        .options(joinedload(Match.home_team), joinedload(Match.away_team), joinedload(Match.competition))
-        .filter(Match.id == match_id)
-        .first()
-    )
+    match = _load_match(db, match_id)
     repo = TickerEntryRepository(db)
     results = []
 
     for event in events:
         match_context = _build_match_context(match, event.time)
         try:
-            async with _llm_semaphore:
-                text, model_used = await generate_ticker_text(
-                    event_type=event.event_type or "comment",
-                    event_detail=event.description or "",
-                    minute=event.time,
-                    style=data.style,
-                    language=data.language,
-                    context_data=_build_context_data(match_context, data.instance),
-                    match_context=match_context,
-                    provider=data.provider,
-                    model=data.model,
-                    db=db,
-                    instance=data.instance,
-                )
+            text, model_used = await _call_llm(
+                event_type=event.event_type or "comment",
+                event_detail=event.description or "",
+                minute=event.time,
+                style=data.style,
+                language=data.language,
+                context_data=_build_context_data(match_context, data.instance),
+                match_context=match_context,
+                provider=data.provider,
+                model=data.model,
+                db=db,
+                instance=data.instance,
+            )
             entry = repo.create(
                 _make_ai_entry(
                     match_id, text, model_used, data.style,

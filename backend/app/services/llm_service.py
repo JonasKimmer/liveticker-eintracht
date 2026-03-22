@@ -322,17 +322,21 @@ class LLMService:
             f"\n### KONTEXT\n{json.dumps(context_data, ensure_ascii=False, indent=2)}\n"
         )
 
+    @staticmethod
+    def _format_context_section(lines: list[str]) -> str:
+        return "\n### KONTEXT\n" + "\n".join(lines) + "\n"
+
     def _ctx_injuries(self, d: dict) -> str:
         team = d.get("team_name", "Unbekannt")
         players = d.get("players", [])
         if not players:
-            return f"\n### KONTEXT\nTeam: {team}\nKeine Ausfälle gemeldet.\n"
+            return self._format_context_section([f"Team: {team}", "Keine Ausfälle gemeldet."])
         lines = [f"Team: {team}", "Ausfälle/Fraglich:"]
         for p in players:
             lines.append(
                 f"  - {p.get('player_name')} ({p.get('reason')}) [{p.get('type')}]"
             )
-        return "\n### KONTEXT\n" + "\n".join(lines) + "\n"
+        return self._format_context_section(lines)
 
     def _ctx_prediction(self, d: dict) -> str:
         home, away = d.get("home", {}), d.get("away", {})
@@ -349,9 +353,9 @@ class LLMService:
     def _ctx_h2h(self, d: dict) -> str:
         matches = d.get("matches", [])
         if not matches:
-            return "\n### KONTEXT\nDirektvergleich: Keine historischen Begegnungen.\n"
+            return self._format_context_section(["Direktvergleich: Keine historischen Begegnungen."])
         lines = ["Direktvergleich (letzte Spiele):"] + [f"  - {m}" for m in matches[:5]]
-        return "\n### KONTEXT\n" + "\n".join(lines) + "\n"
+        return self._format_context_section(lines)
 
     def _ctx_team_stats(self, d: dict) -> str:
         return (
@@ -374,7 +378,7 @@ class LLMService:
                 f"{t.get('wins')}S/{t.get('draws')}U/{t.get('losses')}N, "
                 f"Tore: {t.get('goals_for')}:{t.get('goals_against')}"
             )
-        return "\n### KONTEXT\n" + "\n".join(lines) + "\n"
+        return self._format_context_section(lines)
 
     def _ctx_live_stats(self, d: dict) -> str:
         return (
