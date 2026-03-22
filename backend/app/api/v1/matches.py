@@ -13,6 +13,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from app.core.config import settings
+from app.core.constants import FOOTBALL_APIFOOTBALL_API_PHASE_MAP
 from app.core.database import get_db
 from app.models.player_statistic import PlayerStatistic
 from app.models.synthetic_event import SyntheticEvent
@@ -156,17 +157,6 @@ def delete_match(matchId: int, db: Session = Depends(get_db)) -> None:
 # Football API live sync                                               #
 # ------------------------------------------------------------------ #
 
-_PHASE_MAP = {
-    "1H": "FirstHalf",
-    "2H": "SecondHalf",
-    "HT": "FirstHalfBreak",
-    "ET": "SecondHalf",   # extra time – treat as second half for display
-    "BT": "FirstHalfBreak",  # break before extra time
-    "P":  "SecondHalf",
-    "FT": "FullTime",
-    "AET": "FullTime",
-    "PEN": "FullTime",
-}
 
 
 @router.post(
@@ -215,8 +205,8 @@ def sync_live(matchId: int, db: Session = Depends(get_db)) -> MatchResponse:
     update_data: dict = {}
     if elapsed is not None:
         update_data["minute"] = elapsed
-    if short and short in _PHASE_MAP:
-        update_data["match_phase"] = _PHASE_MAP[short]
+    if short and short in FOOTBALL_API_PHASE_MAP:
+        update_data["match_phase"] = FOOTBALL_API_PHASE_MAP[short]
 
     if update_data:
         updated = repo.update(matchId, MatchUpdate(**update_data))

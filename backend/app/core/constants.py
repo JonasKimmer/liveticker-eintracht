@@ -2,10 +2,6 @@
 Domain Constants
 ================
 Single source of truth for phase mappings used across the application.
-
-Note: The _PHASE_MAP in matches.py maps Football-API status codes (e.g. "1H", "HT")
-to display phases — a different semantic domain. Do NOT merge these.
-This module only covers synthetic-event-type → ticker-phase resolution.
 """
 
 from typing import Optional
@@ -22,6 +18,20 @@ SYNTHETIC_EVENT_PHASE_MAP: dict[str, str] = {
     "match_penalties":      "PenaltyShootout",
     "match_fulltime_aet":   "After",
     "match_fulltime_pen":   "After",
+}
+
+
+# Maps Football-API live status codes (short) to internal ticker phase names.
+FOOTBALL_API_PHASE_MAP: dict[str, str] = {
+    "1H":  "FirstHalf",
+    "2H":  "SecondHalf",
+    "HT":  "FirstHalfBreak",
+    "ET":  "SecondHalf",      # extra time – treat as second half for display
+    "BT":  "FirstHalfBreak",  # break before extra time
+    "P":   "SecondHalf",
+    "FT":  "FullTime",
+    "AET": "FullTime",
+    "PEN": "FullTime",
 }
 
 
