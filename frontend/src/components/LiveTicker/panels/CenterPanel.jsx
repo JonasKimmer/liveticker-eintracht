@@ -54,6 +54,7 @@ export const CenterPanel = memo(function CenterPanel({
   const [publishing, setPublishing] = useState(false);
   const [bulkGenerating, setBulkGenerating] = useState(false);
   const [dismissedIds, setDismissedIds] = useState(new Set());
+  const [autoError, setAutoError] = useState(null);
 
   // Set mit Event-IDs die gerade auto-prozessiert werden → kein Doppel-Trigger
   const processingRef = useRef(new Set());
@@ -112,7 +113,10 @@ export const CenterPanel = memo(function CenterPanel({
         api
           .publishTicker(existingDraft.id, existingDraft.text)
           .then(() => reload.loadTickerTexts())
-          .catch((err) => logger.error("auto publish failed", err))
+          .catch((err) => {
+            logger.error("auto publish failed", err);
+            setAutoError(err?.response?.data?.detail ?? err.message ?? "Auto-Publish fehlgeschlagen");
+          })
           .finally(() => processingRef.current.delete(ev.id));
       } else if (!existingDraft) {
         // Noch kein Draft → generieren, dann publishen
@@ -130,11 +134,21 @@ export const CenterPanel = memo(function CenterPanel({
               await reload.loadTickerTexts();
             }
           })
-          .catch((err) => logger.error("auto generate+publish failed", err))
+          .catch((err) => {
+            logger.error("auto generate+publish failed", err);
+            setAutoError(err?.response?.data?.detail ?? err.message ?? "Auto-Generierung fehlgeschlagen");
+          })
           .finally(() => processingRef.current.delete(ev.id));
       }
     }
   }, [mode, pendingEvents, tickerTexts]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Auto-dismiss AUTO-Modus Fehler nach 6s
+  useEffect(() => {
+    if (!autoError) return;
+    const id = setTimeout(() => setAutoError(null), 6000);
+    return () => clearTimeout(id);
+  }, [autoError]);
 
   // ── Aktiven Draft nach oben melden (CO-OP) ───────────────
   useEffect(() => {
@@ -234,6 +248,16 @@ export const CenterPanel = memo(function CenterPanel({
               <div className="lt-center__auto-dot" />
               AI generiert und veröffentlicht Einträge automatisch.
             </div>
+            {autoError && (
+              <div style={{
+                marginTop: "0.5rem",
+                borderRadius: 6, padding: "0.4rem 0.75rem",
+                background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.3)",
+                fontFamily: "var(--lt-font-mono)", fontSize: "0.7rem", color: "#f87171",
+              }}>
+                ⚠ {autoError}
+              </div>
+            )}
             {pendingEvents.length > 0 && (
               <div style={{ marginTop: "1rem" }}>
                 <div className="lt-center__section-title">
