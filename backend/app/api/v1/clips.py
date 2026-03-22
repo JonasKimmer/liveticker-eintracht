@@ -21,9 +21,10 @@ from sqlalchemy.orm import Session
 
 from app.core.config import settings
 from app.core.database import get_db
-from app.models.match import Match
+from app.repositories.match_repository import MatchRepository
 from app.repositories.media_clip_repository import MediaClipRepository
 from app.repositories.ticker_entry_repository import TickerEntryRepository
+from app.services import ticker_service as ts
 from app.schemas.media_clip import (
     CacheThumbnailRequest,
     MediaClipImportRequest,
@@ -155,16 +156,8 @@ async def generate_clip_draft(
     if not clip:
         raise HTTPException(status_code=404, detail="Clip not found")
 
-    match = db.query(Match).filter(Match.id == match_id).first()
-    match_context = {}
-    if match:
-        match_context = {
-            "home_team": match.home_team.name if match.home_team else "",
-            "away_team": match.away_team.name if match.away_team else "",
-            "home_score": match.home_score,
-            "away_score": match.away_score,
-            "match_state": match.match_state,
-        }
+    match = MatchRepository(db).load_with_teams(match_id)
+    match_context = ts.build_match_context(match, event_minute=None)
 
     is_youtube = clip.source == "youtube"
     try:
