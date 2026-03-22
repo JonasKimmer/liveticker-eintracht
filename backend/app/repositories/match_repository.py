@@ -101,20 +101,14 @@ class MatchRepository:
         """Return distinct Competition objects derived from matches the team plays in."""
         from app.models.competition import Competition
 
-        ids = [
-            r[0]
-            for r in self.db.query(distinct(Match.competition_id))
+        return (
+            self.db.query(Competition)
+            .join(Match, Match.competition_id == Competition.id)
             .filter(
                 Match.competition_id.isnot(None),
                 or_(Match.home_team_id == team_id, Match.away_team_id == team_id),
             )
-            .all()
-        ]
-        if not ids:
-            return []
-        return (
-            self.db.query(Competition)
-            .filter(Competition.id.in_(ids))
+            .distinct()
             .order_by(Competition.position)
             .all()
         )
