@@ -123,7 +123,18 @@ export function useMatchData(selectedMatchId) {
       loadPrematch();
     }, 15000);
 
-    const pollInterval = resolvePollingInterval(matchRef.current?.matchState);
+    return () => {
+      clearTimeout(t1);
+      clearTimeout(t2);
+    };
+  }, [selectedMatchId]);
+
+  // Polling-Interval wird vom Match-State abhängig gemacht.
+  // Separater Effect damit der Interval korrekt neu gesetzt wird sobald
+  // das Match geladen ist (matchState wechselt von null → "Live" etc.)
+  useEffect(() => {
+    if (!selectedMatchId) return;
+    const pollInterval = resolvePollingInterval(match?.matchState);
     intervalRef.current = setInterval(() => {
       loadEvents();
       loadTickerTexts();
@@ -131,13 +142,8 @@ export function useMatchData(selectedMatchId) {
       loadInjuries();
       loadMatch();
     }, pollInterval);
-
-    return () => {
-      clearInterval(intervalRef.current);
-      clearTimeout(t1);
-      clearTimeout(t2);
-    };
-  }, [selectedMatchId]);
+    return () => clearInterval(intervalRef.current);
+  }, [selectedMatchId, match?.matchState, loadEvents, loadTickerTexts, loadMatchStats, loadInjuries, loadMatch]);
 
   return {
     match,
