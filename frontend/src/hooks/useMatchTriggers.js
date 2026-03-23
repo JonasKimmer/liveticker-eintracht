@@ -13,6 +13,7 @@
  * @param {object[]} params.matchStats - Spielstatistiken.
  * @param {object[]} params.tickerTexts - Bestehende Ticker-Einträge.
  * @param {string} params.instance - LLM-Instanz ("generic" | "ef_whitelabel").
+ * @param {string} params.language - Sprache für LLM-Texte (z.B. "de", "en").
  * @param {() => void} params.reload - Callback zum Neu-Laden der Spieldaten.
  */
 import { useEffect, useRef } from "react";
@@ -39,6 +40,8 @@ export function useMatchTriggers({
   matchStats,
   tickerTexts,
   instance,
+  style = "neutral",
+  language = "de",
   reload,
 }) {
   // ── Match-Summary via n8n (Halbzeit / Abpfiff) ────────────
@@ -63,32 +66,33 @@ export function useMatchTriggers({
         (t) => t.phase === phase && (t.status === "published" || t.status == null),
       );
       if (!exists) {
-        api.generateMatchSummary(selMatchId, phase).catch((err) =>
+        api.generateMatchSummary(selMatchId, phase, style, instance, language).catch((err) =>
           logger.warn("[useMatchTriggers] generateMatchSummary silenced:", err?.message)
         );
       }
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selMatchId, match?.matchPhase, match?.matchState, tickerTexts]);
 
   // ── Live Stats Monitor (alle 5 Min bei laufendem Spiel) ───
   useEffect(() => {
     if (!selMatchId || !match?.matchState) return;
     if (match.matchState === "PreMatch") return;
-    api.triggerLiveStatsMonitor(selMatchId).catch((err) =>
+    api.triggerLiveStatsMonitor(selMatchId, instance, language).catch((err) =>
       logger.warn("[useMatchTriggers] triggerLiveStatsMonitor silenced:", err?.message)
     );
     if (match.matchState !== "Live") return;
     const interval = setInterval(() => {
-      api.triggerLiveStatsMonitor(selMatchId).catch((err) =>
+      api.triggerLiveStatsMonitor(selMatchId, instance, language).catch((err) =>
         logger.warn("[useMatchTriggers] triggerLiveStatsMonitor silenced:", err?.message)
       );
     }, 5 * 60 * 1000);
     return () => clearInterval(interval);
-  }, [selMatchId, match?.matchState]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selMatchId, match?.matchState, instance, language]);
 
   // ── Match-Status Webhook beim Match-Open ──────────────────
   const matchStatusTriggeredRef = useRef(null);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (!selMatchId || !match?.matchState || !match?.externalId) return;
     if (matchStatusTriggeredRef.current === selMatchId) return;
@@ -103,46 +107,46 @@ export function useMatchTriggers({
 
     if (status) {
       api
-        .triggerMatchStatus(match.externalId, status, match.minute ?? null)
+        .triggerMatchStatus(match.externalId, status, match.minute ?? null, instance, language, style)
         .catch((err) =>
           logger.warn("[useMatchTriggers] triggerMatchStatus silenced:", err?.message)
         );
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selMatchId, match?.matchState, match?.matchPhase]);
 
   // ── Auto-Import: Events ───────────────────────────────────
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (!selMatchId || !match?.externalId || events.length > 0) return;
     api
       .importEvents(match.externalId)
       .then(() => reload.loadEvents())
       .catch((err) => logger.error("[useMatchTriggers] importEvents error:", err));
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selMatchId, match?.externalId, events.length]);
 
   // ── Auto-Import: Lineups ──────────────────────────────────
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (!selMatchId || lineups.length > 0) return;
     api
       .importLineups(selMatchId)
       .then(() => reload.loadLineups())
       .catch((err) => logger.error("[useMatchTriggers] importLineups error:", err));
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selMatchId, lineups.length]);
 
   // ── Auto-Import: Match-Statistiken ───────────────────────
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (!selMatchId || matchStats.length > 0) return;
     api
       .importMatchStats(selMatchId)
       .then(() => reload.loadMatchStats())
       .catch((err) => logger.error("[useMatchTriggers] importMatchStats error:", err));
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selMatchId, matchStats.length]);
 
   // ── Auto-Import: Prematch + Synthetic Batch ───────────────
   const prematchImportedRef = useRef(null);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (!selMatchId || !match?.externalId) return;
     if (prematchImportedRef.current === selMatchId) return;
@@ -152,7 +156,7 @@ export function useMatchTriggers({
       .then(() => reload.loadPrematch())
       .then(() =>
         api
-          .generateSyntheticBatch(selMatchId, "neutral", instance)
+          .generateSyntheticBatch(selMatchId, style, instance, language)
           .then(() => {
             // LLM läuft async — mehrfach nachladen
             [3000, 8000, 15000, 25000, 40000].forEach((delay) => {
@@ -162,11 +166,11 @@ export function useMatchTriggers({
           .catch((err) => logger.error("[useMatchTriggers] generateSyntheticBatch error:", err)),
       )
       .catch((err) => logger.error("[useMatchTriggers] importPrematch error:", err));
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selMatchId, match?.externalId]);
 
   // ── Auto-Import: Spieler-Statistiken ─────────────────────
   const playerStatsImportedRef = useRef(null);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (!selMatchId) return;
     if (playerStatsImportedRef.current === selMatchId) return;
@@ -175,5 +179,6 @@ export function useMatchTriggers({
       .importPlayerStatistics(selMatchId)
       .then(() => reload.loadPlayerStats())
       .catch((err) => logger.error("[useMatchTriggers] importPlayerStatistics error:", err));
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selMatchId]);
 }

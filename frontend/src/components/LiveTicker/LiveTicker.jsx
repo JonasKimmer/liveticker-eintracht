@@ -1,7 +1,8 @@
 // ============================================================
 // LiveTicker.jsx — Hauptkomponente
 // ============================================================
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useEffect, useCallback, useMemo, useRef } from "react";
+import { useClickOutside } from "../../hooks/useClickOutside";
 import "./LiveTicker.css";
 import logger from "../../utils/logger";
 
@@ -112,11 +113,40 @@ export default function LiveTicker() {
     [mode, setMode, acceptDraft, rejectDraft],
   );
 
-  // ── Instance ──────────────────────────────────────────────
-  const [instance, setInstance] = useState("ef_whitelabel");
+  // ── Instance + Style: automatisch EF wenn Frankfurt-Spiel ──
+  const isEfMatch = useMemo(() => {
+    const kw = config.teamKeyword?.toLowerCase() ?? "";
+    if (!kw || !match) return false;
+    const home = match.homeTeam?.name?.toLowerCase() ?? "";
+    const away = match.awayTeam?.name?.toLowerCase() ?? "";
+    return home.includes(kw) || away.includes(kw);
+  }, [match]);
+  const instance  = isEfMatch ? "ef_whitelabel" : "generic";
+  const efStyle   = isEfMatch ? "euphorisch"    : "neutral";
+
+  // ── Language ───────────────────────────────────────────────
+  const [language, setLanguage] = useState("de");
+  const [showLangPicker, setShowLangPicker] = useState(false);
+  const langPickerRef = useRef(null);
+  useClickOutside(langPickerRef, () => setShowLangPicker(false));
+
+  const translateDebounceRef = useRef(null);
+  const handleLanguageChange = useCallback((lang) => {
+    setLanguage(lang);
+    if (!selMatchId || lang === language) return;
+    if (translateDebounceRef.current) clearTimeout(translateDebounceRef.current);
+    translateDebounceRef.current = setTimeout(async () => {
+      try {
+        await api.translateTickerBatch(selMatchId, lang);
+        await reload.loadTickerTexts();
+      } catch (err) {
+        logger.error("translateTickerBatch error:", err);
+      }
+    }, 600);
+  }, [selMatchId, language, reload]);
 
   // ── n8n Webhooks + Auto-Imports ───────────────────────────
-  useMatchTriggers({ selMatchId, match, events, lineups, matchStats, tickerTexts, instance, reload });
+  useMatchTriggers({ selMatchId, match, events, lineups, matchStats, tickerTexts, instance, style: efStyle, language, reload });
 
   // ── Keyboard Shortcuts ────────────────────────────────────
   useEffect(() => {
@@ -141,14 +171,14 @@ export default function LiveTicker() {
   const handleGenerate = useCallback(async (eventId, style) => {
     setGeneratingId(eventId);
     try {
-      await api.generateTicker(eventId, style, instance);
+      await api.generateTicker(eventId, style, instance, language);
       await reload.loadTickerTexts();
     } catch (err) {
       logger.error("generateTicker error:", err);
     } finally {
       setGeneratingId(null);
     }
-  }, [reload, instance]);
+  }, [reload, instance, language]);
 
   const handleManualPublish = useCallback(async (text, icon = "📝", minute, phase) => {
     try {
@@ -202,6 +232,7 @@ export default function LiveTicker() {
             country={navProps.selCountry}
             team={teams.find((t) => t.id === selTeamId)}
             round={navProps.selRound}
+            matchdays={navProps.matchdays}
             onOpen={() => setModalOpen(true)}
           />
           <div className="lt-header__status">
@@ -215,15 +246,45 @@ export default function LiveTicker() {
               </button>
             ))}
             <span className="lt-header__sep">|</span>
-            <div className="lt-header__dot" style={{ background: apiCfg.dot }} />
-            <span>Backend: {apiCfg.label}</span>
-            <button
-              className={`lt-header__hint${instance === "ef_whitelabel" ? " lt-header__hint--active" : ""}`}
-              onClick={() => setInstance((i) => i === "ef_whitelabel" ? "generic" : "ef_whitelabel")}
-              title={instance === "ef_whitelabel" ? "EF-Stil aktiv – klicken für neutral" : "Neutraler Stil aktiv – klicken für EF-Stil"}
-            >
-              {instance === "ef_whitelabel" ? "EF" : "⬜"}
-            </button>
+            <div className="lt-header__dot" style={{ background: apiCfg.dot }} title={`Backend: ${apiCfg.label}`} />
+            {instance === "ef_whitelabel" && (
+              <span className="lt-header__hint lt-header__hint--active" title="EF-Schreibstil aktiv (Stilreferenzen aus DB)">
+                EF
+              </span>
+            )}
+            <span className="lt-header__sep">|</span>
+            <div className="lt-lang-picker" ref={langPickerRef}>
+              <button
+                className="lt-lang-picker__trigger"
+                onClick={() => setShowLangPicker((v) => !v)}
+                title="Ticker-Sprache wechseln"
+              >
+                🌐 {language.toUpperCase()}
+                <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"
+                  style={{ transition: "transform 0.15s", transform: showLangPicker ? "rotate(180deg)" : "rotate(0deg)", marginLeft: 2 }}>
+                  <path d="M6 9l6 6 6-6" />
+                </svg>
+              </button>
+              {showLangPicker && (
+                <div className="lt-lang-picker__menu">
+                  {[
+                    { code: "de", label: "Deutsch" },
+                    { code: "en", label: "English" },
+                    { code: "es", label: "Español" },
+                    { code: "fr", label: "Français" },
+                  ].map(({ code, label }) => (
+                    <button
+                      key={code}
+                      className={`lt-lang-picker__item${language === code ? " lt-lang-picker__item--active" : ""}`}
+                      onClick={() => { handleLanguageChange(code); setShowLangPicker(false); }}
+                    >
+                      <span className="lt-lang-picker__code">{code.toUpperCase()}</span>
+                      <span className="lt-lang-picker__label">{label}</span>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
             <button
               className="lt-header__hint"
               onClick={() => setShowHints(true)}

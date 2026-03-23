@@ -209,12 +209,13 @@ class TestCreateManualEntry:
         assert data["status"] == "published"
         assert data["source"] == "manual"
 
-    def test_rejects_empty_text(self, client, sample_match):
+    def test_allows_empty_text_for_video_entries(self, client, sample_match):
+        # Empty text is allowed (video-only entries have no text)
         response = client.post(
             "/api/v1/ticker/manual",
-            json={"match_id": sample_match.id, "text": ""},
+            json={"match_id": sample_match.id, "text": "", "video_url": "https://example.com/clip.mp4"},
         )
-        assert response.status_code == 422
+        assert response.status_code == 201
 
     def test_phase_deduplication_returns_existing(self, client, sample_match):
         payload = {

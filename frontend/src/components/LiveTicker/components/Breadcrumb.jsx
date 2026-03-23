@@ -3,28 +3,29 @@
 // Zeigt: Liga › Saison › Spieltag › Heim vs Gast
 // Klick → onOpen() öffnet MatchSelectorModal
 // ============================================================
-import { memo, Fragment } from "react";
+import { memo, Fragment, useMemo } from "react";
 import PropTypes from "prop-types";
+import { makeRoundLabel } from "../../../utils/roundLabel";
 
-export const Breadcrumb = memo(function Breadcrumb({ match, competition, country, team, round, onOpen }) {
+export const Breadcrumb = memo(function Breadcrumb({ match, competition, country, team, round, matchdays, onOpen }) {
+  const { full } = useMemo(() => makeRoundLabel(matchdays ?? []), [matchdays]);
+
   if (!match || !competition) return null;
 
-  const roundLabel = round
-    ? `Spieltag ${String(round).match(/\d+/)?.[0] ?? round}`
-    : null;
+  const roundLabel = round ? full(round) : null;
 
   const segments = [
-    country,
-    team?.name,
-    competition.title,
-    roundLabel,
-  ].filter(Boolean);
+    { value: country,            cls: "country" },
+    { value: team?.name,         cls: "team" },
+    { value: competition.title,  cls: "competition" },
+    { value: roundLabel,         cls: "round" },
+  ].filter(({ value }) => value);
 
   return (
     <button className="lt-breadcrumb" onClick={onOpen} title="Match wechseln">
-      {segments.map((seg, i) => (
-        <Fragment key={i}>
-          <span className="lt-breadcrumb__seg">{seg}</span>
+      {segments.map(({ value, cls }) => (
+        <Fragment key={cls}>
+          <span className={`lt-breadcrumb__seg lt-breadcrumb__seg--${cls}`}>{value}</span>
           <span className="lt-breadcrumb__sep">›</span>
         </Fragment>
       ))}
@@ -49,5 +50,6 @@ Breadcrumb.propTypes = {
     name: PropTypes.string,
   }),
   round: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+  matchdays: PropTypes.arrayOf(PropTypes.number),
   onOpen: PropTypes.func,
 };

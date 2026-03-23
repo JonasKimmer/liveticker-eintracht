@@ -68,7 +68,15 @@ export function useNavigation() {
 
   // ── Land → Teams ────────────────────────────────────────────
   useEffect(() => {
-    if (!selCountry) return;
+    if (!selCountry) {
+      setTeams([]);
+      setSelTeamId(null);
+      setCompetitions([]);
+      setSelCompetitionId(null);
+      setSelRound(null);
+      setMatches([]);
+      return;
+    }
     const controller = new AbortController();
     setTeams([]);
     setSelTeamId(null);
@@ -149,8 +157,9 @@ export function useNavigation() {
 
   // ── Matchdays → letzten vorauswählen ────────────────────────
   useEffect(() => {
-    if (matchdays.length > 0 && selRound == null) setSelRound(matchdays[matchdays.length - 1]);
-  }, [matchdays, selRound]);
+    if (selTeamId && selCompetitionId && matchdays.length > 0 && selRound == null)
+      setSelRound(matchdays[matchdays.length - 1]);
+  }, [matchdays, selRound, selTeamId, selCompetitionId]);
 
   // ── Spieltag → Matches ──────────────────────────────────────
   useEffect(() => {

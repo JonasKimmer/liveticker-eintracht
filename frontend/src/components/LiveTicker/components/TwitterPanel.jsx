@@ -210,7 +210,7 @@ export const TwitterPanel = memo(function TwitterPanel({ matchId, currentMinute 
         >
           <span style={{ display: "flex", alignItems: "center", gap: "0.5rem", fontFamily: "var(--lt-font-mono)", fontSize: "0.7rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--lt-text-muted)" }}>
             <span style={{ fontSize: "0.85rem" }}>𝕏</span>
-            <span>Twitter · @Eintracht</span>
+            <span>Twitter / X</span>
             {posts.length > 0 && (
               <span style={{ background: "#000", color: "#fff", fontSize: "0.6rem", fontWeight: 700, borderRadius: 4, padding: "1px 6px", lineHeight: 1.4 }}>
                 {posts.length}

@@ -44,10 +44,28 @@ function toEmbedUrl(url) {
   return url;
 }
 
-// Inline video player: zeigt Thumbnail → Klick → iframe direkt im Eintrag
+// Inline video player
+// - Direkte MP4-URLs (S3 Torjubel): autoPlay + loop + muted, kein Klick nötig
+// - YouTube: Thumbnail → Klick → iframe
 function InlineVideo({ videoUrl, thumbnailUrl }) {
   const [playing, setPlaying] = useState(false);
   const embedUrl = toEmbedUrl(videoUrl);
+
+  // Direkte MP4 → nativer <video> Player, startet sofort
+  if (!embedUrl) {
+    return (
+      <div className="lt-video-wrap">
+        <video
+          src={videoUrl}
+          autoPlay
+          loop
+          muted
+          playsInline
+          style={{ width: "100%", display: "block", borderRadius: 4 }}
+        />
+      </div>
+    );
+  }
 
   if (playing) {
     return (

@@ -26,10 +26,6 @@ function getYoutubeId(url) {
   }
 }
 
-function getEmbedUrl(url) {
-  const id = getYoutubeId(url);
-  return id ? `https://www.youtube.com/embed/${id}?autoplay=1` : url;
-}
 
 function getThumbnail(clip) {
   if (clip.thumbnail_url) return clip.thumbnail_url;
@@ -457,7 +453,7 @@ export const YouTubePanel = memo(function YouTubePanel({ matchId, currentMinute 
         >
           <span style={{ display: "flex", alignItems: "center", gap: "0.5rem", fontFamily: "var(--lt-font-mono)", fontSize: "0.7rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--lt-text-muted)" }}>
             <span>📺</span>
-            <span>YouTube · Eintracht</span>
+            <span>YouTube</span>
             {clips.length > 0 && (
               <span style={{ background: "#ff0000", color: "#fff", fontSize: "0.6rem", fontWeight: 700, borderRadius: 4, padding: "1px 6px", lineHeight: 1.4 }}>
                 {clips.length}

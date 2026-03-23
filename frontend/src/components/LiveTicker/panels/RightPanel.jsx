@@ -25,6 +25,8 @@ export const RightPanel = memo(function RightPanel({
   const homeAbbr = match?.homeTeam?.name ?? "Heim";
   const awayAbbr = match?.awayTeam?.name ?? "Gast";
 
+
+  // subMinuteMap: interne DB-ID → minute (aus Events)
   // extToInternal: partner API external_id → internal DB id
   const extToInternal = useMemo(() => {
     const map = {};
@@ -34,17 +36,26 @@ export const RightPanel = memo(function RightPanel({
     return map;
   }, [players]);
 
-  // subMinuteMap: interne DB-ID → minute (aus Events)
   const subMinuteMap = useMemo(() => {
     const map = {};
     for (const ev of events) {
       if (ev.liveTickerEventType !== "substitution") continue;
       try {
         const d = typeof ev.description === "string" ? JSON.parse(ev.description) : ev.description;
-        const outId = extToInternal[d?.player_id];
-        const inId  = extToInternal[d?.assist_id];
-        if (outId && ev.time) map[outId] = ev.time;
-        if (inId  && ev.time) map[`in_${inId}`] = ev.time;
+        // player_id = geht raus, assist_id = kommt rein
+        // Beide IDs (extern + intern) speichern, da entry.playerId je nach Spieler unterschiedlich sein kann
+        const outExt = d?.player_id;
+        const inExt  = d?.assist_id;
+        if (outExt && ev.time) {
+          map[outExt] = ev.time;
+          const outInt = extToInternal[outExt];
+          if (outInt) map[outInt] = ev.time;
+        }
+        if (inExt && ev.time) {
+          map[`in_${inExt}`] = ev.time;
+          const inInt = extToInternal[inExt];
+          if (inInt) map[`in_${inInt}`] = ev.time;
+        }
       } catch { /* ignore */ }
     }
     return map;

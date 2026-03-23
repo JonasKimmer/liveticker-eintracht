@@ -565,7 +565,7 @@ export function MediaPickerPanel({ match, matchId, defaultOpen = false, playerNa
         >
           <span style={{ display: "flex", alignItems: "center", gap: "0.5rem", fontFamily: "var(--lt-font-mono)", fontSize: "0.7rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--lt-text-muted)" }}>
             <span>📷</span>
-            <span>ScorePlay Bilder</span>
+            <span>Bilder</span>
             {images.length > 0 && (
               <span style={{
                 background: "var(--lt-accent)", color: "#0d0d0d",
@@ -607,7 +607,7 @@ export function MediaPickerPanel({ match, matchId, defaultOpen = false, playerNa
                     type="text"
                     placeholder="# oder Name suchen…"
                     value={playerQuery}
-                    onChange={(e) => setPlayerQuery(e.target.value)}
+                    onChange={(e) => { setPlayerQuery(e.target.value); if (selectedPlayer) setSelectedPlayer(null); }}
                     onKeyDown={(e) => { if (e.key === "Escape") { setPlayerQuery(""); setSelectedPlayer(null); } }}
                     style={{
                       width: "100%", boxSizing: "border-box",
@@ -641,7 +641,7 @@ export function MediaPickerPanel({ match, matchId, defaultOpen = false, playerNa
                     {playerSuggestions.map((p) => (
                       <button
                         key={p.playerId ?? p.jerseyNumber}
-                        onMouseDown={(e) => { e.preventDefault(); setSelectedPlayer(p); setPlayerQuery(`#${p.jerseyNumber} ${p.playerName}`); }}
+                        onMouseDown={(e) => { e.preventDefault(); setSelectedPlayer(p); setPlayerQuery(p.jerseyNumber != null ? `#${p.jerseyNumber} ${p.playerName}` : p.playerName); }}
                         style={{
                           width: "100%", display: "flex", alignItems: "center", gap: "0.5rem",
                           padding: "0.4rem 0.65rem", background: "transparent", border: "none",

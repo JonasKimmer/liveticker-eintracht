@@ -13,6 +13,7 @@ Instanzen:
 - ef_whitelabel: Eintracht-Stil, Few-Shot aus style_references
 """
 
+import asyncio
 import json
 import logging
 from typing import Optional
@@ -34,9 +35,11 @@ from app.schemas.ticker_entry import (
     TickerEntryUpdate,
     TickerEntryResponse,
     TickerStatus,
+    TranslateBatchRequest,
 )
 from app.core.constants import resolve_phase, STANDARD_PHASES
 from app.services import ticker_service as ts
+from app.services.llm_service import translate_ticker_text
 
 logger = logging.getLogger(__name__)
 
@@ -549,3 +552,34 @@ async def generate_bulk_for_match(
             continue
 
     return results
+
+
+# ──────────────────────────────────────────────
+# POST: Batch-Übersetzung aller KI-Einträge
+# ──────────────────────────────────────────────
+
+
+@router.post(
+    "/translate-batch/{match_id}",
+    response_model=list[TickerEntryResponse],
+    summary="Alle KI-generierten Ticker-Einträge eines Spiels übersetzen",
+)
+async def translate_batch(
+    match_id: int,
+    data: TranslateBatchRequest = Body(default_factory=TranslateBatchRequest),
+    db: Session = Depends(get_db),
+) -> list[TickerEntryResponse]:
+    ticker_repo = TickerEntryRepository(db)
+    entries = ticker_repo.get_by_match(match_id, published_only=False)
+    translatable = [e for e in entries if e.text]
+
+    async def _translate_one(entry):
+        try:
+            translated = await translate_ticker_text(entry.text, data.language)
+            return ticker_repo.update(entry.id, TickerEntryUpdate(text=translated))
+        except Exception:
+            logger.exception("Translation failed for entry_id=%s", entry.id)
+            return None
+
+    updated = await asyncio.gather(*[_translate_one(e) for e in translatable])
+    return [u for u in updated if u is not None]

@@ -252,13 +252,13 @@ export function getRawEventText(event) {
   if (t === "missed_penalty") return `Elfmeter verschossen — ${player}`;
   if (t === "yellow_card") return `Gelb — ${player}`;
   if (t === "red_card") return `Rot — ${player}`;
-  if (t === "substitution") return `${player} ↔ ${assist}`;
+  if (t === "substitution") return `↑ ${assist}${player ? ` / ↓ ${player}` : ""}`;
   if (t === "kick_off") return "Anstoß";
   if (t === "halftime") return "Halbzeit";
   if (t === "fulltime") return "Abpfiff";
   if (eventType === "Goal") return `Tor! ${player}${assist ? ` (Assist: ${assist})` : ""}`;
   if (eventType === "Card") return `${detail} — ${player}`;
-  if (eventType === "subst") return `${player} ↔ ${assist}`;
+  if (eventType === "subst") return `↑ ${assist}${player ? ` / ↓ ${player}` : ""}`;
   return detail;
 }
 

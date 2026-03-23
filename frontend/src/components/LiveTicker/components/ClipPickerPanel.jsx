@@ -20,7 +20,7 @@ function VideoOrThumb({ clip }) {
       <div style={{ position: "relative", paddingBottom: "56.25%", background: "#000" }}>
         <iframe
           src={clip.video_url}
-          allow="autoplay; fullscreen"
+          title="Clip Player" allow="autoplay; fullscreen"
           allowFullScreen
           style={{ position: "absolute", inset: 0, width: "100%", height: "100%", border: "none" }}
         />
@@ -498,7 +498,7 @@ export const ClipPickerPanel = memo(function ClipPickerPanel({ matchId, match, c
         >
           <span style={{ display: "flex", alignItems: "center", gap: "0.5rem", fontFamily: "var(--lt-font-mono)", fontSize: "0.7rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--lt-text-muted)" }}>
             <span>🎬</span>
-            <span>Tor-Clips</span>
+            <span>Clips</span>
             {clips.length > 0 && (
               <span style={{ background: "var(--lt-accent)", color: "#0d0d0d", fontSize: "0.6rem", fontWeight: 700, borderRadius: 4, padding: "1px 6px", lineHeight: 1.4 }}>
                 {clips.length}

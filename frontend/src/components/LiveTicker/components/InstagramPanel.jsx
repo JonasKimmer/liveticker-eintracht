@@ -23,7 +23,7 @@ function InstaPublishModal({ post, matchId, currentMinute, onClose, onPublished 
       onClose={onClose}
       onPublished={onPublished}
       headerIcon="📸"
-      headerLabel="Instagram · @EintrachtFrankfurt"
+      headerLabel="Instagram"
       submitLabel="📸 Im Ticker veröffentlichen"
       submitBackground={INSTA_GRADIENT}
     />
@@ -176,7 +176,7 @@ export const InstagramPanel = memo(function InstagramPanel({ matchId, currentMin
         >
           <span style={{ display: "flex", alignItems: "center", gap: "0.5rem", fontFamily: "var(--lt-font-mono)", fontSize: "0.7rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--lt-text-muted)" }}>
             <span>📸</span>
-            <span>Instagram · @EintrachtFrankfurt</span>
+            <span>Instagram</span>
             {posts.length > 0 && (
               <span style={{
                 background: INSTA_GRADIENT, color: "#fff",

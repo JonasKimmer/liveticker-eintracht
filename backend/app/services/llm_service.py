@@ -205,10 +205,13 @@ class LLMService:
         if minute:
             event_lines.append(f"Minute: {minute_str}")
         if player_name:
-            event_lines.append(f"Spieler: {player_name}")
+            label = (
+                "Ausgewechselt (geht raus)" if event_type == "substitution" else "Spieler"
+            )
+            event_lines.append(f"{label}: {player_name}")
         if assist_name:
             label = (
-                "Eingewechselt für" if event_type == "substitution" else "Vorlagengeber"
+                "Eingewechselt (kommt rein)" if event_type == "substitution" else "Vorlagengeber"
             )
             event_lines.append(f"{label}: {assist_name}")
         if team_name:
@@ -320,9 +323,9 @@ class LLMService:
                 "neutral": [f"ROTE KARTE! {p} muss in der {m}. Minute vom Platz!"]
             },
             "substitution": {
-                "neutral": [f"{m}. Minute: Wechsel bei {t}. {p} kommt für {a}."],
-                "euphorisch": [f"Frische Kräfte! {p} kommt für {a} ({m}')."],
-                "kritisch": [f"Wechsel ({m}'): {p} für {a} – fragwürdig."],
+                "neutral": [f"{m}. Minute: Wechsel bei {t}. {a} kommt für {p}."],
+                "euphorisch": [f"Frische Kräfte! {a} kommt für {p} ({m}')."],
+                "kritisch": [f"Wechsel ({m}'): {a} für {p} – fragwürdig."],
             },
             "kick_off": {"neutral": ["Anstoß! Das Spiel läuft."]},
             "halftime": {"neutral": ["Halbzeit! Pause nach 45 Minuten."]},
@@ -402,6 +405,46 @@ class LLMService:
             messages=[{"role": "user", "content": prompt}],
         )
         return response.content[0].text.strip()
+
+    # ──────────────────────────────────────────
+    # Übersetzung
+    # ──────────────────────────────────────────
+
+    _LANG_NAMES = {"de": "German", "en": "English", "es": "Spanish", "fr": "French"}
+
+    def translate_text(self, text: str, language: str) -> str:
+        """Übersetzt einen fertigen Ticker-Text in eine andere Sprache."""
+        if self.provider == "mock":
+            return f"[{language.upper()}] {text}"
+
+        lang_name = self._LANG_NAMES.get(language, language)
+        prompt = (
+            f"Translate the following football live ticker entry to {lang_name}. "
+            f"Keep the same style, tone, emotion, and approximate length. "
+            f"Only output the translated text, nothing else.\n\n"
+            f"Text: {text}"
+        )
+
+        if self.provider in ("openai", "openrouter"):
+            response = self._client.chat.completions.create(
+                model=self.model,
+                messages=[{"role": "user", "content": prompt}],
+                max_tokens=200,
+                temperature=0.1,
+            )
+            return response.choices[0].message.content.strip()
+        elif self.provider == "gemini":
+            response = self._client.models.generate_content(model=self.model, contents=prompt)
+            return response.text.strip()
+        elif self.provider == "anthropic":
+            response = self._client.messages.create(
+                model=self.model,
+                max_tokens=200,
+                temperature=0.1,
+                messages=[{"role": "user", "content": prompt}],
+            )
+            return response.content[0].text.strip()
+        return text
 
 
 # ──────────────────────────────────────────────
@@ -535,3 +578,8 @@ async def generate_ticker_text(
                 await asyncio.sleep(wait)
 
     raise last_exc
+
+
+async def translate_ticker_text(text: str, language: str) -> str:
+    """Async Wrapper: Übersetzt einen Ticker-Text via LLM."""
+    return await asyncio.to_thread(llm_service.translate_text, text, language)

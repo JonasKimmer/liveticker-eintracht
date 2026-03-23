@@ -61,6 +61,15 @@ export const LeftPanel = memo(function LeftPanel({
       const bPhase = b.type === "manual" ? b.data?.phase : b.data?.tickerText?.phase;
       if (PHASE_START.has(aPhase) && !PHASE_START.has(bPhase)) return 1;
       if (!PHASE_START.has(aPhase) && PHASE_START.has(bPhase)) return -1;
+      // 🎬 Video-Einträge vor Text-Einträgen (auch bei leicht unterschiedlicher Minute)
+      const aIsVideo = a.type === "manual" && a.data?.icon === "🎬";
+      const bIsVideo = b.type === "manual" && b.data?.icon === "🎬";
+      if (aIsVideo && !bIsVideo) return 1;
+      if (!aIsVideo && bIsVideo) return -1;
+      // created_at: ältere Einträge zuerst (Video wird vor LLM-Text erstellt)
+      const aTime = a.type === "manual" ? a.data?.created_at : a.data?.tickerText?.created_at;
+      const bTime = b.type === "manual" ? b.data?.created_at : b.data?.tickerText?.created_at;
+      if (aTime && bTime) return new Date(aTime) - new Date(bTime);
       return 0;
     });
   }, [tickerTexts, events]);

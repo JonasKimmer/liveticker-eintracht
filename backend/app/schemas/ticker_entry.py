@@ -25,7 +25,7 @@ class TickerEntryCreate(BaseModel):
     match_id: int = Field(..., gt=0)
     event_id: Optional[int] = Field(None, gt=0)
     synthetic_event_id: Optional[int] = Field(None, gt=0)
-    text: str = Field(..., min_length=1)
+    text: str = Field("", max_length=5000)
     style: Optional[str] = Field(None, max_length=50)
     icon: Optional[str] = Field(None, max_length=50)
     llm_model: Optional[str] = Field(None, max_length=100)
@@ -74,9 +74,13 @@ class GenerateSyntheticBatchRequest(BaseGenerateRequest):
     auto_publish: bool = True
 
 
+class TranslateBatchRequest(BaseModel):
+    language: str = Field(default="en", max_length=5)
+
+
 class ManualEntryRequest(BaseModel):
     match_id: int
-    text: str = Field(..., min_length=1, max_length=2000)
+    text: str = Field("", max_length=2000)
     event_id: Optional[int] = None
     style: Optional[str] = None
     icon: Optional[str] = None
