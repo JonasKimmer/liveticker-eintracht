@@ -1,0 +1,23 @@
+FROM python:3.12-slim
+
+WORKDIR /app
+
+# System-Abhängigkeiten für psycopg2
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    gcc \
+    libpq-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+# Dependencies zuerst (Layer-Cache)
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# App-Code kopieren
+COPY . .
+
+# Static-Verzeichnis sicherstellen
+RUN mkdir -p static/thumbnails
+
+# Migrations + Start (PORT kommt von Render)
+CMD alembic upgrade head && \
+    uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8001}
