@@ -29,6 +29,7 @@ import { useApiStatus, API_STATUS_CFG } from "../../hooks/useApiStatus";
 import { useMatchTriggers } from "../../hooks/useMatchTriggers";
 import { usePanelResize } from "../../hooks/usePanelResize";
 import { CommandsModal } from "./components/CommandsModal";
+import { PublishToast } from "./components/PublishToast";
 import ErrorBoundary from "../ErrorBoundary";
 
 export default function LiveTicker() {
@@ -75,17 +76,37 @@ export default function LiveTicker() {
   const [activeDraftId, setActiveDraftId] = useState(null);
   const [activeDraftText, setActiveDraftText] = useState("");
 
+  // ── Publish Toast (Undo) ───────────────────────────────
+  const [publishToast, setPublishToast] = useState(null); // { id, text }
+
+  const showPublishToast = useCallback((id, text) => {
+    setPublishToast({ id, text });
+  }, []);
+
+  const handleRetract = useCallback(async () => {
+    if (!publishToast) return;
+    try {
+      await api.updateTicker(publishToast.id, { status: "draft" });
+      await reload.loadTickerTexts();
+    } catch (err) {
+      logger.error("retract error:", err);
+    } finally {
+      setPublishToast(null);
+    }
+  }, [publishToast, reload]);
+
   const acceptDraft = useCallback(async () => {
     if (!activeDraftId) return;
     try {
       await api.publishTicker(activeDraftId, activeDraftText);
       await reload.loadTickerTexts();
+      showPublishToast(activeDraftId, activeDraftText);
       setActiveDraftId(null);
       setActiveDraftText("");
     } catch (err) {
       logger.error("acceptDraft error:", err);
     }
-  }, [activeDraftId, activeDraftText, reload]);
+  }, [activeDraftId, activeDraftText, reload, showPublishToast]);
 
   const rejectDraft = useCallback(async () => {
     if (!activeDraftId) return;
@@ -182,12 +203,13 @@ export default function LiveTicker() {
 
   const handleManualPublish = useCallback(async (text, icon = "📝", minute, phase) => {
     try {
-      await api.createManualTicker(selMatchId, text, icon, minute, phase);
+      const res = await api.createManualTicker(selMatchId, text, icon, minute, phase);
       await reload.loadTickerTexts();
+      if (res?.data?.id) showPublishToast(res.data.id, text);
     } catch (err) {
       logger.error("manualPublish error:", err);
     }
-  }, [selMatchId, reload]);
+  }, [selMatchId, reload, showPublishToast]);
 
   const handleDraftActive = useCallback((id, text) => {
     setActiveDraftId(id);
@@ -330,6 +352,7 @@ export default function LiveTicker() {
                   onGenerate={handleGenerate}
                   onManualPublish={handleManualPublish}
                   onDraftActive={handleDraftActive}
+                  onPublished={showPublishToast}
                   reload={reload}
                   instance={instance}
                   lineups={lineups}
@@ -401,6 +424,14 @@ export default function LiveTicker() {
 
         {showHints && <KeyboardHints mode={mode} onClose={() => setShowHints(false)} />}
         {showCommands && <CommandsModal onClose={() => setShowCommands(false)} />}
+        {publishToast && (
+          <PublishToast
+            entryId={publishToast.id}
+            text={publishToast.text}
+            onRetract={handleRetract}
+            onDismiss={() => setPublishToast(null)}
+          />
+        )}
       </div>
     </TickerModeContext.Provider>
   );

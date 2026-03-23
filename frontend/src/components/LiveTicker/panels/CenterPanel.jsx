@@ -26,6 +26,7 @@ export const CenterPanel = memo(function CenterPanel({
   onGenerate,
   onManualPublish,
   onDraftActive,
+  onPublished,
   reload,
   instance = "ef_whitelabel",
   lineups = [],
@@ -190,7 +191,8 @@ export const CenterPanel = memo(function CenterPanel({
     if (!selectedDraft) return;
     await api.publishTicker(selectedDraft.id, selectedDraft.text);
     await reload.loadTickerTexts();
-  }, [selectedDraft, reload]);
+    onPublished?.(selectedDraft.id, selectedDraft.text);
+  }, [selectedDraft, reload, onPublished]);
 
   const handleRejectDraft = useCallback(async () => {
     if (!selectedDraft) return;
@@ -217,6 +219,7 @@ export const CenterPanel = memo(function CenterPanel({
     try {
       await api.publishTicker(selectedDraft.id, textToPublish);
       await reload.loadTickerTexts();
+      onPublished?.(selectedDraft.id, textToPublish);
       setEditorValue("");
       setEditMode(false);
       setSelectedEventId(null);
@@ -225,7 +228,7 @@ export const CenterPanel = memo(function CenterPanel({
     } finally {
       setPublishing(false);
     }
-  }, [selectedDraft, editorValue, reload]);
+  }, [selectedDraft, editorValue, reload, onPublished]);
 
   if (!match) {
     return (
@@ -419,6 +422,7 @@ CenterPanel.propTypes = {
   onGenerate: PropTypes.func.isRequired,
   onManualPublish: PropTypes.func.isRequired,
   onDraftActive: PropTypes.func,
+  onPublished: PropTypes.func,
   reload: PropTypes.shape({
     loadTickerTexts: PropTypes.func.isRequired,
   }).isRequired,
