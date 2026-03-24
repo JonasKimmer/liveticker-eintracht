@@ -104,6 +104,6 @@ def downgrade() -> None:
         existing_nullable=True,
     )
     op.drop_column("competitions", "localized_title")
-    op.drop_constraint("uq_competitions_external_id", "competitions", type_="unique")
-    op.drop_constraint("uq_competitions_uid", "competitions", type_="unique")
+    op.execute('ALTER TABLE competitions DROP CONSTRAINT IF EXISTS uq_competitions_external_id')
+    op.execute('ALTER TABLE competitions DROP CONSTRAINT IF EXISTS uq_competitions_uid')
     op.alter_column("competitions", "uid", nullable=True)

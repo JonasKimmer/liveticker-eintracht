@@ -41,8 +41,8 @@ def upgrade() -> None:
                existing_type=postgresql.TIMESTAMP(timezone=True),
                nullable=False,
                existing_server_default=sa.text('now()'))
-    op.drop_constraint('uq_competitions_external_id', 'competitions', type_='unique')
-    op.drop_constraint('uq_competitions_uid', 'competitions', type_='unique')
+    op.execute('ALTER TABLE competitions DROP CONSTRAINT IF EXISTS uq_competitions_external_id')
+    op.execute('ALTER TABLE competitions DROP CONSTRAINT IF EXISTS uq_competitions_uid')
     op.create_index(op.f('ix_competitions_external_id'), 'competitions', ['external_id'], unique=True)
     op.create_index(op.f('ix_competitions_id'), 'competitions', ['id'], unique=False)
     op.create_index(op.f('ix_competitions_uid'), 'competitions', ['uid'], unique=True)
@@ -50,7 +50,7 @@ def upgrade() -> None:
                existing_type=postgresql.TIMESTAMP(timezone=True),
                nullable=False,
                existing_server_default=sa.text('now()'))
-    op.drop_constraint('countries_name_key', 'countries', type_='unique')
+    op.execute('ALTER TABLE countries DROP CONSTRAINT IF EXISTS countries_name_key')
     op.create_index(op.f('ix_countries_id'), 'countries', ['id'], unique=False)
     op.create_index(op.f('ix_countries_name'), 'countries', ['name'], unique=True)
     op.add_column('matches', sa.Column('title', sa.String(length=200), nullable=True))
@@ -78,8 +78,8 @@ def upgrade() -> None:
     op.create_index(op.f('ix_matches_external_id'), 'matches', ['external_id'], unique=True)
     op.create_index(op.f('ix_matches_id'), 'matches', ['id'], unique=False)
     op.create_index(op.f('ix_matches_uid'), 'matches', ['uid'], unique=True)
-    op.drop_constraint('uq_seasons_external_id', 'seasons', type_='unique')
-    op.drop_constraint('uq_seasons_uid', 'seasons', type_='unique')
+    op.execute('ALTER TABLE seasons DROP CONSTRAINT IF EXISTS uq_seasons_external_id')
+    op.execute('ALTER TABLE seasons DROP CONSTRAINT IF EXISTS uq_seasons_uid')
     op.execute('DROP INDEX IF EXISTS ix_seasons_external_id')
     op.create_index(op.f('ix_seasons_external_id'), 'seasons', ['external_id'], unique=True)
     op.execute('DROP INDEX IF EXISTS ix_seasons_uid')
@@ -96,13 +96,13 @@ def upgrade() -> None:
                existing_type=postgresql.TIMESTAMP(timezone=True),
                nullable=False,
                existing_server_default=sa.text('now()'))
-    op.drop_constraint('teams_external_id_key', 'teams', type_='unique')
-    op.drop_constraint('uq_teams_uid', 'teams', type_='unique')
+    op.execute('ALTER TABLE teams DROP CONSTRAINT IF EXISTS teams_external_id_key')
+    op.execute('ALTER TABLE teams DROP CONSTRAINT IF EXISTS uq_teams_uid')
     op.create_index(op.f('ix_teams_external_id'), 'teams', ['external_id'], unique=True)
     op.create_index(op.f('ix_teams_id'), 'teams', ['id'], unique=False)
     op.create_index(op.f('ix_teams_name'), 'teams', ['name'], unique=False)
     op.create_index(op.f('ix_teams_uid'), 'teams', ['uid'], unique=True)
-    op.drop_constraint('teams_country_id_fkey', 'teams', type_='foreignkey')
+    op.execute('ALTER TABLE teams DROP CONSTRAINT IF EXISTS teams_country_id_fkey')
     op.create_foreign_key(None, 'teams', 'countries', ['country_id'], ['id'], ondelete='SET NULL')
     # ### end Alembic commands ###
 

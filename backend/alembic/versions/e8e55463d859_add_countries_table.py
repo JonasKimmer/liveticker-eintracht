@@ -40,6 +40,6 @@ def upgrade() -> None:
 
 
 def downgrade() -> None:
-    op.drop_constraint("teams_country_id_fkey", "teams", type_="foreignkey")
+    op.execute('ALTER TABLE teams DROP CONSTRAINT IF EXISTS teams_country_id_fkey')
     op.drop_column("teams", "country_id")
     op.execute('DROP TABLE IF EXISTS countries')

@@ -29,7 +29,5 @@ def upgrade() -> None:
 
 
 def downgrade() -> None:
-    op.drop_constraint(
-        "fk_ticker_entries_synthetic_event_id", "ticker_entries", type_="foreignkey"
-    )
+    op.execute('ALTER TABLE ticker_entries DROP CONSTRAINT IF EXISTS fk_ticker_entries_synthetic_event_id')
     op.drop_column("ticker_entries", "synthetic_event_id")

@@ -29,12 +29,12 @@ def upgrade() -> None:
                existing_type=postgresql.TIMESTAMP(timezone=True),
                nullable=False,
                existing_server_default=sa.text('now()'))
-    op.drop_constraint('uq_event', 'events', type_='unique')
+    op.execute('ALTER TABLE events DROP CONSTRAINT IF EXISTS uq_event')
     op.create_index(op.f('ix_events_match_id'), 'events', ['match_id'], unique=False)
     op.alter_column('lineups', 'status',
                existing_type=sa.VARCHAR(length=10),
                nullable=False)
-    op.drop_constraint('lineups_match_player_unique', 'lineups', type_='unique')
+    op.execute('ALTER TABLE lineups DROP CONSTRAINT IF EXISTS lineups_match_player_unique')
     op.execute(
         "ALTER TABLE match_statistics ALTER COLUMN possession_percentage "
         "TYPE NUMERIC(5,1) USING possession_percentage::numeric(5,1)"
@@ -42,14 +42,14 @@ def upgrade() -> None:
     op.execute('DROP INDEX IF EXISTS ix_media_clips_vid')
     op.execute('DROP INDEX IF EXISTS idx_media_queue_created_at')
     op.execute('DROP INDEX IF EXISTS idx_media_queue_status')
-    op.drop_constraint('players_external_id_key', 'players', type_='unique')
+    op.execute('ALTER TABLE players DROP CONSTRAINT IF EXISTS players_external_id_key')
     op.execute('DROP INDEX IF EXISTS ix_players_external_id')
     op.create_index(op.f('ix_players_external_id'), 'players', ['external_id'], unique=True)
     op.create_index(op.f('ix_standings_team_id'), 'standings', ['team_id'], unique=False)
     op.create_unique_constraint('uq_standing', 'standings', ['season_id', 'competition_id', 'team_id'])
-    op.drop_constraint('standings_team_id_fkey', 'standings', type_='foreignkey')
+    op.execute('ALTER TABLE standings DROP CONSTRAINT IF EXISTS standings_team_id_fkey')
     op.create_foreign_key(None, 'standings', 'teams', ['team_id'], ['id'], ondelete='CASCADE')
-    op.drop_constraint('uq_synthetic_match_type', 'synthetic_events', type_='unique')
+    op.execute('ALTER TABLE synthetic_events DROP CONSTRAINT IF EXISTS uq_synthetic_match_type')
     op.alter_column('ticker_entries', 'created_at',
                existing_type=postgresql.TIMESTAMP(timezone=True),
                nullable=False,
@@ -68,7 +68,7 @@ def downgrade() -> None:
     op.create_unique_constraint('uq_synthetic_match_type', 'synthetic_events', ['match_id', 'type'])
     op.drop_constraint(None, 'standings', type_='foreignkey')
     op.create_foreign_key('standings_team_id_fkey', 'standings', 'teams', ['team_id'], ['id'])
-    op.drop_constraint('uq_standing', 'standings', type_='unique')
+    op.execute('ALTER TABLE standings DROP CONSTRAINT IF EXISTS uq_standing')
     op.drop_index(op.f('ix_standings_team_id'), table_name='standings')
     op.drop_index(op.f('ix_players_external_id'), table_name='players')
     op.create_index('ix_players_external_id', 'players', ['external_id'], unique=False)

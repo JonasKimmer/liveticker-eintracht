@@ -95,5 +95,5 @@ def downgrade() -> None:
         existing_nullable=True,
     )
     op.drop_column("teams", "updated_at")
-    op.drop_constraint("uq_teams_uid", "teams", type_="unique")
+    op.execute('ALTER TABLE teams DROP CONSTRAINT IF EXISTS uq_teams_uid')
     op.alter_column("teams", "uid", nullable=True)
