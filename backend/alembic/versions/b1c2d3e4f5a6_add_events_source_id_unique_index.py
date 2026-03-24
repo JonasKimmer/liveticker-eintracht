@@ -29,4 +29,4 @@ def upgrade() -> None:
 
 
 def downgrade() -> None:
-    op.drop_index("uq_events_source_id", table_name="events")
+    op.execute('DROP INDEX IF EXISTS uq_events_source_id')

@@ -50,5 +50,5 @@ def upgrade() -> None:
 
 
 def downgrade() -> None:
-    op.drop_table('media_clips')
+    op.execute('DROP TABLE IF EXISTS media_clips')
     op.drop_column('ticker_entries', 'video_url')

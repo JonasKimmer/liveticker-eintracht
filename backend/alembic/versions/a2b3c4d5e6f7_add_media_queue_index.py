@@ -25,4 +25,4 @@ def upgrade() -> None:
 
 
 def downgrade() -> None:
-    op.drop_index("ix_media_queue_media_id", table_name="media_queue")
+    op.execute('DROP INDEX IF EXISTS ix_media_queue_media_id')

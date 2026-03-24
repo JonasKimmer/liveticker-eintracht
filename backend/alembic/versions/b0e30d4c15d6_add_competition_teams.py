@@ -32,9 +32,9 @@ def upgrade() -> None:
     sa.PrimaryKeyConstraint('id'),
     sa.UniqueConstraint('season_id', 'competition_id', 'team_id', name='uq_competition_team')
     )
-    op.drop_table('match_statistics')
-    op.drop_table('player_statistics')
-    op.drop_table('lineups')
+    op.execute('DROP TABLE IF EXISTS match_statistics')
+    op.execute('DROP TABLE IF EXISTS player_statistics')
+    op.execute('DROP TABLE IF EXISTS lineups')
     # ### end Alembic commands ###
 
 
@@ -99,5 +99,5 @@ def downgrade() -> None:
     sa.PrimaryKeyConstraint('id', name='match_statistics_pkey'),
     sa.UniqueConstraint('match_id', 'team_id', name='unique_match_team_stat')
     )
-    op.drop_table('competition_teams')
+    op.execute('DROP TABLE IF EXISTS competition_teams')
     # ### end Alembic commands ###

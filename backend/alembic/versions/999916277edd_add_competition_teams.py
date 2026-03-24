@@ -80,9 +80,9 @@ def upgrade() -> None:
     op.create_index(op.f('ix_matches_uid'), 'matches', ['uid'], unique=True)
     op.drop_constraint('uq_seasons_external_id', 'seasons', type_='unique')
     op.drop_constraint('uq_seasons_uid', 'seasons', type_='unique')
-    op.drop_index('ix_seasons_external_id', table_name='seasons')
+    op.execute('DROP INDEX IF EXISTS ix_seasons_external_id')
     op.create_index(op.f('ix_seasons_external_id'), 'seasons', ['external_id'], unique=True)
-    op.drop_index('ix_seasons_uid', table_name='seasons')
+    op.execute('DROP INDEX IF EXISTS ix_seasons_uid')
     op.create_index(op.f('ix_seasons_uid'), 'seasons', ['uid'], unique=True)
     op.alter_column('teams', 'is_partner_team',
                existing_type=sa.BOOLEAN(),

@@ -48,7 +48,7 @@ def upgrade() -> None:
 
 
 def downgrade() -> None:
-    op.drop_index("ix_style_references_event_type_instance", "style_references")
-    op.drop_index("ix_style_references_instance", "style_references")
-    op.drop_index("ix_style_references_event_type", "style_references")
-    op.drop_table("style_references")
+    op.execute('DROP INDEX IF EXISTS ix_style_references_event_type_instance')
+    op.execute('DROP INDEX IF EXISTS ix_style_references_instance')
+    op.execute('DROP INDEX IF EXISTS ix_style_references_event_type')
+    op.execute('DROP TABLE IF EXISTS style_references')

@@ -23,4 +23,4 @@ def upgrade() -> None:
 
 
 def downgrade() -> None:
-    op.drop_index('ix_media_clips_vid', table_name='media_clips')
+    op.execute('DROP INDEX IF EXISTS ix_media_clips_vid')
