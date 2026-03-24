@@ -157,6 +157,24 @@ export const CenterPanel = memo(function CenterPanel({
     else onDraftActive?.(null, "");
   }, [selectedDraft, onDraftActive]);
 
+  const handleBulkPublish = useCallback(async () => {
+    setBulkGenerating(true);
+    try {
+      const freshRes = await api.fetchTickerTexts(match.id);
+      const drafts = (freshRes.data ?? []).filter(
+        (t) => t.status !== "published" && t.event_id,
+      );
+      for (const d of drafts) {
+        await api.publishTicker(d.id, d.text);
+      }
+      await reload.loadTickerTexts();
+    } catch (err) {
+      logger.error("bulkPublish failed", err);
+    } finally {
+      setBulkGenerating(false);
+    }
+  }, [match, reload]);
+
   const handleBulkGenerate = useCallback(async () => {
     if (!pendingEvents.length) return;
     setBulkGenerating(true);
@@ -293,18 +311,30 @@ export const CenterPanel = memo(function CenterPanel({
 
             {pendingEvents.length > 1 && (
               <div style={{ marginBottom: "1rem" }}>
-                <div className="lt-center__section-title" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <div className="lt-center__section-title" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: "0.5rem" }}>
                   <span>Events ({pendingEvents.length})</span>
-                  {pendingEvents.some((ev) => !tickerTexts.find((t) => t.event_id === ev.id)) && (
-                    <button
-                      className="lt-event-card__gen-btn"
-                      onClick={handleBulkGenerate}
-                      disabled={bulkGenerating}
-                      title="KI-Texte für alle Events generieren"
-                    >
-                      {bulkGenerating ? "…" : "✦ Alle generieren & publishen"}
-                    </button>
-                  )}
+                  <div style={{ display: "flex", gap: "0.4rem" }}>
+                    {pendingEvents.some((ev) => tickerTexts.find((t) => t.event_id === ev.id && t.status !== "published")) && (
+                      <button
+                        className="lt-event-card__gen-btn"
+                        onClick={handleBulkPublish}
+                        disabled={bulkGenerating}
+                        title="Alle vorhandenen Drafts veröffentlichen"
+                      >
+                        {bulkGenerating ? "…" : "✓ Alle veröffentlichen"}
+                      </button>
+                    )}
+                    {pendingEvents.some((ev) => !tickerTexts.find((t) => t.event_id === ev.id)) && (
+                      <button
+                        className="lt-event-card__gen-btn"
+                        onClick={handleBulkGenerate}
+                        disabled={bulkGenerating}
+                        title="KI-Texte für alle Events generieren"
+                      >
+                        {bulkGenerating ? "…" : "✦ Alle generieren & publishen"}
+                      </button>
+                    )}
+                  </div>
                 </div>
                 {pendingEvents.map((ev) => {
                   const draft = tickerTexts.find((t) => t.event_id === ev.id);
