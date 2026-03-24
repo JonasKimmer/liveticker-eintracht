@@ -316,26 +316,53 @@ export const CenterPanel = memo(function CenterPanel({
         {/* ── CO-OP ───────────────────────────────────────── */}
         {mode === MODES.COOP && (
           <>
-            {/* Manuelle Drafts (z.B. Halbzeit-/Spielzusammenfassung) */}
-            {tickerTexts.filter((t) => t.status === "draft" && !t.event_id).map((draft) => (
-              <div key={draft.id} style={{ marginBottom: "1rem" }}>
-                <div className="lt-center__section-title">📝 Zusammenfassung zur Review</div>
-                <AIDraft
-                  eventType="match_summary"
-                  draftText={draft.text}
-                  onAccept={async () => {
-                    await api.publishTicker(draft.id, draft.text);
-                    await reload.loadTickerTexts();
-                  }}
-                  onReject={async () => {
-                    await api.updateTicker(draft.id, { status: "rejected" });
-                    await reload.loadTickerTexts();
-                  }}
-                  onEdit={() => {}}
-                  onTextClick={() => {}}
-                />
-              </div>
-            ))}
+            {/* Manuelle Drafts (Zusammenfassungen + Videos) */}
+            {tickerTexts.filter((t) => t.status === "draft" && !t.event_id).map((draft) => {
+              const isVideo = draft.icon === "🎬" || !!draft.video_url;
+              return (
+                <div key={draft.id} style={{ marginBottom: "1rem" }}>
+                  <div className="lt-center__section-title">
+                    {isVideo ? "🎬 Video zur Review" : "📝 Zusammenfassung zur Review"}
+                  </div>
+                  {isVideo ? (
+                    <div style={{ background: "var(--lt-surface)", borderRadius: 8, padding: "0.75rem", border: "1px solid var(--lt-border)" }}>
+                      {draft.video_url && (
+                        <video
+                          src={draft.video_url}
+                          controls
+                          style={{ width: "100%", borderRadius: 6, marginBottom: "0.5rem", maxHeight: 220 }}
+                        />
+                      )}
+                      <div style={{ display: "flex", gap: "0.5rem", marginTop: "0.5rem" }}>
+                        <button
+                          className="lt-event-card__gen-btn"
+                          style={{ flex: 1, background: "rgba(34,197,94,0.15)", color: "#4ade80" }}
+                          onClick={async () => { await api.publishTicker(draft.id, draft.text); await reload.loadTickerTexts(); }}
+                        >
+                          ✓ Veröffentlichen
+                        </button>
+                        <button
+                          className="lt-event-card__gen-btn"
+                          style={{ flex: 1, background: "rgba(239,68,68,0.1)", color: "#f87171" }}
+                          onClick={async () => { await api.updateTicker(draft.id, { status: "rejected" }); await reload.loadTickerTexts(); }}
+                        >
+                          ✕ Ablehnen
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <AIDraft
+                      eventType="match_summary"
+                      draftText={draft.text}
+                      onAccept={async () => { await api.publishTicker(draft.id, draft.text); await reload.loadTickerTexts(); }}
+                      onReject={async () => { await api.updateTicker(draft.id, { status: "rejected" }); await reload.loadTickerTexts(); }}
+                      onEdit={() => {}}
+                      onTextClick={() => {}}
+                    />
+                  )}
+                </div>
+              );
+            })}
 
             {pendingEvents.length === 0 && (
               <div className="lt-empty">
