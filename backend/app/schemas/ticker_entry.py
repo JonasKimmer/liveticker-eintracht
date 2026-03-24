@@ -88,6 +88,7 @@ class ManualEntryRequest(BaseModel):
     phase: Optional[str] = Field(None, max_length=50)
     image_url: Optional[str] = None
     video_url: Optional[str] = None
+    status: Optional[TickerStatus] = None
 
 
 class TickerEntryResponse(BaseModel):

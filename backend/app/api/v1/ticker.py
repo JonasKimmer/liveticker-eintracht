@@ -204,7 +204,7 @@ def create_manual_entry(
             phase=data.phase,
             image_url=data.image_url,
             video_url=data.video_url,
-            status=TickerStatus.published,
+            status=data.status if data.status is not None else TickerStatus.published,
         )
     )
 
