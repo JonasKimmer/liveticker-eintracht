@@ -20,9 +20,10 @@ const AUTO_STYLE = TICKER_STYLES[0];
 function AutoPlayVideo({ src, style }) {
   const ref = useRef(null);
   useEffect(() => {
-    if (ref.current) ref.current.play().catch(() => {});
+    const el = ref.current;
+    if (el) el.play().catch(() => {});
   }, [src]);
-  return <video ref={ref} src={src} autoPlay loop muted playsInline style={style} />;
+  return <video ref={ref} src={src} loop muted playsInline controls style={style} />;
 }
 
 export const CenterPanel = memo(function CenterPanel({

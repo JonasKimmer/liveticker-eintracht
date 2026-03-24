@@ -1,7 +1,7 @@
 // ============================================================
 // PublishedEntry.jsx  (React.memo — rendert oft)
 // ============================================================
-import { memo, useState, useCallback, useRef } from "react";
+import { memo, useState, useCallback, useRef, useEffect } from "react";
 import PropTypes from "prop-types";
 import { getEventMeta } from "../utils/parseCommand";
 import { MATCH_PHASES } from "../constants";
@@ -30,14 +30,19 @@ function getMediaLabel(videoUrl, imageUrl) {
   return "manuell";
 }
 
-
-// Inline video player — nur für direkte MP4-URLs (S3 Torjubel)
+// Inline video player — direkte MP4-URLs (S3 Torjubel)
+// useRef + .play() weil Browser autoPlay-Attribut oft ignorieren
 function InlineVideo({ videoUrl }) {
+  const ref = useRef(null);
+  useEffect(() => {
+    const el = ref.current;
+    if (el) el.play().catch(() => {});
+  }, [videoUrl]);
   return (
     <div className="lt-video-wrap">
       <video
+        ref={ref}
         src={videoUrl}
-        autoPlay
         loop
         muted
         playsInline
