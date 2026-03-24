@@ -122,21 +122,20 @@ export default function LiveTicker() {
 
   const { mode, setMode } = useTickerMode(acceptDraft, rejectDraft);
 
-  // Modus aus DB laden wenn Match wechselt
-  useEffect(() => {
-    if (match?.tickerMode && match.tickerMode !== mode) {
-      setMode(match.tickerMode);
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [match?.id]);
-
-  // Modus in DB speichern wenn gewechselt wird
+  // Modus in DB speichern wenn gewechselt wird oder Spiel wechselt
   const handleModeChange = useCallback(async (newMode) => {
     setMode(newMode);
     if (selMatchId) {
       try { await api.setMatchTickerMode(selMatchId, newMode); } catch (_) {}
     }
   }, [setMode, selMatchId]);
+
+  useEffect(() => {
+    if (selMatchId) {
+      try { api.setMatchTickerMode(selMatchId, mode); } catch (_) {}
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selMatchId]);
 
   const [generatingId, setGeneratingId] = useState(null);
 
