@@ -337,7 +337,7 @@ export const CenterPanel = memo(function CenterPanel({
                         <button
                           className="lt-event-card__gen-btn"
                           style={{ flex: 1, background: "rgba(34,197,94,0.15)", color: "#4ade80" }}
-                          onClick={async () => { await api.publishTicker(draft.id, draft.text); await reload.loadTickerTexts(); }}
+                          onClick={async () => { await api.updateTicker(draft.id, { status: "published" }); await reload.loadTickerTexts(); }}
                         >
                           ✓ Veröffentlichen
                         </button>
