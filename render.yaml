@@ -27,21 +27,56 @@ services:
       - key: API_FOOTBALL_KEY
         sync: false
       - key: N8N_WEBHOOK_LINEUP
-        sync: false           # → https://deine-n8n.railway.app/webhook/lineups
+        value: https://liveticker-n8n.onrender.com/webhook/lineups
       - key: N8N_WEBHOOK_EVENTS
-        sync: false
+        value: https://liveticker-n8n.onrender.com/webhook/Events
       - key: N8N_WEBHOOK_STATISTICS
-        sync: false
+        value: https://liveticker-n8n.onrender.com/webhook/statistics
       - key: N8N_WEBHOOK_PLAYER_STATISTICS
-        sync: false
+        value: https://liveticker-n8n.onrender.com/webhook/Player-Statistics
       - key: N8N_WEBHOOK_PREMATCH
-        sync: false
+        value: https://liveticker-n8n.onrender.com/webhook/import-prematch
       - key: N8N_WEBHOOK_COMPETITIONS
-        sync: false
+        value: https://liveticker-n8n.onrender.com/webhook/import-team-competitions
       - key: N8N_WEBHOOK_MATCHES
-        sync: false
+        value: https://liveticker-n8n.onrender.com/webhook/import-matches
       - key: N8N_WEBHOOK_COUNTRY
-        sync: false
+        value: https://liveticker-n8n.onrender.com/webhook/import-country
+
+  # ── n8n (Workflow Automation) ─────────────────────────────────────
+  - type: web
+    name: liveticker-n8n
+    runtime: image
+    image:
+      url: docker.io/n8nio/n8n:latest
+    plan: free
+    envVars:
+      - key: N8N_HOST
+        value: liveticker-n8n.onrender.com
+      - key: N8N_PORT
+        value: "5678"
+      - key: N8N_PROTOCOL
+        value: https
+      - key: WEBHOOK_URL
+        value: https://liveticker-n8n.onrender.com
+      - key: N8N_BASIC_AUTH_ACTIVE
+        value: "true"
+      - key: N8N_BASIC_AUTH_USER
+        sync: false           # → Benutzername setzen
+      - key: N8N_BASIC_AUTH_PASSWORD
+        sync: false           # → Passwort setzen
+      - key: DB_TYPE
+        value: postgresdb
+      - key: DB_POSTGRESDB_DATABASE
+        sync: false           # → Render PostgreSQL DB-Name
+      - key: DB_POSTGRESDB_HOST
+        sync: false           # → Render PostgreSQL Host
+      - key: DB_POSTGRESDB_PORT
+        value: "5432"
+      - key: DB_POSTGRESDB_USER
+        sync: false           # → Render PostgreSQL User
+      - key: DB_POSTGRESDB_PASSWORD
+        sync: false           # → Render PostgreSQL Password
 
   # ── Frontend (React Static Site) ─────────────────────────────────
   - type: web
@@ -62,4 +97,4 @@ services:
       - key: REACT_APP_API_BASE
         sync: false           # → https://liveticker-backend.onrender.com/api/v1
       - key: REACT_APP_N8N_BASE
-        sync: false           # → https://deine-n8n.railway.app/webhook
+        value: https://liveticker-n8n.onrender.com/webhook
