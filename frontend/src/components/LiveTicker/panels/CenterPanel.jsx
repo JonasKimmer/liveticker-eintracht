@@ -99,6 +99,20 @@ export const CenterPanel = memo(function CenterPanel({
     match?.awayTeam?.name?.toLowerCase().includes(config.teamKeyword),
   [match]);
 
+  // ── AUTO-Modus: manuelle Drafts (Zusammenfassungen) publishen ──
+  useEffect(() => {
+    if (mode !== MODES.AUTO) return;
+    const manualDrafts = tickerTexts.filter((t) => t.status === "draft" && !t.event_id);
+    for (const d of manualDrafts) {
+      if (processingRef.current.has(`manual-${d.id}`)) continue;
+      processingRef.current.add(`manual-${d.id}`);
+      api.publishTicker(d.id, d.text)
+        .then(() => reload.loadTickerTexts())
+        .catch((err) => logger.error("auto publish manual draft failed", err))
+        .finally(() => processingRef.current.delete(`manual-${d.id}`));
+    }
+  }, [mode, tickerTexts]); // eslint-disable-line react-hooks/exhaustive-deps
+
   // ── AUTO-Modus: generate → publish ──────────────────────
   useEffect(() => {
     if (mode !== MODES.AUTO) return;
@@ -302,6 +316,27 @@ export const CenterPanel = memo(function CenterPanel({
         {/* ── CO-OP ───────────────────────────────────────── */}
         {mode === MODES.COOP && (
           <>
+            {/* Manuelle Drafts (z.B. Halbzeit-/Spielzusammenfassung) */}
+            {tickerTexts.filter((t) => t.status === "draft" && !t.event_id).map((draft) => (
+              <div key={draft.id} style={{ marginBottom: "1rem" }}>
+                <div className="lt-center__section-title">📝 Zusammenfassung zur Review</div>
+                <AIDraft
+                  eventType="match_summary"
+                  draftText={draft.text}
+                  onAccept={async () => {
+                    await api.publishTicker(draft.id, draft.text);
+                    await reload.loadTickerTexts();
+                  }}
+                  onReject={async () => {
+                    await api.updateTicker(draft.id, { status: "rejected" });
+                    await reload.loadTickerTexts();
+                  }}
+                  onEdit={() => {}}
+                  onTextClick={() => {}}
+                />
+              </div>
+            ))}
+
             {pendingEvents.length === 0 && (
               <div className="lt-empty">
                 <div className="lt-empty__icon">✓</div>
