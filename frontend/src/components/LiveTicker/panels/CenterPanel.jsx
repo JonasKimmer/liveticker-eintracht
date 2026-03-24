@@ -17,6 +17,14 @@ import config from "../../../config/whitelabel";
 // Welcher Stil im AUTO-Modus verwendet wird
 const AUTO_STYLE = TICKER_STYLES[0];
 
+function AutoPlayVideo({ src, style }) {
+  const ref = useRef(null);
+  useEffect(() => {
+    if (ref.current) ref.current.play().catch(() => {});
+  }, [src]);
+  return <video ref={ref} src={src} autoPlay loop muted playsInline style={style} />;
+}
+
 export const CenterPanel = memo(function CenterPanel({
   match,
   currentMinute = 0,
@@ -327,12 +335,8 @@ export const CenterPanel = memo(function CenterPanel({
                   {isVideo ? (
                     <div style={{ background: "var(--lt-surface)", borderRadius: 8, padding: "0.75rem", border: "1px solid var(--lt-border)" }}>
                       {draft.video_url && (
-                        <video
+                        <AutoPlayVideo
                           src={draft.video_url}
-                          autoPlay
-                          loop
-                          muted
-                          playsInline
                           style={{ width: "100%", borderRadius: 6, marginBottom: "0.5rem", maxHeight: 220 }}
                         />
                       )}

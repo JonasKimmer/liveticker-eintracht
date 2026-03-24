@@ -49,13 +49,21 @@ function toEmbedUrl(url) {
 // - YouTube: Thumbnail → Klick → iframe
 function InlineVideo({ videoUrl, thumbnailUrl }) {
   const [playing, setPlaying] = useState(false);
-  const embedUrl = toEmbedUrl(videoUrl);
+  const videoRef = useRef(null);
+  const isYoutube = /youtube\.com|youtu\.be/.test(videoUrl);
+
+  useEffect(() => {
+    if (!isYoutube && videoRef.current) {
+      videoRef.current.play().catch(() => {});
+    }
+  }, [videoUrl, isYoutube]);
 
   // Direkte MP4 → nativer <video> Player, startet sofort
-  if (!embedUrl) {
+  if (!isYoutube) {
     return (
       <div className="lt-video-wrap">
         <video
+          ref={videoRef}
           src={videoUrl}
           autoPlay
           loop
@@ -66,6 +74,8 @@ function InlineVideo({ videoUrl, thumbnailUrl }) {
       </div>
     );
   }
+
+  const embedUrl = toEmbedUrl(videoUrl);
 
   if (playing) {
     return (
