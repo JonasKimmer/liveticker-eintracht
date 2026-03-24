@@ -329,7 +329,10 @@ export const CenterPanel = memo(function CenterPanel({
                       {draft.video_url && (
                         <video
                           src={draft.video_url}
-                          controls
+                          autoPlay
+                          loop
+                          muted
+                          playsInline
                           style={{ width: "100%", borderRadius: 6, marginBottom: "0.5rem", maxHeight: 220 }}
                         />
                       )}
