@@ -27,6 +27,7 @@ from app.schemas.match import (
     PaginatedMatchResponse,
     StatisticsBulkUpdate,
 )
+from pydantic import BaseModel
 from app.schemas.player import PlayerStatisticResponse
 
 logger = logging.getLogger(__name__)
@@ -150,6 +151,34 @@ def delete_match(matchId: int, db: Session = Depends(get_db)) -> None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Match not found"
         )
+
+
+# ------------------------------------------------------------------ #
+# Ticker-Mode                                                          #
+# ------------------------------------------------------------------ #
+
+
+class TickerModeUpdate(BaseModel):
+    mode: str  # auto | coop | manual
+
+
+@router.patch(
+    "/{matchId}/ticker-mode",
+    response_model=MatchResponse,
+    response_model_by_alias=True,
+    summary="Set ticker mode (auto | coop | manual)",
+)
+def set_ticker_mode(
+    matchId: int,
+    data: TickerModeUpdate,
+    db: Session = Depends(get_db),
+) -> MatchResponse:
+    if data.mode not in ("auto", "coop", "manual"):
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="mode must be auto, coop or manual")
+    updated = MatchRepository(db).update(matchId, MatchUpdate(ticker_mode=data.mode))
+    if not updated:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Match not found")
+    return updated
 
 
 # ------------------------------------------------------------------ #

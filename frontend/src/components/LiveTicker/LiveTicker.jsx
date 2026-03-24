@@ -121,6 +121,23 @@ export default function LiveTicker() {
   }, [activeDraftId, reload]);
 
   const { mode, setMode } = useTickerMode(acceptDraft, rejectDraft);
+
+  // Modus aus DB laden wenn Match wechselt
+  useEffect(() => {
+    if (match?.tickerMode && match.tickerMode !== mode) {
+      setMode(match.tickerMode);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [match?.id]);
+
+  // Modus in DB speichern wenn gewechselt wird
+  const handleModeChange = useCallback(async (newMode) => {
+    setMode(newMode);
+    if (selMatchId) {
+      try { await api.setMatchTickerMode(selMatchId, newMode); } catch (_) {}
+    }
+  }, [setMode, selMatchId]);
+
   const [generatingId, setGeneratingId] = useState(null);
 
   // ── Mobile Panel: Modus-abhängig wechseln ─────────────────
@@ -130,8 +147,8 @@ export default function LiveTicker() {
   }, [mode]);
 
   const tickerModeCtx = useMemo(
-    () => ({ mode, setMode, acceptDraft, rejectDraft }),
-    [mode, setMode, acceptDraft, rejectDraft],
+    () => ({ mode, setMode: handleModeChange, acceptDraft, rejectDraft }),
+    [mode, handleModeChange, acceptDraft, rejectDraft],
   );
 
   // ── Instance + Style: automatisch EF wenn Frankfurt-Spiel ──
@@ -324,7 +341,7 @@ export default function LiveTicker() {
             onMinuteSync={reload.loadMatch}
           />
         )}
-        {match && <ModeSelector mode={mode} onModeChange={setMode} />}
+        {match && <ModeSelector mode={mode} onModeChange={handleModeChange} />}
 
         <main
           className={`lt-columns${mode === "auto" ? " lt-columns--auto" : ""}`}

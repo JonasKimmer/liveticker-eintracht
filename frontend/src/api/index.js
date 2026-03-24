@@ -25,6 +25,8 @@ export const fetchTeamMatchesByMatchday = (teamId, competitionId, round) =>
 // ── Matches ────────────────────────────────────────────
 export const fetchMatch = (id) => api.get(`/matches/${id}`);
 export const syncLiveMatch = (id) => api.post(`/matches/${id}/sync-live`);
+export const setMatchTickerMode = (matchId, mode) =>
+  api.patch(`/matches/${matchId}/ticker-mode`, { mode });
 
 // ── Events ─────────────────────────────────────────────
 export const fetchEvents = (matchId) => api.get(`/matches/${matchId}/events`);

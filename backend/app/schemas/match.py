@@ -122,6 +122,7 @@ class MatchUpdate(BaseModel):
     broadcasts: Optional[list[int]] = None
     matchday_title: Optional[LocalizedTitle] = None
     localized_title: Optional[LocalizedTitle] = None
+    ticker_mode: Optional[str] = Field(None, pattern="^(auto|coop|manual)$")
 
 
 # ------------------------------------------------------------------ #
@@ -177,6 +178,7 @@ class MatchResponse(BaseModel):
     match_state: Optional[str] = None
     minute: Optional[int] = None
     ends_at: Optional[datetime] = None
+    ticker_mode: str = "coop"
     home_team: Optional[MatchTeamInfo] = None
     away_team: Optional[MatchTeamInfo] = None
 
