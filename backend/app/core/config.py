@@ -44,7 +44,7 @@ class Settings(BaseSettings):
     LLM_MODEL: str = "gpt-4"
     LLM_TEMPERATURE: float = 0.7
     LLM_MAX_TOKENS: int = 100
-    OPENROUTER_MODEL: Optional[str] = "google/gemini-2.0-flash-lite"
+    OPENROUTER_MODEL: Optional[str] = "google/gemini-2.0-flash-lite-001"
     LLM_CONCURRENCY: int = 8  # Max gleichzeitige LLM-Requests (Semaphore)
 
     # API-Football Settings

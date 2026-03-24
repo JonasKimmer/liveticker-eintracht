@@ -455,6 +455,7 @@ def upgrade() -> None:
 
     # events
     op.execute("CREATE INDEX IF NOT EXISTS ix_events_match_id ON events (match_id)")
+    op.execute("CREATE UNIQUE INDEX IF NOT EXISTS uq_events_source_id ON events (source_id) WHERE source_id IS NOT NULL")
 
     # media_clips  — partial unique index on vid (NULL allowed multiple times)
     op.execute("""
@@ -469,6 +470,7 @@ def upgrade() -> None:
 
     # synthetic_events
     op.execute("CREATE INDEX IF NOT EXISTS ix_synthetic_events_type ON synthetic_events (type)")
+    op.execute("CREATE UNIQUE INDEX IF NOT EXISTS uq_synthetic_events_match_type ON synthetic_events (match_id, type)")
 
     # ticker_entries
     op.execute("CREATE INDEX IF NOT EXISTS ix_ticker_entries_match_id ON ticker_entries (match_id)")
