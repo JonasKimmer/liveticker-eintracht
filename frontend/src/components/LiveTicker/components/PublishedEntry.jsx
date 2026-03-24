@@ -30,83 +30,26 @@ function getMediaLabel(videoUrl, imageUrl) {
   return "manuell";
 }
 
-// YouTube watch-URL → embed-URL umwandeln
-function toEmbedUrl(url) {
-  try {
-    const u = new URL(url);
-    if (u.hostname.includes("youtube.com") && u.searchParams.get("v")) {
-      return `https://www.youtube.com/embed/${u.searchParams.get("v")}?autoplay=1`;
-    }
-    if (u.hostname === "youtu.be") {
-      return `https://www.youtube.com/embed${u.pathname}?autoplay=1`;
-    }
-  } catch { /* noop */ }
-  return url;
-}
 
-// Inline video player
-// - Direkte MP4-URLs (S3 Torjubel): autoPlay + loop + muted, kein Klick nötig
-// - YouTube: Thumbnail → Klick → iframe
-function InlineVideo({ videoUrl, thumbnailUrl }) {
-  const [playing, setPlaying] = useState(false);
-  const videoRef = useRef(null);
-  const isYoutube = /youtube\.com|youtu\.be/.test(videoUrl);
-
-  useEffect(() => {
-    if (!isYoutube && videoRef.current) {
-      videoRef.current.play().catch(() => {});
-    }
-  }, [videoUrl, isYoutube]);
-
-  // Direkte MP4 → nativer <video> Player, startet sofort
-  if (!isYoutube) {
-    return (
-      <div className="lt-video-wrap">
-        <video
-          ref={videoRef}
-          src={videoUrl}
-          autoPlay
-          loop
-          muted
-          playsInline
-          style={{ width: "100%", display: "block", borderRadius: 4 }}
-        />
-      </div>
-    );
-  }
-
-  const embedUrl = toEmbedUrl(videoUrl);
-
-  if (playing) {
-    return (
-      <div className="lt-video-wrap">
-        <iframe src={embedUrl} className="lt-video-wrap__iframe" allow="autoplay; fullscreen" allowFullScreen />
-        <button onClick={() => setPlaying(false)} className="lt-video-wrap__close">✕</button>
-      </div>
-    );
-  }
-
+// Inline video player — nur für direkte MP4-URLs (S3 Torjubel)
+function InlineVideo({ videoUrl }) {
   return (
-    <div className="lt-video-wrap lt-video-wrap--clickable" onClick={() => setPlaying(true)}>
-      {thumbnailUrl ? (
-        <img src={thumbnailUrl} alt="Clip" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
-      ) : (
-        <div className="lt-video-wrap__placeholder">
-          <span style={{ fontSize: "1.5rem" }}>🎬</span>
-        </div>
-      )}
-      <div className="lt-video-wrap__overlay">
-        <div className="lt-video-wrap__play">
-          <span className="lt-video-wrap__play-icon">▶</span>
-        </div>
-      </div>
+    <div className="lt-video-wrap">
+      <video
+        src={videoUrl}
+        autoPlay
+        loop
+        muted
+        playsInline
+        controls
+        style={{ width: "100%", display: "block", borderRadius: 4 }}
+      />
     </div>
   );
 }
 
 InlineVideo.propTypes = {
   videoUrl: PropTypes.string.isRequired,
-  thumbnailUrl: PropTypes.string,
 };
 
 function MediaContent({ videoUrl, imageUrl }) {
