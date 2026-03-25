@@ -121,24 +121,14 @@ export default function LiveTicker() {
   }, [activeDraftId, reload]);
 
   const { mode, setMode } = useTickerMode(acceptDraft, rejectDraft);
-  const modeSyncedForRef = useRef(null);
 
-  // Modus in DB speichern wenn gewechselt wird oder Spiel wechselt
+  // Modus in DB speichern wenn gewechselt wird
   const handleModeChange = useCallback(async (newMode) => {
     setMode(newMode);
     if (selMatchId) {
       try { await api.setMatchTickerMode(selMatchId, newMode); } catch (_) {}
     }
   }, [setMode, selMatchId]);
-
-  // Mode einmalig aus DB-Wert synchen wenn Match neu geladen wird
-  useEffect(() => {
-    if (match?.tickerMode && selMatchId && modeSyncedForRef.current !== selMatchId) {
-      modeSyncedForRef.current = selMatchId;
-      setMode(match.tickerMode);
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [match?.tickerMode, selMatchId]);
 
   const [generatingId, setGeneratingId] = useState(null);
 
