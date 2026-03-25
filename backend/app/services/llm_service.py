@@ -173,6 +173,8 @@ class LLMService:
         return dispatch[self.provider](**kwargs)
 
     def _normalize_event_type(self, event_type: str) -> str:
+        if event_type.startswith("pre_match_injuries_"):
+            return "pre_match_injuries"
         return EVENT_TYPE_MAP.get(event_type, "comment")
 
     # ──────────────────────────────────────────
