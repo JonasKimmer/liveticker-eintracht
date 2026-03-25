@@ -96,15 +96,33 @@ MediaContent.propTypes = {
 const MEDIA_DEFAULT_ICONS = ["🎬", "📷", "📸"];
 
 function EntryActions({ onEdit, onDelete, tickerTextId, startEdit }) {
+  const [confirmOpen, setConfirmOpen] = useState(false);
   return (
-    <>
+    <div className="lt-entry__actions-wrap">
       {onEdit && (
         <button onClick={startEdit} title="Bearbeiten" className="lt-entry__action-btn lt-entry__action-btn--edit">✎</button>
       )}
       {onDelete && (
-        <button onClick={() => { if (window.confirm("Eintrag löschen?")) onDelete(tickerTextId); }} title="Löschen" className="lt-entry__action-btn lt-entry__action-btn--delete">✕</button>
+        <button
+          onClick={() => setConfirmOpen(true)}
+          title="Löschen"
+          className="lt-entry__action-btn lt-entry__action-btn--delete"
+        >✕</button>
       )}
-    </>
+      {confirmOpen && (
+        <div className="lt-delete-confirm">
+          <span className="lt-delete-confirm__label">Löschen?</span>
+          <button
+            className="lt-delete-confirm__btn lt-delete-confirm__btn--ok"
+            onClick={() => { onDelete(tickerTextId); setConfirmOpen(false); }}
+          >Ja</button>
+          <button
+            className="lt-delete-confirm__btn lt-delete-confirm__btn--cancel"
+            onClick={() => setConfirmOpen(false)}
+          >Nein</button>
+        </div>
+      )}
+    </div>
   );
 }
 

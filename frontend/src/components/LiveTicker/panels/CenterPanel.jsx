@@ -579,6 +579,7 @@ const EventCard = memo(function EventCard({
   showGenButtons,
 }) {
   const { icon, cssClass } = getEventMeta(event.liveTickerEventType, null);
+  const [confirmDismiss, setConfirmDismiss] = useState(false);
 
   return (
     <div
@@ -593,12 +594,19 @@ const EventCard = memo(function EventCard({
         <span className="lt-event-card__raw">
           {draft?.text ?? getRawEventText(event)}
         </span>
-        {onDismiss && (
+        {onDismiss && !confirmDismiss && (
           <button
-            onClick={(e) => { e.stopPropagation(); if (window.confirm("Event entfernen?")) onDismiss(); }}
+            onClick={(e) => { e.stopPropagation(); setConfirmDismiss(true); }}
             title="Entfernen"
             style={{ marginLeft: "auto", flexShrink: 0, background: "none", border: "none", color: "var(--lt-text-faint)", cursor: "pointer", fontSize: "0.75rem", padding: "0 2px", opacity: 0.5 }}
           >✕</button>
+        )}
+        {confirmDismiss && (
+          <div className="lt-delete-confirm" style={{ marginLeft: "auto" }} onClick={(e) => e.stopPropagation()}>
+            <span className="lt-delete-confirm__label">Entfernen?</span>
+            <button className="lt-delete-confirm__btn lt-delete-confirm__btn--ok" onClick={() => { onDismiss(); setConfirmDismiss(false); }}>Ja</button>
+            <button className="lt-delete-confirm__btn lt-delete-confirm__btn--cancel" onClick={() => setConfirmDismiss(false)}>Nein</button>
+          </div>
         )}
       </div>
 
