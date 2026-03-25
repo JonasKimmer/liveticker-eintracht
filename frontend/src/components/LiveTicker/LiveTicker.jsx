@@ -130,12 +130,11 @@ export default function LiveTicker() {
     }
   }, [setMode, selMatchId]);
 
+  // Mode aus DB-Wert synchen wenn Match geladen wird (überschreibt nicht mit Default)
   useEffect(() => {
-    if (selMatchId) {
-      try { api.setMatchTickerMode(selMatchId, mode); } catch (_) {}
-    }
+    if (match?.tickerMode) setMode(match.tickerMode);
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selMatchId]);
+  }, [match?.tickerMode]);
 
   const [generatingId, setGeneratingId] = useState(null);
 
