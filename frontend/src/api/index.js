@@ -145,8 +145,8 @@ export const deleteClip = (clipId) => api.delete(`/clips/${clipId}`);
 export const importMatchesForTeam = (teamId, leagueId, season) =>
   n8n.post("/import-matches", { teamId, leagueId, season });
 
-export const triggerMatchStatus = (fixtureId, status, minute, instance = "generic", language = "de", style = "neutral") =>
-  n8n.post("/match-status", { fixture_id: fixtureId, status, minute: minute ?? null, instance, language, style });
+export const triggerMatchStatus = (fixtureId, status, minute, instance = "generic", language = "de", style = "neutral", tickerMode = "coop") =>
+  n8n.post("/match-status", { fixture_id: fixtureId, status, minute: minute ?? null, instance, language, style, ticker_mode: tickerMode });
 export const triggerMatchPhases = (fixtureId, minute, instance = "generic", language = "de") =>
   n8n.post("/match-phases", { fixture_id: fixtureId, minute: minute ?? null, instance, language });
 export const generateMatchSummary = (matchId, phase, style = "emotional", instance = "generic", language = "de", tickerMode = "coop") =>
