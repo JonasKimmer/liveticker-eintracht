@@ -109,6 +109,12 @@ export function useMatchTriggers({
     if (status) {
       api
         .triggerMatchStatus(match.externalId, status, match.minute ?? null, instance, language, style)
+        .then(() => {
+          // LLM generiert Phasen-Events sequenziell (je ~5s) — mehrfach nachladen
+          [4000, 9000, 16000, 24000, 35000].forEach((delay) => {
+            setTimeout(() => reload.loadTickerTexts(), delay);
+          });
+        })
         .catch((err) =>
           logger.warn("[useMatchTriggers] triggerMatchStatus silenced:", err?.message)
         );

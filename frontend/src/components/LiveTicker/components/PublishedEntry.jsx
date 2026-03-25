@@ -189,8 +189,8 @@ export const PublishedEntry = memo(function PublishedEntry({
 
   if (isManual) {
     const phaseLabel = {
-      [MATCH_PHASES.BEFORE]:                  "Vor",
-      [MATCH_PHASES.AFTER]:                   "FT",
+      [MATCH_PHASES.BEFORE]:                  "i",
+      [MATCH_PHASES.AFTER]:                   "i",
       [MATCH_PHASES.FULL_TIME]:               "FT",
       [MATCH_PHASES.HALFTIME]:                "HZ",
       [MATCH_PHASES.FIRST_HALF_BREAK]:        "HZ",
