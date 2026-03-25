@@ -149,8 +149,8 @@ export const triggerMatchStatus = (fixtureId, status, minute, instance = "generi
   n8n.post("/match-status", { fixture_id: fixtureId, status, minute: minute ?? null, instance, language, style });
 export const triggerMatchPhases = (fixtureId, minute, instance = "generic", language = "de") =>
   n8n.post("/match-phases", { fixture_id: fixtureId, minute: minute ?? null, instance, language });
-export const generateMatchSummary = (matchId, phase, style = "emotional", instance = "generic", language = "de") =>
-  n8n.post("/match-summary", { match_id: matchId, phase, style, instance, language });
+export const generateMatchSummary = (matchId, phase, style = "emotional", instance = "generic", language = "de", tickerMode = "coop") =>
+  n8n.post("/match-summary", { match_id: matchId, phase, style, instance, language, ticker_mode: tickerMode });
 
 export const triggerLiveStatsMonitor = (matchId, instance = "generic", language = "de") =>
   n8n.post("/live-stats-monitor", { match_id: matchId, instance, language });

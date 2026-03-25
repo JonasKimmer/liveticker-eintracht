@@ -183,7 +183,7 @@ export default function LiveTicker() {
   }, [selMatchId, language, reload]);
 
   // ── n8n Webhooks + Auto-Imports ───────────────────────────
-  useMatchTriggers({ selMatchId, match, events, lineups, matchStats, tickerTexts, instance, style: efStyle, language, reload });
+  useMatchTriggers({ selMatchId, match, events, lineups, matchStats, tickerTexts, instance, style: efStyle, language, tickerMode: mode, reload });
 
   // ── Keyboard Shortcuts ────────────────────────────────────
   useEffect(() => {

@@ -42,6 +42,7 @@ export function useMatchTriggers({
   instance,
   style = "neutral",
   language = "de",
+  tickerMode = "coop",
   reload,
 }) {
   // ── Match-Summary via n8n (Halbzeit / Abpfiff) ────────────
@@ -66,7 +67,7 @@ export function useMatchTriggers({
         (t) => t.match_id === selMatchId && t.phase === phase && t.status !== "rejected",
       );
       if (!exists) {
-        api.generateMatchSummary(selMatchId, phase, style, instance, language).catch((err) =>
+        api.generateMatchSummary(selMatchId, phase, style, instance, language, tickerMode).catch((err) =>
           logger.warn("[useMatchTriggers] generateMatchSummary silenced:", err?.message)
         );
       }
