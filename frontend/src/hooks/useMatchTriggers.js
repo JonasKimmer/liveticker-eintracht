@@ -63,7 +63,7 @@ export function useMatchTriggers({
       if (summaryTriggeredRef.current.has(key)) continue;
       summaryTriggeredRef.current.add(key);
       const exists = tickerTexts.some(
-        (t) => t.phase === phase && (t.status === "published" || t.status == null),
+        (t) => t.phase === phase && t.status !== "rejected",
       );
       if (!exists) {
         api.generateMatchSummary(selMatchId, phase, style, instance, language).catch((err) =>
