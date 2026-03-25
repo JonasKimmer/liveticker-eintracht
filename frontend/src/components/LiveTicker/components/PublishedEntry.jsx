@@ -189,27 +189,30 @@ export const PublishedEntry = memo(function PublishedEntry({
 
   if (isManual) {
     const phaseLabel = {
-      [MATCH_PHASES.BEFORE]: "i",
-      [MATCH_PHASES.AFTER]: "i",
-      [MATCH_PHASES.HALFTIME]: "i",
-      [MATCH_PHASES.FIRST_HALF_BREAK]: "i",
-      [MATCH_PHASES.SECOND_HALF_BREAK]: "Pause",
-      [MATCH_PHASES.EXTRA_BREAK]: "VZ·P",
+      [MATCH_PHASES.BEFORE]:                  "Vor",
+      [MATCH_PHASES.AFTER]:                   "FT",
+      [MATCH_PHASES.FULL_TIME]:               "FT",
+      [MATCH_PHASES.HALFTIME]:                "HZ",
+      [MATCH_PHASES.FIRST_HALF_BREAK]:        "HZ",
+      [MATCH_PHASES.SECOND_HALF]:             "Anstoß",
+      [MATCH_PHASES.SECOND_HALF_BREAK]:       "Pause",
+      [MATCH_PHASES.EXTRA_BREAK]:             "VZ·P",
       [MATCH_PHASES.EXTRA_SECOND_HALF_BREAK]: "Elfm.P",
-      [MATCH_PHASES.EXTRA_FIRST_HALF]: "VZ1",
-      [MATCH_PHASES.EXTRA_SECOND_HALF]: "VZ2",
-      [MATCH_PHASES.PENALTY_SHOOTOUT]: "Elfm.",
+      [MATCH_PHASES.EXTRA_FIRST_HALF]:        "VZ1",
+      [MATCH_PHASES.EXTRA_SECOND_HALF]:       "VZ2",
+      [MATCH_PHASES.PENALTY_SHOOTOUT]:        "Elfm.",
     }[tickerText?.phase];
     const phaseIcon = {
-      [MATCH_PHASES.FIRST_HALF]: "📣",
-      [MATCH_PHASES.SECOND_HALF]: "📣",
-      [MATCH_PHASES.EXTRA_FIRST_HALF]: "📣",
-      [MATCH_PHASES.EXTRA_SECOND_HALF]: "📣",
-      [MATCH_PHASES.FIRST_HALF_BREAK]: "🔔",
-      [MATCH_PHASES.SECOND_HALF_BREAK]: "🔔",
-      [MATCH_PHASES.EXTRA_BREAK]: "🔔",
-      [MATCH_PHASES.AFTER]: "📣",
-      [MATCH_PHASES.PENALTY_SHOOTOUT]: "🥅",
+      [MATCH_PHASES.FIRST_HALF]:              "📣",
+      [MATCH_PHASES.SECOND_HALF]:             "📣",
+      [MATCH_PHASES.EXTRA_FIRST_HALF]:        "📣",
+      [MATCH_PHASES.EXTRA_SECOND_HALF]:       "📣",
+      [MATCH_PHASES.FIRST_HALF_BREAK]:        "📣",
+      [MATCH_PHASES.SECOND_HALF_BREAK]:       "📣",
+      [MATCH_PHASES.EXTRA_BREAK]:             "📣",
+      [MATCH_PHASES.AFTER]:                   "📣",
+      [MATCH_PHASES.FULL_TIME]:               "📣",
+      [MATCH_PHASES.PENALTY_SHOOTOUT]:        "🥅",
     }[tickerText?.phase] ?? icon ?? "•";
     // Dedup-Keys (z.B. "pass_h_90") sind kein Emoji → Fallback auf 📊
     const isCodeKey = tickerText?.icon && /^[a-z0-9_]+$/i.test(tickerText.icon);
