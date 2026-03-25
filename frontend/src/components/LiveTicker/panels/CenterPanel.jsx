@@ -359,13 +359,10 @@ export const CenterPanel = memo(function CenterPanel({
                       </div>
                     </div>
                   ) : (
-                    <AIDraft
-                      eventType="match_summary"
-                      draftText={draft.text}
-                      onAccept={async () => { await api.publishTicker(draft.id, draft.text); await reload.loadTickerTexts(); }}
+                    <SummaryDraftCard
+                      draft={draft}
+                      onPublish={async (text) => { await api.publishTicker(draft.id, text); await reload.loadTickerTexts(); }}
                       onReject={async () => { await api.updateTicker(draft.id, { status: "rejected" }); await reload.loadTickerTexts(); }}
-                      onEdit={() => {}}
-                      onTextClick={() => {}}
                     />
                   )}
                 </div>
@@ -508,6 +505,46 @@ export const CenterPanel = memo(function CenterPanel({
     </div>
   );
 });
+
+function SummaryDraftCard({ draft, onPublish, onReject }) {
+  const [editing, setEditing] = useState(false);
+  const [text, setText] = useState(draft.text ?? "");
+  return (
+    <div className="lt-draft">
+      <div className="lt-draft__header">
+        <span style={{ fontSize: "0.9rem" }}>✦</span>
+        <span className="lt-draft__label">AI Draft — Zusammenfassung</span>
+      </div>
+      <div className="lt-draft__text-wrap">
+        {editing ? (
+          <textarea
+            value={text}
+            onChange={(e) => setText(e.target.value)}
+            rows={5}
+            className="lt-entry__edit-textarea"
+            autoFocus
+            style={{ width: "100%", marginBottom: "0.5rem" }}
+          />
+        ) : (
+          <p className="lt-draft__text" style={{ cursor: "text" }} onClick={() => setEditing(true)} title="Klicken zum Bearbeiten">
+            {text || "Generiere Text…"}
+          </p>
+        )}
+      </div>
+      <div className="lt-draft__actions">
+        <button className="lt-btn lt-btn--primary" onClick={() => onPublish(text)}>
+          Annehmen <kbd className="lt-btn__kbd">TAB</kbd>
+        </button>
+        <button className="lt-btn lt-btn--ghost" onClick={onReject}>
+          Ablehnen <kbd className="lt-btn__kbd">ESC</kbd>
+        </button>
+        <button className="lt-btn lt-btn--ghost" onClick={() => setEditing((v) => !v)}>
+          {editing ? "✓ Fertig" : "✎ Bearbeiten"}
+        </button>
+      </div>
+    </div>
+  );
+}
 
 CenterPanel.propTypes = {
   match: PropTypes.shape({
