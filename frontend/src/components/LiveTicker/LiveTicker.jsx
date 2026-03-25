@@ -121,6 +121,7 @@ export default function LiveTicker() {
   }, [activeDraftId, reload]);
 
   const { mode, setMode } = useTickerMode(acceptDraft, rejectDraft);
+  const modeSyncedForRef = useRef(null);
 
   // Modus in DB speichern wenn gewechselt wird oder Spiel wechselt
   const handleModeChange = useCallback(async (newMode) => {
@@ -130,11 +131,14 @@ export default function LiveTicker() {
     }
   }, [setMode, selMatchId]);
 
-  // Mode aus DB-Wert synchen wenn Match geladen wird (überschreibt nicht mit Default)
+  // Mode einmalig aus DB-Wert synchen wenn Match neu geladen wird
   useEffect(() => {
-    if (match?.tickerMode) setMode(match.tickerMode);
+    if (match?.tickerMode && selMatchId && modeSyncedForRef.current !== selMatchId) {
+      modeSyncedForRef.current = selMatchId;
+      setMode(match.tickerMode);
+    }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [match?.tickerMode]);
+  }, [match?.tickerMode, selMatchId]);
 
   const [generatingId, setGeneratingId] = useState(null);
 
