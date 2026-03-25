@@ -93,11 +93,11 @@ export function useMatchTriggers({
   }, [selMatchId, match?.matchState, instance, language]);
 
   // ── Match-Status Webhook beim Match-Open ──────────────────
-  const matchStatusTriggeredRef = useRef(null);
+  const matchStatusTriggeredRef = useRef(new Set());
   useEffect(() => {
     if (!selMatchId || !match?.matchState || !match?.externalId) return;
-    if (matchStatusTriggeredRef.current === selMatchId) return;
-    matchStatusTriggeredRef.current = selMatchId;
+    if (matchStatusTriggeredRef.current.has(selMatchId)) return;
+    matchStatusTriggeredRef.current.add(selMatchId);
 
     let status = null;
     if (match.matchState === MATCH_PHASES.FULL_TIME) {
