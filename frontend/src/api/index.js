@@ -117,8 +117,8 @@ export const importLineups = (matchId) =>
 export const importMatchStats = (matchId) =>
   n8n.post("/match-statistics", { match_id: matchId });
 
-export const importPrematch = (fixtureId) =>
-  n8n.post("/import-prematch", { fixture_id: fixtureId });
+export const importPrematch = (fixtureId, tickerMode = "coop") =>
+  n8n.post("/import-prematch", { fixture_id: fixtureId, ticker_mode: tickerMode });
 
 export const importPlayerStatistics = (matchId) =>
   n8n.post("/player-statistics", { match_id: matchId });

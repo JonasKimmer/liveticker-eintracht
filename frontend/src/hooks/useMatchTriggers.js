@@ -159,7 +159,7 @@ export function useMatchTriggers({
     if (prematchImportedRef.current === selMatchId) return;
     prematchImportedRef.current = selMatchId;
     api
-      .importPrematch(match.externalId)
+      .importPrematch(match.externalId, match.tickerMode ?? tickerMode)
       .then(() => reload.loadPrematch())
       .then(() =>
         api

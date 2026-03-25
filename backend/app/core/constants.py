@@ -57,6 +57,7 @@ EVENT_TYPE_LABEL: dict[str, str] = {
     "pre_match_injuries": "Verletzungsbericht",
     "pre_match_h2h": "Direktvergleich",
     "pre_match_team_stats": "Teamstatistik",
+    "pre_match_standings": "Tabellenstand",
     "post_match": "Nachbericht",
     "halftime_comment": "Halbzeitkommentar",
     "live_stats_update": "Live-Statistik-Update",
