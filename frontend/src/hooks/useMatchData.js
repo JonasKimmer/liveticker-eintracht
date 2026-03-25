@@ -10,6 +10,7 @@ import { POLL_EVENTS_MS, POLL_MATCH_REFRESH_MS } from "../components/LiveTicker/
 function resolvePollingInterval(matchState) {
   if (matchState === "Live") return 5_000;
   if (matchState === "FullTime") return 5_000;
+  if (matchState == null) return 5_000; // Noch am Laden — konservativ pollen
   return 60_000; // PreMatch, Cancelled, etc.
 }
 

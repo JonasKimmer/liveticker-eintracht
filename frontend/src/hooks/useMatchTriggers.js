@@ -111,7 +111,7 @@ export function useMatchTriggers({
         .triggerMatchStatus(match.externalId, status, match.minute ?? null, instance, language, style, tickerMode)
         .then(() => {
           // LLM generiert Phasen-Events sequenziell (je ~5s) — mehrfach nachladen
-          [4000, 9000, 16000, 24000, 35000].forEach((delay) => {
+          [4000, 9000, 16000, 24000, 35000, 50000, 70000, 95000, 125000].forEach((delay) => {
             setTimeout(() => reload.loadTickerTexts(), delay);
           });
         })
