@@ -163,7 +163,7 @@ export function useMatchTriggers({
       .then(() => reload.loadPrematch())
       .then(() =>
         api
-          .generateSyntheticBatch(selMatchId, style, instance, language)
+          .generateSyntheticBatch(selMatchId, style, instance, language, match.tickerMode ?? tickerMode)
           .then(() => {
             // LLM läuft async — mehrfach nachladen
             [3000, 8000, 15000, 25000, 40000].forEach((delay) => {

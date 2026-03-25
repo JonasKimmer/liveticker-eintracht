@@ -61,7 +61,7 @@ def ctx_team_stats(d: dict) -> str:
 
 def ctx_standings(d: dict) -> str:
     league = d.get("league_name", "Liga")
-    lines = [f"Tabelle ({league}):"]
+    lines = [f"Tabelle {league} — BEIDE Vereine erwähnen:"]
     for t in d.get("standings", []):
         lines.append(
             f"  - {t.get('team_name')}: Platz {t.get('rank')}, "
