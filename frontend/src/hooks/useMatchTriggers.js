@@ -108,7 +108,7 @@ export function useMatchTriggers({
 
     if (status) {
       api
-        .triggerMatchStatus(match.externalId, status, match.minute ?? null, instance, language, style, match.tickerMode ?? tickerMode)
+        .triggerMatchStatus(match.externalId, status, match.minute ?? null, instance, language, style, tickerMode)
         .then(() => {
           // LLM generiert Phasen-Events sequenziell (je ~5s) — mehrfach nachladen
           [4000, 9000, 16000, 24000, 35000, 50000, 70000, 95000, 125000].forEach((delay) => {
@@ -126,7 +126,7 @@ export function useMatchTriggers({
   useEffect(() => {
     if (!selMatchId || !match?.externalId || events.length > 0) return;
     api
-      .importEvents(match.externalId)
+      .importEvents(match.externalId, tickerMode)
       .then(() => reload.loadEvents())
       .catch((err) => logger.error("[useMatchTriggers] importEvents error:", err));
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -159,11 +159,11 @@ export function useMatchTriggers({
     if (prematchImportedRef.current === selMatchId) return;
     prematchImportedRef.current = selMatchId;
     api
-      .importPrematch(match.externalId, match.tickerMode ?? tickerMode)
+      .importPrematch(match.externalId, tickerMode)
       .then(() => reload.loadPrematch())
       .then(() =>
         api
-          .generateSyntheticBatch(selMatchId, style, instance, language, match.tickerMode ?? tickerMode)
+          .generateSyntheticBatch(selMatchId, style, instance, language, tickerMode)
           .then(() => {
             // LLM läuft async — mehrfach nachladen
             [3000, 8000, 15000, 25000, 40000].forEach((delay) => {

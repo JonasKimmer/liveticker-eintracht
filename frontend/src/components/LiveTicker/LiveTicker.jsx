@@ -130,6 +130,13 @@ export default function LiveTicker() {
     }
   }, [setMode, selMatchId]);
 
+  // Modus in DB schreiben wenn Spiel gewechselt wird (damit n8n-Workflows den richtigen Modus lesen)
+  useEffect(() => {
+    if (!selMatchId) return;
+    api.setMatchTickerMode(selMatchId, mode).catch(() => {});
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selMatchId]);
+
   const [generatingId, setGeneratingId] = useState(null);
 
   // ── Mobile Panel: Modus-abhängig wechseln ─────────────────

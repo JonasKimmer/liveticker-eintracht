@@ -108,8 +108,8 @@ export const importTeamsByCountry = (country, season) =>
 export const importCompetitionsForTeam = (teamId, season) =>
   n8n.post("/import-competitions", { teamId, season });
 
-export const importEvents = (fixtureId) =>
-  n8n.post("/Events", { fixture_id: fixtureId });
+export const importEvents = (fixtureId, tickerMode = "auto") =>
+  n8n.post("/Events", { fixture_id: fixtureId, ticker_mode: tickerMode });
 
 export const importLineups = (matchId) =>
   n8n.post("/lineups", { match_id: matchId });
