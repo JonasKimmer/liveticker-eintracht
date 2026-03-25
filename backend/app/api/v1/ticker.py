@@ -187,7 +187,7 @@ def create_manual_entry(
     db: Session = Depends(get_db),
 ) -> TickerEntryResponse:
     ticker_repo = TickerEntryRepository(db)
-    if data.phase and data.icon and not data.video_url and not data.image_url:
+    if data.phase and not data.video_url and not data.image_url:
         existing = ticker_repo.get_by_phase(data.match_id, data.phase)
         if existing:
             return existing
