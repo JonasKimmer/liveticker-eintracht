@@ -2951,6 +2951,11 @@
   .lt-start        { padding: 1rem 0.75rem; }
   .lt-start__title { font-size: 1rem; }
   .lt-start__sub   { font-size: 0.75rem; }
+
+  /* iOS-Zoom verhindern: alle Inputs/Textareas mind. 16px font-size */
+  input, textarea, select {
+    font-size: 16px !important;
+  }
 }
 
 /* ── Tor-Clips ─────────────────────────────────────────── */
