@@ -5,7 +5,7 @@
 
 import { useState, useRef } from "react";
 import { useCommandPalette, CommandPalettePortal } from "../utils/commandPalette";
-import { PUBLISH_PHASES as PHASES } from "../constants";
+import { PUBLISH_PHASES as PHASES, MAX_MATCH_MINUTE } from "../constants";
 import { useMediaPublishForm } from "../hooks/useMediaPublishForm";
 
 export function SocialPublishModal({
@@ -100,7 +100,7 @@ export function SocialPublishModal({
                   <input
                     type="number"
                     value={minute}
-                    min={0} max={120}
+                    min={0} max={MAX_MATCH_MINUTE}
                     onChange={(e) => setMinute(Number(e.target.value))}
                     style={{
                       width: 46, background: "var(--lt-bg-input)", border: "1px solid var(--lt-border)",

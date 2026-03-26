@@ -62,6 +62,10 @@ export const POLL_EVENTS_MS = 5000;
 export const POLL_MATCH_REFRESH_MS = 15000;  // zweites Refresh-Intervall nach Kick-off
 export const SYNC_MATCH_INTERVAL_MS = 60000; // Live-Minuten-Sync (MatchHeader)
 export const TOAST_DURATION_MS = 2200;       // Toast-Anzeige (ModeSelector)
+export const AUTO_ERROR_TIMEOUT_MS = 6000;   // Auto-Fehler-Anzeige (CenterPanel)
+
+// ── Spielminuten ──────────────────────────────────────────────
+export const MAX_MATCH_MINUTE = 120; // inkl. Verlängerung (MinuteEditor, ClipPicker, …)
 
 // ── Publish-Phasen (Social-Media Panels) ─────────────────────
 export const PUBLISH_PHASES = [
@@ -132,3 +136,11 @@ export const COMMAND_PREFIX_REGEX = /^\/\w+\s*/;
 
 // ── Standard-Icons für Medien-Einträge ────────────────────────
 export const MEDIA_DEFAULT_ICONS = ["🎬", "📷", "📸"];
+
+// ── URL-Pattern-Erkennung (Social Media) ─────────────────────
+// Werden in PublishedEntry + anderen Komponenten genutzt.
+export const URL_PATTERNS = {
+  twitter:   /x\.com|twitter\.com/,
+  instagram: /instagram\.com/,
+  youtube:   /youtube\.com|youtu\.be/,
+};

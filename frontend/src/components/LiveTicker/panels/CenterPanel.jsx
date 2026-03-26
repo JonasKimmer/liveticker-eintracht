@@ -7,7 +7,7 @@ import { ClipPickerPanel } from "../components/ClipPickerPanel";
 import { YouTubePanel } from "../components/YouTubePanel";
 import { TwitterPanel } from "../components/TwitterPanel";
 import { InstagramPanel } from "../components/InstagramPanel";
-import { MODES, TICKER_STYLES, PREMATCH_PHASES, PHASE_LABEL } from "../constants";
+import { MODES, TICKER_STYLES, PREMATCH_PHASES, PHASE_LABEL, AUTO_ERROR_TIMEOUT_MS } from "../constants";
 import logger from "../../../utils/logger";
 import { useTickerModeContext } from "../../../context/TickerModeContext";
 import { useTickerDataContext } from "../../../context/TickerDataContext";
@@ -172,7 +172,7 @@ export const CenterPanel = memo(function CenterPanel({
   // Auto-dismiss AUTO-Modus Fehler nach 6s
   useEffect(() => {
     if (!autoError) return;
-    const id = setTimeout(() => setAutoError(null), 6000);
+    const id = setTimeout(() => setAutoError(null), AUTO_ERROR_TIMEOUT_MS);
     return () => clearTimeout(id);
   }, [autoError]);
 

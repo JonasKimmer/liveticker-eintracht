@@ -5,6 +5,7 @@
 // ============================================================
 import { useRef } from "react";
 import PropTypes from "prop-types";
+import { MAX_MATCH_MINUTE } from "../constants";
 
 export function MinuteEditor({
   minute,
@@ -26,7 +27,7 @@ export function MinuteEditor({
           className="lt-editor__minute-input"
           value={minute}
           min={0}
-          max={120}
+          max={MAX_MATCH_MINUTE}
           onChange={(e) => {
             setMinute(Number(e.target.value));
             setMinuteOverride(true);

@@ -81,6 +81,26 @@ STANDARD_PHASES: list[tuple[str, str, int]] = [
 ]
 
 
+# ── Gültige Ticker-Phasen ────────────────────────────────────
+# Alle erlaubten Phase-Strings für Ticker-Einträge (Validierung an API-Grenzen).
+VALID_PHASES: frozenset[str] = frozenset({
+    "Before", "PreMatch",
+    "FirstHalf", "FirstHalfBreak", "Halftime",
+    "SecondHalf", "SecondHalfBreak",
+    "ExtraFirstHalf", "ExtraBreak", "ExtraSecondHalf", "ExtraSecondHalfBreak",
+    "PenaltyShootout",
+    "FullTime", "After",
+})
+
+# ── LLM-Konfiguration ────────────────────────────────────────
+# Single source of truth für alle LLM-Provider-Aufrufe.
+LLM_MAX_TOKENS: int = 200
+LLM_TEMPERATURE: float = 0.3
+LLM_TRANSLATION_TEMPERATURE: float = 0.1
+LLM_RETRY_ATTEMPTS: int = 3
+LLM_RATE_LIMIT_WAIT_BASE_S: int = 30  # Sekunden; verdoppelt sich pro Attempt
+
+
 def resolve_phase(event_type: str) -> Optional[str]:
     """Resolve a synthetic event type string to its ticker phase.
 

@@ -7,13 +7,15 @@ Few-Shot: Stilreferenzen aus PostgreSQL (style_references)
 import asyncio
 import logging
 import random
-from typing import TYPE_CHECKING, Optional, Literal
+from typing import Optional, Literal
 
-from app.core.constants import EVENT_TYPE_LABEL, STYLE_DESC
+from app.core.constants import (
+    EVENT_TYPE_LABEL, STYLE_DESC,
+    LLM_MAX_TOKENS, LLM_TEMPERATURE, LLM_TRANSLATION_TEMPERATURE,
+    LLM_RETRY_ATTEMPTS, LLM_RATE_LIMIT_WAIT_BASE_S,
+)
 from app.services.llm_context_builders import build_context_str
 
-if TYPE_CHECKING:
-    from sqlalchemy.orm import Session
 
 logger = logging.getLogger(__name__)
 
@@ -390,8 +392,8 @@ class LLMService:
         response = self._client.chat.completions.create(
             model=self.model,
             messages=[{"role": "user", "content": prompt}],
-            max_tokens=200,
-            temperature=0.3,
+            max_tokens=LLM_MAX_TOKENS,
+            temperature=LLM_TEMPERATURE,
         )
         return response.choices[0].message.content.strip()
 
@@ -412,8 +414,8 @@ class LLMService:
         prompt = self._build_prompt(**kwargs)
         response = self._client.messages.create(
             model=self.model,
-            max_tokens=200,
-            temperature=0.3,
+            max_tokens=LLM_MAX_TOKENS,
+            temperature=LLM_TEMPERATURE,
             messages=[{"role": "user", "content": prompt}],
         )
         return response.content[0].text.strip()
@@ -441,8 +443,8 @@ class LLMService:
             response = self._client.chat.completions.create(
                 model=self.model,
                 messages=[{"role": "user", "content": prompt}],
-                max_tokens=200,
-                temperature=0.1,
+                max_tokens=LLM_MAX_TOKENS,
+                temperature=LLM_TRANSLATION_TEMPERATURE,
             )
             return response.choices[0].message.content.strip()
         elif self.provider == "gemini":
@@ -451,8 +453,8 @@ class LLMService:
         elif self.provider == "anthropic":
             response = self._client.messages.create(
                 model=self.model,
-                max_tokens=200,
-                temperature=0.1,
+                max_tokens=LLM_MAX_TOKENS,
+                temperature=LLM_TRANSLATION_TEMPERATURE,
                 messages=[{"role": "user", "content": prompt}],
             )
             return response.content[0].text.strip()
@@ -502,38 +504,13 @@ async def generate_ticker_text(
     language: str = "de",
     context_data: Optional[dict] = None,
     match_context: Optional[dict] = None,
+    style_references: list[str] | None = None,
     provider: Optional[str] = None,
     model: Optional[str] = None,
-    db: Optional["Session"] = None,
-    instance: str = "ef_whitelabel",
 ) -> tuple[str, str]:
-    # Few-Shot Stilreferenzen aus DB holen
-    style_references: list[str] = []
-    if db:
-        try:
-            from app.repositories.style_reference_repository import (
-                StyleReferenceRepository,
-            )
-
-            normalized = llm_service._normalize_event_type(event_type)
-            league = match_context.get("league") if match_context else None
-            refs = StyleReferenceRepository(db).get_samples(
-                event_type=normalized,
-                instance=instance,
-                limit=3,
-                league=league,
-            )
-            style_references = [r.text for r in refs]
-            logger.debug(
-                "Stilreferenzen geladen: %d für event_type=%s instance=%s league=%s",
-                len(refs),
-                normalized,
-                instance,
-                league,
-            )
-        except Exception:
-            logger.warning("Stilreferenzen konnten nicht geladen werden", exc_info=True)
-            db.rollback()
+    """Async LLM-Aufruf. Stilreferenzen werden vom Aufrufer übergeben (kein DB-Zugriff hier)."""
+    if style_references is None:
+        style_references = []
 
     resolved_minute = (match_context.get("minute") if match_context else None) or minute
     resolved_team = team_name or (
@@ -560,7 +537,7 @@ async def generate_ticker_text(
         return "429" in msg or "rate limit" in msg or "rate_limit" in msg or "too many requests" in msg
 
     last_exc: Exception | None = None
-    for attempt in range(3):
+    for attempt in range(LLM_RETRY_ATTEMPTS):
         try:
             text = await asyncio.to_thread(
                 active_service.generate_ticker_text,
@@ -579,13 +556,13 @@ async def generate_ticker_text(
             return text, model_used
         except Exception as exc:
             last_exc = exc
-            if attempt < 2:
-                # RateLimit: deutlich länger warten (30s / 60s)
-                # Andere transiente Fehler: kurzes Backoff (1s / 2s)
-                wait = 30 * (attempt + 1) if _is_rate_limit(exc) else 2 ** attempt
+            if attempt < LLM_RETRY_ATTEMPTS - 1:
+                # RateLimit: deutlich länger warten; andere Fehler: kurzes Backoff
+                wait = LLM_RATE_LIMIT_WAIT_BASE_S * (attempt + 1) if _is_rate_limit(exc) else 2 ** attempt
                 logger.warning(
-                    "LLM attempt %d/3 failed (%s), retrying in %ds…",
-                    attempt + 1, exc, wait,
+                    "LLM attempt %d/%d failed (%s), retrying in %ds…",
+                    attempt + 1, LLM_RETRY_ATTEMPTS,
+                    attempt + 1, LLM_RETRY_ATTEMPTS, exc, wait,
                 )
                 await asyncio.sleep(wait)
 

@@ -7,7 +7,7 @@ import { memo, useState, useCallback, useEffect } from "react";
 import PropTypes from "prop-types";
 import { createPortal } from "react-dom";
 import { fetchClips, fetchGoalClips, generateClipDraft, publishClip, publishClipTicker, deleteClip } from "../../../api";
-import { TICKER_STYLES } from "../constants";
+import { TICKER_STYLES, MAX_MATCH_MINUTE } from "../constants";
 import logger from "../../../utils/logger";
 
 // ── Video Player / Thumbnail ──────────────────────────────────
@@ -212,7 +212,7 @@ function ClipPublishModal({ clip, matchId, currentMinute, onClose, onPublished }
                 <input
                   type="number"
                   value={minute}
-                  min={0} max={120}
+                  min={0} max={MAX_MATCH_MINUTE}
                   onChange={(e) => setMinute(Number(e.target.value))}
                   style={{
                     width: 46, background: "var(--lt-bg-input)", border: "1px solid var(--lt-border)",

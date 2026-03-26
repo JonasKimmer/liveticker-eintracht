@@ -13,7 +13,7 @@ import {
   generateYoutubeDraft,
   deleteClip,
 } from "../../../api";
-import { PUBLISH_PHASES as PHASES, TICKER_STYLES } from "../constants";
+import { PUBLISH_PHASES as PHASES, TICKER_STYLES, MAX_MATCH_MINUTE } from "../constants";
 import { useMediaPublishForm } from "../hooks/useMediaPublishForm";
 import logger from "../../../utils/logger";
 
@@ -167,7 +167,7 @@ function YoutubePublishModal({ clip, matchId, currentMinute, onClose, onPublishe
                   <input
                     type="number"
                     value={minute}
-                    min={0} max={120}
+                    min={0} max={MAX_MATCH_MINUTE}
                     onChange={(e) => setMinute(Number(e.target.value))}
                     style={{
                       width: 46, background: "var(--lt-bg-input)", border: "1px solid var(--lt-border)",

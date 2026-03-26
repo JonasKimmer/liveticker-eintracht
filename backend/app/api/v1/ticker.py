@@ -16,6 +16,7 @@ Instanzen:
 import asyncio
 import json
 import logging
+from json import JSONDecodeError
 from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Body, status
@@ -37,7 +38,7 @@ from app.schemas.ticker_entry import (
     TickerStatus,
     TranslateBatchRequest,
 )
-from app.core.constants import resolve_phase, STANDARD_PHASES
+from app.core.constants import resolve_phase, STANDARD_PHASES, VALID_PHASES
 from app.services import ticker_service as ts
 from app.services.llm_service import translate_ticker_text
 
@@ -186,6 +187,11 @@ def create_manual_entry(
     data: ManualEntryRequest,
     db: Session = Depends(get_db),
 ) -> TickerEntryResponse:
+    if data.phase and data.phase not in VALID_PHASES:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=f"Ungültige Phase '{data.phase}'. Erlaubt: {sorted(VALID_PHASES)}",
+        )
     ticker_repo = TickerEntryRepository(db)
     if data.phase and not data.video_url and not data.image_url:
         existing = ticker_repo.get_by_phase(data.match_id, data.phase)
@@ -241,7 +247,8 @@ async def generate_for_event(
 
     try:
         desc = json.loads(event.description or "{}")
-    except (ValueError, TypeError):
+    except JSONDecodeError:
+        logger.warning("Invalid JSON in event.description for event_id=%s", event_id)
         desc = {}
 
     player_name = desc.get("player_name")

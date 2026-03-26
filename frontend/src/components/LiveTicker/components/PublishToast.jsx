@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import PropTypes from "prop-types";
 
 const DURATION = 5000; // ms
 
@@ -46,3 +47,10 @@ export function PublishToast({ entryId, text, onRetract, onDismiss }) {
     </div>
   );
 }
+
+PublishToast.propTypes = {
+  entryId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+  text: PropTypes.string,
+  onRetract: PropTypes.func.isRequired,
+  onDismiss: PropTypes.func.isRequired,
+};

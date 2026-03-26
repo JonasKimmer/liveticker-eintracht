@@ -112,7 +112,30 @@ async def call_llm(
     provider: Optional[str] = None,
     model: Optional[str] = None,
 ) -> tuple[str, str]:
-    """Semaphore-gesicherter LLM-Aufruf."""
+    """Semaphore-gesicherter LLM-Aufruf inkl. Stilreferenz-Lookup.
+
+    Stilreferenzen werden hier im Domain-Service geladen, damit llm_service.py
+    keine Datenbankabhängigkeit hat (Separation of Concerns).
+    """
+    from app.repositories.style_reference_repository import StyleReferenceRepository
+    from app.services.llm_service import llm_service as _llm_svc
+
+    style_references: list[str] = []
+    try:
+        normalized = _llm_svc._normalize_event_type(event_type)
+        league = match_context.get("league") if match_context else None
+        refs = StyleReferenceRepository(db).get_samples(
+            event_type=normalized, instance=instance, limit=3, league=league,
+        )
+        style_references = [r.text for r in refs]
+        logger.debug(
+            "Stilreferenzen geladen: %d für event_type=%s instance=%s league=%s",
+            len(refs), normalized, instance, league,
+        )
+    except Exception:
+        logger.warning("Stilreferenzen konnten nicht geladen werden", exc_info=True)
+        db.rollback()
+
     async with _llm_semaphore:
         return await generate_ticker_text(
             event_type=event_type,
@@ -125,10 +148,9 @@ async def call_llm(
             language=language,
             context_data=context_data,
             match_context=match_context,
+            style_references=style_references,
             provider=provider,
             model=model,
-            db=db,
-            instance=instance,
         )
 
 

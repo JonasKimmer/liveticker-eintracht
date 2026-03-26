@@ -87,7 +87,7 @@ class TickerEntryRepository:
             self.db.query(TickerEntry)
             .filter(
                 TickerEntry.event_id == event_id,
-                TickerEntry.status != "rejected",
+                TickerEntry.status != TickerStatus.rejected,
             )
             .first()
         )

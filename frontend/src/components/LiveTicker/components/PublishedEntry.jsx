@@ -4,13 +4,8 @@
 import { memo, useState, useCallback, useRef, useEffect } from "react";
 import PropTypes from "prop-types";
 import { getEventMeta } from "../utils/parseCommand";
-import { MATCH_PHASES, MEDIA_DEFAULT_ICONS } from "../constants";
+import { MATCH_PHASES, MEDIA_DEFAULT_ICONS, URL_PATTERNS } from "../constants";
 
-const URL_PATTERNS = {
-  twitter: /x\.com|twitter\.com/,
-  instagram: /instagram\.com/,
-  youtube: /youtube\.com|youtu\.be/,
-};
 
 function getMediaIcon(videoUrl, imageUrl, fallback) {
   if (!videoUrl && !imageUrl) return fallback;
