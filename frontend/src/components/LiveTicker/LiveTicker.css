@@ -70,6 +70,7 @@
   background: var(--lt-bg);
   color: var(--lt-text);
   font-family: var(--lt-font-ui);
+  user-select: none;
 }
 
 /* ============================================================

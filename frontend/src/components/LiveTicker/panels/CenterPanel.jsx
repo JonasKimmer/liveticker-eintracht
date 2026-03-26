@@ -17,6 +17,25 @@ import config from "../../../config/whitelabel";
 // Welcher Stil im AUTO-Modus verwendet wird
 const AUTO_STYLE = TICKER_STYLES[0];
 
+const PHASE_LABEL = {
+  PreMatch: "Vorbericht",
+  FirstHalf: "Anpfiff 1. HZ",
+  FirstHalfBreak: "Halbzeit",
+  SecondHalf: "Anpfiff 2. HZ",
+  FullTime: "Spielzusammenfassung",
+  After: "Spielzusammenfassung",
+  ExtraFirstHalf: "Verlängerung",
+  ExtraBreak: "VZ-Pause",
+  ExtraSecondHalf: "Verlängerung 2. HZ",
+  PenaltyShootout: "Elfmeterschießen",
+};
+
+function getDraftLabel(draft) {
+  if (draft.phase && PHASE_LABEL[draft.phase]) return PHASE_LABEL[draft.phase];
+  if (draft.icon === "🔔") return "Halbzeit";
+  return "KI-Text";
+}
+
 function AutoPlayVideo({ src, style }) {
   const ref = useRef(null);
   useEffect(() => {
@@ -325,49 +344,52 @@ export const CenterPanel = memo(function CenterPanel({
         {/* ── CO-OP ───────────────────────────────────────── */}
         {mode === MODES.COOP && (
           <>
-            {/* Manuelle Drafts (Zusammenfassungen + Videos) */}
-            {tickerTexts.filter((t) => t.status === "draft" && !t.event_id).map((draft) => {
-              const isVideo = draft.icon === "🎬" || !!draft.video_url;
+            {/* KI-Texte zur Review (Zusammenfassungen + Videos) — gruppiert unter einem Header */}
+            {(() => {
+              const nonEventDrafts = tickerTexts.filter((t) => t.status === "draft" && !t.event_id);
+              if (!nonEventDrafts.length) return null;
               return (
-                <div key={draft.id} style={{ marginBottom: "1rem" }}>
+                <div style={{ marginBottom: "1rem" }}>
                   <div className="lt-center__section-title">
-                    {isVideo ? "🎬 Video zur Review" : "📝 Zusammenfassung zur Review"}
+                    KI-Texte zur Review ({nonEventDrafts.length})
                   </div>
-                  {isVideo ? (
-                    <div style={{ background: "var(--lt-surface)", borderRadius: 8, padding: "0.75rem", border: "1px solid var(--lt-border)" }}>
-                      {draft.video_url && (
-                        <AutoPlayVideo
-                          src={draft.video_url}
-                          style={{ width: "100%", borderRadius: 6, marginBottom: "0.5rem", maxHeight: 220 }}
-                        />
-                      )}
-                      <div style={{ display: "flex", gap: "0.5rem", marginTop: "0.5rem" }}>
-                        <button
-                          className="lt-event-card__gen-btn"
-                          style={{ flex: 1, background: "rgba(34,197,94,0.15)", color: "#4ade80" }}
-                          onClick={async () => { await api.updateTicker(draft.id, { status: "published" }); await reload.loadTickerTexts(); }}
-                        >
-                          ✓ Veröffentlichen
-                        </button>
-                        <button
-                          className="lt-event-card__gen-btn"
-                          style={{ flex: 1, background: "rgba(239,68,68,0.1)", color: "#f87171" }}
-                          onClick={async () => { await api.updateTicker(draft.id, { status: "rejected" }); await reload.loadTickerTexts(); }}
-                        >
-                          ✕ Ablehnen
-                        </button>
+                  {nonEventDrafts.map((draft) => {
+                    const isVideo = draft.icon === "🎬" || !!draft.video_url;
+                    return isVideo ? (
+                      <div key={draft.id} style={{ background: "var(--lt-surface)", borderRadius: 8, padding: "0.75rem", border: "1px solid var(--lt-border)", marginBottom: "0.5rem" }}>
+                        <div style={{ fontFamily: "var(--lt-font-mono)", fontSize: "0.7rem", color: "var(--lt-text-muted)", marginBottom: "0.5rem" }}>🎬 Video</div>
+                        {draft.video_url && (
+                          <AutoPlayVideo
+                            src={draft.video_url}
+                            style={{ width: "100%", borderRadius: 6, marginBottom: "0.5rem", maxHeight: 220 }}
+                          />
+                        )}
+                        <div style={{ display: "flex", gap: "0.5rem", marginTop: "0.5rem" }}>
+                          <button
+                            className="lt-event-card__gen-btn"
+                            style={{ flex: 1, background: "rgba(34,197,94,0.15)", color: "#4ade80" }}
+                            onClick={async () => { await api.updateTicker(draft.id, { status: "published" }); await reload.loadTickerTexts(); }}
+                          >✓ Veröffentlichen</button>
+                          <button
+                            className="lt-event-card__gen-btn"
+                            style={{ flex: 1, background: "rgba(239,68,68,0.1)", color: "#f87171" }}
+                            onClick={async () => { await api.updateTicker(draft.id, { status: "rejected" }); await reload.loadTickerTexts(); }}
+                          >✕ Ablehnen</button>
+                        </div>
                       </div>
-                    </div>
-                  ) : (
-                    <SummaryDraftCard
-                      draft={draft}
-                      onPublish={async (text) => { await api.publishTicker(draft.id, text); await reload.loadTickerTexts(); }}
-                      onReject={async () => { await api.updateTicker(draft.id, { status: "rejected" }); await reload.loadTickerTexts(); }}
-                    />
-                  )}
+                    ) : (
+                      <SummaryDraftCard
+                        key={draft.id}
+                        draft={draft}
+                        label={getDraftLabel(draft)}
+                        onPublish={async (text) => { await api.publishTicker(draft.id, text); await reload.loadTickerTexts(); }}
+                        onReject={async () => { await api.updateTicker(draft.id, { status: "rejected" }); await reload.loadTickerTexts(); }}
+                      />
+                    );
+                  })}
                 </div>
               );
-            })}
+            })()}
 
             {pendingEvents.length === 0 && (
               <div className="lt-empty">
@@ -506,14 +528,14 @@ export const CenterPanel = memo(function CenterPanel({
   );
 });
 
-function SummaryDraftCard({ draft, onPublish, onReject }) {
+function SummaryDraftCard({ draft, label = "KI-Text", onPublish, onReject }) {
   const [editing, setEditing] = useState(false);
   const [text, setText] = useState(draft.text ?? "");
   return (
-    <div className="lt-draft">
+    <div className="lt-draft" style={{ marginBottom: "0.5rem" }}>
       <div className="lt-draft__header">
-        <span style={{ fontSize: "0.9rem" }}>✦</span>
-        <span className="lt-draft__label">AI Draft — Zusammenfassung</span>
+        <span style={{ fontSize: "0.9rem" }}>{draft.icon ?? "✦"}</span>
+        <span className="lt-draft__label">{label}</span>
       </div>
       <div className="lt-draft__text-wrap">
         {editing ? (
