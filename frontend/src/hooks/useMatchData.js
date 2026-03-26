@@ -122,12 +122,16 @@ export function useMatchData(selectedMatchId) {
       loadMatchStats();
       loadMatch().then(() => loadPlayers());
       loadPrematch();
+      loadTickerTexts(); // Drafts die n8n kurz nach Match-Load generiert sofort anzeigen
+      loadEvents();
     }, POLL_EVENTS_MS);
     const t2 = setTimeout(() => {
       loadLineups();
       loadMatchStats();
       loadMatch().then(() => loadPlayers());
       loadPrematch();
+      loadTickerTexts();
+      loadEvents();
     }, POLL_MATCH_REFRESH_MS);
 
     return () => {
