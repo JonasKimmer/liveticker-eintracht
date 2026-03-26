@@ -157,11 +157,6 @@ export default function LiveTicker() {
     [match, events, tickerTexts, reload],
   );
 
-  const tickerActionsCtx = useMemo(
-    () => ({ onGenerate: handleGenerate, onManualPublish: handleManualPublish, onDraftActive: handleDraftActive, onPublished: showPublishToast, onEditEntry: handleEditEntry, onDeleteEntry: handleDeleteEntry }),
-    [handleGenerate, handleManualPublish, handleDraftActive, showPublishToast, handleEditEntry, handleDeleteEntry],
-  );
-
   // ── Instance + Style: automatisch EF wenn Frankfurt-Spiel ──
   const isEfMatch = useMemo(() => {
     const kw = config.teamKeyword?.toLowerCase() ?? "";
@@ -253,6 +248,11 @@ export default function LiveTicker() {
     await api.deleteTicker(id);
     await reload.loadTickerTexts();
   }, [reload]);
+
+  const tickerActionsCtx = useMemo(
+    () => ({ onGenerate: handleGenerate, onManualPublish: handleManualPublish, onDraftActive: handleDraftActive, onPublished: showPublishToast, onEditEntry: handleEditEntry, onDeleteEntry: handleDeleteEntry }),
+    [handleGenerate, handleManualPublish, handleDraftActive, showPublishToast, handleEditEntry, handleDeleteEntry],
+  );
 
   const topBarRef = useRef(null);
 
