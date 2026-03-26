@@ -103,13 +103,11 @@ export function useMatchTriggers({
   }, [selMatchId, match?.matchState, instance, language]);
 
   // ── Match-Status Webhook beim Match-Open ──────────────────
-  // Composite key: matchId + mode, damit Modus-Wechsel erneuten Trigger auslöst
   const matchStatusTriggeredRef = useRef(new Set());
   useEffect(() => {
     if (!selMatchId || !match?.matchState || !match?.externalId) return;
-    const statusKey = `${selMatchId}:${tickerMode}`;
-    if (matchStatusTriggeredRef.current.has(statusKey)) return;
-    matchStatusTriggeredRef.current.add(statusKey);
+    if (matchStatusTriggeredRef.current.has(selMatchId)) return;
+    matchStatusTriggeredRef.current.add(selMatchId);
 
     let status = null;
     if (match.matchState === MATCH_PHASES.FULL_TIME) {
@@ -132,7 +130,7 @@ export function useMatchTriggers({
         );
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selMatchId, match?.matchState, match?.matchPhase, tickerMode]);
+  }, [selMatchId, match?.matchState, match?.matchPhase]);
 
   // ── Auto-Import: Events ───────────────────────────────────
   useEffect(() => {
@@ -165,14 +163,11 @@ export function useMatchTriggers({
   }, [selMatchId, matchStats.length]);
 
   // ── Auto-Import: Prematch + Synthetic Batch ───────────────
-  // Composite key: selMatchId + tickerMode — damit beim Mode-Wechsel (auto↔coop)
-  // erneut importiert und drafts/published erzeugt werden.
   const prematchImportedRef = useRef(null);
   useEffect(() => {
     if (!selMatchId || !match?.externalId) return;
-    const key = `${selMatchId}:${tickerMode}`;
-    if (prematchImportedRef.current === key) return;
-    prematchImportedRef.current = key;
+    if (prematchImportedRef.current === selMatchId) return;
+    prematchImportedRef.current = selMatchId;
     api
       .importPrematch(match.externalId, tickerMode)
       .then(() => reload.loadPrematch())
@@ -189,7 +184,7 @@ export function useMatchTriggers({
       )
       .catch((err) => logger.error("[useMatchTriggers] importPrematch error:", err));
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selMatchId, match?.externalId, tickerMode]);
+  }, [selMatchId, match?.externalId]);
 
   // ── Auto-Import: Spieler-Statistiken ─────────────────────
   const playerStatsImportedRef = useRef(null);
