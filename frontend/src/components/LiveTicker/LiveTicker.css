@@ -2743,15 +2743,24 @@
   .lt-header__nav-tab { display: none; }
 
   /* Viewport-füllendes Flex-Layout.
-     padding kompensiert die fixed Header + Tabs (out of flow) */
+     padding-top wird per ResizeObserver dynamisch als --lt-top-bar-h gesetzt */
   .lt {
     height: 100dvh;
     display: flex;
     flex-direction: column;
     overflow: hidden;
     box-sizing: border-box;
-    padding-top: calc(var(--lt-header-h) + env(safe-area-inset-top, 0px));
+    padding-top: var(--lt-top-bar-h, 0px);
     padding-bottom: calc(56px + env(safe-area-inset-bottom, 0px));
+  }
+
+  /* Top-Bar: Header + MatchHeader + ModeBar zusammen fixed */
+  .lt-top-bar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 300;
   }
 
   /* Spalten-Block wächst in den verbleibenden Platz */
@@ -2804,21 +2813,11 @@
     overflow-y: auto;
   }
 
-  /* Header: komplett fixed — scrollt nie mit */
+  /* Header: normales Kind von lt-top-bar (kein eigenes fixed mehr nötig) */
   .lt-header {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    z-index: 300;
+    position: relative;
     padding-top: env(safe-area-inset-top, 0px);
     height: calc(var(--lt-header-h) + env(safe-area-inset-top, 0px));
-  }
-
-  /* Match-Header + Mode-Bar nicht schrumpfen lassen */
-  .lt-match-header,
-  .lt-mode-bar {
-    flex-shrink: 0;
   }
 
   /* Bottom-Tabs: komplett fixed — scrollt nie mit */

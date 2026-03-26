@@ -253,9 +253,21 @@ export default function LiveTicker() {
     );
   }
 
+  const topBarRef = useRef(null);
+  useEffect(() => {
+    const el = topBarRef.current;
+    if (!el) return;
+    const ro = new ResizeObserver(([entry]) => {
+      document.documentElement.style.setProperty("--lt-top-bar-h", `${entry.contentRect.height}px`);
+    });
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+
   return (
     <TickerModeContext.Provider value={tickerModeCtx}>
       <div className="lt">
+        <div className="lt-top-bar" ref={topBarRef}>
         <header className="lt-header">
           <div
             className="lt-header__logo"
@@ -333,14 +345,15 @@ export default function LiveTicker() {
           </div>
         </header>
 
-        {match && (
-          <MatchHeader
-            match={match}
-            leagueSeason={curCompetition}
-            onMinuteSync={reload.loadMatch}
-          />
-        )}
-        {match && <ModeSelector mode={mode} onModeChange={handleModeChange} />}
+          {match && (
+            <MatchHeader
+              match={match}
+              leagueSeason={curCompetition}
+              onMinuteSync={reload.loadMatch}
+            />
+          )}
+          {match && <ModeSelector mode={mode} onModeChange={handleModeChange} />}
+        </div>{/* /lt-top-bar */}
 
         <main
           className={`lt-columns${mode === "auto" ? " lt-columns--auto" : ""}`}
