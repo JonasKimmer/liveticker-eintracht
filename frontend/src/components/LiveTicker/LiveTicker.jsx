@@ -1,7 +1,7 @@
 // ============================================================
 // LiveTicker.jsx — Hauptkomponente
 // ============================================================
-import { useState, useEffect, useCallback, useMemo, useRef } from "react";
+import { useState, useEffect, useLayoutEffect, useCallback, useMemo, useRef } from "react";
 import { useClickOutside } from "../../hooks/useClickOutside";
 import "./LiveTicker.css";
 import logger from "../../utils/logger";
@@ -243,9 +243,11 @@ export default function LiveTicker() {
   }, [reload]);
 
   const topBarRef = useRef(null);
-  useEffect(() => {
+  useLayoutEffect(() => {
     const el = topBarRef.current;
     if (!el) return;
+    // Sofort messen bevor Browser paintet → kein Flash
+    document.documentElement.style.setProperty("--lt-top-bar-h", `${el.getBoundingClientRect().height}px`);
     const ro = new ResizeObserver(([entry]) => {
       document.documentElement.style.setProperty("--lt-top-bar-h", `${entry.contentRect.height}px`);
     });
