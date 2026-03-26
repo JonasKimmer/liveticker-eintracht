@@ -40,7 +40,6 @@ import { usePanelResize } from "../../hooks/usePanelResize";
 import { CommandsModal } from "./components/CommandsModal";
 import { PublishToast } from "./components/PublishToast";
 import ErrorBoundary from "../ErrorBoundary";
-import logoImage from "../../Gemini_Generated_Image_t8l3p5t8l3p5t8l3.png";
 
 export default function LiveTicker() {
   // ── Navigation (Länder / Teams / Wettbewerbe / Spiele) ────
@@ -378,11 +377,7 @@ export default function LiveTicker() {
                   onClick={() => setSelMatchId(null)}
                   title="Zurück zur Startseite"
                 >
-                  <img
-                    src={logoImage}
-                    alt={config.clubName}
-                    className="lt-header__logo-image"
-                  />
+                  {config.clubName}
                 </div>
                 <Breadcrumb
                   match={match}

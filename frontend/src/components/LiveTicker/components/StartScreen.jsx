@@ -3,7 +3,6 @@
 // ============================================================
 import { memo, useState, useRef, useEffect, useMemo, useCallback } from "react";
 import config from "../../../config/whitelabel";
-import logoImage from "../../../Gemini_Generated_Image_t8l3p5t8l3p5t8l3.png";
 import { useClickOutside } from "../../../hooks/useClickOutside";
 import { useListKeyboard } from "../../../hooks/useListKeyboard";
 import { knockoutThreshold, makeRoundLabel } from "../../../utils/roundLabel";
@@ -34,13 +33,7 @@ export const StartScreen = memo(function StartScreen({
       <div className="lt-start__inner">
         {!compact && (
           <>
-            <div className="lt-start__logo">
-              <img
-                src={logoImage}
-                alt={config.clubName}
-                className="lt-start__logo-image"
-              />
-            </div>
+            <div className="lt-start__logo">{config.clubName}</div>
             <h1 className="lt-start__title">Select a Match to Start</h1>
             <p className="lt-start__sub">
               Choose a match to open the live ticker
