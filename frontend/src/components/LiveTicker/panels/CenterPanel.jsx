@@ -18,12 +18,13 @@ import config from "../../../config/whitelabel";
 const AUTO_STYLE = TICKER_STYLES[0];
 
 const PHASE_LABEL = {
-  PreMatch: "Vorbericht",
+  Before: "Vorberichterstattung",
+  PreMatch: "Vorberichterstattung",
   FirstHalf: "Anpfiff 1. HZ",
   FirstHalfBreak: "Halbzeit",
   SecondHalf: "Anpfiff 2. HZ",
-  FullTime: "Spielzusammenfassung",
-  After: "Spielzusammenfassung",
+  FullTime: "Abpfiff",
+  After: "Abpfiff",
   ExtraFirstHalf: "Verlängerung",
   ExtraBreak: "VZ-Pause",
   ExtraSecondHalf: "Verlängerung 2. HZ",
