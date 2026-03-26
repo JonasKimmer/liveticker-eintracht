@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import * as api from "../api";
 import logger from "../utils/logger";
-import { POLL_EVENTS_MS, POLL_MATCH_REFRESH_MS, SYNC_MATCH_INTERVAL_MS } from "../components/LiveTicker/constants";
+import { POLL_EVENTS_MS, POLL_MATCH_REFRESH_MS, POLL_PREMATCH_MS } from "../components/LiveTicker/constants";
 
 /**
  * Gibt das Polling-Intervall in ms basierend auf dem Spielstatus zurück.
@@ -14,10 +14,10 @@ import { POLL_EVENTS_MS, POLL_MATCH_REFRESH_MS, SYNC_MATCH_INTERVAL_MS } from ".
  * Alle anderen Zustände (PreMatch, Cancelled …) pollen nur alle 60 s (SYNC_MATCH_INTERVAL_MS).
  */
 function resolvePollingInterval(matchState) {
-  if (matchState === "Live")     return POLL_EVENTS_MS;
-  if (matchState === "FullTime") return POLL_EVENTS_MS;
-  if (matchState == null)        return POLL_EVENTS_MS; // Noch am Laden — konservativ pollen
-  return SYNC_MATCH_INTERVAL_MS; // PreMatch, Cancelled, etc.
+  if (matchState === "Live")     return POLL_EVENTS_MS;     // 5 s – Events sofort
+  if (matchState === "FullTime") return POLL_EVENTS_MS;     // 5 s – Nachberichte sofort
+  if (matchState == null)        return POLL_EVENTS_MS;     // 5 s – noch am Laden
+  return POLL_PREMATCH_MS;  // 15 s – Pre-Match: Drafts innerhalb 15 s sichtbar
 }
 
 /**
