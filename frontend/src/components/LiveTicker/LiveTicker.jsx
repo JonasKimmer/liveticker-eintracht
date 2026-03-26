@@ -243,11 +243,18 @@ export default function LiveTicker() {
   }, [reload]);
 
   const topBarRef = useRef(null);
+
+  // Synchron vor Paint messen wenn Match sich ändert (MatchHeader/ModeBar erscheinen)
   useLayoutEffect(() => {
     const el = topBarRef.current;
     if (!el) return;
-    // Sofort messen bevor Browser paintet → kein Flash
     document.documentElement.style.setProperty("--lt-top-bar-h", `${el.getBoundingClientRect().height}px`);
+  }, [match]);
+
+  // ResizeObserver für Orientierungswechsel + sonstige Größenänderungen
+  useLayoutEffect(() => {
+    const el = topBarRef.current;
+    if (!el) return;
     const ro = new ResizeObserver(([entry]) => {
       document.documentElement.style.setProperty("--lt-top-bar-h", `${entry.contentRect.height}px`);
     });
