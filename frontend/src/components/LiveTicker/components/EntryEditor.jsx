@@ -5,11 +5,9 @@ import { memo, useState, useEffect, useMemo, useCallback, useRef } from "react";
 import PropTypes from "prop-types";
 import { parseCommand } from "../utils/parseCommand";
 import { COMMAND_PALETTE, NEEDS_ARG } from "../utils/commandPalette";
-import { MODES } from "../constants";
+import { MODES, COMMAND_PREFIX_REGEX } from "../constants";
 import { useLiveMinuteEditor } from "../hooks/useLiveMinuteEditor";
 import { MinuteEditor } from "./MinuteEditor";
-
-const COMMAND_PREFIX_REGEX = /^\/\w+\s*/;
 
 export const EntryEditor = memo(function EntryEditor({
   value,

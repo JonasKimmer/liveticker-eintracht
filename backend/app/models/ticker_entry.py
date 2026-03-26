@@ -1,7 +1,8 @@
-from sqlalchemy import Column, Integer, String, Text, TIMESTAMP, ForeignKey
+from sqlalchemy import Column, Enum as SAEnum, Integer, String, Text, TIMESTAMP, ForeignKey
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from app.core.database import Base
+from app.core.enums import TickerSource, TickerStatus
 
 
 class TickerEntry(Base):
@@ -22,9 +23,15 @@ class TickerEntry(Base):
     icon = Column(String(50), nullable=True)
     llm_model = Column(String(100), nullable=True)
     status = Column(
-        String(20), nullable=False, default="draft"
-    )  # draft|published|rejected
-    source = Column(String(20), nullable=False, default="ai")  # ai|manual
+        SAEnum(TickerStatus, name="ticker_status", native_enum=False),
+        nullable=False,
+        default=TickerStatus.draft,
+    )
+    source = Column(
+        SAEnum(TickerSource, name="ticker_source", native_enum=False),
+        nullable=False,
+        default=TickerSource.ai,
+    )
     minute = Column(Integer, nullable=True)
     phase = Column(String(50), nullable=True)
     image_url = Column(Text, nullable=True)

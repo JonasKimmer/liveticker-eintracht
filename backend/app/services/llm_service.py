@@ -178,8 +178,63 @@ class LLMService:
         return EVENT_TYPE_MAP.get(event_type, "comment")
 
     # ──────────────────────────────────────────
-    # Prompt Builder
+    # Prompt Builder (aufgeteilt in Teilmethoden)
     # ──────────────────────────────────────────
+
+    def _build_event_lines(
+        self,
+        event_type: str,
+        event_detail: str,
+        minute: Optional[int],
+        player_name: Optional[str],
+        assist_name: Optional[str],
+        team_name: Optional[str],
+    ) -> list[str]:
+        """Baut die FAKTEN-Sektion des Prompts auf."""
+        _et = "pre_match_injuries" if event_type.startswith("pre_match_injuries") else event_type
+        event_label = EVENT_TYPE_LABEL.get(_et, event_type)
+        minute_str = f"{minute}. Minute" if minute else "Vor/Nach dem Spiel"
+
+        lines = [f"Ereignistyp: {event_label}"]
+        if event_detail:
+            lines.append(f"Detail: {event_detail}")
+        if minute:
+            lines.append(f"Minute: {minute_str}")
+        if player_name:
+            label = "Ausgewechselt (geht raus)" if event_type == "substitution" else "Spieler"
+            lines.append(f"{label}: {player_name}")
+        if assist_name:
+            label = "Eingewechselt (kommt rein)" if event_type == "substitution" else "Vorlagengeber"
+            lines.append(f"{label}: {assist_name}")
+        if team_name:
+            lines.append(f"Verursachendes Team (Spieler gehört zu diesem Verein): {team_name}")
+        return lines
+
+    def _build_few_shot_block(self, style_references: Optional[list[str]]) -> str:
+        """Baut den Stilreferenzen-Block für Few-Shot-Prompting auf."""
+        if not style_references:
+            return ""
+        examples = "\n".join(f'- "{r}"' for r in style_references)
+        return (
+            f"\n### STILREFERENZEN\n"
+            f"Schreibe in exakt diesem Stil (Rhythmus, Wortwahl, Emotionalität):\n"
+            f"{examples}\n"
+        )
+
+    def _build_prematch_parts(self, event_type: str) -> tuple[str, str]:
+        """Gibt (prematch_instruction, prematch_rule) zurück – leer wenn kein Vorbericht."""
+        if not event_type.startswith("pre_match"):
+            return "", ""
+        instruction = (
+            "=== VOR-BERICHT – KEIN SPIEL LÄUFT ===\n"
+            "Du schreibst einen VORSCHAU-Text. Das Spiel hat NOCH NICHT begonnen.\n"
+            "ABSOLUT VERBOTEN: Spielszenen, Angriffe, Abschlüsse, Tore, Pässe, Zweikämpfe, "
+            "Schüsse, Elfmeter, Einwürfe, Ecken – jede Art von Live-Kommentar.\n"
+            "Schreibe NUR sachliche Fakten aus dem KONTEXT unten (2–3 Sätze). Nichts erfinden!\n"
+            "=======================================\n\n"
+        )
+        rule = "- VOR-BERICHT: Nur Vorschau/Analyse – KEINE Spielszenen, KEINE Aktionen, KEINE Live-Beschreibungen\n"
+        return instruction, rule
 
     def _build_prompt(
         self,
@@ -196,61 +251,13 @@ class LLMService:
     ) -> str:
         lang = "Deutsch" if language == "de" else "English"
         style_desc = STYLE_DESC.get(style, STYLE_DESC["neutral"])
-        minute_str = f"{minute}. Minute" if minute else "Vor/Nach dem Spiel"
-        _et = (
-            "pre_match_injuries"
-            if event_type.startswith("pre_match_injuries")
-            else event_type
+
+        event_lines = self._build_event_lines(
+            event_type, event_detail, minute, player_name, assist_name, team_name
         )
-        event_label = EVENT_TYPE_LABEL.get(_et, event_type)
-
-        event_lines = [f"Ereignistyp: {event_label}"]
-        if event_detail:
-            event_lines.append(f"Detail: {event_detail}")
-        if minute:
-            event_lines.append(f"Minute: {minute_str}")
-        if player_name:
-            label = (
-                "Ausgewechselt (geht raus)" if event_type == "substitution" else "Spieler"
-            )
-            event_lines.append(f"{label}: {player_name}")
-        if assist_name:
-            label = (
-                "Eingewechselt (kommt rein)" if event_type == "substitution" else "Vorlagengeber"
-            )
-            event_lines.append(f"{label}: {assist_name}")
-        if team_name:
-            event_lines.append(
-                f"Verursachendes Team (Spieler gehört zu diesem Verein): {team_name}"
-            )
-
         context_block = self._build_context_str(event_type, context_data)
-
-        few_shot_block = ""
-        if style_references:
-            examples = "\n".join(f'- "{r}"' for r in style_references)
-            few_shot_block = (
-                f"\n### STILREFERENZEN\n"
-                f"Schreibe in exakt diesem Stil (Rhythmus, Wortwahl, Emotionalität):\n"
-                f"{examples}\n"
-            )
-
-        is_prematch = event_type.startswith("pre_match")
-        prematch_instruction = (
-            "=== VOR-BERICHT – KEIN SPIEL LÄUFT ===\n"
-            "Du schreibst einen VORSCHAU-Text. Das Spiel hat NOCH NICHT begonnen.\n"
-            "ABSOLUT VERBOTEN: Spielszenen, Angriffe, Abschlüsse, Tore, Pässe, Zweikämpfe, Schüsse, Elfmeter, Einwürfe, Ecken – jede Art von Live-Kommentar.\n"
-            "Schreibe NUR sachliche Fakten aus dem KONTEXT unten (2–3 Sätze). Nichts erfinden!\n"
-            "=======================================\n\n"
-            if is_prematch
-            else ""
-        )
-
-        prematch_rule = (
-            "- VOR-BERICHT: Nur Vorschau/Analyse – KEINE Spielszenen, KEINE Aktionen, KEINE Live-Beschreibungen\n"
-            if is_prematch
-            else ""
-        )
+        few_shot_block = self._build_few_shot_block(style_references)
+        prematch_instruction, prematch_rule = self._build_prematch_parts(event_type)
 
         return (
             f"{prematch_instruction}"
@@ -281,16 +288,16 @@ class LLMService:
 
     def _generate_mock_text(
         self,
-        event_type,
-        event_detail,
-        minute,
-        player_name,
-        assist_name,
-        team_name,
-        style,
-        language,
-        context_data,
-        style_references,
+        event_type: str,
+        event_detail: str,
+        minute: Optional[int],
+        player_name: Optional[str],
+        assist_name: Optional[str],
+        team_name: Optional[str],
+        style: str,
+        language: str,
+        context_data: Optional[dict],
+        style_references: Optional[list[str]],
     ) -> str:
         m = minute or "?"
         p = player_name or "Unbekannt"
@@ -356,16 +363,16 @@ class LLMService:
 
     def _generate_openai_compatible_text(
         self,
-        event_type,
-        event_detail,
-        minute,
-        player_name,
-        assist_name,
-        team_name,
-        style,
-        language,
-        context_data,
-        style_references,
+        event_type: str,
+        event_detail: str,
+        minute: Optional[int],
+        player_name: Optional[str],
+        assist_name: Optional[str],
+        team_name: Optional[str],
+        style: str,
+        language: str,
+        context_data: Optional[dict],
+        style_references: Optional[list[str]],
     ) -> str:
         """Shared implementation for OpenAI-compatible APIs (openai, openrouter)."""
         prompt = self._build_prompt(
@@ -388,20 +395,20 @@ class LLMService:
         )
         return response.choices[0].message.content.strip()
 
-    def _generate_openrouter_text(self, **kwargs) -> str:
+    def _generate_openrouter_text(self, **kwargs: object) -> str:
         return self._generate_openai_compatible_text(**kwargs)
 
-    def _generate_openai_text(self, **kwargs) -> str:
+    def _generate_openai_text(self, **kwargs: object) -> str:
         return self._generate_openai_compatible_text(**kwargs)
 
-    def _generate_gemini_text(self, **kwargs) -> str:
+    def _generate_gemini_text(self, **kwargs: object) -> str:
         prompt = self._build_prompt(**kwargs)
         response = self._client.models.generate_content(
             model=self.model, contents=prompt
         )
         return response.text.strip()
 
-    def _generate_anthropic_text(self, **kwargs) -> str:
+    def _generate_anthropic_text(self, **kwargs: object) -> str:
         prompt = self._build_prompt(**kwargs)
         response = self._client.messages.create(
             model=self.model,

@@ -1,7 +1,8 @@
 import { memo, useMemo } from "react";
-import PropTypes from "prop-types";
 import { PublishedEntry } from "../components/PublishedEntry";
 import { PHASE_SORT, PHASE_MINUTE_DEFAULT, PHASE_START } from "../constants";
+import { useTickerDataContext } from "../../../context/TickerDataContext";
+import { useTickerActionsContext } from "../../../context/TickerActionsContext";
 
 const sortMinute = (t) => {
   if (!t.phase) return t.minute ?? 0;
@@ -9,13 +10,10 @@ const sortMinute = (t) => {
   return ps !== null ? ps : (t.minute ?? PHASE_MINUTE_DEFAULT[t.phase] ?? 0);
 };
 
-export const LeftPanel = memo(function LeftPanel({
-  events,
-  tickerTexts,
-  match,
-  onEditEntry,
-  onDeleteEntry,
-}) {
+export const LeftPanel = memo(function LeftPanel() {
+  const { match, events, tickerTexts } = useTickerDataContext();
+  const { onEditEntry, onDeleteEntry } = useTickerActionsContext();
+
   const allEntries = useMemo(() => {
     // Deduplicate: if multiple ticker entries share the same event_id (race-condition
     // duplicates from parallel n8n imports), keep only the one with the highest id.
@@ -120,10 +118,6 @@ export const LeftPanel = memo(function LeftPanel({
   );
 });
 
-LeftPanel.propTypes = {
-  events: PropTypes.arrayOf(PropTypes.object).isRequired,
-  tickerTexts: PropTypes.arrayOf(PropTypes.object).isRequired,
-  match: PropTypes.object,
-  onEditEntry: PropTypes.func.isRequired,
-  onDeleteEntry: PropTypes.func.isRequired,
-};
+// match, events, tickerTexts → via TickerDataContext
+// onEditEntry, onDeleteEntry → via TickerActionsContext
+// No props required.

@@ -389,6 +389,7 @@ async def generate_synthetic_batch(
     existing_ids = ticker_repo.get_existing_synthetic_ids(match_id)
     match = MatchRepository(db).load_with_teams(match_id)
     results = []
+    failed: list[tuple[int, str]] = []
 
     for synthetic in synthetics:
         if synthetic.id in existing_ids:
@@ -407,10 +408,11 @@ async def generate_synthetic_batch(
                 db=db,
                 instance=data.instance,
             )
-        except Exception:
+        except Exception as exc:
             logger.exception(
                 "Batch synthetic generation failed for id=%s", synthetic.id
             )
+            failed.append((synthetic.id, str(exc)))
             continue
 
         phase = resolve_phase(synthetic.type or "")
@@ -424,6 +426,12 @@ async def generate_synthetic_batch(
             )
         )
         results.append(entry)
+
+    if failed:
+        logger.warning(
+            "generate-synthetic-batch match_id=%s: %d/%d items failed: %s",
+            match_id, len(failed), len(synthetics), failed,
+        )
 
     return results
 
@@ -454,6 +462,7 @@ async def generate_match_phases(
     ticker_repo = TickerEntryRepository(db)
     synth_repo = SyntheticEventRepository(db)
     results = []
+    failed: list[tuple[str, str]] = []
 
     for event_type, phase, default_minute in STANDARD_PHASES:
         if ticker_repo.get_by_phase(match_id, phase):
@@ -476,10 +485,11 @@ async def generate_match_phases(
                 db=db,
                 instance=data.instance,
             )
-        except Exception:
+        except Exception as exc:
             logger.exception(
                 "Phase generation failed for match_id=%s type=%s", match_id, event_type
             )
+            failed.append((event_type, str(exc)))
             continue
 
         entry = ticker_repo.create(
@@ -492,6 +502,12 @@ async def generate_match_phases(
             )
         )
         results.append(entry)
+
+    if failed:
+        logger.warning(
+            "generate-match-phases match_id=%s: %d/%d phases failed: %s",
+            match_id, len(failed), len(STANDARD_PHASES), failed,
+        )
 
     return results
 
@@ -522,6 +538,7 @@ async def generate_bulk_for_match(
     match = MatchRepository(db).load_with_teams(match_id)
     ticker_repo = TickerEntryRepository(db)
     results = []
+    failed: list[tuple[int, str]] = []
 
     for event in events:
         match_context = ts.build_match_context(match, event.time)
@@ -547,9 +564,16 @@ async def generate_bulk_for_match(
                 )
             )
             results.append(entry)
-        except Exception:
+        except Exception as exc:
             logger.exception("Bulk generation failed for event_id=%s", event.id)
+            failed.append((event.id, str(exc)))
             continue
+
+    if failed:
+        logger.warning(
+            "generate-bulk match_id=%s: %d/%d events failed: %s",
+            match_id, len(failed), len(events), failed,
+        )
 
     return results
 

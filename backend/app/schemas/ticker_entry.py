@@ -1,24 +1,16 @@
 from datetime import datetime
-from enum import Enum
 from typing import Literal, Optional
-from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field
+
+from app.core.enums import TickerSource, TickerStatus
+
+# Re-export so existing imports like `from app.schemas.ticker_entry import TickerStatus` keep working.
+__all__ = ["TickerStatus", "TickerSource"]
 
 # Shared Literal types – used in ticker.py request schemas
 TickerStyle = Literal["neutral", "euphorisch", "kritisch"]
 TickerInstance = Literal["generic", "ef_whitelabel"]
-
-
-class TickerStatus(str, Enum):
-    draft = "draft"
-    published = "published"
-    rejected = "rejected"
-
-
-class TickerSource(str, Enum):
-    ai = "ai"
-    manual = "manual"
 
 
 class TickerEntryCreate(BaseModel):

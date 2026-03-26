@@ -106,3 +106,29 @@ export const MATCH_PHASES = {
   PENALTY_SHOOTOUT:        "PenaltyShootout",
   FULL_TIME:               "FullTime",
 };
+
+// ── Phasen-Label (Deutsch) ────────────────────────────────────
+// Einzige Quelle für Phase → lesbaren Namen-Mapping im Frontend.
+export const PHASE_LABEL = {
+  Before:            "Vorberichterstattung",
+  PreMatch:          "Vorberichterstattung",
+  FirstHalf:         "Anpfiff 1. HZ",
+  FirstHalfBreak:    "Halbzeit",
+  SecondHalf:        "Anpfiff 2. HZ",
+  FullTime:          "Abpfiff",
+  After:             "Abpfiff",
+  ExtraFirstHalf:    "Verlängerung",
+  ExtraBreak:        "VZ-Pause",
+  ExtraSecondHalf:   "Verlängerung 2. HZ",
+  PenaltyShootout:   "Elfmeterschießen",
+};
+
+// ── Vorberichts-Phasen ────────────────────────────────────────
+export const PREMATCH_PHASES = new Set(["Before", "PreMatch"]);
+
+// ── Command-Prefix-Regex ──────────────────────────────────────
+// Matcht /command + whitespace am Anfang (z.B. "/g " oder "/gelb ").
+export const COMMAND_PREFIX_REGEX = /^\/\w+\s*/;
+
+// ── Standard-Icons für Medien-Einträge ────────────────────────
+export const MEDIA_DEFAULT_ICONS = ["🎬", "📷", "📸"];

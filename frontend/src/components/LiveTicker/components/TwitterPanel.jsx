@@ -9,6 +9,7 @@ import { createPortal } from "react-dom";
 import { fetchTwitterPosts, triggerTwitterImport } from "../../../api";
 import { useSocialPanel } from "../hooks/useSocialPanel";
 import { SocialPublishModal } from "./SocialPublishModal";
+import { SocialPanelShell } from "./SocialPanelShell";
 
 // ── Publish Modal ─────────────────────────────────────────────
 
@@ -184,6 +185,8 @@ export const TwitterPanel = memo(function TwitterPanel({ matchId, currentMinute 
     loadPosts, handleImport, handlePublished, handleDelete,
   } = useSocialPanel(fetchTwitterPosts, triggerTwitterImport);
 
+  const hasThumbnails = posts.some((p) => p.thumbnail_url);
+
   return (
     <>
       {modalPost && createPortal(
@@ -194,111 +197,31 @@ export const TwitterPanel = memo(function TwitterPanel({ matchId, currentMinute 
           onClose={() => setModalPost(null)}
           onPublished={handlePublished}
         />,
-        document.body
+        document.body,
       )}
 
-      <div style={{ borderRadius: 8, border: "1px solid var(--lt-border)", background: "var(--lt-bg-card)", overflow: "hidden" }}>
-        <button
-          onClick={() => setOpen((v) => !v)}
-          style={{
-            width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between",
-            padding: "0.65rem 1rem", background: "transparent", border: "none", cursor: "pointer",
-            transition: "background 0.15s",
-          }}
-          onMouseEnter={(e) => e.currentTarget.style.background = "var(--lt-bg-hover)"}
-          onMouseLeave={(e) => e.currentTarget.style.background = "transparent"}
-        >
-          <span style={{ display: "flex", alignItems: "center", gap: "0.5rem", fontFamily: "var(--lt-font-mono)", fontSize: "0.7rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--lt-text-muted)" }}>
-            <span style={{ fontSize: "0.85rem" }}>𝕏</span>
-            <span>Twitter / X</span>
-            {posts.length > 0 && (
-              <span style={{ background: "#000", color: "#fff", fontSize: "0.6rem", fontWeight: 700, borderRadius: 4, padding: "1px 6px", lineHeight: 1.4 }}>
-                {posts.length}
-              </span>
-            )}
-          </span>
-          <svg style={{ width: 14, height: 14, color: "var(--lt-text-faint)", transform: open ? "rotate(180deg)" : "rotate(0deg)", transition: "transform 0.2s" }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-          </svg>
-        </button>
-
-        {open && (
-          <div style={{ padding: "0.75rem 1rem 1rem", borderTop: "1px solid var(--lt-border)", display: "flex", flexDirection: "column", gap: "0.75rem" }}>
-            {statusMsg && (
-              <div style={{
-                borderRadius: 6, padding: "0.4rem 0.75rem",
-                fontFamily: "var(--lt-font-mono)", fontSize: "0.7rem",
-                background: statusMsg.type === "error" ? "rgba(239,68,68,0.1)" : "rgba(34,197,94,0.1)",
-                border: `1px solid ${statusMsg.type === "error" ? "rgba(239,68,68,0.25)" : "rgba(34,197,94,0.25)"}`,
-                color: statusMsg.type === "error" ? "#f87171" : "#4ade80",
-              }}>
-                {statusMsg.text}
-              </div>
-            )}
-
-            <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-              <button
-                onClick={handleImport}
-                disabled={importing}
-                style={{
-                  flexShrink: 0, display: "inline-flex", alignItems: "center", gap: 5,
-                  padding: "0.4rem 0.75rem", borderRadius: 6, border: "none",
-                  background: importing ? "var(--lt-bg-card-2)" : "#000",
-                  color: importing ? "var(--lt-text-faint)" : "#fff",
-                  fontFamily: "var(--lt-font-mono)", fontSize: "0.72rem", fontWeight: 700,
-                  cursor: importing ? "not-allowed" : "pointer",
-                }}
-              >
-                {importing ? "Importiert…" : "𝕏 Tweets importieren"}
-              </button>
-              <button
-                onClick={loadPosts}
-                disabled={loading}
-                style={{
-                  flexShrink: 0, padding: "0.4rem 0.6rem", borderRadius: 6,
-                  border: "1px solid var(--lt-border)", background: "transparent",
-                  color: "var(--lt-text-muted)", fontFamily: "var(--lt-font-mono)", fontSize: "0.7rem",
-                  cursor: loading ? "not-allowed" : "pointer",
-                }}
-                title="Aktualisieren"
-              >
-                ↺
-              </button>
-            </div>
-
-            {loading && (
-              <p style={{ textAlign: "center", padding: "1rem 0", fontFamily: "var(--lt-font-mono)", fontSize: "0.72rem", color: "var(--lt-text-faint)" }}>
-                Lädt…
-              </p>
-            )}
-            {!loading && posts.length === 0 && (
-              <p style={{ textAlign: "center", padding: "1rem 0", fontFamily: "var(--lt-font-mono)", fontSize: "0.72rem", color: "var(--lt-text-faint)" }}>
-                Keine Tweets – erst importieren
-              </p>
-            )}
-            {!loading && posts.length > 0 && (
-              <>
-                <p style={{ fontFamily: "var(--lt-font-mono)", fontSize: "0.62rem", color: "var(--lt-text-faint)", letterSpacing: "0.04em", margin: 0 }}>
-                  Klick → Text bearbeiten + veröffentlichen
-                </p>
-                {posts.some((p) => p.thumbnail_url) ? (
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.4rem" }}>
-                    {posts.map((post) => (
-                      <TweetCard key={post.id} post={post} onClick={setModalPost} onDelete={handleDelete} />
-                    ))}
-                  </div>
-                ) : (
-                  <div style={{ display: "flex", flexDirection: "column", gap: "0.4rem" }}>
-                    {posts.map((post) => (
-                      <TweetCard key={post.id} post={post} onClick={setModalPost} onDelete={handleDelete} />
-                    ))}
-                  </div>
-                )}
-              </>
-            )}
-          </div>
-        )}
-      </div>
+      <SocialPanelShell
+        open={open}
+        onToggle={() => setOpen((v) => !v)}
+        icon="𝕏"
+        label="Twitter / X"
+        badgeCount={posts.length}
+        badgeBackground="#000"
+        importing={importing}
+        loading={loading}
+        onImport={handleImport}
+        onRefresh={loadPosts}
+        importLabel="𝕏 Tweets importieren"
+        importBackground="#000"
+        emptyLabel="Keine Tweets – erst importieren"
+        hintLabel="Klick → Text bearbeiten + veröffentlichen"
+        statusMsg={statusMsg}
+        gridColumns={hasThumbnails ? "1fr 1fr" : "1fr"}
+      >
+        {posts.map((post) => (
+          <TweetCard key={post.id} post={post} onClick={setModalPost} onDelete={handleDelete} />
+        ))}
+      </SocialPanelShell>
     </>
   );
 });

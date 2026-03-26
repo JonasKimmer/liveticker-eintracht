@@ -4,7 +4,7 @@
 import { memo, useState, useCallback, useRef, useEffect } from "react";
 import PropTypes from "prop-types";
 import { getEventMeta } from "../utils/parseCommand";
-import { MATCH_PHASES } from "../constants";
+import { MATCH_PHASES, MEDIA_DEFAULT_ICONS } from "../constants";
 
 const URL_PATTERNS = {
   twitter: /x\.com|twitter\.com/,
@@ -92,8 +92,6 @@ MediaContent.propTypes = {
   videoUrl: PropTypes.string,
   imageUrl: PropTypes.string,
 };
-
-const MEDIA_DEFAULT_ICONS = ["🎬", "📷", "📸"];
 
 function EntryActions({ onEdit, onDelete, tickerTextId, startEdit }) {
   const [confirmOpen, setConfirmOpen] = useState(false);

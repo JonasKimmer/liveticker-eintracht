@@ -12,6 +12,8 @@ import { useLiveMinute } from "../../hooks/useLiveMinute";
 import { useTickerMode } from "../../hooks/useTickerMode";
 import { useNavigation } from "../../hooks/useNavigation";
 import { TickerModeContext } from "../../context/TickerModeContext";
+import { TickerDataContext } from "../../context/TickerDataContext";
+import { TickerActionsContext } from "../../context/TickerActionsContext";
 import config from "../../config/whitelabel";
 
 import { NAV_TABS } from "./constants";
@@ -150,6 +152,16 @@ export default function LiveTicker() {
     [mode, handleModeChange, acceptDraft, rejectDraft],
   );
 
+  const tickerDataCtx = useMemo(
+    () => ({ match, events, tickerTexts, reload }),
+    [match, events, tickerTexts, reload],
+  );
+
+  const tickerActionsCtx = useMemo(
+    () => ({ onGenerate: handleGenerate, onManualPublish: handleManualPublish, onDraftActive: handleDraftActive, onPublished: showPublishToast, onEditEntry: handleEditEntry, onDeleteEntry: handleDeleteEntry }),
+    [handleGenerate, handleManualPublish, handleDraftActive, showPublishToast, handleEditEntry, handleDeleteEntry],
+  );
+
   // ── Instance + Style: automatisch EF wenn Frankfurt-Spiel ──
   const isEfMatch = useMemo(() => {
     const kw = config.teamKeyword?.toLowerCase() ?? "";
@@ -275,6 +287,8 @@ export default function LiveTicker() {
 
   return (
     <TickerModeContext.Provider value={tickerModeCtx}>
+    <TickerDataContext.Provider value={tickerDataCtx}>
+    <TickerActionsContext.Provider value={tickerActionsCtx}>
       <div className="lt">
         <div className={`lt-top-bar${modalOpen ? " lt-top-bar--hidden" : ""}`} ref={topBarRef}>
         <header className="lt-header">
@@ -382,16 +396,8 @@ export default function LiveTicker() {
               />
               <ErrorBoundary>
                 <CenterPanel
-                  match={match}
                   currentMinute={liveMinute}
-                  events={events}
-                  tickerTexts={tickerTexts}
                   generatingId={generatingId}
-                  onGenerate={handleGenerate}
-                  onManualPublish={handleManualPublish}
-                  onDraftActive={handleDraftActive}
-                  onPublished={showPublishToast}
-                  reload={reload}
                   instance={instance}
                   lineups={lineups}
                   players={players}
@@ -401,13 +407,7 @@ export default function LiveTicker() {
           )}
           <div className={`lt-panel-wrap lt-panel-wrap--left${mobilePanel === "left" ? " lt-panel-wrap--active" : ""}`}>
             <ErrorBoundary>
-              <LeftPanel
-                events={events}
-                tickerTexts={tickerTexts}
-                match={match}
-                onEditEntry={handleEditEntry}
-                onDeleteEntry={handleDeleteEntry}
-              />
+              <LeftPanel />
             </ErrorBoundary>
           </div>
           <div className={`lt-panel-wrap${mobilePanel === "right" ? " lt-panel-wrap--active" : ""}`}>
@@ -471,6 +471,8 @@ export default function LiveTicker() {
           />
         )}
       </div>
+    </TickerActionsContext.Provider>
+    </TickerDataContext.Provider>
     </TickerModeContext.Provider>
   );
 }

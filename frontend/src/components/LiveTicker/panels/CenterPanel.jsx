@@ -7,9 +7,11 @@ import { ClipPickerPanel } from "../components/ClipPickerPanel";
 import { YouTubePanel } from "../components/YouTubePanel";
 import { TwitterPanel } from "../components/TwitterPanel";
 import { InstagramPanel } from "../components/InstagramPanel";
-import { MODES, TICKER_STYLES } from "../constants";
+import { MODES, TICKER_STYLES, PREMATCH_PHASES, PHASE_LABEL } from "../constants";
 import logger from "../../../utils/logger";
 import { useTickerModeContext } from "../../../context/TickerModeContext";
+import { useTickerDataContext } from "../../../context/TickerDataContext";
+import { useTickerActionsContext } from "../../../context/TickerActionsContext";
 import { getEventMeta, getRawEventText } from "../utils/parseCommand";
 import * as api from "../../../api";
 import config from "../../../config/whitelabel";
@@ -17,21 +19,6 @@ import config from "../../../config/whitelabel";
 // Welcher Stil im AUTO-Modus verwendet wird
 const AUTO_STYLE = TICKER_STYLES[0];
 
-const PREMATCH_PHASES = new Set(["Before", "PreMatch"]);
-
-const PHASE_LABEL = {
-  Before: "Vorberichterstattung",
-  PreMatch: "Vorberichterstattung",
-  FirstHalf: "Anpfiff 1. HZ",
-  FirstHalfBreak: "Halbzeit",
-  SecondHalf: "Anpfiff 2. HZ",
-  FullTime: "Abpfiff",
-  After: "Abpfiff",
-  ExtraFirstHalf: "Verlängerung",
-  ExtraBreak: "VZ-Pause",
-  ExtraSecondHalf: "Verlängerung 2. HZ",
-  PenaltyShootout: "Elfmeterschießen",
-};
 
 function getDraftLabel(draft) {
   if (draft.phase && PHASE_LABEL[draft.phase]) return PHASE_LABEL[draft.phase];
@@ -49,21 +36,15 @@ function AutoPlayVideo({ src, style }) {
 }
 
 export const CenterPanel = memo(function CenterPanel({
-  match,
   currentMinute = 0,
-  events,
-  tickerTexts,
   generatingId,
-  onGenerate,
-  onManualPublish,
-  onDraftActive,
-  onPublished,
-  reload,
   instance = "ef_whitelabel",
   lineups = [],
   players = [],
 }) {
   const { mode } = useTickerModeContext();
+  const { match, events, tickerTexts, reload } = useTickerDataContext();
+  const { onGenerate, onManualPublish, onDraftActive, onPublished } = useTickerActionsContext();
 
   // Player + team names for autocomplete
   const playerNames = useMemo(() => {
@@ -83,7 +64,6 @@ export const CenterPanel = memo(function CenterPanel({
   const [selectedEventId, setSelectedEventId] = useState(null);
   const [editMode, setEditMode] = useState(false);
   const [editorValue, setEditorValue] = useState("");
-  const [publishing, setPublishing] = useState(false);
   const [bulkGenerating, setBulkGenerating] = useState(false);
   const [dismissedIds, setDismissedIds] = useState(new Set());
   const [autoError, setAutoError] = useState(null);
@@ -278,7 +258,6 @@ export const CenterPanel = memo(function CenterPanel({
   const handleEditPublish = useCallback(async ({ text } = {}) => {
     const textToPublish = text ?? editorValue.trim();
     if (!selectedDraft || !textToPublish) return;
-    setPublishing(true);
     try {
       await api.publishTicker(selectedDraft.id, textToPublish);
       await reload.loadTickerTexts();
@@ -288,8 +267,6 @@ export const CenterPanel = memo(function CenterPanel({
       setSelectedEventId(null);
     } catch (err) {
       logger.error("editPublish failed", err);
-    } finally {
-      setPublishing(false);
     }
   }, [selectedDraft, editorValue, reload, onPublished]);
 
@@ -588,26 +565,19 @@ function SummaryDraftCard({ draft, label = "KI-Text", onPublish, onReject }) {
   );
 }
 
+// match, events, tickerTexts, reload → via TickerDataContext
+// onGenerate, onManualPublish, onDraftActive, onPublished → via TickerActionsContext
 CenterPanel.propTypes = {
-  match: PropTypes.shape({
-    id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
-    homeTeam: PropTypes.shape({ name: PropTypes.string }),
-    awayTeam: PropTypes.shape({ name: PropTypes.string }),
-  }),
   currentMinute: PropTypes.number,
-  events: PropTypes.array.isRequired,
-  tickerTexts: PropTypes.array.isRequired,
   generatingId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
-  onGenerate: PropTypes.func.isRequired,
-  onManualPublish: PropTypes.func.isRequired,
-  onDraftActive: PropTypes.func,
-  onPublished: PropTypes.func,
-  reload: PropTypes.shape({
-    loadTickerTexts: PropTypes.func.isRequired,
-  }).isRequired,
   instance: PropTypes.string,
-  lineups: PropTypes.array,
-  players: PropTypes.array,
+  lineups: PropTypes.arrayOf(PropTypes.shape({ playerName: PropTypes.string })),
+  players: PropTypes.arrayOf(PropTypes.shape({
+    knownName: PropTypes.string,
+    displayName: PropTypes.string,
+    firstName: PropTypes.string,
+    lastName: PropTypes.string,
+  })),
 };
 
 const EventCard = memo(function EventCard({
