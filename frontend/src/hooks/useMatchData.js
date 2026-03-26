@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import * as api from "../api";
 import logger from "../utils/logger";
-import { POLL_EVENTS_MS, SYNC_MATCH_INTERVAL_MS } from "../components/LiveTicker/constants";
+import { POLL_EVENTS_MS, POLL_MATCH_REFRESH_MS, SYNC_MATCH_INTERVAL_MS } from "../components/LiveTicker/constants";
 
 /**
  * Gibt das Polling-Intervall in ms basierend auf dem Spielstatus zurück.
