@@ -45,6 +45,16 @@ export function useMatchTriggers({
   tickerMode = "coop",
   reload,
 }) {
+  // Alle ausstehenden Timeout-IDs — werden beim Match-Wechsel gecancelt
+  // damit veraltete reload-Closures keine alten Daten in den State schreiben (Flash-Bug)
+  const pendingTimeoutsRef = useRef([]);
+  useEffect(() => {
+    return () => {
+      pendingTimeoutsRef.current.forEach(clearTimeout);
+      pendingTimeoutsRef.current = [];
+    };
+  }, [selMatchId]);
+
   // ── Match-Summary via n8n (Halbzeit / Abpfiff) ────────────
   const summaryTriggeredRef = useRef(new Set());
   useEffect(() => {
@@ -93,11 +103,13 @@ export function useMatchTriggers({
   }, [selMatchId, match?.matchState, instance, language]);
 
   // ── Match-Status Webhook beim Match-Open ──────────────────
+  // Composite key: matchId + mode, damit Modus-Wechsel erneuten Trigger auslöst
   const matchStatusTriggeredRef = useRef(new Set());
   useEffect(() => {
     if (!selMatchId || !match?.matchState || !match?.externalId) return;
-    if (matchStatusTriggeredRef.current.has(selMatchId)) return;
-    matchStatusTriggeredRef.current.add(selMatchId);
+    const statusKey = `${selMatchId}:${tickerMode}`;
+    if (matchStatusTriggeredRef.current.has(statusKey)) return;
+    matchStatusTriggeredRef.current.add(statusKey);
 
     let status = null;
     if (match.matchState === MATCH_PHASES.FULL_TIME) {
@@ -112,7 +124,7 @@ export function useMatchTriggers({
         .then(() => {
           // LLM generiert Phasen-Events sequenziell (je ~5s) — mehrfach nachladen
           [4000, 9000, 16000, 24000, 35000, 50000, 70000, 95000, 125000].forEach((delay) => {
-            setTimeout(() => reload.loadTickerTexts(), delay);
+            pendingTimeoutsRef.current.push(setTimeout(() => reload.loadTickerTexts(), delay));
           });
         })
         .catch((err) =>
@@ -120,7 +132,7 @@ export function useMatchTriggers({
         );
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selMatchId, match?.matchState, match?.matchPhase]);
+  }, [selMatchId, match?.matchState, match?.matchPhase, tickerMode]);
 
   // ── Auto-Import: Events ───────────────────────────────────
   useEffect(() => {
@@ -153,11 +165,14 @@ export function useMatchTriggers({
   }, [selMatchId, matchStats.length]);
 
   // ── Auto-Import: Prematch + Synthetic Batch ───────────────
+  // Composite key: selMatchId + tickerMode — damit beim Mode-Wechsel (auto↔coop)
+  // erneut importiert und drafts/published erzeugt werden.
   const prematchImportedRef = useRef(null);
   useEffect(() => {
     if (!selMatchId || !match?.externalId) return;
-    if (prematchImportedRef.current === selMatchId) return;
-    prematchImportedRef.current = selMatchId;
+    const key = `${selMatchId}:${tickerMode}`;
+    if (prematchImportedRef.current === key) return;
+    prematchImportedRef.current = key;
     api
       .importPrematch(match.externalId, tickerMode)
       .then(() => reload.loadPrematch())
@@ -167,14 +182,14 @@ export function useMatchTriggers({
           .then(() => {
             // LLM läuft async — mehrfach nachladen
             [3000, 8000, 15000, 25000, 40000].forEach((delay) => {
-              setTimeout(() => reload.loadTickerTexts(), delay);
+              pendingTimeoutsRef.current.push(setTimeout(() => reload.loadTickerTexts(), delay));
             });
           })
           .catch((err) => logger.error("[useMatchTriggers] generateSyntheticBatch error:", err)),
       )
       .catch((err) => logger.error("[useMatchTriggers] importPrematch error:", err));
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selMatchId, match?.externalId]);
+  }, [selMatchId, match?.externalId, tickerMode]);
 
   // ── Auto-Import: Spieler-Statistiken ─────────────────────
   const playerStatsImportedRef = useRef(null);

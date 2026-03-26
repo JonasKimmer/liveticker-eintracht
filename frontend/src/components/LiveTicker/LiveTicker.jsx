@@ -151,10 +151,12 @@ export default function LiveTicker() {
   );
 
   // Modus in DB schreiben wenn Spiel gewechselt wird (damit n8n-Workflows den richtigen Modus lesen)
+  // modeRef verhindert stale-closure: mode wird immer zum aktuellen Wert gelesen
+  const modeRef = useRef(mode);
+  modeRef.current = mode;
   useEffect(() => {
     if (!selMatchId) return;
-    api.setMatchTickerMode(selMatchId, mode).catch(() => {});
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    api.setMatchTickerMode(selMatchId, modeRef.current).catch(() => {});
   }, [selMatchId]);
 
   const [generatingId, setGeneratingId] = useState(null);
