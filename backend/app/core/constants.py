@@ -81,6 +81,29 @@ STANDARD_PHASES: list[tuple[str, str, int]] = [
 ]
 
 
+# ── Phasen-Sortierung (Backend DB-Reihenfolge) ───────────────
+# Primär-Sortkey: Before → After. Phasen die fehlen → Mitte (5).
+# Wird von TickerEntryRepository.get_by_match() genutzt.
+PHASE_SORT_ORDER: dict[str, int] = {
+    "Before":               0,
+    "FirstHalf":            1,
+    "FirstHalfBreak":       2,
+    "SecondHalf":           3,
+    "SecondHalfBreak":      4,
+    "ExtraFirstHalf":       5,
+    "ExtraBreak":           6,
+    "ExtraSecondHalf":      7,
+    "ExtraSecondHalfBreak": 8,
+    "PenaltyShootout":      9,
+    "After":               10,
+}
+
+# Phasen die einen Spielabschnitt STARTEN → sortieren innerhalb ihrer Minute zuerst
+PHASE_START_SET: frozenset[str] = frozenset({
+    "FirstHalf", "SecondHalf", "ExtraFirstHalf", "ExtraSecondHalf", "PenaltyShootout",
+})
+
+
 # ── Gültige Ticker-Phasen ────────────────────────────────────
 # Alle erlaubten Phase-Strings für Ticker-Einträge (Validierung an API-Grenzen).
 VALID_PHASES: frozenset[str] = frozenset({

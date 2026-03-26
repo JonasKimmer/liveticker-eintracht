@@ -13,12 +13,9 @@ from sqlalchemy.orm import Session
 
 from app.models.competition import Competition
 from app.schemas.competition import CompetitionCreate, CompetitionUpdate
+from app.utils.db_utils import str_or_none as _str_or_none
 
 logger = logging.getLogger(__name__)
-
-
-def _str_or_none(value: object) -> str | None:
-    return str(value) if value else None
 
 
 class CompetitionRepository:

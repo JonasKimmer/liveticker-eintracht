@@ -1,9 +1,12 @@
 import { useState, useEffect, useCallback, useRef, memo, useMemo } from "react";
 import PropTypes from "prop-types";
 import { AIDraft } from "../components/AIDraft";
+import { CollapsibleSection } from "../components/CollapsibleSection";
 import { EntryEditor } from "../components/EntryEditor";
+import { EventCard } from "../components/EventCard";
 import { MediaPickerPanel } from "../components/MediaPickerPanel";
 import { ClipPickerPanel } from "../components/ClipPickerPanel";
+import { SummaryDraftCard } from "../components/SummaryDraftCard";
 import { YouTubePanel } from "../components/YouTubePanel";
 import { TwitterPanel } from "../components/TwitterPanel";
 import { InstagramPanel } from "../components/InstagramPanel";
@@ -12,7 +15,6 @@ import logger from "../../../utils/logger";
 import { useTickerModeContext } from "../../../context/TickerModeContext";
 import { useTickerDataContext } from "../../../context/TickerDataContext";
 import { useTickerActionsContext } from "../../../context/TickerActionsContext";
-import { getEventMeta, getRawEventText } from "../utils/parseCommand";
 import * as api from "../../../api";
 import config from "../../../config/whitelabel";
 
@@ -505,66 +507,6 @@ export const CenterPanel = memo(function CenterPanel({
   );
 });
 
-function CollapsibleSection({ title, count, actions, defaultOpen = true, children }) {
-  const [open, setOpen] = useState(defaultOpen);
-  return (
-    <div style={{ marginBottom: "1rem" }}>
-      <div
-        className="lt-center__section-title"
-        style={{ cursor: "pointer", display: "flex", justifyContent: "space-between", alignItems: "center", gap: "0.5rem" }}
-        onClick={() => setOpen((v) => !v)}
-      >
-        <span>{title}{count != null ? ` (${count})` : ""}</span>
-        <div style={{ display: "flex", alignItems: "center", gap: "0.4rem" }} onClick={(e) => e.stopPropagation()}>
-          {actions}
-          <span style={{ fontSize: "0.65rem", opacity: 0.5, pointerEvents: "none" }}>{open ? "▲" : "▼"}</span>
-        </div>
-      </div>
-      {open && children}
-    </div>
-  );
-}
-
-function SummaryDraftCard({ draft, label = "KI-Text", onPublish, onReject }) {
-  const [editing, setEditing] = useState(false);
-  const [text, setText] = useState(draft.text ?? "");
-  return (
-    <div className="lt-draft" style={{ marginBottom: "0.5rem" }}>
-      <div className="lt-draft__header">
-        <span style={{ fontSize: "0.9rem" }}>{draft.icon ?? "✦"}</span>
-        <span className="lt-draft__label">{label}</span>
-      </div>
-      <div className="lt-draft__text-wrap">
-        {editing ? (
-          <textarea
-            value={text}
-            onChange={(e) => setText(e.target.value)}
-            rows={5}
-            className="lt-entry__edit-textarea"
-            autoFocus
-            style={{ width: "100%", marginBottom: "0.5rem" }}
-          />
-        ) : (
-          <p className="lt-draft__text" style={{ cursor: "text" }} onClick={() => setEditing(true)} title="Klicken zum Bearbeiten">
-            {text || "Generiere Text…"}
-          </p>
-        )}
-      </div>
-      <div className="lt-draft__actions">
-        <button className="lt-btn lt-btn--primary" onClick={() => onPublish(text)}>
-          Annehmen <kbd className="lt-btn__kbd">TAB</kbd>
-        </button>
-        <button className="lt-btn lt-btn--ghost" onClick={onReject}>
-          Ablehnen <kbd className="lt-btn__kbd">ESC</kbd>
-        </button>
-        <button className="lt-btn lt-btn--ghost" onClick={() => setEditing((v) => !v)}>
-          {editing ? "✓ Fertig" : "✎ Bearbeiten"}
-        </button>
-      </div>
-    </div>
-  );
-}
-
 // match, events, tickerTexts, reload → via TickerDataContext
 // onGenerate, onManualPublish, onDraftActive, onPublished → via TickerActionsContext
 CenterPanel.propTypes = {
@@ -580,83 +522,3 @@ CenterPanel.propTypes = {
   })),
 };
 
-const EventCard = memo(function EventCard({
-  event,
-  draft,
-  isSelected,
-  generatingId,
-  onGenerate,
-  onSelect,
-  onDismiss,
-  showGenButtons,
-}) {
-  const { icon, cssClass } = getEventMeta(event.liveTickerEventType, null);
-  const [confirmDismiss, setConfirmDismiss] = useState(false);
-
-  return (
-    <div
-      className={`lt-event-card lt-event-card--${cssClass}${isSelected ? " lt-event-card--selected" : ""}`}
-      onClick={onSelect}
-      role={onSelect ? "button" : undefined}
-      tabIndex={onSelect ? 0 : undefined}
-    >
-      <div className="lt-event-card__row">
-        <span className="lt-event-card__minute">{event.time}'</span>
-        <span className="lt-event-card__icon">{icon}</span>
-        <span className="lt-event-card__raw">
-          {draft?.text ?? getRawEventText(event)}
-        </span>
-        {onDismiss && !confirmDismiss && (
-          <button
-            onClick={(e) => { e.stopPropagation(); setConfirmDismiss(true); }}
-            title="Entfernen"
-            style={{ marginLeft: "auto", flexShrink: 0, background: "none", border: "none", color: "var(--lt-text-faint)", cursor: "pointer", fontSize: "0.75rem", padding: "0 2px", opacity: 0.5 }}
-          >✕</button>
-        )}
-        {confirmDismiss && (
-          <div className="lt-delete-confirm" style={{ marginLeft: "auto" }} onClick={(e) => e.stopPropagation()}>
-            <span className="lt-delete-confirm__label">Entfernen?</span>
-            <button className="lt-delete-confirm__btn lt-delete-confirm__btn--ok" onClick={() => { onDismiss(); setConfirmDismiss(false); }}>Ja</button>
-            <button className="lt-delete-confirm__btn lt-delete-confirm__btn--cancel" onClick={() => setConfirmDismiss(false)}>Nein</button>
-          </div>
-        )}
-      </div>
-
-      {showGenButtons && !draft && (
-        <div className="lt-event-card__gen-btns">
-          {TICKER_STYLES.map((s) => (
-            <button
-              key={s}
-              className="lt-event-card__gen-btn"
-              onClick={(e) => {
-                e.stopPropagation();
-                onGenerate(event.id, s);
-              }}
-              disabled={generatingId === event.id}
-            >
-              {generatingId === event.id ? "…" : `✦ ${s}`}
-            </button>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-});
-
-EventCard.propTypes = {
-  event: PropTypes.shape({
-    id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
-    time: PropTypes.number,
-    liveTickerEventType: PropTypes.string,
-  }).isRequired,
-  draft: PropTypes.shape({
-    id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
-    text: PropTypes.string,
-  }),
-  isSelected: PropTypes.bool,
-  generatingId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
-  onGenerate: PropTypes.func.isRequired,
-  onSelect: PropTypes.func,
-  onDismiss: PropTypes.func,
-  showGenButtons: PropTypes.bool.isRequired,
-};

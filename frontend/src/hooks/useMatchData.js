@@ -1,17 +1,23 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import * as api from "../api";
 import logger from "../utils/logger";
-import { POLL_EVENTS_MS, POLL_MATCH_REFRESH_MS } from "../components/LiveTicker/constants";
+import { POLL_EVENTS_MS, SYNC_MATCH_INTERVAL_MS } from "../components/LiveTicker/constants";
 
 /**
  * Gibt das Polling-Intervall in ms basierend auf dem Spielstatus zurück.
- * Live-Spiele werden aggressiv gepollert, Pre- und Post-Match deutlich seltener.
+ *
+ * @param {string|null} matchState - z.B. "Live", "FullTime", "PreMatch", null (noch am Laden)
+ * @returns {number} Intervall in Millisekunden
+ *
+ * Live + FullTime pollen aggressiv (POLL_EVENTS_MS = 5 s) damit Events sofort erscheinen.
+ * null (noch am Laden) ebenfalls 5 s — konservativer Fallback bis Status bekannt ist.
+ * Alle anderen Zustände (PreMatch, Cancelled …) pollen nur alle 60 s (SYNC_MATCH_INTERVAL_MS).
  */
 function resolvePollingInterval(matchState) {
-  if (matchState === "Live") return 5_000;
-  if (matchState === "FullTime") return 5_000;
-  if (matchState == null) return 5_000; // Noch am Laden — konservativ pollen
-  return 60_000; // PreMatch, Cancelled, etc.
+  if (matchState === "Live")     return POLL_EVENTS_MS;
+  if (matchState === "FullTime") return POLL_EVENTS_MS;
+  if (matchState == null)        return POLL_EVENTS_MS; // Noch am Laden — konservativ pollen
+  return SYNC_MATCH_INTERVAL_MS; // PreMatch, Cancelled, etc.
 }
 
 /**

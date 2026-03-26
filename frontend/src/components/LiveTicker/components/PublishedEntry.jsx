@@ -4,7 +4,7 @@
 import { memo, useState, useCallback, useRef, useEffect } from "react";
 import PropTypes from "prop-types";
 import { getEventMeta } from "../utils/parseCommand";
-import { MATCH_PHASES, MEDIA_DEFAULT_ICONS, URL_PATTERNS } from "../constants";
+import { MEDIA_DEFAULT_ICONS, URL_PATTERNS, PHASE_SHORT_LABEL, PHASE_DEFAULT_ICON } from "../constants";
 
 
 function getMediaIcon(videoUrl, imageUrl, fallback) {
@@ -199,32 +199,8 @@ export const PublishedEntry = memo(function PublishedEntry({
   }
 
   if (isManual) {
-    const phaseLabel = {
-      [MATCH_PHASES.BEFORE]:                  "i",
-      [MATCH_PHASES.AFTER]:                   "i",
-      [MATCH_PHASES.FULL_TIME]:               "FT",
-      [MATCH_PHASES.HALFTIME]:                "HZ",
-      [MATCH_PHASES.FIRST_HALF_BREAK]:        "HZ",
-      [MATCH_PHASES.SECOND_HALF]:             "Anstoß",
-      [MATCH_PHASES.SECOND_HALF_BREAK]:       "Pause",
-      [MATCH_PHASES.EXTRA_BREAK]:             "VZ·P",
-      [MATCH_PHASES.EXTRA_SECOND_HALF_BREAK]: "Elfm.P",
-      [MATCH_PHASES.EXTRA_FIRST_HALF]:        "VZ1",
-      [MATCH_PHASES.EXTRA_SECOND_HALF]:       "VZ2",
-      [MATCH_PHASES.PENALTY_SHOOTOUT]:        "Elfm.",
-    }[tickerText?.phase];
-    const phaseIcon = {
-      [MATCH_PHASES.FIRST_HALF]:              "📣",
-      [MATCH_PHASES.SECOND_HALF]:             "📣",
-      [MATCH_PHASES.EXTRA_FIRST_HALF]:        "📣",
-      [MATCH_PHASES.EXTRA_SECOND_HALF]:       "📣",
-      [MATCH_PHASES.FIRST_HALF_BREAK]:        "📣",
-      [MATCH_PHASES.SECOND_HALF_BREAK]:       "📣",
-      [MATCH_PHASES.EXTRA_BREAK]:             "📣",
-      [MATCH_PHASES.AFTER]:                   "📣",
-      [MATCH_PHASES.FULL_TIME]:               "📣",
-      [MATCH_PHASES.PENALTY_SHOOTOUT]:        "🥅",
-    }[tickerText?.phase] ?? icon ?? "•";
+    const phaseLabel = PHASE_SHORT_LABEL[tickerText?.phase];
+    const phaseIcon  = (PHASE_DEFAULT_ICON[tickerText?.phase] ?? icon) ?? "•";
     // Dedup-Keys (z.B. "pass_h_90") sind kein Emoji → Fallback auf 📊
     const isCodeKey = tickerText?.icon && /^[a-z0-9_]+$/i.test(tickerText.icon);
     const displayIcon = isCodeKey ? "📊" : (tickerText?.icon ?? phaseIcon);

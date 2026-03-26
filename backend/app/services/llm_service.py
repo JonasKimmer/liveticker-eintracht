@@ -467,16 +467,26 @@ class LLMService:
 
 from app.core.config import settings
 
+# Provider → API-Key-Mapping (einzige Quelle; wird in _build_singleton + generate_ticker_text genutzt)
+_PROVIDER_KEY_MAP: dict[str, str | None] = {
+    "openrouter": settings.OPENROUTER_API_KEY,
+    "gemini":     settings.GEMINI_API_KEY,
+    "openai":     settings.OPENAI_API_KEY,
+    "anthropic":  settings.ANTHROPIC_API_KEY,
+}
+
+_PROVIDER_DEFAULT_MODEL: dict[str, str] = {
+    "openrouter": settings.OPENROUTER_MODEL,
+    "gemini":     "gemini-2.0-flash-lite-001",
+    "openai":     "gpt-4o-mini",
+    "anthropic":  "claude-haiku-4-5-20251001",
+}
+
 
 def _build_singleton() -> LLMService:
-    candidates = [
-        ("openrouter", settings.OPENROUTER_API_KEY, settings.OPENROUTER_MODEL),
-        ("gemini",     settings.GEMINI_API_KEY,     "gemini-2.0-flash-lite-001"),
-        ("openai",     settings.OPENAI_API_KEY,     "gpt-4o-mini"),
-        ("anthropic",  settings.ANTHROPIC_API_KEY,  "claude-haiku-4-5-20251001"),
-    ]
-    for provider, key, model in candidates:
+    for provider, key in _PROVIDER_KEY_MAP.items():
         if key:
+            model = _PROVIDER_DEFAULT_MODEL[provider]
             logger.info("LLM Provider: %s / %s", provider, model)
             return LLMService(provider=provider, api_key=key, model=model)
     logger.warning("Kein API Key gefunden – LLM läuft im MOCK-Modus")
@@ -519,14 +529,8 @@ async def generate_ticker_text(
 
     # Provider/Model Override (Evaluation)
     if provider and provider != _provider:
-        key_map = {
-            "openrouter": settings.OPENROUTER_API_KEY,
-            "gemini":     settings.GEMINI_API_KEY,
-            "openai":     settings.OPENAI_API_KEY,
-            "anthropic":  settings.ANTHROPIC_API_KEY,
-        }
         active_service = LLMService(
-            provider=provider, api_key=key_map.get(provider), model=model
+            provider=provider, api_key=_PROVIDER_KEY_MAP.get(provider), model=model
         )
     else:
         active_service = llm_service
@@ -561,7 +565,6 @@ async def generate_ticker_text(
                 wait = LLM_RATE_LIMIT_WAIT_BASE_S * (attempt + 1) if _is_rate_limit(exc) else 2 ** attempt
                 logger.warning(
                     "LLM attempt %d/%d failed (%s), retrying in %ds…",
-                    attempt + 1, LLM_RETRY_ATTEMPTS,
                     attempt + 1, LLM_RETRY_ATTEMPTS, exc, wait,
                 )
                 await asyncio.sleep(wait)

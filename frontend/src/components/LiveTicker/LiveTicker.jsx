@@ -35,6 +35,7 @@ import { StartScreen } from "./components/StartScreen";
 import { Breadcrumb } from "./components/Breadcrumb";
 import { NavDrawer } from "./components/NavDrawer";
 import { useApiStatus, API_STATUS_CFG } from "../../hooks/useApiStatus";
+import { useKeyboardShortcuts } from "../../hooks/useKeyboardShortcuts";
 import { useMatchTriggers } from "../../hooks/useMatchTriggers";
 import { usePanelResize } from "../../hooks/usePanelResize";
 import { CommandsModal } from "./components/CommandsModal";
@@ -226,29 +227,11 @@ export default function LiveTicker() {
   });
 
   // ── Keyboard Shortcuts ────────────────────────────────────
-  useEffect(() => {
-    const handler = (e) => {
-      const tag = e.target?.tagName;
-      if (
-        e.key === "?" &&
-        !e.ctrlKey &&
-        !e.metaKey &&
-        tag !== "TEXTAREA" &&
-        tag !== "INPUT"
-      )
-        setShowHints((s) => !s);
-    };
-    const imgHandler = () => setShowHints(true);
-    const cmdHandler = () => setShowCommands(true);
-    window.addEventListener("keydown", handler);
-    window.addEventListener("lt-show-hints", imgHandler);
-    window.addEventListener("lt-show-commands", cmdHandler);
-    return () => {
-      window.removeEventListener("keydown", handler);
-      window.removeEventListener("lt-show-hints", imgHandler);
-      window.removeEventListener("lt-show-commands", cmdHandler);
-    };
-  }, []);
+  useKeyboardShortcuts({
+    onToggleHints: () => setShowHints((s) => !s),
+    onShowHints:   () => setShowHints(true),
+    onShowCommands: () => setShowCommands(true),
+  });
 
   // ── Ticker-Callbacks ──────────────────────────────────────
   const handleGenerate = useCallback(

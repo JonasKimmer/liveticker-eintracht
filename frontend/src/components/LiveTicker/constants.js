@@ -130,6 +130,37 @@ export const PHASE_LABEL = {
 // ── Vorberichts-Phasen ────────────────────────────────────────
 export const PREMATCH_PHASES = new Set(["Before", "PreMatch"]);
 
+// ── Kurzbezeichnungen für Phasen (Minuten-Spalte im Ticker) ──
+// Kurze Anzeige-Labels z.B. "HZ", "FT" — getrennt von PHASE_LABEL (vollständige Namen).
+export const PHASE_SHORT_LABEL = {
+  Before:               "i",
+  After:                "i",
+  FullTime:             "FT",
+  Halftime:             "HZ",
+  FirstHalfBreak:       "HZ",
+  SecondHalf:           "Anstoß",
+  SecondHalfBreak:      "Pause",
+  ExtraBreak:           "VZ·P",
+  ExtraSecondHalfBreak: "Elfm.P",
+  ExtraFirstHalf:       "VZ1",
+  ExtraSecondHalf:      "VZ2",
+  PenaltyShootout:      "Elfm.",
+};
+
+// ── Standard-Icons für Phasen-Events (Manual-Einträge) ───────
+export const PHASE_DEFAULT_ICON = {
+  FirstHalf:        "📣",
+  SecondHalf:       "📣",
+  ExtraFirstHalf:   "📣",
+  ExtraSecondHalf:  "📣",
+  FirstHalfBreak:   "📣",
+  SecondHalfBreak:  "📣",
+  ExtraBreak:       "📣",
+  After:            "📣",
+  FullTime:         "📣",
+  PenaltyShootout:  "🥅",
+};
+
 // ── Command-Prefix-Regex ──────────────────────────────────────
 // Matcht /command + whitespace am Anfang (z.B. "/g " oder "/gelb ").
 export const COMMAND_PREFIX_REGEX = /^\/\w+\s*/;

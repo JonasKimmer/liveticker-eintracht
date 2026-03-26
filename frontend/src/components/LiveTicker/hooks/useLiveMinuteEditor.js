@@ -9,6 +9,7 @@
  * Used by: EntryEditor, MediaPickerPanel (PublishModal)
  */
 import { useState, useEffect } from "react";
+import { SYNC_MATCH_INTERVAL_MS } from "../constants";
 
 /**
  * @param {number|null} currentMinute - Live minute from the parent (e.g. match.minute)
@@ -31,7 +32,7 @@ export function useLiveMinuteEditor(currentMinute) {
   // Tick up every 60 s when match is running and minute not locked
   useEffect(() => {
     if (minuteOverride || !minute) return;
-    const id = setInterval(() => setMinute((m) => m + 1), 60000);
+    const id = setInterval(() => setMinute((m) => m + 1), SYNC_MATCH_INTERVAL_MS);
     return () => clearInterval(id);
   }, [minuteOverride, minute]);
 

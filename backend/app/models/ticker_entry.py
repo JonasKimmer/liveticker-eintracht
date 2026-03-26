@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Enum as SAEnum, Integer, String, Text, TIMESTAMP, ForeignKey
+from sqlalchemy import Column, Enum as SAEnum, Index, Integer, String, Text, TIMESTAMP, ForeignKey
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from app.core.database import Base
@@ -40,3 +40,12 @@ class TickerEntry(Base):
 
     match = relationship("Match", back_populates="ticker_entries")
     event = relationship("Event", back_populates="ticker_entries")
+
+    __table_args__ = (
+        # Häufigste Query: alle publizierten Einträge eines Spiels
+        Index("ix_ticker_match_status", "match_id", "status"),
+        # Phase-Filter (get_by_phase, Dedup-Check)
+        Index("ix_ticker_match_phase", "match_id", "phase"),
+        # Lookup per Event-ID (generate_for_event dedup-check)
+        Index("ix_ticker_event_id", "event_id"),
+    )

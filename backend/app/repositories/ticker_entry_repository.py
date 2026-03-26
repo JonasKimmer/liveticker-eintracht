@@ -15,6 +15,7 @@ from typing import Optional
 
 from sqlalchemy.orm import Session
 
+from app.core.constants import PHASE_SORT_ORDER, PHASE_START_SET
 from app.models.ticker_entry import TickerEntry
 from app.schemas.ticker_entry import TickerEntryCreate, TickerEntryUpdate, TickerStatus
 
@@ -25,23 +26,6 @@ class TickerEntryRepository:
     def __init__(self, db: Session) -> None:
         self.db = db
 
-    _PHASE_ORDER = {
-        "Before":               0,
-        "FirstHalf":            1,
-        "FirstHalfBreak":       2,
-        "SecondHalf":           3,
-        "SecondHalfBreak":      4,
-        "ExtraFirstHalf":       5,
-        "ExtraBreak":           6,
-        "ExtraSecondHalf":      7,
-        "ExtraSecondHalfBreak": 8,
-        "PenaltyShootout":      9,
-        "After":               10,
-    }
-
-    # Phasen die einen Spielabschnitt STARTEN → sortieren innerhalb ihrer Minute zuerst
-    _PHASE_FIRST = frozenset({"FirstHalf", "SecondHalf", "ExtraFirstHalf", "ExtraSecondHalf", "PenaltyShootout"})
-
     def get_by_match(
         self, match_id: int, published_only: bool = True
     ) -> list[TickerEntry]:
@@ -51,9 +35,9 @@ class TickerEntryRepository:
         entries = q.order_by(TickerEntry.created_at.desc()).all()
         entries.sort(
             key=lambda e: (
-                self._PHASE_ORDER.get(e.phase, 5) if e.phase else 5,
+                PHASE_SORT_ORDER.get(e.phase, 5) if e.phase else 5,
                 e.minute if e.minute is not None else 999,
-                0 if (e.synthetic_event_id is not None and e.phase in self._PHASE_FIRST) else 1,
+                0 if (e.synthetic_event_id is not None and e.phase in PHASE_START_SET) else 1,
                 e.created_at,
             )
         )
