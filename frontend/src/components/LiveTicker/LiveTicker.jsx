@@ -1,7 +1,14 @@
 // ============================================================
 // LiveTicker.jsx — Hauptkomponente
 // ============================================================
-import { useState, useEffect, useLayoutEffect, useCallback, useMemo, useRef } from "react";
+import {
+  useState,
+  useEffect,
+  useLayoutEffect,
+  useCallback,
+  useMemo,
+  useRef,
+} from "react";
 import { useClickOutside } from "../../hooks/useClickOutside";
 import "./LiveTicker.css";
 import logger from "../../utils/logger";
@@ -33,6 +40,7 @@ import { usePanelResize } from "../../hooks/usePanelResize";
 import { CommandsModal } from "./components/CommandsModal";
 import { PublishToast } from "./components/PublishToast";
 import ErrorBoundary from "../ErrorBoundary";
+import logoImage from "../../Gemini_Generated_Image_t8l3p5t8l3p5t8l3.png";
 
 export default function LiveTicker() {
   // ── Navigation (Länder / Teams / Wettbewerbe / Spiele) ────
@@ -54,7 +62,12 @@ export default function LiveTicker() {
   const [activeTab, setActiveTab] = useState("teams");
 
   // ── Resizable Panels ──────────────────────────────────────
-  const { rightW, centerW, handleResizeMouseDown, handleCenterResizeMouseDown } = usePanelResize();
+  const {
+    rightW,
+    centerW,
+    handleResizeMouseDown,
+    handleCenterResizeMouseDown,
+  } = usePanelResize();
 
   // ── Match-Daten ───────────────────────────────────────────
   const {
@@ -71,8 +84,8 @@ export default function LiveTicker() {
   } = useMatchData(selMatchId);
 
   const liveMinute = useLiveMinute(match);
-  const apiStatus  = useApiStatus();
-  const apiCfg     = API_STATUS_CFG[apiStatus];
+  const apiStatus = useApiStatus();
+  const apiCfg = API_STATUS_CFG[apiStatus];
 
   // ── Aktiver Draft ─────────────────────────────────────────
   const [activeDraftId, setActiveDraftId] = useState(null);
@@ -125,18 +138,23 @@ export default function LiveTicker() {
   const { mode, setMode } = useTickerMode(acceptDraft, rejectDraft);
 
   // Modus in DB speichern wenn gewechselt wird
-  const handleModeChange = useCallback(async (newMode) => {
-    setMode(newMode);
-    if (selMatchId) {
-      try { await api.setMatchTickerMode(selMatchId, newMode); } catch (_) {}
-    }
-  }, [setMode, selMatchId]);
+  const handleModeChange = useCallback(
+    async (newMode) => {
+      setMode(newMode);
+      if (selMatchId) {
+        try {
+          await api.setMatchTickerMode(selMatchId, newMode);
+        } catch (_) {}
+      }
+    },
+    [setMode, selMatchId],
+  );
 
   // Modus in DB schreiben wenn Spiel gewechselt wird (damit n8n-Workflows den richtigen Modus lesen)
   useEffect(() => {
     if (!selMatchId) return;
     api.setMatchTickerMode(selMatchId, mode).catch(() => {});
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selMatchId]);
 
   const [generatingId, setGeneratingId] = useState(null);
@@ -165,8 +183,8 @@ export default function LiveTicker() {
     const away = match.awayTeam?.name?.toLowerCase() ?? "";
     return home.includes(kw) || away.includes(kw);
   }, [match]);
-  const instance  = isEfMatch ? "ef_whitelabel" : "generic";
-  const efStyle   = isEfMatch ? "euphorisch"    : "neutral";
+  const instance = isEfMatch ? "ef_whitelabel" : "generic";
+  const efStyle = isEfMatch ? "euphorisch" : "neutral";
 
   // ── Language ───────────────────────────────────────────────
   const [language, setLanguage] = useState("de");
@@ -175,28 +193,50 @@ export default function LiveTicker() {
   useClickOutside(langPickerRef, () => setShowLangPicker(false));
 
   const translateDebounceRef = useRef(null);
-  const handleLanguageChange = useCallback((lang) => {
-    setLanguage(lang);
-    if (!selMatchId || lang === language) return;
-    if (translateDebounceRef.current) clearTimeout(translateDebounceRef.current);
-    translateDebounceRef.current = setTimeout(async () => {
-      try {
-        await api.translateTickerBatch(selMatchId, lang);
-        await reload.loadTickerTexts();
-      } catch (err) {
-        logger.error("translateTickerBatch error:", err);
-      }
-    }, 600);
-  }, [selMatchId, language, reload]);
+  const handleLanguageChange = useCallback(
+    (lang) => {
+      setLanguage(lang);
+      if (!selMatchId || lang === language) return;
+      if (translateDebounceRef.current)
+        clearTimeout(translateDebounceRef.current);
+      translateDebounceRef.current = setTimeout(async () => {
+        try {
+          await api.translateTickerBatch(selMatchId, lang);
+          await reload.loadTickerTexts();
+        } catch (err) {
+          logger.error("translateTickerBatch error:", err);
+        }
+      }, 600);
+    },
+    [selMatchId, language, reload],
+  );
 
   // ── n8n Webhooks + Auto-Imports ───────────────────────────
-  useMatchTriggers({ selMatchId, match, events, lineups, matchStats, tickerTexts, instance, style: efStyle, language, tickerMode: mode, reload });
+  useMatchTriggers({
+    selMatchId,
+    match,
+    events,
+    lineups,
+    matchStats,
+    tickerTexts,
+    instance,
+    style: efStyle,
+    language,
+    tickerMode: mode,
+    reload,
+  });
 
   // ── Keyboard Shortcuts ────────────────────────────────────
   useEffect(() => {
     const handler = (e) => {
       const tag = e.target?.tagName;
-      if (e.key === "?" && !e.ctrlKey && !e.metaKey && tag !== "TEXTAREA" && tag !== "INPUT")
+      if (
+        e.key === "?" &&
+        !e.ctrlKey &&
+        !e.metaKey &&
+        tag !== "TEXTAREA" &&
+        tag !== "INPUT"
+      )
         setShowHints((s) => !s);
     };
     const imgHandler = () => setShowHints(true);
@@ -212,46 +252,78 @@ export default function LiveTicker() {
   }, []);
 
   // ── Ticker-Callbacks ──────────────────────────────────────
-  const handleGenerate = useCallback(async (eventId, style) => {
-    setGeneratingId(eventId);
-    try {
-      await api.generateTicker(eventId, style, instance, language);
-      await reload.loadTickerTexts();
-    } catch (err) {
-      logger.error("generateTicker error:", err);
-    } finally {
-      setGeneratingId(null);
-    }
-  }, [reload, instance, language]);
+  const handleGenerate = useCallback(
+    async (eventId, style) => {
+      setGeneratingId(eventId);
+      try {
+        await api.generateTicker(eventId, style, instance, language);
+        await reload.loadTickerTexts();
+      } catch (err) {
+        logger.error("generateTicker error:", err);
+      } finally {
+        setGeneratingId(null);
+      }
+    },
+    [reload, instance, language],
+  );
 
-  const handleManualPublish = useCallback(async (text, icon = "📝", minute, phase) => {
-    try {
-      const res = await api.createManualTicker(selMatchId, text, icon, minute, phase);
-      await reload.loadTickerTexts();
-      if (res?.data?.id) showPublishToast(res.data.id, text);
-    } catch (err) {
-      logger.error("manualPublish error:", err);
-    }
-  }, [selMatchId, reload, showPublishToast]);
+  const handleManualPublish = useCallback(
+    async (text, icon = "📝", minute, phase) => {
+      try {
+        const res = await api.createManualTicker(
+          selMatchId,
+          text,
+          icon,
+          minute,
+          phase,
+        );
+        await reload.loadTickerTexts();
+        if (res?.data?.id) showPublishToast(res.data.id, text);
+      } catch (err) {
+        logger.error("manualPublish error:", err);
+      }
+    },
+    [selMatchId, reload, showPublishToast],
+  );
 
   const handleDraftActive = useCallback((id, text) => {
     setActiveDraftId(id);
     setActiveDraftText(text);
   }, []);
 
-  const handleEditEntry = useCallback(async (id, text) => {
-    await api.updateTicker(id, { text });
-    await reload.loadTickerTexts();
-  }, [reload]);
+  const handleEditEntry = useCallback(
+    async (id, text) => {
+      await api.updateTicker(id, { text });
+      await reload.loadTickerTexts();
+    },
+    [reload],
+  );
 
-  const handleDeleteEntry = useCallback(async (id) => {
-    await api.deleteTicker(id);
-    await reload.loadTickerTexts();
-  }, [reload]);
+  const handleDeleteEntry = useCallback(
+    async (id) => {
+      await api.deleteTicker(id);
+      await reload.loadTickerTexts();
+    },
+    [reload],
+  );
 
   const tickerActionsCtx = useMemo(
-    () => ({ onGenerate: handleGenerate, onManualPublish: handleManualPublish, onDraftActive: handleDraftActive, onPublished: showPublishToast, onEditEntry: handleEditEntry, onDeleteEntry: handleDeleteEntry }),
-    [handleGenerate, handleManualPublish, handleDraftActive, showPublishToast, handleEditEntry, handleDeleteEntry],
+    () => ({
+      onGenerate: handleGenerate,
+      onManualPublish: handleManualPublish,
+      onDraftActive: handleDraftActive,
+      onPublished: showPublishToast,
+      onEditEntry: handleEditEntry,
+      onDeleteEntry: handleDeleteEntry,
+    }),
+    [
+      handleGenerate,
+      handleManualPublish,
+      handleDraftActive,
+      showPublishToast,
+      handleEditEntry,
+      handleDeleteEntry,
+    ],
   );
 
   const topBarRef = useRef(null);
@@ -260,7 +332,10 @@ export default function LiveTicker() {
   useLayoutEffect(() => {
     const el = topBarRef.current;
     if (!el) return;
-    document.documentElement.style.setProperty("--lt-top-bar-h", `${el.getBoundingClientRect().height}px`);
+    document.documentElement.style.setProperty(
+      "--lt-top-bar-h",
+      `${el.getBoundingClientRect().height}px`,
+    );
   }, [match]);
 
   // ResizeObserver für Orientierungswechsel + sonstige Größenänderungen
@@ -268,7 +343,10 @@ export default function LiveTicker() {
     const el = topBarRef.current;
     if (!el) return;
     const ro = new ResizeObserver(([entry]) => {
-      document.documentElement.style.setProperty("--lt-top-bar-h", `${entry.contentRect.height}px`);
+      document.documentElement.style.setProperty(
+        "--lt-top-bar-h",
+        `${entry.contentRect.height}px`,
+      );
     });
     ro.observe(el);
     return () => ro.disconnect();
@@ -287,192 +365,266 @@ export default function LiveTicker() {
 
   return (
     <TickerModeContext.Provider value={tickerModeCtx}>
-    <TickerDataContext.Provider value={tickerDataCtx}>
-    <TickerActionsContext.Provider value={tickerActionsCtx}>
-      <div className="lt">
-        <div className={`lt-top-bar${modalOpen ? " lt-top-bar--hidden" : ""}`} ref={topBarRef}>
-        <header className="lt-header">
-          <div
-            className="lt-header__logo"
-            onClick={() => setSelMatchId(null)}
-            title="Zurück zur Startseite"
-          >
-            {config.clubName}
-          </div>
-          <Breadcrumb
-            match={match}
-            competition={curCompetition}
-            country={navProps.selCountry}
-            team={teams.find((t) => t.id === selTeamId)}
-            round={navProps.selRound}
-            matchdays={navProps.matchdays}
-            onOpen={() => setModalOpen(true)}
-          />
-          <div className="lt-header__status">
-            {NAV_TABS.filter((t) => t.id !== "teams").map(({ id, label }) => (
-              <button
-                key={id}
-                className={`lt-header__nav-tab${activeTab === id ? " lt-header__nav-tab--active" : ""}`}
-                onClick={() => { setActiveTab(id); setModalOpen(true); }}
-              >
-                {label}
-              </button>
-            ))}
-            <span className="lt-header__sep">|</span>
-            <div className="lt-header__dot" style={{ background: apiCfg.dot }} title={`Backend: ${apiCfg.label}`} />
-            {instance === "ef_whitelabel" && (
-              <span className="lt-header__hint lt-header__hint--active" title="EF-Schreibstil aktiv (Stilreferenzen aus DB)">
-                EF
-              </span>
-            )}
-            <span className="lt-header__sep">|</span>
-            <div className="lt-lang-picker" ref={langPickerRef}>
-              <button
-                className="lt-lang-picker__trigger"
-                onClick={() => setShowLangPicker((v) => !v)}
-                title="Ticker-Sprache wechseln"
-              >
-                🌐 {language.toUpperCase()}
-                <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"
-                  style={{ transition: "transform 0.15s", transform: showLangPicker ? "rotate(180deg)" : "rotate(0deg)", marginLeft: 2 }}>
-                  <path d="M6 9l6 6 6-6" />
-                </svg>
-              </button>
-              {showLangPicker && (
-                <div className="lt-lang-picker__menu">
-                  {[
-                    { code: "de", label: "Deutsch" },
-                    { code: "en", label: "English" },
-                    { code: "es", label: "Español" },
-                    { code: "fr", label: "Français" },
-                  ].map(({ code, label }) => (
-                    <button
-                      key={code}
-                      className={`lt-lang-picker__item${language === code ? " lt-lang-picker__item--active" : ""}`}
-                      onClick={() => { handleLanguageChange(code); setShowLangPicker(false); }}
-                    >
-                      <span className="lt-lang-picker__code">{code.toUpperCase()}</span>
-                      <span className="lt-lang-picker__label">{label}</span>
-                    </button>
-                  ))}
+      <TickerDataContext.Provider value={tickerDataCtx}>
+        <TickerActionsContext.Provider value={tickerActionsCtx}>
+          <div className="lt">
+            <div
+              className={`lt-top-bar${modalOpen ? " lt-top-bar--hidden" : ""}`}
+              ref={topBarRef}
+            >
+              <header className="lt-header">
+                <div
+                  className="lt-header__logo"
+                  onClick={() => setSelMatchId(null)}
+                  title="Zurück zur Startseite"
+                >
+                  <img
+                    src={logoImage}
+                    alt={config.clubName}
+                    className="lt-header__logo-image"
+                  />
                 </div>
+                <Breadcrumb
+                  match={match}
+                  competition={curCompetition}
+                  country={navProps.selCountry}
+                  team={teams.find((t) => t.id === selTeamId)}
+                  round={navProps.selRound}
+                  matchdays={navProps.matchdays}
+                  onOpen={() => setModalOpen(true)}
+                />
+                <div className="lt-header__status">
+                  {NAV_TABS.filter((t) => t.id !== "teams").map(
+                    ({ id, label }) => (
+                      <button
+                        key={id}
+                        className={`lt-header__nav-tab${activeTab === id ? " lt-header__nav-tab--active" : ""}`}
+                        onClick={() => {
+                          setActiveTab(id);
+                          setModalOpen(true);
+                        }}
+                      >
+                        {label}
+                      </button>
+                    ),
+                  )}
+                  <span className="lt-header__sep">|</span>
+                  <div
+                    className="lt-header__dot"
+                    style={{ background: apiCfg.dot }}
+                    title={`Backend: ${apiCfg.label}`}
+                  />
+                  {instance === "ef_whitelabel" && (
+                    <span
+                      className="lt-header__hint lt-header__hint--active"
+                      title="EF-Schreibstil aktiv (Stilreferenzen aus DB)"
+                    >
+                      EF
+                    </span>
+                  )}
+                  <span className="lt-header__sep">|</span>
+                  <div className="lt-lang-picker" ref={langPickerRef}>
+                    <button
+                      className="lt-lang-picker__trigger"
+                      onClick={() => setShowLangPicker((v) => !v)}
+                      title="Ticker-Sprache wechseln"
+                    >
+                      🌐 {language.toUpperCase()}
+                      <svg
+                        width="8"
+                        height="8"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2.5"
+                        style={{
+                          transition: "transform 0.15s",
+                          transform: showLangPicker
+                            ? "rotate(180deg)"
+                            : "rotate(0deg)",
+                          marginLeft: 2,
+                        }}
+                      >
+                        <path d="M6 9l6 6 6-6" />
+                      </svg>
+                    </button>
+                    {showLangPicker && (
+                      <div className="lt-lang-picker__menu">
+                        {[
+                          { code: "de", label: "Deutsch" },
+                          { code: "en", label: "English" },
+                          { code: "es", label: "Español" },
+                          { code: "fr", label: "Français" },
+                        ].map(({ code, label }) => (
+                          <button
+                            key={code}
+                            className={`lt-lang-picker__item${language === code ? " lt-lang-picker__item--active" : ""}`}
+                            onClick={() => {
+                              handleLanguageChange(code);
+                              setShowLangPicker(false);
+                            }}
+                          >
+                            <span className="lt-lang-picker__code">
+                              {code.toUpperCase()}
+                            </span>
+                            <span className="lt-lang-picker__label">
+                              {label}
+                            </span>
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                  <button
+                    className="lt-header__hint"
+                    onClick={() => setShowHints(true)}
+                    title="Keyboard Shortcuts anzeigen (?)"
+                  >
+                    ?
+                  </button>
+                </div>
+              </header>
+
+              {match && (
+                <MatchHeader
+                  match={match}
+                  leagueSeason={curCompetition}
+                  onMinuteSync={reload.loadMatch}
+                />
+              )}
+              {match && (
+                <ModeSelector mode={mode} onModeChange={handleModeChange} />
               )}
             </div>
-            <button
-              className="lt-header__hint"
-              onClick={() => setShowHints(true)}
-              title="Keyboard Shortcuts anzeigen (?)"
+            {/* /lt-top-bar */}
+
+            <main
+              className={`lt-columns${mode === "auto" ? " lt-columns--auto" : ""}`}
+              style={{
+                gridTemplateColumns:
+                  mode === "auto"
+                    ? `1fr ${rightW}px`
+                    : `${centerW}px 1fr ${rightW}px`,
+              }}
             >
-              ?
-            </button>
-          </div>
-        </header>
-
-          {match && (
-            <MatchHeader
-              match={match}
-              leagueSeason={curCompetition}
-              onMinuteSync={reload.loadMatch}
-            />
-          )}
-          {match && <ModeSelector mode={mode} onModeChange={handleModeChange} />}
-        </div>{/* /lt-top-bar */}
-
-        <main
-          className={`lt-columns${mode === "auto" ? " lt-columns--auto" : ""}`}
-          style={{
-            gridTemplateColumns:
-              mode === "auto"
-                ? `1fr ${rightW}px`
-                : `${centerW}px 1fr ${rightW}px`,
-          }}
-        >
-          {mode !== "auto" && (
-            <div className={`lt-panel-wrap${mobilePanel === "center" ? " lt-panel-wrap--active" : ""}`}>
+              {mode !== "auto" && (
+                <div
+                  className={`lt-panel-wrap${mobilePanel === "center" ? " lt-panel-wrap--active" : ""}`}
+                >
+                  <div
+                    onMouseDown={handleCenterResizeMouseDown}
+                    title="Breite ziehen"
+                    style={{
+                      position: "absolute",
+                      right: 0,
+                      top: 0,
+                      bottom: 0,
+                      width: 6,
+                      cursor: "col-resize",
+                      zIndex: 20,
+                      background: "transparent",
+                    }}
+                  />
+                  <ErrorBoundary>
+                    <CenterPanel
+                      currentMinute={liveMinute}
+                      generatingId={generatingId}
+                      instance={instance}
+                      lineups={lineups}
+                      players={players}
+                    />
+                  </ErrorBoundary>
+                </div>
+              )}
               <div
-                onMouseDown={handleCenterResizeMouseDown}
-                title="Breite ziehen"
-                style={{ position: "absolute", right: 0, top: 0, bottom: 0, width: 6, cursor: "col-resize", zIndex: 20, background: "transparent" }}
-              />
-              <ErrorBoundary>
-                <CenterPanel
-                  currentMinute={liveMinute}
-                  generatingId={generatingId}
-                  instance={instance}
-                  lineups={lineups}
-                  players={players}
+                className={`lt-panel-wrap lt-panel-wrap--left${mobilePanel === "left" ? " lt-panel-wrap--active" : ""}`}
+              >
+                <ErrorBoundary>
+                  <LeftPanel />
+                </ErrorBoundary>
+              </div>
+              <div
+                className={`lt-panel-wrap${mobilePanel === "right" ? " lt-panel-wrap--active" : ""}`}
+              >
+                <div
+                  onMouseDown={handleResizeMouseDown}
+                  title="Breite ziehen"
+                  style={{
+                    position: "absolute",
+                    left: 0,
+                    top: 0,
+                    bottom: 0,
+                    width: 6,
+                    cursor: "col-resize",
+                    zIndex: 20,
+                    background: "transparent",
+                  }}
                 />
-              </ErrorBoundary>
-            </div>
-          )}
-          <div className={`lt-panel-wrap lt-panel-wrap--left${mobilePanel === "left" ? " lt-panel-wrap--active" : ""}`}>
-            <ErrorBoundary>
-              <LeftPanel />
-            </ErrorBoundary>
-          </div>
-          <div className={`lt-panel-wrap${mobilePanel === "right" ? " lt-panel-wrap--active" : ""}`}>
-            <div
-              onMouseDown={handleResizeMouseDown}
-              title="Breite ziehen"
-              style={{ position: "absolute", left: 0, top: 0, bottom: 0, width: 6, cursor: "col-resize", zIndex: 20, background: "transparent" }}
+                <ErrorBoundary>
+                  <RightPanel
+                    match={match}
+                    matchStats={matchStats}
+                    players={players}
+                    playerStats={playerStats}
+                    lineups={lineups}
+                    prematch={prematch}
+                    events={events}
+                    injuries={injuries}
+                  />
+                </ErrorBoundary>
+              </div>
+            </main>
+
+            {/* Mobile Bottom Tab Bar */}
+            <nav className="lt-mobile-tabs">
+              {mode !== "auto" && (
+                <button
+                  className={`lt-mobile-tab${mobilePanel === "center" ? " lt-mobile-tab--active" : ""}`}
+                  onClick={() => setMobilePanel("center")}
+                >
+                  <span>✏️</span>
+                  <span>Editor</span>
+                </button>
+              )}
+              <button
+                className={`lt-mobile-tab${mobilePanel === "left" ? " lt-mobile-tab--active" : ""}`}
+                onClick={() => setMobilePanel("left")}
+              >
+                <span>📋</span>
+                <span>Ticker</span>
+              </button>
+              <button
+                className={`lt-mobile-tab${mobilePanel === "right" ? " lt-mobile-tab--active" : ""}`}
+                onClick={() => setMobilePanel("right")}
+              >
+                <span>📊</span>
+                <span>Stats</span>
+              </button>
+            </nav>
+
+            <NavDrawer
+              open={modalOpen}
+              onClose={() => setModalOpen(false)}
+              navProps={navProps}
             />
-            <ErrorBoundary>
-              <RightPanel
-                match={match}
-                matchStats={matchStats}
-                players={players}
-                playerStats={playerStats}
-                lineups={lineups}
-                prematch={prematch}
-                events={events}
-                injuries={injuries}
+
+            {showHints && (
+              <KeyboardHints mode={mode} onClose={() => setShowHints(false)} />
+            )}
+            {showCommands && (
+              <CommandsModal onClose={() => setShowCommands(false)} />
+            )}
+            {publishToast && (
+              <PublishToast
+                entryId={publishToast.id}
+                text={publishToast.text}
+                onRetract={handleRetract}
+                onDismiss={() => setPublishToast(null)}
               />
-            </ErrorBoundary>
+            )}
           </div>
-        </main>
-
-        {/* Mobile Bottom Tab Bar */}
-        <nav className="lt-mobile-tabs">
-          {mode !== "auto" && (
-            <button
-              className={`lt-mobile-tab${mobilePanel === "center" ? " lt-mobile-tab--active" : ""}`}
-              onClick={() => setMobilePanel("center")}
-            >
-              <span>✏️</span>
-              <span>Editor</span>
-            </button>
-          )}
-          <button
-            className={`lt-mobile-tab${mobilePanel === "left" ? " lt-mobile-tab--active" : ""}`}
-            onClick={() => setMobilePanel("left")}
-          >
-            <span>📋</span>
-            <span>Ticker</span>
-          </button>
-          <button
-            className={`lt-mobile-tab${mobilePanel === "right" ? " lt-mobile-tab--active" : ""}`}
-            onClick={() => setMobilePanel("right")}
-          >
-            <span>📊</span>
-            <span>Stats</span>
-          </button>
-        </nav>
-
-        <NavDrawer open={modalOpen} onClose={() => setModalOpen(false)} navProps={navProps} />
-
-        {showHints && <KeyboardHints mode={mode} onClose={() => setShowHints(false)} />}
-        {showCommands && <CommandsModal onClose={() => setShowCommands(false)} />}
-        {publishToast && (
-          <PublishToast
-            entryId={publishToast.id}
-            text={publishToast.text}
-            onRetract={handleRetract}
-            onDismiss={() => setPublishToast(null)}
-          />
-        )}
-      </div>
-    </TickerActionsContext.Provider>
-    </TickerDataContext.Provider>
+        </TickerActionsContext.Provider>
+      </TickerDataContext.Provider>
     </TickerModeContext.Provider>
   );
 }
