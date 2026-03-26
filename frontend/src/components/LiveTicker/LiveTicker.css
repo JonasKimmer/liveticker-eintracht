@@ -2761,6 +2761,14 @@
     left: 0;
     right: 0;
     z-index: 300;
+    transition: transform 0.2s ease, opacity 0.2s ease;
+  }
+
+  /* Modal offen → Top-Bar wegblenden damit NavDrawer voll sichtbar */
+  .lt-top-bar--hidden {
+    transform: translateY(-100%);
+    opacity: 0;
+    pointer-events: none;
   }
 
   /* Spalten-Block wächst in den verbleibenden Platz */

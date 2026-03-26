@@ -276,7 +276,7 @@ export default function LiveTicker() {
   return (
     <TickerModeContext.Provider value={tickerModeCtx}>
       <div className="lt">
-        <div className="lt-top-bar" ref={topBarRef}>
+        <div className={`lt-top-bar${modalOpen ? " lt-top-bar--hidden" : ""}`} ref={topBarRef}>
         <header className="lt-header">
           <div
             className="lt-header__logo"
