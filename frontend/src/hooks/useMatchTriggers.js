@@ -45,15 +45,11 @@ export function useMatchTriggers({
   tickerMode = "coop",
   reload,
 }) {
-  // Alle ausstehenden Timeout-IDs — werden beim Match-Wechsel gecancelt
-  // damit veraltete reload-Closures keine alten Daten in den State schreiben (Flash-Bug)
-  const pendingTimeoutsRef = useRef([]);
-  useEffect(() => {
-    return () => {
-      pendingTimeoutsRef.current.forEach(clearTimeout);
-      pendingTimeoutsRef.current = [];
-    };
-  }, [selMatchId]);
+  // Hält die aktuell aktive Match-ID für Timeout-Guards (Flash-Bug-Fix).
+  // Timeouts prüfen vor Ausführung ob noch dasselbe Spiel aktiv ist —
+  // verhindert stale-Closures ohne Cleanup/Cancel der Timeouts.
+  const currentMatchIdRef = useRef(null);
+  currentMatchIdRef.current = selMatchId;
 
   // ── Match-Summary via n8n (Halbzeit / Abpfiff) ────────────
   const summaryTriggeredRef = useRef(new Set());
@@ -121,8 +117,11 @@ export function useMatchTriggers({
         .triggerMatchStatus(match.externalId, status, match.minute ?? null, instance, language, style, tickerMode)
         .then(() => {
           // LLM generiert Phasen-Events sequenziell (je ~5s) — mehrfach nachladen
+          const scheduledFor = selMatchId;
           [4000, 9000, 16000, 24000, 35000, 50000, 70000, 95000, 125000].forEach((delay) => {
-            pendingTimeoutsRef.current.push(setTimeout(() => reload.loadTickerTexts(), delay));
+            setTimeout(() => {
+              if (currentMatchIdRef.current === scheduledFor) reload.loadTickerTexts();
+            }, delay);
           });
         })
         .catch((err) =>
@@ -176,8 +175,11 @@ export function useMatchTriggers({
           .generateSyntheticBatch(selMatchId, style, instance, language, tickerMode)
           .then(() => {
             // LLM läuft async — mehrfach nachladen
+            const scheduledFor = selMatchId;
             [3000, 8000, 15000, 25000, 40000].forEach((delay) => {
-              pendingTimeoutsRef.current.push(setTimeout(() => reload.loadTickerTexts(), delay));
+              setTimeout(() => {
+                if (currentMatchIdRef.current === scheduledFor) reload.loadTickerTexts();
+              }, delay);
             });
           })
           .catch((err) => logger.error("[useMatchTriggers] generateSyntheticBatch error:", err)),
