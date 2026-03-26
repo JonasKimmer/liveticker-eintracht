@@ -242,17 +242,6 @@ export default function LiveTicker() {
     await reload.loadTickerTexts();
   }, [reload]);
 
-  // ── Render ────────────────────────────────────────────────
-  if (appLoading) return <LoadingScreen />;
-
-  if (!selMatchId) {
-    return (
-      <div className="lt">
-        <StartScreen {...navProps} />
-      </div>
-    );
-  }
-
   const topBarRef = useRef(null);
   useEffect(() => {
     const el = topBarRef.current;
@@ -263,6 +252,17 @@ export default function LiveTicker() {
     ro.observe(el);
     return () => ro.disconnect();
   }, []);
+
+  // ── Render ────────────────────────────────────────────────
+  if (appLoading) return <LoadingScreen />;
+
+  if (!selMatchId) {
+    return (
+      <div className="lt">
+        <StartScreen {...navProps} />
+      </div>
+    );
+  }
 
   return (
     <TickerModeContext.Provider value={tickerModeCtx}>
