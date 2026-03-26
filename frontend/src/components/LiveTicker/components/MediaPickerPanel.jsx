@@ -13,6 +13,7 @@ import { generateMediaCaption, fetchMediaQueue, clearMediaQueue, publishMedia } 
 import { parseCommand } from "../utils/parseCommand";
 import { useCommandPalette, CommandPalettePortal } from "../utils/commandPalette";
 import { MinuteEditor } from "./MinuteEditor";
+import { useNameAutocomplete } from "../../../hooks/useNameAutocomplete";
 import config from "../../../config/whitelabel";
 
 const N8N_WEBHOOK = `${config.n8nBase}/scoreplay-media`;
@@ -44,47 +45,20 @@ function PublishModal({ image, matchId, onClose, onPublished, playerNames = [], 
   const { minute, setMinute, minuteEditing, setMinuteEditing, minuteOverride, setMinuteOverride } = useLiveMinuteEditor(currentMinute);
 
   const { showPalette, paletteIdx, filteredCmds, onValueChange, selectCmd: selectCmdPalette, handlePaletteKeyDown } = useCommandPalette(description);
-  const [nameIdx, setNameIdx] = useState(0);
-
   const preview = useMemo(() => {
     if (!description.trim().startsWith("/")) return null;
     return parseCommand(description.trim(), minute);
   }, [description, minute]);
 
-  const lastWord = useMemo(() => {
-    if (description.startsWith("/") && !description.includes(" ")) return "";
-    const words = description.split(/\s+/);
-    return words[words.length - 1] ?? "";
-  }, [description]);
-
-  const nameSuggestions = useMemo(() => {
-    if (!lastWord) return [];
-    const q = lastWord.toLowerCase();
-    return playerNames
-      .filter((name) => {
-        const parts = name.toLowerCase().split(/\s+/);
-        return parts.some((part) => part.startsWith(q) && part !== q) ||
-               (name.toLowerCase().startsWith(q) && name.toLowerCase() !== q);
-      })
-      .slice(0, 6);
-  }, [lastWord, playerNames]);
-
-  const showNames = nameSuggestions.length > 0 && !showPalette;
-
-  useEffect(() => { setNameIdx(0); }, [nameSuggestions]);
+  const { lastWord, nameSuggestions, showNames, nameIdx, setNameIdx, selectName } = useNameAutocomplete(
+    description, playerNames, { showPalette, onReplace: setDescription, inputRef: textareaRef },
+  );
   useEffect(() => { textareaRef.current?.focus(); }, []);
   useEffect(() => {
     const onKey = (e) => { if (e.key === "Escape" && !showPalette && !showNames) onClose(); };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, [onClose, showPalette, showNames]);
-
-  const selectName = useCallback((name) => {
-    const words = description.split(/\s+/);
-    words[words.length - 1] = name;
-    setDescription(words.join(" ") + " ");
-    setTimeout(() => textareaRef.current?.focus(), 0);
-  }, [description]);
 
   const handleGenerate = useCallback(async () => {
     setGenerating(true);

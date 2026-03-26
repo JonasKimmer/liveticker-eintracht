@@ -1,12 +1,13 @@
 // ============================================================
 // EntryEditor.jsx  — Slash-Command Editor mit Autocomplete
 // ============================================================
-import { memo, useState, useEffect, useMemo, useCallback, useRef } from "react";
+import { memo, useState, useMemo, useCallback, useRef } from "react";
 import PropTypes from "prop-types";
 import { parseCommand } from "../utils/parseCommand";
 import { COMMAND_PALETTE, NEEDS_ARG } from "../utils/commandPalette";
 import { MODES, COMMAND_PREFIX_REGEX } from "../constants";
 import { useLiveMinuteEditor } from "../hooks/useLiveMinuteEditor";
+import { useNameAutocomplete } from "../../../hooks/useNameAutocomplete";
 import { MinuteEditor } from "./MinuteEditor";
 
 export const EntryEditor = memo(function EntryEditor({
@@ -20,7 +21,6 @@ export const EntryEditor = memo(function EntryEditor({
 }) {
   const [paletteOpen, setPaletteOpen] = useState(false);
   const [paletteIdx, setPaletteIdx] = useState(0);
-  const [nameIdx, setNameIdx] = useState(0);
   const textareaRef = useRef(null);
 
   // Live minute — syncs from prop, ticks every 60s, can be manually overridden
@@ -47,38 +47,9 @@ export const EntryEditor = memo(function EntryEditor({
     return parseCommand(value.trim(), minute);
   }, [value, minute]);
 
-  // Last typed word (for name autocomplete)
-  const lastWord = useMemo(() => {
-    if (value.startsWith("/") && !value.includes(" ")) return "";
-    const words = value.split(/\s+/);
-    return words[words.length - 1] ?? "";
-  }, [value]);
-
-  // Name suggestions: match full name OR any word within name
-  const nameSuggestions = useMemo(() => {
-    if (!lastWord) return [];
-    const q = lastWord.toLowerCase();
-    return playerNames
-      .filter((name) => {
-        const parts = name.toLowerCase().split(/\s+/);
-        return parts.some((part) => part.startsWith(q) && part !== q) ||
-               (name.toLowerCase().startsWith(q) && name.toLowerCase() !== q);
-      })
-      .slice(0, 6);
-  }, [lastWord, playerNames]);
-
-  const showNames = nameSuggestions.length > 0 && !showPalette;
-
-  // Reset name index when suggestions change
-  useEffect(() => { setNameIdx(0); }, [nameSuggestions]);
-
-  const selectName = useCallback((name) => {
-    // Replace the lastWord with the full name
-    const words = value.split(/\s+/);
-    words[words.length - 1] = name;
-    onChange(words.join(" ") + " ");
-    setTimeout(() => textareaRef.current?.focus(), 0);
-  }, [value, onChange]);
+  const { lastWord, nameSuggestions, showNames, nameIdx, setNameIdx, selectName } = useNameAutocomplete(
+    value, playerNames, { showPalette, onReplace: onChange, inputRef: textareaRef },
+  );
 
   const selectCmd = useCallback((cmd) => {
     onChange(cmd + (NEEDS_ARG.includes(cmd) ? " " : ""));
