@@ -2800,13 +2800,30 @@
     overflow-y: auto;
   }
 
-  /* Bottom-Tabs (natürlicher Flex-Child, kein fixed) */
+  /* Header: sticky nicht nötig (Parent overflow:hidden), flex-shrink verhindern */
+  /* Safe-Area-Inset-Top: Notch/Dynamic-Island auf iPhone */
+  .lt-header {
+    position: relative;
+    flex-shrink: 0;
+    padding-top: env(safe-area-inset-top, 0px);
+    height: calc(var(--lt-header-h) + env(safe-area-inset-top, 0px));
+  }
+
+  /* Match-Header + Mode-Bar nicht schrumpfen lassen */
+  .lt-match-header,
+  .lt-mode-bar {
+    flex-shrink: 0;
+  }
+
+  /* Bottom-Tabs: Home-Bar-Bereich (iPhone) freihalten + Schatten */
   .lt-mobile-tabs {
     display: flex;
     flex-shrink: 0;
-    height: 56px;
+    height: calc(56px + env(safe-area-inset-bottom, 0px));
+    padding-bottom: env(safe-area-inset-bottom, 0px);
     background: var(--lt-bg-card);
     border-top: 1px solid var(--lt-border);
+    box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.25);
     z-index: 200;
   }
   .lt-mobile-tab {
