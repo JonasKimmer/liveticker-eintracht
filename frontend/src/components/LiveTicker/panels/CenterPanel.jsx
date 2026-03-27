@@ -6,7 +6,8 @@ import { EntryEditor } from "../components/EntryEditor";
 import { EventCard } from "../components/EventCard";
 import { MediaPickerPanel } from "../components/MediaPickerPanel";
 import { ClipPickerPanel } from "../components/ClipPickerPanel";
-import { SummaryDraftCard } from "../components/SummaryDraftCard";
+import { SummarySection } from "../components/SummarySection";
+import { getSummaryMeta, getDraftLabel } from "../components/SummaryRow";
 import { YouTubePanel } from "../components/YouTubePanel";
 import { TwitterPanel } from "../components/TwitterPanel";
 import { InstagramPanel } from "../components/InstagramPanel";
@@ -14,150 +15,18 @@ import {
   MODES,
   TICKER_STYLES,
   PREMATCH_PHASES,
-  PHASE_LABEL,
   AUTO_ERROR_TIMEOUT_MS,
 } from "../constants";
 import logger from "../../../utils/logger";
 import { useTickerModeContext } from "../../../context/TickerModeContext";
 import { useTickerDataContext } from "../../../context/TickerDataContext";
 import { useTickerActionsContext } from "../../../context/TickerActionsContext";
+import { useAutoPublisher } from "../hooks/useAutoPublisher";
 import * as api from "../../../api";
 import config from "../../../config/whitelabel";
 
 // Welcher Stil im AUTO-Modus verwendet wird
 const AUTO_STYLE = TICKER_STYLES[0];
-
-function getDraftLabel(draft) {
-  if (draft.phase && PHASE_LABEL[draft.phase]) return PHASE_LABEL[draft.phase];
-  if (draft.icon === "🔔") return "Halbzeit";
-  return "KI-Text";
-}
-
-function getSummaryMeta(draft, phase) {
-  // icon: aus draft.icon oder default basierend auf phase
-  const icon =
-    draft.icon ||
-    (phase && PREMATCH_PHASES.has(phase) ? "📣" : phase ? "🎙️" : "✦");
-  // cssClass: basierend auf icon/phase für border-left Farbe
-  let cssClass = "summary";
-  if (draft.icon === "🎬" || draft.video_url) cssClass = "summary--video";
-  else if (PREMATCH_PHASES.has(phase)) cssClass = "summary--prematch";
-  else if (
-    phase === "FirstHalf" ||
-    phase === "SecondHalf" ||
-    phase === "ExtraFirstHalf" ||
-    phase === "ExtraSecondHalf"
-  )
-    cssClass = "summary--live";
-  else if (phase === "FirstHalfBreak" || phase === "ExtraBreak")
-    cssClass = "summary--halftime";
-  else if (phase === "After" || phase === "FullTime")
-    cssClass = "summary--after";
-  else if (phase === "PenaltyShootout") cssClass = "summary--penalty";
-  return { icon, cssClass };
-}
-
-function SummaryRow({ draft, label, isSelected, onSelect, onReject }) {
-  const [confirmReject, setConfirmReject] = useState(false);
-  const { icon, cssClass } = getSummaryMeta(draft, draft.phase);
-  return (
-    <div
-      className={`lt-event-card lt-event-card__${cssClass}${isSelected ? " lt-event-card--selected" : ""}`}
-      onClick={onSelect}
-      role="button"
-      tabIndex={0}
-    >
-      <div className="lt-event-card__row">
-        <span className="lt-event-card__icon">{icon}</span>
-        <span className="lt-event-card__raw">
-          {label}
-          {draft.text
-            ? ` · ${draft.text.slice(0, 50)}${draft.text.length > 50 ? "…" : ""}`
-            : ""}
-        </span>
-        {!confirmReject && (
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              setConfirmReject(true);
-            }}
-            title="Ablehnen"
-            style={{
-              marginLeft: "auto",
-              flexShrink: 0,
-              background: "none",
-              border: "none",
-              color: "var(--lt-text-faint)",
-              cursor: "pointer",
-              fontSize: "0.75rem",
-              padding: "0 2px",
-              opacity: 0.5,
-            }}
-          >
-            ✕
-          </button>
-        )}
-        {confirmReject && (
-          <div
-            style={{
-              marginLeft: "auto",
-              display: "flex",
-              alignItems: "center",
-              gap: "0.35rem",
-            }}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <span style={{ fontSize: "0.7rem", color: "var(--lt-text-muted)" }}>
-              Ablehnen?
-            </span>
-            <button
-              style={{
-                fontSize: "0.7rem",
-                padding: "1px 6px",
-                background: "rgba(239,68,68,0.15)",
-                border: "1px solid rgba(239,68,68,0.3)",
-                color: "#f87171",
-                borderRadius: 4,
-                cursor: "pointer",
-              }}
-              onClick={() => {
-                onReject();
-                setConfirmReject(false);
-              }}
-            >
-              Ja
-            </button>
-            <button
-              style={{
-                fontSize: "0.7rem",
-                padding: "1px 6px",
-                background: "none",
-                border: "1px solid var(--lt-border)",
-                color: "var(--lt-text-muted)",
-                borderRadius: 4,
-                cursor: "pointer",
-              }}
-              onClick={() => setConfirmReject(false)}
-            >
-              Nein
-            </button>
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
-
-function AutoPlayVideo({ src, style }) {
-  const ref = useRef(null);
-  useEffect(() => {
-    const el = ref.current;
-    if (el) el.play().catch(() => {});
-  }, [src]);
-  return (
-    <video ref={ref} src={src} loop muted playsInline controls style={style} />
-  );
-}
 
 export const CenterPanel = memo(function CenterPanel({
   currentMinute = 0,
@@ -173,7 +42,6 @@ export const CenterPanel = memo(function CenterPanel({
 
   // Player + team names for autocomplete
   const playerNames = useMemo(() => {
-    // Player names from lineup (backend joins player_name directly)
     const fromLineup = lineups.map((l) => l.playerName).filter(Boolean);
     const fromPlayers =
       fromLineup.length > 0
@@ -186,13 +54,7 @@ export const CenterPanel = memo(function CenterPanel({
                 `${p.firstName ?? ""} ${p.lastName ?? ""}`.trim(),
             )
             .filter(Boolean);
-
-    // Team names from match
-    const teamNames = [match?.homeTeam?.name, match?.awayTeam?.name].filter(
-      Boolean,
-    );
-
-    // Deduplicate
+    const teamNames = [match?.homeTeam?.name, match?.awayTeam?.name].filter(Boolean);
     return [...new Set([...fromPlayers, ...teamNames])];
   }, [lineups, players, match]);
 
@@ -207,9 +69,6 @@ export const CenterPanel = memo(function CenterPanel({
   const [dismissedIds, setDismissedIds] = useState(new Set());
   const [autoError, setAutoError] = useState(null);
 
-  // Set mit Event-IDs die gerade auto-prozessiert werden → kein Doppel-Trigger
-  const processingRef = useRef(new Set());
-
   const pendingEvents = useMemo(() => {
     const seenSourceIds = new Set();
     return events.filter((ev) => {
@@ -222,7 +81,6 @@ export const CenterPanel = memo(function CenterPanel({
         )
       )
         return false;
-      // Deduplicate events imported multiple times (same sourceId, different DB id)
       if (ev.sourceId) {
         if (seenSourceIds.has(ev.sourceId)) return false;
         seenSourceIds.add(ev.sourceId);
@@ -243,6 +101,7 @@ export const CenterPanel = memo(function CenterPanel({
     },
     [selectedEventId, reload],
   );
+
   const selectedEvent = useMemo(
     () => pendingEvents.find((e) => e.id === selectedEventId) ?? null,
     [pendingEvents, selectedEventId],
@@ -256,14 +115,6 @@ export const CenterPanel = memo(function CenterPanel({
     [selectedEvent, tickerTexts],
   );
 
-  const selectedSummaryDraft = useMemo(
-    () =>
-      selectedSummaryDraftId
-        ? (tickerTexts.find((t) => t.id === selectedSummaryDraftId) ?? null)
-        : null,
-    [selectedSummaryDraftId, tickerTexts],
-  );
-
   const isOurTeam = useMemo(
     () =>
       match?.homeTeam?.name?.toLowerCase().includes(config.teamKeyword) ||
@@ -271,84 +122,21 @@ export const CenterPanel = memo(function CenterPanel({
     [match],
   );
 
-  // ── AUTO-Modus: manuelle Drafts (Zusammenfassungen) publishen ──
-  useEffect(() => {
-    if (mode !== MODES.AUTO) return;
-    const manualDrafts = tickerTexts.filter(
-      (t) => t.status === "draft" && !t.event_id,
-    );
-    for (const d of manualDrafts) {
-      if (processingRef.current.has(`manual-${d.id}`)) continue;
-      processingRef.current.add(`manual-${d.id}`);
-      api
-        .publishTicker(d.id, d.text)
-        .then(() => reload.loadTickerTexts())
-        .catch((err) => logger.error("auto publish manual draft failed", err))
-        .finally(() => processingRef.current.delete(`manual-${d.id}`));
-    }
-  }, [mode, tickerTexts]); // eslint-disable-line react-hooks/exhaustive-deps
+  // ── AUTO-Modus: generate → publish ──────────────────────────
+  useAutoPublisher({
+    instance,
+    pendingEvents,
+    onError: setAutoError,
+  });
 
-  // ── AUTO-Modus: generate → publish ──────────────────────
-  useEffect(() => {
-    if (mode !== MODES.AUTO) return;
-
-    for (const ev of pendingEvents) {
-      if (processingRef.current.has(ev.id)) continue;
-
-      const existingDraft = tickerTexts.find((t) => t.event_id === ev.id);
-
-      if (existingDraft && existingDraft.status !== "published") {
-        // Draft existiert bereits → direkt publishen
-        processingRef.current.add(ev.id);
-        api
-          .publishTicker(existingDraft.id, existingDraft.text)
-          .then(() => reload.loadTickerTexts())
-          .catch((err) => {
-            logger.error("auto publish failed", err);
-            setAutoError(
-              err?.response?.data?.detail ??
-                err.message ??
-                "Auto-Publish fehlgeschlagen",
-            );
-          })
-          .finally(() => processingRef.current.delete(ev.id));
-      } else if (!existingDraft) {
-        // Noch kein Draft → generieren, dann publishen
-        processingRef.current.add(ev.id);
-        api
-          .generateTicker(ev.id, AUTO_STYLE, instance)
-          .then(() => reload.loadTickerTexts())
-          .then(async () => {
-            const res = await api.fetchTickerTexts(match.id);
-            const draft = res.data.find(
-              (t) => t.event_id === ev.id && t.status !== "published",
-            );
-            if (draft) {
-              await api.publishTicker(draft.id, draft.text);
-              await reload.loadTickerTexts();
-            }
-          })
-          .catch((err) => {
-            logger.error("auto generate+publish failed", err);
-            setAutoError(
-              err?.response?.data?.detail ??
-                err.message ??
-                "Auto-Generierung fehlgeschlagen",
-            );
-          })
-          .finally(() => processingRef.current.delete(ev.id));
-      }
-    }
-  }, [mode, pendingEvents, tickerTexts]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  // Auto-dismiss AUTO-Modus Fehler nach 6s
+  // Auto-dismiss AUTO-Modus Fehler nach Timeout
   useEffect(() => {
     if (!autoError) return;
     const id = setTimeout(() => setAutoError(null), AUTO_ERROR_TIMEOUT_MS);
     return () => clearTimeout(id);
   }, [autoError]);
 
-  // ── Aktiven Draft nach oben melden (CO-OP) ───────────────
+  // ── Aktiven Draft nach oben melden (CO-OP) ──────────────────
   useEffect(() => {
     if (selectedDraft) onDraftActive?.(selectedDraft.id, selectedDraft.text);
     else onDraftActive?.(null, "");
@@ -357,19 +145,18 @@ export const CenterPanel = memo(function CenterPanel({
   // Ref hält aktuellen editorValue synchron → lesbar in Effects ohne Dep
   editorValueRef.current = editorValue;
 
-  // ── Text-Restore nach Manual-Stornierung ─────────────────
+  // ── Text-Restore nach Manual-Stornierung ────────────────────
   useEffect(() => {
     if (!retractedText) return;
-    // Nicht überschreiben wenn User gerade tippt (z.B. Slash-Command offen)
     if (!editorValueRef.current.trim()) setEditorValue(retractedText);
     clearRetractedText();
   }, [retractedText, clearRetractedText]);
 
-  // ── Auto-Expand nach Stornierung ─────────────────────────
+  // ── Auto-Expand nach Stornierung ────────────────────────────
   useEffect(() => {
     if (!pendingAutoExpandId) return;
     const targetDraft = tickerTexts.find(
-      (t) => t.id === pendingAutoExpandId && t.status === "draft" && !t.event_id
+      (t) => t.id === pendingAutoExpandId && t.status === "draft" && !t.event_id,
     );
     if (targetDraft) {
       setSelectedSummaryDraftId(pendingAutoExpandId);
@@ -384,9 +171,7 @@ export const CenterPanel = memo(function CenterPanel({
       const drafts = (freshRes.data ?? []).filter(
         (t) => t.status !== "published" && t.event_id,
       );
-      for (const d of drafts) {
-        await api.publishTicker(d.id, d.text);
-      }
+      for (const d of drafts) await api.publishTicker(d.id, d.text);
       await reload.loadTickerTexts();
     } catch (err) {
       logger.error("bulkPublish failed", err);
@@ -399,24 +184,17 @@ export const CenterPanel = memo(function CenterPanel({
     if (!pendingEvents.length) return;
     setBulkGenerating(true);
     try {
-      // 1. Alle Events ohne Draft: generieren
       const withoutDraft = pendingEvents.filter(
         (ev) => !tickerTexts.find((t) => t.event_id === ev.id),
       );
       for (const ev of withoutDraft) {
         await api.generateTicker(ev.id, AUTO_STYLE, instance);
       }
-
-      // 2. Alle Drafts (inkl. neu generierte) publishen
       const freshRes = await api.fetchTickerTexts(match.id);
-      const allTexts = freshRes.data ?? [];
-      const drafts = allTexts.filter(
+      const drafts = (freshRes.data ?? []).filter(
         (t) => t.status !== "published" && t.event_id,
       );
-      for (const d of drafts) {
-        await api.publishTicker(d.id, d.text);
-      }
-
+      for (const d of drafts) await api.publishTicker(d.id, d.text);
       await reload.loadTickerTexts();
     } catch (err) {
       logger.error("bulkGenerate failed", err);
@@ -432,9 +210,7 @@ export const CenterPanel = memo(function CenterPanel({
       const drafts = (freshRes.data ?? []).filter(
         (t) => t.status === "draft" && !t.event_id && PREMATCH_PHASES.has(t.phase),
       );
-      for (const d of drafts) {
-        await api.publishTicker(d.id, d.text);
-      }
+      for (const d of drafts) await api.publishTicker(d.id, d.text);
       await reload.loadTickerTexts();
     } catch (err) {
       logger.error("bulkPublishPrematch failed", err);
@@ -465,10 +241,7 @@ export const CenterPanel = memo(function CenterPanel({
     }
   }, [match, reload]);
 
-  // ── Style-Regeneration für Summary-Drafts ─────────────────
-  // Vorberichterstattung: generateSyntheticBatch (FastAPI, synchron)
-  // Spielphasen:          generateMatchPhases    (FastAPI, synchron)
-  // Beide Pfade identisch: delete → generate → reload → select
+  // ── Style-Regeneration für Summary-Drafts ───────────────────
   const handleRegenerateSummaryDraft = useCallback(
     async (draftId, style) => {
       setBulkPublishingSection("regenerating");
@@ -477,24 +250,14 @@ export const CenterPanel = memo(function CenterPanel({
       const phase = oldDraft.phase;
       const isPrematch = PREMATCH_PHASES.has(phase);
       try {
-        // Hard-delete so backend's get_by_phase doesn't block regeneration
         await api.deleteTicker(draftId);
-
         if (isPrematch) {
-          // Vorberichterstattung: generate-synthetic-batch kennt alle Synthetic-Events
-          // des Matches; da der alte Draft gerade gelöscht wurde, regeneriert der Batch
-          // genau diesen einen fehlenden Synthetic-Event (synchron, kein n8n).
           await api.generateSyntheticBatch(match.id, style, instance);
         } else {
-          // Spielphasen: direkte FastAPI-Generierung
           await api.generateMatchPhases(match.id, style, instance, undefined, false);
         }
-
         await reload.loadTickerTexts();
         const res = await api.fetchTickerTexts(match.id);
-        // Vorberichterstattung: per synthetic_event_id exakt den richtigen Draft finden
-        // (mehrere Drafts können dieselbe Phase haben: Verletzungen, H2H, Stats, …)
-        // Spielphasen: per Phase (kein synthetic_event_id vorhanden)
         const newDraft = (res.data ?? []).find((t) =>
           isPrematch && oldDraft.synthetic_event_id
             ? t.synthetic_event_id === oldDraft.synthetic_event_id && t.status === "draft"
@@ -513,13 +276,10 @@ export const CenterPanel = memo(function CenterPanel({
 
   const handleRegenerateEventDraft = useCallback(
     async (eventId, style) => {
-      // Delete existing draft so generate doesn't leave a stale one
       const existing = tickerTexts.find(
         (t) => t.event_id === eventId && t.status !== "rejected",
       );
-      if (existing) {
-        await api.deleteTicker(existing.id);
-      }
+      if (existing) await api.deleteTicker(existing.id);
       await onGenerate(eventId, style);
     },
     [tickerTexts, onGenerate],
@@ -547,8 +307,6 @@ export const CenterPanel = memo(function CenterPanel({
     async ({ text, icon, minute, phase } = {}) => {
       const textToPublish = text ?? editorValue.trim();
       if (!textToPublish) return;
-      // rawInput = originaler Editor-Wert (inkl. Slash-Command wie /g Paris Dembele)
-      // der wird beim Retract zurück ins Feld geschrieben, nicht der verarbeitete text
       const rawInput = editorValue.trim();
       await onManualPublish(textToPublish, icon, minute, phase, rawInput);
       setEditorValue("");
@@ -588,7 +346,8 @@ export const CenterPanel = memo(function CenterPanel({
   return (
     <div className="lt-col lt-col--events">
       <div className="lt-center__inner">
-        {/* ── AUTO ────────────────────────────────────────── */}
+
+        {/* ── AUTO ──────────────────────────────────────────── */}
         {mode === MODES.AUTO && (
           <>
             <div className="lt-center__auto-info">
@@ -598,14 +357,9 @@ export const CenterPanel = memo(function CenterPanel({
             {autoError && (
               <div
                 style={{
-                  marginTop: "0.5rem",
-                  borderRadius: 6,
-                  padding: "0.4rem 0.75rem",
-                  background: "rgba(239,68,68,0.1)",
-                  border: "1px solid rgba(239,68,68,0.3)",
-                  fontFamily: "var(--lt-font-mono)",
-                  fontSize: "0.7rem",
-                  color: "#f87171",
+                  marginTop: "0.5rem", borderRadius: 6, padding: "0.4rem 0.75rem",
+                  background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.3)",
+                  fontFamily: "var(--lt-font-mono)", fontSize: "0.7rem", color: "#f87171",
                 }}
               >
                 ⚠ {autoError}
@@ -628,220 +382,28 @@ export const CenterPanel = memo(function CenterPanel({
           </>
         )}
 
-        {/* ── CO-OP ───────────────────────────────────────── */}
+        {/* ── CO-OP ─────────────────────────────────────────── */}
         {mode === MODES.COOP && (
           <>
-            {/* Vorberichterstattung */}
-            {(() => {
-              const drafts = tickerTexts
-                .filter(
-                  (t) =>
-                    t.status === "draft" &&
-                    !t.event_id &&
-                    PREMATCH_PHASES.has(t.phase),
-                )
-                .sort((a, b) => (a.synthetic_event_id ?? 0) - (b.synthetic_event_id ?? 0));
-              if (!drafts.length) return null;
-              return (
-                <CollapsibleSection
-                  title="Vorberichterstattung"
-                  count={drafts.length}
-                  actions={
-                    drafts.length > 1 ? (
-                      <button
-                        className="lt-event-card__gen-btn"
-                        onClick={handleBulkPublishPrematch}
-                        disabled={bulkPublishingSection === "prematch"}
-                        title="Alle Vorberichte veröffentlichen"
-                      >
-                        {bulkPublishingSection === "prematch" ? "…" : "✓ Alle"}
-                      </button>
-                    ) : null
-                  }
-                >
-                  {drafts.map((draft) => (
-                    <>
-                      <SummaryRow
-                        key={draft.id}
-                        draft={draft}
-                        label={getDraftLabel(draft)}
-                        isSelected={selectedSummaryDraftId === draft.id}
-                        onSelect={() =>
-                          setSelectedSummaryDraftId((prev) =>
-                            prev === draft.id ? null : draft.id,
-                          )
-                        }
-                        onReject={async () => {
-                          await api.deleteTicker(draft.id);
-                          await reload.loadTickerTexts();
-                          if (selectedSummaryDraftId === draft.id)
-                            setSelectedSummaryDraftId(null);
-                        }}
-                      />
-                      {selectedSummaryDraftId === draft.id &&
-                        PREMATCH_PHASES.has(draft.phase) && (
-                          <>
-                            <SummaryDraftCard
-                              key={`expanded-${draft.id}`}
-                              draft={draft}
-                              label={getDraftLabel(draft)}
-                              onPublish={async (text) => {
-                                await api.publishTicker(draft.id, text);
-                                await reload.loadTickerTexts();
-                                onPublished?.(draft.id, text);
-                                // selectedSummaryDraftId bleibt gesetzt →
-                                // nach Stornieren öffnet sich der Draft automatisch
-                              }}
-                              onReject={async () => {
-                                await api.deleteTicker(draft.id);
-                                await reload.loadTickerTexts();
-                                setSelectedSummaryDraftId(null);
-                              }}
-                              onGenerate={handleRegenerateSummaryDraft}
-                              generatingId={bulkPublishingSection}
-                            />
-                          </>
-                        )}
-                    </>
-                  ))}
-                </CollapsibleSection>
-              );
-            })()}
+            <SummarySection
+              isPrematch={true}
+              title="Vorberichterstattung"
+              selectedId={selectedSummaryDraftId}
+              onSelect={setSelectedSummaryDraftId}
+              generatingId={bulkPublishingSection}
+              onBulkPublish={handleBulkPublishPrematch}
+              onRegenerate={handleRegenerateSummaryDraft}
+            />
 
-            {/* Spielphasen + Videos */}
-            {(() => {
-              const drafts = tickerTexts.filter(
-                (t) =>
-                  t.status === "draft" &&
-                  !t.event_id &&
-                  !PREMATCH_PHASES.has(t.phase),
-              );
-              if (!drafts.length) return null;
-              return (
-                <CollapsibleSection
-                  title="Spielphasen"
-                  count={drafts.length}
-                  actions={
-                    drafts.length > 1 ? (
-                      <button
-                        className="lt-event-card__gen-btn"
-                        onClick={handleBulkPublishSpielphase}
-                        disabled={bulkPublishingSection === "spielphasen"}
-                        title="Alle Spielphasen-Drafts veröffentlichen"
-                      >
-                        {bulkPublishingSection === "spielphasen" ? "…" : "✓ Alle"}
-                      </button>
-                    ) : null
-                  }
-                >
-                  {drafts.map((draft) => (
-                    <>
-                      <SummaryRow
-                        key={draft.id}
-                        draft={draft}
-                        label={getDraftLabel(draft)}
-                        isSelected={selectedSummaryDraftId === draft.id}
-                        onSelect={() =>
-                          setSelectedSummaryDraftId((prev) =>
-                            prev === draft.id ? null : draft.id,
-                          )
-                        }
-                        onReject={async () => {
-                          await api.deleteTicker(draft.id);
-                          await reload.loadTickerTexts();
-                          if (selectedSummaryDraftId === draft.id)
-                            setSelectedSummaryDraftId(null);
-                        }}
-                      />
-                      {selectedSummaryDraftId === draft.id &&
-                        !PREMATCH_PHASES.has(draft.phase) &&
-                        (draft.icon === "🎬" || !!draft.video_url ? (
-                          <>
-                            <div
-                              key={`expanded-${draft.id}`}
-                              style={{
-                                background: "var(--lt-surface)",
-                                borderRadius: 8,
-                                padding: "0.75rem",
-                                border: "1px solid var(--lt-border)",
-                                marginBottom: "0.5rem",
-                              }}
-                            >
-                              <div
-                                style={{
-                                  fontFamily: "var(--lt-font-mono)",
-                                  fontSize: "0.7rem",
-                                  color: "var(--lt-text-muted)",
-                                  marginBottom: "0.5rem",
-                                }}
-                              >
-                                🎬 Video
-                              </div>
-                              {draft.video_url && (
-                                <AutoPlayVideo
-                                  src={draft.video_url}
-                                  style={{
-                                    width: "100%",
-                                    borderRadius: 6,
-                                    marginBottom: "0.5rem",
-                                    maxHeight: 220,
-                                  }}
-                                />
-                              )}
-                              <div style={{ display: "flex", gap: "0.5rem", marginTop: "0.5rem" }}>
-                                <button
-                                  className="lt-event-card__gen-btn"
-                                  style={{ flex: 1, background: "rgba(34,197,94,0.15)", color: "#4ade80" }}
-                                  onClick={async () => {
-                                    await api.updateTicker(draft.id, { status: "published" });
-                                    await reload.loadTickerTexts();
-                                    onPublished?.(draft.id, draft.text || "🎬 Video");
-                                    // selectedSummaryDraftId bleibt gesetzt → auto-expand nach Stornieren
-                                  }}
-                                >
-                                  ✓ Veröffentlichen
-                                </button>
-                                <button
-                                  className="lt-event-card__gen-btn"
-                                  style={{ flex: 1, background: "rgba(239,68,68,0.1)", color: "#f87171" }}
-                                  onClick={async () => {
-                                    await api.deleteTicker(draft.id);
-                                    await reload.loadTickerTexts();
-                                    setSelectedSummaryDraftId(null);
-                                  }}
-                                >
-                                  ✕ Ablehnen
-                                </button>
-                              </div>
-                            </div>
-                          </>
-                        ) : (
-                          <>
-                            <SummaryDraftCard
-                              key={`expanded-${draft.id}`}
-                              draft={draft}
-                              label={getDraftLabel(draft)}
-                              onPublish={async (text) => {
-                                await api.publishTicker(draft.id, text);
-                                await reload.loadTickerTexts();
-                                onPublished?.(draft.id, text);
-                                // selectedSummaryDraftId bleibt gesetzt → auto-expand nach Stornieren
-                              }}
-                              onReject={async () => {
-                                await api.deleteTicker(draft.id);
-                                await reload.loadTickerTexts();
-                                setSelectedSummaryDraftId(null);
-                              }}
-                              onGenerate={handleRegenerateSummaryDraft}
-                              generatingId={bulkPublishingSection}
-                            />
-                          </>
-                        ))}
-                    </>
-                  ))}
-                </CollapsibleSection>
-              );
-            })()}
+            <SummarySection
+              isPrematch={false}
+              title="Spielphasen"
+              selectedId={selectedSummaryDraftId}
+              onSelect={setSelectedSummaryDraftId}
+              generatingId={bulkPublishingSection}
+              onBulkPublish={handleBulkPublishSpielphase}
+              onRegenerate={handleRegenerateSummaryDraft}
+            />
 
             {/* Veröffentlicht – Vorberichterstattung & Spielphasen */}
             {(() => {
@@ -880,16 +442,10 @@ export const CenterPanel = memo(function CenterPanel({
                               await reload.loadTickerTexts();
                             }}
                             style={{
-                              marginLeft: "auto",
-                              flexShrink: 0,
-                              background: "none",
-                              border: "1px solid var(--lt-border)",
-                              color: "var(--lt-text-muted)",
-                              cursor: "pointer",
-                              fontSize: "0.7rem",
-                              padding: "1px 8px",
-                              borderRadius: 4,
-                              whiteSpace: "nowrap",
+                              marginLeft: "auto", flexShrink: 0, background: "none",
+                              border: "1px solid var(--lt-border)", color: "var(--lt-text-muted)",
+                              cursor: "pointer", fontSize: "0.7rem", padding: "1px 8px",
+                              borderRadius: 4, whiteSpace: "nowrap",
                             }}
                           >
                             ↩ Stornieren
@@ -920,8 +476,7 @@ export const CenterPanel = memo(function CenterPanel({
                     <div style={{ display: "flex", gap: "0.4rem" }}>
                       {pendingEvents.some((ev) =>
                         tickerTexts.find(
-                          (t) =>
-                            t.event_id === ev.id && t.status !== "published",
+                          (t) => t.event_id === ev.id && t.status !== "published",
                         ),
                       ) && (
                         <button
@@ -953,9 +508,8 @@ export const CenterPanel = memo(function CenterPanel({
                   const draft = tickerTexts.find((t) => t.event_id === ev.id);
                   const isSelected = selectedEvent?.id === ev.id;
                   return (
-                    <>
+                    <div key={ev.id}>
                       <EventCard
-                        key={ev.id}
                         event={ev}
                         draft={draft}
                         isSelected={isSelected}
@@ -977,33 +531,30 @@ export const CenterPanel = memo(function CenterPanel({
                             playerNames={playerNames}
                           />
                         ) : (
-                          <>
-                            <AIDraft
-                              eventType={ev.liveTickerEventType}
-                              draftText={
-                                draft?.text ??
-                                "Kein Draft vorhanden – generiere einen Stil."
-                              }
-                              onAccept={handleAcceptDraft}
-                              onReject={handleRejectDraft}
-                              onEdit={handleOpenEdit}
-                              onTextClick={handleOpenEdit}
-                              onGenerate={handleRegenerateEventDraft}
-                              generatingId={generatingId}
-                              eventId={ev.id}
-                            />
-                          </>
+                          <AIDraft
+                            eventType={ev.liveTickerEventType}
+                            draftText={
+                              draft?.text ??
+                              "Kein Draft vorhanden – generiere einen Stil."
+                            }
+                            onAccept={handleAcceptDraft}
+                            onReject={handleRejectDraft}
+                            onEdit={handleOpenEdit}
+                            onTextClick={handleOpenEdit}
+                            onGenerate={handleRegenerateEventDraft}
+                            generatingId={generatingId}
+                            eventId={ev.id}
+                          />
                         ))}
-                    </>
+                    </div>
                   );
                 })}
               </CollapsibleSection>
             )}
-
           </>
         )}
 
-        {/* ── MANUAL ──────────────────────────────────────── */}
+        {/* ── MANUAL ────────────────────────────────────────── */}
         {mode === MODES.MANUAL && (
           <EntryEditor
             value={editorValue}
@@ -1015,7 +566,7 @@ export const CenterPanel = memo(function CenterPanel({
           />
         )}
 
-        {/* ── ScorePlay Bilder ─────────────────────────── */}
+        {/* ── ScorePlay Bilder ──────────────────────────────── */}
         <div style={{ marginTop: "1rem" }}>
           <MediaPickerPanel
             match={match}
@@ -1026,7 +577,7 @@ export const CenterPanel = memo(function CenterPanel({
           />
         </div>
 
-        {/* ── Tor-Clips ────────────────────────────────── */}
+        {/* ── Tor-Clips ─────────────────────────────────────── */}
         <div style={{ marginTop: "0.5rem" }}>
           <ClipPickerPanel
             matchId={match.id}
@@ -1046,10 +597,7 @@ export const CenterPanel = memo(function CenterPanel({
               <TwitterPanel matchId={match.id} currentMinute={currentMinute} />
             </div>
             <div style={{ marginTop: "0.5rem" }}>
-              <InstagramPanel
-                matchId={match.id}
-                currentMinute={currentMinute}
-              />
+              <InstagramPanel matchId={match.id} currentMinute={currentMinute} />
             </div>
           </>
         )}
