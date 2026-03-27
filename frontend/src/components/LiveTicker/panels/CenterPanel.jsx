@@ -843,24 +843,10 @@ export const CenterPanel = memo(function CenterPanel({
                               onReject={handleRejectDraft}
                               onEdit={handleOpenEdit}
                               onTextClick={handleOpenEdit}
+                              onGenerate={onGenerate}
+                              generatingId={generatingId}
+                              eventId={ev.id}
                             />
-                            <div style={{ marginTop: "0.75rem" }}>
-                              <div className="lt-center__section-title">
-                                {draft ? "Neu generieren" : "Stil wählen"}
-                              </div>
-                              <div className="lt-event-card__gen-btns">
-                                {TICKER_STYLES.map((s) => (
-                                  <button
-                                    key={s}
-                                    className="lt-event-card__gen-btn"
-                                    onClick={() => onGenerate(ev.id, s)}
-                                    disabled={generatingId === ev.id}
-                                  >
-                                    {generatingId === ev.id ? "…" : `✦ ${s}`}
-                                  </button>
-                                ))}
-                              </div>
-                            </div>
                           </>
                         ))}
                     </>

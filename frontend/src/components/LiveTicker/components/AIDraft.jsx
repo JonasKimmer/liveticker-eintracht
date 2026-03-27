@@ -4,6 +4,7 @@
 // ============================================================
 import { memo } from "react";
 import PropTypes from "prop-types";
+import { TICKER_STYLES } from "../constants";
 
 export const AIDraft = memo(function AIDraft({
   eventType,
@@ -12,6 +13,9 @@ export const AIDraft = memo(function AIDraft({
   onReject,
   onEdit,
   onTextClick,
+  onGenerate,
+  generatingId,
+  eventId,
 }) {
   return (
     <div className="lt-draft">
@@ -41,6 +45,20 @@ export const AIDraft = memo(function AIDraft({
             ✎ Bearbeiten
           </button>
         )}
+        {onGenerate &&
+          eventId &&
+          TICKER_STYLES.map((s) => (
+            <button
+              key={s}
+              className="lt-event-card__gen-btn"
+              onClick={() => onGenerate(eventId, s)}
+              disabled={generatingId === eventId}
+              style={{ fontSize: "0.75rem", padding: "0.4rem 0.6rem" }}
+              title={`Neu als ${s} generieren`}
+            >
+              {generatingId === eventId ? "…" : `${s}`}
+            </button>
+          ))}
       </div>
     </div>
   );
@@ -53,4 +71,7 @@ AIDraft.propTypes = {
   onReject: PropTypes.func,
   onEdit: PropTypes.func,
   onTextClick: PropTypes.func,
+  onGenerate: PropTypes.func,
+  generatingId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+  eventId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
 };
