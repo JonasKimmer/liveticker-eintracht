@@ -660,6 +660,7 @@ export const CenterPanel = memo(function CenterPanel({
                               onPublish={async (text) => {
                                 await api.publishTicker(draft.id, text);
                                 await reload.loadTickerTexts();
+                                onPublished?.(draft.id, text);
                                 setSelectedSummaryDraftId(null);
                               }}
                               onReject={async () => {
@@ -765,6 +766,7 @@ export const CenterPanel = memo(function CenterPanel({
                                   onClick={async () => {
                                     await api.updateTicker(draft.id, { status: "published" });
                                     await reload.loadTickerTexts();
+                                    onPublished?.(draft.id, draft.text);
                                     setSelectedSummaryDraftId(null);
                                   }}
                                 >
@@ -793,6 +795,7 @@ export const CenterPanel = memo(function CenterPanel({
                               onPublish={async (text) => {
                                 await api.publishTicker(draft.id, text);
                                 await reload.loadTickerTexts();
+                                onPublished?.(draft.id, text);
                                 setSelectedSummaryDraftId(null);
                               }}
                               onReject={async () => {
