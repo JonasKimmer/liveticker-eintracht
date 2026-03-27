@@ -22,14 +22,14 @@ import logger from "../utils/logger";
 import { MATCH_PHASES } from "../components/LiveTicker/constants";
 
 const PHASE_TO_STATUS = {
-  [MATCH_PHASES.FIRST_HALF]:              "1H",
-  [MATCH_PHASES.FIRST_HALF_BREAK]:        "HT",
-  [MATCH_PHASES.SECOND_HALF]:             "2H",
-  [MATCH_PHASES.EXTRA_FIRST_HALF]:        "ET",
-  [MATCH_PHASES.EXTRA_BREAK]:             "BT",
-  [MATCH_PHASES.EXTRA_SECOND_HALF]:       "ET",
+  [MATCH_PHASES.FIRST_HALF]: "1H",
+  [MATCH_PHASES.FIRST_HALF_BREAK]: "HT",
+  [MATCH_PHASES.SECOND_HALF]: "2H",
+  [MATCH_PHASES.EXTRA_FIRST_HALF]: "ET",
+  [MATCH_PHASES.EXTRA_BREAK]: "BT",
+  [MATCH_PHASES.EXTRA_SECOND_HALF]: "ET",
   [MATCH_PHASES.EXTRA_SECOND_HALF_BREAK]: "BT",
-  [MATCH_PHASES.PENALTY_SHOOTOUT]:        "P",
+  [MATCH_PHASES.PENALTY_SHOOTOUT]: "P",
 };
 
 export function useMatchTriggers({
@@ -55,9 +55,13 @@ export function useMatchTriggers({
   const summaryTriggeredRef = useRef(new Set());
   useEffect(() => {
     if (!selMatchId || !match || !tickerTexts) return;
+    if (match.id !== selMatchId) return; // stale match aus vorherigem Spiel
 
     const phasesToCheck = [];
-    if (match.matchPhase === MATCH_PHASES.FIRST_HALF_BREAK || match.matchState === MATCH_PHASES.FULL_TIME) {
+    if (
+      match.matchPhase === MATCH_PHASES.FIRST_HALF_BREAK ||
+      match.matchState === MATCH_PHASES.FULL_TIME
+    ) {
       phasesToCheck.push(MATCH_PHASES.FIRST_HALF_BREAK);
     }
     if (match.matchState === MATCH_PHASES.FULL_TIME) {
@@ -70,32 +74,60 @@ export function useMatchTriggers({
       if (summaryTriggeredRef.current.has(key)) continue;
       summaryTriggeredRef.current.add(key);
       const exists = tickerTexts.some(
-        (t) => t.match_id === selMatchId && t.phase === phase && t.status !== "rejected",
+        (t) =>
+          t.match_id === selMatchId &&
+          t.phase === phase &&
+          t.status !== "rejected",
       );
       if (!exists) {
-        api.generateMatchSummary(selMatchId, phase, style, instance, language, tickerMode).catch((err) =>
-          logger.warn("[useMatchTriggers] generateMatchSummary silenced:", err?.message)
-        );
+        api
+          .generateMatchSummary(
+            selMatchId,
+            phase,
+            style,
+            instance,
+            language,
+            tickerMode,
+          )
+          .catch((err) =>
+            logger.warn(
+              "[useMatchTriggers] generateMatchSummary silenced:",
+              err?.message,
+            ),
+          );
       }
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selMatchId, match?.matchPhase, match?.matchState, tickerTexts]);
 
   // ── Live Stats Monitor (alle 5 Min bei laufendem Spiel) ───
   useEffect(() => {
     if (!selMatchId || !match?.matchState) return;
     if (match.matchState === "PreMatch") return;
-    api.triggerLiveStatsMonitor(selMatchId, instance, language).catch((err) =>
-      logger.warn("[useMatchTriggers] triggerLiveStatsMonitor silenced:", err?.message)
-    );
-    if (match.matchState !== "Live") return;
-    const interval = setInterval(() => {
-      api.triggerLiveStatsMonitor(selMatchId, instance, language).catch((err) =>
-        logger.warn("[useMatchTriggers] triggerLiveStatsMonitor silenced:", err?.message)
+    api
+      .triggerLiveStatsMonitor(selMatchId, instance, language)
+      .catch((err) =>
+        logger.warn(
+          "[useMatchTriggers] triggerLiveStatsMonitor silenced:",
+          err?.message,
+        ),
       );
-    }, 5 * 60 * 1000);
+    if (match.matchState !== "Live") return;
+    const interval = setInterval(
+      () => {
+        api
+          .triggerLiveStatsMonitor(selMatchId, instance, language)
+          .catch((err) =>
+            logger.warn(
+              "[useMatchTriggers] triggerLiveStatsMonitor silenced:",
+              err?.message,
+            ),
+          );
+      },
+      5 * 60 * 1000,
+    );
     return () => clearInterval(interval);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selMatchId, match?.matchState, instance, language]);
 
   // ── Match-Status Webhook beim Match-Open ──────────────────
@@ -104,6 +136,7 @@ export function useMatchTriggers({
   const matchStatusTriggeredRef = useRef(new Set());
   useEffect(() => {
     if (!selMatchId || !match?.matchState || !match?.externalId) return;
+    if (match.id !== selMatchId) return; // stale match aus vorherigem Spiel
 
     let status = null;
     if (match.matchState === MATCH_PHASES.FULL_TIME) {
@@ -122,24 +155,37 @@ export function useMatchTriggers({
     const scheduledFor = selMatchId;
     [10000, 20000, 35000, 55000, 80000, 110000].forEach((delay) => {
       setTimeout(() => {
-        if (currentMatchIdRef.current === scheduledFor) reload.loadTickerTexts();
+        if (currentMatchIdRef.current === scheduledFor)
+          reload.loadTickerTexts();
       }, delay);
     });
 
     api
-      .triggerMatchStatus(match.externalId, status, match.minute ?? null, instance, language, style, tickerMode)
+      .triggerMatchStatus(
+        match.externalId,
+        status,
+        match.minute ?? null,
+        instance,
+        language,
+        style,
+        tickerMode,
+      )
       .then(() => {
         // Zusätzliche Reloads nach API-Antwort (LLM sequenziell je ~5s)
         [4000, 9000, 16000, 24000, 35000].forEach((delay) => {
           setTimeout(() => {
-            if (currentMatchIdRef.current === scheduledFor) reload.loadTickerTexts();
+            if (currentMatchIdRef.current === scheduledFor)
+              reload.loadTickerTexts();
           }, delay);
         });
       })
       .catch((err) =>
-        logger.warn("[useMatchTriggers] triggerMatchStatus silenced:", err?.message)
+        logger.warn(
+          "[useMatchTriggers] triggerMatchStatus silenced:",
+          err?.message,
+        ),
       );
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selMatchId, match?.matchState, match?.matchPhase]);
 
   // ── Auto-Import: Events ───────────────────────────────────
@@ -148,8 +194,10 @@ export function useMatchTriggers({
     api
       .importEvents(match.externalId, tickerMode)
       .then(() => reload.loadEvents())
-      .catch((err) => logger.error("[useMatchTriggers] importEvents error:", err));
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+      .catch((err) =>
+        logger.error("[useMatchTriggers] importEvents error:", err),
+      );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selMatchId, match?.externalId, events.length]);
 
   // ── Auto-Import: Lineups ──────────────────────────────────
@@ -158,8 +206,10 @@ export function useMatchTriggers({
     api
       .importLineups(selMatchId)
       .then(() => reload.loadLineups())
-      .catch((err) => logger.error("[useMatchTriggers] importLineups error:", err));
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+      .catch((err) =>
+        logger.error("[useMatchTriggers] importLineups error:", err),
+      );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selMatchId, lineups.length]);
 
   // ── Auto-Import: Match-Statistiken ───────────────────────
@@ -168,14 +218,17 @@ export function useMatchTriggers({
     api
       .importMatchStats(selMatchId)
       .then(() => reload.loadMatchStats())
-      .catch((err) => logger.error("[useMatchTriggers] importMatchStats error:", err));
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+      .catch((err) =>
+        logger.error("[useMatchTriggers] importMatchStats error:", err),
+      );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selMatchId, matchStats.length]);
 
   // ── Auto-Import: Prematch + Synthetic Batch ───────────────
   const prematchImportedRef = useRef(null);
   useEffect(() => {
     if (!selMatchId || !match?.externalId) return;
+    if (match.id !== selMatchId) return; // stale match aus vorherigem Spiel
     if (prematchImportedRef.current === selMatchId) return;
     prematchImportedRef.current = selMatchId;
 
@@ -183,7 +236,8 @@ export function useMatchTriggers({
     const scheduledFor = selMatchId;
     [10000, 20000, 35000, 55000, 80000, 110000].forEach((delay) => {
       setTimeout(() => {
-        if (currentMatchIdRef.current === scheduledFor) reload.loadTickerTexts();
+        if (currentMatchIdRef.current === scheduledFor)
+          reload.loadTickerTexts();
       }, delay);
     });
 
@@ -192,19 +246,33 @@ export function useMatchTriggers({
       .then(() => reload.loadPrematch())
       .then(() =>
         api
-          .generateSyntheticBatch(selMatchId, style, instance, language, tickerMode)
+          .generateSyntheticBatch(
+            selMatchId,
+            style,
+            instance,
+            language,
+            tickerMode,
+          )
           .then(() => {
             // Zusätzliche Reloads nach API-Antwort
             [3000, 8000, 15000, 25000].forEach((delay) => {
               setTimeout(() => {
-                if (currentMatchIdRef.current === scheduledFor) reload.loadTickerTexts();
+                if (currentMatchIdRef.current === scheduledFor)
+                  reload.loadTickerTexts();
               }, delay);
             });
           })
-          .catch((err) => logger.error("[useMatchTriggers] generateSyntheticBatch error:", err)),
+          .catch((err) =>
+            logger.error(
+              "[useMatchTriggers] generateSyntheticBatch error:",
+              err,
+            ),
+          ),
       )
-      .catch((err) => logger.error("[useMatchTriggers] importPrematch error:", err));
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+      .catch((err) =>
+        logger.error("[useMatchTriggers] importPrematch error:", err),
+      );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selMatchId, match?.externalId]);
 
   // ── Auto-Import: Spieler-Statistiken ─────────────────────
@@ -216,7 +284,9 @@ export function useMatchTriggers({
     api
       .importPlayerStatistics(selMatchId)
       .then(() => reload.loadPlayerStats())
-      .catch((err) => logger.error("[useMatchTriggers] importPlayerStatistics error:", err));
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+      .catch((err) =>
+        logger.error("[useMatchTriggers] importPlayerStatistics error:", err),
+      );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selMatchId]);
 }
