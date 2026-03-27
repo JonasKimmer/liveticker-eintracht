@@ -471,36 +471,41 @@ export const CenterPanel = memo(function CenterPanel({
       if (!oldDraft) return;
       const phase = oldDraft.phase;
       const isPrematch = PREMATCH_PHASES.has(phase);
+      let asyncFallback = false;
       try {
         // Hard-delete so backend's get_by_phase doesn't block regeneration
         await api.deleteTicker(draftId);
-        // Alten Draft sofort aus tickerTexts entfernen — sonst matcht der
-        // useEffect unten auf den alten (schon gelöschten) Draft statt auf den neuen.
-        await reload.loadTickerTexts();
 
-        if (isPrematch) {
-          // Vorberichterstattung: n8n ist async → useEffect beobachtet tickerTexts
-          // und selektiert den neuen Draft automatisch sobald er erscheint
+        if (isPrematch && oldDraft.synthetic_event_id) {
+          // Vorberichterstattung: synchroner FastAPI-Aufruf mit bestehender synthetic_event_id
+          // (gleicher Weg wie Spielphasen — kein n8n-Umweg nötig)
+          await api.generateSynthetic(oldDraft.synthetic_event_id, style, false);
+        } else if (isPrematch) {
+          // Fallback: kein synthetic_event_id bekannt → n8n async
+          asyncFallback = true;
+          await reload.loadTickerTexts();
           await api.generateMatchSummary(match.id, phase, style, instance);
           setPendingRegenData({ matchId: match.id, phase });
-          // bulkPublishingSection bleibt "regenerating" bis useEffect es löscht
+          return; // bulkPublishingSection wird durch useEffect gecleared
         } else {
           // Spielphasen: FastAPI ist synchron → sofort verfügbar
           await api.generateMatchPhases(match.id, style, instance, undefined, false);
-          await reload.loadTickerTexts();
-          const res = await api.fetchTickerTexts(match.id);
-          const newDraft = (res.data ?? []).find(
-            (t) => t.status === "draft" && !t.event_id && t.phase === phase,
-          );
-          setSelectedSummaryDraftId(newDraft?.id ?? null);
         }
+
+        // Synchrone Pfade: direkt neu laden und selektieren
+        await reload.loadTickerTexts();
+        const res = await api.fetchTickerTexts(match.id);
+        const newDraft = (res.data ?? []).find(
+          (t) => t.status === "draft" && !t.event_id && t.phase === phase,
+        );
+        setSelectedSummaryDraftId(newDraft?.id ?? null);
       } catch (err) {
         logger.error("regenerateSummaryDraft failed", err);
         setSelectedSummaryDraftId(null);
         setPendingRegenData(null);
         setBulkPublishingSection(null);
       } finally {
-        if (!isPrematch) setBulkPublishingSection(null);
+        if (!asyncFallback) setBulkPublishingSection(null);
       }
     },
     [tickerTexts, match, reload, instance],
