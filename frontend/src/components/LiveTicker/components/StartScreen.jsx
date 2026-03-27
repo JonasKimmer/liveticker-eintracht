@@ -554,11 +554,11 @@ function MatchdayPicker({
 
   // Panel-Keyboard: ↑↓ für Spiele, ←/→ für Spieltage, Enter/Esc via matchOnKeyDown
   function handlePanelKeyDown(e) {
-    if (e.key === "ArrowLeft" || e.key === "ArrowRight") {
+    if (e.key === "ArrowLeft" || e.key === "ArrowRight" || e.key === "ArrowUp" || e.key === "ArrowDown") {
       e.preventDefault();
       const idx = sortedMatchdays.indexOf(selRound);
       const next =
-        e.key === "ArrowRight"
+        e.key === "ArrowRight" || e.key === "ArrowDown"
           ? sortedMatchdays[Math.min(idx + 1, sortedMatchdays.length - 1)]
           : sortedMatchdays[Math.max(idx - 1, 0)];
       if (next !== undefined) onRoundChange(next);
