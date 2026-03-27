@@ -444,8 +444,22 @@ export const CenterPanel = memo(function CenterPanel({
     async (draftId, style) => {
       setBulkPublishingSection("regenerating");
       try {
-        // Reject current draft to clear it
-        await api.updateTicker(draftId, { status: "rejected" });
+        // Find draft info before deleting (still in React state)
+        const draft = tickerTexts.find((t) => t.id === draftId);
+        if (!draft) return;
+
+        // Hard-delete so backend's get_by_phase doesn't block regeneration
+        await api.deleteTicker(draftId);
+
+        // Regenerate based on phase
+        if (PREMATCH_PHASES.has(draft.phase)) {
+          // Vorberichterstattung: use generateMatchSummary (n8n async)
+          await api.generateMatchSummary(match.id, draft.phase, style, instance);
+        } else {
+          // Spielphasen: generate as draft (auto_publish: false)
+          await api.generateMatchPhases(match.id, style, instance, undefined, false);
+        }
+
         await reload.loadTickerTexts();
         setSelectedSummaryDraftId(null);
       } catch (err) {
@@ -454,7 +468,21 @@ export const CenterPanel = memo(function CenterPanel({
         setBulkPublishingSection(null);
       }
     },
-    [reload],
+    [tickerTexts, match, reload, instance],
+  );
+
+  const handleRegenerateEventDraft = useCallback(
+    async (eventId, style) => {
+      // Delete existing draft so generate doesn't leave a stale one
+      const existing = tickerTexts.find(
+        (t) => t.event_id === eventId && t.status !== "rejected",
+      );
+      if (existing) {
+        await api.deleteTicker(existing.id);
+      }
+      await onGenerate(eventId, style);
+    },
+    [tickerTexts, onGenerate],
   );
 
   const handleAcceptDraft = useCallback(async () => {
@@ -860,7 +888,7 @@ export const CenterPanel = memo(function CenterPanel({
                               onReject={handleRejectDraft}
                               onEdit={handleOpenEdit}
                               onTextClick={handleOpenEdit}
-                              onGenerate={onGenerate}
+                              onGenerate={handleRegenerateEventDraft}
                               generatingId={generatingId}
                               eventId={ev.id}
                             />

@@ -61,8 +61,8 @@ export const publishClipTicker = (matchId, text, videoUrl, thumbnailUrl, minute)
   });
 export const generateSyntheticBatch = (matchId, style = "neutral", instance = "ef_whitelabel", language = "de", tickerMode = "coop") =>
   api.post(`/ticker/generate-synthetic-batch/${matchId}`, { style, instance, language, auto_publish: tickerMode === "auto" });
-export const generateMatchPhases = (matchId, style = "neutral", instance = "ef_whitelabel", language = "de") =>
-  api.post(`/ticker/generate-match-phases/${matchId}`, { style, instance, language, auto_publish: true });
+export const generateMatchPhases = (matchId, style = "neutral", instance = "ef_whitelabel", language = "de", autoPublish = true) =>
+  api.post(`/ticker/generate-match-phases/${matchId}`, { style, instance, language, auto_publish: autoPublish });
 export const translateTickerBatch = (matchId, language) =>
   api.post(`/ticker/translate-batch/${matchId}`, { language });
 
