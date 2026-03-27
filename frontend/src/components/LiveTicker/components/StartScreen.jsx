@@ -554,7 +554,12 @@ function MatchdayPicker({
 
   // Panel-Keyboard: ↑↓ für Spiele, ←/→ für Spieltage, Enter/Esc via matchOnKeyDown
   function handlePanelKeyDown(e) {
-    if (e.key === "ArrowLeft" || e.key === "ArrowRight" || e.key === "ArrowUp" || e.key === "ArrowDown") {
+    if (
+      e.key === "ArrowLeft" ||
+      e.key === "ArrowRight" ||
+      e.key === "ArrowUp" ||
+      e.key === "ArrowDown"
+    ) {
       e.preventDefault();
       const idx = sortedMatchdays.indexOf(selRound);
       const next =
