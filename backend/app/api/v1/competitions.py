@@ -4,22 +4,19 @@ Competitions Router
 Endpunkte für Wettbewerbe (Ligen, Pokale) und zugehörige Saisons.
 """
 
-import logging
 from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
-from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
+from app.utils.http_errors import handle_integrity_error
 from app.repositories.competition_repository import CompetitionRepository
 from app.schemas.competition import (
     CompetitionCreate,
     CompetitionResponse,
     CompetitionUpdate,
 )
-
-logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/competitions", tags=["Competitions"])
 
@@ -68,14 +65,8 @@ def create_competition(
     data: CompetitionCreate,
     db: Session = Depends(get_db),
 ) -> CompetitionResponse:
-    try:
+    with handle_integrity_error("A competition with conflicting data already exists."):
         return CompetitionRepository(db).create(data)
-    except IntegrityError:
-        logger.exception("IntegrityError creating competition: %s", data.title)
-        raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
-            detail="A competition with conflicting data already exists.",
-        )
 
 
 @router.put(
@@ -94,14 +85,8 @@ def update_competition(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
             detail="Request body must contain at least one field to update.",
         )
-    try:
+    with handle_integrity_error("Update would violate a unique constraint."):
         updated = CompetitionRepository(db).update(competitionId, data)
-    except IntegrityError:
-        logger.exception("IntegrityError updating competition id=%s", competitionId)
-        raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
-            detail="Update would violate a unique constraint.",
-        )
     if not updated:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Competition not found"

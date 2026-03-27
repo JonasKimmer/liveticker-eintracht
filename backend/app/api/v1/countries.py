@@ -4,17 +4,13 @@ Countries Router
 Endpunkte für Länderdaten (CRUD).
 """
 
-import logging
-
 from fastapi import APIRouter, Depends, HTTPException, Query, status
-from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
+from app.utils.http_errors import handle_integrity_error
 from app.repositories.country_repository import CountryRepository
 from app.schemas.country import CountryCreate, CountryResponse
-
-logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/countries", tags=["Countries"])
 
@@ -62,11 +58,5 @@ def upsert_country(
     data: CountryCreate,
     db: Session = Depends(get_db),
 ) -> CountryResponse:
-    try:
+    with handle_integrity_error(f"Country '{data.name}' already exists with conflicting data."):
         return CountryRepository(db).upsert(data)
-    except IntegrityError:
-        logger.exception("IntegrityError upserting country: %s", data.name)
-        raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
-            detail=f"Country '{data.name}' already exists with conflicting data.",
-        )

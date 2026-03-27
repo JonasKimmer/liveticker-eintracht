@@ -4,18 +4,14 @@ Events Router
 Endpunkte für Match-Events (Tore, Karten, Wechsel) inkl. Upsert.
 """
 
-import logging
-
 from fastapi import APIRouter, Depends, HTTPException, Query, status
-from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
+from app.utils.http_errors import handle_integrity_error
 from app.repositories.event_repository import EventRepository
 from app.repositories.match_repository import MatchRepository
 from app.schemas.event import EventCreate, EventResponse, EventUpdate, PaginatedEventResponse
-
-logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/matches/{matchId}/events", tags=["Events"])
 
@@ -66,15 +62,9 @@ def create_event(
     db: Session = Depends(get_db),
 ) -> EventResponse:
     _get_match_or_404(matchId, db)
-    try:
+    with handle_integrity_error("Event with this sourceId already exists with conflicting data."):
         event, _ = EventRepository(db).upsert(matchId, data)
         return event
-    except IntegrityError:
-        logger.exception("IntegrityError upserting event for matchId=%s", matchId)
-        raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
-            detail="Event with this sourceId already exists with conflicting data.",
-        )
 
 
 @router.patch(

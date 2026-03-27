@@ -9,12 +9,12 @@ from typing import Optional
 
 import httpx
 from fastapi import APIRouter, Depends, HTTPException, Query, status
-from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from app.core.config import settings
 from app.core.constants import FOOTBALL_API_PHASE_MAP
 from app.core.database import get_db
+from app.utils.http_errors import handle_integrity_error
 from app.repositories.match_repository import MatchRepository
 from app.repositories.synthetic_event_repository import SyntheticEventRepository
 from app.schemas.match import (
@@ -100,14 +100,8 @@ def create_match(
     data: MatchCreate,
     db: Session = Depends(get_db),
 ) -> MatchResponse:
-    try:
+    with handle_integrity_error("A match with this id already exists."):
         return MatchRepository(db).create(data)
-    except IntegrityError:
-        logger.exception("IntegrityError creating match")
-        raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
-            detail="A match with this id already exists.",
-        )
 
 
 @router.patch(
@@ -126,14 +120,8 @@ def update_match(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
             detail="Request body must contain at least one field to update.",
         )
-    try:
+    with handle_integrity_error("Update would violate a unique constraint."):
         updated = MatchRepository(db).update(matchId, data)
-    except IntegrityError:
-        logger.exception("IntegrityError updating match id=%s", matchId)
-        raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
-            detail="Update would violate a unique constraint.",
-        )
     if not updated:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Match not found"
