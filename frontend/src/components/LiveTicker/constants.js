@@ -176,3 +176,14 @@ export const URL_PATTERNS = {
   instagram: /instagram\.com/,
   youtube:   /youtube\.com|youtu\.be/,
 };
+
+// ── KI-Schreibstil-Metadaten ──────────────────────────────────
+// Wird in AIDraft, SummaryDraftCard und StylePickerDropdown genutzt.
+export const STYLE_META = {
+  neutral:    { emoji: "⚪", label: "Neutral" },
+  euphorisch: { emoji: "🔥", label: "Euphorisch" },
+  kritisch:   { emoji: "⚡", label: "Kritisch" },
+};
+
+// ── Social Media Brand-Stile ──────────────────────────────────
+export const INSTA_GRADIENT = "linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888)";
