@@ -1,0 +1,148 @@
+import { useState, useCallback } from "react";
+import { PREMATCH_PHASES } from "../constants";
+import { useTickerDataContext } from "../../../context/TickerDataContext";
+import * as api from "../../../api";
+import logger from "../../../utils/logger";
+
+const AUTO_STYLE = "neutral";
+
+/**
+ * Kapselt alle Bulk-Publish/Generate-Handler sowie Style-Regeneration für Summary-Drafts.
+ *
+ * @param {object} opts
+ * @param {string}   opts.instance                - Whitelabel-Instance
+ * @param {Array}    opts.pendingEvents            - Noch nicht veröffentlichte Events
+ * @param {Function} opts.setSelectedSummaryDraftId - Setter aus CenterPanel-State
+ */
+export function useBulkActions({ instance, pendingEvents, setSelectedSummaryDraftId }) {
+  const { match, tickerTexts, reload } = useTickerDataContext();
+  const [bulkGenerating, setBulkGenerating] = useState(false);
+  const [bulkPublishingSection, setBulkPublishingSection] = useState(null);
+
+  // ── Events: alle vorhandenen Drafts publishen ─────────────
+  const handleBulkPublish = useCallback(async () => {
+    setBulkGenerating(true);
+    try {
+      const freshRes = await api.fetchTickerTexts(match.id);
+      const drafts = (freshRes.data ?? []).filter(
+        (t) => t.status !== "published" && t.event_id,
+      );
+      for (const d of drafts) await api.publishTicker(d.id, d.text);
+      await reload.loadTickerTexts();
+    } catch (err) {
+      logger.error("bulkPublish failed", err);
+    } finally {
+      setBulkGenerating(false);
+    }
+  }, [match, reload]);
+
+  // ── Events: alle Events generieren + publishen ────────────
+  const handleBulkGenerate = useCallback(async () => {
+    if (!pendingEvents.length) return;
+    setBulkGenerating(true);
+    try {
+      const withoutDraft = pendingEvents.filter(
+        (ev) => !tickerTexts.find((t) => t.event_id === ev.id),
+      );
+      for (const ev of withoutDraft) {
+        await api.generateTicker(ev.id, AUTO_STYLE, instance);
+      }
+      const freshRes = await api.fetchTickerTexts(match.id);
+      const drafts = (freshRes.data ?? []).filter(
+        (t) => t.status !== "published" && t.event_id,
+      );
+      for (const d of drafts) await api.publishTicker(d.id, d.text);
+      await reload.loadTickerTexts();
+    } catch (err) {
+      logger.error("bulkGenerate failed", err);
+    } finally {
+      setBulkGenerating(false);
+    }
+  }, [pendingEvents, tickerTexts, match, reload, instance]);
+
+  // ── Vorberichterstattung: alle Drafts publishen ──────────
+  const handleBulkPublishPrematch = useCallback(async () => {
+    setBulkPublishingSection("prematch");
+    try {
+      const freshRes = await api.fetchTickerTexts(match.id);
+      const drafts = (freshRes.data ?? []).filter(
+        (t) => t.status === "draft" && !t.event_id && PREMATCH_PHASES.has(t.phase),
+      );
+      for (const d of drafts) await api.publishTicker(d.id, d.text);
+      await reload.loadTickerTexts();
+    } catch (err) {
+      logger.error("bulkPublishPrematch failed", err);
+    } finally {
+      setBulkPublishingSection(null);
+    }
+  }, [match, reload]);
+
+  // ── Spielphasen: alle Drafts + Videos publishen ──────────
+  const handleBulkPublishSpielphase = useCallback(async () => {
+    setBulkPublishingSection("spielphasen");
+    try {
+      const freshRes = await api.fetchTickerTexts(match.id);
+      const drafts = (freshRes.data ?? []).filter(
+        (t) => t.status === "draft" && !t.event_id && !PREMATCH_PHASES.has(t.phase),
+      );
+      for (const d of drafts) {
+        if (d.icon === "🎬" || d.video_url) {
+          await api.updateTicker(d.id, { status: "published" });
+        } else {
+          await api.publishTicker(d.id, d.text);
+        }
+      }
+      await reload.loadTickerTexts();
+    } catch (err) {
+      logger.error("bulkPublishSpielphase failed", err);
+    } finally {
+      setBulkPublishingSection(null);
+    }
+  }, [match, reload]);
+
+  // ── Style-Regeneration für einen Summary-Draft ────────────
+  // Vorberichterstattung: generateSyntheticBatch (FastAPI, synchron)
+  // Spielphasen:          generateMatchPhases    (FastAPI, synchron)
+  const handleRegenerateSummaryDraft = useCallback(
+    async (draftId, style) => {
+      setBulkPublishingSection("regenerating");
+      const oldDraft = tickerTexts.find((t) => t.id === draftId);
+      if (!oldDraft) { setBulkPublishingSection(null); return; }
+      const phase = oldDraft.phase;
+      const isPrematch = PREMATCH_PHASES.has(phase);
+      try {
+        // Hard-delete so backend's get_by_phase doesn't block regeneration
+        await api.deleteTicker(draftId);
+        if (isPrematch) {
+          await api.generateSyntheticBatch(match.id, style, instance);
+        } else {
+          await api.generateMatchPhases(match.id, style, instance, undefined, false);
+        }
+        await reload.loadTickerTexts();
+        const res = await api.fetchTickerTexts(match.id);
+        const newDraft = (res.data ?? []).find((t) =>
+          isPrematch && oldDraft.synthetic_event_id
+            ? t.synthetic_event_id === oldDraft.synthetic_event_id && t.status === "draft"
+            : t.status === "draft" && !t.event_id && t.phase === phase,
+        );
+        setSelectedSummaryDraftId(newDraft?.id ?? null);
+      } catch (err) {
+        logger.error("regenerateSummaryDraft failed", err);
+        setSelectedSummaryDraftId(null);
+      } finally {
+        setBulkPublishingSection(null);
+      }
+    },
+    [tickerTexts, match, reload, instance, setSelectedSummaryDraftId],
+  );
+
+  return {
+    bulkGenerating,
+    bulkPublishingSection,
+    handleBulkPublish,
+    handleBulkGenerate,
+    handleBulkPublishPrematch,
+    handleBulkPublishSpielphase,
+    handleRegenerateSummaryDraft,
+  };
+}
