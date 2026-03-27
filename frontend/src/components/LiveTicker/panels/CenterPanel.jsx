@@ -847,6 +847,7 @@ export const CenterPanel = memo(function CenterPanel({
                             onClick={async () => {
                               await api.updateTicker(entry.id, { status: "draft" });
                               await reload.loadTickerTexts();
+                              setSelectedSummaryDraftId(entry.id);
                             }}
                             style={{
                               marginLeft: "auto",
