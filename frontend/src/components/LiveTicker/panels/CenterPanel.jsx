@@ -536,6 +536,7 @@ export const CenterPanel = memo(function CenterPanel({
               <CollapsibleSection
                 title="Events"
                 count={pendingEvents.length}
+                onToggle={(open) => { if (!open) setSelectedEventId(null); }}
                 actions={
                   pendingEvents.length > 1 ? (
                     <div style={{ display: "flex", gap: "0.4rem" }}>
