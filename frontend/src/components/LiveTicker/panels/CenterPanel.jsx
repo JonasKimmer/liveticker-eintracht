@@ -443,27 +443,39 @@ export const CenterPanel = memo(function CenterPanel({
   const handleRegenerateSummaryDraft = useCallback(
     async (draftId, style) => {
       setBulkPublishingSection("regenerating");
+      const oldDraft = tickerTexts.find((t) => t.id === draftId);
+      if (!oldDraft) return;
+      const phase = oldDraft.phase;
       try {
-        // Find draft info before deleting (still in React state)
-        const draft = tickerTexts.find((t) => t.id === draftId);
-        if (!draft) return;
-
         // Hard-delete so backend's get_by_phase doesn't block regeneration
         await api.deleteTicker(draftId);
 
-        // Regenerate based on phase
-        if (PREMATCH_PHASES.has(draft.phase)) {
-          // Vorberichterstattung: use generateMatchSummary (n8n async)
-          await api.generateMatchSummary(match.id, draft.phase, style, instance);
+        if (PREMATCH_PHASES.has(phase)) {
+          // Vorberichterstattung: n8n ist async (~15-30s) → pollen bis Draft erscheint
+          await api.generateMatchSummary(match.id, phase, style, instance);
+          let newDraft = null;
+          for (let attempt = 0; attempt < 8 && !newDraft; attempt++) {
+            await new Promise((r) => setTimeout(r, 4000));
+            const res = await api.fetchTickerTexts(match.id);
+            newDraft = (res.data ?? []).find(
+              (t) => t.status === "draft" && !t.event_id && t.phase === phase,
+            );
+          }
+          await reload.loadTickerTexts();
+          setSelectedSummaryDraftId(newDraft?.id ?? null);
         } else {
-          // Spielphasen: generate as draft (auto_publish: false)
+          // Spielphasen: FastAPI ist synchron → sofort verfügbar
           await api.generateMatchPhases(match.id, style, instance, undefined, false);
+          await reload.loadTickerTexts();
+          const res = await api.fetchTickerTexts(match.id);
+          const newDraft = (res.data ?? []).find(
+            (t) => t.status === "draft" && !t.event_id && t.phase === phase,
+          );
+          setSelectedSummaryDraftId(newDraft?.id ?? null);
         }
-
-        await reload.loadTickerTexts();
-        setSelectedSummaryDraftId(null);
       } catch (err) {
         logger.error("regenerateSummaryDraft failed", err);
+        setSelectedSummaryDraftId(null);
       } finally {
         setBulkPublishingSection(null);
       }
@@ -630,7 +642,7 @@ export const CenterPanel = memo(function CenterPanel({
                           )
                         }
                         onReject={async () => {
-                          await api.updateTicker(draft.id, { status: "rejected" });
+                          await api.deleteTicker(draft.id);
                           await reload.loadTickerTexts();
                           if (selectedSummaryDraftId === draft.id)
                             setSelectedSummaryDraftId(null);
@@ -649,9 +661,7 @@ export const CenterPanel = memo(function CenterPanel({
                                 setSelectedSummaryDraftId(null);
                               }}
                               onReject={async () => {
-                                await api.updateTicker(draft.id, {
-                                  status: "rejected",
-                                });
+                                await api.deleteTicker(draft.id);
                                 await reload.loadTickerTexts();
                                 setSelectedSummaryDraftId(null);
                               }}
@@ -705,7 +715,7 @@ export const CenterPanel = memo(function CenterPanel({
                           )
                         }
                         onReject={async () => {
-                          await api.updateTicker(draft.id, { status: "rejected" });
+                          await api.deleteTicker(draft.id);
                           await reload.loadTickerTexts();
                           if (selectedSummaryDraftId === draft.id)
                             setSelectedSummaryDraftId(null);
@@ -762,7 +772,7 @@ export const CenterPanel = memo(function CenterPanel({
                                   className="lt-event-card__gen-btn"
                                   style={{ flex: 1, background: "rgba(239,68,68,0.1)", color: "#f87171" }}
                                   onClick={async () => {
-                                    await api.updateTicker(draft.id, { status: "rejected" });
+                                    await api.deleteTicker(draft.id);
                                     await reload.loadTickerTexts();
                                     setSelectedSummaryDraftId(null);
                                   }}
@@ -784,7 +794,7 @@ export const CenterPanel = memo(function CenterPanel({
                                 setSelectedSummaryDraftId(null);
                               }}
                               onReject={async () => {
-                                await api.updateTicker(draft.id, { status: "rejected" });
+                                await api.deleteTicker(draft.id);
                                 await reload.loadTickerTexts();
                                 setSelectedSummaryDraftId(null);
                               }}
