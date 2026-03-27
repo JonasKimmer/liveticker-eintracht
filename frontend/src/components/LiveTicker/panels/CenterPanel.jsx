@@ -610,24 +610,9 @@ export const CenterPanel = memo(function CenterPanel({
                                 await reload.loadTickerTexts();
                                 setSelectedSummaryDraftId(null);
                               }}
+                              onGenerate={onGenerate}
+                              generatingId={generatingId}
                             />
-                            <div style={{ marginTop: "0.75rem" }}>
-                              <div className="lt-center__section-title">
-                                Neu generieren
-                              </div>
-                              <div className="lt-event-card__gen-btns">
-                                {TICKER_STYLES.map((s) => (
-                                  <button
-                                    key={s}
-                                    className="lt-event-card__gen-btn"
-                                    onClick={() => onGenerate(draft.id, s)}
-                                    disabled={generatingId === draft.id}
-                                  >
-                                    {generatingId === draft.id ? "…" : `✦ ${s}`}
-                                  </button>
-                                ))}
-                              </div>
-                            </div>
                           </>
                         )}
                     </>
@@ -758,24 +743,9 @@ export const CenterPanel = memo(function CenterPanel({
                                 await reload.loadTickerTexts();
                                 setSelectedSummaryDraftId(null);
                               }}
+                              onGenerate={onGenerate}
+                              generatingId={generatingId}
                             />
-                            <div style={{ marginTop: "0.75rem" }}>
-                              <div className="lt-center__section-title">
-                                Neu generieren
-                              </div>
-                              <div className="lt-event-card__gen-btns">
-                                {TICKER_STYLES.map((s) => (
-                                  <button
-                                    key={s}
-                                    className="lt-event-card__gen-btn"
-                                    onClick={() => onGenerate(draft.id, s)}
-                                    disabled={generatingId === draft.id}
-                                  >
-                                    {generatingId === draft.id ? "…" : `✦ ${s}`}
-                                  </button>
-                                ))}
-                              </div>
-                            </div>
                           </>
                         ))}
                     </>

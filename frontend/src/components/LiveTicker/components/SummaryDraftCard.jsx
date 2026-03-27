@@ -1,7 +1,15 @@
 import { useState } from "react";
 import PropTypes from "prop-types";
+import { TICKER_STYLES } from "../constants";
 
-export function SummaryDraftCard({ draft, label = "KI-Text", onPublish, onReject }) {
+export function SummaryDraftCard({
+  draft,
+  label = "KI-Text",
+  onPublish,
+  onReject,
+  onGenerate,
+  generatingId,
+}) {
   const [editing, setEditing] = useState(false);
   const [text, setText] = useState(draft.text ?? "");
   return (
@@ -21,21 +29,48 @@ export function SummaryDraftCard({ draft, label = "KI-Text", onPublish, onReject
             style={{ width: "100%", marginBottom: "0.5rem" }}
           />
         ) : (
-          <p className="lt-draft__text" style={{ cursor: "text" }} onClick={() => setEditing(true)} title="Klicken zum Bearbeiten">
+          <p
+            className="lt-draft__text"
+            style={{ cursor: "text" }}
+            onClick={() => setEditing(true)}
+            title="Klicken zum Bearbeiten"
+          >
             {text || "Generiere Text…"}
           </p>
         )}
       </div>
       <div className="lt-draft__actions">
-        <button className="lt-btn lt-btn--primary" onClick={() => onPublish(text)}>
+        <button
+          className="lt-btn lt-btn--primary"
+          onClick={() => onPublish(text)}
+        >
           Annehmen <kbd className="lt-btn__kbd">TAB</kbd>
         </button>
         <button className="lt-btn lt-btn--ghost" onClick={onReject}>
           Ablehnen <kbd className="lt-btn__kbd">ESC</kbd>
         </button>
-        <button className="lt-btn lt-btn--ghost" onClick={() => setEditing((v) => !v)}>
+        <button
+          className="lt-btn lt-btn--ghost"
+          onClick={() => setEditing((v) => !v)}
+        >
           {editing ? "✓ Fertig" : "✎ Bearbeiten"}
         </button>
+        {onGenerate && (
+          <>
+            {TICKER_STYLES.map((s) => (
+              <button
+                key={s}
+                className="lt-event-card__gen-btn"
+                onClick={() => onGenerate(draft.id, s)}
+                disabled={generatingId === draft.id}
+                style={{ fontSize: "0.75rem", padding: "0.4rem 0.6rem" }}
+                title={`Neu als ${s} generieren`}
+              >
+                {generatingId === draft.id ? "…" : `${s}`}
+              </button>
+            ))}
+          </>
+        )}
       </div>
     </div>
   );
@@ -50,4 +85,6 @@ SummaryDraftCard.propTypes = {
   label: PropTypes.string,
   onPublish: PropTypes.func.isRequired,
   onReject: PropTypes.func.isRequired,
+  onGenerate: PropTypes.func,
+  generatingId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
 };
