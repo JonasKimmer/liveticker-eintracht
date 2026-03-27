@@ -3448,3 +3448,29 @@
   border-radius: 2px;
   transition: width 0.05s linear;
 }
+
+/* Delete Toast */
+.lt-delete-toast {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 9999;
+  background: #1a1a1a;
+  border: 1px solid #333;
+  border-left: 3px solid #4ade80;
+  border-radius: 8px;
+  padding: 0.65rem 1rem;
+  font-family: var(--lt-font-mono);
+  font-size: 0.75rem;
+  color: var(--lt-text-sec);
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+  animation: lt-toast-in 0.18s ease;
+  pointer-events: none;
+}
+.lt-delete-toast__icon {
+  color: #4ade80;
+  font-size: 0.8rem;
+}

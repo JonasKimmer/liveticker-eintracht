@@ -94,6 +94,10 @@ export default function LiveTicker() {
   // ── Publish Toast (Undo) ───────────────────────────────
   const [publishToast, setPublishToast] = useState(null); // { id, text }
 
+  // ── Delete Toast ───────────────────────────────────────
+  const [deleteToast, setDeleteToast] = useState(false);
+  const deleteToastTimerRef = useRef(null);
+
   const showPublishToast = useCallback((id, text) => {
     setPublishToast({ id, text });
   }, []);
@@ -231,7 +235,7 @@ export default function LiveTicker() {
   // ── Keyboard Shortcuts ────────────────────────────────────
   useKeyboardShortcuts({
     onToggleHints: () => setShowHints((s) => !s),
-    onShowHints:   () => setShowHints(true),
+    onShowHints: () => setShowHints(true),
     onShowCommands: () => setShowCommands(true),
   });
 
@@ -287,6 +291,9 @@ export default function LiveTicker() {
     async (id) => {
       await api.deleteTicker(id);
       await reload.loadTickerTexts();
+      if (deleteToastTimerRef.current) clearTimeout(deleteToastTimerRef.current);
+      setDeleteToast(true);
+      deleteToastTimerRef.current = setTimeout(() => setDeleteToast(false), 2500);
     },
     [reload],
   );
@@ -601,6 +608,12 @@ export default function LiveTicker() {
                 onRetract={handleRetract}
                 onDismiss={() => setPublishToast(null)}
               />
+            )}
+            {deleteToast && (
+              <div className="lt-delete-toast">
+                <span className="lt-delete-toast__icon">✓</span>
+                Eintrag gelöscht
+              </div>
             )}
           </div>
         </TickerActionsContext.Provider>
