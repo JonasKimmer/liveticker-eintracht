@@ -593,23 +593,42 @@ export const CenterPanel = memo(function CenterPanel({
                       />
                       {selectedSummaryDraftId === draft.id &&
                         PREMATCH_PHASES.has(draft.phase) && (
-                          <SummaryDraftCard
-                            key={`expanded-${draft.id}`}
-                            draft={draft}
-                            label={getDraftLabel(draft)}
-                            onPublish={async (text) => {
-                              await api.publishTicker(draft.id, text);
-                              await reload.loadTickerTexts();
-                              setSelectedSummaryDraftId(null);
-                            }}
-                            onReject={async () => {
-                              await api.updateTicker(draft.id, {
-                                status: "rejected",
-                              });
-                              await reload.loadTickerTexts();
-                              setSelectedSummaryDraftId(null);
-                            }}
-                          />
+                          <>
+                            <SummaryDraftCard
+                              key={`expanded-${draft.id}`}
+                              draft={draft}
+                              label={getDraftLabel(draft)}
+                              onPublish={async (text) => {
+                                await api.publishTicker(draft.id, text);
+                                await reload.loadTickerTexts();
+                                setSelectedSummaryDraftId(null);
+                              }}
+                              onReject={async () => {
+                                await api.updateTicker(draft.id, {
+                                  status: "rejected",
+                                });
+                                await reload.loadTickerTexts();
+                                setSelectedSummaryDraftId(null);
+                              }}
+                            />
+                            <div style={{ marginTop: "0.75rem" }}>
+                              <div className="lt-center__section-title">
+                                Neu generieren
+                              </div>
+                              <div className="lt-event-card__gen-btns">
+                                {TICKER_STYLES.map((s) => (
+                                  <button
+                                    key={s}
+                                    className="lt-event-card__gen-btn"
+                                    onClick={() => onGenerate(draft.id, s)}
+                                    disabled={generatingId === draft.id}
+                                  >
+                                    {generatingId === draft.id ? "…" : `✦ ${s}`}
+                                  </button>
+                                ))}
+                              </div>
+                            </div>
+                          </>
                         )}
                     </>
                   ))}
@@ -665,78 +684,99 @@ export const CenterPanel = memo(function CenterPanel({
                       {selectedSummaryDraftId === draft.id &&
                         !PREMATCH_PHASES.has(draft.phase) &&
                         (draft.icon === "🎬" || !!draft.video_url ? (
-                          <div
-                            key={`expanded-${draft.id}`}
-                            style={{
-                              background: "var(--lt-surface)",
-                              borderRadius: 8,
-                              padding: "0.75rem",
-                              border: "1px solid var(--lt-border)",
-                              marginBottom: "0.5rem",
-                            }}
-                          >
+                          <>
                             <div
+                              key={`expanded-${draft.id}`}
                               style={{
-                                fontFamily: "var(--lt-font-mono)",
-                                fontSize: "0.7rem",
-                                color: "var(--lt-text-muted)",
+                                background: "var(--lt-surface)",
+                                borderRadius: 8,
+                                padding: "0.75rem",
+                                border: "1px solid var(--lt-border)",
                                 marginBottom: "0.5rem",
                               }}
                             >
-                              🎬 Video
-                            </div>
-                            {draft.video_url && (
-                              <AutoPlayVideo
-                                src={draft.video_url}
+                              <div
                                 style={{
-                                  width: "100%",
-                                  borderRadius: 6,
+                                  fontFamily: "var(--lt-font-mono)",
+                                  fontSize: "0.7rem",
+                                  color: "var(--lt-text-muted)",
                                   marginBottom: "0.5rem",
-                                  maxHeight: 220,
-                                }}
-                              />
-                            )}
-                            <div style={{ display: "flex", gap: "0.5rem", marginTop: "0.5rem" }}>
-                              <button
-                                className="lt-event-card__gen-btn"
-                                style={{ flex: 1, background: "rgba(34,197,94,0.15)", color: "#4ade80" }}
-                                onClick={async () => {
-                                  await api.updateTicker(draft.id, { status: "published" });
-                                  await reload.loadTickerTexts();
-                                  setSelectedSummaryDraftId(null);
                                 }}
                               >
-                                ✓ Veröffentlichen
-                              </button>
-                              <button
-                                className="lt-event-card__gen-btn"
-                                style={{ flex: 1, background: "rgba(239,68,68,0.1)", color: "#f87171" }}
-                                onClick={async () => {
-                                  await api.updateTicker(draft.id, { status: "rejected" });
-                                  await reload.loadTickerTexts();
-                                  setSelectedSummaryDraftId(null);
-                                }}
-                              >
-                                ✕ Ablehnen
-                              </button>
+                                🎬 Video
+                              </div>
+                              {draft.video_url && (
+                                <AutoPlayVideo
+                                  src={draft.video_url}
+                                  style={{
+                                    width: "100%",
+                                    borderRadius: 6,
+                                    marginBottom: "0.5rem",
+                                    maxHeight: 220,
+                                  }}
+                                />
+                              )}
+                              <div style={{ display: "flex", gap: "0.5rem", marginTop: "0.5rem" }}>
+                                <button
+                                  className="lt-event-card__gen-btn"
+                                  style={{ flex: 1, background: "rgba(34,197,94,0.15)", color: "#4ade80" }}
+                                  onClick={async () => {
+                                    await api.updateTicker(draft.id, { status: "published" });
+                                    await reload.loadTickerTexts();
+                                    setSelectedSummaryDraftId(null);
+                                  }}
+                                >
+                                  ✓ Veröffentlichen
+                                </button>
+                                <button
+                                  className="lt-event-card__gen-btn"
+                                  style={{ flex: 1, background: "rgba(239,68,68,0.1)", color: "#f87171" }}
+                                  onClick={async () => {
+                                    await api.updateTicker(draft.id, { status: "rejected" });
+                                    await reload.loadTickerTexts();
+                                    setSelectedSummaryDraftId(null);
+                                  }}
+                                >
+                                  ✕ Ablehnen
+                                </button>
+                              </div>
                             </div>
-                          </div>
+                          </>
                         ) : (
-                          <SummaryDraftCard
-                            key={`expanded-${draft.id}`}
-                            draft={draft}
-                            label={getDraftLabel(draft)}
-                            onPublish={async (text) => {
-                              await api.publishTicker(draft.id, text);
-                              await reload.loadTickerTexts();
-                              setSelectedSummaryDraftId(null);
-                            }}
-                            onReject={async () => {
-                              await api.updateTicker(draft.id, { status: "rejected" });
-                              await reload.loadTickerTexts();
-                              setSelectedSummaryDraftId(null);
-                            }}
-                          />
+                          <>
+                            <SummaryDraftCard
+                              key={`expanded-${draft.id}`}
+                              draft={draft}
+                              label={getDraftLabel(draft)}
+                              onPublish={async (text) => {
+                                await api.publishTicker(draft.id, text);
+                                await reload.loadTickerTexts();
+                                setSelectedSummaryDraftId(null);
+                              }}
+                              onReject={async () => {
+                                await api.updateTicker(draft.id, { status: "rejected" });
+                                await reload.loadTickerTexts();
+                                setSelectedSummaryDraftId(null);
+                              }}
+                            />
+                            <div style={{ marginTop: "0.75rem" }}>
+                              <div className="lt-center__section-title">
+                                Neu generieren
+                              </div>
+                              <div className="lt-event-card__gen-btns">
+                                {TICKER_STYLES.map((s) => (
+                                  <button
+                                    key={s}
+                                    className="lt-event-card__gen-btn"
+                                    onClick={() => onGenerate(draft.id, s)}
+                                    disabled={generatingId === draft.id}
+                                  >
+                                    {generatingId === draft.id ? "…" : `✦ ${s}`}
+                                  </button>
+                                ))}
+                              </div>
+                            </div>
+                          </>
                         ))}
                     </>
                   ))}
