@@ -99,11 +99,11 @@ export function useMatchTriggers({
   }, [selMatchId, match?.matchState, instance, language]);
 
   // ── Match-Status Webhook beim Match-Open ──────────────────
+  // Guard-Key = matchId + status: jede Phase darf einmal triggern.
+  // Kein Guard bei PreMatch (status = null) damit Anpfiff später noch feuert.
   const matchStatusTriggeredRef = useRef(new Set());
   useEffect(() => {
     if (!selMatchId || !match?.matchState || !match?.externalId) return;
-    if (matchStatusTriggeredRef.current.has(selMatchId)) return;
-    matchStatusTriggeredRef.current.add(selMatchId);
 
     let status = null;
     if (match.matchState === MATCH_PHASES.FULL_TIME) {
@@ -112,22 +112,26 @@ export function useMatchTriggers({
       status = PHASE_TO_STATUS[match.matchPhase] ?? "1H";
     }
 
-    if (status) {
-      api
-        .triggerMatchStatus(match.externalId, status, match.minute ?? null, instance, language, style, tickerMode)
-        .then(() => {
-          // LLM generiert Phasen-Events sequenziell (je ~5s) — mehrfach nachladen
-          const scheduledFor = selMatchId;
-          [4000, 9000, 16000, 24000, 35000, 50000, 70000, 95000, 125000].forEach((delay) => {
-            setTimeout(() => {
-              if (currentMatchIdRef.current === scheduledFor) reload.loadTickerTexts();
-            }, delay);
-          });
-        })
-        .catch((err) =>
-          logger.warn("[useMatchTriggers] triggerMatchStatus silenced:", err?.message)
-        );
-    }
+    if (!status) return; // PreMatch o.ä. — kein Guard setzen, kein Call
+
+    const key = `${selMatchId}-${status}`;
+    if (matchStatusTriggeredRef.current.has(key)) return;
+    matchStatusTriggeredRef.current.add(key);
+
+    api
+      .triggerMatchStatus(match.externalId, status, match.minute ?? null, instance, language, style, tickerMode)
+      .then(() => {
+        // LLM generiert Phasen-Events sequenziell (je ~5s) — mehrfach nachladen
+        const scheduledFor = selMatchId;
+        [4000, 9000, 16000, 24000, 35000, 50000, 70000, 95000, 125000].forEach((delay) => {
+          setTimeout(() => {
+            if (currentMatchIdRef.current === scheduledFor) reload.loadTickerTexts();
+          }, delay);
+        });
+      })
+      .catch((err) =>
+        logger.warn("[useMatchTriggers] triggerMatchStatus silenced:", err?.message)
+      );
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selMatchId, match?.matchState, match?.matchPhase]);
 
