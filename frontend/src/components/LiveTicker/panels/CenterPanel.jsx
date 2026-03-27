@@ -440,6 +440,23 @@ export const CenterPanel = memo(function CenterPanel({
     }
   }, [match, reload]);
 
+  const handleRegenerateSummaryDraft = useCallback(
+    async (draftId, style) => {
+      setBulkPublishingSection("regenerating");
+      try {
+        // Reject current draft to clear it
+        await api.updateTicker(draftId, { status: "rejected" });
+        await reload.loadTickerTexts();
+        setSelectedSummaryDraftId(null);
+      } catch (err) {
+        logger.error("regenerateSummaryDraft failed", err);
+      } finally {
+        setBulkPublishingSection(null);
+      }
+    },
+    [reload],
+  );
+
   const handleAcceptDraft = useCallback(async () => {
     if (!selectedDraft) return;
     await api.publishTicker(selectedDraft.id, selectedDraft.text);
@@ -610,8 +627,8 @@ export const CenterPanel = memo(function CenterPanel({
                                 await reload.loadTickerTexts();
                                 setSelectedSummaryDraftId(null);
                               }}
-                              onGenerate={onGenerate}
-                              generatingId={generatingId}
+                              onGenerate={handleRegenerateSummaryDraft}
+                              generatingId={bulkPublishingSection}
                             />
                           </>
                         )}
@@ -743,8 +760,8 @@ export const CenterPanel = memo(function CenterPanel({
                                 await reload.loadTickerTexts();
                                 setSelectedSummaryDraftId(null);
                               }}
-                              onGenerate={onGenerate}
-                              generatingId={generatingId}
+                              onGenerate={handleRegenerateSummaryDraft}
+                              generatingId={bulkPublishingSection}
                             />
                           </>
                         ))}
