@@ -85,6 +85,7 @@ export const CenterPanel = memo(function CenterPanel({
   const [editMode, setEditMode] = useState(false);
   const [editorValue, setEditorValue] = useState("");
   const [bulkGenerating, setBulkGenerating] = useState(false);
+  const [bulkPublishingSection, setBulkPublishingSection] = useState(null);
   const [dismissedIds, setDismissedIds] = useState(new Set());
   const [autoError, setAutoError] = useState(null);
 
@@ -275,6 +276,46 @@ export const CenterPanel = memo(function CenterPanel({
     }
   }, [pendingEvents, tickerTexts, match, reload, instance]);
 
+  const handleBulkPublishPrematch = useCallback(async () => {
+    setBulkPublishingSection("prematch");
+    try {
+      const freshRes = await api.fetchTickerTexts(match.id);
+      const drafts = (freshRes.data ?? []).filter(
+        (t) => t.status === "draft" && !t.event_id && PREMATCH_PHASES.has(t.phase),
+      );
+      for (const d of drafts) {
+        await api.publishTicker(d.id, d.text);
+      }
+      await reload.loadTickerTexts();
+    } catch (err) {
+      logger.error("bulkPublishPrematch failed", err);
+    } finally {
+      setBulkPublishingSection(null);
+    }
+  }, [match, reload]);
+
+  const handleBulkPublishSpielphase = useCallback(async () => {
+    setBulkPublishingSection("spielphasen");
+    try {
+      const freshRes = await api.fetchTickerTexts(match.id);
+      const drafts = (freshRes.data ?? []).filter(
+        (t) => t.status === "draft" && !t.event_id && !PREMATCH_PHASES.has(t.phase),
+      );
+      for (const d of drafts) {
+        if (d.icon === "🎬" || d.video_url) {
+          await api.updateTicker(d.id, { status: "published" });
+        } else {
+          await api.publishTicker(d.id, d.text);
+        }
+      }
+      await reload.loadTickerTexts();
+    } catch (err) {
+      logger.error("bulkPublishSpielphase failed", err);
+    } finally {
+      setBulkPublishingSection(null);
+    }
+  }, [match, reload]);
+
   const handleAcceptDraft = useCallback(async () => {
     if (!selectedDraft) return;
     await api.publishTicker(selectedDraft.id, selectedDraft.text);
@@ -394,6 +435,18 @@ export const CenterPanel = memo(function CenterPanel({
                 <CollapsibleSection
                   title="Vorberichterstattung"
                   count={drafts.length}
+                  actions={
+                    drafts.length > 1 ? (
+                      <button
+                        className="lt-event-card__gen-btn"
+                        onClick={handleBulkPublishPrematch}
+                        disabled={bulkPublishingSection === "prematch"}
+                        title="Alle Vorberichte veröffentlichen"
+                      >
+                        {bulkPublishingSection === "prematch" ? "…" : "✓ Alle"}
+                      </button>
+                    ) : null
+                  }
                 >
                   {drafts.map((draft) => (
                     <SummaryDraftCard
@@ -426,7 +479,22 @@ export const CenterPanel = memo(function CenterPanel({
               );
               if (!drafts.length) return null;
               return (
-                <CollapsibleSection title="Spielphasen" count={drafts.length}>
+                <CollapsibleSection
+                  title="Spielphasen"
+                  count={drafts.length}
+                  actions={
+                    drafts.length > 1 ? (
+                      <button
+                        className="lt-event-card__gen-btn"
+                        onClick={handleBulkPublishSpielphase}
+                        disabled={bulkPublishingSection === "spielphasen"}
+                        title="Alle Spielphasen-Drafts veröffentlichen"
+                      >
+                        {bulkPublishingSection === "spielphasen" ? "…" : "✓ Alle"}
+                      </button>
+                    ) : null
+                  }
+                >
                   {drafts.map((draft) => {
                     const isVideo = draft.icon === "🎬" || !!draft.video_url;
                     return isVideo ? (
