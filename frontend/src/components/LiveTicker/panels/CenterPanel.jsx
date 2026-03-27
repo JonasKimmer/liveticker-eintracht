@@ -202,8 +202,6 @@ export const CenterPanel = memo(function CenterPanel({
   const [bulkGenerating, setBulkGenerating] = useState(false);
   const [bulkPublishingSection, setBulkPublishingSection] = useState(null);
   const [selectedSummaryDraftId, setSelectedSummaryDraftId] = useState(null);
-  // { matchId, phase } | null — hält laufende Vorberichterstattungs-Regeneration
-  const [pendingRegenData, setPendingRegenData] = useState(null);
   const [dismissedIds, setDismissedIds] = useState(new Set());
   const [autoError, setAutoError] = useState(null);
 
@@ -354,28 +352,6 @@ export const CenterPanel = memo(function CenterPanel({
     else onDraftActive?.(null, "");
   }, [selectedDraft, onDraftActive]);
 
-  // ── Warten auf neuen Vorberichterstattungs-Draft (n8n async) ──
-  // Nach Regeneration merkt sich pendingRegenData matchId + Phase.
-  // Sobald tickerTexts einen passenden Draft enthält, wird er auto-selektiert.
-  // Match-ID-Guard verhindert falsches Feuern nach Spielwechsel.
-  useEffect(() => {
-    if (!pendingRegenData) return;
-    if (pendingRegenData.matchId !== match?.id) {
-      // Spielwechsel → Regeneration verwerfen
-      setPendingRegenData(null);
-      setBulkPublishingSection(null);
-      return;
-    }
-    const newDraft = tickerTexts.find(
-      (t) => t.status === "draft" && !t.event_id && t.phase === pendingRegenData.phase,
-    );
-    if (newDraft) {
-      setSelectedSummaryDraftId(newDraft.id);
-      setPendingRegenData(null);
-      setBulkPublishingSection(null);
-    }
-  }, [tickerTexts, pendingRegenData, match?.id]);
-
   const handleBulkPublish = useCallback(async () => {
     setBulkGenerating(true);
     try {
@@ -464,35 +440,31 @@ export const CenterPanel = memo(function CenterPanel({
     }
   }, [match, reload]);
 
+  // ── Style-Regeneration für Summary-Drafts ─────────────────
+  // Vorberichterstattung: generateSyntheticBatch (FastAPI, synchron)
+  // Spielphasen:          generateMatchPhases    (FastAPI, synchron)
+  // Beide Pfade identisch: delete → generate → reload → select
   const handleRegenerateSummaryDraft = useCallback(
     async (draftId, style) => {
       setBulkPublishingSection("regenerating");
       const oldDraft = tickerTexts.find((t) => t.id === draftId);
-      if (!oldDraft) return;
+      if (!oldDraft) { setBulkPublishingSection(null); return; }
       const phase = oldDraft.phase;
       const isPrematch = PREMATCH_PHASES.has(phase);
-      let asyncFallback = false;
       try {
         // Hard-delete so backend's get_by_phase doesn't block regeneration
         await api.deleteTicker(draftId);
 
-        if (isPrematch && oldDraft.synthetic_event_id) {
-          // Vorberichterstattung: synchroner FastAPI-Aufruf mit bestehender synthetic_event_id
-          // (gleicher Weg wie Spielphasen — kein n8n-Umweg nötig)
-          await api.generateSynthetic(oldDraft.synthetic_event_id, style, false);
-        } else if (isPrematch) {
-          // Fallback: kein synthetic_event_id bekannt → n8n async
-          asyncFallback = true;
-          await reload.loadTickerTexts();
-          await api.generateMatchSummary(match.id, phase, style, instance);
-          setPendingRegenData({ matchId: match.id, phase });
-          return; // bulkPublishingSection wird durch useEffect gecleared
+        if (isPrematch) {
+          // Vorberichterstattung: generate-synthetic-batch kennt alle Synthetic-Events
+          // des Matches; da der alte Draft gerade gelöscht wurde, regeneriert der Batch
+          // genau diesen einen fehlenden Synthetic-Event (synchron, kein n8n).
+          await api.generateSyntheticBatch(match.id, style, instance);
         } else {
-          // Spielphasen: FastAPI ist synchron → sofort verfügbar
+          // Spielphasen: direkte FastAPI-Generierung
           await api.generateMatchPhases(match.id, style, instance, undefined, false);
         }
 
-        // Synchrone Pfade: direkt neu laden und selektieren
         await reload.loadTickerTexts();
         const res = await api.fetchTickerTexts(match.id);
         const newDraft = (res.data ?? []).find(
@@ -502,10 +474,8 @@ export const CenterPanel = memo(function CenterPanel({
       } catch (err) {
         logger.error("regenerateSummaryDraft failed", err);
         setSelectedSummaryDraftId(null);
-        setPendingRegenData(null);
-        setBulkPublishingSection(null);
       } finally {
-        if (!asyncFallback) setBulkPublishingSection(null);
+        setBulkPublishingSection(null);
       }
     },
     [tickerTexts, match, reload, instance],
@@ -636,10 +606,7 @@ export const CenterPanel = memo(function CenterPanel({
                   !t.event_id &&
                   PREMATCH_PHASES.has(t.phase),
               );
-              const isRegenerating =
-                pendingRegenData?.matchId === match?.id &&
-                PREMATCH_PHASES.has(pendingRegenData?.phase);
-              if (!drafts.length && !isRegenerating) return null;
+              if (!drafts.length) return null;
               return (
                 <CollapsibleSection
                   title="Vorberichterstattung"
@@ -657,21 +624,6 @@ export const CenterPanel = memo(function CenterPanel({
                     ) : null
                   }
                 >
-                  {isRegenerating && drafts.length === 0 && (
-                    <div
-                      style={{
-                        padding: "0.65rem 0.75rem",
-                        fontSize: "0.8rem",
-                        color: "var(--lt-text-muted)",
-                        fontStyle: "italic",
-                        display: "flex",
-                        alignItems: "center",
-                        gap: "0.5rem",
-                      }}
-                    >
-                      ✦ KI schreibt neuen Text…
-                    </div>
-                  )}
                   {drafts.map((draft) => (
                     <>
                       <SummaryRow
