@@ -552,20 +552,34 @@ function MatchdayPicker({
     matchItemRefs.current[matchActiveIdx]?.scrollIntoView({ block: "nearest" });
   }, [matchActiveIdx]);
 
-  // Panel-Keyboard: ↑↓ für Spiele, ←/→ für Spieltage, Enter/Esc via matchOnKeyDown
+  // Panel-Keyboard: ←/→ für ±1 Spieltag, ↑/↓ springt eine ganze Zeile im Grid
   function handlePanelKeyDown(e) {
-    if (
-      e.key === "ArrowLeft" ||
-      e.key === "ArrowRight" ||
-      e.key === "ArrowUp" ||
-      e.key === "ArrowDown"
-    ) {
+    if (e.key === "ArrowLeft" || e.key === "ArrowRight" || e.key === "ArrowUp" || e.key === "ArrowDown") {
       e.preventDefault();
       const idx = sortedMatchdays.indexOf(selRound);
+
+      let step = 1;
+      if (e.key === "ArrowUp" || e.key === "ArrowDown") {
+        // Spaltenanzahl aus dem tatsächlich gerenderten Grid bestimmen
+        const gridEl = panelRef.current?.querySelector(".lt-mdp__grid");
+        if (gridEl) {
+          const btns = Array.from(gridEl.querySelectorAll(".lt-mdp__day"));
+          if (btns.length >= 2) {
+            const firstTop = btns[0].getBoundingClientRect().top;
+            let cols = 1;
+            for (let i = 1; i < btns.length; i++) {
+              if (Math.abs(btns[i].getBoundingClientRect().top - firstTop) > 4) break;
+              cols++;
+            }
+            step = cols;
+          }
+        }
+      }
+
       const next =
         e.key === "ArrowRight" || e.key === "ArrowDown"
-          ? sortedMatchdays[Math.min(idx + 1, sortedMatchdays.length - 1)]
-          : sortedMatchdays[Math.max(idx - 1, 0)];
+          ? sortedMatchdays[Math.min(idx + step, sortedMatchdays.length - 1)]
+          : sortedMatchdays[Math.max(idx - step, 0)];
       if (next !== undefined) onRoundChange(next);
     } else {
       matchOnKeyDown(e);
