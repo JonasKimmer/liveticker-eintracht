@@ -1,173 +1,29 @@
-import { useState, useEffect, useCallback, useRef } from "react";
-import * as api from "../api";
-import logger from "../utils/logger";
-import { POLL_EVENTS_MS, POLL_MATCH_REFRESH_MS, POLL_PREMATCH_MS } from "../components/LiveTicker/constants";
+import { useMatchCore } from "./useMatchCore";
+import { useMatchEvents } from "./useMatchEvents";
+import { useMatchTicker } from "./useMatchTicker";
 
 /**
- * Gibt das Polling-Intervall in ms basierend auf dem Spielstatus zurück.
+ * Aggregiert alle Match-Daten aus den drei Teilhooks.
+ * Öffentliche API bleibt identisch zur bisherigen Version.
  *
- * @param {string|null} matchState - z.B. "Live", "FullTime", "PreMatch", null (noch am Laden)
- * @returns {number} Intervall in Millisekunden
- *
- * Live + FullTime pollen aggressiv (POLL_EVENTS_MS = 5 s) damit Events sofort erscheinen.
- * null (noch am Laden) ebenfalls 5 s — konservativer Fallback bis Status bekannt ist.
- * Alle anderen Zustände (PreMatch, Cancelled …) pollen nur alle 60 s (SYNC_MATCH_INTERVAL_MS).
- */
-function resolvePollingInterval(matchState) {
-  if (matchState === "Live")     return POLL_EVENTS_MS;     // 5 s – Events sofort
-  if (matchState === "FullTime") return POLL_EVENTS_MS;     // 5 s – Nachberichte sofort
-  if (matchState == null)        return POLL_EVENTS_MS;     // 5 s – noch am Laden
-  return POLL_PREMATCH_MS;  // 15 s – Pre-Match: Drafts innerhalb 15 s sichtbar
-}
-
-/**
- * Lädt alle Daten für ein Spiel (Match, Events, Ticker, Lineup, Statistiken)
- * und pollt sie je nach Spielstatus automatisch in Echtzeit.
- *
- * @param {number|null} selectedMatchId - Interne Match-ID oder null.
- * @returns {{ match, events, tickerTexts, prematch, lineups, matchStats, players, playerStats, leagueSeason, reload: () => void }}
+ * @param {number|null} selectedMatchId
  */
 export function useMatchData(selectedMatchId) {
-  const [match, setMatch] = useState(null);
-  const [events, setEvents] = useState([]);
-  const [tickerTexts, setTickerTexts] = useState([]);
-  const [prematch, setPrematch] = useState([]);
-  const [lineups, setLineups] = useState([]);
-  const [matchStats, setMatchStats] = useState([]);
-  const [players, setPlayers] = useState([]);
-  const [playerStats, setPlayerStats] = useState([]);
-  const [injuries, setInjuries] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const intervalRef = useRef(null);
-  // Ref hält aktuelle Match-Daten synchron für loadPlayers
-  const matchRef = useRef(null);
-
-  // Generic loader: fetches data and sets state, with optional transform
-  const _load = useCallback(async (fetchFn, setFn, transform) => {
-    if (!selectedMatchId) return;
-    try {
-      const res = await fetchFn(selectedMatchId);
-      setFn(transform ? transform(res.data) : res.data);
-    } catch (err) {
-      logger.error(`[useMatchData] ${fetchFn.name} failed:`, err);
-    }
-  }, [selectedMatchId]);
-
-  // loadMatch is separate: it also updates matchRef for loadPlayers
-  const loadMatch = useCallback(async () => {
-    if (!selectedMatchId) return;
-    try {
-      const res = await api.fetchMatch(selectedMatchId);
-      matchRef.current = res.data;
-      setMatch(res.data);
-    } catch (err) {
-      logger.error("[useMatchData] fetchMatch failed:", err);
-    }
-  }, [selectedMatchId]);
-
-  const loadEvents      = useCallback(() => _load(api.fetchEvents,     setEvents,     (d) => [...(d?.items ?? d ?? [])].reverse()), [_load]);
-  const loadTickerTexts = useCallback(() => _load(api.fetchTickerTexts, setTickerTexts), [_load]);
-  const loadPrematch    = useCallback(() => _load(api.fetchPrematch,    setPrematch),    [_load]);
-  const loadLineups     = useCallback(() => _load(api.fetchLineups,     setLineups),     [_load]);
-  const loadMatchStats  = useCallback(() => _load(api.fetchMatchStats,  setMatchStats),  [_load]);
-  const loadPlayerStats = useCallback(() => _load(api.fetchPlayerStats, setPlayerStats), [_load]);
-  const loadInjuries    = useCallback(() => _load(api.fetchInjuries,    setInjuries,   (d) => d ?? []), [_load]);
-
-  // loadPlayers liest Team-IDs aus matchRef (setzt loadMatch voraus)
-  const loadPlayers = useCallback(async () => {
-    const m = matchRef.current;
-    const teamIds = [m?.teamHomeId, m?.teamAwayId].filter(Boolean);
-    if (!teamIds.length) return;
-    try {
-      const results = await Promise.all(teamIds.map((id) => api.fetchPlayers(id)));
-      const allPlayers = results.flatMap((r) => r.data?.items ?? []);
-      setPlayers(allPlayers);
-    } catch (err) {
-      logger.error("loadPlayers error:", err);
-    }
-  }, []);
-
-  useEffect(() => {
-    if (!selectedMatchId) return;
-    matchRef.current = null;
-    setMatch(null);
-    setEvents([]);
-    setTickerTexts([]);
-    setPrematch([]);
-    setLineups([]);
-    setMatchStats([]);
-    setPlayers([]);
-    setPlayerStats([]);
-    setInjuries([]);
-    setLoading(true);
-
-    // loadMatch zuerst, dann loadPlayers (braucht teamIds aus Match)
-    const matchAndPlayers = loadMatch().then(() => {
-      loadPlayers();
-    });
-
-    Promise.all([
-      matchAndPlayers,
-      loadEvents(),
-      loadTickerTexts(),
-      loadPrematch(),
-      loadMatchStats(),
-      loadLineups(),
-      loadPlayerStats(),
-      loadInjuries(),
-    ]).finally(() => setLoading(false));
-
-    const t1 = setTimeout(() => {
-      loadLineups();
-      loadMatchStats();
-      loadMatch().then(() => loadPlayers());
-      loadPrematch();
-      loadTickerTexts(); // Drafts die n8n kurz nach Match-Load generiert sofort anzeigen
-      loadEvents();
-    }, POLL_EVENTS_MS);
-    const t2 = setTimeout(() => {
-      loadLineups();
-      loadMatchStats();
-      loadMatch().then(() => loadPlayers());
-      loadPrematch();
-      loadTickerTexts();
-      loadEvents();
-    }, POLL_MATCH_REFRESH_MS);
-
-    return () => {
-      clearTimeout(t1);
-      clearTimeout(t2);
-    };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedMatchId]);
-
-  // Polling-Interval wird vom Match-State abhängig gemacht.
-  // Separater Effect damit der Interval korrekt neu gesetzt wird sobald
-  // das Match geladen ist (matchState wechselt von null → "Live" etc.)
-  useEffect(() => {
-    if (!selectedMatchId) return;
-    const pollInterval = resolvePollingInterval(match?.matchState);
-    intervalRef.current = setInterval(() => {
-      loadEvents();
-      loadTickerTexts();
-      loadMatchStats();
-      loadInjuries();
-      loadMatch();
-    }, pollInterval);
-    return () => clearInterval(intervalRef.current);
-  }, [selectedMatchId, match?.matchState, loadEvents, loadTickerTexts, loadMatchStats, loadInjuries, loadMatch]);
+  const core = useMatchCore(selectedMatchId);
+  const { events, reload: evReload } = useMatchEvents(selectedMatchId, core.match?.matchState);
+  const { tickerTexts, reload: txReload } = useMatchTicker(selectedMatchId, core.match?.matchState);
 
   return {
-    match,
+    match:       core.match,
+    players:     core.players,
+    prematch:    core.prematch,
+    lineups:     core.lineups,
+    matchStats:  core.matchStats,
+    playerStats: core.playerStats,
+    injuries:    core.injuries,
+    loading:     core.loading,
     events,
     tickerTexts,
-    prematch,
-    lineups,
-    matchStats,
-    players,
-    playerStats,
-    injuries,
-    loading,
-    reload: { loadMatch, loadEvents, loadTickerTexts, loadPrematch, loadLineups, loadMatchStats, loadPlayers, loadPlayerStats, loadInjuries },
+    reload: { ...core.reload, ...evReload, ...txReload },
   };
 }
