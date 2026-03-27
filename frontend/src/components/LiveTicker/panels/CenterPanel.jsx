@@ -199,6 +199,7 @@ export const CenterPanel = memo(function CenterPanel({
   const [selectedEventId, setSelectedEventId] = useState(null);
   const [editMode, setEditMode] = useState(false);
   const [editorValue, setEditorValue] = useState("");
+  const editorValueRef = useRef("");
   const [bulkGenerating, setBulkGenerating] = useState(false);
   const [bulkPublishingSection, setBulkPublishingSection] = useState(null);
   const [selectedSummaryDraftId, setSelectedSummaryDraftId] = useState(null);
@@ -353,10 +354,14 @@ export const CenterPanel = memo(function CenterPanel({
     else onDraftActive?.(null, "");
   }, [selectedDraft, onDraftActive]);
 
+  // Ref hält aktuellen editorValue synchron → lesbar in Effects ohne Dep
+  editorValueRef.current = editorValue;
+
   // ── Text-Restore nach Manual-Stornierung ─────────────────
   useEffect(() => {
     if (!retractedText) return;
-    setEditorValue(retractedText);
+    // Nicht überschreiben wenn User gerade tippt (z.B. Slash-Command offen)
+    if (!editorValueRef.current.trim()) setEditorValue(retractedText);
     clearRetractedText();
   }, [retractedText, clearRetractedText]);
 
