@@ -99,14 +99,17 @@ export default function LiveTicker() {
   const deleteToastTimerRef = useRef(null);
 
   const showPublishToast = useCallback((id, text) => {
+    console.log("[LiveTicker] showPublishToast called:", id, text);
     setPublishToast({ id, text });
   }, []);
 
   const handleRetract = useCallback(async () => {
     if (!publishToast) return;
+    console.log("[LiveTicker] Retracting:", publishToast.id);
     try {
       await api.updateTicker(publishToast.id, { status: "draft" });
       await reload.loadTickerTexts();
+      console.log("[LiveTicker] Retract successful");
     } catch (err) {
       logger.error("retract error:", err);
     } finally {

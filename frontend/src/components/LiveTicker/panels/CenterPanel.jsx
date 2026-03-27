@@ -658,8 +658,10 @@ export const CenterPanel = memo(function CenterPanel({
                               draft={draft}
                               label={getDraftLabel(draft)}
                               onPublish={async (text) => {
+                                console.log("[CenterPanel] Publishing summary draft:", draft.id, text);
                                 await api.publishTicker(draft.id, text);
                                 await reload.loadTickerTexts();
+                                console.log("[CenterPanel] Calling onPublished for draft:", draft.id);
                                 onPublished?.(draft.id, text);
                                 setSelectedSummaryDraftId(null);
                               }}
@@ -764,9 +766,11 @@ export const CenterPanel = memo(function CenterPanel({
                                   className="lt-event-card__gen-btn"
                                   style={{ flex: 1, background: "rgba(34,197,94,0.15)", color: "#4ade80" }}
                                   onClick={async () => {
+                                    console.log("[CenterPanel] Publishing video draft:", draft.id);
                                     await api.updateTicker(draft.id, { status: "published" });
                                     await reload.loadTickerTexts();
-                                    onPublished?.(draft.id, draft.text);
+                                    console.log("[CenterPanel] Calling onPublished for video draft:", draft.id);
+                                    onPublished?.(draft.id, draft.text || "🎬 Video");
                                     setSelectedSummaryDraftId(null);
                                   }}
                                 >
@@ -793,8 +797,10 @@ export const CenterPanel = memo(function CenterPanel({
                               draft={draft}
                               label={getDraftLabel(draft)}
                               onPublish={async (text) => {
+                                console.log("[CenterPanel] Publishing summary draft:", draft.id, text);
                                 await api.publishTicker(draft.id, text);
                                 await reload.loadTickerTexts();
+                                console.log("[CenterPanel] Calling onPublished for draft:", draft.id);
                                 onPublished?.(draft.id, text);
                                 setSelectedSummaryDraftId(null);
                               }}
