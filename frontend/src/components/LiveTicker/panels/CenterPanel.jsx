@@ -467,8 +467,13 @@ export const CenterPanel = memo(function CenterPanel({
 
         await reload.loadTickerTexts();
         const res = await api.fetchTickerTexts(match.id);
-        const newDraft = (res.data ?? []).find(
-          (t) => t.status === "draft" && !t.event_id && t.phase === phase,
+        // Vorberichterstattung: per synthetic_event_id exakt den richtigen Draft finden
+        // (mehrere Drafts können dieselbe Phase haben: Verletzungen, H2H, Stats, …)
+        // Spielphasen: per Phase (kein synthetic_event_id vorhanden)
+        const newDraft = (res.data ?? []).find((t) =>
+          isPrematch && oldDraft.synthetic_event_id
+            ? t.synthetic_event_id === oldDraft.synthetic_event_id && t.status === "draft"
+            : t.status === "draft" && !t.event_id && t.phase === phase,
         );
         setSelectedSummaryDraftId(newDraft?.id ?? null);
       } catch (err) {
@@ -600,12 +605,14 @@ export const CenterPanel = memo(function CenterPanel({
           <>
             {/* Vorberichterstattung */}
             {(() => {
-              const drafts = tickerTexts.filter(
-                (t) =>
-                  t.status === "draft" &&
-                  !t.event_id &&
-                  PREMATCH_PHASES.has(t.phase),
-              );
+              const drafts = tickerTexts
+                .filter(
+                  (t) =>
+                    t.status === "draft" &&
+                    !t.event_id &&
+                    PREMATCH_PHASES.has(t.phase),
+                )
+                .sort((a, b) => (a.synthetic_event_id ?? 0) - (b.synthetic_event_id ?? 0));
               if (!drafts.length) return null;
               return (
                 <CollapsibleSection
