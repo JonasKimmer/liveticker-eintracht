@@ -168,7 +168,7 @@ export const CenterPanel = memo(function CenterPanel({
 }) {
   const { mode } = useTickerModeContext();
   const { match, events, tickerTexts, reload } = useTickerDataContext();
-  const { onGenerate, onManualPublish, onDraftActive, onPublished } =
+  const { onGenerate, onManualPublish, onDraftActive, onPublished, retractedText, clearRetractedText } =
     useTickerActionsContext();
 
   // Player + team names for autocomplete
@@ -352,6 +352,13 @@ export const CenterPanel = memo(function CenterPanel({
     if (selectedDraft) onDraftActive?.(selectedDraft.id, selectedDraft.text);
     else onDraftActive?.(null, "");
   }, [selectedDraft, onDraftActive]);
+
+  // ── Text-Restore nach Manual-Stornierung ─────────────────
+  useEffect(() => {
+    if (!retractedText) return;
+    setEditorValue(retractedText);
+    clearRetractedText();
+  }, [retractedText, clearRetractedText]);
 
   // ── Auto-Expand nach Stornierung ─────────────────────────
   useEffect(() => {

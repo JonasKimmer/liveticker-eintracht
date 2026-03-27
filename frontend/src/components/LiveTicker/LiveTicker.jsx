@@ -92,14 +92,16 @@ export default function LiveTicker() {
   const [activeDraftText, setActiveDraftText] = useState("");
 
   // ── Publish Toast (Undo) ───────────────────────────────
-  const [publishToast, setPublishToast] = useState(null); // { id, text }
+  const [publishToast, setPublishToast] = useState(null); // { id, text, isManual }
+  const [retractedText, setRetractedText] = useState(null);
+  const clearRetractedText = useCallback(() => setRetractedText(null), []);
 
   // ── Delete Toast ───────────────────────────────────────
   const [deleteToast, setDeleteToast] = useState(false);
   const deleteToastTimerRef = useRef(null);
 
-  const showPublishToast = useCallback((id, text) => {
-    setPublishToast({ id, text });
+  const showPublishToast = useCallback((id, text, isManual = false) => {
+    setPublishToast({ id, text, isManual });
   }, []);
 
   const handleRetract = useCallback(async () => {
@@ -107,6 +109,7 @@ export default function LiveTicker() {
     try {
       await api.updateTicker(publishToast.id, { status: "draft" });
       await reload.loadTickerTexts();
+      if (publishToast.isManual) setRetractedText(publishToast.text);
     } catch (err) {
       logger.error("retract error:", err);
     } finally {
@@ -266,7 +269,7 @@ export default function LiveTicker() {
           phase,
         );
         await reload.loadTickerTexts();
-        if (res?.data?.id) showPublishToast(res.data.id, text);
+        if (res?.data?.id) showPublishToast(res.data.id, text, true);
       } catch (err) {
         logger.error("manualPublish error:", err);
       }
@@ -306,6 +309,8 @@ export default function LiveTicker() {
       onPublished: showPublishToast,
       onEditEntry: handleEditEntry,
       onDeleteEntry: handleDeleteEntry,
+      retractedText,
+      clearRetractedText,
     }),
     [
       handleGenerate,
@@ -314,6 +319,8 @@ export default function LiveTicker() {
       showPublishToast,
       handleEditEntry,
       handleDeleteEntry,
+      retractedText,
+      clearRetractedText,
     ],
   );
 
