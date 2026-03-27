@@ -506,7 +506,7 @@ export const CenterPanel = memo(function CenterPanel({
 
   const handleRejectDraft = useCallback(async () => {
     if (!selectedDraft) return;
-    await api.deleteTicker(selectedDraft.id);
+    await api.updateTicker(selectedDraft.id, { status: "rejected" });
     await reload.loadTickerTexts();
   }, [selectedDraft, reload]);
 
