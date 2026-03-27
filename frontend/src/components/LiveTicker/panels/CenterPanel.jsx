@@ -202,6 +202,7 @@ export const CenterPanel = memo(function CenterPanel({
   const [bulkGenerating, setBulkGenerating] = useState(false);
   const [bulkPublishingSection, setBulkPublishingSection] = useState(null);
   const [selectedSummaryDraftId, setSelectedSummaryDraftId] = useState(null);
+  const [pendingAutoExpandId, setPendingAutoExpandId] = useState(null);
   const [dismissedIds, setDismissedIds] = useState(new Set());
   const [autoError, setAutoError] = useState(null);
 
@@ -351,6 +352,18 @@ export const CenterPanel = memo(function CenterPanel({
     if (selectedDraft) onDraftActive?.(selectedDraft.id, selectedDraft.text);
     else onDraftActive?.(null, "");
   }, [selectedDraft, onDraftActive]);
+
+  // ── Auto-Expand nach Stornierung ─────────────────────────
+  useEffect(() => {
+    if (!pendingAutoExpandId) return;
+    const targetDraft = tickerTexts.find(
+      (t) => t.id === pendingAutoExpandId && t.status === "draft" && !t.event_id
+    );
+    if (targetDraft) {
+      setSelectedSummaryDraftId(pendingAutoExpandId);
+      setPendingAutoExpandId(null);
+    }
+  }, [tickerTexts, pendingAutoExpandId]);
 
   const handleBulkPublish = useCallback(async () => {
     setBulkGenerating(true);
@@ -845,9 +858,10 @@ export const CenterPanel = memo(function CenterPanel({
                           </span>
                           <button
                             onClick={async () => {
-                              await api.updateTicker(entry.id, { status: "draft" });
+                              const entryId = entry.id;
+                              setPendingAutoExpandId(entryId);
+                              await api.updateTicker(entryId, { status: "draft" });
                               await reload.loadTickerTexts();
-                              setSelectedSummaryDraftId(entry.id);
                             }}
                             style={{
                               marginLeft: "auto",
