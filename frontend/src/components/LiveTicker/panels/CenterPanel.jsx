@@ -590,9 +590,6 @@ export const CenterPanel = memo(function CenterPanel({
                     key={ev.id}
                     event={ev}
                     draft={tickerTexts.find((t) => t.event_id === ev.id)}
-                    generatingId={generatingId}
-                    onGenerate={onGenerate}
-                    showGenButtons={false}
                   />
                 ))}
               </div>
@@ -866,14 +863,11 @@ export const CenterPanel = memo(function CenterPanel({
                         event={ev}
                         draft={draft}
                         isSelected={isSelected}
-                        generatingId={generatingId}
-                        onGenerate={onGenerate}
                         onSelect={() => {
                           setSelectedEventId(ev.id);
                           setEditMode(false);
                         }}
                         onDismiss={() => handleDismissEvent(ev, draft)}
-                        showGenButtons
                       />
                       {isSelected &&
                         (editMode ? (
