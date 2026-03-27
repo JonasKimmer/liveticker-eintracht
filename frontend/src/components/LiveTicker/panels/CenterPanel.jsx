@@ -33,17 +33,42 @@ function getDraftLabel(draft) {
   return "KI-Text";
 }
 
+function getSummaryMeta(draft, phase) {
+  // icon: aus draft.icon oder default basierend auf phase
+  const icon =
+    draft.icon ||
+    (phase && PREMATCH_PHASES.has(phase) ? "📣" : phase ? "🎙️" : "✦");
+  // cssClass: basierend auf icon/phase für border-left Farbe
+  let cssClass = "summary";
+  if (draft.icon === "🎬" || draft.video_url) cssClass = "summary--video";
+  else if (PREMATCH_PHASES.has(phase)) cssClass = "summary--prematch";
+  else if (
+    phase === "FirstHalf" ||
+    phase === "SecondHalf" ||
+    phase === "ExtraFirstHalf" ||
+    phase === "ExtraSecondHalf"
+  )
+    cssClass = "summary--live";
+  else if (phase === "FirstHalfBreak" || phase === "ExtraBreak")
+    cssClass = "summary--halftime";
+  else if (phase === "After" || phase === "FullTime")
+    cssClass = "summary--after";
+  else if (phase === "PenaltyShootout") cssClass = "summary--penalty";
+  return { icon, cssClass };
+}
+
 function SummaryRow({ draft, label, isSelected, onSelect, onReject }) {
   const [confirmReject, setConfirmReject] = useState(false);
+  const { icon, cssClass } = getSummaryMeta(draft, draft.phase);
   return (
     <div
-      className={`lt-event-card${isSelected ? " lt-event-card--selected" : ""}`}
+      className={`lt-event-card lt-event-card__${cssClass}${isSelected ? " lt-event-card--selected" : ""}`}
       onClick={onSelect}
       role="button"
       tabIndex={0}
     >
       <div className="lt-event-card__row">
-        <span className="lt-event-card__icon">{draft.icon ?? "✦"}</span>
+        <span className="lt-event-card__icon">{icon}</span>
         <span className="lt-event-card__raw">
           {label}
           {draft.text
@@ -74,18 +99,48 @@ function SummaryRow({ draft, label, isSelected, onSelect, onReject }) {
         )}
         {confirmReject && (
           <div
-            style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: "0.35rem" }}
+            style={{
+              marginLeft: "auto",
+              display: "flex",
+              alignItems: "center",
+              gap: "0.35rem",
+            }}
             onClick={(e) => e.stopPropagation()}
           >
-            <span style={{ fontSize: "0.7rem", color: "var(--lt-text-muted)" }}>Ablehnen?</span>
+            <span style={{ fontSize: "0.7rem", color: "var(--lt-text-muted)" }}>
+              Ablehnen?
+            </span>
             <button
-              style={{ fontSize: "0.7rem", padding: "1px 6px", background: "rgba(239,68,68,0.15)", border: "1px solid rgba(239,68,68,0.3)", color: "#f87171", borderRadius: 4, cursor: "pointer" }}
-              onClick={() => { onReject(); setConfirmReject(false); }}
-            >Ja</button>
+              style={{
+                fontSize: "0.7rem",
+                padding: "1px 6px",
+                background: "rgba(239,68,68,0.15)",
+                border: "1px solid rgba(239,68,68,0.3)",
+                color: "#f87171",
+                borderRadius: 4,
+                cursor: "pointer",
+              }}
+              onClick={() => {
+                onReject();
+                setConfirmReject(false);
+              }}
+            >
+              Ja
+            </button>
             <button
-              style={{ fontSize: "0.7rem", padding: "1px 6px", background: "none", border: "1px solid var(--lt-border)", color: "var(--lt-text-muted)", borderRadius: 4, cursor: "pointer" }}
+              style={{
+                fontSize: "0.7rem",
+                padding: "1px 6px",
+                background: "none",
+                border: "1px solid var(--lt-border)",
+                color: "var(--lt-text-muted)",
+                borderRadius: 4,
+                cursor: "pointer",
+              }}
               onClick={() => setConfirmReject(false)}
-            >Nein</button>
+            >
+              Nein
+            </button>
           </div>
         )}
       </div>

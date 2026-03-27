@@ -1745,6 +1745,29 @@
   border-left: 3px solid var(--lt-color-sub);
 }
 
+/* Summary row colored borders */
+.lt-event-card__summary {
+  border-left: 3px solid var(--lt-color-pre);
+}
+.lt-event-card__summary--prematch {
+  border-left: 3px solid var(--lt-color-pre);
+}
+.lt-event-card__summary--video {
+  border-left: 3px solid #3b82f6;
+}
+.lt-event-card__summary--live {
+  border-left: 3px solid var(--lt-color-live);
+}
+.lt-event-card__summary--halftime {
+  border-left: 3px solid #eab308;
+}
+.lt-event-card__summary--after {
+  border-left: 3px solid #6b7280;
+}
+.lt-event-card__summary--penalty {
+  border-left: 3px solid var(--lt-color-red);
+}
+
 .lt-event-card__row {
   display: flex;
   align-items: center;

@@ -1,3 +1,0 @@
-style: Drei-Punkte-Menue-Button auf --lt-text-sec (#d1d5db) gesetzt
-
-Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>
