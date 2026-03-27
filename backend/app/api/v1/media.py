@@ -17,6 +17,7 @@ from fastapi import APIRouter, Depends, HTTPException, WebSocket, WebSocketDisco
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
+from app.utils.http_errors import require_or_404
 from app.repositories.media_queue_repository import MediaQueueRepository
 from app.repositories.ticker_entry_repository import TickerEntryRepository
 from app.schemas.media_queue import (
@@ -172,12 +173,7 @@ def media_publish(
     4. Gibt den fertigen Ticker-Eintrag zurück
     """
     media_repo = MediaQueueRepository(db)
-    media = media_repo.get_by_media_id(data.media_id)
-    if not media:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Media mit media_id={data.media_id} nicht gefunden.",
-        )
+    media = require_or_404(media_repo.get_by_media_id(data.media_id), f"Media mit media_id={data.media_id} nicht gefunden.")
 
     entry = TickerEntryRepository(db).create(
         TickerEntryCreate(
@@ -209,9 +205,7 @@ async def generate_media_caption(
     db: Session = Depends(get_db),
 ) -> dict:
     """Generiert per LLM einen Ticker-Text für ein ScorePlay-Bild."""
-    media = MediaQueueRepository(db).get_by_media_id(media_id)
-    if not media:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Bild nicht gefunden")
+    media = require_or_404(MediaQueueRepository(db).get_by_media_id(media_id), "Bild nicht gefunden")
 
     detail = media.name or f"ScorePlay Bild #{media_id}"
     text, model = await generate_ticker_text(

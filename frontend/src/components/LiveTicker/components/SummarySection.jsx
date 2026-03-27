@@ -5,9 +5,9 @@ import { SummaryDraftCard } from "./SummaryDraftCard";
 import { SummaryRow, getDraftLabel } from "./SummaryRow";
 import { AutoPlayVideo } from "./AutoPlayVideo";
 import { PREMATCH_PHASES } from "../constants";
-import { useTickerDataContext } from "../../../context/TickerDataContext";
-import { useTickerActionsContext } from "../../../context/TickerActionsContext";
-import * as api from "../../../api";
+import { useTickerDataContext } from "context/TickerDataContext";
+import { useTickerActionsContext } from "context/TickerActionsContext";
+import * as api from "api";
 
 /**
  * Zeigt entweder die Vorberichterstattungs- oder die Spielphasen-Sektion.

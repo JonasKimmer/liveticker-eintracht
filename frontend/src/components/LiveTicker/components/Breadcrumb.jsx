@@ -5,7 +5,7 @@
 // ============================================================
 import { memo, Fragment, useMemo } from "react";
 import PropTypes from "prop-types";
-import { makeRoundLabel } from "../../../utils/roundLabel";
+import { makeRoundLabel } from "utils/roundLabel";
 
 export const Breadcrumb = memo(function Breadcrumb({ match, competition, country, team, round, matchdays, onOpen }) {
   const { full } = useMemo(() => makeRoundLabel(matchdays ?? []), [matchdays]);

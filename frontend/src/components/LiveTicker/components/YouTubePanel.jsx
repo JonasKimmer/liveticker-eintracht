@@ -12,10 +12,10 @@ import {
   triggerYoutubeScrape,
   generateYoutubeDraft,
   deleteClip,
-} from "../../../api";
+} from "api";
 import { PUBLISH_PHASES as PHASES, TICKER_STYLES, MAX_MATCH_MINUTE } from "../constants";
 import { useMediaPublishForm } from "../hooks/useMediaPublishForm";
-import logger from "../../../utils/logger";
+import logger from "utils/logger";
 
 // YouTube Video-ID aus URL extrahieren
 function getYoutubeId(url) {

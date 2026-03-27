@@ -21,6 +21,7 @@ from sqlalchemy.orm import Session
 
 from app.core.config import settings
 from app.core.database import get_db
+from app.utils.http_errors import require_or_404
 from app.repositories.match_repository import MatchRepository
 from app.repositories.media_clip_repository import MediaClipRepository
 from app.repositories.ticker_entry_repository import TickerEntryRepository
@@ -144,9 +145,7 @@ async def generate_clip_draft(
     style: str = "euphorisch",
     db: Session = Depends(get_db),
 ) -> dict:
-    clip = MediaClipRepository(db).get_by_id(clip_id)
-    if not clip:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Clip not found")
+    clip = require_or_404(MediaClipRepository(db).get_by_id(clip_id), "Clip not found")
 
     match = MatchRepository(db).load_with_teams(match_id)
     match_context = ts.build_match_context(match, event_minute=None)
@@ -194,9 +193,7 @@ def publish_clip(
     db: Session = Depends(get_db),
 ) -> TickerEntryResponse:
     clip_repo = MediaClipRepository(db)
-    clip = clip_repo.get_by_id(clip_id)
-    if not clip:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Clip not found")
+    clip = require_or_404(clip_repo.get_by_id(clip_id), "Clip not found")
 
     entry = TickerEntryRepository(db).create(
         TickerEntryCreate(
@@ -230,9 +227,7 @@ def delete_clip(
     db: Session = Depends(get_db),
 ) -> None:
     clip_repo = MediaClipRepository(db)
-    clip = clip_repo.get_by_id(clip_id)
-    if not clip:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Clip not found")
+    clip = require_or_404(clip_repo.get_by_id(clip_id), "Clip not found")
     clip_repo.delete(clip)
 
 

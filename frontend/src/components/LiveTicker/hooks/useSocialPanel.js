@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect } from "react";
-import { deleteClip } from "../../../api";
+import { deleteClip } from "api";
 
 /**
  * useSocialPanel

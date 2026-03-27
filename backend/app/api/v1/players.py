@@ -7,10 +7,11 @@ Endpunkte für Spielerdaten und Statistiken.
 import logging
 from typing import Optional
 
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, Query, status
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
+from app.utils.http_errors import require_or_404
 from app.repositories.player_repository import PlayerRepository
 from app.schemas.player import (
     PaginatedPlayerResponse,
@@ -26,13 +27,7 @@ router = APIRouter(prefix="/players", tags=["Players"])
 
 
 def _get_player_or_404(player_id: int, repo: PlayerRepository):
-    player = repo.get_by_id(player_id)
-    if not player:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Player {player_id} not found.",
-        )
-    return player
+    return require_or_404(repo.get_by_id(player_id), f"Player {player_id} not found.")
 
 
 # ------------------------------------------------------------------ #

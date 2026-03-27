@@ -4,10 +4,10 @@
 import { memo, useEffect } from "react";
 import PropTypes from "prop-types";
 import { normalizeMatchStatus } from "../utils/parseCommand";
-import { useLiveMinute } from "../../../hooks/useLiveMinute";
+import { useLiveMinute } from "hooks/useLiveMinute";
 import { SYNC_MATCH_INTERVAL_MS } from "../constants";
-import * as api from "../../../api";
-import logger from "../../../utils/logger";
+import * as api from "api";
+import logger from "utils/logger";
 
 export const MatchHeader = memo(function MatchHeader({ match, leagueSeason, onMinuteSync }) {
   const status = normalizeMatchStatus(match?.matchState);

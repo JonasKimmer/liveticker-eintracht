@@ -3,7 +3,7 @@
 // ============================================================
 import { memo, useEffect, useRef, useState } from "react";
 import PropTypes from "prop-types";
-import { useClickOutside } from "../../../hooks/useClickOutside";
+import { useClickOutside } from "hooks/useClickOutside";
 
 export const MatchSelectorModal = memo(function MatchSelectorModal({
   onClose,

@@ -6,7 +6,7 @@
 import { memo, useState, useRef } from "react";
 import PropTypes from "prop-types";
 import { createPortal } from "react-dom";
-import { fetchInstagramPosts, triggerInstagramImport } from "../../../api";
+import { fetchInstagramPosts, triggerInstagramImport } from "api";
 import { useSocialPanel } from "../hooks/useSocialPanel";
 import { SocialPublishModal } from "./SocialPublishModal";
 import { SocialPanelShell } from "./SocialPanelShell";

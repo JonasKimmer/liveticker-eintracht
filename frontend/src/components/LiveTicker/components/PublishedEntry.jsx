@@ -10,7 +10,7 @@ import {
   PHASE_SHORT_LABEL,
   PHASE_DEFAULT_ICON,
 } from "../constants";
-import { useClickOutside } from "../../../hooks/useClickOutside";
+import { useClickOutside } from "hooks/useClickOutside";
 
 function getMediaIcon(videoUrl, imageUrl, fallback) {
   if (!videoUrl && !imageUrl) return fallback;

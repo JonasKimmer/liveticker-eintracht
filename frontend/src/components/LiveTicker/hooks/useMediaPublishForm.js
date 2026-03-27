@@ -6,7 +6,7 @@
  * input, phase selector, loading/error state, and the same publishClip call.
  */
 import { useState } from "react";
-import { publishClip } from "../../../api";
+import { publishClip } from "api";
 import { resolvePublishPayload } from "../utils/commandPalette";
 
 /**

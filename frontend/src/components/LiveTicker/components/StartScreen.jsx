@@ -2,10 +2,10 @@
 // StartScreen.jsx
 // ============================================================
 import { memo, useState, useRef, useEffect, useMemo, useCallback } from "react";
-import config from "../../../config/whitelabel";
-import { useClickOutside } from "../../../hooks/useClickOutside";
-import { useListKeyboard } from "../../../hooks/useListKeyboard";
-import { knockoutThreshold, makeRoundLabel } from "../../../utils/roundLabel";
+import config from "config/whitelabel";
+import { useClickOutside } from "hooks/useClickOutside";
+import { useListKeyboard } from "hooks/useListKeyboard";
+import { knockoutThreshold, makeRoundLabel } from "utils/roundLabel";
 
 export const StartScreen = memo(function StartScreen({
   countries,

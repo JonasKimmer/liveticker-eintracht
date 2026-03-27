@@ -20,6 +20,7 @@ from sqlalchemy.orm import Session
 
 from app.core.constants import resolve_phase, STANDARD_PHASES
 from app.core.database import get_db
+from app.utils.http_errors import require_or_404
 from app.repositories.event_repository import EventRepository
 from app.repositories.match_repository import MatchRepository
 from app.repositories.synthetic_event_repository import SyntheticEventRepository
@@ -71,11 +72,7 @@ async def generate_for_event(
     data: GenerateEventRequest = Body(default_factory=GenerateEventRequest),
     db: Session = Depends(get_db),
 ) -> TickerEntryResponse:
-    event = EventRepository(db).get_by_id(event_id)
-    if not event:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Event not found"
-        )
+    event = require_or_404(EventRepository(db).get_by_id(event_id), "Event not found")
 
     ticker_repo = TickerEntryRepository(db)
     existing = ticker_repo.get_by_event(event_id)
@@ -147,11 +144,7 @@ async def generate_for_synthetic_event(
     data: GenerateSyntheticRequest,
     db: Session = Depends(get_db),
 ) -> TickerEntryResponse:
-    synthetic = SyntheticEventRepository(db).get_by_id(data.synthetic_event_id)
-    if not synthetic:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="SyntheticEvent not found"
-        )
+    synthetic = require_or_404(SyntheticEventRepository(db).get_by_id(data.synthetic_event_id), "SyntheticEvent not found")
 
     match = MatchRepository(db).load_with_teams(synthetic.match_id)
     match_context = ts.build_match_context(match, synthetic.minute)
@@ -273,11 +266,7 @@ async def generate_match_phases(
     ),
     db: Session = Depends(get_db),
 ) -> list[TickerEntryResponse]:
-    match = MatchRepository(db).load_with_teams(match_id)
-    if not match:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Match not found"
-        )
+    match = require_or_404(MatchRepository(db).load_with_teams(match_id), "Match not found")
 
     ticker_repo = TickerEntryRepository(db)
     synth_repo = SyntheticEventRepository(db)

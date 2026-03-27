@@ -14,7 +14,7 @@ from sqlalchemy.orm import Session
 from app.core.config import settings
 from app.core.constants import FOOTBALL_API_PHASE_MAP
 from app.core.database import get_db
-from app.utils.http_errors import handle_integrity_error
+from app.utils.http_errors import handle_integrity_error, require_or_404
 from app.repositories.match_repository import MatchRepository
 from app.repositories.synthetic_event_repository import SyntheticEventRepository
 from app.schemas.match import (
@@ -81,12 +81,7 @@ def get_match(
     matchId: int,
     db: Session = Depends(get_db),
 ) -> MatchResponse:
-    match = MatchRepository(db).get_by_id(matchId)
-    if not match:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Match not found"
-        )
-    return match
+    return require_or_404(MatchRepository(db).get_by_id(matchId), "Match not found")
 
 
 @router.post(
@@ -122,11 +117,7 @@ def update_match(
         )
     with handle_integrity_error("Update would violate a unique constraint."):
         updated = MatchRepository(db).update(matchId, data)
-    if not updated:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Match not found"
-        )
-    return updated
+    return require_or_404(updated, "Match not found")
 
 
 @router.delete(
@@ -135,10 +126,7 @@ def update_match(
     summary="Delete a match",
 )
 def delete_match(matchId: int, db: Session = Depends(get_db)) -> None:
-    if not MatchRepository(db).delete(matchId):
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Match not found"
-        )
+    require_or_404(MatchRepository(db).delete(matchId), "Match not found")
 
 
 # ------------------------------------------------------------------ #
@@ -163,10 +151,7 @@ def set_ticker_mode(
 ) -> MatchResponse:
     if data.mode not in ("auto", "coop", "manual"):
         raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="mode must be auto, coop or manual")
-    updated = MatchRepository(db).update(matchId, MatchUpdate(ticker_mode=data.mode))
-    if not updated:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Match not found")
-    return updated
+    return require_or_404(MatchRepository(db).update(matchId, MatchUpdate(ticker_mode=data.mode)), "Match not found")
 
 
 # ------------------------------------------------------------------ #
@@ -183,9 +168,7 @@ def set_ticker_mode(
 )
 def sync_live(matchId: int, db: Session = Depends(get_db)) -> MatchResponse:
     repo = MatchRepository(db)
-    match = repo.get_by_id(matchId)
-    if not match:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Match not found")
+    match = require_or_404(repo.get_by_id(matchId), "Match not found")
 
     if not match.external_id:
         raise HTTPException(
@@ -266,11 +249,7 @@ def replace_lineup(
 ) -> list[LineupPlayerResponse]:
     """Replaces the complete lineup for both teams atomically."""
     repo = MatchRepository(db)
-    match = repo.get_by_id(matchId)
-    if not match:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Match not found"
-        )
+    match = require_or_404(repo.get_by_id(matchId), "Match not found")
     try:
         return repo.replace_lineup(matchId, match, data)
     except ValueError as e:
@@ -314,11 +293,7 @@ def update_statistics(
 ) -> list[MatchStatisticResponse]:
     """Upserts statistics for home and away team simultaneously."""
     repo = MatchRepository(db)
-    match = repo.get_by_id(matchId)
-    if not match:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Match not found"
-        )
+    match = require_or_404(repo.get_by_id(matchId), "Match not found")
     try:
         return repo.upsert_statistics(matchId, match, data)
     except ValueError as e:

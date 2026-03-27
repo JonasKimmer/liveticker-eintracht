@@ -20,6 +20,7 @@ from sqlalchemy.orm import Session
 
 from app.core.constants import VALID_PHASES
 from app.core.database import get_db
+from app.utils.http_errors import require_or_404
 from app.repositories.ticker_entry_repository import TickerEntryRepository
 from app.schemas.ticker_entry import (
     ManualEntryRequest,
@@ -58,12 +59,7 @@ def get_ticker_entry(
     entry_id: int,
     db: Session = Depends(get_db),
 ) -> TickerEntryResponse:
-    entry = TickerEntryRepository(db).get_by_id(entry_id)
-    if not entry:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Entry not found"
-        )
-    return entry
+    return require_or_404(TickerEntryRepository(db).get_by_id(entry_id), "Entry not found")
 
 
 @router.delete(
@@ -75,11 +71,7 @@ def delete_ticker_entry(
     entry_id: int,
     db: Session = Depends(get_db),
 ) -> None:
-    deleted = TickerEntryRepository(db).delete(entry_id)
-    if not deleted:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Entry not found"
-        )
+    require_or_404(TickerEntryRepository(db).delete(entry_id), "Entry not found")
 
 
 @router.patch(
@@ -97,12 +89,7 @@ def update_ticker_entry(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
             detail="Mindestens ein Feld muss gesetzt sein.",
         )
-    entry = TickerEntryRepository(db).update(entry_id, data)
-    if not entry:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Entry not found"
-        )
-    return entry
+    return require_or_404(TickerEntryRepository(db).update(entry_id, data), "Entry not found")
 
 
 @router.patch(
@@ -115,11 +102,7 @@ def publish_ticker_entry(
     db: Session = Depends(get_db),
 ) -> TickerEntryResponse:
     repo = TickerEntryRepository(db)
-    entry = repo.get_by_id(entry_id)
-    if not entry:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Entry not found"
-        )
+    entry = require_or_404(repo.get_by_id(entry_id), "Entry not found")
     if entry.status == TickerStatus.published:
         return entry
     return repo.update(entry_id, TickerEntryUpdate(status=TickerStatus.published))
@@ -135,11 +118,7 @@ def reject_ticker_entry(
     db: Session = Depends(get_db),
 ) -> TickerEntryResponse:
     repo = TickerEntryRepository(db)
-    entry = repo.get_by_id(entry_id)
-    if not entry:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Entry not found"
-        )
+    entry = require_or_404(repo.get_by_id(entry_id), "Entry not found")
     return repo.update(entry_id, TickerEntryUpdate(status=TickerStatus.rejected))
 
 

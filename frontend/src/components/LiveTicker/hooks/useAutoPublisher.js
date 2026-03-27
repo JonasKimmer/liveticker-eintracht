@@ -1,9 +1,9 @@
 import { useRef, useEffect } from "react";
 import { MODES, TICKER_STYLES } from "../constants";
-import { useTickerModeContext } from "../../../context/TickerModeContext";
-import { useTickerDataContext } from "../../../context/TickerDataContext";
-import * as api from "../../../api";
-import logger from "../../../utils/logger";
+import { useTickerModeContext } from "context/TickerModeContext";
+import { useTickerDataContext } from "context/TickerDataContext";
+import * as api from "api";
+import logger from "utils/logger";
 
 const AUTO_STYLE = TICKER_STYLES[0];
 

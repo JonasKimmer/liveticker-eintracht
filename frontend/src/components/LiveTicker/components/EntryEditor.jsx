@@ -7,7 +7,7 @@ import { parseCommand } from "../utils/parseCommand";
 import { COMMAND_PALETTE, NEEDS_ARG } from "../utils/commandPalette";
 import { MODES, COMMAND_PREFIX_REGEX } from "../constants";
 import { useLiveMinuteEditor } from "../hooks/useLiveMinuteEditor";
-import { useNameAutocomplete } from "../../../hooks/useNameAutocomplete";
+import { useNameAutocomplete } from "hooks/useNameAutocomplete";
 import { MinuteEditor } from "./MinuteEditor";
 
 export const EntryEditor = memo(function EntryEditor({

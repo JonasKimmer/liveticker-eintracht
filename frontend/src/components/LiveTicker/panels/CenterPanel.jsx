@@ -13,12 +13,12 @@ import { YouTubePanel } from "../components/YouTubePanel";
 import { TwitterPanel } from "../components/TwitterPanel";
 import { InstagramPanel } from "../components/InstagramPanel";
 import { MODES, AUTO_ERROR_TIMEOUT_MS } from "../constants";
-import { useTickerModeContext } from "../../../context/TickerModeContext";
-import { useTickerDataContext } from "../../../context/TickerDataContext";
+import { useTickerModeContext } from "context/TickerModeContext";
+import { useTickerDataContext } from "context/TickerDataContext";
 import { useAutoPublisher } from "../hooks/useAutoPublisher";
 import { useBulkActions } from "../hooks/useBulkActions";
 import { useEventDraft } from "../hooks/useEventDraft";
-import config from "../../../config/whitelabel";
+import config from "config/whitelabel";
 
 export const CenterPanel = memo(function CenterPanel({
   currentMinute = 0,

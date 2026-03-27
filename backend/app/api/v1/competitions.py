@@ -10,7 +10,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
-from app.utils.http_errors import handle_integrity_error
+from app.utils.http_errors import handle_integrity_error, require_or_404
 from app.repositories.competition_repository import CompetitionRepository
 from app.schemas.competition import (
     CompetitionCreate,
@@ -46,12 +46,7 @@ def get_competition(
     competitionId: int,
     db: Session = Depends(get_db),
 ) -> CompetitionResponse:
-    competition = CompetitionRepository(db).get_by_id(competitionId)
-    if not competition:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Competition not found"
-        )
-    return competition
+    return require_or_404(CompetitionRepository(db).get_by_id(competitionId), "Competition not found")
 
 
 @router.post(
@@ -87,11 +82,7 @@ def update_competition(
         )
     with handle_integrity_error("Update would violate a unique constraint."):
         updated = CompetitionRepository(db).update(competitionId, data)
-    if not updated:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Competition not found"
-        )
-    return updated
+    return require_or_404(updated, "Competition not found")
 
 
 @router.delete(
@@ -103,7 +94,4 @@ def delete_competition(
     competitionId: int,
     db: Session = Depends(get_db),
 ) -> None:
-    if not CompetitionRepository(db).delete(competitionId):
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Competition not found"
-        )
+    require_or_404(CompetitionRepository(db).delete(competitionId), "Competition not found")

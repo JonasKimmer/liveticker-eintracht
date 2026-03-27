@@ -10,7 +10,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
-from app.utils.http_errors import handle_integrity_error
+from app.utils.http_errors import handle_integrity_error, require_or_404
 from app.repositories.season_repository import SeasonRepository
 from app.schemas.season import (
     PaginatedSeasonResponse,
@@ -51,12 +51,7 @@ def get_season(
     seasonId: int,
     db: Session = Depends(get_db),
 ) -> SeasonResponse:
-    season = SeasonRepository(db).get_by_id(seasonId)
-    if not season:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Season not found"
-        )
-    return season
+    return require_or_404(SeasonRepository(db).get_by_id(seasonId), "Season not found")
 
 
 @router.post(
@@ -92,11 +87,7 @@ def update_season(
         )
     with handle_integrity_error("Update would violate a unique constraint."):
         updated = SeasonRepository(db).update(seasonId, data)
-    if not updated:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Season not found"
-        )
-    return updated
+    return require_or_404(updated, "Season not found")
 
 
 @router.delete(
@@ -108,7 +99,4 @@ def delete_season(
     seasonId: int,
     db: Session = Depends(get_db),
 ) -> None:
-    if not SeasonRepository(db).delete(seasonId):
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Season not found"
-        )
+    require_or_404(SeasonRepository(db).delete(seasonId), "Season not found")

@@ -1,8 +1,8 @@
 import { useState, useEffect, useCallback, useRef, useMemo } from "react";
-import { useTickerDataContext } from "../../../context/TickerDataContext";
-import { useTickerActionsContext } from "../../../context/TickerActionsContext";
-import * as api from "../../../api";
-import logger from "../../../utils/logger";
+import { useTickerDataContext } from "context/TickerDataContext";
+import { useTickerActionsContext } from "context/TickerActionsContext";
+import * as api from "api";
+import logger from "utils/logger";
 
 /**
  * Kapselt den gesamten Event-Draft-Workflow:

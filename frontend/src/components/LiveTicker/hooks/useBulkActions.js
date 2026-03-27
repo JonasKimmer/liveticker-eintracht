@@ -1,8 +1,8 @@
 import { useState, useCallback } from "react";
 import { PREMATCH_PHASES } from "../constants";
-import { useTickerDataContext } from "../../../context/TickerDataContext";
-import * as api from "../../../api";
-import logger from "../../../utils/logger";
+import { useTickerDataContext } from "context/TickerDataContext";
+import * as api from "api";
+import logger from "utils/logger";
 
 const AUTO_STYLE = "neutral";
 

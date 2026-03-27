@@ -6,9 +6,9 @@
 import { memo, useState, useCallback, useEffect } from "react";
 import PropTypes from "prop-types";
 import { createPortal } from "react-dom";
-import { fetchClips, fetchGoalClips, generateClipDraft, publishClip, publishClipTicker, deleteClip } from "../../../api";
+import { fetchClips, fetchGoalClips, generateClipDraft, publishClip, publishClipTicker, deleteClip } from "api";
 import { TICKER_STYLES, MAX_MATCH_MINUTE } from "../constants";
-import logger from "../../../utils/logger";
+import logger from "utils/logger";
 
 // ── Video Player / Thumbnail ──────────────────────────────────
 

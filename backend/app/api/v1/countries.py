@@ -4,11 +4,11 @@ Countries Router
 Endpunkte für Länderdaten (CRUD).
 """
 
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, Query, status
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
-from app.utils.http_errors import handle_integrity_error
+from app.utils.http_errors import handle_integrity_error, require_or_404
 from app.repositories.country_repository import CountryRepository
 from app.schemas.country import CountryCreate, CountryResponse
 
@@ -39,12 +39,7 @@ def get_country(
     countryId: int,
     db: Session = Depends(get_db),
 ) -> CountryResponse:
-    country = CountryRepository(db).get_by_id(countryId)
-    if not country:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Country not found"
-        )
-    return country
+    return require_or_404(CountryRepository(db).get_by_id(countryId), "Country not found")
 
 
 @router.post(

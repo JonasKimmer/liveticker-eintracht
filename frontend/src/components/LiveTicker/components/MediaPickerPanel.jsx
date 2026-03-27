@@ -8,13 +8,13 @@ import { useState, useCallback, useRef, useMemo, useEffect } from "react";
 import PropTypes from "prop-types";
 import { useLiveMinuteEditor } from "../hooks/useLiveMinuteEditor";
 import { createPortal } from "react-dom";
-import { useMediaWebSocket } from "../../../hooks/useMediaWebSocket";
-import { generateMediaCaption, fetchMediaQueue, clearMediaQueue, publishMedia } from "../../../api";
+import { useMediaWebSocket } from "hooks/useMediaWebSocket";
+import { generateMediaCaption, fetchMediaQueue, clearMediaQueue, publishMedia } from "api";
 import { parseCommand } from "../utils/parseCommand";
 import { useCommandPalette, CommandPalettePortal } from "../utils/commandPalette";
 import { MinuteEditor } from "./MinuteEditor";
-import { useNameAutocomplete } from "../../../hooks/useNameAutocomplete";
-import config from "../../../config/whitelabel";
+import { useNameAutocomplete } from "hooks/useNameAutocomplete";
+import config from "config/whitelabel";
 
 const N8N_WEBHOOK = `${config.n8nBase}/scoreplay-media`;
 

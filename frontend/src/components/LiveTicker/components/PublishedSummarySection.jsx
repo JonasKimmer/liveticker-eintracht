@@ -1,8 +1,8 @@
 import PropTypes from "prop-types";
 import { CollapsibleSection } from "./CollapsibleSection";
 import { getSummaryMeta, getDraftLabel } from "./SummaryRow";
-import { useTickerDataContext } from "../../../context/TickerDataContext";
-import * as api from "../../../api";
+import { useTickerDataContext } from "context/TickerDataContext";
+import * as api from "api";
 
 /**
  * Veröffentlichte Summary-Einträge (Vorberichterstattung + Spielphasen).

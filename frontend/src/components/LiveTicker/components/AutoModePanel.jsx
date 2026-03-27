@@ -1,6 +1,6 @@
 import PropTypes from "prop-types";
 import { EventCard } from "./EventCard";
-import { useTickerDataContext } from "../../../context/TickerDataContext";
+import { useTickerDataContext } from "context/TickerDataContext";
 
 /**
  * AUTO-Modus: Info-Banner, optionaler Fehler-Toast und Warteschlange.

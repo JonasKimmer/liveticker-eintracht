@@ -1,8 +1,8 @@
 import { memo, useMemo } from "react";
 import { PublishedEntry } from "../components/PublishedEntry";
 import { PHASE_SORT, PHASE_MINUTE_DEFAULT, PHASE_START } from "../constants";
-import { useTickerDataContext } from "../../../context/TickerDataContext";
-import { useTickerActionsContext } from "../../../context/TickerActionsContext";
+import { useTickerDataContext } from "context/TickerDataContext";
+import { useTickerActionsContext } from "context/TickerActionsContext";
 
 const sortMinute = (t) => {
   if (!t.phase) return t.minute ?? 0;
