@@ -118,12 +118,19 @@ export function useMatchTriggers({
     if (matchStatusTriggeredRef.current.has(key)) return;
     matchStatusTriggeredRef.current.add(key);
 
+    // Anchor-Reloads ab jetzt — unabhängig vom API-Timing (n8n kann busy sein)
+    const scheduledFor = selMatchId;
+    [10000, 20000, 35000, 55000, 80000, 110000].forEach((delay) => {
+      setTimeout(() => {
+        if (currentMatchIdRef.current === scheduledFor) reload.loadTickerTexts();
+      }, delay);
+    });
+
     api
       .triggerMatchStatus(match.externalId, status, match.minute ?? null, instance, language, style, tickerMode)
       .then(() => {
-        // LLM generiert Phasen-Events sequenziell (je ~5s) — mehrfach nachladen
-        const scheduledFor = selMatchId;
-        [4000, 9000, 16000, 24000, 35000, 50000, 70000, 95000, 125000].forEach((delay) => {
+        // Zusätzliche Reloads nach API-Antwort (LLM sequenziell je ~5s)
+        [4000, 9000, 16000, 24000, 35000].forEach((delay) => {
           setTimeout(() => {
             if (currentMatchIdRef.current === scheduledFor) reload.loadTickerTexts();
           }, delay);
@@ -171,6 +178,15 @@ export function useMatchTriggers({
     if (!selMatchId || !match?.externalId) return;
     if (prematchImportedRef.current === selMatchId) return;
     prematchImportedRef.current = selMatchId;
+
+    // Anchor-Reloads ab jetzt — unabhängig vom API-Timing (n8n kann busy sein)
+    const scheduledFor = selMatchId;
+    [10000, 20000, 35000, 55000, 80000, 110000].forEach((delay) => {
+      setTimeout(() => {
+        if (currentMatchIdRef.current === scheduledFor) reload.loadTickerTexts();
+      }, delay);
+    });
+
     api
       .importPrematch(match.externalId, tickerMode)
       .then(() => reload.loadPrematch())
@@ -178,9 +194,8 @@ export function useMatchTriggers({
         api
           .generateSyntheticBatch(selMatchId, style, instance, language, tickerMode)
           .then(() => {
-            // LLM läuft async — mehrfach nachladen
-            const scheduledFor = selMatchId;
-            [3000, 8000, 15000, 25000, 40000].forEach((delay) => {
+            // Zusätzliche Reloads nach API-Antwort
+            [3000, 8000, 15000, 25000].forEach((delay) => {
               setTimeout(() => {
                 if (currentMatchIdRef.current === scheduledFor) reload.loadTickerTexts();
               }, delay);
