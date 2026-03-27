@@ -466,6 +466,9 @@ export const CenterPanel = memo(function CenterPanel({
       try {
         // Hard-delete so backend's get_by_phase doesn't block regeneration
         await api.deleteTicker(draftId);
+        // Alten Draft sofort aus tickerTexts entfernen — sonst matcht der
+        // useEffect unten auf den alten (schon gelöschten) Draft statt auf den neuen.
+        await reload.loadTickerTexts();
 
         if (isPrematch) {
           // Vorberichterstattung: n8n ist async → useEffect beobachtet tickerTexts
