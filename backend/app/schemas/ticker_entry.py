@@ -38,6 +38,7 @@ class TickerEntryUpdate(BaseModel):
 
 class BaseGenerateRequest(BaseModel):
     """Gemeinsame Felder für alle KI-Generierungs-Requests."""
+
     style: TickerStyle = "neutral"
     language: str = Field(default="de", max_length=5)
     instance: TickerInstance = "ef_whitelabel"
@@ -89,6 +90,7 @@ class TickerEntryResponse(BaseModel):
     id: int
     match_id: int
     event_id: Optional[int] = None
+    synthetic_event_id: Optional[int] = None
     text: str
     style: Optional[str] = None
     icon: Optional[str] = None
