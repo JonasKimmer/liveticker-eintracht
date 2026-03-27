@@ -60,7 +60,7 @@ export const FINISHED_STATUSES = ["FT", "AET", "PEN", "finished"];
 // ── Polling-Intervalle (ms) ──────────────────────────────────
 export const POLL_EVENTS_MS = 5000;
 export const POLL_MATCH_REFRESH_MS = 15000;  // zweites Refresh-Intervall nach Kick-off
-export const POLL_PREMATCH_MS = 15000;       // Pre-Match-Polling (Drafts schnell sichtbar)
+export const POLL_PREMATCH_MS = 5000;        // Pre-Match-Polling (Drafts schnell sichtbar, LLM ~15-30s)
 export const SYNC_MATCH_INTERVAL_MS = 60000; // Live-Minuten-Tick (useLiveMinuteEditor)
 export const TOAST_DURATION_MS = 2200;       // Toast-Anzeige (ModeSelector)
 export const AUTO_ERROR_TIMEOUT_MS = 6000;   // Auto-Fehler-Anzeige (CenterPanel)
