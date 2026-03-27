@@ -547,7 +547,10 @@ export const CenterPanel = memo(function CenterPanel({
     async ({ text, icon, minute, phase } = {}) => {
       const textToPublish = text ?? editorValue.trim();
       if (!textToPublish) return;
-      await onManualPublish(textToPublish, icon, minute, phase);
+      // rawInput = originaler Editor-Wert (inkl. Slash-Command wie /g Paris Dembele)
+      // der wird beim Retract zurück ins Feld geschrieben, nicht der verarbeitete text
+      const rawInput = editorValue.trim();
+      await onManualPublish(textToPublish, icon, minute, phase, rawInput);
       setEditorValue("");
     },
     [editorValue, onManualPublish],

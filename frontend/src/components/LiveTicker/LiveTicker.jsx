@@ -259,7 +259,7 @@ export default function LiveTicker() {
   );
 
   const handleManualPublish = useCallback(
-    async (text, icon = "📝", minute, phase) => {
+    async (text, icon = "📝", minute, phase, rawInput) => {
       try {
         const res = await api.createManualTicker(
           selMatchId,
@@ -269,7 +269,9 @@ export default function LiveTicker() {
           phase,
         );
         await reload.loadTickerTexts();
-        if (res?.data?.id) showPublishToast(res.data.id, text, true);
+        // rawInput = originaler Editor-Wert (z.B. "/g Paris Dembele"),
+        // damit Retract den Slash-Command zurückschreibt, nicht nur den verarbeiteten Text
+        if (res?.data?.id) showPublishToast(res.data.id, rawInput || text, true);
       } catch (err) {
         logger.error("manualPublish error:", err);
       }
