@@ -225,12 +225,12 @@ export function useMatchTriggers({
   }, [selMatchId, matchStats.length]);
 
   // ── Auto-Import: Prematch + Synthetic Batch ───────────────
-  const prematchImportedRef = useRef(null);
+  const prematchImportedRef = useRef(new Set());
   useEffect(() => {
     if (!selMatchId || !match?.externalId) return;
     if (match.id !== selMatchId) return; // stale match aus vorherigem Spiel
-    if (prematchImportedRef.current === selMatchId) return;
-    prematchImportedRef.current = selMatchId;
+    if (prematchImportedRef.current.has(selMatchId)) return;
+    prematchImportedRef.current.add(selMatchId);
 
     // Anchor-Reloads ab jetzt — unabhängig vom API-Timing (n8n kann busy sein)
     const scheduledFor = selMatchId;
