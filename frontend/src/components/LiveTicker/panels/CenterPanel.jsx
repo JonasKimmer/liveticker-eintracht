@@ -79,7 +79,7 @@ export const CenterPanel = memo(function CenterPanel({
       if (dismissedIds.has(ev.id)) return false;
       if (tickerTexts.find(
         (t) => t.event_id === ev.id &&
-               (t.status === "published" || t.status === "rejected" || !t.status),
+               (t.status === "published" || t.status === "rejected"),
       )) return false;
       // Deduplicate events imported multiple times (same sourceId, different DB id)
       if (ev.sourceId) {
