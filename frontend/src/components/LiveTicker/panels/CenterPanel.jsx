@@ -33,6 +33,66 @@ function getDraftLabel(draft) {
   return "KI-Text";
 }
 
+function SummaryRow({ draft, label, isSelected, onSelect, onReject }) {
+  const [confirmReject, setConfirmReject] = useState(false);
+  return (
+    <div
+      className={`lt-event-card${isSelected ? " lt-event-card--selected" : ""}`}
+      onClick={onSelect}
+      role="button"
+      tabIndex={0}
+    >
+      <div className="lt-event-card__row">
+        <span className="lt-event-card__icon">{draft.icon ?? "✦"}</span>
+        <span className="lt-event-card__raw">
+          {label}
+          {draft.text
+            ? ` · ${draft.text.slice(0, 50)}${draft.text.length > 50 ? "…" : ""}`
+            : ""}
+        </span>
+        {!confirmReject && (
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              setConfirmReject(true);
+            }}
+            title="Ablehnen"
+            style={{
+              marginLeft: "auto",
+              flexShrink: 0,
+              background: "none",
+              border: "none",
+              color: "var(--lt-text-faint)",
+              cursor: "pointer",
+              fontSize: "0.75rem",
+              padding: "0 2px",
+              opacity: 0.5,
+            }}
+          >
+            ✕
+          </button>
+        )}
+        {confirmReject && (
+          <div
+            style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: "0.35rem" }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <span style={{ fontSize: "0.7rem", color: "var(--lt-text-muted)" }}>Ablehnen?</span>
+            <button
+              style={{ fontSize: "0.7rem", padding: "1px 6px", background: "rgba(239,68,68,0.15)", border: "1px solid rgba(239,68,68,0.3)", color: "#f87171", borderRadius: 4, cursor: "pointer" }}
+              onClick={() => { onReject(); setConfirmReject(false); }}
+            >Ja</button>
+            <button
+              style={{ fontSize: "0.7rem", padding: "1px 6px", background: "none", border: "1px solid var(--lt-border)", color: "var(--lt-text-muted)", borderRadius: 4, cursor: "pointer" }}
+              onClick={() => setConfirmReject(false)}
+            >Nein</button>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 function AutoPlayVideo({ src, style }) {
   const ref = useRef(null);
   useEffect(() => {
@@ -86,6 +146,7 @@ export const CenterPanel = memo(function CenterPanel({
   const [editorValue, setEditorValue] = useState("");
   const [bulkGenerating, setBulkGenerating] = useState(false);
   const [bulkPublishingSection, setBulkPublishingSection] = useState(null);
+  const [selectedSummaryDraftId, setSelectedSummaryDraftId] = useState(null);
   const [dismissedIds, setDismissedIds] = useState(new Set());
   const [autoError, setAutoError] = useState(null);
 
@@ -136,6 +197,14 @@ export const CenterPanel = memo(function CenterPanel({
         ? tickerTexts.find((t) => t.event_id === selectedEvent.id)
         : null,
     [selectedEvent, tickerTexts],
+  );
+
+  const selectedSummaryDraft = useMemo(
+    () =>
+      selectedSummaryDraftId
+        ? (tickerTexts.find((t) => t.id === selectedSummaryDraftId) ?? null)
+        : null,
+    [selectedSummaryDraftId, tickerTexts],
   );
 
   const isOurTeam = useMemo(
@@ -449,25 +518,50 @@ export const CenterPanel = memo(function CenterPanel({
                   }
                 >
                   {drafts.map((draft) => (
-                    <SummaryDraftCard
+                    <SummaryRow
                       key={draft.id}
                       draft={draft}
                       label={getDraftLabel(draft)}
-                      onPublish={async (text) => {
-                        await api.publishTicker(draft.id, text);
-                        await reload.loadTickerTexts();
-                      }}
+                      isSelected={selectedSummaryDraftId === draft.id}
+                      onSelect={() =>
+                        setSelectedSummaryDraftId((prev) =>
+                          prev === draft.id ? null : draft.id,
+                        )
+                      }
                       onReject={async () => {
-                        await api.updateTicker(draft.id, {
-                          status: "rejected",
-                        });
+                        await api.updateTicker(draft.id, { status: "rejected" });
                         await reload.loadTickerTexts();
+                        if (selectedSummaryDraftId === draft.id)
+                          setSelectedSummaryDraftId(null);
                       }}
                     />
                   ))}
                 </CollapsibleSection>
               );
             })()}
+
+            {/* Expanded prematch draft */}
+            {selectedSummaryDraft &&
+              !selectedSummaryDraft.event_id &&
+              PREMATCH_PHASES.has(selectedSummaryDraft.phase) && (
+                <SummaryDraftCard
+                  key={selectedSummaryDraft.id}
+                  draft={selectedSummaryDraft}
+                  label={getDraftLabel(selectedSummaryDraft)}
+                  onPublish={async (text) => {
+                    await api.publishTicker(selectedSummaryDraft.id, text);
+                    await reload.loadTickerTexts();
+                    setSelectedSummaryDraftId(null);
+                  }}
+                  onReject={async () => {
+                    await api.updateTicker(selectedSummaryDraft.id, {
+                      status: "rejected",
+                    });
+                    await reload.loadTickerTexts();
+                    setSelectedSummaryDraftId(null);
+                  }}
+                />
+              )}
 
             {/* Spielphasen + Videos */}
             {(() => {
@@ -495,102 +589,107 @@ export const CenterPanel = memo(function CenterPanel({
                     ) : null
                   }
                 >
-                  {drafts.map((draft) => {
-                    const isVideo = draft.icon === "🎬" || !!draft.video_url;
-                    return isVideo ? (
-                      <div
-                        key={draft.id}
-                        style={{
-                          background: "var(--lt-surface)",
-                          borderRadius: 8,
-                          padding: "0.75rem",
-                          border: "1px solid var(--lt-border)",
-                          marginBottom: "0.5rem",
-                        }}
-                      >
-                        <div
-                          style={{
-                            fontFamily: "var(--lt-font-mono)",
-                            fontSize: "0.7rem",
-                            color: "var(--lt-text-muted)",
-                            marginBottom: "0.5rem",
-                          }}
-                        >
-                          🎬 Video
-                        </div>
-                        {draft.video_url && (
-                          <AutoPlayVideo
-                            src={draft.video_url}
-                            style={{
-                              width: "100%",
-                              borderRadius: 6,
-                              marginBottom: "0.5rem",
-                              maxHeight: 220,
-                            }}
-                          />
-                        )}
-                        <div
-                          style={{
-                            display: "flex",
-                            gap: "0.5rem",
-                            marginTop: "0.5rem",
-                          }}
-                        >
-                          <button
-                            className="lt-event-card__gen-btn"
-                            style={{
-                              flex: 1,
-                              background: "rgba(34,197,94,0.15)",
-                              color: "#4ade80",
-                            }}
-                            onClick={async () => {
-                              await api.updateTicker(draft.id, {
-                                status: "published",
-                              });
-                              await reload.loadTickerTexts();
-                            }}
-                          >
-                            ✓ Veröffentlichen
-                          </button>
-                          <button
-                            className="lt-event-card__gen-btn"
-                            style={{
-                              flex: 1,
-                              background: "rgba(239,68,68,0.1)",
-                              color: "#f87171",
-                            }}
-                            onClick={async () => {
-                              await api.updateTicker(draft.id, {
-                                status: "rejected",
-                              });
-                              await reload.loadTickerTexts();
-                            }}
-                          >
-                            ✕ Ablehnen
-                          </button>
-                        </div>
-                      </div>
-                    ) : (
-                      <SummaryDraftCard
-                        key={draft.id}
-                        draft={draft}
-                        label={getDraftLabel(draft)}
-                        onPublish={async (text) => {
-                          await api.publishTicker(draft.id, text);
-                          await reload.loadTickerTexts();
-                        }}
-                        onReject={async () => {
-                          await api.updateTicker(draft.id, {
-                            status: "rejected",
-                          });
-                          await reload.loadTickerTexts();
-                        }}
-                      />
-                    );
-                  })}
+                  {drafts.map((draft) => (
+                    <SummaryRow
+                      key={draft.id}
+                      draft={draft}
+                      label={getDraftLabel(draft)}
+                      isSelected={selectedSummaryDraftId === draft.id}
+                      onSelect={() =>
+                        setSelectedSummaryDraftId((prev) =>
+                          prev === draft.id ? null : draft.id,
+                        )
+                      }
+                      onReject={async () => {
+                        await api.updateTicker(draft.id, { status: "rejected" });
+                        await reload.loadTickerTexts();
+                        if (selectedSummaryDraftId === draft.id)
+                          setSelectedSummaryDraftId(null);
+                      }}
+                    />
+                  ))}
                 </CollapsibleSection>
               );
             })()}
+
+            {/* Expanded spielphasen draft */}
+            {selectedSummaryDraft &&
+              !selectedSummaryDraft.event_id &&
+              !PREMATCH_PHASES.has(selectedSummaryDraft.phase) &&
+              (selectedSummaryDraft.icon === "🎬" ||
+              !!selectedSummaryDraft.video_url ? (
+                <div
+                  style={{
+                    background: "var(--lt-surface)",
+                    borderRadius: 8,
+                    padding: "0.75rem",
+                    border: "1px solid var(--lt-border)",
+                    marginBottom: "0.5rem",
+                  }}
+                >
+                  <div
+                    style={{
+                      fontFamily: "var(--lt-font-mono)",
+                      fontSize: "0.7rem",
+                      color: "var(--lt-text-muted)",
+                      marginBottom: "0.5rem",
+                    }}
+                  >
+                    🎬 Video
+                  </div>
+                  {selectedSummaryDraft.video_url && (
+                    <AutoPlayVideo
+                      src={selectedSummaryDraft.video_url}
+                      style={{
+                        width: "100%",
+                        borderRadius: 6,
+                        marginBottom: "0.5rem",
+                        maxHeight: 220,
+                      }}
+                    />
+                  )}
+                  <div style={{ display: "flex", gap: "0.5rem", marginTop: "0.5rem" }}>
+                    <button
+                      className="lt-event-card__gen-btn"
+                      style={{ flex: 1, background: "rgba(34,197,94,0.15)", color: "#4ade80" }}
+                      onClick={async () => {
+                        await api.updateTicker(selectedSummaryDraft.id, { status: "published" });
+                        await reload.loadTickerTexts();
+                        setSelectedSummaryDraftId(null);
+                      }}
+                    >
+                      ✓ Veröffentlichen
+                    </button>
+                    <button
+                      className="lt-event-card__gen-btn"
+                      style={{ flex: 1, background: "rgba(239,68,68,0.1)", color: "#f87171" }}
+                      onClick={async () => {
+                        await api.updateTicker(selectedSummaryDraft.id, { status: "rejected" });
+                        await reload.loadTickerTexts();
+                        setSelectedSummaryDraftId(null);
+                      }}
+                    >
+                      ✕ Ablehnen
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <SummaryDraftCard
+                  key={selectedSummaryDraft.id}
+                  draft={selectedSummaryDraft}
+                  label={getDraftLabel(selectedSummaryDraft)}
+                  onPublish={async (text) => {
+                    await api.publishTicker(selectedSummaryDraft.id, text);
+                    await reload.loadTickerTexts();
+                    setSelectedSummaryDraftId(null);
+                  }}
+                  onReject={async () => {
+                    await api.updateTicker(selectedSummaryDraft.id, { status: "rejected" });
+                    await reload.loadTickerTexts();
+                    setSelectedSummaryDraftId(null);
+                  }}
+                />
+              ))}
 
             {/* Events */}
             {pendingEvents.length === 0 && (
