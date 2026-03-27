@@ -202,7 +202,8 @@ export const CenterPanel = memo(function CenterPanel({
   const [bulkGenerating, setBulkGenerating] = useState(false);
   const [bulkPublishingSection, setBulkPublishingSection] = useState(null);
   const [selectedSummaryDraftId, setSelectedSummaryDraftId] = useState(null);
-  const [pendingRegenPhase, setPendingRegenPhase] = useState(null);
+  // { matchId, phase } | null — hält laufende Vorberichterstattungs-Regeneration
+  const [pendingRegenData, setPendingRegenData] = useState(null);
   const [dismissedIds, setDismissedIds] = useState(new Set());
   const [autoError, setAutoError] = useState(null);
 
@@ -354,19 +355,26 @@ export const CenterPanel = memo(function CenterPanel({
   }, [selectedDraft, onDraftActive]);
 
   // ── Warten auf neuen Vorberichterstattungs-Draft (n8n async) ──
-  // Nach Regeneration merkt sich pendingRegenPhase die Phase.
+  // Nach Regeneration merkt sich pendingRegenData matchId + Phase.
   // Sobald tickerTexts einen passenden Draft enthält, wird er auto-selektiert.
+  // Match-ID-Guard verhindert falsches Feuern nach Spielwechsel.
   useEffect(() => {
-    if (!pendingRegenPhase) return;
+    if (!pendingRegenData) return;
+    if (pendingRegenData.matchId !== match?.id) {
+      // Spielwechsel → Regeneration verwerfen
+      setPendingRegenData(null);
+      setBulkPublishingSection(null);
+      return;
+    }
     const newDraft = tickerTexts.find(
-      (t) => t.status === "draft" && !t.event_id && t.phase === pendingRegenPhase,
+      (t) => t.status === "draft" && !t.event_id && t.phase === pendingRegenData.phase,
     );
     if (newDraft) {
       setSelectedSummaryDraftId(newDraft.id);
-      setPendingRegenPhase(null);
+      setPendingRegenData(null);
       setBulkPublishingSection(null);
     }
-  }, [tickerTexts, pendingRegenPhase]);
+  }, [tickerTexts, pendingRegenData, match?.id]);
 
   const handleBulkPublish = useCallback(async () => {
     setBulkGenerating(true);
@@ -474,7 +482,7 @@ export const CenterPanel = memo(function CenterPanel({
           // Vorberichterstattung: n8n ist async → useEffect beobachtet tickerTexts
           // und selektiert den neuen Draft automatisch sobald er erscheint
           await api.generateMatchSummary(match.id, phase, style, instance);
-          setPendingRegenPhase(phase);
+          setPendingRegenData({ matchId: match.id, phase });
           // bulkPublishingSection bleibt "regenerating" bis useEffect es löscht
         } else {
           // Spielphasen: FastAPI ist synchron → sofort verfügbar
@@ -489,7 +497,7 @@ export const CenterPanel = memo(function CenterPanel({
       } catch (err) {
         logger.error("regenerateSummaryDraft failed", err);
         setSelectedSummaryDraftId(null);
-        setPendingRegenPhase(null);
+        setPendingRegenData(null);
         setBulkPublishingSection(null);
       } finally {
         if (!isPrematch) setBulkPublishingSection(null);
@@ -623,7 +631,10 @@ export const CenterPanel = memo(function CenterPanel({
                   !t.event_id &&
                   PREMATCH_PHASES.has(t.phase),
               );
-              if (!drafts.length) return null;
+              const isRegenerating =
+                pendingRegenData?.matchId === match?.id &&
+                PREMATCH_PHASES.has(pendingRegenData?.phase);
+              if (!drafts.length && !isRegenerating) return null;
               return (
                 <CollapsibleSection
                   title="Vorberichterstattung"
@@ -641,6 +652,21 @@ export const CenterPanel = memo(function CenterPanel({
                     ) : null
                   }
                 >
+                  {isRegenerating && drafts.length === 0 && (
+                    <div
+                      style={{
+                        padding: "0.65rem 0.75rem",
+                        fontSize: "0.8rem",
+                        color: "var(--lt-text-muted)",
+                        fontStyle: "italic",
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "0.5rem",
+                      }}
+                    >
+                      ✦ KI schreibt neuen Text…
+                    </div>
+                  )}
                   {drafts.map((draft) => (
                     <>
                       <SummaryRow
