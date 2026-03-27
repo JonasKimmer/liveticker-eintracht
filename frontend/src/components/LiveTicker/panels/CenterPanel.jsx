@@ -674,7 +674,8 @@ export const CenterPanel = memo(function CenterPanel({
                                 await api.publishTicker(draft.id, text);
                                 await reload.loadTickerTexts();
                                 onPublished?.(draft.id, text);
-                                setSelectedSummaryDraftId(null);
+                                // selectedSummaryDraftId bleibt gesetzt →
+                                // nach Stornieren öffnet sich der Draft automatisch
                               }}
                               onReject={async () => {
                                 await api.deleteTicker(draft.id);
@@ -780,7 +781,7 @@ export const CenterPanel = memo(function CenterPanel({
                                     await api.updateTicker(draft.id, { status: "published" });
                                     await reload.loadTickerTexts();
                                     onPublished?.(draft.id, draft.text || "🎬 Video");
-                                    setSelectedSummaryDraftId(null);
+                                    // selectedSummaryDraftId bleibt gesetzt → auto-expand nach Stornieren
                                   }}
                                 >
                                   ✓ Veröffentlichen
@@ -809,7 +810,7 @@ export const CenterPanel = memo(function CenterPanel({
                                 await api.publishTicker(draft.id, text);
                                 await reload.loadTickerTexts();
                                 onPublished?.(draft.id, text);
-                                setSelectedSummaryDraftId(null);
+                                // selectedSummaryDraftId bleibt gesetzt → auto-expand nach Stornieren
                               }}
                               onReject={async () => {
                                 await api.deleteTicker(draft.id);
