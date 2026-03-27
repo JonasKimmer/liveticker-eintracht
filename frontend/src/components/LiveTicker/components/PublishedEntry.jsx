@@ -185,44 +185,42 @@ function EntryMenu({ onEdit, onDelete, tickerTextId, startEdit }) {
       </button>
       {open && (
         <div className="lt-entry__menu-dropdown">
-          {onEdit && (
-            <button
-              className="lt-entry__menu-item"
-              onClick={() => {
-                setOpen(false);
-                startEdit();
-              }}
-            >
-              ✎ Bearbeiten
-            </button>
-          )}
-          {onDelete && !confirmOpen && (
-            <button
-              className="lt-entry__menu-item lt-entry__menu-item--danger"
-              onClick={() => setConfirmOpen(true)}
-            >
-              ✕ Löschen
-            </button>
-          )}
-          {confirmOpen && (
-            <div className="lt-entry__menu-confirm">
-              <span className="lt-entry__menu-confirm__label">Sicher?</span>
-              <button
-                className="lt-entry__menu-confirm__btn lt-entry__menu-confirm__btn--ok"
-                onClick={() => {
-                  onDelete(tickerTextId);
-                  setOpen(false);
-                  setConfirmOpen(false);
-                }}
-              >
-                Ja
-              </button>
-              <button
-                className="lt-entry__menu-confirm__btn lt-entry__menu-confirm__btn--cancel"
-                onClick={() => setConfirmOpen(false)}
-              >
-                Nein
-              </button>
+          {!confirmOpen ? (
+            <>
+              {onEdit && (
+                <button
+                  className="lt-entry__menu-item"
+                  onClick={() => { setOpen(false); startEdit(); }}
+                >
+                  ✎ Bearbeiten
+                </button>
+              )}
+              {onDelete && (
+                <button
+                  className="lt-entry__menu-item lt-entry__menu-item--danger"
+                  onClick={() => setConfirmOpen(true)}
+                >
+                  ✕ Löschen
+                </button>
+              )}
+            </>
+          ) : (
+            <div className="lt-entry__menu-confirm-view">
+              <div className="lt-entry__menu-confirm-title">Eintrag löschen?</div>
+              <div className="lt-entry__menu-confirm-btns">
+                <button
+                  className="lt-entry__menu-confirm__btn lt-entry__menu-confirm__btn--ok"
+                  onClick={() => { onDelete(tickerTextId); setOpen(false); setConfirmOpen(false); }}
+                >
+                  Löschen
+                </button>
+                <button
+                  className="lt-entry__menu-confirm__btn lt-entry__menu-confirm__btn--cancel"
+                  onClick={() => setConfirmOpen(false)}
+                >
+                  Abbrechen
+                </button>
+              </div>
             </div>
           )}
         </div>
