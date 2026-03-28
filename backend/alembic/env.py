@@ -1,3 +1,4 @@
+import os
 from logging.config import fileConfig
 
 from sqlalchemy import engine_from_config
@@ -8,27 +9,17 @@ from alembic import context
 from app.core.database import Base
 
 # Import ALL models – required so Base.metadata knows all tables
-from app.models.country import Country
-from app.models.team import Team
-from app.models.competition import Competition
-from app.models.season import Season
-from app.models.match import Match
-from app.models.event import Event
-from app.models.ticker_entry import TickerEntry
-from app.models.synthetic_event import SyntheticEvent
-from app.models.standing import Standing
-from app.models.competition_team import CompetitionTeam
-from app.models.lineup import Lineup
-from app.models.match_statistic import MatchStatistic
-from app.models.media_queue import MediaQueue
-from app.models.player import Player
-from app.models.player_statistic import PlayerStatistic
-from app.models.media_clip import MediaClip
+import app.models  # noqa: F401 – registers every model with Base.metadata
 
 config = context.config
 
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
+
+# Override with DATABASE_URL env var if set (e.g. on Render/production)
+database_url = os.environ.get("DATABASE_URL")
+if database_url:
+    config.set_main_option("sqlalchemy.url", database_url)
 
 target_metadata = Base.metadata
 

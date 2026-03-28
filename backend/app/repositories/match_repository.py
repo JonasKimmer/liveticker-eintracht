@@ -1,7 +1,14 @@
+"""
+MatchRepository
+===============
+Datenbankzugriff für Spiele (Match) inkl. Lineup, Statistiken und Spieltag-Navigation.
+"""
+
 import logging
 from typing import Optional
 
 from sqlalchemy import distinct, func, or_
+from sqlalchemy.orm import Query
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session, joinedload
 
@@ -9,6 +16,7 @@ from app.models.lineup import Lineup
 from app.models.match import Match
 from app.models.match_statistic import MatchStatistic
 from app.models.player import Player
+from app.models.player_statistic import PlayerStatistic
 from app.schemas.match import (
     LineupBulkUpdate,
     LineupPlayerInput,
@@ -29,7 +37,7 @@ class MatchRepository:
     # Internal helpers                                                     #
     # ------------------------------------------------------------------ #
 
-    def _base_query(self):
+    def _base_query(self) -> Query:
         return self.db.query(Match).options(
             joinedload(Match.home_team),
             joinedload(Match.away_team),
@@ -73,6 +81,9 @@ class MatchRepository:
     def get_by_id(self, match_id: int) -> Optional[Match]:
         return self._base_query().filter(Match.id == match_id).first()
 
+    def load_with_teams(self, match_id: int) -> Optional[Match]:
+        """Eager-load Match mit Home/Away-Teams und Wettbewerb (für LLM-Kontext)."""
+        return self._base_query().filter(Match.id == match_id).first()
 
     def exists(self, match_id: int) -> bool:
         return self.db.query(Match.id).filter(Match.id == match_id).scalar() is not None
@@ -91,24 +102,18 @@ class MatchRepository:
         )
         return [r[0] for r in rows]
 
-    def get_competitions_for_team(self, team_id: int) -> list:
+    def get_competitions_for_team(self, team_id: int) -> list["Competition"]:
         """Return distinct Competition objects derived from matches the team plays in."""
         from app.models.competition import Competition
 
-        ids = [
-            r[0]
-            for r in self.db.query(distinct(Match.competition_id))
+        return (
+            self.db.query(Competition)
+            .join(Match, Match.competition_id == Competition.id)
             .filter(
                 Match.competition_id.isnot(None),
                 or_(Match.home_team_id == team_id, Match.away_team_id == team_id),
             )
-            .all()
-        ]
-        if not ids:
-            return []
-        return (
-            self.db.query(Competition)
-            .filter(Competition.id.in_(ids))
+            .distinct()
             .order_by(Competition.position)
             .all()
         )
@@ -330,3 +335,11 @@ class MatchRepository:
         self.db.refresh(away_stat)
         logger.debug("Statistics upserted for match id=%s", match_id)
         return [home_stat, away_stat]
+
+    def get_player_statistics(self, match_id: int) -> list[PlayerStatistic]:
+        return (
+            self.db.query(PlayerStatistic)
+            .filter(PlayerStatistic.match_id == match_id)
+            .order_by(PlayerStatistic.rating.desc().nulls_last(), PlayerStatistic.minutes.desc())
+            .all()
+        )

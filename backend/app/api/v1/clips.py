@@ -12,29 +12,34 @@ Endpunkte:
 """
 
 import logging
-import os
+from pathlib import Path
 from typing import Optional
 
 import httpx
 from fastapi import APIRouter, Depends, HTTPException, status
-from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
+from app.core.config import settings
 from app.core.database import get_db
-from app.models.match import Match
-from app.models.media_clip import MediaClip
+from app.utils.http_errors import require_or_404
+from app.repositories.match_repository import MatchRepository
+from app.repositories.media_clip_repository import MediaClipRepository
+from app.repositories.ticker_entry_repository import TickerEntryRepository
+from app.services import ticker_service as ts
 from app.schemas.media_clip import (
+    CacheThumbnailRequest,
     MediaClipImportRequest,
     MediaClipResponse,
     ClipPublishRequest,
 )
-from app.schemas.ticker_entry import TickerEntryCreate, TickerEntryResponse
-from app.repositories.ticker_entry_repository import TickerEntryRepository
+from app.schemas.ticker_entry import TickerEntryCreate, TickerEntryResponse, TickerStatus
 from app.services.llm_service import generate_ticker_text
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/clips", tags=["Clips"])
+
+THUMBNAILS_DIR = Path(__file__).parents[3] / "static" / "thumbnails"
 
 
 # ──────────────────────────────────────────────
@@ -52,40 +57,7 @@ def import_clips(
     data: MediaClipImportRequest,
     db: Session = Depends(get_db),
 ) -> list[MediaClipResponse]:
-    results = []
-    for c in data.clips:
-        # Upsert: wenn vid bekannt, nur aktualisieren
-        existing = None
-        if c.vid:
-            existing = db.query(MediaClip).filter(MediaClip.vid == c.vid).first()
-
-        if existing:
-            existing.match_id = data.match_id or existing.match_id
-            existing.thumbnail_url = c.thumbnail_url or existing.thumbnail_url
-            existing.title = c.title or existing.title
-            existing.player_name = c.player_name or existing.player_name
-            existing.team_name = c.team_name or existing.team_name
-            existing.source = c.source or existing.source
-            results.append(existing)
-        else:
-            clip = MediaClip(
-                match_id=data.match_id,
-                vid=c.vid,
-                video_url=c.video_url,
-                thumbnail_url=c.thumbnail_url,
-                title=c.title,
-                player_name=c.player_name,
-                team_name=c.team_name,
-                source=c.source or "bundesliga",
-            )
-            db.add(clip)
-            db.flush()
-            results.append(clip)
-
-    db.commit()
-    for r in results:
-        db.refresh(r)
-    return results
+    return MediaClipRepository(db).upsert_batch(data.match_id, data.clips)
 
 
 # ──────────────────────────────────────────────
@@ -104,12 +76,7 @@ def get_clips_for_match(
     include_published: bool = False,
     db: Session = Depends(get_db),
 ) -> list[MediaClipResponse]:
-    q = db.query(MediaClip).filter(MediaClip.match_id == match_id)
-    if not include_published:
-        q = q.filter(MediaClip.published.is_(False))
-    if team_name:
-        q = q.filter(MediaClip.team_name.ilike(f"%{team_name}%"))
-    return q.order_by(MediaClip.created_at.desc()).all()
+    return MediaClipRepository(db).get_by_match(match_id, include_published, team_name)
 
 
 # ──────────────────────────────────────────────
@@ -126,10 +93,7 @@ def get_youtube_clips(
     include_published: bool = False,
     db: Session = Depends(get_db),
 ) -> list[MediaClipResponse]:
-    q = db.query(MediaClip).filter(MediaClip.source == "youtube")
-    if not include_published:
-        q = q.filter(MediaClip.published.is_(False))
-    return q.order_by(MediaClip.created_at.desc()).all()
+    return MediaClipRepository(db).get_by_source("youtube", include_published)
 
 
 # ──────────────────────────────────────────────
@@ -146,10 +110,7 @@ def get_twitter_posts(
     include_published: bool = False,
     db: Session = Depends(get_db),
 ) -> list[MediaClipResponse]:
-    q = db.query(MediaClip).filter(MediaClip.source == "twitter")
-    if not include_published:
-        q = q.filter(MediaClip.published.is_(False))
-    return q.order_by(MediaClip.created_at.desc()).all()
+    return MediaClipRepository(db).get_by_source("twitter", include_published)
 
 
 # ──────────────────────────────────────────────
@@ -166,10 +127,7 @@ def get_instagram_posts(
     include_published: bool = False,
     db: Session = Depends(get_db),
 ) -> list[MediaClipResponse]:
-    q = db.query(MediaClip).filter(MediaClip.source == "instagram")
-    if not include_published:
-        q = q.filter(MediaClip.published.is_(False))
-    return q.order_by(MediaClip.created_at.desc()).all()
+    return MediaClipRepository(db).get_by_source("instagram", include_published)
 
 
 # ──────────────────────────────────────────────
@@ -187,20 +145,10 @@ async def generate_clip_draft(
     style: str = "euphorisch",
     db: Session = Depends(get_db),
 ) -> dict:
-    clip = db.query(MediaClip).filter(MediaClip.id == clip_id).first()
-    if not clip:
-        raise HTTPException(status_code=404, detail="Clip not found")
+    clip = require_or_404(MediaClipRepository(db).get_by_id(clip_id), "Clip not found")
 
-    match = db.query(Match).filter(Match.id == match_id).first()
-    match_context = {}
-    if match:
-        match_context = {
-            "home_team": match.home_team.name if match.home_team else "",
-            "away_team": match.away_team.name if match.away_team else "",
-            "home_score": match.home_score,
-            "away_score": match.away_score,
-            "match_state": match.match_state,
-        }
+    match = MatchRepository(db).load_with_teams(match_id)
+    match_context = ts.build_match_context(match, event_minute=None)
 
     is_youtube = clip.source == "youtube"
     try:
@@ -244,9 +192,8 @@ def publish_clip(
     data: ClipPublishRequest,
     db: Session = Depends(get_db),
 ) -> TickerEntryResponse:
-    clip = db.query(MediaClip).filter(MediaClip.id == clip_id).first()
-    if not clip:
-        raise HTTPException(status_code=404, detail="Clip not found")
+    clip_repo = MediaClipRepository(db)
+    clip = require_or_404(clip_repo.get_by_id(clip_id), "Clip not found")
 
     entry = TickerEntryRepository(db).create(
         TickerEntryCreate(
@@ -258,13 +205,10 @@ def publish_clip(
             phase=data.phase,
             image_url=clip.thumbnail_url,
             video_url=clip.video_url,
-            status="published",
+            status=TickerStatus.published,
         )
     )
-
-    clip.published = True
-    db.commit()
-
+    clip_repo.publish(clip)
     return entry
 
 
@@ -282,26 +226,14 @@ def delete_clip(
     clip_id: int,
     db: Session = Depends(get_db),
 ) -> None:
-    clip = db.query(MediaClip).filter(MediaClip.id == clip_id).first()
-    if not clip:
-        raise HTTPException(status_code=404, detail="Clip not found")
-    db.delete(clip)
-    db.commit()
+    clip_repo = MediaClipRepository(db)
+    clip = require_or_404(clip_repo.get_by_id(clip_id), "Clip not found")
+    clip_repo.delete(clip)
 
 
 # ──────────────────────────────────────────────
 # CACHE THUMBNAIL
 # ──────────────────────────────────────────────
-
-THUMBNAILS_DIR = os.path.join(
-    os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(__file__)))),
-    "static", "thumbnails"
-)
-
-
-class CacheThumbnailRequest(BaseModel):
-    vid: str
-    thumbnail_url: str
 
 
 @router.post("/cache-thumbnail", summary="Instagram-Thumbnail lokal speichern")
@@ -309,10 +241,9 @@ def cache_thumbnail(
     req: CacheThumbnailRequest,
     db: Session = Depends(get_db),
 ) -> dict:
-    os.makedirs(THUMBNAILS_DIR, exist_ok=True)
-    ext = ".jpg"
-    filename = f"{req.vid}{ext}"
-    filepath = os.path.join(THUMBNAILS_DIR, filename)
+    THUMBNAILS_DIR.mkdir(parents=True, exist_ok=True)
+    filename = f"{req.vid}.jpg"
+    filepath = THUMBNAILS_DIR / filename
 
     try:
         with httpx.Client(follow_redirects=True, timeout=15) as client:
@@ -321,16 +252,15 @@ def cache_thumbnail(
                 headers={"Referer": "https://www.instagram.com/"},
             )
             resp.raise_for_status()
-            with open(filepath, "wb") as f:
-                f.write(resp.content)
+            filepath.write_bytes(resp.content)
     except Exception as e:
         raise HTTPException(status_code=502, detail=f"Download fehlgeschlagen: {e}")
 
-    local_url = f"http://localhost:8001/static/thumbnails/{filename}"
+    local_url = f"{settings.PUBLIC_BASE_URL}/static/thumbnails/{filename}"
 
-    clip = db.query(MediaClip).filter(MediaClip.vid == req.vid).first()
+    clip_repo = MediaClipRepository(db)
+    clip = clip_repo.get_by_vid(req.vid)
     if clip:
-        clip.thumbnail_url = local_url
-        db.commit()
+        clip_repo.update_thumbnail(clip, local_url)
 
     return {"local_url": local_url}

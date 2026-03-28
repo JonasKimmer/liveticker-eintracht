@@ -14,14 +14,19 @@ Flow:
 import logging
 
 from fastapi import APIRouter, Depends, HTTPException, WebSocket, WebSocketDisconnect, status
-from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
-from app.models.media_queue import MediaQueue
-from app.models.ticker_entry import TickerEntry
-from app.schemas.media_queue import MediaItemIn, MediaItemResponse, PublishMediaRequest
-from app.schemas.ticker_entry import TickerEntryResponse
+from app.utils.http_errors import require_or_404
+from app.repositories.media_queue_repository import MediaQueueRepository
+from app.repositories.ticker_entry_repository import TickerEntryRepository
+from app.schemas.media_queue import (
+    GenerateCaptionRequest,
+    MediaItemIn,
+    MediaItemResponse,
+    PublishMediaRequest,
+)
+from app.schemas.ticker_entry import TickerEntryCreate, TickerEntryResponse, TickerStatus
 from app.services.llm_service import generate_ticker_text
 
 logger = logging.getLogger(__name__)
@@ -95,31 +100,14 @@ async def media_incoming(
     Speichert neue Bilder (ON CONFLICT wird über unique-Check gelöst),
     broadcasted sie via WebSocket an alle verbundenen Redakteur-Clients.
     """
-    saved: list[MediaItemIn] = []
+    repo = MediaQueueRepository(db)
+    incoming_ids = [item.media_id for item in items]
+    existing_ids = repo.get_existing_ids(incoming_ids)
 
-    for item in items:
-        exists = (
-            db.query(MediaQueue)
-            .filter(MediaQueue.media_id == item.media_id)
-            .first()
-        )
-        if exists:
-            continue
-
-        entry = MediaQueue(
-            media_id=item.media_id,
-            name=item.name,
-            thumbnail_url=item.thumbnail_url,
-            compressed_url=item.compressed_url,
-            original_url=item.original_url,
-            event_id=item.event_id,
-            status="pending",
-        )
-        db.add(entry)
-        saved.append(item)
+    saved = [item for item in items if item.media_id not in existing_ids]
 
     if saved:
-        db.commit()
+        repo.save_batch(saved)
         payload = {
             "type": "new_media",
             "items": [i.model_dump() for i in saved],
@@ -145,12 +133,7 @@ async def media_incoming(
 )
 def media_queue(db: Session = Depends(get_db)) -> list[MediaItemResponse]:
     """Gibt alle Bilder mit Status `pending` zurück, neueste zuerst."""
-    return (
-        db.query(MediaQueue)
-        .filter(MediaQueue.status == "pending")
-        .order_by(MediaQueue.created_at.desc())
-        .all()
-    )
+    return MediaQueueRepository(db).get_pending()
 
 
 # ──────────────────────────────────────────────
@@ -164,8 +147,7 @@ def media_queue(db: Session = Depends(get_db)) -> list[MediaItemResponse]:
     summary="Alle pending Bilder aus der Queue löschen",
 )
 def clear_media_queue(db: Session = Depends(get_db)) -> None:
-    db.query(MediaQueue).filter(MediaQueue.status == "pending").delete()
-    db.commit()
+    MediaQueueRepository(db).clear_pending()
 
 
 # ──────────────────────────────────────────────
@@ -190,44 +172,27 @@ def media_publish(
     3. Setzt MediaQueue.status → 'published'
     4. Gibt den fertigen Ticker-Eintrag zurück
     """
-    media = (
-        db.query(MediaQueue)
-        .filter(MediaQueue.media_id == data.media_id)
-        .first()
-    )
-    if not media:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Media mit media_id={data.media_id} nicht gefunden.",
+    media_repo = MediaQueueRepository(db)
+    media = require_or_404(media_repo.get_by_media_id(data.media_id), f"Media mit media_id={data.media_id} nicht gefunden.")
+
+    entry = TickerEntryRepository(db).create(
+        TickerEntryCreate(
+            match_id=data.match_id,
+            text=data.description,
+            source="manual",
+            status=TickerStatus.published,
+            icon=data.icon or "📷",
+            minute=data.minute,
+            image_url=media.compressed_url or media.original_url or media.thumbnail_url,
         )
-
-    ticker = TickerEntry(
-        match_id=data.match_id,
-        text=data.description,
-        source="manual",
-        status="published",
-        icon=data.icon or "📷",
-        minute=data.minute,
-        image_url=media.compressed_url or media.original_url or media.thumbnail_url,
     )
-    db.add(ticker)
-
-    media.status = "published"
-    media.description = data.description
-
-    db.commit()
-    db.refresh(ticker)
-    return ticker
+    media_repo.publish(media, data.description)
+    return entry
 
 
 # ──────────────────────────────────────────────
 # POST /media/generate-caption/{media_id}
 # ──────────────────────────────────────────────
-
-
-class GenerateCaptionRequest(BaseModel):
-    style: str = "neutral"
-    instance: str = "ef_whitelabel"
 
 
 @router.post(
@@ -240,9 +205,7 @@ async def generate_media_caption(
     db: Session = Depends(get_db),
 ) -> dict:
     """Generiert per LLM einen Ticker-Text für ein ScorePlay-Bild."""
-    media = db.query(MediaQueue).filter(MediaQueue.media_id == media_id).first()
-    if not media:
-        raise HTTPException(status_code=404, detail="Bild nicht gefunden")
+    media = require_or_404(MediaQueueRepository(db).get_by_media_id(media_id), "Bild nicht gefunden")
 
     detail = media.name or f"ScorePlay Bild #{media_id}"
     text, model = await generate_ticker_text(

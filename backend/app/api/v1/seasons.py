@@ -1,11 +1,16 @@
-import logging
+"""
+Seasons Router
+==============
+Endpunkte für Saisons, Spieltage und Tabellenabfragen.
+"""
+
 from typing import Literal
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
-from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
+from app.utils.http_errors import handle_integrity_error, require_or_404
 from app.repositories.season_repository import SeasonRepository
 from app.schemas.season import (
     PaginatedSeasonResponse,
@@ -13,8 +18,6 @@ from app.schemas.season import (
     SeasonResponse,
     SeasonUpdate,
 )
-
-logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/seasons", tags=["Seasons"])
 
@@ -48,12 +51,7 @@ def get_season(
     seasonId: int,
     db: Session = Depends(get_db),
 ) -> SeasonResponse:
-    season = SeasonRepository(db).get_by_id(seasonId)
-    if not season:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Season not found"
-        )
-    return season
+    return require_or_404(SeasonRepository(db).get_by_id(seasonId), "Season not found")
 
 
 @router.post(
@@ -67,14 +65,8 @@ def create_season(
     data: SeasonCreate,
     db: Session = Depends(get_db),
 ) -> SeasonResponse:
-    try:
+    with handle_integrity_error("A season with conflicting data already exists."):
         return SeasonRepository(db).create(data)
-    except IntegrityError:
-        logger.exception("IntegrityError creating season: %s", data.title)
-        raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
-            detail="A season with conflicting data already exists.",
-        )
 
 
 @router.put(
@@ -93,19 +85,9 @@ def update_season(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
             detail="Request body must contain at least one field to update.",
         )
-    try:
+    with handle_integrity_error("Update would violate a unique constraint."):
         updated = SeasonRepository(db).update(seasonId, data)
-    except IntegrityError:
-        logger.exception("IntegrityError updating season id=%s", seasonId)
-        raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
-            detail="Update would violate a unique constraint.",
-        )
-    if not updated:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Season not found"
-        )
-    return updated
+    return require_or_404(updated, "Season not found")
 
 
 @router.delete(
@@ -117,7 +99,4 @@ def delete_season(
     seasonId: int,
     db: Session = Depends(get_db),
 ) -> None:
-    if not SeasonRepository(db).delete(seasonId):
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Season not found"
-        )
+    require_or_404(SeasonRepository(db).delete(seasonId), "Season not found")

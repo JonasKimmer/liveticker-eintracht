@@ -1,3 +1,9 @@
+"""
+CountryRepository
+=================
+Datenbankzugriff für Länderdaten (CRUD + Suche nach ISO-Code).
+"""
+
 import logging
 from typing import Optional
 
@@ -8,6 +14,10 @@ from app.models.country import Country
 from app.schemas.country import CountryCreate
 
 logger = logging.getLogger(__name__)
+
+
+def _str_or_none(value: object) -> str | None:
+    return str(value) if value else None
 
 
 class CountryRepository:
@@ -34,7 +44,7 @@ class CountryRepository:
         existing = self.get_by_name(data.name)
         if existing:
             existing.code = data.code
-            existing.flag_url = str(data.flag_url) if data.flag_url else None
+            existing.flag_url = _str_or_none(data.flag_url)
             try:
                 self.db.commit()
                 self.db.refresh(existing)
@@ -47,7 +57,7 @@ class CountryRepository:
         country = Country(
             name=data.name,
             code=data.code,
-            flag_url=str(data.flag_url) if data.flag_url else None,
+            flag_url=_str_or_none(data.flag_url),
         )
         self.db.add(country)
         try:

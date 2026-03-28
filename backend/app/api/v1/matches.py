@@ -1,16 +1,22 @@
+"""
+Matches Router
+==============
+Endpunkte für Spielabruf, Spieltag-Navigation, Lineup und Statistiken.
+"""
+
 import logging
 from typing import Optional
 
 import httpx
 from fastapi import APIRouter, Depends, HTTPException, Query, status
-from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from app.core.config import settings
+from app.core.constants import FOOTBALL_API_PHASE_MAP
 from app.core.database import get_db
-from app.models.player_statistic import PlayerStatistic
-from app.models.synthetic_event import SyntheticEvent
+from app.utils.http_errors import handle_integrity_error, require_or_404
 from app.repositories.match_repository import MatchRepository
+from app.repositories.synthetic_event_repository import SyntheticEventRepository
 from app.schemas.match import (
     LineupBulkUpdate,
     LineupPlayerResponse,
@@ -21,6 +27,7 @@ from app.schemas.match import (
     PaginatedMatchResponse,
     StatisticsBulkUpdate,
 )
+from pydantic import BaseModel
 from app.schemas.player import PlayerStatisticResponse
 
 logger = logging.getLogger(__name__)
@@ -64,7 +71,6 @@ def get_matches(
     )
 
 
-
 @router.get(
     "/{matchId}",
     response_model=MatchResponse,
@@ -75,12 +81,7 @@ def get_match(
     matchId: int,
     db: Session = Depends(get_db),
 ) -> MatchResponse:
-    match = MatchRepository(db).get_by_id(matchId)
-    if not match:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Match not found"
-        )
-    return match
+    return require_or_404(MatchRepository(db).get_by_id(matchId), "Match not found")
 
 
 @router.post(
@@ -94,14 +95,8 @@ def create_match(
     data: MatchCreate,
     db: Session = Depends(get_db),
 ) -> MatchResponse:
-    try:
+    with handle_integrity_error("A match with this id already exists."):
         return MatchRepository(db).create(data)
-    except IntegrityError:
-        logger.exception("IntegrityError creating match")
-        raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
-            detail="A match with this id already exists.",
-        )
 
 
 @router.patch(
@@ -120,19 +115,9 @@ def update_match(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
             detail="Request body must contain at least one field to update.",
         )
-    try:
+    with handle_integrity_error("Update would violate a unique constraint."):
         updated = MatchRepository(db).update(matchId, data)
-    except IntegrityError:
-        logger.exception("IntegrityError updating match id=%s", matchId)
-        raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
-            detail="Update would violate a unique constraint.",
-        )
-    if not updated:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Match not found"
-        )
-    return updated
+    return require_or_404(updated, "Match not found")
 
 
 @router.delete(
@@ -141,27 +126,38 @@ def update_match(
     summary="Delete a match",
 )
 def delete_match(matchId: int, db: Session = Depends(get_db)) -> None:
-    if not MatchRepository(db).delete(matchId):
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Match not found"
-        )
+    require_or_404(MatchRepository(db).delete(matchId), "Match not found")
+
+
+# ------------------------------------------------------------------ #
+# Ticker-Mode                                                          #
+# ------------------------------------------------------------------ #
+
+
+class TickerModeUpdate(BaseModel):
+    mode: str  # auto | coop | manual
+
+
+@router.patch(
+    "/{matchId}/ticker-mode",
+    response_model=MatchResponse,
+    response_model_by_alias=True,
+    summary="Set ticker mode (auto | coop | manual)",
+)
+def set_ticker_mode(
+    matchId: int,
+    data: TickerModeUpdate,
+    db: Session = Depends(get_db),
+) -> MatchResponse:
+    if data.mode not in ("auto", "coop", "manual"):
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="mode must be auto, coop or manual")
+    return require_or_404(MatchRepository(db).update(matchId, MatchUpdate(ticker_mode=data.mode)), "Match not found")
 
 
 # ------------------------------------------------------------------ #
 # Football API live sync                                               #
 # ------------------------------------------------------------------ #
 
-_PHASE_MAP = {
-    "1H": "FirstHalf",
-    "2H": "SecondHalf",
-    "HT": "FirstHalfBreak",
-    "ET": "SecondHalf",   # extra time – treat as second half for display
-    "BT": "FirstHalfBreak",  # break before extra time
-    "P":  "SecondHalf",
-    "FT": "FullTime",
-    "AET": "FullTime",
-    "PEN": "FullTime",
-}
 
 
 @router.post(
@@ -172,9 +168,7 @@ _PHASE_MAP = {
 )
 def sync_live(matchId: int, db: Session = Depends(get_db)) -> MatchResponse:
     repo = MatchRepository(db)
-    match = repo.get_by_id(matchId)
-    if not match:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Match not found")
+    match = require_or_404(repo.get_by_id(matchId), "Match not found")
 
     if not match.external_id:
         raise HTTPException(
@@ -210,8 +204,8 @@ def sync_live(matchId: int, db: Session = Depends(get_db)) -> MatchResponse:
     update_data: dict = {}
     if elapsed is not None:
         update_data["minute"] = elapsed
-    if short and short in _PHASE_MAP:
-        update_data["match_phase"] = _PHASE_MAP[short]
+    if short and short in FOOTBALL_API_PHASE_MAP:
+        update_data["match_phase"] = FOOTBALL_API_PHASE_MAP[short]
 
     if update_data:
         updated = repo.update(matchId, MatchUpdate(**update_data))
@@ -255,11 +249,7 @@ def replace_lineup(
 ) -> list[LineupPlayerResponse]:
     """Replaces the complete lineup for both teams atomically."""
     repo = MatchRepository(db)
-    match = repo.get_by_id(matchId)
-    if not match:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Match not found"
-        )
+    match = require_or_404(repo.get_by_id(matchId), "Match not found")
     try:
         return repo.replace_lineup(matchId, match, data)
     except ValueError as e:
@@ -303,11 +293,7 @@ def update_statistics(
 ) -> list[MatchStatisticResponse]:
     """Upserts statistics for home and away team simultaneously."""
     repo = MatchRepository(db)
-    match = repo.get_by_id(matchId)
-    if not match:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Match not found"
-        )
+    match = require_or_404(repo.get_by_id(matchId), "Match not found")
     try:
         return repo.upsert_statistics(matchId, match, data)
     except ValueError as e:
@@ -335,12 +321,7 @@ def get_player_statistics(
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Match not found"
         )
-    rows = (
-        db.query(PlayerStatistic)
-        .filter(PlayerStatistic.match_id == matchId)
-        .order_by(PlayerStatistic.rating.desc().nulls_last(), PlayerStatistic.minutes.desc())
-        .all()
-    )
+    rows = repo.get_player_statistics(matchId)
     return [PlayerStatisticResponse.model_validate(r) for r in rows]
 
 
@@ -361,12 +342,5 @@ def get_injuries(
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Match not found"
         )
-    rows = (
-        db.query(SyntheticEvent)
-        .filter(
-            SyntheticEvent.match_id == matchId,
-            SyntheticEvent.type.like("pre_match_injuries%"),
-        )
-        .all()
-    )
+    rows = SyntheticEventRepository(db).get_injuries(matchId)
     return [r.data for r in rows if r.data]

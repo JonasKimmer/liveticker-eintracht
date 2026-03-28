@@ -1,5 +1,6 @@
 const config = {
   clubName: "Liveticker",
+  teamKeyword: "frankfurt",
   primaryColor: "#f5a623",
   secondaryColor: "#e8940f",
   accentColor: "#ffd700",

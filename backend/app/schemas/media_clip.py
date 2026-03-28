@@ -40,3 +40,8 @@ class ClipPublishRequest(BaseModel):
     minute: Optional[int] = None
     phase: Optional[str] = None
     icon: Optional[str] = "🎬"
+
+
+class CacheThumbnailRequest(BaseModel):
+    vid: str
+    thumbnail_url: str

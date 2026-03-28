@@ -1,3 +1,9 @@
+"""
+TeamRepository
+==============
+Datenbankzugriff für Vereinsdaten inkl. Paginierung und externer ID-Suche.
+"""
+
 import logging
 import math
 from typing import Optional
@@ -9,6 +15,7 @@ from sqlalchemy.orm import Session
 from app.models.country import Country
 from app.models.team import Team
 from app.schemas.team import PaginatedTeamResponse, TeamCreate, TeamResponse, TeamUpdate
+from app.utils.db_utils import str_or_none as _str_or_none
 
 logger = logging.getLogger(__name__)
 
@@ -91,7 +98,7 @@ class TeamRepository:
             initials=data.initials,
             short_name=data.short_name,
             category=data.category.model_dump() if data.category else None,
-            logo_url=str(data.logo_url) if data.logo_url else None,
+            logo_url=_str_or_none(data.logo_url),
             is_partner_team=data.is_partner_team,
             position=data.position,
             hidden=data.hidden,
@@ -113,8 +120,8 @@ class TeamRepository:
             return None
 
         update_data = data.model_dump(exclude_unset=True)
-        if "logo_url" in update_data and update_data["logo_url"] is not None:
-            update_data["logo_url"] = str(update_data["logo_url"])
+        if "logo_url" in update_data:
+            update_data["logo_url"] = _str_or_none(update_data["logo_url"])
         if "category" in update_data and update_data["category"] is not None:
             update_data["category"] = data.category.model_dump(exclude_none=True)
 

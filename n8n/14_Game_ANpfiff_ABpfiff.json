@@ -1,0 +1,244 @@
+{
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "match-status",
+        "options": {}
+      },
+      "id": "dbde71ed-cd00-49b3-a069-1dd16202f5bb",
+      "name": "Webhook match-status",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [32, -192],
+      "webhookId": "ede969f8-7c48-4c87-9c39-777b941d2901"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT id, external_id, match_state, ticker_mode FROM matches WHERE external_id = $1",
+        "options": {
+          "queryReplacement": "={{ [$json.body.fixture_id] }}"
+        }
+      },
+      "id": "91587273-bed5-49a1-b17f-d3b49a4e47bf",
+      "name": "SQL: Match laden",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [272, -192],
+      "credentials": {
+        "postgres": {
+          "id": "5VeE2cikA9rLeOKz",
+          "name": "Postgres account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const match = $input.first().json;\nconst body = $('Webhook match-status').first().json.body;\n\nconst newStatus = body.status;\nconst oldMatchState = match.match_state;\n\nconst typeMap = {\n  '1H':  'match_kickoff',\n  'HT':  'match_halftime',\n  '2H':  'match_second_half',\n  'FT':  'match_fulltime',\n  'ET':  'match_extra_kickoff',\n  'BT':  'match_extra_halftime',\n  'P':   'match_penalties',\n  'AET': 'match_fulltime_aet',\n  'PEN': 'match_fulltime_pen'\n};\n\nconst newMatchStateMap = {\n  '1H':  'Live',\n  'HT':  'Live',\n  '2H':  'Live',\n  'FT':  'FullTime',\n  'ET':  'Live',\n  'BT':  'Live',\n  'P':   'Live',\n  'AET': 'FullTime',\n  'PEN': 'FullTime'\n};\n\nconst matchPhaseMap = {\n  '1H':  'FirstHalf',\n  'HT':  'FirstHalfBreak',\n  '2H':  'SecondHalf',\n  'FT':  'FullTime',\n  'ET':  'SecondHalf',\n  'BT':  'FirstHalfBreak',\n  'P':   'SecondHalf',\n  'AET': 'FullTime',\n  'PEN': 'FullTime'\n};\n\nconst validFromStates = {\n  '1H':  ['PreMatch', 'ToBeConfirmed', null],\n  'HT':  ['Live'],\n  '2H':  ['Live'],\n  'FT':  ['Live', 'FullTime'],\n  'ET':  ['Live', 'FullTime'],\n  'BT':  ['Live'],\n  'P':   ['Live'],\n  'AET': ['Live', 'FullTime'],\n  'PEN': ['Live', 'FullTime']\n};\n\nconst allowedStates = validFromStates[newStatus] ?? [];\nconst isValid = !!typeMap[newStatus] && (\n  allowedStates.includes(oldMatchState) || allowedStates.includes(null)\n);\n\nif (!isValid) {\n  return [{ json: { is_valid_transition: false } }];\n}\n\nconst ticker_mode = body.ticker_mode ?? match.ticker_mode ?? 'coop';\n\nconst base = {\n  match_id: match.id,\n  fixture_id: match.external_id,\n  new_match_state: newMatchStateMap[newStatus] ?? oldMatchState,\n  new_match_phase: matchPhaseMap[newStatus] ?? null,\n  minute: body.minute ?? null,\n  ticker_mode,\n  is_valid_transition: true,\n};\n\nconst isFulltime = ['FT', 'AET', 'PEN'].includes(newStatus);\n\nif (isFulltime) {\n  const phases = [\n    { event_type: 'match_kickoff',     minute: 1  },\n    { event_type: 'match_halftime',    minute: 45 },\n    { event_type: 'match_second_half', minute: 46 },\n    { event_type: typeMap[newStatus],  minute: body.minute ?? 90 },\n  ];\n  if (newStatus === 'AET') {\n    phases.splice(3, 0,\n      { event_type: 'match_extra_kickoff',  minute: 91  },\n      { event_type: 'match_extra_halftime', minute: 105 }\n    );\n  }\n  if (newStatus === 'PEN') {\n    phases.splice(3, 0,\n      { event_type: 'match_extra_kickoff',  minute: 91  },\n      { event_type: 'match_extra_halftime', minute: 105 },\n      { event_type: 'match_fulltime_aet',   minute: 120 },\n      { event_type: 'match_penalties',      minute: 121 }\n    );\n  }\n  return phases.map(p => ({ json: { ...base, ...p } }));\n}\n\nreturn [{ json: { ...base, event_type: typeMap[newStatus] } }];"
+      },
+      "id": "ea18b887-28a8-4956-b5ab-05d91039a005",
+      "name": "Transition prüfen",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [512, -192]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "valid-transition",
+              "leftValue": "={{ $json.is_valid_transition }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "21ac0080-fbac-49dc-abc5-a607e151e9dd",
+      "name": "Filter: Gültige Transition",
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.2,
+      "position": [752, -192]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "WITH upd AS (\n  UPDATE matches SET match_state = $1, match_phase = $5, minute = $6 WHERE id = $2\n),\nins AS (\n  INSERT INTO synthetic_events (match_id, type, data)\n  VALUES ($2, $3, $4::jsonb)\n  ON CONFLICT (match_id, type) DO UPDATE SET data = EXCLUDED.data\n  RETURNING id, type\n),\ndemote AS (\n  UPDATE ticker_entries SET status = 'draft'\n  FROM ins\n  WHERE ticker_entries.synthetic_event_id = ins.id\n    AND ticker_entries.status = 'published'\n  RETURNING ticker_entries.synthetic_event_id\n)\nSELECT ins.id, ins.type FROM ins\nLEFT JOIN ticker_entries te ON te.synthetic_event_id = ins.id AND te.status = 'draft'\nLEFT JOIN demote d ON d.synthetic_event_id = ins.id\nWHERE te.id IS NULL AND d.synthetic_event_id IS NULL",
+        "options": {
+          "queryReplacement": "={{ [\n  $json.new_match_state,\n  $json.match_id,\n  $json.event_type,\n  JSON.stringify({ fixture_id: $json.fixture_id, minute: $json.minute }),\n  $json.new_match_phase,\n  $json.minute\n] }}"
+        }
+      },
+      "id": "ee6dd82e-2856-4fb2-af13-3084f5da491b",
+      "name": "SQL: Update + Insert2",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [992, -192],
+      "credentials": {
+        "postgres": {
+          "id": "5VeE2cikA9rLeOKz",
+          "name": "Postgres account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "has-id",
+              "leftValue": "={{ $json.id }}",
+              "rightValue": "exists",
+              "operator": {
+                "type": "any",
+                "operation": "exists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "0d86e7e2-10a3-45f3-bf97-779d3a245338",
+      "name": "Filter: Ticker fehlt noch1",
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.2,
+      "position": [1232, -192]
+    },
+    {
+      "parameters": {
+        "jsCode": "const styleMap = {\n  'match_kickoff':        'neutral',\n  'match_halftime':       'neutral',\n  'match_second_half':    'neutral',\n  'match_fulltime':       'emotional',\n  'match_extra_kickoff':  'neutral',\n  'match_extra_halftime': 'neutral',\n  'match_fulltime_aet':   'emotional',\n  'match_penalties':      'neutral',\n  'match_fulltime_pen':   'emotional',\n};\nconst style = styleMap[$json.type] ?? 'neutral';\nconst ticker_mode = $('Webhook match-status').first().json.body.ticker_mode\n  ?? $('SQL: Match laden').first().json.ticker_mode\n  ?? 'coop';\nreturn [{ json: { id: $json.id, style, ticker_mode } }];"
+      },
+      "id": "cd8d3056-2da6-42ea-b738-225186873686",
+      "name": "Style wählen",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1472, -192]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://liveticker-backend.onrender.com/api/v1/ticker/generate-synthetic",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ synthetic_event_id: $json.id, style: $json.style, auto_publish: $json.ticker_mode === 'auto' }) }}",
+        "options": {}
+      },
+      "id": "30af6612-cd98-40a2-a581-22143825cd82",
+      "name": "LLM Trigger",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1712, -192],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "o9sSk9ZOxtD4rV7z",
+          "name": "Header Auth account 3"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Webhook match-status": {
+      "main": [
+        [
+          {
+            "node": "SQL: Match laden",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "SQL: Match laden": {
+      "main": [
+        [
+          {
+            "node": "Transition prüfen",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Transition prüfen": {
+      "main": [
+        [
+          {
+            "node": "Filter: Gültige Transition",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter: Gültige Transition": {
+      "main": [
+        [
+          {
+            "node": "SQL: Update + Insert2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "SQL: Update + Insert2": {
+      "main": [
+        [
+          {
+            "node": "Filter: Ticker fehlt noch1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter: Ticker fehlt noch1": {
+      "main": [
+        [
+          {
+            "node": "Style wählen",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Style wählen": {
+      "main": [
+        [
+          {
+            "node": "LLM Trigger",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "meta": {
+    "instanceId": "c812d7c91145a37daf0cb923fa307183fa91637fdbe8017dda5dce71e0f572b5"
+  }
+}
