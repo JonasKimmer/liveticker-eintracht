@@ -3,6 +3,7 @@ import { useTickerDataContext } from "context/TickerDataContext";
 import { useTickerActionsContext } from "context/TickerActionsContext";
 import * as api from "api";
 import logger from "utils/logger";
+import type { PublishPayload } from "../../../types";
 
 /**
  * Kapselt den gesamten Event-Draft-Workflow:
@@ -116,7 +117,7 @@ export function useEventDraft() {
   }, [selectedDraft]);
 
   const handleManualPublish = useCallback(
-    async ({ text, icon, minute, phase }: any = {}) => {
+    async ({ text, icon, minute, phase }: PublishPayload = {}) => {
       const textToPublish = text ?? editorValue.trim();
       if (!textToPublish) return;
       const rawInput = editorValue.trim();
@@ -127,7 +128,7 @@ export function useEventDraft() {
   );
 
   const handleEditPublish = useCallback(
-    async ({ text }: any = {}) => {
+    async ({ text }: Pick<PublishPayload, "text"> = {}) => {
       const textToPublish = text ?? editorValue.trim();
       if (!selectedDraft || !textToPublish) return;
       try {

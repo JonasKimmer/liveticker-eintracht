@@ -46,7 +46,7 @@ export const MANUAL_ICONS = [
 ];
 
 // ── Ticker-Styles (für API-Calls) ────────────────────────────
-export const TICKER_STYLES = ["neutral", "euphorisch", "kritisch"];
+export const TICKER_STYLES = ["neutral", "euphorisch", "kritisch"] as const;
 
 // ── Nav-Tabs ─────────────────────────────────────────────────
 export const NAV_TABS = [

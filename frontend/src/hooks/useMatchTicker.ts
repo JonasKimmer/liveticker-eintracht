@@ -10,7 +10,7 @@ import { resolvePollingInterval } from "../utils/resolvePollingInterval";
  * @param {number|null} selectedMatchId
  * @param {string|null} matchState - aus useMatchCore, steuert Polling-Intervall
  */
-export function useMatchTicker(selectedMatchId, matchState) {
+export function useMatchTicker(selectedMatchId: number | null, matchState: string | null) {
   const [tickerTexts, setTickerTexts] = useState([]);
 
   const loadTickerTexts = useCallback(async () => {

@@ -10,7 +10,7 @@ import { resolvePollingInterval } from "../utils/resolvePollingInterval";
  * @param {number|null} selectedMatchId
  * @param {string|null} matchState - aus useMatchCore, steuert Polling-Intervall
  */
-export function useMatchEvents(selectedMatchId, matchState) {
+export function useMatchEvents(selectedMatchId: number | null, matchState: string | null) {
   const [events, setEvents] = useState([]);
 
   const loadEvents = useCallback(async () => {

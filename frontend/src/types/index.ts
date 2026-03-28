@@ -150,6 +150,14 @@ export interface ReloadFunctions {
   loadEvents?: () => Promise<void>;
 }
 
+// ── PublishPayload ────────────────────────────────────────────
+export interface PublishPayload {
+  text?: string;
+  icon?: string | null;
+  minute?: number | null;
+  phase?: MatchPhase | null;
+}
+
 // ── RoundLabel ────────────────────────────────────────────────
 export interface RoundLabel {
   short: (r: number | string) => string;

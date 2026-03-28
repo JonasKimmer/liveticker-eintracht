@@ -4,8 +4,21 @@
 // ============================================================
 import { memo } from "react";
 import { StylePickerDropdown } from "./StylePickerDropdown";
+import type { TickerStyle } from "../../../types";
 
-export const AIDraft: any = memo<any>(function AIDraft({
+interface AIDraftProps {
+  eventType: string;
+  draftText?: string | null;
+  onAccept: () => void;
+  onReject: () => void;
+  onEdit?: () => void;
+  onTextClick?: () => void;
+  onGenerate?: (id: number, style: TickerStyle) => void;
+  generatingId?: number | null;
+  eventId?: number | null;
+}
+
+export const AIDraft: any = memo(function AIDraft({
   eventType,
   draftText,
   onAccept,
@@ -15,7 +28,7 @@ export const AIDraft: any = memo<any>(function AIDraft({
   onGenerate,
   generatingId,
   eventId,
-}: any) {
+}: AIDraftProps) {
   const isGenerating = generatingId === eventId;
   return (
     <div className="lt-draft">

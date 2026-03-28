@@ -1,11 +1,12 @@
 import { useState } from "react";
 import { TICKER_STYLES, STYLE_META } from "../constants";
+import type { TickerStyle } from "../../../types";
 
 /**
  * Wiederverwendbarer KI-Stil-Picker (AIDraft + SummaryDraftCard).
  * Zeigt einen Toggle-Button; bei Klick öffnet sich ein Dropdown mit Stil-Optionen.
  */
-export function StylePickerDropdown({ onSelect, disabled }: any) {
+export function StylePickerDropdown({ onSelect, disabled }: { onSelect: (style: TickerStyle) => void; disabled?: boolean }) {
   const [open, setOpen] = useState(false);
 
   return (

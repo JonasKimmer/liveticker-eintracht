@@ -1,13 +1,22 @@
 import { memo, useState } from "react";
 import { getEventMeta, getRawEventText } from "../utils/parseCommand";
+import type { MatchEvent, TickerEntry } from "../../../types";
 
-export const EventCard: any = memo<any>(function EventCard({
+interface EventCardProps {
+  event: MatchEvent;
+  draft?: TickerEntry | null;
+  isSelected?: boolean;
+  onSelect?: () => void;
+  onDismiss?: () => void;
+}
+
+export const EventCard: any = memo(function EventCard({
   event,
   draft,
   isSelected,
   onSelect,
   onDismiss,
-}: any) {
+}: EventCardProps) {
   const { icon, cssClass } = getEventMeta(event.liveTickerEventType, null);
   const [confirmDismiss, setConfirmDismiss] = useState(false);
 

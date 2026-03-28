@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from "react";
+import type React from "react";
 import * as api from "../api";
 import logger from "../utils/logger";
 import { POLL_EVENTS_MS, POLL_MATCH_REFRESH_MS } from "../components/LiveTicker/constants";
@@ -10,7 +11,7 @@ import { resolvePollingInterval } from "../utils/resolvePollingInterval";
  *
  * @param {number|null} selectedMatchId
  */
-export function useMatchCore(selectedMatchId) {
+export function useMatchCore(selectedMatchId: number | null) {
   const [match, setMatch] = useState(null);
   const [players, setPlayers] = useState([]);
   const [prematch, setPrematch] = useState([]);
@@ -21,7 +22,11 @@ export function useMatchCore(selectedMatchId) {
   const [loading, setLoading] = useState(false);
   const matchRef = useRef(null);
 
-  const _load = useCallback(async (fetchFn: any, setFn: any, transform?: any) => {
+  const _load = useCallback(async <T>(
+    fetchFn: (id: number) => Promise<{ data: T }>,
+    setFn: React.Dispatch<React.SetStateAction<T>>,
+    transform?: (d: T) => T,
+  ) => {
     if (!selectedMatchId) return;
     try {
       const res = await fetchFn(selectedMatchId);
