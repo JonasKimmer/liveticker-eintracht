@@ -4,13 +4,7 @@
 // ============================================================
 import { memo } from "react";
 import PropTypes from "prop-types";
-import {
-  Collapsible,
-  CollapsibleCat,
-  PlayerBadges,
-  FormationColumn,
-  StatRow,
-} from "../components/Collapsible";
+import { Collapsible, CollapsibleCat } from "../components/Collapsible";
 import { PlayerBadges } from "../components/PlayerBadges";
 import { FormationColumn } from "../components/FormationColumn";
 import { StatRow } from "../components/StatRow";

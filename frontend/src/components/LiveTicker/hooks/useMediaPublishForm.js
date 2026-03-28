@@ -7,7 +7,7 @@
  */
 import { useState } from "react";
 import { publishClip } from "api";
-import { resolvePublishPayload } from "../components/commandPalette";
+import { resolvePublishPayload } from "../components/CommandPalette";
 
 /**
  * @param {number|null} currentMinute - Live match minute to pre-fill

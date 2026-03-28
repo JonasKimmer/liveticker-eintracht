@@ -1,6 +1,6 @@
 import { useSearchableDropdown } from "../hooks/useSearchableDropdown";
 import { DropdownList } from "./DropdownList";
-import { DROPDOWN_INPUT_STYLE } from "./dropdownStyles";
+import { DROPDOWN_INPUT_STYLE } from "../utils/dropdownStyles";
 
 export function CountryDropdown({ countries, value, onSelect }) {
   const { open, query, setQuery, filtered, activeIdx, ref, inputRef, handleOpen, handleSelect, handleKeyDown } = useSearchableDropdown({
@@ -16,9 +16,7 @@ export function CountryDropdown({ countries, value, onSelect }) {
     setQuery("");
     inputRef.current?.focus();
   }
-  function handleBlur() {
-    setTimeout(() => { inputRef.current; }, 150); // no-op — click-outside handles close
-  }
+  function handleBlur() {} // click-outside handles close
 
   return (
     <div className="lt-start__select-wrap" ref={ref} style={{ position: "relative" }}>

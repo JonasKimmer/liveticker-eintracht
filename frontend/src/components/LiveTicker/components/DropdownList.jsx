@@ -1,5 +1,5 @@
 import { useRef, useEffect } from "react";
-import { DROPDOWN_LIST_STYLE } from "./dropdownStyles";
+import { DROPDOWN_LIST_STYLE } from "../utils/dropdownStyles";
 
 export function DropdownList({ filtered, value, total, unit, onSelect, activeIdx = -1 }) {
   const itemRefs = useRef([]);

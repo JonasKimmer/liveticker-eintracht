@@ -2,7 +2,7 @@ import { useState, useMemo, useCallback } from "react";
 import { useClickOutside } from "hooks/useClickOutside";
 import { useListKeyboard } from "hooks/useListKeyboard";
 import { DropdownList } from "./DropdownList";
-import { DROPDOWN_INPUT_STYLE } from "./dropdownStyles";
+import { DROPDOWN_INPUT_STYLE } from "../utils/dropdownStyles";
 import { useRef } from "react";
 
 export function Dropdown({ label, disabled, value, placeholder, displayValue, items, onSelect }) {

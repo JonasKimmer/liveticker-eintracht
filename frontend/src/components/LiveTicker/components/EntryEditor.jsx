@@ -4,7 +4,7 @@
 import { memo, useState, useMemo, useCallback, useRef } from "react";
 import PropTypes from "prop-types";
 import { parseCommand } from "../utils/parseCommand";
-import { COMMAND_PALETTE, NEEDS_ARG } from "./commandPalette";
+import { COMMAND_PALETTE, NEEDS_ARG } from "./CommandPalette";
 import { MODES, COMMAND_PREFIX_REGEX } from "../constants";
 import { useLiveMinuteEditor } from "../hooks/useLiveMinuteEditor";
 import { useNameAutocomplete } from "hooks/useNameAutocomplete";
