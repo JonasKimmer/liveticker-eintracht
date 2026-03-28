@@ -6,7 +6,7 @@
 import { memo, useState, useCallback, useEffect, useRef } from "react";
 import PropTypes from "prop-types";
 import { createPortal } from "react-dom";
-import { useCommandPalette, CommandPalettePortal } from "../utils/commandPalette";
+import { useCommandPalette, CommandPalettePortal } from "./commandPalette";
 import {
   fetchYoutubeClips,
   triggerYoutubeScrape,

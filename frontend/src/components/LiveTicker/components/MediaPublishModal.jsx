@@ -3,7 +3,7 @@ import { createPortal } from "react-dom";
 import { useLiveMinuteEditor } from "../hooks/useLiveMinuteEditor";
 import { generateMediaCaption, publishMedia } from "api";
 import { parseCommand } from "../utils/parseCommand";
-import { useCommandPalette, CommandPalettePortal } from "../utils/commandPalette";
+import { useCommandPalette, CommandPalettePortal } from "./commandPalette";
 import { MinuteEditor } from "./MinuteEditor";
 import { useNameAutocomplete } from "hooks/useNameAutocomplete";
 

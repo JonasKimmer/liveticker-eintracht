@@ -4,7 +4,7 @@
 // ============================================================
 
 import { useState, useRef } from "react";
-import { useCommandPalette, CommandPalettePortal } from "../utils/commandPalette";
+import { useCommandPalette, CommandPalettePortal } from "./commandPalette";
 import { PUBLISH_PHASES as PHASES, MAX_MATCH_MINUTE } from "../constants";
 import { useMediaPublishForm } from "../hooks/useMediaPublishForm";
 

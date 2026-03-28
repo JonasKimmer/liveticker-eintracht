@@ -10,7 +10,10 @@ import {
   PlayerBadges,
   FormationColumn,
   StatRow,
-} from "../components/RightPanelComponents";
+} from "../components/Collapsible";
+import { PlayerBadges } from "../components/PlayerBadges";
+import { FormationColumn } from "../components/FormationColumn";
+import { StatRow } from "../components/StatRow";
 import { useRightPanelData } from "../hooks/useRightPanelData";
 
 export const RightPanel = memo(function RightPanel({

@@ -1,12 +1,9 @@
 import React from "react";
 import { render, screen } from "@testing-library/react";
 import "@testing-library/jest-dom";
-import {
-  StatRow,
-  PlayerBadges,
-  Collapsible,
-  CollapsibleCat,
-} from "./RightPanelComponents";
+import { Collapsible, CollapsibleCat } from "./Collapsible";
+import { PlayerBadges } from "./PlayerBadges";
+import { StatRow } from "./StatRow";
 import userEvent from "@testing-library/user-event";
 
 // ──────────────────────────────────────────────

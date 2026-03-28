@@ -1,7 +1,7 @@
 import { memo, useState, useMemo } from "react";
 import PropTypes from "prop-types";
 import { createPortal } from "react-dom";
-import { parseCommand } from "./parseCommand";
+import { parseCommand } from "../utils/parseCommand";
 
 export const COMMAND_PALETTE = [
   { cmd: "/g",        desc: "Tor",                    icon: "⚽", hint: "Spieler Team" },

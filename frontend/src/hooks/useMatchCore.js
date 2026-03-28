@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import * as api from "../api";
 import logger from "../utils/logger";
 import { POLL_EVENTS_MS, POLL_MATCH_REFRESH_MS } from "../components/LiveTicker/constants";
-import { resolvePollingInterval } from "./resolvePollingInterval";
+import { resolvePollingInterval } from "../utils/resolvePollingInterval";
 
 /**
  * Lädt und pollt match-bezogene Kerndaten:

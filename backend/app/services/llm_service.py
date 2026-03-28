@@ -14,7 +14,7 @@ from app.core.constants import (
     LLM_MAX_TOKENS, LLM_TEMPERATURE, LLM_TRANSLATION_TEMPERATURE,
     LLM_RETRY_ATTEMPTS, LLM_RATE_LIMIT_WAIT_BASE_S,
 )
-from app.services.llm_context_builders import build_context_str
+from app.utils.llm_context_builders import build_context_str
 
 
 logger = logging.getLogger(__name__)
