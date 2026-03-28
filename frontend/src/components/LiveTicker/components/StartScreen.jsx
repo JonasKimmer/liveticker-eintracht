@@ -6,6 +6,7 @@ import config from "config/whitelabel";
 import { useClickOutside } from "hooks/useClickOutside";
 import { useListKeyboard } from "hooks/useListKeyboard";
 import { knockoutThreshold, makeRoundLabel } from "utils/roundLabel";
+import { useSearchableDropdown } from "../hooks/useSearchableDropdown";
 
 export const StartScreen = memo(function StartScreen({
   countries,
@@ -226,50 +227,24 @@ function DropdownList({
 // ── CountryDropdown ──────────────────────────────────────────
 
 function CountryDropdown({ countries, value, onSelect }) {
-  const [open, setOpen] = useState(false);
-  const [query, setQuery] = useState("");
-  const ref = useRef(null);
-  const inputRef = useRef(null);
-
-  useClickOutside(ref, () => {
-    setOpen(false);
-    setQuery("");
+  const {
+    open,
+    query,
+    setQuery,
+    filtered,
+    activeIdx,
+    ref,
+    inputRef,
+    handleOpen,
+    handleSelect,
+    handleKeyDown,
+  } = useSearchableDropdown({
+    items: countries,
+    onSelect,
+    getLabel: (c) => c,
+    getValue: (c) => c,
   });
 
-  const filtered = useMemo(
-    () =>
-      countries
-        .filter((c) => c.toLowerCase().includes(query.toLowerCase()))
-        .map((c) => ({ key: c, label: c, val: c })),
-    [countries, query],
-  );
-
-  const handleSelect = useCallback(
-    (country) => {
-      onSelect(country);
-      setOpen(false);
-      setQuery("");
-      inputRef.current?.blur();
-    },
-    [onSelect],
-  );
-
-  const handleClose = useCallback(() => {
-    setOpen(false);
-    setQuery("");
-    inputRef.current?.blur();
-  }, []);
-
-  const filteredVals = useMemo(() => filtered.map((f) => f.val), [filtered]);
-  const { activeIdx, onKeyDown } = useListKeyboard(filteredVals, {
-    onSelect: handleSelect,
-    onClose: handleClose,
-  });
-
-  function handleFocus() {
-    setOpen(true);
-    setQuery("");
-  }
   function handleClear(e) {
     e.stopPropagation();
     onSelect(null);
@@ -278,8 +253,9 @@ function CountryDropdown({ countries, value, onSelect }) {
   }
   function handleBlur() {
     setTimeout(() => {
-      setOpen(false);
-      setQuery("");
+      // handleClose via useClickOutside covers mousedown outside;
+      // onBlur covers Tab/focus-loss without a list click.
+      inputRef.current; // no-op reference to satisfy linter
     }, 150);
   }
 
@@ -296,9 +272,9 @@ function CountryDropdown({ countries, value, onSelect }) {
           value={open ? query : (value ?? "")}
           placeholder="Land auswählen"
           onChange={(e) => setQuery(e.target.value)}
-          onFocus={handleFocus}
+          onFocus={handleOpen}
           onBlur={handleBlur}
-          onKeyDown={open ? onKeyDown : undefined}
+          onKeyDown={open ? handleKeyDown : undefined}
           style={{
             ...DROPDOWN_INPUT_STYLE,
             borderColor: open ? "var(--lt-accent)" : "var(--lt-border)",

@@ -9,14 +9,11 @@ import {
   useMemo,
   useRef,
 } from "react";
-import { useClickOutside } from "../../hooks/useClickOutside";
 import "./LiveTicker.css";
-import logger from "../../utils/logger";
 
 import * as api from "../../api";
 import { useMatchData } from "../../hooks/useMatchData";
 import { useLiveMinute } from "../../hooks/useLiveMinute";
-import { useTickerMode } from "../../hooks/useTickerMode";
 import { useNavigation } from "../../hooks/useNavigation";
 import { TickerModeContext } from "../../context/TickerModeContext";
 import { TickerDataContext } from "../../context/TickerDataContext";
@@ -34,12 +31,14 @@ import { RightPanel } from "./panels/RightPanel";
 import { StartScreen } from "./components/StartScreen";
 import { Breadcrumb } from "./components/Breadcrumb";
 import { NavDrawer } from "./components/NavDrawer";
+import { LanguagePicker } from "./components/LanguagePicker";
 import { useApiStatus, API_STATUS_CFG } from "../../hooks/useApiStatus";
 import { useKeyboardShortcuts } from "../../hooks/useKeyboardShortcuts";
 import { useMatchTriggers } from "../../hooks/useMatchTriggers";
 import { usePanelResize } from "../../hooks/usePanelResize";
 import { CommandsModal } from "./components/CommandsModal";
 import { PublishToast } from "./components/PublishToast";
+import { useTicker } from "./hooks/useTicker";
 import ErrorBoundary from "../ErrorBoundary";
 
 export default function LiveTicker() {
@@ -87,103 +86,6 @@ export default function LiveTicker() {
   const apiStatus = useApiStatus();
   const apiCfg = API_STATUS_CFG[apiStatus];
 
-  // ── Aktiver Draft ─────────────────────────────────────────
-  const [activeDraftId, setActiveDraftId] = useState(null);
-  const [activeDraftText, setActiveDraftText] = useState("");
-
-  // ── Publish Toast (Undo) ───────────────────────────────
-  const [publishToast, setPublishToast] = useState(null); // { id, text, isManual }
-  const [retractedText, setRetractedText] = useState(null);
-  const clearRetractedText = useCallback(() => setRetractedText(null), []);
-
-  // ── Delete Toast ───────────────────────────────────────
-  const [deleteToast, setDeleteToast] = useState(false);
-  const deleteToastTimerRef = useRef(null);
-
-  const showPublishToast = useCallback((id, text, isManual = false) => {
-    setPublishToast({ id, text, isManual });
-  }, []);
-
-  const handleRetract = useCallback(async () => {
-    if (!publishToast) return;
-    try {
-      await api.updateTicker(publishToast.id, { status: "draft" });
-      await reload.loadTickerTexts();
-      if (publishToast.isManual) setRetractedText(publishToast.text);
-    } catch (err) {
-      logger.error("retract error:", err);
-    } finally {
-      setPublishToast(null);
-    }
-  }, [publishToast, reload]);
-
-  const acceptDraft = useCallback(async () => {
-    if (!activeDraftId) return;
-    try {
-      await api.publishTicker(activeDraftId, activeDraftText);
-      await reload.loadTickerTexts();
-      showPublishToast(activeDraftId, activeDraftText);
-      setActiveDraftId(null);
-      setActiveDraftText("");
-    } catch (err) {
-      logger.error("acceptDraft error:", err);
-    }
-  }, [activeDraftId, activeDraftText, reload, showPublishToast]);
-
-  const rejectDraft = useCallback(async () => {
-    if (!activeDraftId) return;
-    try {
-      await api.updateTicker(activeDraftId, { status: "rejected" });
-      await reload.loadTickerTexts();
-      setActiveDraftId(null);
-      setActiveDraftText("");
-    } catch (err) {
-      logger.error("rejectDraft error:", err);
-    }
-  }, [activeDraftId, reload]);
-
-  const { mode, setMode } = useTickerMode(acceptDraft, rejectDraft);
-
-  // Modus in DB speichern wenn gewechselt wird
-  const handleModeChange = useCallback(
-    async (newMode) => {
-      setMode(newMode);
-      if (selMatchId) {
-        try {
-          await api.setMatchTickerMode(selMatchId, newMode);
-        } catch (_) {}
-      }
-    },
-    [setMode, selMatchId],
-  );
-
-  // Modus in DB schreiben wenn Spiel gewechselt wird (damit n8n-Workflows den richtigen Modus lesen)
-  // modeRef verhindert stale-closure: mode wird immer zum aktuellen Wert gelesen
-  const modeRef = useRef(mode);
-  modeRef.current = mode;
-  useEffect(() => {
-    if (!selMatchId) return;
-    api.setMatchTickerMode(selMatchId, modeRef.current).catch(() => {});
-  }, [selMatchId]);
-
-  const [generatingId, setGeneratingId] = useState(null);
-
-  // ── Mobile Panel: Modus-abhängig wechseln ─────────────────
-  useEffect(() => {
-    if (mode === "auto") setMobilePanel("left");
-    else setMobilePanel("center");
-  }, [mode]);
-
-  const tickerModeCtx = useMemo(
-    () => ({ mode, setMode: handleModeChange, acceptDraft, rejectDraft }),
-    [mode, handleModeChange, acceptDraft, rejectDraft],
-  );
-
-  const tickerDataCtx = useMemo(
-    () => ({ match, events, tickerTexts, reload }),
-    [match, events, tickerTexts, reload],
-  );
-
   // ── Instance + Style: automatisch EF wenn Frankfurt-Spiel ──
   const isEfMatch = useMemo(() => {
     const kw = config.teamKeyword?.toLowerCase() ?? "";
@@ -197,10 +99,6 @@ export default function LiveTicker() {
 
   // ── Language ───────────────────────────────────────────────
   const [language, setLanguage] = useState("de");
-  const [showLangPicker, setShowLangPicker] = useState(false);
-  const langPickerRef = useRef(null);
-  useClickOutside(langPickerRef, () => setShowLangPicker(false));
-
   const translateDebounceRef = useRef(null);
   const handleLanguageChange = useCallback(
     (lang) => {
@@ -212,12 +110,34 @@ export default function LiveTicker() {
         try {
           await api.translateTickerBatch(selMatchId, lang);
           await reload.loadTickerTexts();
-        } catch (err) {
-          logger.error("translateTickerBatch error:", err);
-        }
+        } catch (_) {}
       }, 600);
     },
     [selMatchId, language, reload],
+  );
+
+  // ── Ticker State + Actions ────────────────────────────────
+  const {
+    mode,
+    handleModeChange,
+    tickerModeCtx,
+    tickerActionsCtx,
+    generatingId,
+    publishToast,
+    setPublishToast,
+    handleRetract,
+    deleteToast,
+  } = useTicker({ selMatchId, reload, instance, language });
+
+  // ── Mobile Panel: Modus-abhängig wechseln ─────────────────
+  useEffect(() => {
+    if (mode === "auto") setMobilePanel("left");
+    else setMobilePanel("center");
+  }, [mode]);
+
+  const tickerDataCtx = useMemo(
+    () => ({ match, events, tickerTexts, reload }),
+    [match, events, tickerTexts, reload],
   );
 
   // ── n8n Webhooks + Auto-Imports ───────────────────────────
@@ -241,90 +161,6 @@ export default function LiveTicker() {
     onShowHints: () => setShowHints(true),
     onShowCommands: () => setShowCommands(true),
   });
-
-  // ── Ticker-Callbacks ──────────────────────────────────────
-  const handleGenerate = useCallback(
-    async (eventId, style) => {
-      setGeneratingId(eventId);
-      try {
-        await api.generateTicker(eventId, style, instance, language);
-        await reload.loadTickerTexts();
-      } catch (err) {
-        logger.error("generateTicker error:", err);
-      } finally {
-        setGeneratingId(null);
-      }
-    },
-    [reload, instance, language],
-  );
-
-  const handleManualPublish = useCallback(
-    async (text, icon = "📝", minute, phase, rawInput) => {
-      try {
-        const res = await api.createManualTicker(
-          selMatchId,
-          text,
-          icon,
-          minute,
-          phase,
-        );
-        await reload.loadTickerTexts();
-        // rawInput = originaler Editor-Wert (z.B. "/g Paris Dembele"),
-        // damit Retract den Slash-Command zurückschreibt, nicht nur den verarbeiteten Text
-        if (res?.data?.id) showPublishToast(res.data.id, rawInput || text, true);
-      } catch (err) {
-        logger.error("manualPublish error:", err);
-      }
-    },
-    [selMatchId, reload, showPublishToast],
-  );
-
-  const handleDraftActive = useCallback((id, text) => {
-    setActiveDraftId(id);
-    setActiveDraftText(text);
-  }, []);
-
-  const handleEditEntry = useCallback(
-    async (id, text) => {
-      await api.updateTicker(id, { text });
-      await reload.loadTickerTexts();
-    },
-    [reload],
-  );
-
-  const handleDeleteEntry = useCallback(
-    async (id) => {
-      await api.deleteTicker(id);
-      await reload.loadTickerTexts();
-      if (deleteToastTimerRef.current) clearTimeout(deleteToastTimerRef.current);
-      setDeleteToast(true);
-      deleteToastTimerRef.current = setTimeout(() => setDeleteToast(false), 2500);
-    },
-    [reload],
-  );
-
-  const tickerActionsCtx = useMemo(
-    () => ({
-      onGenerate: handleGenerate,
-      onManualPublish: handleManualPublish,
-      onDraftActive: handleDraftActive,
-      onPublished: showPublishToast,
-      onEditEntry: handleEditEntry,
-      onDeleteEntry: handleDeleteEntry,
-      retractedText,
-      clearRetractedText,
-    }),
-    [
-      handleGenerate,
-      handleManualPublish,
-      handleDraftActive,
-      showPublishToast,
-      handleEditEntry,
-      handleDeleteEntry,
-      retractedText,
-      clearRetractedText,
-    ],
-  );
 
   const topBarRef = useRef(null);
 
@@ -419,58 +255,10 @@ export default function LiveTicker() {
                     </span>
                   )}
                   <span className="lt-header__sep">|</span>
-                  <div className="lt-lang-picker" ref={langPickerRef}>
-                    <button
-                      className="lt-lang-picker__trigger"
-                      onClick={() => setShowLangPicker((v) => !v)}
-                      title="Ticker-Sprache wechseln"
-                    >
-                      🌐 {language.toUpperCase()}
-                      <svg
-                        width="8"
-                        height="8"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2.5"
-                        style={{
-                          transition: "transform 0.15s",
-                          transform: showLangPicker
-                            ? "rotate(180deg)"
-                            : "rotate(0deg)",
-                          marginLeft: 2,
-                        }}
-                      >
-                        <path d="M6 9l6 6 6-6" />
-                      </svg>
-                    </button>
-                    {showLangPicker && (
-                      <div className="lt-lang-picker__menu">
-                        {[
-                          { code: "de", label: "Deutsch" },
-                          { code: "en", label: "English" },
-                          { code: "es", label: "Español" },
-                          { code: "fr", label: "Français" },
-                        ].map(({ code, label }) => (
-                          <button
-                            key={code}
-                            className={`lt-lang-picker__item${language === code ? " lt-lang-picker__item--active" : ""}`}
-                            onClick={() => {
-                              handleLanguageChange(code);
-                              setShowLangPicker(false);
-                            }}
-                          >
-                            <span className="lt-lang-picker__code">
-                              {code.toUpperCase()}
-                            </span>
-                            <span className="lt-lang-picker__label">
-                              {label}
-                            </span>
-                          </button>
-                        ))}
-                      </div>
-                    )}
-                  </div>
+                  <LanguagePicker
+                    language={language}
+                    onLanguageChange={handleLanguageChange}
+                  />
                   <button
                     className="lt-header__hint"
                     onClick={() => setShowHints(true)}
