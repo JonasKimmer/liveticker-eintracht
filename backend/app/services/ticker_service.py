@@ -165,6 +165,7 @@ def make_ai_entry(
     synthetic_event_id: Optional[int] = None,
     phase: Optional[str] = None,
     minute: Optional[int] = None,
+    icon: Optional[str] = None,
 ) -> TickerEntryCreate:
     """Erstellt ein TickerEntryCreate-Schema für einen KI-generierten Eintrag."""
     return TickerEntryCreate(
@@ -178,4 +179,5 @@ def make_ai_entry(
         phase=phase,
         minute=minute,
         status=status,
+        icon=icon,
     )

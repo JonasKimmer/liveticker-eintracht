@@ -3497,3 +3497,154 @@
   color: #4ade80;
   font-size: 0.8rem;
 }
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   Shared Modal / Panel Utility Classes
+   ───────────────────────────────────────────────────────────────────────────── */
+
+/* Modal overlay (full-screen backdrop) */
+.lt-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+/* Modal card container */
+.lt-modal-card {
+  width: 100%;
+  max-width: 440px;
+  border-radius: 10px;
+  background: var(--lt-bg-card);
+  border: 1px solid var(--lt-border);
+  box-shadow: 0 24px 48px rgba(0, 0, 0, 0.7);
+  overflow: hidden;
+  position: relative;
+}
+
+/* Close button (top-right circle) */
+.lt-modal-close {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.5);
+  border: 1px solid var(--lt-border);
+  color: var(--lt-text-muted);
+  cursor: pointer;
+  font-size: 0.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Form input / select */
+.lt-form-input {
+  background: var(--lt-bg-input);
+  border: 1px solid var(--lt-border);
+  border-radius: 4px;
+  padding: 2px 4px;
+  font-family: var(--lt-font-mono);
+  font-size: 0.62rem;
+  color: var(--lt-text);
+  outline: none;
+}
+
+/* Form textarea */
+.lt-form-textarea {
+  width: 100%;
+  box-sizing: border-box;
+  resize: none;
+  background: var(--lt-bg-input);
+  border: 1px solid var(--lt-border);
+  border-radius: 6px;
+  padding: 0.6rem 0.75rem;
+  font-family: var(--lt-font-mono);
+  font-size: 0.82rem;
+  color: var(--lt-text);
+  line-height: 1.5;
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+/* Error message box */
+.lt-msg-error {
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  border-radius: 6px;
+  padding: 0.5rem 0.75rem;
+  font-family: var(--lt-font-mono);
+  font-size: 0.72rem;
+  color: #f87171;
+}
+
+/* Status message (error or success variant) */
+.lt-status-msg {
+  border-radius: 6px;
+  padding: 0.4rem 0.75rem;
+  font-family: var(--lt-font-mono);
+  font-size: 0.7rem;
+}
+.lt-status-msg--error {
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.25);
+  color: #f87171;
+}
+.lt-status-msg--success {
+  background: rgba(34, 197, 94, 0.1);
+  border: 1px solid rgba(34, 197, 94, 0.25);
+  color: #4ade80;
+}
+
+/* Primary action button */
+.lt-btn-primary {
+  flex: 2;
+  padding: 0.6rem;
+  border-radius: 6px;
+  border: none;
+  background: var(--lt-accent);
+  color: #0d0d0d;
+  font-family: var(--lt-font-mono);
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+.lt-btn-primary:disabled {
+  background: var(--lt-bg-card-2);
+  color: var(--lt-text-faint);
+  cursor: not-allowed;
+}
+
+/* Secondary / cancel button */
+.lt-btn-secondary {
+  flex: 1;
+  padding: 0.6rem;
+  border-radius: 6px;
+  border: 1px solid var(--lt-border);
+  background: transparent;
+  color: var(--lt-text-muted);
+  font-family: var(--lt-font-mono);
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+
+/* Flex row: space-between aligned center */
+.lt-row-between {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* 2-column grid */
+.lt-grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+}
