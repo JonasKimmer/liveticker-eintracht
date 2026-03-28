@@ -41,9 +41,13 @@ export interface Team {
 // ── Competition ───────────────────────────────────────────────
 export interface Competition {
   id: number;
-  name: string;
+  /** camelCase from alias_generator */
+  title?: string | null;
+  shortTitle?: string | null;
+  sport?: string;
   externalId?: number;
   logoUrl?: string;
+  hidden?: boolean;
 }
 
 // ── Match ─────────────────────────────────────────────────────
@@ -53,8 +57,12 @@ export interface Match {
   awayTeamId: number;
   homeTeam?: Team;
   awayTeam?: Team;
+  /** from matchday-list endpoint (alias_generator camelCase) */
   homeScore?: number | null;
   awayScore?: number | null;
+  /** from single-match endpoint (explicit serialization_alias) */
+  teamHomeScore?: number | null;
+  teamAwayScore?: number | null;
   matchState?: string | null;
   matchPhase?: MatchPhase | null;
   minute?: number | null;
@@ -81,6 +89,9 @@ export interface MatchEvent {
   external_id?: number | null;
   sourceId?: number | null;
   liveTickerEventType?: string | null;
+  /** fallback alias used by some API responses */
+  type?: string | null;
+  detail?: string | null;
 }
 
 // ── SyntheticEvent ────────────────────────────────────────────
@@ -107,7 +118,7 @@ export interface TickerEntry {
   phase?: MatchPhase | null;
   event_id?: number | null;
   synthetic_event_id?: number | null;
-  model_used?: string | null;
+  llm_model?: string | null;
   image_url?: string | null;
   video_url?: string | null;
   created_at?: string;

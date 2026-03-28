@@ -8,7 +8,15 @@ import { SYNC_MATCH_INTERVAL_MS } from "../constants";
 import * as api from "api";
 import logger from "utils/logger";
 
-export const MatchHeader: any = memo<any>(function MatchHeader({ match, leagueSeason, onMinuteSync }: any) {
+import type { Match, Competition } from "../../../types";
+
+interface MatchHeaderProps {
+  match: Match;
+  leagueSeason?: Competition | null;
+  onMinuteSync?: () => void;
+}
+
+export const MatchHeader: any = memo(function MatchHeader({ match, leagueSeason, onMinuteSync }: MatchHeaderProps) {
   const status = normalizeMatchStatus(match?.matchState);
   const liveMinute = useLiveMinute(match);
 
@@ -79,9 +87,9 @@ export const MatchHeader: any = memo<any>(function MatchHeader({ match, leagueSe
         </div>
       </div>
 
-      {(leagueSeason?.league?.name || leagueSeason?.season?.year) && (
+      {leagueSeason?.title && (
         <div className="lt-match-header__meta">
-          <span>{leagueSeason?.league?.name} {leagueSeason?.season?.year}</span>
+          <span>{leagueSeason.title}</span>
         </div>
       )}
     </div>

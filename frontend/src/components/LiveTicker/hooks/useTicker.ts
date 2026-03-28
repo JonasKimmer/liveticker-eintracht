@@ -6,6 +6,7 @@ import { useState, useCallback, useMemo, useRef, useEffect } from "react";
 import * as api from "api";
 import logger from "utils/logger";
 import { useTickerMode } from "hooks/useTickerMode";
+import type { TickerMode } from "../../../types";
 
 /**
  * Kapselt alle Ticker-Actions, Drafts, Toasts und Modus-Verwaltung.
@@ -100,7 +101,7 @@ export function useTicker({ selMatchId, reload, instance, language }: any) {
   modeRef.current = mode;
   useEffect(() => {
     if (!selMatchId) return;
-    api.setMatchTickerMode(selMatchId, modeRef.current).catch(() => {});
+    api.setMatchTickerMode(selMatchId, modeRef.current as TickerMode).catch(() => {});
   }, [selMatchId]);
 
   const [generatingId, setGeneratingId] = useState(null);

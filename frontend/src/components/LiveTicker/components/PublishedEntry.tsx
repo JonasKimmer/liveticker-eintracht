@@ -262,14 +262,25 @@ function EditForm({ textareaRef, value, onChange, onSave, onCancel, saving }: an
   );
 }
 
-export const PublishedEntry: any = memo<any>(function PublishedEntry({
+import type { MatchEvent, TickerEntry } from "../../../types";
+
+interface PublishedEntryProps {
+  tickerText: TickerEntry;
+  entry?: MatchEvent | null;
+  isManual?: boolean;
+  isPrematch?: boolean;
+  onEdit?: (id: number, text: string) => Promise<void>;
+  onDelete?: (id: number) => Promise<void>;
+}
+
+export const PublishedEntry: any = memo(function PublishedEntry({
   entry,
   tickerText,
   isManual,
   isPrematch,
   onEdit,
   onDelete,
-}: any) {
+}: PublishedEntryProps) {
   const [editing, setEditing] = useState(false);
   const [editText, setEditText] = useState("");
   const [saving, setSaving] = useState(false);

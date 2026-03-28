@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import type { MatchEvent } from "../types";
 import * as api from "../api";
 import logger from "../utils/logger";
 import { POLL_EVENTS_MS, POLL_MATCH_REFRESH_MS } from "../components/LiveTicker/constants";
@@ -17,7 +18,9 @@ export function useMatchEvents(selectedMatchId: number | null, matchState: strin
     if (!selectedMatchId) return;
     try {
       const res = await api.fetchEvents(selectedMatchId);
-      setEvents([...(res.data?.items ?? res.data ?? [])].reverse());
+      const raw = res.data;
+      const items: MatchEvent[] = Array.isArray(raw) ? raw : (raw?.items ?? []);
+      setEvents([...items].reverse());
     } catch (err) {
       logger.error("[useMatchEvents] fetchEvents failed:", err);
     }

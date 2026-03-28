@@ -8,6 +8,7 @@
 import { useState } from "react";
 import { publishClip } from "api";
 import { resolvePublishPayload } from "../components/CommandPalette";
+import type { MatchPhase } from "../../../types";
 
 /**
  * @param {number|null} currentMinute - Live match minute to pre-fill
@@ -32,7 +33,7 @@ export function useMediaPublishForm(currentMinute) {
     try {
       const publishMinute = phase === "Halftime" ? 45 : phase ? null : (minute || null);
       const { text: publishText, icon } = resolvePublishPayload(text, publishMinute);
-      await publishClip(itemId, matchId, publishText, publishMinute, phase || null, icon);
+      await publishClip(itemId, matchId, publishText, publishMinute, (phase || null) as MatchPhase | null, icon);
       onPublished(itemId);
     } catch (err) {
       const detail = err?.response?.data?.detail;

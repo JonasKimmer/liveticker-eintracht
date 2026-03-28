@@ -9,7 +9,19 @@ import { useLiveMinuteEditor } from "../hooks/useLiveMinuteEditor";
 import { useNameAutocomplete } from "hooks/useNameAutocomplete";
 import { MinuteEditor } from "./MinuteEditor";
 
-export const EntryEditor: any = memo<any>(function EntryEditor({
+import type { TickerMode, PublishPayload } from "../../../types";
+
+interface EntryEditorProps {
+  value: string;
+  onChange: (v: string) => void;
+  onPublish: (payload: PublishPayload) => void;
+  onCancel?: () => void;
+  mode?: TickerMode;
+  currentMinute?: number;
+  playerNames?: string[];
+}
+
+export const EntryEditor: any = memo(function EntryEditor({
   value,
   onChange,
   onPublish,
@@ -17,7 +29,7 @@ export const EntryEditor: any = memo<any>(function EntryEditor({
   mode,
   currentMinute = 0,
   playerNames = [],
-}: any) {
+}: EntryEditorProps) {
   const [paletteOpen, setPaletteOpen] = useState(false);
   const [paletteIdx, setPaletteIdx] = useState(0);
   const textareaRef = useRef(null);

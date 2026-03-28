@@ -1,47 +1,75 @@
-import axios from "axios";
+import axios, { type AxiosResponse } from "axios";
 import config from "../config/whitelabel";
+import type {
+  Match,
+  MatchEvent,
+  TickerEntry,
+  TickerMode,
+  TickerStyle,
+  MatchPhase,
+} from "../types";
 
 const api = axios.create({ baseURL: config.apiBase });
 const n8n = axios.create({ baseURL: config.n8nBase });
 
 // ── Teams ──────────────────────────────────────────────
-export const fetchCountries = () => api.get("/teams/countries");
-export const fetchTeamsByCountry = (country) =>
+export const fetchCountries = (): Promise<AxiosResponse<string[]>> =>
+  api.get("/teams/countries");
+export const fetchTeamsByCountry = (country: string) =>
   api.get(`/teams/by-country/${encodeURIComponent(country)}`);
 
 export const fetchTeams = () => api.get("/teams");
 export const fetchPartnerTeams = () => api.get("/teams/partners");
 
 // Team-first Navigation
-export const fetchTeamCompetitions = (teamId) =>
+export const fetchTeamCompetitions = (teamId: number) =>
   api.get(`/teams/${teamId}/competitions`);
-export const fetchTeamMatchdays = (teamId, competitionId) =>
+export const fetchTeamMatchdays = (teamId: number, competitionId: number) =>
   api.get(`/teams/${teamId}/competitions/${competitionId}/matchdays`);
-export const fetchTeamMatchesByMatchday = (teamId, competitionId, round) =>
+export const fetchTeamMatchesByMatchday = (
+  teamId: number,
+  competitionId: number,
+  round: number,
+) =>
   api.get(
     `/teams/${teamId}/competitions/${competitionId}/matchdays/${round}/matches`,
   );
 
 // ── Matches ────────────────────────────────────────────
-export const fetchMatch = (id) => api.get(`/matches/${id}`);
-export const syncLiveMatch = (id) => api.post(`/matches/${id}/sync-live`);
-export const setMatchTickerMode = (matchId, mode) =>
+export const fetchMatch = (id: number): Promise<AxiosResponse<Match>> =>
+  api.get(`/matches/${id}`);
+export const syncLiveMatch = (id: number) => api.post(`/matches/${id}/sync-live`);
+export const setMatchTickerMode = (matchId: number, mode: TickerMode) =>
   api.patch(`/matches/${matchId}/ticker-mode`, { mode });
 
 // ── Events ─────────────────────────────────────────────
-export const fetchEvents = (matchId) => api.get(`/matches/${matchId}/events`);
+export const fetchEvents = (
+  matchId: number,
+): Promise<AxiosResponse<{ items: MatchEvent[] } | MatchEvent[]>> =>
+  api.get(`/matches/${matchId}/events`);
 
 // ── Ticker ─────────────────────────────────────────────
-export const fetchTickerTexts = (matchId) =>
+export const fetchTickerTexts = (
+  matchId: number,
+): Promise<AxiosResponse<TickerEntry[]>> =>
   api.get(`/ticker/match/${matchId}?all_entries=true`);
-export const fetchPrematch = (matchId) => api.get(`/ticker/match/${matchId}`);
+export const fetchPrematch = (
+  matchId: number,
+): Promise<AxiosResponse<TickerEntry[]>> =>
+  api.get(`/ticker/match/${matchId}`);
 export const generateTicker = (
-  eventId,
-  style,
+  eventId: number,
+  style: TickerStyle,
   instance = "ef_whitelabel",
   language = "de",
 ) => api.post(`/ticker/generate/${eventId}`, { style, instance, language });
-export const createManualTicker = (matchId, text, icon = "📝", minute, phase) =>
+export const createManualTicker = (
+  matchId: number,
+  text: string,
+  icon = "📝",
+  minute?: number | null,
+  phase?: MatchPhase | null,
+) =>
   api.post("/ticker/manual", {
     match_id: matchId,
     text,
@@ -49,17 +77,21 @@ export const createManualTicker = (matchId, text, icon = "📝", minute, phase) 
     minute: minute ?? null,
     phase: phase ?? null,
   });
-export const publishTicker = (entryId, text) =>
+export const publishTicker = (
+  entryId: number,
+  text: string,
+): Promise<AxiosResponse<TickerEntry>> =>
   api.patch(`/ticker/${entryId}`, { text, status: "published" });
-export const updateTicker = (entryId, data) =>
+export const updateTicker = (entryId: number, data: Partial<TickerEntry>) =>
   api.patch(`/ticker/${entryId}`, data);
-export const deleteTicker = (entryId) => api.delete(`/ticker/${entryId}`);
+export const deleteTicker = (entryId: number) =>
+  api.delete(`/ticker/${entryId}`);
 export const publishClipTicker = (
-  matchId,
-  text,
-  videoUrl,
-  thumbnailUrl,
-  minute,
+  matchId: number,
+  text: string,
+  videoUrl: string,
+  thumbnailUrl: string | null,
+  minute: number | null,
 ) =>
   api.post("/ticker/manual", {
     match_id: matchId,
@@ -70,7 +102,7 @@ export const publishClipTicker = (
     video_url: videoUrl ?? null,
   });
 export const generateSyntheticBatch = (
-  matchId,
+  matchId: number,
   style = "neutral",
   instance = "ef_whitelabel",
   language = "de",
@@ -83,7 +115,7 @@ export const generateSyntheticBatch = (
     auto_publish: tickerMode === "auto",
   });
 export const generateSynthetic = (
-  syntheticEventId,
+  syntheticEventId: number,
   style = "neutral",
   autoPublish = false,
 ) =>
@@ -93,7 +125,7 @@ export const generateSynthetic = (
     auto_publish: autoPublish,
   });
 export const generateMatchPhases = (
-  matchId,
+  matchId: number,
   style = "neutral",
   instance = "ef_whitelabel",
   language = "de",
@@ -105,37 +137,56 @@ export const generateMatchPhases = (
     language,
     auto_publish: autoPublish,
   });
-export const translateTickerBatch = (matchId, language) =>
+export const translateTickerBatch = (matchId: number, language: string) =>
   api.post(`/ticker/translate-batch/${matchId}`, { language });
 
 // ── Stats / Lineups ────────────────────────────────────
-export const fetchLineups = (matchId) => api.get(`/matches/${matchId}/lineup`);
-export const fetchMatchStats = (matchId) =>
+export const fetchLineups = (matchId: number) =>
+  api.get(`/matches/${matchId}/lineup`);
+export const fetchMatchStats = (matchId: number) =>
   api.get(`/matches/${matchId}/statistics`);
-export const fetchPlayerStats = (matchId) =>
+export const fetchPlayerStats = (matchId: number) =>
   api.get(`/matches/${matchId}/player-statistics`);
-export const fetchInjuries = (matchId) =>
+export const fetchInjuries = (matchId: number) =>
   api.get(`/matches/${matchId}/injuries`);
 
 // ── Players ────────────────────────────────────────────
-export const fetchPlayers = (teamId) =>
+export const fetchPlayers = (teamId: number) =>
   api.get(`/players?teamId=${teamId}&pageSize=100`);
-export const createPlayer = (data) => api.post("/players", data);
-export const updatePlayer = (playerId, data) =>
-  api.put(`/players/${playerId}`, data);
-export const deletePlayer = (playerId) => api.delete(`/players/${playerId}`);
-export const updatePlayerStats = (playerId, statistics) =>
-  api.patch(`/players/${playerId}/statistics`, { statistics });
+export const createPlayer = (data: Record<string, unknown>) =>
+  api.post("/players", data);
+export const updatePlayer = (
+  playerId: number,
+  data: Record<string, unknown>,
+) => api.put(`/players/${playerId}`, data);
+export const deletePlayer = (playerId: number) =>
+  api.delete(`/players/${playerId}`);
+export const updatePlayerStats = (
+  playerId: number,
+  statistics: Record<string, unknown>,
+) => api.patch(`/players/${playerId}/statistics`, { statistics });
 
 // ── Media ───────────────────────────────────────────────
 export const generateMediaCaption = (
-  mediaId,
+  mediaId: number,
   style = "neutral",
   instance = "ef_whitelabel",
 ) => api.post(`/media/generate-caption/${mediaId}`, { style, instance });
 export const fetchMediaQueue = () => api.get("/media/queue");
 export const clearMediaQueue = () => api.delete("/media/queue");
-export const publishMedia = ({ mediaId, description, matchId, minute, icon }) =>
+export const publishMedia = ({
+  mediaId,
+  description,
+  matchId,
+  minute,
+  icon,
+}: {
+  mediaId: number;
+  description: string;
+  matchId: number;
+  minute?: number | null;
+  icon?: string | null;
+}) =>
   api.post("/media/publish", {
     media_id: mediaId,
     description,
@@ -147,31 +198,31 @@ export const publishMedia = ({ mediaId, description, matchId, minute, icon }) =>
 // ── n8n Webhooks ───────────────────────────────────────
 export const importCountries = () => n8n.post("/import-countries");
 
-export const importTeamsByCountry = (country, season) =>
+export const importTeamsByCountry = (country: string, season: number | string) =>
   n8n.post("/import-teams-by-country", { country, season });
 
-export const importCompetitionsForTeam = (teamId, season) =>
+export const importCompetitionsForTeam = (teamId: number, season: number | string) =>
   n8n.post("/import-competitions", { teamId, season });
 
-export const importEvents = (fixtureId, tickerMode = "auto") =>
+export const importEvents = (fixtureId: number, tickerMode = "auto") =>
   n8n.post("/Events", { fixture_id: fixtureId, ticker_mode: tickerMode });
 
-export const importLineups = (matchId) =>
+export const importLineups = (matchId: number) =>
   n8n.post("/lineups", { match_id: matchId });
 
-export const importMatchStats = (matchId) =>
+export const importMatchStats = (matchId: number) =>
   n8n.post("/match-statistics", { match_id: matchId });
 
-export const importPrematch = (fixtureId, tickerMode = "coop") =>
+export const importPrematch = (fixtureId: number, tickerMode = "coop") =>
   n8n.post("/import-prematch", {
     fixture_id: fixtureId,
     ticker_mode: tickerMode,
   });
 
-export const importPlayerStatistics = (matchId) =>
+export const importPlayerStatistics = (matchId: number) =>
   n8n.post("/player-statistics", { match_id: matchId });
 
-export const fetchGoalClips = (matchId) =>
+export const fetchGoalClips = (matchId: number) =>
   n8n.post("/Tor Clip", matchId ? { match_id: matchId } : {});
 export const triggerYoutubeScrape = () =>
   n8n.post("/3555f418-e7a5-4d9b-ac87-5b591b4bc0d0");
@@ -181,18 +232,28 @@ export const triggerInstagramImport = () =>
   n8n.post("/149b541b-34f0-44f8-b3ce-c66bd3d75714");
 
 // ── Clips (persistent DB) ───────────────────────────────────
-export const fetchClips = (matchId, teamName) =>
+export const fetchClips = (matchId: number, teamName?: string) =>
   api.get(
     `/clips/match/${matchId}${teamName ? `?team_name=${encodeURIComponent(teamName)}` : ""}`,
   );
 export const fetchYoutubeClips = () => api.get("/clips/youtube");
 export const fetchTwitterPosts = () => api.get("/clips/twitter");
 export const fetchInstagramPosts = () => api.get("/clips/instagram");
-export const generateClipDraft = (clipId, matchId, style = "euphorisch") =>
-  api.post(`/clips/${clipId}/draft?match_id=${matchId}&style=${style}`);
-export const generateYoutubeDraft = (clipId, style = "neutral") =>
+export const generateClipDraft = (
+  clipId: number,
+  matchId: number,
+  style = "euphorisch",
+) => api.post(`/clips/${clipId}/draft?match_id=${matchId}&style=${style}`);
+export const generateYoutubeDraft = (clipId: number, style = "neutral") =>
   api.post(`/clips/${clipId}/draft?match_id=0&style=${style}`);
-export const publishClip = (clipId, matchId, text, minute, phase, icon) =>
+export const publishClip = (
+  clipId: number,
+  matchId: number,
+  text: string,
+  minute: number | null,
+  phase: MatchPhase | null,
+  icon: string | null,
+) =>
   api.post(`/clips/${clipId}/publish`, {
     match_id: matchId,
     text,
@@ -200,15 +261,18 @@ export const publishClip = (clipId, matchId, text, minute, phase, icon) =>
     phase: phase ?? null,
     icon: icon ?? null,
   });
-export const deleteClip = (clipId) => api.delete(`/clips/${clipId}`);
+export const deleteClip = (clipId: number) => api.delete(`/clips/${clipId}`);
 
-export const importMatchesForTeam = (teamId, leagueId, season) =>
-  n8n.post("/import-matches", { teamId, leagueId, season });
+export const importMatchesForTeam = (
+  teamId: number,
+  leagueId: number,
+  season: number | string,
+) => n8n.post("/import-matches", { teamId, leagueId, season });
 
 export const triggerMatchStatus = (
-  fixtureId,
-  status,
-  minute,
+  fixtureId: number,
+  status: string,
+  minute: number | null,
   instance = "generic",
   language = "de",
   style = "neutral",
@@ -224,8 +288,8 @@ export const triggerMatchStatus = (
     ticker_mode: tickerMode,
   });
 export const triggerMatchPhases = (
-  fixtureId,
-  minute,
+  fixtureId: number,
+  minute: number | null,
   instance = "generic",
   language = "de",
 ) =>
@@ -236,8 +300,8 @@ export const triggerMatchPhases = (
     language,
   });
 export const generateMatchSummary = (
-  matchId,
-  phase,
+  matchId: number,
+  phase: MatchPhase | string,
   style = "emotional",
   instance = "generic",
   language = "de",
@@ -253,10 +317,10 @@ export const generateMatchSummary = (
   });
 
 export const triggerLiveStatsMonitor = (
-  matchId,
+  matchId: number,
   instance = "generic",
   language = "de",
 ) => n8n.post("/live-stats-monitor", { match_id: matchId, instance, language });
 
-export const triggerMinuteUpdate = (fixtureId) =>
+export const triggerMinuteUpdate = (fixtureId: number) =>
   n8n.post("/update-minute", { fixture_id: fixtureId });

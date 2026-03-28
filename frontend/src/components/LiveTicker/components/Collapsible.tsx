@@ -1,6 +1,16 @@
 import { memo, useState } from "react";
+import type { ReactNode } from "react";
 
-function CollapsibleBase({ title, defaultOpen, wrapperClass, titleClass, mountContent, children }: any) {
+interface CollapsibleBaseProps {
+  title: ReactNode;
+  defaultOpen?: boolean;
+  wrapperClass: string;
+  titleClass: string;
+  mountContent: boolean;
+  children?: ReactNode;
+}
+
+function CollapsibleBase({ title, defaultOpen, wrapperClass, titleClass, mountContent, children }: CollapsibleBaseProps) {
   const [open, setOpen] = useState(defaultOpen);
   return (
     <div className={wrapperClass}>
@@ -16,7 +26,9 @@ function CollapsibleBase({ title, defaultOpen, wrapperClass, titleClass, mountCo
   );
 }
 
-export const Collapsible: any = memo<any>(function Collapsible({ title, defaultOpen = true, children }: any) {
+interface CollapsibleProps { title: ReactNode; defaultOpen?: boolean; children?: ReactNode; }
+
+export const Collapsible: any = memo(function Collapsible({ title, defaultOpen = true, children }: CollapsibleProps) {
   return (
     <CollapsibleBase
       title={title}
@@ -30,7 +42,7 @@ export const Collapsible: any = memo<any>(function Collapsible({ title, defaultO
   );
 });
 
-export const CollapsibleCat: any = memo<any>(function CollapsibleCat({ title, defaultOpen = true, children }: any) {
+export const CollapsibleCat: any = memo(function CollapsibleCat({ title, defaultOpen = true, children }: CollapsibleProps) {
   return (
     <CollapsibleBase
       title={title}

@@ -1,6 +1,15 @@
 import { memo } from "react";
 
-export const StatRow: any = memo<any>(function StatRow({ label, home, away, homeVal, awayVal, standalone }: any) {
+interface StatRowProps {
+  label: string;
+  home: string | number;
+  away: string | number;
+  homeVal?: number | null;
+  awayVal?: number | null;
+  standalone?: boolean;
+}
+
+export const StatRow: any = memo(function StatRow({ label, home, away, homeVal, awayVal, standalone }: StatRowProps) {
   const hv = Number(homeVal ?? 0);
   const av = Number(awayVal ?? 0);
   const total = hv + av;
