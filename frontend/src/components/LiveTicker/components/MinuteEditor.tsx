@@ -6,6 +6,16 @@
 import { useRef } from "react";
 import { MAX_MATCH_MINUTE } from "../constants";
 
+interface MinuteEditorProps {
+  minute: number;
+  setMinute: (m: number) => void;
+  minuteEditing: boolean;
+  setMinuteEditing: (v: boolean) => void;
+  minuteOverride: boolean;
+  setMinuteOverride: (v: boolean) => void;
+  currentMinute?: number;
+}
+
 export function MinuteEditor({
   minute,
   setMinute,
@@ -14,7 +24,7 @@ export function MinuteEditor({
   minuteOverride,
   setMinuteOverride,
   currentMinute,
-}: any) {
+}: MinuteEditorProps) {
   const inputRef = useRef(null);
 
   return (

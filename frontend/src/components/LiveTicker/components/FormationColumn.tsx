@@ -1,7 +1,16 @@
 import { memo } from "react";
 import { PlayerBadges } from "./PlayerBadges";
 
-export const FormationColumn: any = memo<any>(function FormationColumn({ lineup, playerName, playerStats = [], subMinuteMap = {}, abbr, labelClass }: any) {
+interface FormationColumnProps {
+  lineup: any[];
+  playerName: (id: number) => string | undefined;
+  playerStats?: any[];
+  subMinuteMap?: Record<string, number>;
+  abbr: string;
+  labelClass: string;
+}
+
+export const FormationColumn: any = memo(function FormationColumn({ lineup, playerName, playerStats = [], subMinuteMap = {}, abbr, labelClass }: FormationColumnProps) {
   const formation = lineup[0]?.formation ?? "";
 
   const posOrder = { G: 0, D: 1, M: 2, F: 3 };

@@ -8,7 +8,14 @@ import { useTickerDataContext } from "context/TickerDataContext";
  * @param {Array}       props.pendingEvents - Events ohne publizierten Ticker
  * @param {string|null} props.autoError     - Fehlertext oder null
  */
-export function AutoModePanel({ pendingEvents, autoError }: any) {
+import type { MatchEvent } from "../../../types";
+
+interface AutoModePanelProps {
+  pendingEvents: MatchEvent[];
+  autoError: string | null;
+}
+
+export function AutoModePanel({ pendingEvents, autoError }: AutoModePanelProps) {
   const { tickerTexts } = useTickerDataContext();
   return (
     <>

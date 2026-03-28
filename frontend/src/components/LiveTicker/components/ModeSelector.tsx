@@ -38,7 +38,14 @@ const MODE_CFG = {
   },
 };
 
-export const ModeSelector: any = memo<any>(function ModeSelector({ mode, onModeChange }: any) {
+import type { TickerMode } from "../../../types";
+
+interface ModeSelectorProps {
+  mode: TickerMode;
+  onModeChange: (mode: TickerMode) => void | Promise<void>;
+}
+
+export const ModeSelector: any = memo(function ModeSelector({ mode, onModeChange }: ModeSelectorProps) {
   const [pending, setPending] = useState(null);
   const [popPos, setPopPos]   = useState(null);
   const [toast, setToast]     = useState(null);

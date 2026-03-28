@@ -6,7 +6,19 @@
 import { memo, Fragment, useMemo } from "react";
 import { makeRoundLabel } from "utils/roundLabel";
 
-export const Breadcrumb: any = memo<any>(function Breadcrumb({ match, competition, country, team, round, matchdays, onOpen }: any) {
+import type { Match, Competition, Team } from "../../../types";
+
+interface BreadcrumbProps {
+  match: Match | null;
+  competition: Competition | null;
+  country?: string | null;
+  team?: Team | null;
+  round?: number | null;
+  matchdays?: number[];
+  onOpen: () => void;
+}
+
+export const Breadcrumb: any = memo(function Breadcrumb({ match, competition, country, team, round, matchdays, onOpen }: BreadcrumbProps) {
   const { full } = useMemo(() => makeRoundLabel(matchdays ?? []), [matchdays]);
 
   if (!match || !competition) return null;

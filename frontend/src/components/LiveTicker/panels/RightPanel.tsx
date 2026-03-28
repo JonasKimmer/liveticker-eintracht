@@ -9,7 +9,20 @@ import { FormationColumn } from "../components/FormationColumn";
 import { StatRow } from "../components/StatRow";
 import { useRightPanelData } from "../hooks/useRightPanelData";
 
-export const RightPanel: any = memo<any>(function RightPanel({
+import type { Match, MatchEvent } from "../../../types";
+
+interface RightPanelProps {
+  match: Match | null;
+  matchStats: any;
+  players: any[];
+  playerStats?: any[];
+  lineups: any;
+  events?: MatchEvent[];
+  injuries?: any[];
+  prematch?: any[];
+}
+
+export const RightPanel: any = memo(function RightPanel({
   match,
   matchStats,
   players,
@@ -17,7 +30,7 @@ export const RightPanel: any = memo<any>(function RightPanel({
   lineups,
   events = [],
   injuries = [],
-}: any) {
+}: RightPanelProps) {
   const {
     homeAbbr,
     awayAbbr,

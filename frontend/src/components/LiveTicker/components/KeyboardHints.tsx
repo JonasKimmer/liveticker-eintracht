@@ -4,7 +4,11 @@
 import { memo, Fragment } from "react";
 import { MODES } from "../constants";
 
-export const KeyboardHints: any = memo<any>(function KeyboardHints({ mode, onClose }: any) {
+import type { TickerMode } from "../../../types";
+
+interface KeyboardHintsProps { mode: TickerMode; onClose: () => void; }
+
+export const KeyboardHints: any = memo(function KeyboardHints({ mode, onClose }: KeyboardHintsProps) {
   return (
     <div className="lt-kb-overlay" onClick={onClose}>
       <div className="lt-kb-modal" onClick={(e) => e.stopPropagation()}>

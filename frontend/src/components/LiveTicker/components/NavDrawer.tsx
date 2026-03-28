@@ -3,7 +3,13 @@
 // ============================================================
 import { StartScreen } from "./StartScreen";
 
-export function NavDrawer({ open, onClose, navProps }: any) {
+interface NavDrawerProps {
+  open: boolean;
+  onClose: () => void;
+  navProps: Record<string, any>;
+}
+
+export function NavDrawer({ open, onClose, navProps }: NavDrawerProps) {
   return (
     <>
       {/* Overlay */}

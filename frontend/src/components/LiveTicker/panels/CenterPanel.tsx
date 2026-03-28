@@ -19,13 +19,21 @@ import { useBulkActions } from "../hooks/useBulkActions";
 import { useEventDraft } from "../hooks/useEventDraft";
 import config from "config/whitelabel";
 
-export const CenterPanel: any = memo<any>(function CenterPanel({
+interface CenterPanelProps {
+  currentMinute?: number;
+  generatingId: number | null;
+  instance?: string;
+  lineups: any[];
+  players: any[];
+}
+
+export const CenterPanel: any = memo(function CenterPanel({
   currentMinute = 0,
   generatingId,
   instance = "ef_whitelabel",
   lineups = [],
   players = [],
-}: any) {
+}: CenterPanelProps) {
   const { mode } = useTickerModeContext();
   const { match, tickerTexts } = useTickerDataContext();
 

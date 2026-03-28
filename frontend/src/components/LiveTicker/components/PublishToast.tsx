@@ -2,7 +2,14 @@ import { useEffect, useRef, useState } from "react";
 
 const DURATION = 5000; // ms
 
-export function PublishToast({ entryId, text, onRetract, onDismiss }: any) {
+interface PublishToastProps {
+  entryId: number;
+  text: string;
+  onRetract: () => void;
+  onDismiss: () => void;
+}
+
+export function PublishToast({ entryId, text, onRetract, onDismiss }: PublishToastProps) {
   const [timeLeft, setTimeLeft] = useState(DURATION);
   const intervalRef = useRef(null);
   const startRef = useRef(Date.now());

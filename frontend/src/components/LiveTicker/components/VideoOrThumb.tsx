@@ -1,6 +1,14 @@
 import { useState } from "react";
 
-export function VideoOrThumb({ clip }: any) {
+interface VideoOrThumbClip {
+  video_url?: string | null;
+  thumbnail_url?: string | null;
+  title?: string | null;
+  player_name?: string | null;
+  team_name?: string | null;
+}
+
+export function VideoOrThumb({ clip }: { clip: VideoOrThumbClip }) {
   const [playing, setPlaying] = useState(false);
 
   if (playing && clip.video_url) {

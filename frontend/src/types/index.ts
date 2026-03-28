@@ -53,8 +53,12 @@ export interface Competition {
 // ── Match ─────────────────────────────────────────────────────
 export interface Match {
   id: number;
-  homeTeamId: number;
-  awayTeamId: number;
+  /** camelCase from alias_generator */
+  homeTeamId?: number;
+  awayTeamId?: number;
+  /** serialization_alias from single-match endpoint */
+  teamHomeId?: number;
+  teamAwayId?: number;
   homeTeam?: Team;
   awayTeam?: Team;
   /** from matchday-list endpoint (alias_generator camelCase) */
