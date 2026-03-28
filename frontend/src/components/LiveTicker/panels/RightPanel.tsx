@@ -9,14 +9,14 @@ import { FormationColumn } from "../components/FormationColumn";
 import { StatRow } from "../components/StatRow";
 import { useRightPanelData } from "../hooks/useRightPanelData";
 
-import type { Match, MatchEvent } from "../../../types";
+import type { Match, MatchEvent, Player, LineupEntry, PlayerStat, MatchStat } from "../../../types";
 
 interface RightPanelProps {
   match: Match | null;
-  matchStats: any;
-  players: any[];
-  playerStats?: any[];
-  lineups: any;
+  matchStats: MatchStat[];
+  players: Player[];
+  playerStats?: PlayerStat[];
+  lineups: LineupEntry[];
   events?: MatchEvent[];
   injuries?: any[];
   prematch?: any[];

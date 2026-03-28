@@ -21,7 +21,7 @@ import * as api from "../api";
 import logger from "../utils/logger";
 import { MATCH_PHASES } from "../components/LiveTicker/constants";
 
-const PHASE_TO_STATUS = {
+const PHASE_TO_STATUS: Record<string, string> = {
   [MATCH_PHASES.FIRST_HALF]: "1H",
   [MATCH_PHASES.FIRST_HALF_BREAK]: "HT",
   [MATCH_PHASES.SECOND_HALF]: "2H",
@@ -31,6 +31,8 @@ const PHASE_TO_STATUS = {
   [MATCH_PHASES.EXTRA_SECOND_HALF_BREAK]: "BT",
   [MATCH_PHASES.PENALTY_SHOOTOUT]: "P",
 };
+
+import type { Match, MatchEvent, TickerEntry, ReloadFunctions } from "../types";
 
 export function useMatchTriggers({
   selMatchId,
@@ -44,11 +46,23 @@ export function useMatchTriggers({
   language = "de",
   tickerMode = "coop",
   reload,
-}: any) {
+}: {
+  selMatchId: number | null;
+  match: Match | null;
+  events: MatchEvent[];
+  lineups: any[];
+  matchStats: any[];
+  tickerTexts: TickerEntry[];
+  instance: string;
+  style?: string;
+  language?: string;
+  tickerMode?: string;
+  reload: ReloadFunctions & { loadPrematch?: () => void; loadLineups?: () => void; loadMatchStats?: () => void; loadPlayerStats?: () => void };
+}) {
   // Hält die aktuell aktive Match-ID für Timeout-Guards (Flash-Bug-Fix).
   // Timeouts prüfen vor Ausführung ob noch dasselbe Spiel aktiv ist —
   // verhindert stale-Closures ohne Cleanup/Cancel der Timeouts.
-  const currentMatchIdRef = useRef(null);
+  const currentMatchIdRef = useRef<number | null>(null);
   currentMatchIdRef.current = selMatchId;
 
   // ── Match-Summary via n8n (Halbzeit / Abpfiff) ────────────

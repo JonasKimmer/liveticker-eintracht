@@ -1,7 +1,7 @@
 // ============================================================
 // PublishedEntry.jsx  (React.memo — rendert oft)
 // ============================================================
-import { memo, useState, useCallback, useRef, useEffect } from "react";
+import React, { memo, useState, useCallback, useRef, useEffect } from "react";
 import { getEventMeta } from "../utils/parseCommand";
 import {
   MEDIA_DEFAULT_ICONS,
@@ -33,8 +33,8 @@ function getMediaLabel(videoUrl, imageUrl) {
 
 // Inline video player — direkte MP4-URLs (S3 Torjubel)
 // useRef + .play() weil Browser autoPlay-Attribut oft ignorieren
-function InlineVideo({ videoUrl }: any) {
-  const ref = useRef(null);
+function InlineVideo({ videoUrl, thumbnailUrl }: { videoUrl: string; thumbnailUrl?: string | null }) {
+  const ref = useRef<HTMLVideoElement>(null);
   useEffect(() => {
     const el = ref.current;
     if (el) el.play().catch(() => {});
@@ -54,7 +54,7 @@ function InlineVideo({ videoUrl }: any) {
   );
 }
 
-function MediaContent({ videoUrl, imageUrl }: any) {
+function MediaContent({ videoUrl, imageUrl }: { videoUrl?: string | null; imageUrl?: string | null }) {
   if (!videoUrl && !imageUrl) return null;
   if (videoUrl && URL_PATTERNS.twitter.test(videoUrl)) {
     return (
@@ -146,10 +146,15 @@ function MediaContent({ videoUrl, imageUrl }: any) {
 }
 
 // Drei-Punkte-Menü für Bearbeiten / Löschen
-function EntryMenu({ onEdit, onDelete, tickerTextId, startEdit }: any) {
+function EntryMenu({ onEdit, onDelete, tickerTextId, startEdit }: {
+  onEdit?: ((id: number, text: string) => Promise<void>) | undefined;
+  onDelete?: ((id: number) => Promise<void>) | undefined;
+  tickerTextId: number;
+  startEdit: () => void;
+}) {
   const [open, setOpen] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
-  const menuRef = useRef(null);
+  const menuRef = useRef<HTMLDivElement>(null);
   const close = useCallback(() => {
     setOpen(false);
     setConfirmOpen(false);
@@ -219,7 +224,7 @@ function EntryMenu({ onEdit, onDelete, tickerTextId, startEdit }: any) {
   );
 }
 
-function getDisplayText(tickerText) {
+function getDisplayText(tickerText: import("../../../types").TickerEntry) {
   const hasMedia = tickerText?.video_url || tickerText?.image_url;
   const isCodeKey = tickerText?.icon && /^[a-z0-9_]+$/i.test(tickerText.icon);
   const hasCustomIcon =
@@ -232,7 +237,14 @@ function getDisplayText(tickerText) {
     : tickerText?.text;
 }
 
-function EditForm({ textareaRef, value, onChange, onSave, onCancel, saving }: any) {
+function EditForm({ textareaRef, value, onChange, onSave, onCancel, saving }: {
+  textareaRef: React.RefObject<HTMLTextAreaElement>;
+  value: string;
+  onChange: (v: string) => void;
+  onSave: () => void;
+  onCancel: () => void;
+  saving: boolean;
+}) {
   return (
     <div className="lt-entry__edit-form">
       <textarea

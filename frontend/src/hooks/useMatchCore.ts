@@ -11,16 +11,18 @@ import { resolvePollingInterval } from "../utils/resolvePollingInterval";
  *
  * @param {number|null} selectedMatchId
  */
+import type { Match, Player, LineupEntry, PlayerStat, MatchStat } from "../types";
+
 export function useMatchCore(selectedMatchId: number | null) {
-  const [match, setMatch] = useState(null);
-  const [players, setPlayers] = useState([]);
-  const [prematch, setPrematch] = useState([]);
-  const [lineups, setLineups] = useState([]);
-  const [matchStats, setMatchStats] = useState([]);
-  const [playerStats, setPlayerStats] = useState([]);
-  const [injuries, setInjuries] = useState([]);
+  const [match, setMatch] = useState<Match | null>(null);
+  const [players, setPlayers] = useState<Player[]>([]);
+  const [prematch, setPrematch] = useState<any[]>([]);
+  const [lineups, setLineups] = useState<LineupEntry[]>([]);
+  const [matchStats, setMatchStats] = useState<MatchStat[]>([]);
+  const [playerStats, setPlayerStats] = useState<PlayerStat[]>([]);
+  const [injuries, setInjuries] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
-  const matchRef = useRef(null);
+  const matchRef = useRef<Match | null>(null);
 
   const _load = useCallback(async <T>(
     fetchFn: (id: number) => Promise<{ data: T }>,

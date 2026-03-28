@@ -1,4 +1,13 @@
-import { useState } from "react";
+import { useState, ReactNode } from "react";
+
+interface CollapsibleSectionProps {
+  title: ReactNode;
+  count?: number | null;
+  actions?: ReactNode;
+  defaultOpen?: boolean;
+  onToggle?: (open: boolean) => void;
+  children?: ReactNode;
+}
 
 export function CollapsibleSection({
   title,
@@ -7,7 +16,7 @@ export function CollapsibleSection({
   defaultOpen = true,
   onToggle,
   children,
-}: any) {
+}: CollapsibleSectionProps) {
   const [open, setOpen] = useState(defaultOpen);
   return (
     <div style={{ marginBottom: "1rem" }}>

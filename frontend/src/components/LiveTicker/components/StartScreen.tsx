@@ -3,8 +3,31 @@ import config from "config/whitelabel";
 import { CountryDropdown } from "./CountryDropdown";
 import { Dropdown } from "./Dropdown";
 import { MatchdayPicker } from "./MatchdayPicker";
+import type { Team, Competition, Match } from "../../../types";
 
-export const StartScreen: any = memo<any>(function StartScreen({
+interface StartScreenProps {
+  countries: string[];
+  selCountry: string | null;
+  onCountryChange: (c: string) => void;
+  teams: Team[];
+  teamsLoading?: boolean;
+  selTeamId: number | null;
+  onTeamChange: (id: number) => void;
+  competitions: Competition[];
+  competitionsLoading?: boolean;
+  selCompetitionId: number | null;
+  onCompetitionChange: (id: number) => void;
+  matchdays: number[];
+  matchdaysLoading?: boolean;
+  matchdaysError?: string | null;
+  selRound: number | null;
+  onRoundChange: (r: number) => void;
+  matches: Match[];
+  onMatchChange: (id: number) => void;
+  compact?: boolean;
+}
+
+export const StartScreen: any = memo(function StartScreen({
   countries,
   selCountry,
   onCountryChange,
@@ -24,7 +47,7 @@ export const StartScreen: any = memo<any>(function StartScreen({
   matches,
   onMatchChange,
   compact = false,
-}: any) {
+}: StartScreenProps) {
   return (
     <div className={compact ? "lt-start lt-start--compact" : "lt-start"}>
       <div className="lt-start__inner">
@@ -52,7 +75,7 @@ export const StartScreen: any = memo<any>(function StartScreen({
             placeholder="Team auswählen"
             displayValue={teams.find((t) => t.id === selTeamId)?.name}
             items={teams.map((t) => ({ value: t.id, label: t.name }))}
-            onSelect={(v) => onTeamChange(parseInt(v))}
+            onSelect={(v) => onTeamChange(parseInt(String(v)))}
           />
 
           <Dropdown
@@ -61,10 +84,10 @@ export const StartScreen: any = memo<any>(function StartScreen({
             value={selCompetitionId}
             placeholder="Wettbewerb auswählen"
             displayValue={
-              competitions.find((c) => c.id === selCompetitionId)?.title
+              competitions.find((c) => c.id === selCompetitionId)?.title ?? undefined
             }
-            items={competitions.map((c) => ({ value: c.id, label: c.title }))}
-            onSelect={(v) => onCompetitionChange(parseInt(v))}
+            items={competitions.map((c) => ({ value: c.id, label: c.title ?? String(c.id) }))}
+            onSelect={(v) => onCompetitionChange(parseInt(String(v)))}
           />
         </div>
 

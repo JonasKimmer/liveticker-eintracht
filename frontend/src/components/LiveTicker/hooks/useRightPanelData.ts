@@ -1,5 +1,6 @@
 import { useMemo, useCallback } from "react";
 
+
 /**
  * Berechnet alle abgeleiteten Daten für RightPanel.
  * Kein State, keine Side-Effects — nur memoized Derivationen.
@@ -13,6 +14,24 @@ import { useMemo, useCallback } from "react";
  * @param {Array}  opts.events
  * @param {Array}  opts.injuries
  */
+import type { Match, MatchEvent, Player, LineupEntry, PlayerStat, MatchStat } from "../../../types";
+
+interface InjuryGroup {
+  team_id?: number;
+  team_name?: string;
+  players?: any[];
+}
+
+interface UseRightPanelDataParams {
+  match: Match | null;
+  matchStats: MatchStat[];
+  players: Player[];
+  playerStats?: PlayerStat[];
+  lineups: LineupEntry[];
+  events?: MatchEvent[];
+  injuries?: InjuryGroup[];
+}
+
 export function useRightPanelData({
   match,
   matchStats,
@@ -21,7 +40,7 @@ export function useRightPanelData({
   lineups,
   events = [],
   injuries = [],
-}: any) {
+}: UseRightPanelDataParams) {
   const homeAbbr = match?.homeTeam?.name ?? "Heim";
   const awayAbbr = match?.awayTeam?.name ?? "Gast";
 
@@ -58,7 +77,7 @@ export function useRightPanelData({
     return map;
   }, [events, extToInternal]);
 
-  const playerName = useCallback((playerId) => {
+  const playerName = useCallback((playerId: number | undefined | null) => {
     if (!playerId) return null;
     const p = players.find((pl) => pl.id === playerId);
     if (!p) return null;

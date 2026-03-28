@@ -8,6 +8,7 @@
  * Used by: LiveTicker.jsx
  */
 import { useState, useRef, useCallback, useEffect } from "react";
+import type { MouseEvent } from "react";
 
 export function usePanelResize({
   rightInitial = 380,
@@ -16,11 +17,18 @@ export function usePanelResize({
   centerInitial = 320,
   centerMin = 240,
   centerMax = 600,
-}: any = {}) {
+}: {
+  rightInitial?: number;
+  rightMin?: number;
+  rightMax?: number;
+  centerInitial?: number;
+  centerMin?: number;
+  centerMax?: number;
+} = {}) {
   const [rightW, setRightW] = useState(rightInitial);
   const [centerW, setCenterW] = useState(centerInitial);
 
-  const draggingPanel = useRef(null);
+  const draggingPanel = useRef<"right" | "center" | null>(null);
   const dragStartX = useRef(0);
   const dragStartW = useRef(0);
 
@@ -30,7 +38,7 @@ export function usePanelResize({
     limitsRef.current = { rightMin, rightMax, centerMin, centerMax };
   }, [rightMin, rightMax, centerMin, centerMax]);
 
-  const handleResizeMouseDown = useCallback((e) => {
+  const handleResizeMouseDown = useCallback((e: MouseEvent) => {
     draggingPanel.current = "right";
     dragStartX.current = e.clientX;
     dragStartW.current = rightW;
@@ -38,7 +46,7 @@ export function usePanelResize({
     document.body.style.userSelect = "none";
   }, [rightW]);
 
-  const handleCenterResizeMouseDown = useCallback((e) => {
+  const handleCenterResizeMouseDown = useCallback((e: MouseEvent) => {
     draggingPanel.current = "center";
     dragStartX.current = e.clientX;
     dragStartW.current = centerW;
@@ -47,7 +55,7 @@ export function usePanelResize({
   }, [centerW]);
 
   useEffect(() => {
-    const onMove = (e) => {
+    const onMove = (e: globalThis.MouseEvent) => {
       if (!draggingPanel.current) return;
       const { rightMin, rightMax, centerMin, centerMax } = limitsRef.current;
       const delta = e.clientX - dragStartX.current;

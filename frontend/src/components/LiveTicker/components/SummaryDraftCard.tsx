@@ -1,5 +1,15 @@
 import { useState } from "react";
 import { StylePickerDropdown } from "./StylePickerDropdown";
+import type { TickerEntry, TickerStyle } from "../../../types";
+
+interface SummaryDraftCardProps {
+  draft: TickerEntry;
+  label?: string;
+  onPublish: (text: string) => void;
+  onReject: () => void;
+  onGenerate?: (id: number, style: TickerStyle) => void;
+  generatingId?: string | number | null;
+}
 
 export function SummaryDraftCard({
   draft,
@@ -8,7 +18,7 @@ export function SummaryDraftCard({
   onReject,
   onGenerate,
   generatingId,
-}: any) {
+}: SummaryDraftCardProps) {
   const [editing, setEditing] = useState(false);
   const [text, setText] = useState(draft.text ?? "");
   const isGenerating = generatingId === "regenerating";

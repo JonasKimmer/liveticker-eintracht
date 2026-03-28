@@ -46,11 +46,11 @@ interface ModeSelectorProps {
 }
 
 export const ModeSelector: any = memo(function ModeSelector({ mode, onModeChange }: ModeSelectorProps) {
-  const [pending, setPending] = useState(null);
-  const [popPos, setPopPos]   = useState(null);
-  const [toast, setToast]     = useState(null);
-  const btnRefs    = useRef({});
-  const toastTimer = useRef(null);
+  const [pending, setPending] = useState<TickerMode | null>(null);
+  const [popPos, setPopPos]   = useState<{ top: number; left: number } | null>(null);
+  const [toast, setToast]     = useState<{ text: string; color: string } | null>(null);
+  const btnRefs    = useRef<Record<string, HTMLButtonElement | null>>({});
+  const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const cancelSwitch = useCallback(() => {
     setPending(null);
@@ -68,7 +68,7 @@ export const ModeSelector: any = memo(function ModeSelector({ mode, onModeChange
     toastTimer.current = setTimeout(() => setToast(null), TOAST_DURATION_MS);
   }, [pending, onModeChange]);
 
-  const requestSwitch = useCallback((m) => {
+  const requestSwitch = useCallback((m: TickerMode) => {
     if (m === mode) return;
     const btn = btnRefs.current[m];
     if (!btn) return;
@@ -83,7 +83,7 @@ export const ModeSelector: any = memo(function ModeSelector({ mode, onModeChange
   // Enter / Esc when popover open
   useEffect(() => {
     if (!pending) return;
-    const h = (e) => {
+    const h = (e: KeyboardEvent) => {
       if (e.key === "Enter")  { e.preventDefault(); confirmSwitch(); }
       if (e.key === "Escape") { e.preventDefault(); cancelSwitch(); }
     };
@@ -93,7 +93,7 @@ export const ModeSelector: any = memo(function ModeSelector({ mode, onModeChange
 
   // Ctrl+1/2/3 shortcuts
   useEffect(() => {
-    const h = (e) => {
+    const h = (e: KeyboardEvent) => {
       if (!e.ctrlKey && !e.metaKey) return;
       if (e.key === "1") { e.preventDefault(); requestSwitch(MODES.AUTO); }
       if (e.key === "2") { e.preventDefault(); requestSwitch(MODES.COOP); }
@@ -106,8 +106,9 @@ export const ModeSelector: any = memo(function ModeSelector({ mode, onModeChange
   // Outside click closes popover
   useEffect(() => {
     if (!pending) return;
-    const h = (e) => {
-      if (!e.target.closest(".lt-mode-bar") && !e.target.closest(".lt-mode-popover")) {
+    const h = (e: MouseEvent) => {
+      const t = e.target as Element | null;
+      if (!t?.closest(".lt-mode-bar") && !t?.closest(".lt-mode-popover")) {
         cancelSwitch();
       }
     };
@@ -147,7 +148,7 @@ export const ModeSelector: any = memo(function ModeSelector({ mode, onModeChange
             return (
               <button
                 key={m}
-                ref={(el) => { btnRefs.current[m] = el; }}
+                ref={(el) => { btnRefs.current[m] = el as HTMLButtonElement; }}
                 className={`lt-mode-bar__btn${isActive ? ` lt-mode-bar__btn--active lt-mode-bar__btn--${cfg.key}` : ""}${pending === m ? " lt-mode-bar__btn--pending" : ""}`}
                 style={isActive ? { "--btn-bg": cfg.color, "--btn-fg": cfg.textColor } as React.CSSProperties : undefined}
                 onClick={() => requestSwitch(m)}

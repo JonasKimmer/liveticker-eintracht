@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { MODES } from "../components/LiveTicker/constants";
+import type { TickerMode } from "../types";
 
 /**
  * Kapselt die gesamte Modus-Logik:
@@ -14,8 +15,8 @@ import { MODES } from "../components/LiveTicker/constants";
  * @param {Function} onAccept - Wird aufgerufen wenn Draft akzeptiert wird
  * @param {Function} onReject - Wird aufgerufen wenn Draft abgelehnt wird
  */
-export function useTickerMode(onAccept, onReject) {
-  const [mode, setMode] = useState(MODES.AUTO);
+export function useTickerMode(onAccept: () => void, onReject: () => void) {
+  const [mode, setMode] = useState<TickerMode>(MODES.AUTO);
 
   const acceptDraft = useCallback(() => {
     if (typeof onAccept === "function") onAccept();
@@ -29,7 +30,7 @@ export function useTickerMode(onAccept, onReject) {
   useEffect(() => {
     if (mode !== MODES.COOP) return;
 
-    const handler = (e) => {
+    const handler = (e: KeyboardEvent) => {
       if (e.key === "Tab") {
         e.preventDefault();
         acceptDraft();

@@ -19,21 +19,22 @@ import { useState, useEffect, useMemo, useCallback } from "react";
 import * as api from "../api";
 import logger from "../utils/logger";
 import { usePollingMatchdays } from "./usePollingMatchdays";
+import type { Team, Competition, Match } from "../types";
 
 const CURRENT_YEAR = new Date().getFullYear();
 
 export function useNavigation() {
   const [appLoading, setAppLoading] = useState(true);
 
-  const [countries, setCountries] = useState([]);
-  const [selCountry, setSelCountry] = useState(null);
+  const [countries, setCountries] = useState<string[]>([]);
+  const [selCountry, setSelCountry] = useState<string | null>(null);
 
-  const [teams, setTeams] = useState([]);
-  const [selTeamId, setSelTeamId] = useState(null);
+  const [teams, setTeams] = useState<Team[]>([]);
+  const [selTeamId, setSelTeamId] = useState<number | null>(null);
   const [importingTeams, setImportingTeams] = useState(false);
 
-  const [competitions, setCompetitions] = useState([]);
-  const [selCompetitionId, setSelCompetitionId] = useState(null);
+  const [competitions, setCompetitions] = useState<Competition[]>([]);
+  const [selCompetitionId, setSelCompetitionId] = useState<number | null>(null);
   const [importingCompetitions, setImportingCompetitions] = useState(false);
 
   const {
@@ -42,9 +43,9 @@ export function useNavigation() {
     error: matchdaysError,
   } = usePollingMatchdays(selTeamId, selCompetitionId);
 
-  const [selRound, setSelRound] = useState(null);
-  const [matches, setMatches] = useState([]);
-  const [selMatchId, setSelMatchId] = useState(null);
+  const [selRound, setSelRound] = useState<number | null>(null);
+  const [matches, setMatches] = useState<Match[]>([]);
+  const [selMatchId, setSelMatchId] = useState<number | null>(null);
 
   // ── Init: Länder laden ──────────────────────────────────────
   useEffect(() => {
@@ -213,7 +214,7 @@ export function useNavigation() {
     [competitions, selCompetitionId],
   );
 
-  const handleTabChange = useCallback((tab, setActiveTab) => setActiveTab(tab), []);
+  const handleTabChange = useCallback((tab: string, setActiveTab: (t: string) => void) => setActiveTab(tab), []);
 
   return {
     appLoading,

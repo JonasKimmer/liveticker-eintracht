@@ -5,11 +5,26 @@ import { DropdownList } from "./DropdownList";
 import { DROPDOWN_INPUT_STYLE } from "../utils/dropdownStyles";
 import { useRef } from "react";
 
-export function Dropdown({ label, disabled, value, placeholder, displayValue, items, onSelect }: any) {
+interface DropdownItem {
+  value: number | string;
+  label: string;
+}
+
+interface DropdownProps {
+  label: string;
+  disabled?: boolean;
+  value: number | string | null;
+  placeholder?: string;
+  displayValue?: string;
+  items: DropdownItem[];
+  onSelect: (val: number | string) => void;
+}
+
+export function Dropdown({ label, disabled, value, placeholder, displayValue, items, onSelect }: DropdownProps) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
-  const ref = useRef(null);
-  const inputRef = useRef(null);
+  const ref = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   useClickOutside(ref, () => { setOpen(false); setQuery(""); });
 
@@ -19,7 +34,7 @@ export function Dropdown({ label, disabled, value, placeholder, displayValue, it
     [items, query],
   );
 
-  const handleSelect = useCallback((val) => {
+  const handleSelect = useCallback((val: number | string) => {
     onSelect(val);
     setOpen(false);
     setQuery("");

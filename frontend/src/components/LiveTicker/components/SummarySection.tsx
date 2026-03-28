@@ -20,6 +20,18 @@ import * as api from "api";
  * @param {Function} props.onBulkPublish      - handleBulkPublishPrematch / handleBulkPublishSpielphase
  * @param {Function} props.onRegenerate       - handleRegenerateSummaryDraft(draftId, style)
  */
+import type { TickerStyle } from "../../../types";
+
+interface SummarySectionProps {
+  isPrematch: boolean;
+  title: string;
+  selectedId: number | null;
+  onSelect: (updater: ((prev: number | null) => number | null) | null) => void;
+  generatingId: string | null;
+  onBulkPublish: () => void;
+  onRegenerate: (draftId: number, style: TickerStyle) => void;
+}
+
 export function SummarySection({
   isPrematch,
   title,
@@ -28,7 +40,7 @@ export function SummarySection({
   generatingId,
   onBulkPublish,
   onRegenerate,
-}: any) {
+}: SummarySectionProps) {
   const { tickerTexts, reload } = useTickerDataContext();
   const { onPublished } = useTickerActionsContext();
 

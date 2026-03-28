@@ -1,15 +1,16 @@
 import { useState } from "react";
 import { PREMATCH_PHASES, PHASE_LABEL } from "../constants";
+import type { TickerEntry } from "../../../types";
 
 // ── Hilfsfunktionen (auch von SummarySection genutzt) ────────
 
-export function getDraftLabel(draft) {
+export function getDraftLabel(draft: TickerEntry) {
   if (draft.phase && PHASE_LABEL[draft.phase]) return PHASE_LABEL[draft.phase];
   if (draft.icon === "🔔") return "Halbzeit";
   return "KI-Text";
 }
 
-export function getSummaryMeta(draft, phase) {
+export function getSummaryMeta(draft: Pick<TickerEntry, "icon" | "video_url">, phase: string | null | undefined) {
   const icon =
     draft.icon ||
     (phase && PREMATCH_PHASES.has(phase) ? "📣" : phase ? "🎙️" : "✦");
@@ -33,7 +34,15 @@ export function getSummaryMeta(draft, phase) {
 
 // ── Komponente ────────────────────────────────────────────────
 
-export function SummaryRow({ draft, label, isSelected, onSelect, onReject }: any) {
+interface SummaryRowProps {
+  draft: TickerEntry;
+  label: string;
+  isSelected?: boolean;
+  onSelect: () => void;
+  onReject: () => void;
+}
+
+export function SummaryRow({ draft, label, isSelected, onSelect, onReject }: SummaryRowProps) {
   const [confirmReject, setConfirmReject] = useState(false);
   const { icon, cssClass } = getSummaryMeta(draft, draft.phase);
   return (

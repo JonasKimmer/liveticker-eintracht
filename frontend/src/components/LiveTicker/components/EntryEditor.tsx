@@ -1,7 +1,7 @@
 // ============================================================
 // EntryEditor.jsx  — Slash-Command Editor mit Autocomplete
 // ============================================================
-import { memo, useState, useMemo, useCallback, useRef } from "react";
+import React, { memo, useState, useMemo, useCallback, useRef } from "react";
 import { parseCommand } from "../utils/parseCommand";
 import { COMMAND_PALETTE, NEEDS_ARG } from "./CommandPalette";
 import { MODES, COMMAND_PREFIX_REGEX } from "../constants";
@@ -32,7 +32,7 @@ export const EntryEditor: any = memo(function EntryEditor({
 }: EntryEditorProps) {
   const [paletteOpen, setPaletteOpen] = useState(false);
   const [paletteIdx, setPaletteIdx] = useState(0);
-  const textareaRef = useRef(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   // Live minute — syncs from prop, ticks every 60s, can be manually overridden
   const { minute, setMinute, minuteEditing, setMinuteEditing, minuteOverride, setMinuteOverride } = useLiveMinuteEditor(currentMinute);
@@ -62,13 +62,13 @@ export const EntryEditor: any = memo(function EntryEditor({
     value, playerNames, { showPalette, onReplace: onChange, inputRef: textareaRef },
   );
 
-  const selectCmd = useCallback((cmd) => {
+  const selectCmd = useCallback((cmd: string) => {
     onChange(cmd + (NEEDS_ARG.includes(cmd) ? " " : ""));
     setPaletteOpen(false);
     setTimeout(() => textareaRef.current?.focus(), 0);
   }, [onChange]);
 
-  const handleChange = useCallback((e) => {
+  const handleChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const v = e.target.value;
     onChange(v);
     if (v.startsWith("/") && !v.includes(" ")) {
@@ -111,7 +111,7 @@ export const EntryEditor: any = memo(function EntryEditor({
     onChange("");
   }, [value, preview, minute, onPublish, onChange]);
 
-  const handleKeyDown = useCallback((e) => {
+  const handleKeyDown = useCallback((e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     // Command palette navigation
     if (showPalette) {
       if (e.key === "ArrowDown") { e.preventDefault(); setPaletteIdx((i) => Math.min(i + 1, filteredCmds.length - 1)); return; }

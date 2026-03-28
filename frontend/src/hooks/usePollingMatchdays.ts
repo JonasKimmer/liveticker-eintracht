@@ -10,11 +10,11 @@ import * as api from "../api";
  * @param {number|null} competitionId - Interne Competition-ID.
  * @returns {{ matchdays: object[], loading: boolean, error: Error|null }}
  */
-export function usePollingMatchdays(teamId, competitionId) {
-  const [matchdays, setMatchdays] = useState([]);
+export function usePollingMatchdays(teamId: number | null, competitionId: number | null) {
+  const [matchdays, setMatchdays] = useState<number[]>([]);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
-  const timeoutRef = useRef(null);
+  const [error, setError] = useState<string | null>(null);
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     if (!teamId || !competitionId) {

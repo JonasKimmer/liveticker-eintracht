@@ -29,6 +29,14 @@ export type MatchPhase =
   | "FullTime"
   | "After";
 
+// ── Country ───────────────────────────────────────────────────
+export interface Country {
+  id: number;
+  name: string;
+  code?: string | null;
+  externalId?: number;
+}
+
 // ── Team ─────────────────────────────────────────────────────
 export interface Team {
   id: number;
@@ -156,6 +164,55 @@ export interface Clip {
   draft?: string | null;
   platform?: string | null;
   createdAt?: string;
+}
+
+// ── Player ───────────────────────────────────────────────────
+export interface Player {
+  id: number;
+  externalId?: number | null;
+  firstName?: string | null;
+  lastName?: string | null;
+  knownName?: string | null;
+  displayName?: string | null;
+}
+
+// ── LineupEntry ───────────────────────────────────────────────
+export interface LineupEntry {
+  id: number;
+  playerId: number;
+  teamId: number;
+  playerName?: string | null;
+  status?: "Start" | "Sub" | "Coach" | string;
+  position?: string | null;
+  jerseyNumber?: number | null;
+  formation?: string | null;
+  numberOfGoals?: number;
+  hasYellowCard?: boolean;
+  hasRedCard?: boolean;
+  isSubstituted?: boolean;
+}
+
+// ── PlayerStat ────────────────────────────────────────────────
+export interface PlayerStat {
+  id?: number;
+  playerId: number;
+  teamId: number;
+  jerseyNumber?: number | null;
+  rating?: number | null;
+  goals?: number;
+  assists?: number;
+  shotsOnTarget?: number;
+  passesTotal?: number;
+  tacklesTotal?: number;
+  cardsYellow?: number;
+  cardsRed?: number;
+  minutes?: number | null;
+}
+
+// ── MatchStat ─────────────────────────────────────────────────
+export interface MatchStat {
+  teamId: number;
+  [key: string]: unknown;
 }
 
 // ── Reload ────────────────────────────────────────────────────

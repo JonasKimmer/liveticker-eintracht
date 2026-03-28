@@ -14,10 +14,16 @@ const AUTO_STYLE = "neutral";
  * @param {Array}    opts.pendingEvents            - Noch nicht veröffentlichte Events
  * @param {Function} opts.setSelectedSummaryDraftId - Setter aus CenterPanel-State
  */
-export function useBulkActions({ instance, pendingEvents, setSelectedSummaryDraftId }: any) {
+interface UseBulkActionsParams {
+  instance: string;
+  pendingEvents: import("../../../types").MatchEvent[];
+  setSelectedSummaryDraftId: (id: number | null) => void;
+}
+
+export function useBulkActions({ instance, pendingEvents, setSelectedSummaryDraftId }: UseBulkActionsParams) {
   const { match, tickerTexts, reload } = useTickerDataContext();
   const [bulkGenerating, setBulkGenerating] = useState(false);
-  const [bulkPublishingSection, setBulkPublishingSection] = useState(null);
+  const [bulkPublishingSection, setBulkPublishingSection] = useState<string | null>(null);
 
   // ── Events: alle vorhandenen Drafts publishen ─────────────
   const handleBulkPublish = useCallback(async () => {
@@ -104,7 +110,7 @@ export function useBulkActions({ instance, pendingEvents, setSelectedSummaryDraf
   // Vorberichterstattung: generateSyntheticBatch (FastAPI, synchron)
   // Spielphasen:          generateMatchPhases    (FastAPI, synchron)
   const handleRegenerateSummaryDraft = useCallback(
-    async (draftId, style) => {
+    async (draftId: number, style: string) => {
       setBulkPublishingSection("regenerating");
       const oldDraft = tickerTexts.find((t) => t.id === draftId);
       if (!oldDraft) { setBulkPublishingSection(null); return; }

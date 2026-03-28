@@ -8,7 +8,7 @@ import { useMatchTicker } from "./useMatchTicker";
  *
  * @param {number|null} selectedMatchId
  */
-export function useMatchData(selectedMatchId) {
+export function useMatchData(selectedMatchId: number | null) {
   const core = useMatchCore(selectedMatchId);
   const { events, reload: evReload } = useMatchEvents(selectedMatchId, core.match?.matchState);
   const { tickerTexts, reload: txReload } = useMatchTicker(selectedMatchId, core.match?.matchState);

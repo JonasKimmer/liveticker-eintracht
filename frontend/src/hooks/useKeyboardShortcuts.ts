@@ -12,10 +12,16 @@
  */
 import { useEffect } from "react";
 
-export function useKeyboardShortcuts({ onToggleHints, onShowHints, onShowCommands }: any) {
+interface KeyboardShortcutsHandlers {
+  onToggleHints: () => void;
+  onShowHints: () => void;
+  onShowCommands: () => void;
+}
+
+export function useKeyboardShortcuts({ onToggleHints, onShowHints, onShowCommands }: KeyboardShortcutsHandlers) {
   useEffect(() => {
-    const handler = (e) => {
-      const tag = e.target?.tagName;
+    const handler = (e: KeyboardEvent) => {
+      const tag = (e.target as HTMLElement | null)?.tagName;
       if (
         e.key === "?" &&
         !e.ctrlKey &&

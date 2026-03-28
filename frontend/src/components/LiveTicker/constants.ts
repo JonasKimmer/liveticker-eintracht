@@ -5,9 +5,9 @@
 
 // ── Ticker-Modi ──────────────────────────────────────────────
 export const MODES = {
-  AUTO: "auto",
-  COOP: "coop",
-  MANUAL: "manual",
+  AUTO: "auto" as const,
+  COOP: "coop" as const,
+  MANUAL: "manual" as const,
 };
 
 export const MODE_META = {

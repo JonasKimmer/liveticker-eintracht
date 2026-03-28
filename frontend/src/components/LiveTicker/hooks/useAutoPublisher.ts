@@ -15,7 +15,13 @@ const AUTO_STYLE = TICKER_STYLES[0];
  * @param {Array}    opts.pendingEvents  - Events die noch keinen publizierten Ticker haben
  * @param {Function} opts.onError        - Callback bei Fehler: (message: string) => void
  */
-export function useAutoPublisher({ instance, pendingEvents, onError }: any) {
+interface UseAutoPublisherParams {
+  instance: string;
+  pendingEvents: import("../../../types").MatchEvent[];
+  onError: (message: string) => void;
+}
+
+export function useAutoPublisher({ instance, pendingEvents, onError }: UseAutoPublisherParams) {
   const { mode } = useTickerModeContext();
   const { match, tickerTexts, reload } = useTickerDataContext();
   const processingRef = useRef(new Set());

@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { normalizeMatchStatus } from "../components/LiveTicker/utils/parseCommand";
 import { MATCH_PHASES } from "../components/LiveTicker/constants";
+import type { Match } from "../types";
 
 /**
  * Berechnet die aktuelle Spielminute basierend auf Matchstatus und Anstoßzeit.
@@ -9,7 +10,7 @@ import { MATCH_PHASES } from "../components/LiveTicker/constants";
  * @param {object|null} match - Match-Objekt aus der API
  * @returns {number} Aktuelle Spielminute (0 wenn kein Live-Spiel)
  */
-export function useLiveMinute(match) {
+export function useLiveMinute(match: Match | null) {
   const [now, setNow] = useState(Date.now());
   const status = normalizeMatchStatus(match?.matchState);
 
@@ -25,7 +26,7 @@ export function useLiveMinute(match) {
   if (match.minute != null) return match.minute;
 
   // Compute from kickoff or startsAt
-  const kickoffTime = match.kickoff || match.startsAt;
+  const kickoffTime = (match as any).kickoff || match.startsAt;
   if (!kickoffTime) return 0;
 
   const kickoffMs = new Date(kickoffTime).getTime();

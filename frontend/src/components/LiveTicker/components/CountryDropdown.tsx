@@ -1,8 +1,15 @@
+import React from "react";
 import { useSearchableDropdown } from "../hooks/useSearchableDropdown";
 import { DropdownList } from "./DropdownList";
 import { DROPDOWN_INPUT_STYLE } from "../utils/dropdownStyles";
 
-export function CountryDropdown({ countries, value, onSelect }: any) {
+interface CountryDropdownProps {
+  countries: string[];
+  value: string | null;
+  onSelect: (c: string | null) => void;
+}
+
+export function CountryDropdown({ countries, value, onSelect }: CountryDropdownProps) {
   const { open, query, setQuery, filtered, activeIdx, ref, inputRef, handleOpen, handleSelect, handleKeyDown } = useSearchableDropdown({
     items: countries,
     onSelect,
@@ -10,7 +17,7 @@ export function CountryDropdown({ countries, value, onSelect }: any) {
     getValue: (c) => c,
   });
 
-  function handleClear(e) {
+  function handleClear(e: React.MouseEvent) {
     e.stopPropagation();
     onSelect(null);
     setQuery("");

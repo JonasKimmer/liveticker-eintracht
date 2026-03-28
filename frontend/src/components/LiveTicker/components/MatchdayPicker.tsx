@@ -1,9 +1,21 @@
-import { useState, useRef, useEffect, useMemo, useCallback } from "react";
+import React, { useState, useRef, useEffect, useMemo, useCallback } from "react";
 import { useClickOutside } from "hooks/useClickOutside";
 import { useListKeyboard } from "hooks/useListKeyboard";
 import { knockoutThreshold, makeRoundLabel } from "utils/roundLabel";
+import type { Match } from "../../../types";
 
-export function MatchdayPicker({ matchdays, matchdaysLoading, matchdaysError, selRound, onRoundChange, matches, onMatchChange, disabled }: any) {
+interface MatchdayPickerProps {
+  matchdays: number[];
+  matchdaysLoading?: boolean;
+  matchdaysError?: string | null;
+  selRound: number | null;
+  onRoundChange: (r: number) => void;
+  matches: Match[];
+  onMatchChange: (id: number) => void;
+  disabled?: boolean;
+}
+
+export function MatchdayPicker({ matchdays, matchdaysLoading, matchdaysError, selRound, onRoundChange, matches, onMatchChange, disabled }: MatchdayPickerProps) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
@@ -21,13 +33,13 @@ export function MatchdayPicker({ matchdays, matchdaysLoading, matchdaysError, se
   useClickOutside(ref, () => setOpen(false));
   useEffect(() => { if (open) panelRef.current?.focus(); }, [open]);
 
-  const handleMatchSelect = useCallback((matchId) => { onMatchChange(matchId); setOpen(false); }, [onMatchChange]);
+  const handleMatchSelect = useCallback((matchId: number) => { onMatchChange(matchId); setOpen(false); }, [onMatchChange]);
   const matchIds = useMemo(() => matches.map((m) => m.id), [matches]);
   const { activeIdx: matchActiveIdx, onKeyDown: matchOnKeyDown } = useListKeyboard(matchIds, { onSelect: handleMatchSelect, onClose: () => setOpen(false) });
 
   useEffect(() => { matchItemRefs.current[matchActiveIdx]?.scrollIntoView({ block: "nearest" }); }, [matchActiveIdx]);
 
-  function handlePanelKeyDown(e) {
+  function handlePanelKeyDown(e: React.KeyboardEvent<HTMLDivElement>) {
     if (["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown"].includes(e.key)) {
       e.preventDefault();
       const idx = sortedMatchdays.indexOf(selRound);

@@ -1,8 +1,23 @@
 import { useRef, useEffect } from "react";
 import { DROPDOWN_LIST_STYLE } from "../utils/dropdownStyles";
 
-export function DropdownList({ filtered, value, total, unit, onSelect, activeIdx = -1 }: any) {
-  const itemRefs = useRef([]);
+interface DropdownListItem {
+  key: string | number;
+  label: string;
+  val: string | number;
+}
+
+interface DropdownListProps {
+  filtered: DropdownListItem[];
+  value: string | number | null;
+  total: number;
+  unit: string;
+  onSelect: (val: string | number) => void;
+  activeIdx?: number;
+}
+
+export function DropdownList({ filtered, value, total, unit, onSelect, activeIdx = -1 }: DropdownListProps) {
+  const itemRefs = useRef<(HTMLButtonElement | null)[]>([]);
 
   useEffect(() => {
     if (activeIdx >= 0) {
@@ -24,7 +39,7 @@ export function DropdownList({ filtered, value, total, unit, onSelect, activeIdx
             return (
               <button
                 key={key}
-                ref={(el) => { itemRefs.current[idx] = el; }}
+                ref={(el) => { itemRefs.current[idx] = el as HTMLButtonElement; }}
                 onMouseDown={(e) => { e.preventDefault(); onSelect(val); }}
                 style={{
                   width: "100%", textAlign: "left",

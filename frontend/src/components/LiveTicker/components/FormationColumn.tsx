@@ -1,11 +1,12 @@
 import { memo } from "react";
 import { PlayerBadges } from "./PlayerBadges";
+import type { LineupEntry, PlayerStat } from "../../../types";
 
 interface FormationColumnProps {
-  lineup: any[];
+  lineup: LineupEntry[];
   playerName: (id: number) => string | undefined;
-  playerStats?: any[];
-  subMinuteMap?: Record<string, number>;
+  playerStats?: PlayerStat[];
+  subMinuteMap?: Record<string | number, number>;
   abbr: string;
   labelClass: string;
 }

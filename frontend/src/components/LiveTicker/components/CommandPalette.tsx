@@ -1,4 +1,4 @@
-import { memo, useState, useMemo } from "react";
+import React, { memo, useState, useMemo } from "react";
 import { createPortal } from "react-dom";
 import { parseCommand } from "../utils/parseCommand";
 
@@ -25,7 +25,7 @@ export const COMMAND_PALETTE = [
 
 export const NEEDS_ARG = ["/anpfiff", "/2hz", "/vz1", "/vz2", "/g", "/og", "/gelb", "/rot", "/ep", "/c", "/s", "/n"];
 
-export function useCommandPalette(value) {
+export function useCommandPalette(value: string) {
   const [paletteOpen, setPaletteOpen] = useState(false);
   const [paletteIdx, setPaletteIdx] = useState(0);
 
@@ -42,7 +42,7 @@ export function useCommandPalette(value) {
 
   const showPalette = paletteOpen && filteredCmds.length > 0;
 
-  function onValueChange(v) {
+  function onValueChange(v: string) {
     if (v.startsWith("/") && !v.includes(" ")) {
       setPaletteOpen(true);
       setPaletteIdx(0);
@@ -51,12 +51,12 @@ export function useCommandPalette(value) {
     }
   }
 
-  function selectCmd(cmd, setValue) {
+  function selectCmd(cmd: string, setValue: (v: string) => void) {
     setValue(cmd + (NEEDS_ARG.includes(cmd) ? " " : ""));
     setPaletteOpen(false);
   }
 
-  function handlePaletteKeyDown(e, setValue) {
+  function handlePaletteKeyDown(e: React.KeyboardEvent, setValue: (v: string) => void) {
     if (!showPalette) return false;
     if (e.key === "ArrowDown") { e.preventDefault(); setPaletteIdx((i) => Math.min(i + 1, filteredCmds.length - 1)); return true; }
     if (e.key === "ArrowUp")   { e.preventDefault(); setPaletteIdx((i) => Math.max(i - 1, 0)); return true; }
@@ -72,7 +72,22 @@ export function useCommandPalette(value) {
   return { showPalette, paletteIdx, filteredCmds, setPaletteOpen, onValueChange, selectCmd, handlePaletteKeyDown };
 }
 
-export const CommandPalettePortal: any = memo<any>(function CommandPalettePortal({ show, items, activeIdx, anchorRef, onSelect }: any) {
+interface PaletteItem {
+  cmd: string;
+  desc: string;
+  icon: string;
+  hint?: string;
+}
+
+interface CommandPalettePortalProps {
+  show: boolean;
+  items: PaletteItem[];
+  activeIdx: number;
+  anchorRef: React.RefObject<HTMLElement | HTMLTextAreaElement | null>;
+  onSelect: (cmd: string) => void;
+}
+
+export const CommandPalettePortal: any = memo(function CommandPalettePortal({ show, items, activeIdx, anchorRef, onSelect }: CommandPalettePortalProps) {
   if (!show || !items.length || !anchorRef?.current) return null;
 
   const rect = anchorRef.current.getBoundingClientRect();
