@@ -1,0 +1,311 @@
+{
+  "name": "Sync | 03 | Squads & Players",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## I'm a note \n**L ALLLLE SPEILEr\nimportiert\n"
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -5408,
+        -240
+      ],
+      "id": "6067c43b-d3ba-47d3-bd87-cdde252b3cdb",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "content": "Spielr team für team extrahieren",
+        "height": 192
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -3664,
+        -272
+      ],
+      "id": "7fc42a96-f7c8-4558-b731-cec5108adcc2",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://partner-api.stackwork-01-test.tech/cms/v1/players",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer 52091AC14B524E59DEF531D0EA8F57EF0804D4CFADCF4A1A52CE842687D2D209-1"
+            },
+            {
+              "name": "et-partner-id",
+              "value": "4"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"position\": \"{{ $json.position }}\",\n  \"signingDate\": null,\n  \"id\": {{ $json.id }},\n  \"sport\": \"{{ $json.sport }}\",\n  \"statistics\": null,\n  \"teamId\": {{ $json.teamId }},\n  \"firstName\": \"{{ $json.firstName }}\",\n  \"lastName\": \"{{ $json.lastName }}\",\n  \"shortName\": null,\n  \"displayName\": null,\n  \"knownName\": null,\n  \"birthday\": null,\n  \"birthplace\": null,\n  \"weight\": null,\n  \"height\": null,\n  \"jerseyNumber\": {{ $json.jerseyNumber !== null ? $json.jerseyNumber : 'null' }},\n  \"country\": null,\n  \"joinedOn\": null,\n  \"imageUrl\": {{ $json.imageUrl ? `\"${$json.imageUrl}\"` : 'null' }},\n  \"personHeroImageUrl\": null,\n  \"profile\": null,\n  \"hidden\": {{ $json.hidden }}\n}",
+        "options": {}
+      },
+      "id": "b614e95e-d80e-4331-929b-bbc7153c7bf1",
+      "name": "API – Fixtures abrufen3",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        -5712,
+        -144
+      ],
+      "disabled": true,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "return $input.all().flatMap(item => {\n  const teamId = item.json.parameters?.team;\n  const positionMap = {\n    \"Attacker\":   \"Forward\",\n    \"Midfielder\": \"Midfielder\",\n    \"Defender\":   \"Defender\",\n    \"Goalkeeper\": \"Goalkeeper\"\n  };\n  return (item.json.response || []).flatMap(entry =>\n    (entry.players || []).map(p => ({\n      json: {\n        id: p.id,\n        sport: \"Football\",\n        teamId: Number(teamId),\n        firstName: p.name?.split(' ')[0] ?? '',\n        lastName: p.name?.split(' ').slice(1).join(' ') ?? '',\n        position: positionMap[p.position] ?? \"Midfielder\",\n        jerseyNumber: p.number !== undefined && p.number !== null ? p.number : null,\n        imageUrl: p.photo && p.photo !== '' ? p.photo : null,\n        hidden: false\n      }\n    }))\n  );\n});"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -5968,
+        -144
+      ],
+      "id": "3f30f034-8486-436b-a294-e737e1081f11",
+      "name": "Code in JavaScript7",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "url": "https://v3.football.api-sports.io/players/squads",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "team",
+              "value": "={{ $json.fixtureId }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -6208,
+        -144
+      ],
+      "id": "593a2acf-aa4d-472b-b8c2-d40927b5ffc7",
+      "name": "API: Ligen abrufen2",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "8TXlLPe7BeXnl0Ut",
+          "name": "Header Auth account"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "url": "https://partner-api.stackwork-01-test.tech/cms/v1/matches",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "pageSize",
+              "value": "100"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer 52091AC14B524E59DEF531D0EA8F57EF0804D4CFADCF4A1A52CE842687D2D209-1"
+            },
+            {
+              "name": "et-partner-id",
+              "value": "4"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "0034fa3a-b3bc-4fc5-b018-3549bff3788e",
+      "name": "HTTP: Get Season Matches",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        -6752,
+        -144
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const teamIds = new Set();\n\n// Wir gehen durch das Array von n8n (meistens ein Item, das \"items\" enthält)\n$input.all().forEach(item => {\n  const matches = item.json.items || [];\n  \n  matches.forEach(m => {\n    if (m.teamHomeId) teamIds.add(m.teamHomeId);\n    if (m.teamAwayId) teamIds.add(m.teamAwayId);\n  });\n});\n\n// Umwandlung in eine Liste für die API-Sports Squad Abfrage\nreturn Array.from(teamIds).map(id => ({\n  json: {\n    teamId: id\n  }\n}));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -6480,
+        -144
+      ],
+      "id": "4c0f0720-9da4-4b63-b228-1936cfe58afb",
+      "name": "JS: Extract Unique Team IDs"
+    },
+    {
+      "parameters": {
+        "url": "https://v3.football.api-sports.io/players/squads",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "team",
+              "value": "=180"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -6192,
+        80
+      ],
+      "id": "fc127f8b-445b-4147-8d03-e0a311318a0a",
+      "name": "HTTP: Get Team Squad",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "8TXlLPe7BeXnl0Ut",
+          "name": "Header Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "return $input.all().flatMap(item => {\n  const teamId = item.json.parameters?.team;\n  const positionMap = {\n    \"Attacker\":   \"Forward\",\n    \"Midfielder\": \"Midfielder\",\n    \"Defender\":   \"Defender\",\n    \"Goalkeeper\": \"Goalkeeper\"\n  };\n  return (item.json.response || []).flatMap(entry =>\n    (entry.players || []).map(p => ({\n      json: {\n        id: p.id,\n        sport: \"Football\",\n        teamId: Number(teamId),\n        firstName: p.name?.split(' ')[0] ?? '',\n        lastName: p.name?.split(' ').slice(1).join(' ') ?? '',\n        position: positionMap[p.position] ?? \"Midfielder\",\n        jerseyNumber: p.number !== undefined && p.number !== null ? p.number : null,\n        imageUrl: p.photo && p.photo !== '' ? p.photo : null,\n        hidden: false\n      }\n    }))\n  );\n});"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -5952,
+        80
+      ],
+      "id": "d5dd0a02-e784-4e2a-bdf6-811b082cd508",
+      "name": "JS: Map Player Data"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://partner-api.stackwork-01-test.tech/cms/v1/players",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer 52091AC14B524E59DEF531D0EA8F57EF0804D4CFADCF4A1A52CE842687D2D209-1"
+            },
+            {
+              "name": "et-partner-id",
+              "value": "4"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"position\": \"{{ $json.position }}\",\n  \"signingDate\": null,\n  \"id\": {{ $json.id }},\n  \"sport\": \"{{ $json.sport }}\",\n  \"statistics\": null,\n  \"teamId\": {{ $json.teamId }},\n  \"firstName\": \"{{ $json.firstName }}\",\n  \"lastName\": \"{{ $json.lastName }}\",\n  \"shortName\": null,\n  \"displayName\": null,\n  \"knownName\": null,\n  \"birthday\": null,\n  \"birthplace\": null,\n  \"weight\": null,\n  \"height\": null,\n  \"jerseyNumber\": {{ $json.jerseyNumber !== null ? $json.jerseyNumber : 'null' }},\n  \"country\": null,\n  \"joinedOn\": null,\n  \"imageUrl\": {{ $json.imageUrl ? `\"${$json.imageUrl}\"` : 'null' }},\n  \"personHeroImageUrl\": null,\n  \"profile\": null,\n  \"hidden\": {{ $json.hidden }}\n}",
+        "options": {}
+      },
+      "id": "5b5ae00b-89f3-41d9-b809-2780d0334cda",
+      "name": "HTTP: Post Player to CMS",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        -5696,
+        80
+      ],
+      "onError": "continueRegularOutput"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Code in JavaScript7": {
+      "main": [
+        [
+          {
+            "node": "API – Fixtures abrufen3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "API: Ligen abrufen2": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript7",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP: Get Season Matches": {
+      "main": [
+        [
+          {
+            "node": "JS: Extract Unique Team IDs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "JS: Extract Unique Team IDs": {
+      "main": [
+        []
+      ]
+    },
+    "HTTP: Get Team Squad": {
+      "main": [
+        [
+          {
+            "node": "JS: Map Player Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "JS: Map Player Data": {
+      "main": [
+        [
+          {
+            "node": "HTTP: Post Player to CMS",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "d86550f9-649b-47ec-a0d6-a87383cdd99a",
+  "meta": {
+    "instanceId": "8f356ecf824174491100e48f7fade606f544a76873378b03e211127fbec11c97"
+  },
+  "id": "xVOjxhfJBykMDbJ8",
+  "tags": []
+}

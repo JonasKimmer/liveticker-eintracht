@@ -1,0 +1,659 @@
+{
+  "name": "Sync 09 | Halbzeit und Aftermatch Bericht Liveticker",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "5121dd47-0dac-4d22-a451-40007edab0d8",
+      "name": "Manual Trigger",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -160,
+        -32
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "1",
+              "name": "match_id",
+              "value": 1388536,
+              "type": "number"
+            },
+            {
+              "id": "2",
+              "name": "phase",
+              "value": "FirstHalfBreak",
+              "type": "string"
+            },
+            {
+              "id": "3",
+              "name": "style",
+              "value": "neutral",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "c885fa21-4113-4a8d-807a-ffbd40cd247b",
+      "name": "Konfiguration",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        48,
+        -32
+      ]
+    },
+    {
+      "parameters": {
+        "url": "=https://partner-api.stackwork-01-test.tech/cms/v1/matches/{{ $json.match_id }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer 52091AC14B524E59DEF531D0EA8F57EF0804D4CFADCF4A1A52CE842687D2D209-1"
+            },
+            {
+              "name": "et-partner-id",
+              "value": "4"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "80c073cb-e830-4163-a6b3-6ddb9a788bff",
+      "name": "Get Match",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        272,
+        -32
+      ]
+    },
+    {
+      "parameters": {
+        "url": "=https://v3.football.api-sports.io/fixtures/events?fixture={{ $('Get Match').first().json.id }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {}
+      },
+      "id": "30c41b58-a531-43f2-b5d1-b01e05871e02",
+      "name": "Get Events",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        496,
+        -32
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "8TXlLPe7BeXnl0Ut",
+          "name": "Header Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "=https://v3.football.api-sports.io/fixtures/statistics?fixture={{ $('Get Match').first().json.id }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {}
+      },
+      "id": "7172a6e8-023d-4d4a-b4ef-a3cdf48b15cc",
+      "name": "Get Statistics",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        720,
+        -32
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "8TXlLPe7BeXnl0Ut",
+          "name": "Header Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "=https://v3.football.api-sports.io/fixtures/players?fixture={{ $('Get Match').first().json.id }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {}
+      },
+      "id": "6987f9f1-77a1-4fb5-bcae-89befae91103",
+      "name": "Get Players",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        944,
+        -32
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "8TXlLPe7BeXnl0Ut",
+          "name": "Header Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const webhookBody = $('Konfiguration').first().json;\nconst phase = webhookBody.phase;\nconst matchId = webhookBody.match_id;\nconst style = webhookBody.style ?? 'standard';\n\nconst match = $('Get Match').first().json;\n// Partner-API gibt teamHomeId/teamAwayId als IDs zurück – Namen über Teams holen falls verfügbar\nconst homeTeamId = match.teamHomeId;\nconst awayTeamId = match.teamAwayId;\nconst homeScore = match.teamHomeScore ?? 0;\nconst awayScore = match.teamAwayScore ?? 0;\nconst competition = match.competitionId ?? '';\n\n// Team-Namen aus api-sports Statistics-Response holen\nconst stats = $('Get Statistics').first().json.response ?? [];\nconst homeTeam = stats[0]?.team?.name ?? 'Heimteam';\nconst awayTeam = stats[1]?.team?.name ?? 'Auswärtsteam';\n\nconst events = $('Get Events').first().json.response ?? [];\nconst playerTeams = $('Get Players').first().json.response ?? [];\n\nconst maxMinute = phase === 'FirstHalfBreak' ? 45 : 999;\nconst goals = events.filter(e => e.type === 'Goal' && (e.time?.elapsed ?? 0) <= maxMinute);\nconst cards = events.filter(e => e.type === 'Card' && (e.time?.elapsed ?? 0) <= maxMinute);\nconst injuries = events.filter(e => e.detail === 'Injury' && (e.time?.elapsed ?? 0) <= maxMinute);\nconst subs = events.filter(e => e.type === 'subst' && (e.time?.elapsed ?? 0) <= maxMinute);\n\nconst homeStats = stats[0]?.statistics ?? [];\nconst awayStats = stats[1]?.statistics ?? [];\nconst getStat = (arr, name) => arr.find(s => s.type === name)?.value ?? '–';\n\nconst allPlayers = playerTeams.flatMap(t => t.players ?? []);\nconst topPlayers = allPlayers\n  .filter(p => p.statistics?.[0]?.games?.rating)\n  .sort((a, b) => parseFloat(b.statistics[0].games.rating) - parseFloat(a.statistics[0].games.rating))\n  .slice(0, 3)\n  .map(p => `${p.player.name} (${parseFloat(p.statistics[0].games.rating).toFixed(1)})`);\n\nconst homeGoalsCount = goals.filter(g => g.team.id === stats[0]?.team?.id).length;\nconst awayGoalsCount = goals.filter(g => g.team.id === stats[1]?.team?.id).length;\nconst scoreDisplay = phase === 'FirstHalfBreak'\n  ? `${homeGoalsCount}:${awayGoalsCount} (Halbzeit)`\n  : `${homeScore}:${awayScore} (Endstand)`;\n\nconst phaseLabel = {\n  FirstHalfBreak: 'Halbzeitbericht',\n  SecondHalfBreak: 'Bericht zur Verlängerungspause',\n  After: 'Spielbericht',\n  ExtraFirstHalf: 'Bericht nach erster Verlängerungshälfte',\n}[phase] ?? 'Bericht';\n\nconst goalLines = goals.length > 0\n  ? goals.map(g => {\n      const extra = g.detail === 'Penalty' ? ' [Elfmeter]' : g.detail === 'Own Goal' ? ' [Eigentor]' : '';\n      const assist = g.assist?.name ? ` (Assist: ${g.assist.name})` : '';\n      return `  ${g.time.elapsed}' ${g.player.name}${extra}${assist} — ${g.team.name}`;\n    }).join('\\n')\n  : '  Kein Tor';\n\nconst cardLines = cards.length > 0\n  ? cards.map(c => `  ${c.time.elapsed}' ${c.player.name} – ${c.detail} (${c.team.name})`).join('\\n')\n  : '  Keine';\n\nconst injurySection = injuries.length > 0\n  ? `\\nVERLETZUNGEN:\\n${injuries.map(i => `  ${i.time.elapsed}' ${i.player.name} (${i.team.name})`).join('\\n')}`\n  : '';\n\nconst subNote = subs.length >= 4 ? `\\n(${subs.length} Auswechslungen)` : '';\n\nconst prompt = `Du bist Liveticker-Redakteur für Eintracht Frankfurt. Schreibe einen ${phaseLabel} (2–3 lebhafte Sätze auf Deutsch, direkte Fansprache).\n\nSPIEL: ${homeTeam} vs ${awayTeam}\nSPIELSTAND: ${scoreDisplay}\n\nTORE:\\n${goalLines}\n\nKARTEN:\\n${cardLines}${injurySection}${subNote}\n\nSTATISTIKEN (${homeTeam} vs ${awayTeam}):\nBallbesitz: ${getStat(homeStats, 'Ball Possession')} vs ${getStat(awayStats, 'Ball Possession')}\nSchüsse gesamt: ${getStat(homeStats, 'Total Shots')} vs ${getStat(awayStats, 'Total Shots')}\nSchüsse aufs Tor: ${getStat(homeStats, 'Shots on Goal')} vs ${getStat(awayStats, 'Shots on Goal')}\nxG: ${getStat(homeStats, 'expected_goals')} vs ${getStat(awayStats, 'expected_goals')}\nEcken: ${getStat(homeStats, 'Corner Kicks')} vs ${getStat(awayStats, 'Corner Kicks')}\nFouls: ${getStat(homeStats, 'Fouls')} vs ${getStat(awayStats, 'Fouls')}\nPässe: ${getStat(homeStats, 'Total passes')} (${getStat(homeStats, 'Passes %')}) vs ${getStat(awayStats, 'Total passes')} (${getStat(awayStats, 'Passes %')})\n\nBESTE SPIELER: ${topPlayers.join(', ') || '–'}\n\nStil: ${style}. Keine reine Statistikaufzählung — interpretiere die Zahlen. Besondere Ereignisse (Verletzungen, Karten) erwähnen.`;\n\nreturn [{ json: { prompt, match_id: matchId, phase, style } }];"
+      },
+      "id": "d9546157-1c1f-43c0-bae2-b5c341be0dad",
+      "name": "Build Prompt",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1168,
+        -32
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://openrouter.ai/api/v1/chat/completions",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ model: 'google/gemini-2.0-flash-lite-001', messages: [{ role: 'user', content: $json.prompt }], max_tokens: 450 }) }}",
+        "options": {}
+      },
+      "id": "fe44b86a-70ac-49ca-91bf-c19ecaf2a77f",
+      "name": "OpenRouter",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1376,
+        -32
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "qgFPOEHRxazizzJI",
+          "name": "Header Auth account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const text = $('OpenRouter').first().json.choices?.[0]?.message?.content?.trim() ?? '';\nconst { match_id, phase } = $('Build Prompt').first().json;\n\nconst phaseMap = {\n  FirstHalfBreak: 'FirstHalfBreak',\n  After: 'After',\n  ExtraFirstHalf: 'ExtraFirstHalf',\n  SecondHalfBreak: 'SecondHalfBreak'\n};\n\nreturn [{\n  json: {\n    matchId: match_id,\n    body: {\n      sourceId: `summary-${match_id}-${phase}`,\n      sport: 'Football',\n      position: phase === 'FirstHalfBreak' ? 45 : 90,\n      time: phase === 'FirstHalfBreak' ? 45 : 90,\n      timeAdditional: 0,\n      description: text,\n      imageUrl: null,\n      videoUrl: null,\n      pushTitle: null,\n      pushDescription: null,\n      pushImageSrc: null,\n      embedHtml: null,\n      liveTickerPhaseType: phaseMap[phase] ?? 'After',\n      liveTickerEventType: 'PhaseChange',\n      players: []\n    }\n  }\n}];"
+      },
+      "id": "76912ece-2b72-49f0-81fe-78ebf1addb88",
+      "name": "Extract Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1600,
+        -32
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://partner-api.stackwork-01-test.tech/cms/v1/matches/{{ $json.matchId }}/events",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer 52091AC14B524E59DEF531D0EA8F57EF0804D4CFADCF4A1A52CE842687D2D209-1"
+            },
+            {
+              "name": "et-partner-id",
+              "value": "4"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json.body) }}",
+        "options": {}
+      },
+      "id": "7d052b7c-6163-4196-bfe1-3e9ad1010d67",
+      "name": "POST: LiveTicker Event",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1824,
+        -32
+      ],
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "1",
+              "name": "match_id",
+              "value": 1388536,
+              "type": "number"
+            },
+            {
+              "id": "2",
+              "name": "phase",
+              "value": "After",
+              "type": "string"
+            },
+            {
+              "id": "3",
+              "name": "style",
+              "value": "neutral",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "82ae4ea5-905f-49c9-8a23-58d07c23d7e0",
+      "name": "Konfiguration1",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        64,
+        224
+      ]
+    },
+    {
+      "parameters": {
+        "url": "=https://partner-api.stackwork-01-test.tech/cms/v1/matches/{{ $json.match_id }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer 52091AC14B524E59DEF531D0EA8F57EF0804D4CFADCF4A1A52CE842687D2D209-1"
+            },
+            {
+              "name": "et-partner-id",
+              "value": "4"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "15c5a89f-b5db-4f9f-a80e-531fc77be029",
+      "name": "Get Match1",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        288,
+        224
+      ]
+    },
+    {
+      "parameters": {
+        "url": "=https://v3.football.api-sports.io/fixtures/events?fixture={{ $('Get Match1').first().json.id }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {}
+      },
+      "id": "8296cc13-4298-42f9-94f9-334f13f51c4a",
+      "name": "Get Events1",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        512,
+        224
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "8TXlLPe7BeXnl0Ut",
+          "name": "Header Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "=https://v3.football.api-sports.io/fixtures/statistics?fixture={{ $('Get Match1').first().json.id }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {}
+      },
+      "id": "dec4db30-e183-4c22-a20d-203d4f02fe42",
+      "name": "Get Statistics1",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        736,
+        224
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "8TXlLPe7BeXnl0Ut",
+          "name": "Header Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "=https://v3.football.api-sports.io/fixtures/players?fixture={{ $('Get Match1').first().json.id }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {}
+      },
+      "id": "12b7ac42-e340-4ed1-b587-9dacb354b3c7",
+      "name": "Get Players1",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        960,
+        224
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "8TXlLPe7BeXnl0Ut",
+          "name": "Header Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const webhookBody = $('Konfiguration1').first().json;\nconst phase = webhookBody.phase;\nconst matchId = webhookBody.match_id;\nconst style = webhookBody.style ?? 'standard';\n\nconst match = $('Get Match1').first().json;\n// Partner-API gibt teamHomeId/teamAwayId als IDs zurück – Namen über Teams holen falls verfügbar\nconst homeTeamId = match.teamHomeId;\nconst awayTeamId = match.teamAwayId;\nconst homeScore = match.teamHomeScore ?? 0;\nconst awayScore = match.teamAwayScore ?? 0;\nconst competition = match.competitionId ?? '';\n\n// Team-Namen aus api-sports Statistics-Response holen\nconst stats = $('Get Statistics1').first().json.response ?? [];\nconst homeTeam = stats[0]?.team?.name ?? 'Heimteam';\nconst awayTeam = stats[1]?.team?.name ?? 'Auswärtsteam';\n\nconst events = $('Get Events1').first().json.response ?? [];\nconst playerTeams = $('Get Players1').first().json.response ?? [];\n\nconst maxMinute = phase === 'FirstHalfBreak' ? 45 : 999;\nconst goals = events.filter(e => e.type === 'Goal' && (e.time?.elapsed ?? 0) <= maxMinute);\nconst cards = events.filter(e => e.type === 'Card' && (e.time?.elapsed ?? 0) <= maxMinute);\nconst injuries = events.filter(e => e.detail === 'Injury' && (e.time?.elapsed ?? 0) <= maxMinute);\nconst subs = events.filter(e => e.type === 'subst' && (e.time?.elapsed ?? 0) <= maxMinute);\n\nconst homeStats = stats[0]?.statistics ?? [];\nconst awayStats = stats[1]?.statistics ?? [];\nconst getStat = (arr, name) => arr.find(s => s.type === name)?.value ?? '–';\n\nconst allPlayers = playerTeams.flatMap(t => t.players ?? []);\nconst topPlayers = allPlayers\n  .filter(p => p.statistics?.[0]?.games?.rating)\n  .sort((a, b) => parseFloat(b.statistics[0].games.rating) - parseFloat(a.statistics[0].games.rating))\n  .slice(0, 3)\n  .map(p => `${p.player.name} (${parseFloat(p.statistics[0].games.rating).toFixed(1)})`);\n\nconst homeGoalsCount = goals.filter(g => g.team.id === stats[0]?.team?.id).length;\nconst awayGoalsCount = goals.filter(g => g.team.id === stats[1]?.team?.id).length;\nconst scoreDisplay = phase === 'FirstHalfBreak'\n  ? `${homeGoalsCount}:${awayGoalsCount} (Halbzeit)`\n  : `${homeScore}:${awayScore} (Endstand)`;\n\nconst phaseLabel = {\n  FirstHalfBreak: 'Halbzeitbericht',\n  SecondHalfBreak: 'Bericht zur Verlängerungspause',\n  After: 'Spielbericht',\n  ExtraFirstHalf: 'Bericht nach erster Verlängerungshälfte',\n}[phase] ?? 'Bericht';\n\nconst goalLines = goals.length > 0\n  ? goals.map(g => {\n      const extra = g.detail === 'Penalty' ? ' [Elfmeter]' : g.detail === 'Own Goal' ? ' [Eigentor]' : '';\n      const assist = g.assist?.name ? ` (Assist: ${g.assist.name})` : '';\n      return `  ${g.time.elapsed}' ${g.player.name}${extra}${assist} — ${g.team.name}`;\n    }).join('\\n')\n  : '  Kein Tor';\n\nconst cardLines = cards.length > 0\n  ? cards.map(c => `  ${c.time.elapsed}' ${c.player.name} – ${c.detail} (${c.team.name})`).join('\\n')\n  : '  Keine';\n\nconst injurySection = injuries.length > 0\n  ? `\\nVERLETZUNGEN:\\n${injuries.map(i => `  ${i.time.elapsed}' ${i.player.name} (${i.team.name})`).join('\\n')}`\n  : '';\n\nconst subNote = subs.length >= 4 ? `\\n(${subs.length} Auswechslungen)` : '';\n\nconst prompt = `Du bist Liveticker-Redakteur für Eintracht Frankfurt. Schreibe einen ${phaseLabel} (2–3 lebhafte Sätze auf Deutsch, direkte Fansprache).\n\nSPIEL: ${homeTeam} vs ${awayTeam}\nSPIELSTAND: ${scoreDisplay}\n\nTORE:\\n${goalLines}\n\nKARTEN:\\n${cardLines}${injurySection}${subNote}\n\nSTATISTIKEN (${homeTeam} vs ${awayTeam}):\nBallbesitz: ${getStat(homeStats, 'Ball Possession')} vs ${getStat(awayStats, 'Ball Possession')}\nSchüsse gesamt: ${getStat(homeStats, 'Total Shots')} vs ${getStat(awayStats, 'Total Shots')}\nSchüsse aufs Tor: ${getStat(homeStats, 'Shots on Goal')} vs ${getStat(awayStats, 'Shots on Goal')}\nxG: ${getStat(homeStats, 'expected_goals')} vs ${getStat(awayStats, 'expected_goals')}\nEcken: ${getStat(homeStats, 'Corner Kicks')} vs ${getStat(awayStats, 'Corner Kicks')}\nFouls: ${getStat(homeStats, 'Fouls')} vs ${getStat(awayStats, 'Fouls')}\nPässe: ${getStat(homeStats, 'Total passes')} (${getStat(homeStats, 'Passes %')}) vs ${getStat(awayStats, 'Total passes')} (${getStat(awayStats, 'Passes %')})\n\nBESTE SPIELER: ${topPlayers.join(', ') || '–'}\n\nStil: ${style}. Keine reine Statistikaufzählung — interpretiere die Zahlen. Besondere Ereignisse (Verletzungen, Karten) erwähnen.`;\n\nreturn [{ json: { prompt, match_id: matchId, phase, style } }];"
+      },
+      "id": "ac5f9367-0f32-4557-b245-987692e3d902",
+      "name": "Build Prompt1",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1184,
+        224
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://openrouter.ai/api/v1/chat/completions",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ model: 'google/gemini-2.0-flash-lite-001', messages: [{ role: 'user', content: $json.prompt }], max_tokens: 450 }) }}",
+        "options": {}
+      },
+      "id": "e13a6d52-0ff1-4567-bd82-542d6b9e4b1b",
+      "name": "OpenRouter1",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1392,
+        224
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "qgFPOEHRxazizzJI",
+          "name": "Header Auth account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const text = $('OpenRouter1').first().json.choices?.[0]?.message?.content?.trim() ?? '';\nconst { match_id, phase } = $('Build Prompt1').first().json;\n\nconst phaseMap = {\n  FirstHalfBreak: 'FirstHalfBreak',\n  After: 'After',\n  ExtraFirstHalf: 'ExtraFirstHalf',\n  SecondHalfBreak: 'SecondHalfBreak'\n};\n\nreturn [{\n  json: {\n    matchId: match_id,\n    body: {\n      sourceId: `summary-${match_id}-${phase}`,\n      sport: 'Football',\n      position: phase === 'FirstHalfBreak' ? 45 : 90,\n      time: phase === 'FirstHalfBreak' ? 45 : 90,\n      timeAdditional: 0,\n      description: text,\n      imageUrl: null,\n      videoUrl: null,\n      pushTitle: null,\n      pushDescription: null,\n      pushImageSrc: null,\n      embedHtml: null,\n      liveTickerPhaseType: phaseMap[phase] ?? 'After',\n      liveTickerEventType: 'PhaseChange',\n      players: []\n    }\n  }\n}];"
+      },
+      "id": "331caae6-88b2-45dd-94fc-9271f2cfa45e",
+      "name": "Extract Response1",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1616,
+        224
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://partner-api.stackwork-01-test.tech/cms/v1/matches/{{ $json.matchId }}/events",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer 52091AC14B524E59DEF531D0EA8F57EF0804D4CFADCF4A1A52CE842687D2D209-1"
+            },
+            {
+              "name": "et-partner-id",
+              "value": "4"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json.body) }}",
+        "options": {}
+      },
+      "id": "df291ea1-cbf7-4260-a166-abc60bc4c2cf",
+      "name": "POST: LiveTicker Event1",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1840,
+        224
+      ],
+      "onError": "continueRegularOutput"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Manual Trigger": {
+      "main": [
+        [
+          {
+            "node": "Konfiguration",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Konfiguration": {
+      "main": [
+        [
+          {
+            "node": "Get Match",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Match": {
+      "main": [
+        [
+          {
+            "node": "Get Events",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Events": {
+      "main": [
+        [
+          {
+            "node": "Get Statistics",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Statistics": {
+      "main": [
+        [
+          {
+            "node": "Get Players",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Players": {
+      "main": [
+        [
+          {
+            "node": "Build Prompt",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Prompt": {
+      "main": [
+        [
+          {
+            "node": "OpenRouter",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter": {
+      "main": [
+        [
+          {
+            "node": "Extract Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Response": {
+      "main": [
+        [
+          {
+            "node": "POST: LiveTicker Event",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Konfiguration1": {
+      "main": [
+        [
+          {
+            "node": "Get Match1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Match1": {
+      "main": [
+        [
+          {
+            "node": "Get Events1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Events1": {
+      "main": [
+        [
+          {
+            "node": "Get Statistics1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Statistics1": {
+      "main": [
+        [
+          {
+            "node": "Get Players1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Players1": {
+      "main": [
+        [
+          {
+            "node": "Build Prompt1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Prompt1": {
+      "main": [
+        [
+          {
+            "node": "OpenRouter1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter1": {
+      "main": [
+        [
+          {
+            "node": "Extract Response1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Response1": {
+      "main": [
+        [
+          {
+            "node": "POST: LiveTicker Event1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "e6f95ffd-a388-43ef-939f-02610b500094",
+  "meta": {
+    "instanceId": "8f356ecf824174491100e48f7fade606f544a76873378b03e211127fbec11c97"
+  },
+  "id": "8LCHF3FBVg610UYZ",
+  "tags": []
+}
