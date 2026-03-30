@@ -93,10 +93,7 @@ export function useEventDraft() {
         (t) => t.event_id === eventId && t.status !== "rejected",
       );
       try {
-        if (existing) {
-          await api.deleteTicker(existing.id);
-          await reload.loadTickerTexts();
-        }
+        if (existing) await api.deleteTicker(existing.id);
         await onGenerate(eventId, style);
       } catch (err) {
         logger.error("handleRegenerateEventDraft failed", err);

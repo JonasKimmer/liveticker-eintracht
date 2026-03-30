@@ -132,6 +132,7 @@ async def call_llm(
         logger.warning(
             "Stil-Beschreibung konnte nicht aus DB geladen werden", exc_info=True
         )
+        db.rollback()
         style_desc = STYLE_DESC.get(style)
 
     style_references: list[str] = []
