@@ -35,7 +35,10 @@ class StyleReferenceRepository:
         ]
 
         if league:
-            results = self._random_sample(base_filters + [StyleReference.league == league], limit)
+            results = self._random_sample(
+                base_filters + [func.lower(StyleReference.league) == league.lower()],
+                limit,
+            )
             if len(results) >= limit:
                 return results
             # Fallback: ohne League-Filter
