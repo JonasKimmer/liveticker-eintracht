@@ -20,7 +20,7 @@ export function useMatchCore(selectedMatchId: number | null) {
   const [lineups, setLineups] = useState<LineupEntry[]>([]);
   const [matchStats, setMatchStats] = useState<MatchStat[]>([]);
   const [playerStats, setPlayerStats] = useState<PlayerStat[]>([]);
-  const [injuries, setInjuries] = useState<InjuryGroup[] | null>(null);
+  const [injuries, setInjuries] = useState<InjuryGroup[]>([]);
   const [loading, setLoading] = useState(false);
   const matchRef = useRef<Match | null>(null);
 
