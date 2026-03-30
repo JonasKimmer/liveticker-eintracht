@@ -24,7 +24,7 @@ export function ClipPublishModal({ clip, matchId, currentMinute, onClose, onPubl
   useEffect(() => {
     if (!clip.player_name) return;
     setGenerating(true);
-    generateClipDraft(clip.id, matchId, style)
+    generateClipDraft(Number(clip.id), matchId, style)
       .then((res) => setText(res.data.text ?? ""))
       .catch((err) => logger.warn("[ClipPickerPanel] generateClipDraft silenced:", err?.message))
       .finally(() => setGenerating(false));
@@ -34,7 +34,7 @@ export function ClipPublishModal({ clip, matchId, currentMinute, onClose, onPubl
     setGenerating(true);
     setError(null);
     try {
-      const res = await generateClipDraft(clip.id, matchId, style);
+      const res = await generateClipDraft(Number(clip.id), matchId, style);
       setText(res.data.text ?? "");
     } catch {
       setError("KI-Generierung fehlgeschlagen.");
@@ -52,7 +52,7 @@ export function ClipPublishModal({ clip, matchId, currentMinute, onClose, onPubl
       if (clip._fromN8n) {
         await publishClipTicker(matchId, text.trim(), clip.video_url, clip.thumbnail_url, minute || null);
       } else {
-        await publishClip(clip.id, matchId, text.trim(), minute || null, null, null);
+        await publishClip(Number(clip.id), matchId, text.trim(), minute || null, null, null);
       }
       onPublished(clip.id);
     } catch (err) {

@@ -212,6 +212,13 @@ export interface PlayerStat {
 // ── MatchStat ─────────────────────────────────────────────────
 export interface MatchStat {
   teamId: number;
+  possessionPercentage?: number | null;
+  goalScoringAttempt?: number | null;
+  goalOnTargetScoringAttempt?: number | null;
+  totalPass?: number | null;
+  cornerTaken?: number | null;
+  fouls?: number | null;
+  totalOffside?: number | null;
   [key: string]: unknown;
 }
 
@@ -228,6 +235,19 @@ export interface PublishPayload {
   icon?: string | null;
   minute?: number | null;
   phase?: MatchPhase | null;
+}
+
+// ── InjuryGroup ───────────────────────────────────────────────
+export interface InjuryPlayer {
+  player_name?: string;
+  name?: string;
+  reason?: string;
+}
+
+export interface InjuryGroup {
+  team_id?: number;
+  team_name?: string;
+  players?: InjuryPlayer[];
 }
 
 // ── RoundLabel ────────────────────────────────────────────────

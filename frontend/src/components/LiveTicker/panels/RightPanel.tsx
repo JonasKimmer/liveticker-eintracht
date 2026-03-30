@@ -9,13 +9,7 @@ import { FormationColumn } from "../components/FormationColumn";
 import { StatRow } from "../components/StatRow";
 import { useRightPanelData } from "../hooks/useRightPanelData";
 
-import type { Match, MatchEvent, Player, LineupEntry, PlayerStat, MatchStat } from "../../../types";
-
-interface InjuryGroup {
-  team_id?: number;
-  team_name?: string;
-  players?: { player_name?: string; name?: string; reason?: string }[];
-}
+import type { Match, MatchEvent, Player, LineupEntry, PlayerStat, MatchStat, InjuryGroup } from "../../../types";
 
 interface RightPanelProps {
   match: Match | null;
@@ -87,15 +81,17 @@ export const RightPanel = memo(function RightPanel({
             awayVal={awayStats.possessionPercentage}
             standalone
           />
-          {[
-            ["Schüsse", homeStats.goalScoringAttempt, awayStats.goalScoringAttempt],
-            ["aufs Tor", homeStats.goalOnTargetScoringAttempt, awayStats.goalOnTargetScoringAttempt],
-            ["Pässe", homeStats.totalPass, awayStats.totalPass],
-            ["Ecken", homeStats.cornerTaken, awayStats.cornerTaken],
-            ["Fouls", homeStats.fouls, awayStats.fouls],
-            ["Abseits", homeStats.totalOffside, awayStats.totalOffside],
-          ].map(([lbl, h, a]) => (
-            <StatRow key={lbl} label={lbl} home={h} away={a} homeVal={h} awayVal={a} />
+          {(
+            [
+              ["Schüsse", homeStats.goalScoringAttempt, awayStats.goalScoringAttempt],
+              ["aufs Tor", homeStats.goalOnTargetScoringAttempt, awayStats.goalOnTargetScoringAttempt],
+              ["Pässe", homeStats.totalPass, awayStats.totalPass],
+              ["Ecken", homeStats.cornerTaken, awayStats.cornerTaken],
+              ["Fouls", homeStats.fouls, awayStats.fouls],
+              ["Abseits", homeStats.totalOffside, awayStats.totalOffside],
+            ] as [string, number | null | undefined, number | null | undefined][]
+          ).map(([lbl, h, a]) => (
+            <StatRow key={lbl} label={lbl} home={h ?? 0} away={a ?? 0} homeVal={h} awayVal={a} />
           ))}
         </Collapsible>
       )}

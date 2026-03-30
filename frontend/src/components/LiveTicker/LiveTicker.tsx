@@ -351,7 +351,6 @@ export default function LiveTicker() {
                     players={players}
                     playerStats={playerStats}
                     lineups={lineups}
-                    prematch={prematch}
                     events={events}
                     injuries={injuries}
                   />

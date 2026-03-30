@@ -14,19 +14,7 @@ import { useMemo, useCallback } from "react";
  * @param {Array}  opts.events
  * @param {Array}  opts.injuries
  */
-import type { Match, MatchEvent, Player, LineupEntry, PlayerStat, MatchStat } from "../../../types";
-
-interface InjuryPlayer {
-  player_name?: string;
-  name?: string;
-  reason?: string;
-}
-
-interface InjuryGroup {
-  team_id?: number;
-  team_name?: string;
-  players?: InjuryPlayer[];
-}
+import type { Match, MatchEvent, Player, LineupEntry, PlayerStat, MatchStat, InjuryGroup } from "../../../types";
 
 interface UseRightPanelDataParams {
   match: Match | null;

@@ -5,7 +5,7 @@ import { Dropdown } from "./Dropdown";
 import { MatchdayPicker } from "./MatchdayPicker";
 import type { Team, Competition, Match } from "../../../types";
 
-interface StartScreenProps {
+export interface StartScreenProps {
   countries: string[];
   selCountry: string | null;
   onCountryChange: (c: string) => void;

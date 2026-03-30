@@ -46,7 +46,7 @@ export function MediaPublishModal({ image, matchId, onClose, onPublished, player
     setGenerating(true);
     setError(null);
     try {
-      const res = await generateMediaCaption(image.media_id);
+      const res = await generateMediaCaption(Number(image.media_id));
       setDescription(res.data.text);
       textareaRef.current?.focus();
     } catch {
@@ -76,7 +76,7 @@ export function MediaPublishModal({ image, matchId, onClose, onPublished, player
     setLoading(true);
     setError(null);
     try {
-      await publishMedia({ mediaId: image.media_id, description: textToPublish, matchId, minute: minute || null, icon });
+      await publishMedia({ mediaId: Number(image.media_id), description: textToPublish, matchId, minute: minute || null, icon });
       onPublished(image.media_id);
     } catch (err) {
       setError(err.response?.data?.detail || err.message);

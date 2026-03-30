@@ -2,11 +2,12 @@
 // NavDrawer.jsx — Slide-in Drawer für Match-Wechsel
 // ============================================================
 import { StartScreen } from "./StartScreen";
+import type { StartScreenProps } from "./StartScreen";
 
 interface NavDrawerProps {
   open: boolean;
   onClose: () => void;
-  navProps: Record<string, any>;
+  navProps: StartScreenProps;
 }
 
 export function NavDrawer({ open, onClose, navProps }: NavDrawerProps) {
