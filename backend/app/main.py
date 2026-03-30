@@ -21,7 +21,7 @@ from app.api.v1 import (
     media,
     players,
     clips,
-    settings,
+    settings as settings_router,
 )
 from app.core.config import settings
 from app.core.database import Base, engine, check_database_connection
@@ -81,7 +81,7 @@ app.include_router(media.router, prefix=PREFIX)
 app.include_router(media.ws_router)  # WebSocket ohne /api/v1 Prefix → /ws/media
 app.include_router(players.router, prefix=PREFIX)
 app.include_router(clips.router, prefix=PREFIX)
-app.include_router(settings.router, prefix=PREFIX)
+app.include_router(settings_router.router, prefix=PREFIX)
 
 
 app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
