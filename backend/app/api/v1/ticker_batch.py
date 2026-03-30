@@ -74,8 +74,12 @@ async def generate_bulk_for_match(
             )
             entry = ticker_repo.create(
                 ts.make_ai_entry(
-                    match_id, text, model_used, data.style,
+                    match_id,
+                    text,
+                    model_used,
+                    data.style,
                     event_id=event.id,
+                    instance=data.instance,
                     status=TickerStatus.draft,
                 )
             )
@@ -87,7 +91,10 @@ async def generate_bulk_for_match(
     if failed:
         logger.warning(
             "generate-bulk match_id=%s: %d/%d events failed: %s",
-            match_id, len(failed), len(events), failed,
+            match_id,
+            len(failed),
+            len(events),
+            failed,
         )
 
     return results

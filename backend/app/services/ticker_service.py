@@ -125,12 +125,18 @@ async def call_llm(
         normalized = _llm_svc._normalize_event_type(event_type)
         league = match_context.get("league") if match_context else None
         refs = StyleReferenceRepository(db).get_samples(
-            event_type=normalized, instance=instance, limit=3, league=league,
+            event_type=normalized,
+            instance=instance,
+            limit=3,
+            league=league,
         )
         style_references = [r.text for r in refs]
         logger.debug(
             "Stilreferenzen geladen: %d für event_type=%s instance=%s league=%s",
-            len(refs), normalized, instance, league,
+            len(refs),
+            normalized,
+            instance,
+            league,
         )
     except Exception:
         logger.warning("Stilreferenzen konnten nicht geladen werden", exc_info=True)
@@ -166,6 +172,7 @@ def make_ai_entry(
     phase: Optional[str] = None,
     minute: Optional[int] = None,
     icon: Optional[str] = None,
+    instance: Optional[str] = None,
 ) -> TickerEntryCreate:
     """Erstellt ein TickerEntryCreate-Schema für einen KI-generierten Eintrag."""
     return TickerEntryCreate(
@@ -175,6 +182,7 @@ def make_ai_entry(
         text=text,
         source="ai",
         style=style,
+        instance=instance,
         llm_model=model_used,
         phase=phase,
         minute=minute,

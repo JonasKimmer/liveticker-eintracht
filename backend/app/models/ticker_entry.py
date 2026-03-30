@@ -1,4 +1,13 @@
-from sqlalchemy import Column, Enum as SAEnum, Index, Integer, String, Text, TIMESTAMP, ForeignKey
+from sqlalchemy import (
+    Column,
+    Enum as SAEnum,
+    Index,
+    Integer,
+    String,
+    Text,
+    TIMESTAMP,
+    ForeignKey,
+)
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from app.core.database import Base
@@ -10,7 +19,10 @@ class TickerEntry(Base):
 
     id = Column(Integer, primary_key=True)
     match_id = Column(
-        Integer, ForeignKey("matches.id", ondelete="CASCADE"), nullable=False, index=True
+        Integer,
+        ForeignKey("matches.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
     )
     event_id = Column(
         Integer, ForeignKey("events.id", ondelete="SET NULL"), nullable=True
@@ -20,6 +32,7 @@ class TickerEntry(Base):
     )
     text = Column(Text, nullable=False)
     style = Column(String(50), nullable=True)
+    instance = Column(String(20), nullable=True)
     icon = Column(String(50), nullable=True)
     llm_model = Column(String(100), nullable=True)
     status = Column(
@@ -36,7 +49,9 @@ class TickerEntry(Base):
     phase = Column(String(50), nullable=True)
     image_url = Column(Text, nullable=True)
     video_url = Column(Text, nullable=True)
-    created_at = Column(TIMESTAMP(timezone=True), server_default=func.now(), nullable=False)
+    created_at = Column(
+        TIMESTAMP(timezone=True), server_default=func.now(), nullable=False
+    )
 
     match = relationship("Match", back_populates="ticker_entries")
     event = relationship("Event", back_populates="ticker_entries")

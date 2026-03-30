@@ -19,6 +19,7 @@ class TickerEntryCreate(BaseModel):
     synthetic_event_id: Optional[int] = Field(None, gt=0)
     text: str = Field("", max_length=5000)
     style: Optional[str] = Field(None, max_length=50)
+    instance: Optional[str] = Field(None, max_length=20)
     icon: Optional[str] = Field(None, max_length=50)
     llm_model: Optional[str] = Field(None, max_length=100)
     status: TickerStatus = TickerStatus.draft
@@ -93,6 +94,7 @@ class TickerEntryResponse(BaseModel):
     synthetic_event_id: Optional[int] = None
     text: str
     style: Optional[str] = None
+    instance: Optional[str] = None
     icon: Optional[str] = None
     llm_model: Optional[str] = None
     status: TickerStatus

@@ -74,10 +74,14 @@ async def _generate_synthetic_entry(
 
     return ticker_repo.create(
         ts.make_ai_entry(
-            match_id, text, model_used, data.style,
+            match_id,
+            text,
+            model_used,
+            data.style,
             synthetic_event_id=synthetic_event_id,
             phase=phase,
             minute=minute,
+            instance=data.instance,
             status=TickerStatus.published if data.auto_publish else TickerStatus.draft,
         )
     )
@@ -171,9 +175,13 @@ async def generate_for_event(
 
     return ticker_repo.create(
         ts.make_ai_entry(
-            event.match_id, text, model_used, data.style,
+            event.match_id,
+            text,
+            model_used,
+            data.style,
             event_id=event_id,
             minute=event.time,
+            instance=data.instance,
             status=TickerStatus.published if data.auto_publish else TickerStatus.draft,
         )
     )
@@ -189,7 +197,10 @@ async def generate_for_synthetic_event(
     data: GenerateSyntheticRequest,
     db: Session = Depends(get_db),
 ) -> TickerEntryResponse:
-    synthetic = require_or_404(SyntheticEventRepository(db).get_by_id(data.synthetic_event_id), "SyntheticEvent not found")
+    synthetic = require_or_404(
+        SyntheticEventRepository(db).get_by_id(data.synthetic_event_id),
+        "SyntheticEvent not found",
+    )
 
     match = MatchRepository(db).load_with_teams(synthetic.match_id)
     match_context = ts.build_match_context(match, synthetic.minute)
@@ -221,10 +232,14 @@ async def generate_for_synthetic_event(
 
     return TickerEntryRepository(db).create(
         ts.make_ai_entry(
-            synthetic.match_id, text, model_used, data.style,
+            synthetic.match_id,
+            text,
+            model_used,
+            data.style,
             synthetic_event_id=synthetic.id,
             phase=phase,
             minute=event_minute,
+            instance=data.instance,
             status=TickerStatus.published if data.auto_publish else TickerStatus.draft,
         )
     )
@@ -280,7 +295,10 @@ async def generate_synthetic_batch(
     if failed:
         logger.warning(
             "generate-synthetic-batch match_id=%s: %d/%d items failed: %s",
-            match_id, len(failed), len(synthetics), failed,
+            match_id,
+            len(failed),
+            len(synthetics),
+            failed,
         )
 
     return results
@@ -299,7 +317,9 @@ async def generate_match_phases(
     ),
     db: Session = Depends(get_db),
 ) -> list[TickerEntryResponse]:
-    match = require_or_404(MatchRepository(db).load_with_teams(match_id), "Match not found")
+    match = require_or_404(
+        MatchRepository(db).load_with_teams(match_id), "Match not found"
+    )
 
     ticker_repo = TickerEntryRepository(db)
     synth_repo = SyntheticEventRepository(db)
@@ -334,7 +354,10 @@ async def generate_match_phases(
     if failed:
         logger.warning(
             "generate-match-phases match_id=%s: %d/%d phases failed: %s",
-            match_id, len(failed), len(STANDARD_PHASES), failed,
+            match_id,
+            len(failed),
+            len(STANDARD_PHASES),
+            failed,
         )
 
     return results
