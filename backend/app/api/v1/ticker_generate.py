@@ -39,6 +39,50 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/ticker", tags=["Ticker"])
 
 
+async def _generate_synthetic_entry(
+    *,
+    match_id: int,
+    event_type: str,
+    minute: Optional[int],
+    context_data: dict,
+    match_context: dict,
+    synthetic_event_id: int,
+    phase: str,
+    ticker_repo: TickerEntryRepository,
+    data: GenerateSyntheticBatchRequest,
+    db: Session,
+    failed: list,
+    failed_key: object,
+) -> Optional[TickerEntryResponse]:
+    """Gemeinsame LLM-Aufruf + Entry-Erstellungs-Logik für Batch- und Phasen-Generierung."""
+    try:
+        text, model_used = await ts.call_llm(
+            event_type=event_type,
+            event_detail="",
+            minute=minute,
+            style=data.style,
+            language=data.language,
+            context_data=context_data,
+            match_context=match_context,
+            db=db,
+            instance=data.instance,
+        )
+    except Exception as exc:
+        logger.exception("Synthetic generation failed for %s", failed_key)
+        failed.append((failed_key, str(exc)))
+        return None
+
+    return ticker_repo.create(
+        ts.make_ai_entry(
+            match_id, text, model_used, data.style,
+            synthetic_event_id=synthetic_event_id,
+            phase=phase,
+            minute=minute,
+            status=TickerStatus.published if data.auto_publish else TickerStatus.draft,
+        )
+    )
+
+
 async def _call_llm_or_502(context_info: str, **kwargs) -> tuple[str, str]:
     """Ruft ts.call_llm() auf und wandelt Fehler in HTTP 502 um.
 
@@ -214,35 +258,23 @@ async def generate_synthetic_batch(
             continue
 
         match_context = ts.build_match_context(match, synthetic.minute)
-        try:
-            text, model_used = await ts.call_llm(
-                event_type=synthetic.type or "comment",
-                event_detail="",
-                minute=synthetic.minute,
-                style=data.style,
-                language=data.language,
-                context_data=synthetic.data or {},
-                match_context=match_context,
-                db=db,
-                instance=data.instance,
-            )
-        except Exception as exc:
-            logger.exception(
-                "Batch synthetic generation failed for id=%s", synthetic.id
-            )
-            failed.append((synthetic.id, str(exc)))
-            continue
-
         phase = resolve_phase(synthetic.type or "")
-        entry = ticker_repo.create(
-            ts.make_ai_entry(
-                match_id, text, model_used, data.style,
-                synthetic_event_id=synthetic.id,
-                phase=phase,
-                status=TickerStatus.published if data.auto_publish else TickerStatus.draft,
-            )
+        entry = await _generate_synthetic_entry(
+            match_id=match_id,
+            event_type=synthetic.type or "comment",
+            minute=synthetic.minute,
+            context_data=synthetic.data or {},
+            match_context=match_context,
+            synthetic_event_id=synthetic.id,
+            phase=phase,
+            ticker_repo=ticker_repo,
+            data=data,
+            db=db,
+            failed=failed,
+            failed_key=synthetic.id,
         )
-        results.append(entry)
+        if entry:
+            results.append(entry)
 
     if failed:
         logger.warning(
@@ -281,35 +313,22 @@ async def generate_match_phases(
             match_id, event_type, {"minute": default_minute}
         )
         match_context = ts.build_match_context(match, default_minute)
-        try:
-            text, model_used = await ts.call_llm(
-                event_type=event_type,
-                event_detail="",
-                minute=default_minute,
-                style=data.style,
-                language=data.language,
-                context_data={},
-                match_context=match_context,
-                db=db,
-                instance=data.instance,
-            )
-        except Exception as exc:
-            logger.exception(
-                "Phase generation failed for match_id=%s type=%s", match_id, event_type
-            )
-            failed.append((event_type, str(exc)))
-            continue
-
-        entry = ticker_repo.create(
-            ts.make_ai_entry(
-                match_id, text, model_used, data.style,
-                synthetic_event_id=synthetic.id,
-                phase=phase,
-                minute=default_minute,
-                status=TickerStatus.published if data.auto_publish else TickerStatus.draft,
-            )
+        entry = await _generate_synthetic_entry(
+            match_id=match_id,
+            event_type=event_type,
+            minute=default_minute,
+            context_data={},
+            match_context=match_context,
+            synthetic_event_id=synthetic.id,
+            phase=phase,
+            ticker_repo=ticker_repo,
+            data=data,
+            db=db,
+            failed=failed,
+            failed_key=event_type,
         )
-        results.append(entry)
+        if entry:
+            results.append(entry)
 
     if failed:
         logger.warning(

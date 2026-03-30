@@ -363,6 +363,16 @@ class LLMService:
         )
         return random.choice(choices)
 
+    def _call_openai_compatible_raw(self, prompt: str, temperature: float) -> str:
+        """Low-level call to an OpenAI-compatible endpoint (openai / openrouter)."""
+        response = self._client.chat.completions.create(
+            model=self.model,
+            messages=[{"role": "user", "content": prompt}],
+            max_tokens=LLM_MAX_TOKENS,
+            temperature=temperature,
+        )
+        return response.choices[0].message.content.strip()
+
     def _generate_openai_compatible_text(
         self,
         event_type: str,
@@ -389,13 +399,7 @@ class LLMService:
             context_data,
             style_references,
         )
-        response = self._client.chat.completions.create(
-            model=self.model,
-            messages=[{"role": "user", "content": prompt}],
-            max_tokens=LLM_MAX_TOKENS,
-            temperature=LLM_TEMPERATURE,
-        )
-        return response.choices[0].message.content.strip()
+        return self._call_openai_compatible_raw(prompt, LLM_TEMPERATURE)
 
     def _generate_openrouter_text(self, **kwargs: object) -> str:
         return self._generate_openai_compatible_text(**kwargs)
@@ -440,13 +444,7 @@ class LLMService:
         )
 
         if self.provider in ("openai", "openrouter"):
-            response = self._client.chat.completions.create(
-                model=self.model,
-                messages=[{"role": "user", "content": prompt}],
-                max_tokens=LLM_MAX_TOKENS,
-                temperature=LLM_TRANSLATION_TEMPERATURE,
-            )
-            return response.choices[0].message.content.strip()
+            return self._call_openai_compatible_raw(prompt, LLM_TRANSLATION_TEMPERATURE)
         elif self.provider == "gemini":
             response = self._client.models.generate_content(model=self.model, contents=prompt)
             return response.text.strip()

@@ -11,16 +11,16 @@ import { resolvePollingInterval } from "../utils/resolvePollingInterval";
  *
  * @param {number|null} selectedMatchId
  */
-import type { Match, Player, LineupEntry, PlayerStat, MatchStat } from "../types";
+import type { Match, Player, LineupEntry, PlayerStat, MatchStat, TickerEntry } from "../types";
 
 export function useMatchCore(selectedMatchId: number | null) {
   const [match, setMatch] = useState<Match | null>(null);
   const [players, setPlayers] = useState<Player[]>([]);
-  const [prematch, setPrematch] = useState<any[]>([]);
+  const [prematch, setPrematch] = useState<TickerEntry[]>([]);
   const [lineups, setLineups] = useState<LineupEntry[]>([]);
   const [matchStats, setMatchStats] = useState<MatchStat[]>([]);
   const [playerStats, setPlayerStats] = useState<PlayerStat[]>([]);
-  const [injuries, setInjuries] = useState<any[]>([]);
+  const [injuries, setInjuries] = useState<unknown>(null);
   const [loading, setLoading] = useState(false);
   const matchRef = useRef<Match | null>(null);
 

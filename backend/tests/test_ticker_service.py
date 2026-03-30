@@ -60,27 +60,37 @@ class TestScoreAtEvent:
 
     def test_returns_score_string_for_goal(self):
         event_repo = MagicMock()
-        # Simulate: 1 goal before this event (the own goal)
+        # Simuliert 1 Tor vor diesem Event (home_team_id=1, external_id=1)
         goal_event = MagicMock()
         goal_event.event_type = "goal"
         goal_event.id = 10
-        goal_event.description = ""
+        goal_event.description = '{"team_id": 1}'
         event_repo.get_goals_up_to.return_value = [goal_event]
 
-        event = _make_event(event_type="goal", position=5)
         match = _make_match(home_score=1, away_score=0)
+        match.home_team.external_id = 1
+        match.away_team.external_id = 2
+        event = _make_event(event_type="goal", position=5)
 
         result = score_at_event(event_repo, event, match)
-        # Result should be a score string or None
-        assert result is None or isinstance(result, str)
+        assert result == "1:0"
 
     def test_own_goal_counted_for_opponent(self):
         event_repo = MagicMock()
-        event_repo.get_goals_up_to.return_value = []
-        event = _make_event(event_type="own_goal")
+        # Eigentor von home_team → zählt für away
+        og_event = MagicMock()
+        og_event.event_type = "own_goal"
+        og_event.id = 11
+        og_event.description = '{"team_id": 1}'
+        event_repo.get_goals_up_to.return_value = [og_event]
+
         match = _make_match()
+        match.home_team.external_id = 1
+        match.away_team.external_id = 2
+        event = _make_event(event_type="own_goal")
+
         result = score_at_event(event_repo, event, match)
-        assert result is None or isinstance(result, str)
+        assert result == "0:1"
 
 
 # ── build_match_context ───────────────────────────────────────────────────────

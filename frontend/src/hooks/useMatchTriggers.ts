@@ -20,6 +20,7 @@ import { useEffect, useRef } from "react";
 import * as api from "../api";
 import logger from "../utils/logger";
 import { MATCH_PHASES } from "../components/LiveTicker/constants";
+import type { Match, MatchEvent, TickerEntry, ReloadFunctions } from "../types";
 
 const PHASE_TO_STATUS: Record<string, string> = {
   [MATCH_PHASES.FIRST_HALF]: "1H",
@@ -31,8 +32,6 @@ const PHASE_TO_STATUS: Record<string, string> = {
   [MATCH_PHASES.EXTRA_SECOND_HALF_BREAK]: "BT",
   [MATCH_PHASES.PENALTY_SHOOTOUT]: "P",
 };
-
-import type { Match, MatchEvent, TickerEntry, ReloadFunctions } from "../types";
 
 export function useMatchTriggers({
   selMatchId,
@@ -59,6 +58,12 @@ export function useMatchTriggers({
   tickerMode?: string;
   reload: ReloadFunctions & { loadPrematch?: () => void; loadLineups?: () => void; loadMatchStats?: () => void; loadPlayerStats?: () => void };
 }) {
+  // Reload-Delays nach n8n-Trigger: LLM kann 5–30s brauchen, daher gestaffelte Reloads.
+  // Anchor-Reloads starten sofort nach dem Trigger-Aufruf.
+  const POST_MATCH_RELOAD_DELAYS_MS = [10000, 20000, 35000, 55000, 80000, 110000];
+  // Post-LLM-Reloads starten nach Antwort des n8n-Webhooks (sequenzielle Generierung).
+  const POST_LLM_RELOAD_DELAYS_MS   = [4000, 9000, 16000, 24000, 35000];
+
   // Hält die aktuell aktive Match-ID für Timeout-Guards (Flash-Bug-Fix).
   // Timeouts prüfen vor Ausführung ob noch dasselbe Spiel aktiv ist —
   // verhindert stale-Closures ohne Cleanup/Cancel der Timeouts.
@@ -167,7 +172,7 @@ export function useMatchTriggers({
 
     // Anchor-Reloads ab jetzt — unabhängig vom API-Timing (n8n kann busy sein)
     const scheduledFor = selMatchId;
-    [10000, 20000, 35000, 55000, 80000, 110000].forEach((delay) => {
+    POST_MATCH_RELOAD_DELAYS_MS.forEach((delay) => {
       setTimeout(() => {
         if (currentMatchIdRef.current === scheduledFor)
           reload.loadTickerTexts();
@@ -186,7 +191,7 @@ export function useMatchTriggers({
       )
       .then(() => {
         // Zusätzliche Reloads nach API-Antwort (LLM sequenziell je ~5s)
-        [4000, 9000, 16000, 24000, 35000].forEach((delay) => {
+        POST_LLM_RELOAD_DELAYS_MS.forEach((delay) => {
           setTimeout(() => {
             if (currentMatchIdRef.current === scheduledFor)
               reload.loadTickerTexts();
@@ -248,7 +253,7 @@ export function useMatchTriggers({
 
     // Anchor-Reloads ab jetzt — unabhängig vom API-Timing (n8n kann busy sein)
     const scheduledFor = selMatchId;
-    [10000, 20000, 35000, 55000, 80000, 110000].forEach((delay) => {
+    POST_MATCH_RELOAD_DELAYS_MS.forEach((delay) => {
       setTimeout(() => {
         if (currentMatchIdRef.current === scheduledFor)
           reload.loadTickerTexts();

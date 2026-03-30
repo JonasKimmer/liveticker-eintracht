@@ -18,16 +18,17 @@ import { useAutoPublisher } from "../hooks/useAutoPublisher";
 import { useBulkActions } from "../hooks/useBulkActions";
 import { useEventDraft } from "../hooks/useEventDraft";
 import config from "config/whitelabel";
+import type { LineupEntry, Player } from "../../../types";
 
 interface CenterPanelProps {
   currentMinute?: number;
   generatingId: number | null;
   instance?: string;
-  lineups: any[];
-  players: any[];
+  lineups: LineupEntry[];
+  players: Player[];
 }
 
-export const CenterPanel: any = memo(function CenterPanel({
+export const CenterPanel = memo<CenterPanelProps>(function CenterPanel({
   currentMinute = 0,
   generatingId,
   instance = "ef_whitelabel",
