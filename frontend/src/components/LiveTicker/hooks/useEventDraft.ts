@@ -92,10 +92,18 @@ export function useEventDraft() {
       const existing = tickerTexts.find(
         (t) => t.event_id === eventId && t.status !== "rejected",
       );
-      if (existing) await api.deleteTicker(existing.id);
-      await onGenerate(eventId, style);
+      try {
+        if (existing) {
+          await api.deleteTicker(existing.id);
+          await reload.loadTickerTexts();
+        }
+        await onGenerate(eventId, style);
+      } catch (err) {
+        logger.error("handleRegenerateEventDraft failed", err);
+        await reload.loadTickerTexts();
+      }
     },
-    [tickerTexts, onGenerate],
+    [tickerTexts, onGenerate, reload],
   );
 
   const handleAcceptDraft = useCallback(async () => {

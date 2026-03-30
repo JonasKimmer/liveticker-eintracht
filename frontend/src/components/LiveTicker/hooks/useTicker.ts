@@ -122,6 +122,7 @@ export function useTicker({ selMatchId, reload, instance, language }: UseTickerP
         await reload.loadTickerTexts();
       } catch (err) {
         logger.error("generateTicker error:", err);
+        await reload.loadTickerTexts();
       } finally {
         setGeneratingId(null);
       }
