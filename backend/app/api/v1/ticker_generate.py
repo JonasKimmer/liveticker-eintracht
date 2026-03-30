@@ -173,6 +173,7 @@ async def generate_for_event(
         ts.make_ai_entry(
             event.match_id, text, model_used, data.style,
             event_id=event_id,
+            minute=event.time,
             status=TickerStatus.published if data.auto_publish else TickerStatus.draft,
         )
     )
