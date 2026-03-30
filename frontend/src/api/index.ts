@@ -62,7 +62,8 @@ export const generateTicker = (
   style: TickerStyle,
   instance = "ef_whitelabel",
   language = "de",
-) => api.post(`/ticker/generate/${eventId}`, { style, instance, language });
+  force = false,
+) => api.post(`/ticker/generate/${eventId}`, { style, instance, language, force });
 export const createManualTicker = (
   matchId: number,
   text: string,

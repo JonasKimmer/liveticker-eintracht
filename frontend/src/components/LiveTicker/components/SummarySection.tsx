@@ -63,7 +63,17 @@ export function SummarySection({
       : filtered;
   }, [tickerTexts, isPrematch]);
 
-  if (!drafts.length) return null;
+  if (!drafts.length && generatingId !== "regenerating") return null;
+
+  if (!drafts.length) {
+    return (
+      <CollapsibleSection title={title} count={0}>
+        <div style={{ padding: "0.75rem 1rem", color: "var(--lt-text-muted)", fontSize: "0.8rem" }}>
+          Regeneriere…
+        </div>
+      </CollapsibleSection>
+    );
+  }
 
   return (
     <CollapsibleSection

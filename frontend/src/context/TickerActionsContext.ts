@@ -13,7 +13,7 @@ import { createContext, useContext } from "react";
 import type { TickerStyle } from "../types";
 
 export interface TickerActionsContextValue {
-  onGenerate: (eventId: number, style: TickerStyle) => Promise<void>;
+  onGenerate: (eventId: number, style: TickerStyle, force?: boolean) => Promise<void>;
   onManualPublish: (text: string, icon?: string, minute?: number | null, phase?: string | null, rawInput?: string) => Promise<void>;
   onDraftActive: (id: number, text: string) => void;
   onPublished: (id: number, text: string, isManual?: boolean) => void;

@@ -55,6 +55,9 @@ class GenerateEventRequest(BaseGenerateRequest):
     auto_publish: bool = Field(
         default=False, description="Modus 2: direkt publizieren ohne Review"
     )
+    force: bool = Field(
+        default=False, description="Bestehenden Draft löschen und neu generieren"
+    )
 
 
 class GenerateSyntheticRequest(BaseGenerateRequest):

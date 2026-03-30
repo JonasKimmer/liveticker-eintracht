@@ -131,10 +131,10 @@ export function useTicker({
 
   // ── Ticker-Callbacks ──────────────────────────────────────
   const handleGenerate = useCallback(
-    async (eventId: number, style: import("../../../types").TickerStyle) => {
+    async (eventId: number, style: import("../../../types").TickerStyle, force = false) => {
       setGeneratingId(eventId);
       try {
-        await api.generateTicker(eventId, style, instance, language);
+        await api.generateTicker(eventId, style, instance, language, force);
         await reload.loadTickerTexts();
       } catch (err) {
         logger.error("generateTicker error:", err);

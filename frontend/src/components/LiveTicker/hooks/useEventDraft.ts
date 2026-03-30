@@ -96,11 +96,12 @@ export function useEventDraft() {
         try {
           await api.deleteTicker(existing.id);
         } catch (err) {
-          // 404 oder Netzwerkfehler: Draft evtl. schon weg — trotzdem generieren
+          // 404 oder Netzwerkfehler: Draft evtl. schon weg — force=true stellt sicher
+          // dass das Backend trotzdem neu generiert statt den alten Draft zurückzugeben
           logger.warn("delete before regenerate failed (proceeding anyway)", err);
         }
       }
-      await onGenerate(eventId, style);
+      await onGenerate(eventId, style, true);
     },
     [tickerTexts, onGenerate],
   );

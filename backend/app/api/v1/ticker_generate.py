@@ -121,7 +121,9 @@ async def generate_for_event(
     ticker_repo = TickerEntryRepository(db)
     existing = ticker_repo.get_by_event(event_id)
     if existing:
-        return existing
+        if not data.force:
+            return existing
+        ticker_repo.delete(existing.id)
 
     match = MatchRepository(db).load_with_teams(event.match_id)
     match_context = ts.build_match_context(match, event.time)
