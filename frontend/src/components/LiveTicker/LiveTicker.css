@@ -2981,6 +2981,7 @@
     height: auto !important;
     position: static !important;
     overflow-y: auto;
+    overflow-x: hidden;
   }
 
   /* Resize-Handles verstecken */

@@ -17,7 +17,7 @@ import pytest
 # ── Verbindungs-URL aus Umgebung oder .env ───────────────────────────────────
 os.environ.setdefault(
     "DATABASE_URL",
-    "postgresql://liveticker_user:dev_password_123@localhost:5434/liveticker_eintracht",
+    "postgresql://jonaskimmer@localhost:5432/liveticker_eintracht",
 )
 
 

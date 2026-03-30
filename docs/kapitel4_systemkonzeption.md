@@ -12,11 +12,77 @@ Die **Anwendungs- und Persistenzschicht** basiert auf FastAPI (Python) und Postg
 
 Die **Präsentationsschicht** ist als White-Label-Frontend in React realisiert. Sie bildet den Redaktionsworkflow für Auswahl, Sichtung, Bearbeitung und Publikation ab und bleibt dabei mandantenfähig konfigurierbar (z. B. Instanz, Stil, Sprache, Branding). Technisch kombiniert das Frontend REST-basiertes Polling für Ticker- und Spieldaten mit einem dedizierten WebSocket-Kanal für Echtzeit-Medienupdates.
 
+Die folgende Abbildung zeigt die drei Schichten mit ihren Technologien und Kommunikationspfaden:
+
+```mermaid
+graph TD
+    subgraph Präsentation["Präsentationsschicht"]
+        FE["React Frontend\n(TypeScript)"]
+    end
+
+    subgraph Anwendung["Anwendungs- & Persistenzschicht"]
+        BE["FastAPI Backend\n(Python / Uvicorn)"]
+        DB[(PostgreSQL\n17 Tabellen)]
+        BE <--> DB
+    end
+
+    subgraph Orchestrierung["Datenbeschaffungs- & Automatisierungsschicht"]
+        N8N["n8n Workflows\n(15 JSON-Flows)"]
+    end
+
+    subgraph Extern["Externe Dienste"]
+        FAPI["Football-API\n(api-sports.io)"]
+        LLM["LLM Provider\n(OpenRouter / Gemini / OpenAI)"]
+        SP["ScorePlay\nMedia"]
+        EF["profis.eintracht.de\nSpieler-Daten"]
+    end
+
+    FE -- "REST Polling (5s/30s)" --> BE
+    FE -- "WebSocket /ws/media" --> BE
+    FE -- "Webhook-Trigger" --> N8N
+
+    N8N -- "REST POST /api/v1/..." --> BE
+    N8N -- "HTTP GET" --> FAPI
+    N8N -- "HTTP GET/POST" --> SP
+    N8N -- "HTTP GET" --> EF
+    N8N -- "HTTP POST (Zusammenfassungen)" --> LLM
+
+    BE -- "HTTP (LLM-Service)" --> LLM
+```
+
 ---
 
 ## 4.1.2 Kommunikationsfluss
 
 Der Kommunikationsfluss folgt einem Cache-first-Muster mit bedarfsgesteuerten Webhook-Triggern.
+
+```mermaid
+sequenceDiagram
+    participant FE as React Frontend
+    participant BE as FastAPI Backend
+    participant N8N as n8n
+    participant FAPI as Football-API
+
+    FE->>BE: GET /teams/countries
+    alt Keine Daten vorhanden
+        FE->>N8N: Webhook import-countries
+        N8N->>FAPI: GET /countries
+        N8N->>BE: INSERT countries
+        FE->>BE: GET /teams/countries (erneut)
+    end
+
+    FE->>BE: GET /matches (nach Teamauswahl)
+    FE->>N8N: Webhook import-prematch, import-lineups, ...
+    N8N->>BE: POST /api/v1/events, /api/v1/ticker/generate/...
+
+    loop Polling alle 5s (Live/PreMatch)
+        FE->>BE: GET /api/v1/ticker/{match_id}
+        BE-->>FE: TickerEntry[] (inkl. neuer Entwürfe)
+    end
+
+    N8N->>BE: POST /api/v1/media/incoming
+    BE-->>FE: WebSocket /ws/media → neue Medien
+```
 
 1. Beim Öffnen der Anwendung lädt das Frontend zunächst Länder aus dem Backend (`GET /teams/countries`).
 2. Ist der Länderbestand leer, wird einmalig der n8n-Webhook `import-countries` ausgelöst; danach erfolgt ein erneuter Read aus dem Backend.
@@ -135,7 +201,35 @@ Die Persistenzschicht basiert auf PostgreSQL und umfasst in der aktuellen Fassun
 
 ### 4.3.1 Schemadesign-Prinzipien
 
-Das Datenbankschema folgt einem hybriden Entwurfsansatz aus strukturierter Normalisierung und gezielter Schemaflexibilität:
+Das Datenbankschema umfasst 17 Tabellen. Die folgende Abbildung zeigt die zentralen Entitäten und ihre Beziehungen:
+
+```mermaid
+erDiagram
+    countries ||--o{ teams : "hat Teams"
+    teams ||--o{ competition_teams : "spielt in"
+    competitions ||--o{ competition_teams : "hat Teams"
+    competitions ||--o{ matches : "umfasst"
+    seasons ||--o{ matches : "enthält"
+    teams ||--o{ matches : "home_team"
+    teams ||--o{ matches : "away_team"
+
+    matches ||--o{ events : "hat Events"
+    matches ||--o{ synthetic_events : "hat synth. Events"
+    matches ||--o{ ticker_entries : "hat Ticker"
+    matches ||--o{ lineup_players : "hat Lineup"
+    matches ||--o{ match_statistics : "hat Statistiken"
+    matches ||--o{ media_queue : "hat Media-Queue"
+
+    events ||--o{ ticker_entries : "event_id (nullable)"
+    synthetic_events ||--o{ ticker_entries : "synthetic_event_id"
+
+    players ||--o{ lineup_players : "spielt"
+    players ||--o{ player_statistics : "hat Statistiken"
+
+    style_references }o--|| ticker_entries : "Few-Shot Quelle"
+```
+
+Das Schema folgt einem hybriden Entwurfsansatz aus strukturierter Normalisierung und gezielter Schemaflexibilität:
 
 1. **Normalisierte Kernentitäten** — Zentrale Domänenobjekte wie `teams`, `matches`, `events`, `ticker_entries`, `players`, `competitions` und Zuordnungstabellen sind relational normalisiert modelliert. Dadurch bleiben Beziehungen, Integrität und Auswertbarkeit im Live-Betrieb stabil.
 2. **Gezielter JSONB-Einsatz** — JSONB wird bewusst nur dort eingesetzt, wo sich Strukturen dynamisch ändern oder kontextabhängig sind (z. B. `synthetic_events.data`, sowie mehrere Kontextfelder in `matches`). Die Statistiktabellen (`match_statistics`, `player_statistics`) sind dagegen bewusst stark typisiert über explizite Spalten modelliert, um konsistente Abfragen und robuste Aggregationen zu ermöglichen.
@@ -151,6 +245,19 @@ Jeder Ticker-Eintrag in `ticker_entries` folgt einem klaren Statusmodell mit dre
 - **`published`**: redaktionell oder automatisch veröffentlicht
 - **`rejected`**: verworfen, bleibt zur Nachvollziehbarkeit erhalten
 
+```mermaid
+stateDiagram-v2
+    [*] --> draft : KI generiert (coop)\nauto_publish=false
+    [*] --> published : KI generiert (auto)\nauto_publish=true
+    [*] --> published : Manuell\nPOST /ticker/manual
+
+    draft --> published : Redakteur bestätigt\nPATCH status=published
+    draft --> rejected  : Redakteur verwirft\nPATCH status=rejected
+    published --> draft : Undo (Retract)\nPATCH status=draft
+
+    note right of rejected : Bleibt erhalten\n(Auswertbarkeit)
+```
+
 Ergänzend markiert das Feld `source` die Herkunft (`ai` vs. `manual`) und erlaubt eine saubere Trennung für Evaluationen (z. B. ausschließlich KI-generierte Einträge).
 
 > **Hinweis für die Methodik**: Im aktuellen Schema ist kein separates `published_at`-Feld vorhanden. Persistiert wird `created_at` des jeweiligen Ticker-Eintrags. Für sekundengenaue Time-to-Publish-Analysen sind daher zusätzliche Messzeitpunkte im Evaluationsdatensatz bzw. in der Messlogik erforderlich, statt sich allein auf den Tabellenzustand zu stützen.
@@ -164,6 +271,20 @@ Das Feld `ticker_mode` in `matches` steuert das Verhalten der Generierungspipeli
 1. **`auto`** (vollautomatisch) — Triggerkette läuft ohne redaktionellen Eingriff; KI-Ergebnisse werden direkt veröffentlicht.
 2. **`coop`** (kooperativ / Human-in-the-Loop) — KI erzeugt Entwürfe (`draft`), die Redaktion entscheidet über Veröffentlichung oder Ablehnung. Dieser Modus bildet das primäre Zielbild des Systems.
 3. **`manual`** (rein redaktionell) — Einträge werden manuell erstellt; KI-Generierung ist nicht leitend für den Veröffentlichungsprozess. Dieser Modus dient als Referenz für Vergleiche in der Evaluation.
+
+```mermaid
+flowchart LR
+    E[Neues Spielereignis\nvia n8n] --> G[KI generiert Text\nPOST /ticker/generate]
+
+    G --> M{ticker_mode}
+    M -->|auto| P[status = published\nSofort sichtbar]
+    M -->|coop| D[status = draft\nWartet auf Freigabe]
+    M -->|manual| X[Kein KI-Aufruf\nManuelle Eingabe]
+
+    D --> R{Redakteur}
+    R -->|TAB / Bestätigen| P
+    R -->|ESC / Verwerfen| REJ[status = rejected]
+```
 
 Damit wird der Moduswechsel als Laufzeitparameter auf Datenbankebene abgebildet, ohne Deploy oder Neustart des Systems.
 
@@ -186,7 +307,42 @@ Die Workflow-Schicht ist als entkoppelte Orchestrierungsebene zwischen externen 
 
 ### 4.4.1 Workflow-Klassen und Verantwortlichkeiten
 
-Die n8n-Landschaft gliedert sich in vier funktionale Klassen:
+Die n8n-Landschaft gliedert sich in vier funktionale Klassen. Die folgende Übersicht zeigt alle 15 Workflows und ihren Auslöser:
+
+```mermaid
+graph LR
+    subgraph Stammdaten["Stammdaten & Matchstruktur"]
+        W01["01 Import Countries\nWebhook"]
+        W02["02 Import Teams\nWebhook"]
+        W03["03 Import Competitions\nWebhook"]
+        W04a["04 Import Matches\nWebhook"]
+    end
+
+    subgraph Matchdaten["Matchdaten-Importe"]
+        W04b["04 Import Lineups\nWebhook"]
+        W05["05 Match Statistics\nWebhook"]
+        W06["06 Player Statistics\nWebhook"]
+        W07["07 Import Prematch\nWebhook"]
+    end
+
+    subgraph KI["KI-Generierung"]
+        W09["09 Events LLM\nWebhook /Events"]
+        W13["13 Halftime/Aftertime\nWebhook /match-summary"]
+        W14["14 Anpfiff/Abpfiff\nWebhook /match-status"]
+    end
+
+    subgraph Medien["Medien & Social"]
+        W08["08 ScorePlay Media\nWebhook"]
+        W10["10 Twitter/X\nWebhook"]
+        W11["11 YouTube\nWebhook"]
+        W12["12 Instagram\nWebhook"]
+    end
+
+    FE["Frontend"] -- "bei leeren Daten" --> Stammdaten
+    FE -- "nach Match-Auswahl" --> Matchdaten
+    FE -- "Modussteuerung" --> KI
+    FE -- "Medien-Suche" --> Medien
+```
 
 **1. Stammdaten- und Strukturimporte**
 
@@ -312,6 +468,19 @@ Die Generierung verwendet ein template-basiertes Prompting mit modularen Baustei
 4. Optionaler Few-Shot-Block mit Stilbeispielen
 5. Regelblock mit formativen und inhaltlichen Einschränkungen
 
+```mermaid
+flowchart TD
+    A["Ereignis-Typ\n(z.B. goal)"] --> P
+    B["Fakten\n(Spieler, Minute, Team)"] --> P
+    C["Match-Kontext\n(Spielstand, Teams, Liga)"] --> P
+    D["Few-Shot-Beispiele\naus style_references\n(0–3 Texte)"] --> P
+    E["Regelblock\n(Länge, Sprache, kein Markdown)"] --> P
+    F["Stilinstruktion\nneutral / euphorisch / kritisch"] --> P
+
+    P["Vollständiger\nSystem-Prompt"] --> LLM["LLM\n(temp=0.3)"]
+    LLM --> T["Generierter\nTicker-Text"]
+```
+
 Der Few-Shot-Block wird aus der Tabelle `style_references` gespeist und nach `event_type`, `instance` und optional `league` gefiltert. Für Pre-Match-Typen enthält der Prompt zusätzliche harte Restriktionen, um Live-Szenen-Halluzinationen zu vermeiden und die Ausgabe auf Vorschau- und Analyseinhalte zu begrenzen.
 
 ---
@@ -402,6 +571,19 @@ Das Frontend nutzt einen hybriden Kommunikationsansatz:
 1. **REST/Polling** für Match-, Event-, Ticker- und Statistikdaten. Das Polling-Intervall ist statusabhängig: **5 Sekunden** bei laufenden Spielen (Live, FullTime) sowie in der Pre-Match-Phase, um KI-Entwürfe schnell sichtbar zu machen (LLM-Latenz typischerweise 15–30 s).
 2. **Webhook-Trigger über n8n** für bedarfsgesteuerte Importe und Generierungsprozesse.
 3. **WebSocket** ausschließlich für latenzkritische Media-Queue-Updates (`/ws/media`) mit automatischem Reconnect bei Verbindungsabbruch.
+
+```mermaid
+flowchart LR
+    FE["React Frontend"]
+
+    FE -- "REST Polling\n5s (Live/PreMatch)\n30s (sonst)" --> BE["FastAPI Backend"]
+    FE -- "Webhook-Trigger\n(bei leeren Daten / Statuswechsel)" --> N8N["n8n"]
+    FE -- "WebSocket\n(Echtzeit, Backoff 1–30s)" --> WS["/ws/media"]
+
+    BE -- "Response" --> FE
+    N8N -- "Daten-Import / LLM-Trigger" --> BE
+    WS -- "new_media Events" --> FE
+```
 
 Diese Aufteilung reduziert Komplexität in den Kerndatenflüssen und konzentriert Echtzeitmechanismen auf den Bereich mit höchstem redaktionellem Nutzen.
 
