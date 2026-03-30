@@ -38,7 +38,8 @@ export const fetchTeamMatchesByMatchday = (
 // ── Matches ────────────────────────────────────────────
 export const fetchMatch = (id: number): Promise<AxiosResponse<Match>> =>
   api.get(`/matches/${id}`);
-export const syncLiveMatch = (id: number) => api.post(`/matches/${id}/sync-live`);
+export const syncLiveMatch = (id: number) =>
+  api.post(`/matches/${id}/sync-live`);
 export const setMatchTickerMode = (matchId: number, mode: TickerMode) =>
   api.patch(`/matches/${matchId}/ticker-mode`, { mode });
 
@@ -55,8 +56,7 @@ export const fetchTickerTexts = (
   api.get(`/ticker/match/${matchId}?all_entries=true`);
 export const fetchPrematch = (
   matchId: number,
-): Promise<AxiosResponse<TickerEntry[]>> =>
-  api.get(`/ticker/match/${matchId}`);
+): Promise<AxiosResponse<TickerEntry[]>> => api.get(`/ticker/match/${matchId}`);
 export const generateTicker = (
   eventId: number,
   style: TickerStyle,
@@ -155,10 +155,8 @@ export const fetchPlayers = (teamId: number) =>
   api.get(`/players?teamId=${teamId}&pageSize=100`);
 export const createPlayer = (data: Record<string, unknown>) =>
   api.post("/players", data);
-export const updatePlayer = (
-  playerId: number,
-  data: Record<string, unknown>,
-) => api.put(`/players/${playerId}`, data);
+export const updatePlayer = (playerId: number, data: Record<string, unknown>) =>
+  api.put(`/players/${playerId}`, data);
 export const deletePlayer = (playerId: number) =>
   api.delete(`/players/${playerId}`);
 export const updatePlayerStats = (
@@ -198,11 +196,15 @@ export const publishMedia = ({
 // ── n8n Webhooks ───────────────────────────────────────
 export const importCountries = () => n8n.post("/import-countries");
 
-export const importTeamsByCountry = (country: string, season: number | string) =>
-  n8n.post("/import-teams-by-country", { country, season });
+export const importTeamsByCountry = (
+  country: string,
+  season: number | string,
+) => n8n.post("/import-teams-by-country", { country, season });
 
-export const importCompetitionsForTeam = (teamId: number, season: number | string) =>
-  n8n.post("/import-competitions", { teamId, season });
+export const importCompetitionsForTeam = (
+  teamId: number,
+  season: number | string,
+) => n8n.post("/import-competitions", { teamId, season });
 
 export const importEvents = (fixtureId: number, tickerMode = "auto") =>
   n8n.post("/Events", { fixture_id: fixtureId, ticker_mode: tickerMode });
@@ -324,3 +326,13 @@ export const triggerLiveStatsMonitor = (
 
 export const triggerMinuteUpdate = (fixtureId: number) =>
   n8n.post("/update-minute", { fixture_id: fixtureId });
+
+// ── Settings ────────────────────────────────────────────
+export const fetchSettings = (): Promise<
+  AxiosResponse<Record<string, string>>
+> => api.get("/settings");
+
+export const updateSetting = (
+  key: string,
+  value: string,
+): Promise<AxiosResponse> => api.patch("/settings", { key, value });

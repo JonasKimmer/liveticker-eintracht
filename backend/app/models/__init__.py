@@ -13,6 +13,7 @@ from app.models.player import Player
 from app.models.player_statistic import PlayerStatistic
 from app.models.season import Season
 from app.models.standing import Standing
+from app.models.setting import Setting
 from app.models.style_reference import StyleReference
 from app.models.synthetic_event import SyntheticEvent
 from app.models.team import Team
@@ -31,6 +32,7 @@ __all__ = [
     "Player",
     "PlayerStatistic",
     "Season",
+    "Setting",
     "Standing",
     "StyleReference",
     "SyntheticEvent",

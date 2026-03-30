@@ -10,9 +10,13 @@ import random
 from typing import Optional, Literal
 
 from app.core.constants import (
-    EVENT_TYPE_LABEL, STYLE_DESC,
-    LLM_MAX_TOKENS, LLM_TEMPERATURE, LLM_TRANSLATION_TEMPERATURE,
-    LLM_RETRY_ATTEMPTS, LLM_RATE_LIMIT_WAIT_BASE_S,
+    EVENT_TYPE_LABEL,
+    STYLE_DESC,
+    LLM_MAX_TOKENS,
+    LLM_TEMPERATURE,
+    LLM_TRANSLATION_TEMPERATURE,
+    LLM_RETRY_ATTEMPTS,
+    LLM_RATE_LIMIT_WAIT_BASE_S,
 )
 from app.utils.llm_context_builders import build_context_str
 
@@ -151,6 +155,7 @@ class LLMService:
         language: str = "de",
         context_data: Optional[dict] = None,
         style_references: Optional[list[str]] = None,
+        style_desc: Optional[str] = None,
     ) -> str:
         normalized = self._normalize_event_type(event_type)
         kwargs = dict(
@@ -164,6 +169,7 @@ class LLMService:
             language=language,
             context_data=context_data,
             style_references=style_references,
+            style_desc=style_desc,
         )
         dispatch = {
             "mock": self._generate_mock_text,
@@ -193,7 +199,11 @@ class LLMService:
         team_name: Optional[str],
     ) -> list[str]:
         """Baut die FAKTEN-Sektion des Prompts auf."""
-        _et = "pre_match_injuries" if event_type.startswith("pre_match_injuries") else event_type
+        _et = (
+            "pre_match_injuries"
+            if event_type.startswith("pre_match_injuries")
+            else event_type
+        )
         event_label = EVENT_TYPE_LABEL.get(_et, event_type)
         minute_str = f"{minute}. Minute" if minute else "Vor/Nach dem Spiel"
 
@@ -203,13 +213,23 @@ class LLMService:
         if minute:
             lines.append(f"Minute: {minute_str}")
         if player_name:
-            label = "Ausgewechselt (geht raus)" if event_type == "substitution" else "Spieler"
+            label = (
+                "Ausgewechselt (geht raus)"
+                if event_type == "substitution"
+                else "Spieler"
+            )
             lines.append(f"{label}: {player_name}")
         if assist_name:
-            label = "Eingewechselt (kommt rein)" if event_type == "substitution" else "Vorlagengeber"
+            label = (
+                "Eingewechselt (kommt rein)"
+                if event_type == "substitution"
+                else "Vorlagengeber"
+            )
             lines.append(f"{label}: {assist_name}")
         if team_name:
-            lines.append(f"Verursachendes Team (Spieler gehört zu diesem Verein): {team_name}")
+            lines.append(
+                f"Verursachendes Team (Spieler gehört zu diesem Verein): {team_name}"
+            )
         return lines
 
     def _build_few_shot_block(self, style_references: Optional[list[str]]) -> str:
@@ -250,9 +270,14 @@ class LLMService:
         language: str,
         context_data: Optional[dict] = None,
         style_references: Optional[list[str]] = None,
+        style_desc: Optional[str] = None,
     ) -> str:
         lang = "Deutsch" if language == "de" else "English"
-        style_desc = STYLE_DESC.get(style, STYLE_DESC["neutral"])
+        style_desc = (
+            style_desc
+            if style_desc is not None
+            else STYLE_DESC.get(style, STYLE_DESC["neutral"])
+        )
 
         event_lines = self._build_event_lines(
             event_type, event_detail, minute, player_name, assist_name, team_name
@@ -446,7 +471,9 @@ class LLMService:
         if self.provider in ("openai", "openrouter"):
             return self._call_openai_compatible_raw(prompt, LLM_TRANSLATION_TEMPERATURE)
         elif self.provider == "gemini":
-            response = self._client.models.generate_content(model=self.model, contents=prompt)
+            response = self._client.models.generate_content(
+                model=self.model, contents=prompt
+            )
             return response.text.strip()
         elif self.provider == "anthropic":
             response = self._client.messages.create(
@@ -468,16 +495,16 @@ from app.core.config import settings
 # Provider → API-Key-Mapping (einzige Quelle; wird in _build_singleton + generate_ticker_text genutzt)
 _PROVIDER_KEY_MAP: dict[str, str | None] = {
     "openrouter": settings.OPENROUTER_API_KEY,
-    "gemini":     settings.GEMINI_API_KEY,
-    "openai":     settings.OPENAI_API_KEY,
-    "anthropic":  settings.ANTHROPIC_API_KEY,
+    "gemini": settings.GEMINI_API_KEY,
+    "openai": settings.OPENAI_API_KEY,
+    "anthropic": settings.ANTHROPIC_API_KEY,
 }
 
 _PROVIDER_DEFAULT_MODEL: dict[str, str] = {
     "openrouter": settings.OPENROUTER_MODEL,
-    "gemini":     "gemini-2.0-flash-lite-001",
-    "openai":     "gpt-4o-mini",
-    "anthropic":  "claude-haiku-4-5-20251001",
+    "gemini": "gemini-2.0-flash-lite-001",
+    "openai": "gpt-4o-mini",
+    "anthropic": "claude-haiku-4-5-20251001",
 }
 
 
@@ -515,6 +542,7 @@ async def generate_ticker_text(
     style_references: list[str] | None = None,
     provider: Optional[str] = None,
     model: Optional[str] = None,
+    style_desc: Optional[str] = None,
 ) -> tuple[str, str]:
     """Async LLM-Aufruf. Stilreferenzen werden vom Aufrufer übergeben (kein DB-Zugriff hier)."""
     if style_references is None:
@@ -536,7 +564,12 @@ async def generate_ticker_text(
     def _is_rate_limit(exc: Exception) -> bool:
         """Erkennt 429-RateLimit-Fehler aller unterstützten Provider."""
         msg = str(exc).lower()
-        return "429" in msg or "rate limit" in msg or "rate_limit" in msg or "too many requests" in msg
+        return (
+            "429" in msg
+            or "rate limit" in msg
+            or "rate_limit" in msg
+            or "too many requests" in msg
+        )
 
     last_exc: Exception | None = None
     for attempt in range(LLM_RETRY_ATTEMPTS):
@@ -553,6 +586,7 @@ async def generate_ticker_text(
                 language=language,
                 context_data=context_data,
                 style_references=style_references,
+                style_desc=style_desc,
             )
             model_used = model or _model or _provider
             return text, model_used
@@ -560,10 +594,17 @@ async def generate_ticker_text(
             last_exc = exc
             if attempt < LLM_RETRY_ATTEMPTS - 1:
                 # RateLimit: deutlich länger warten; andere Fehler: kurzes Backoff
-                wait = LLM_RATE_LIMIT_WAIT_BASE_S * (attempt + 1) if _is_rate_limit(exc) else 2 ** attempt
+                wait = (
+                    LLM_RATE_LIMIT_WAIT_BASE_S * (attempt + 1)
+                    if _is_rate_limit(exc)
+                    else 2**attempt
+                )
                 logger.warning(
                     "LLM attempt %d/%d failed (%s), retrying in %ds…",
-                    attempt + 1, LLM_RETRY_ATTEMPTS, exc, wait,
+                    attempt + 1,
+                    LLM_RETRY_ATTEMPTS,
+                    exc,
+                    wait,
                 )
                 await asyncio.sleep(wait)
 

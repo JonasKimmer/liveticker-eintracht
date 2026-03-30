@@ -18,6 +18,7 @@ from typing import Optional
 from sqlalchemy.orm import Session
 
 from app.core.config import settings
+from app.core.constants import STYLE_DESC
 from app.repositories.event_repository import EventRepository
 from app.schemas.ticker_entry import TickerEntryCreate, TickerStatus
 from app.services.llm_service import generate_ticker_text
@@ -118,19 +119,38 @@ async def call_llm(
     keine Datenbankabhängigkeit hat (Separation of Concerns).
     """
     from app.repositories.style_reference_repository import StyleReferenceRepository
+    from app.repositories.setting_repository import SettingRepository
     from app.services.llm_service import llm_service as _llm_svc
+
+    # Lade benutzerdefinierte Stil-Beschreibung aus DB (Fallback: constants.py)
+    style_desc: Optional[str] = None
+    try:
+        style_desc = SettingRepository(db).get(f"style_desc_{style}") or STYLE_DESC.get(
+            style
+        )
+    except Exception:
+        logger.warning(
+            "Stil-Beschreibung konnte nicht aus DB geladen werden", exc_info=True
+        )
+        style_desc = STYLE_DESC.get(style)
 
     style_references: list[str] = []
     try:
         normalized = _llm_svc._normalize_event_type(event_type)
         league = match_context.get("league") if match_context else None
         refs = StyleReferenceRepository(db).get_samples(
-            event_type=normalized, instance=instance, limit=3, league=league,
+            event_type=normalized,
+            instance=instance,
+            limit=3,
+            league=league,
         )
         style_references = [r.text for r in refs]
         logger.debug(
             "Stilreferenzen geladen: %d für event_type=%s instance=%s league=%s",
-            len(refs), normalized, instance, league,
+            len(refs),
+            normalized,
+            instance,
+            league,
         )
     except Exception:
         logger.warning("Stilreferenzen konnten nicht geladen werden", exc_info=True)
@@ -151,6 +171,7 @@ async def call_llm(
             style_references=style_references,
             provider=provider,
             model=model,
+            style_desc=style_desc,
         )
 
 

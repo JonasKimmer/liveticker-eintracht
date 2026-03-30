@@ -38,7 +38,9 @@ import { useMatchTriggers } from "../../hooks/useMatchTriggers";
 import { usePanelResize } from "../../hooks/usePanelResize";
 import { CommandsModal } from "./components/CommandsModal";
 import { PublishToast } from "./components/PublishToast";
+import { SettingsModal } from "./components/SettingsModal";
 import { useTicker } from "./hooks/useTicker";
+import { useSettings } from "../../hooks/useSettings";
 import ErrorBoundary from "../ErrorBoundary";
 
 export default function LiveTicker() {
@@ -59,6 +61,10 @@ export default function LiveTicker() {
   const [showCommands, setShowCommands] = useState(false);
   const [mobilePanel, setMobilePanel] = useState("center");
   const [activeTab, setActiveTab] = useState("teams");
+  const [settingsOpen, setSettingsOpen] = useState(false);
+
+  // ── Settings (Sprache + Prompt-Profile aus Backend) ────────
+  const { settings, updateSetting, loading: settingsLoading } = useSettings();
 
   // ── Resizable Panels ──────────────────────────────────────
   const {
@@ -136,8 +142,32 @@ export default function LiveTicker() {
   }, [mode]);
 
   const tickerDataCtx = useMemo(
-    () => ({ match, events, tickerTexts, prematch, lineups, matchStats, players, playerStats, injuries, reload, generatingId }),
-    [match, events, tickerTexts, prematch, lineups, matchStats, players, playerStats, injuries, reload, generatingId],
+    () => ({
+      match,
+      events,
+      tickerTexts,
+      prematch,
+      lineups,
+      matchStats,
+      players,
+      playerStats,
+      injuries,
+      reload,
+      generatingId,
+    }),
+    [
+      match,
+      events,
+      tickerTexts,
+      prematch,
+      lineups,
+      matchStats,
+      players,
+      playerStats,
+      injuries,
+      reload,
+      generatingId,
+    ],
   );
 
   // ── n8n Webhooks + Auto-Imports ───────────────────────────
@@ -259,6 +289,13 @@ export default function LiveTicker() {
                     language={language}
                     onLanguageChange={handleLanguageChange}
                   />
+                  <button
+                    className="lt-header__hint"
+                    onClick={() => setSettingsOpen(true)}
+                    title="Einstellungen"
+                  >
+                    ⚙
+                  </button>
                   <button
                     className="lt-header__hint"
                     onClick={() => setShowHints(true)}
@@ -397,6 +434,15 @@ export default function LiveTicker() {
             {showCommands && (
               <CommandsModal onClose={() => setShowCommands(false)} />
             )}
+            <SettingsModal
+              open={settingsOpen}
+              onClose={() => setSettingsOpen(false)}
+              language={language}
+              onLanguageChange={handleLanguageChange}
+              settings={settings}
+              updateSetting={updateSetting}
+              loading={settingsLoading}
+            />
             {publishToast && (
               <PublishToast
                 entryId={publishToast.id}

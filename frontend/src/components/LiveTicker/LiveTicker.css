@@ -3649,3 +3649,218 @@
   grid-template-columns: 1fr 1fr;
   gap: 0.5rem;
 }
+
+/* ── Settings Modal ─────────────────────────────────────────── */
+.lt-settings-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.lt-settings-modal {
+  background: var(--lt-bg-panel, #1e1e1e);
+  border: 1px solid var(--lt-border, #333);
+  border-radius: 8px;
+  width: min(520px, 94vw);
+  max-height: 80vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.lt-settings-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--lt-border, #333);
+  flex-shrink: 0;
+}
+
+.lt-settings-title {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--lt-text, #e0e0e0);
+}
+
+.lt-settings-close {
+  background: none;
+  border: none;
+  color: var(--lt-text-muted, #888);
+  cursor: pointer;
+  font-size: 1rem;
+  padding: 0.25rem 0.4rem;
+  border-radius: 4px;
+  line-height: 1;
+}
+.lt-settings-close:hover {
+  background: var(--lt-hover, #2a2a2a);
+  color: var(--lt-text, #e0e0e0);
+}
+
+.lt-settings-tabs {
+  display: flex;
+  gap: 0;
+  border-bottom: 1px solid var(--lt-border, #333);
+  flex-shrink: 0;
+}
+
+.lt-settings-tab {
+  flex: 1;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: var(--lt-text-muted, #888);
+  cursor: pointer;
+  font-size: 0.85rem;
+  padding: 0.6rem 0.75rem;
+  margin-bottom: -1px;
+}
+.lt-settings-tab:hover {
+  color: var(--lt-text, #e0e0e0);
+}
+.lt-settings-tab--active {
+  color: var(--lt-accent, #f5a623);
+  border-bottom-color: var(--lt-accent, #f5a623);
+}
+
+.lt-settings-body {
+  overflow-y: auto;
+  flex: 1;
+  padding: 1rem;
+}
+
+.lt-settings-hint {
+  font-size: 0.8rem;
+  color: var(--lt-text-muted, #888);
+  margin: 0 0 0.75rem;
+  line-height: 1.5;
+}
+.lt-settings-hint code {
+  background: var(--lt-bg-code, #111);
+  padding: 0.1em 0.35em;
+  border-radius: 3px;
+  font-size: 0.78rem;
+}
+
+/* Language tab */
+.lt-settings-lang-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.5rem;
+}
+
+.lt-settings-lang-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.2rem;
+  background: var(--lt-bg-input, #111);
+  border: 1px solid var(--lt-border, #333);
+  border-radius: 6px;
+  color: var(--lt-text-muted, #888);
+  cursor: pointer;
+  padding: 0.6rem 0.4rem;
+  transition: border-color 0.15s, color 0.15s;
+}
+.lt-settings-lang-btn:hover {
+  border-color: var(--lt-accent, #f5a623);
+  color: var(--lt-text, #e0e0e0);
+}
+.lt-settings-lang-btn--active {
+  border-color: var(--lt-accent, #f5a623);
+  color: var(--lt-accent, #f5a623);
+  background: var(--lt-accent-bg, rgba(245, 166, 35, 0.08));
+}
+
+.lt-settings-lang-flag { font-size: 1.3rem; line-height: 1; }
+.lt-settings-lang-code { font-size: 0.7rem; font-weight: 700; letter-spacing: 0.05em; }
+.lt-settings-lang-label { font-size: 0.72rem; }
+
+/* Prompts tab */
+.lt-settings-prompts {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.lt-settings-prompt-card {
+  background: var(--lt-bg-input, #111);
+  border: 1px solid var(--lt-border, #333);
+  border-radius: 6px;
+  padding: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.lt-settings-prompt-header {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+.lt-settings-prompt-emoji { font-size: 1rem; }
+.lt-settings-prompt-label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--lt-text, #e0e0e0);
+}
+.lt-settings-prompt-key {
+  margin-left: auto;
+  font-size: 0.7rem;
+  color: var(--lt-text-muted, #666);
+  background: transparent;
+}
+
+.lt-settings-textarea {
+  width: 100%;
+  box-sizing: border-box;
+  background: var(--lt-bg-panel, #1e1e1e);
+  border: 1px solid var(--lt-border, #333);
+  border-radius: 4px;
+  color: var(--lt-text, #e0e0e0);
+  font-family: inherit;
+  font-size: 0.8rem;
+  line-height: 1.5;
+  padding: 0.4rem 0.5rem;
+  resize: vertical;
+}
+.lt-settings-textarea:focus {
+  outline: none;
+  border-color: var(--lt-accent, #f5a623);
+}
+
+.lt-settings-prompt-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  min-height: 1.6rem;
+}
+
+.lt-settings-save-btn {
+  background: var(--lt-accent, #f5a623);
+  border: none;
+  border-radius: 4px;
+  color: #000;
+  cursor: pointer;
+  font-size: 0.78rem;
+  font-weight: 600;
+  padding: 0.3rem 0.75rem;
+}
+.lt-settings-save-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.lt-settings-saved {
+  font-size: 0.78rem;
+  color: #4caf50;
+}
+.lt-settings-unchanged {
+  font-size: 0.78rem;
+  color: var(--lt-text-muted, #555);
+}
