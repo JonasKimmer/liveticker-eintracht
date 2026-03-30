@@ -9,7 +9,7 @@ interface StatRowProps {
   standalone?: boolean;
 }
 
-export const StatRow: any = memo(function StatRow({ label, home, away, homeVal, awayVal, standalone }: StatRowProps) {
+export const StatRow = memo(function StatRow({ label, home, away, homeVal, awayVal, standalone }: StatRowProps) {
   const hv = Number(homeVal ?? 0);
   const av = Number(awayVal ?? 0);
   const total = hv + av;

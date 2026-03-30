@@ -10,7 +10,7 @@ interface EventCardProps {
   onDismiss?: () => void;
 }
 
-export const EventCard: any = memo(function EventCard({
+export const EventCard = memo(function EventCard({
   event,
   draft,
   isSelected,

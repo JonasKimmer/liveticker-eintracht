@@ -16,7 +16,9 @@ const COMMANDS = [
   ["/hz",                    "🔔 Halbzeit"],
 ];
 
-export function CommandsModal({ onClose }: any) {
+interface CommandsModalProps { onClose: () => void; }
+
+export function CommandsModal({ onClose }: CommandsModalProps) {
   return (
     <div
       style={{

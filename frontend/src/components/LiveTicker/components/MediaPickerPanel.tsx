@@ -30,7 +30,16 @@ async function triggerN8nWebhook(player) {
 
 // ── Hauptkomponente ───────────────────────────────────────────
 
-export function MediaPickerPanel({ match, matchId, defaultOpen = false, playerNames = [], currentMinute = 0, lineups = [] }: any) {
+interface MediaPickerPanelProps {
+  match?: { homeTeam?: { name: string } | null; awayTeam?: { name: string } | null; teamHomeId?: number; teamAwayId?: number } | null;
+  matchId: number;
+  defaultOpen?: boolean;
+  playerNames?: string[];
+  currentMinute?: number;
+  lineups?: { playerId?: number; playerName?: string | null; jerseyNumber?: number | null; teamId?: number }[];
+}
+
+export function MediaPickerPanel({ match, matchId, defaultOpen = false, playerNames = [], currentMinute = 0, lineups = [] }: MediaPickerPanelProps) {
   const [open, setOpen] = useState(defaultOpen);
   const [images, setImages] = useState([]);
   const [modalImage, setModalImage] = useState(null);

@@ -28,7 +28,7 @@ function CollapsibleBase({ title, defaultOpen, wrapperClass, titleClass, mountCo
 
 interface CollapsibleProps { title: ReactNode; defaultOpen?: boolean; children?: ReactNode; }
 
-export const Collapsible: any = memo(function Collapsible({ title, defaultOpen = true, children }: CollapsibleProps) {
+export const Collapsible = memo(function Collapsible({ title, defaultOpen = true, children }: CollapsibleProps) {
   return (
     <CollapsibleBase
       title={title}
@@ -42,7 +42,7 @@ export const Collapsible: any = memo(function Collapsible({ title, defaultOpen =
   );
 });
 
-export const CollapsibleCat: any = memo(function CollapsibleCat({ title, defaultOpen = true, children }: CollapsibleProps) {
+export const CollapsibleCat = memo(function CollapsibleCat({ title, defaultOpen = true, children }: CollapsibleProps) {
   return (
     <CollapsibleBase
       title={title}

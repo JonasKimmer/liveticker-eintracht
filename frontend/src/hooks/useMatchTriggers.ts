@@ -20,7 +20,7 @@ import { useEffect, useRef } from "react";
 import * as api from "../api";
 import logger from "../utils/logger";
 import { MATCH_PHASES } from "../components/LiveTicker/constants";
-import type { Match, MatchEvent, TickerEntry, ReloadFunctions } from "../types";
+import type { Match, MatchEvent, TickerEntry, ReloadFunctions, LineupEntry, MatchStat } from "../types";
 
 const PHASE_TO_STATUS: Record<string, string> = {
   [MATCH_PHASES.FIRST_HALF]: "1H",
@@ -49,8 +49,8 @@ export function useMatchTriggers({
   selMatchId: number | null;
   match: Match | null;
   events: MatchEvent[];
-  lineups: any[];
-  matchStats: any[];
+  lineups: LineupEntry[];
+  matchStats: MatchStat[];
   tickerTexts: TickerEntry[];
   instance: string;
   style?: string;

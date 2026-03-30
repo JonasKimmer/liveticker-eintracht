@@ -16,10 +16,16 @@ import { useMemo, useCallback } from "react";
  */
 import type { Match, MatchEvent, Player, LineupEntry, PlayerStat, MatchStat } from "../../../types";
 
+interface InjuryPlayer {
+  player_name?: string;
+  name?: string;
+  reason?: string;
+}
+
 interface InjuryGroup {
   team_id?: number;
   team_name?: string;
-  players?: any[];
+  players?: InjuryPlayer[];
 }
 
 interface UseRightPanelDataParams {

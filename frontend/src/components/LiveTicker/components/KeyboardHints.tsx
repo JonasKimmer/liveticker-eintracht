@@ -2,13 +2,14 @@
 // KeyboardHints.jsx  — Modal (?-Taste)
 // ============================================================
 import { memo, Fragment } from "react";
+import type { ReactNode } from "react";
 import { MODES } from "../constants";
 
 import type { TickerMode } from "../../../types";
 
 interface KeyboardHintsProps { mode: TickerMode; onClose: () => void; }
 
-export const KeyboardHints: any = memo(function KeyboardHints({ mode, onClose }: KeyboardHintsProps) {
+export const KeyboardHints = memo(function KeyboardHints({ mode, onClose }: KeyboardHintsProps) {
   return (
     <div className="lt-kb-overlay" onClick={onClose}>
       <div className="lt-kb-modal" onClick={(e) => e.stopPropagation()}>
@@ -75,7 +76,9 @@ export const KeyboardHints: any = memo(function KeyboardHints({ mode, onClose }:
   );
 });
 
-function KbGroup({ title, children }: any) {
+interface KbGroupProps { title: string; children: ReactNode; }
+
+function KbGroup({ title, children }: KbGroupProps) {
   return (
     <div>
       <div className="lt-kb-group__title">{title}</div>
@@ -84,7 +87,9 @@ function KbGroup({ title, children }: any) {
   );
 }
 
-function KbItem({ keys, action, accent }: any) {
+interface KbItemProps { keys: string[]; action: string; accent?: boolean; }
+
+function KbItem({ keys, action, accent }: KbItemProps) {
   return (
     <div className="lt-kb-item">
       <div className="lt-kb-item__keys">

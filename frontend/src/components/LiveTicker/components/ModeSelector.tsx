@@ -4,6 +4,7 @@
 import React, { memo, useState, useRef, useEffect, useCallback } from "react";
 import { createPortal } from "react-dom";
 import { MODES, TOAST_DURATION_MS } from "../constants";
+import type { TickerMode } from "../../../types";
 
 const MODE_CFG = {
   [MODES.AUTO]: {
@@ -38,14 +39,12 @@ const MODE_CFG = {
   },
 };
 
-import type { TickerMode } from "../../../types";
-
 interface ModeSelectorProps {
   mode: TickerMode;
   onModeChange: (mode: TickerMode) => void | Promise<void>;
 }
 
-export const ModeSelector: any = memo(function ModeSelector({ mode, onModeChange }: ModeSelectorProps) {
+export const ModeSelector = memo(function ModeSelector({ mode, onModeChange }: ModeSelectorProps) {
   const [pending, setPending] = useState<TickerMode | null>(null);
   const [popPos, setPopPos]   = useState<{ top: number; left: number } | null>(null);
   const [toast, setToast]     = useState<{ text: string; color: string } | null>(null);

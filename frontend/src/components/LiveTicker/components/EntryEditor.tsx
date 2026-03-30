@@ -21,7 +21,7 @@ interface EntryEditorProps {
   playerNames?: string[];
 }
 
-export const EntryEditor: any = memo(function EntryEditor({
+export const EntryEditor = memo(function EntryEditor({
   value,
   onChange,
   onPublish,
@@ -84,7 +84,7 @@ export const EntryEditor: any = memo(function EntryEditor({
     const trimmed = value.trim();
     const afterCmd = trimmed.replace(COMMAND_PREFIX_REGEX, "");
     if (trimmed.startsWith("/") && preview?.isValid) {
-      const meta = preview.meta ?? {};
+      const meta = preview.meta;
       // Phase commands (e.g. /prematch, /elfmeter) with extra text → free text mode
       if (meta.phase != null && afterCmd) {
         onPublish?.({ text: afterCmd, icon: meta.icon ?? "📣", minute: minute != null ? minute : null, phase: null });
@@ -94,7 +94,7 @@ export const EntryEditor: any = memo(function EntryEditor({
           text: preview.formatted,
           icon: meta.icon ?? "📣",
           minute: meta.minute ?? minute ?? null,
-          phase: meta.phase,
+          phase: meta.phase as import("../../../types").MatchPhase | null,
         });
       } else {
         // Event command (/g, /gelb etc.) → freier Text nach Prefix + Icon

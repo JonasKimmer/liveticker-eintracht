@@ -1,6 +1,12 @@
 import { useState } from "react";
 
-export function ClipThumbnail({ clip, onClick, onDelete }: any) {
+interface ClipThumbnailProps {
+  clip: { id: string | number; player_name?: string | null; title?: string | null; thumbnail_url?: string | null; team_name?: string | null };
+  onClick: (clip: ClipThumbnailProps["clip"]) => void;
+  onDelete: (id: string | number) => void;
+}
+
+export function ClipThumbnail({ clip, onClick, onDelete }: ClipThumbnailProps) {
   const [hovered, setHovered] = useState(false);
   return (
     <div style={{ position: "relative" }}>

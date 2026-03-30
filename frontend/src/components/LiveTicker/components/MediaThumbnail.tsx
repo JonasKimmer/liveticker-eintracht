@@ -1,7 +1,18 @@
 import { useState, useRef } from "react";
 import { createPortal } from "react-dom";
 
-export function MediaThumbnail({ item, onDoubleClick }: any) {
+interface MediaItem {
+  thumbnail_url?: string | null;
+  name?: string | null;
+  media_id: string | number;
+}
+
+interface MediaThumbnailProps {
+  item: MediaItem;
+  onDoubleClick: (item: MediaItem) => void;
+}
+
+export function MediaThumbnail({ item, onDoubleClick }: MediaThumbnailProps) {
   const [hovered, setHovered] = useState(false);
   const [previewStyle, setPreviewStyle] = useState(null);
   const btnRef = useRef(null);

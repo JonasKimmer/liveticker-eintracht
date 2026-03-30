@@ -3,10 +3,22 @@
 // Used by TwitterPanel and InstagramPanel
 // ============================================================
 
-import { useState, useRef } from "react";
+import { useState, useRef, type FormEvent } from "react";
 import { useCommandPalette, CommandPalettePortal } from "./CommandPalette";
 import { PUBLISH_PHASES as PHASES, MAX_MATCH_MINUTE } from "../constants";
 import { useMediaPublishForm } from "../hooks/useMediaPublishForm";
+
+interface SocialPublishModalProps {
+  post: { id: number | string; title?: string | null };
+  matchId: number;
+  currentMinute: number;
+  onClose: () => void;
+  onPublished: (id: number | string) => void;
+  headerIcon: string;
+  headerLabel: string;
+  submitLabel: string;
+  submitBackground: string;
+}
 
 export function SocialPublishModal({
   post,
@@ -18,7 +30,7 @@ export function SocialPublishModal({
   headerLabel,
   submitLabel,
   submitBackground,
-}: any) {
+}: SocialPublishModalProps) {
   const [text, setText] = useState(post.title ?? "");
   const textareaRef = useRef(null);
   const { minute, setMinute, phase, setPhase, loading, error, submit } =
@@ -26,7 +38,7 @@ export function SocialPublishModal({
   const { showPalette, paletteIdx, filteredCmds, onValueChange, selectCmd, handlePaletteKeyDown } =
     useCommandPalette(text);
 
-  async function handleSubmit(e?: any) {
+  async function handleSubmit(e?: FormEvent) {
     e?.preventDefault();
     await submit(post.id, matchId, text, onPublished);
   }

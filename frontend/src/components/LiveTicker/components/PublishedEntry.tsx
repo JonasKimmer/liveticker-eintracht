@@ -10,6 +10,7 @@ import {
   PHASE_DEFAULT_ICON,
 } from "../constants";
 import { useClickOutside } from "hooks/useClickOutside";
+import type { MatchEvent, TickerEntry } from "../../../types";
 
 function getMediaIcon(videoUrl, imageUrl, fallback) {
   if (!videoUrl && !imageUrl) return fallback;
@@ -274,8 +275,6 @@ function EditForm({ textareaRef, value, onChange, onSave, onCancel, saving }: {
   );
 }
 
-import type { MatchEvent, TickerEntry } from "../../../types";
-
 interface PublishedEntryProps {
   tickerText: TickerEntry;
   entry?: MatchEvent | null;
@@ -285,7 +284,7 @@ interface PublishedEntryProps {
   onDelete?: (id: number) => Promise<void>;
 }
 
-export const PublishedEntry: any = memo(function PublishedEntry({
+export const PublishedEntry = memo(function PublishedEntry({
   entry,
   tickerText,
   isManual,

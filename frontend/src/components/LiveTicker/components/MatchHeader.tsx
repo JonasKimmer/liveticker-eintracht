@@ -16,7 +16,7 @@ interface MatchHeaderProps {
   onMinuteSync?: () => void;
 }
 
-export const MatchHeader: any = memo(function MatchHeader({ match, leagueSeason, onMinuteSync }: MatchHeaderProps) {
+export const MatchHeader = memo(function MatchHeader({ match, leagueSeason, onMinuteSync }: MatchHeaderProps) {
   const status = normalizeMatchStatus(match?.matchState);
   const liveMinute = useLiveMinute(match);
 

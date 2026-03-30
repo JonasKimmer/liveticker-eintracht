@@ -11,7 +11,7 @@ interface FormationColumnProps {
   labelClass: string;
 }
 
-export const FormationColumn: any = memo(function FormationColumn({ lineup, playerName, playerStats = [], subMinuteMap = {}, abbr, labelClass }: FormationColumnProps) {
+export const FormationColumn = memo(function FormationColumn({ lineup, playerName, playerStats = [], subMinuteMap = {}, abbr, labelClass }: FormationColumnProps) {
   const formation = lineup[0]?.formation ?? "";
 
   const posOrder = { G: 0, D: 1, M: 2, F: 3 };

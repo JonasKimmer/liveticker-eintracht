@@ -3,7 +3,7 @@
 // ============================================================
 import { memo } from "react";
 
-export const LoadingScreen: any = memo<any>(function LoadingScreen() {
+export const LoadingScreen = memo(function LoadingScreen() {
   return (
     <div className="lt-loading">
       <div className="lt-loading__spinner" />

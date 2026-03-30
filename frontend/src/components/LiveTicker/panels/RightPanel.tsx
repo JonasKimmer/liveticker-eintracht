@@ -11,6 +11,12 @@ import { useRightPanelData } from "../hooks/useRightPanelData";
 
 import type { Match, MatchEvent, Player, LineupEntry, PlayerStat, MatchStat } from "../../../types";
 
+interface InjuryGroup {
+  team_id?: number;
+  team_name?: string;
+  players?: { player_name?: string; name?: string; reason?: string }[];
+}
+
 interface RightPanelProps {
   match: Match | null;
   matchStats: MatchStat[];
@@ -18,11 +24,10 @@ interface RightPanelProps {
   playerStats?: PlayerStat[];
   lineups: LineupEntry[];
   events?: MatchEvent[];
-  injuries?: any[];
-  prematch?: any[];
+  injuries?: InjuryGroup[];
 }
 
-export const RightPanel: any = memo(function RightPanel({
+export const RightPanel = memo(function RightPanel({
   match,
   matchStats,
   players,

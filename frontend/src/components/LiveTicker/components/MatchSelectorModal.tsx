@@ -1,10 +1,34 @@
 // ============================================================
 // MatchSelectorModal.jsx
 // ============================================================
-import { memo, useEffect, useRef, useState } from "react";
+import { memo, useEffect, useRef, useState, type ReactNode } from "react";
 import { useClickOutside } from "hooks/useClickOutside";
 
-export const MatchSelectorModal: any = memo<any>(function MatchSelectorModal({
+interface MatchSelectorModalProps {
+  onClose: () => void;
+  activeTab: string;
+  countries: string[];
+  selCountry: string | null;
+  onCountryChange: (v: string | null) => void;
+  teams: { id: number; name: string }[];
+  teamsLoading?: boolean;
+  selTeamId: number | null;
+  onTeamChange: (id: number) => void;
+  competitions: { id: number; title?: string }[];
+  competitionsLoading?: boolean;
+  selCompetitionId: number | null;
+  onCompetitionChange: (id: number) => void;
+  matchdays: number[];
+  matchdaysLoading?: boolean;
+  matchdaysError?: string | null;
+  selRound: number | null;
+  onRoundChange: (r: number) => void;
+  matches: { id: number; homeTeam?: { name: string }; awayTeam?: { name: string }; homeScore?: number | null; awayScore?: number | null }[];
+  selMatchId: number | null;
+  onMatchChange: (id: number) => void;
+}
+
+export const MatchSelectorModal = memo(function MatchSelectorModal({
   onClose,
   activeTab,
   countries,
@@ -26,11 +50,11 @@ export const MatchSelectorModal: any = memo<any>(function MatchSelectorModal({
   matches,
   selMatchId,
   onMatchChange,
-}: any) {
+}: MatchSelectorModalProps) {
   const overlayRef = useRef(null);
 
   useEffect(() => {
-    const handler = (e) => { if (e.key === "Escape") onClose(); };
+    const handler = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
   }, [onClose]);
@@ -74,7 +98,7 @@ export const MatchSelectorModal: any = memo<any>(function MatchSelectorModal({
                 value={selTeamId}
                 displayValue={teams.find((t) => t.id === selTeamId)?.name}
                 placeholder="Select a Team"
-                onSelect={(v) => onTeamChange(parseInt(v))}
+                onSelect={(v) => onTeamChange(v)}
                 items={teams.map((t) => ({ value: t.id, label: t.name }))}
               />
 
@@ -84,7 +108,7 @@ export const MatchSelectorModal: any = memo<any>(function MatchSelectorModal({
                 value={selCompetitionId}
                 displayValue={competitions.find((c) => c.id === selCompetitionId)?.title}
                 placeholder="Select Wettbewerb"
-                onSelect={(v) => onCompetitionChange(parseInt(v))}
+                onSelect={(v) => onCompetitionChange(v)}
                 items={competitions.map((c) => ({ value: c.id, label: c.title }))}
               />
 
@@ -129,13 +153,25 @@ export const MatchSelectorModal: any = memo<any>(function MatchSelectorModal({
   );
 });
 
+interface MsmMatchdayPickerProps {
+  matchdays: number[];
+  matchdaysLoading?: boolean;
+  matchdaysError?: string | null;
+  selRound: number | null;
+  onRoundChange: (r: number) => void;
+  matches: { id: number; homeTeam?: { name: string }; awayTeam?: { name: string }; homeScore?: number | null; awayScore?: number | null }[];
+  selMatchId: number | null;
+  onMatchChange: (id: number) => void;
+  disabled?: boolean;
+}
+
 function MsmMatchdayPicker({
   matchdays, matchdaysLoading, matchdaysError,
   selRound, onRoundChange, matches, selMatchId, onMatchChange, disabled,
-}: any) {
+}: MsmMatchdayPickerProps) {
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
-  const roundLabel = (r) => String(r).match(/\d+/)?.[0] ?? String(r);
+  const roundLabel = (r: number) => String(r).match(/\d+/)?.[0] ?? String(r);
 
   useClickOutside(ref, () => setOpen(false));
 
@@ -202,7 +238,17 @@ function MsmMatchdayPicker({
   );
 }
 
-function MsmDropdown({ label, disabled, value, displayValue, placeholder, onSelect, items }: any) {
+interface MsmDropdownProps {
+  label: string;
+  disabled?: boolean;
+  value: number | null;
+  displayValue?: string;
+  placeholder: string;
+  onSelect: (v: number) => void;
+  items: { value: number; label?: string }[];
+}
+
+function MsmDropdown({ label, disabled, value, displayValue, placeholder, onSelect, items }: MsmDropdownProps) {
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
 
@@ -244,7 +290,15 @@ function MsmDropdown({ label, disabled, value, displayValue, placeholder, onSele
   );
 }
 
-function MsmSelect({ label, disabled, value, onChange, children }: any) {
+interface MsmSelectProps {
+  label: string;
+  disabled?: boolean;
+  value: string | number;
+  onChange: (v: string) => void;
+  children: ReactNode;
+}
+
+function MsmSelect({ label, disabled, value, onChange, children }: MsmSelectProps) {
   return (
     <div className="lt-msm__select-wrap">
       <label className="lt-msm__label">{label}</label>

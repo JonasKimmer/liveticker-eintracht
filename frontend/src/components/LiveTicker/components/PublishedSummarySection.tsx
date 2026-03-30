@@ -10,7 +10,9 @@ import * as api from "api";
  * @param {object}   props
  * @param {Function} props.onRetract - (entryId: number) => void — aufgerufen vor dem API-Call
  */
-export function PublishedSummarySection({ onRetract }: any) {
+interface PublishedSummarySectionProps { onRetract: (id: number) => void; }
+
+export function PublishedSummarySection({ onRetract }: PublishedSummarySectionProps) {
   const { tickerTexts, reload } = useTickerDataContext();
 
   const published = tickerTexts

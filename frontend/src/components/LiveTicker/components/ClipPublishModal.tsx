@@ -1,10 +1,18 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, type FormEvent } from "react";
 import { generateClipDraft, publishClip, publishClipTicker } from "api";
 import { TICKER_STYLES, MAX_MATCH_MINUTE } from "../constants";
 import logger from "utils/logger";
 import { VideoOrThumb } from "./VideoOrThumb";
 
-export function ClipPublishModal({ clip, matchId, currentMinute, onClose, onPublished }: any) {
+interface ClipPublishModalProps {
+  clip: { id: string | number; player_name?: string | null; video_url?: string | null; thumbnail_url?: string | null; _fromN8n?: boolean };
+  matchId: number;
+  currentMinute: number;
+  onClose: () => void;
+  onPublished: (clipId: string | number) => void;
+}
+
+export function ClipPublishModal({ clip, matchId, currentMinute, onClose, onPublished }: ClipPublishModalProps) {
   const [text, setText] = useState("");
   const [minute, setMinute] = useState(currentMinute ?? 0);
   const [style, setStyle] = useState("euphorisch");
@@ -35,7 +43,7 @@ export function ClipPublishModal({ clip, matchId, currentMinute, onClose, onPubl
     }
   }
 
-  async function handleSubmit(e?: any) {
+  async function handleSubmit(e?: FormEvent) {
     e?.preventDefault();
     if (!text.trim()) { setError("Text darf nicht leer sein."); return; }
     setLoading(true);

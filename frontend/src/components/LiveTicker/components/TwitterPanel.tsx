@@ -12,7 +12,15 @@ import { SocialPanelShell } from "./SocialPanelShell";
 
 // ── Publish Modal ─────────────────────────────────────────────
 
-function TwitterPublishModal({ post, matchId, currentMinute, onClose, onPublished }: any) {
+interface TwitterPublishModalProps {
+  post: { id: number | string; title?: string | null };
+  matchId: number;
+  currentMinute: number;
+  onClose: () => void;
+  onPublished: (id: number | string) => void;
+}
+
+function TwitterPublishModal({ post, matchId, currentMinute, onClose, onPublished }: TwitterPublishModalProps) {
   return (
     <SocialPublishModal
       post={post}
@@ -30,7 +38,13 @@ function TwitterPublishModal({ post, matchId, currentMinute, onClose, onPublishe
 
 // ── Tweet-Karte ───────────────────────────────────────────────
 
-function TweetCard({ post, onClick, onDelete }: any) {
+interface TweetCardProps {
+  post: { id: number | string; title?: string | null; thumbnail_url?: string | null; video_url?: string | null };
+  onClick: (post: TweetCardProps["post"]) => void;
+  onDelete: (id: number | string) => void;
+}
+
+function TweetCard({ post, onClick, onDelete }: TweetCardProps) {
   const [hovered, setHovered] = useState(false);
   const hasThumbnail = !!post.thumbnail_url;
 
@@ -177,7 +191,9 @@ function TweetCard({ post, onClick, onDelete }: any) {
 
 // ── Hauptkomponente ───────────────────────────────────────────
 
-export const TwitterPanel: any = memo<any>(function TwitterPanel({ matchId, currentMinute = 0 }: any) {
+interface TwitterPanelProps { matchId: number; currentMinute?: number; }
+
+export const TwitterPanel = memo(function TwitterPanel({ matchId, currentMinute = 0 }: TwitterPanelProps) {
   const {
     open, setOpen, posts, loading, importing,
     modalPost, setModalPost, statusMsg,

@@ -3,7 +3,7 @@
 // Flow: n8n scrapet Kanal → DB → Klick → Modal → Ticker
 // ============================================================
 
-import { memo, useState, useCallback, useEffect, useRef } from "react";
+import { memo, useState, useCallback, useEffect, useRef, type FormEvent } from "react";
 import { createPortal } from "react-dom";
 import { useCommandPalette, CommandPalettePortal } from "./CommandPalette";
 import {
@@ -34,7 +34,15 @@ function getThumbnail(clip) {
 
 // ── Publish Modal ─────────────────────────────────────────────
 
-function YoutubePublishModal({ clip, matchId, currentMinute, onClose, onPublished }: any) {
+interface YoutubePublishModalProps {
+  clip: { id: number; title?: string | null; video_url?: string | null; thumbnail_url?: string | null };
+  matchId: number;
+  currentMinute: number;
+  onClose: () => void;
+  onPublished: (id: number) => void;
+}
+
+function YoutubePublishModal({ clip, matchId, currentMinute, onClose, onPublished }: YoutubePublishModalProps) {
   const [text, setText] = useState("");
   const [style, setStyle] = useState("neutral");
   const [generating, setGenerating] = useState(false);
@@ -64,7 +72,7 @@ function YoutubePublishModal({ clip, matchId, currentMinute, onClose, onPublishe
     }
   }
 
-  async function handleSubmit(e?: any) {
+  async function handleSubmit(e?: FormEvent) {
     e?.preventDefault();
     await submit(clip.id, matchId, text, onPublished);
   }
@@ -212,7 +220,13 @@ function YoutubePublishModal({ clip, matchId, currentMinute, onClose, onPublishe
 
 // ── Video-Kachel (ScorePlay-Style: Hover-Preview + Doppelklick) ─
 
-function YouTubeThumbnail({ clip, onClick, onDelete }: any) {
+interface YouTubeThumbnailProps {
+  clip: { id: number; title?: string | null; video_url?: string | null; thumbnail_url?: string | null };
+  onClick: (clip: YouTubeThumbnailProps["clip"]) => void;
+  onDelete: (id: number) => void;
+}
+
+function YouTubeThumbnail({ clip, onClick, onDelete }: YouTubeThumbnailProps) {
   const [hovered, setHovered] = useState(false);
   const [previewStyle, setPreviewStyle] = useState(null);
   const btnRef = useRef(null);
@@ -317,7 +331,9 @@ function YouTubeThumbnail({ clip, onClick, onDelete }: any) {
 
 // ── Hauptkomponente ───────────────────────────────────────────
 
-export const YouTubePanel: any = memo<any>(function YouTubePanel({ matchId, currentMinute = 0 }: any) {
+interface YouTubePanelProps { matchId: number; currentMinute?: number; }
+
+export const YouTubePanel = memo(function YouTubePanel({ matchId, currentMinute = 0 }: YouTubePanelProps) {
   const [open, setOpen] = useState(false);
   const [clips, setClips] = useState([]);
   const [loading, setLoading] = useState(false);

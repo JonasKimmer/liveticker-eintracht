@@ -7,7 +7,7 @@
 // über Props injiziert → kein Copy-Paste mehr in Twitter/Insta.
 // ============================================================
 
-import { memo } from "react";
+import { memo, type ReactNode } from "react";
 
 const CHEVRON_SVG = (
   <svg
@@ -20,7 +20,9 @@ const CHEVRON_SVG = (
   </svg>
 );
 
-function StatusMessage({ msg }: any) {
+interface StatusMsg { type: "error" | "success"; text: string; }
+
+function StatusMessage({ msg }: { msg: StatusMsg | null }) {
   if (!msg) return null;
   return (
     <div className={`lt-status-msg ${msg.type === "error" ? "lt-status-msg--error" : "lt-status-msg--success"}`}>
@@ -29,7 +31,27 @@ function StatusMessage({ msg }: any) {
   );
 }
 
-export const SocialPanelShell: any = memo<any>(function SocialPanelShell({
+interface SocialPanelShellProps {
+  open: boolean;
+  onToggle: () => void;
+  icon: ReactNode;
+  label: string;
+  badgeCount: number;
+  badgeBackground: string;
+  importing: boolean;
+  loading: boolean;
+  onImport: () => void;
+  onRefresh: () => void;
+  importLabel: string;
+  importBackground: string;
+  emptyLabel: string;
+  hintLabel?: string;
+  statusMsg?: StatusMsg | null;
+  gridColumns?: string;
+  children?: ReactNode;
+}
+
+export const SocialPanelShell = memo(function SocialPanelShell({
   open,
   onToggle,
   icon,
@@ -47,7 +69,7 @@ export const SocialPanelShell: any = memo<any>(function SocialPanelShell({
   statusMsg,
   gridColumns = "1fr 1fr",
   children,
-}: any) {
+}: SocialPanelShellProps) {
   return (
     <div
       style={{

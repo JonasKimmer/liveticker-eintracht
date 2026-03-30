@@ -87,7 +87,7 @@ interface CommandPalettePortalProps {
   onSelect: (cmd: string) => void;
 }
 
-export const CommandPalettePortal: any = memo(function CommandPalettePortal({ show, items, activeIdx, anchorRef, onSelect }: CommandPalettePortalProps) {
+export const CommandPalettePortal = memo(function CommandPalettePortal({ show, items, activeIdx, anchorRef, onSelect }: CommandPalettePortalProps) {
   if (!show || !items.length || !anchorRef?.current) return null;
 
   const rect = anchorRef.current.getBoundingClientRect();

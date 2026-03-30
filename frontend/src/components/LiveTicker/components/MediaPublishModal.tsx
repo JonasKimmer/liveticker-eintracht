@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef, useMemo, useEffect } from "react";
+import { useState, useCallback, useRef, useMemo, useEffect, type FormEvent } from "react";
 import { createPortal } from "react-dom";
 import { useLiveMinuteEditor } from "../hooks/useLiveMinuteEditor";
 import { generateMediaCaption, publishMedia } from "api";
@@ -7,7 +7,16 @@ import { useCommandPalette, CommandPalettePortal } from "./CommandPalette";
 import { MinuteEditor } from "./MinuteEditor";
 import { useNameAutocomplete } from "hooks/useNameAutocomplete";
 
-export function MediaPublishModal({ image, matchId, onClose, onPublished, playerNames = [], currentMinute = 0 }: any) {
+interface MediaPublishModalProps {
+  image: { media_id: string | number; thumbnail_url?: string | null; name?: string | null };
+  matchId: number;
+  onClose: () => void;
+  onPublished: (mediaId: string | number) => void;
+  playerNames?: string[];
+  currentMinute?: number;
+}
+
+export function MediaPublishModal({ image, matchId, onClose, onPublished, playerNames = [], currentMinute = 0 }: MediaPublishModalProps) {
   const [description, setDescription] = useState("");
   const [loading, setLoading] = useState(false);
   const [generating, setGenerating] = useState(false);
@@ -53,7 +62,7 @@ export function MediaPublishModal({ image, matchId, onClose, onPublished, player
     onValueChange(v);
   }, [onValueChange]);
 
-  const handleSubmit = useCallback(async (e?: any) => {
+  const handleSubmit = useCallback(async (e?: FormEvent) => {
     e?.preventDefault();
     if (!description.trim()) { setError("Text darf nicht leer sein."); return; }
     const raw = description.trim();

@@ -18,7 +18,7 @@ interface BreadcrumbProps {
   onOpen: () => void;
 }
 
-export const Breadcrumb: any = memo(function Breadcrumb({ match, competition, country, team, round, matchdays, onOpen }: BreadcrumbProps) {
+export const Breadcrumb = memo(function Breadcrumb({ match, competition, country, team, round, matchdays, onOpen }: BreadcrumbProps) {
   const { full } = useMemo(() => makeRoundLabel(matchdays ?? []), [matchdays]);
 
   if (!match || !competition) return null;

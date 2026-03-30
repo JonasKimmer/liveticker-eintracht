@@ -15,7 +15,7 @@ const sortMinute = (t: TickerEntry) => {
   return ps !== null ? ps : (t.minute ?? PHASE_MINUTE_DEFAULT[t.phase] ?? 0);
 };
 
-export const LeftPanel: any = memo<any>(function LeftPanel() {
+export const LeftPanel = memo(function LeftPanel() {
   const { match, events, tickerTexts } = useTickerDataContext();
   const { onEditEntry, onDeleteEntry } = useTickerActionsContext();
 

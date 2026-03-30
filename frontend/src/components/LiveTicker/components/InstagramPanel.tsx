@@ -13,7 +13,15 @@ import { INSTA_GRADIENT } from "../constants";
 
 // ── Publish Modal ─────────────────────────────────────────────
 
-function InstaPublishModal({ post, matchId, currentMinute, onClose, onPublished }: any) {
+interface InstaPublishModalProps {
+  post: { id: number | string; title?: string | null };
+  matchId: number;
+  currentMinute: number;
+  onClose: () => void;
+  onPublished: (id: number | string) => void;
+}
+
+function InstaPublishModal({ post, matchId, currentMinute, onClose, onPublished }: InstaPublishModalProps) {
   return (
     <SocialPublishModal
       post={post}
@@ -31,7 +39,13 @@ function InstaPublishModal({ post, matchId, currentMinute, onClose, onPublished 
 
 // ── Post-Karte (ScorePlay-Style: Hover-Preview + Doppelklick) ─
 
-function InstaCard({ post, onClick, onDelete }: any) {
+interface InstaCardProps {
+  post: { id: number | string; title?: string | null; thumbnail_url?: string | null };
+  onClick: (post: InstaCardProps["post"]) => void;
+  onDelete: (id: number | string) => void;
+}
+
+function InstaCard({ post, onClick, onDelete }: InstaCardProps) {
   const [hovered, setHovered] = useState(false);
   const [previewStyle, setPreviewStyle] = useState(null);
   const btnRef = useRef(null);
@@ -142,7 +156,9 @@ function InstaCard({ post, onClick, onDelete }: any) {
 
 // ── Hauptkomponente ───────────────────────────────────────────
 
-export const InstagramPanel: any = memo<any>(function InstagramPanel({ matchId, currentMinute = 0 }: any) {
+interface InstagramPanelProps { matchId: number; currentMinute?: number; }
+
+export const InstagramPanel = memo(function InstagramPanel({ matchId, currentMinute = 0 }: InstagramPanelProps) {
   const {
     open, setOpen, posts, loading, importing,
     modalPost, setModalPost, statusMsg,

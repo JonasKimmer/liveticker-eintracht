@@ -27,7 +27,7 @@ interface StartScreenProps {
   compact?: boolean;
 }
 
-export const StartScreen: any = memo(function StartScreen({
+export const StartScreen = memo(function StartScreen({
   countries,
   selCountry,
   onCountryChange,

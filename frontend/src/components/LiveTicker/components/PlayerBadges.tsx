@@ -7,7 +7,7 @@ interface PlayerBadgesProps {
   subMinuteMap?: Record<string | number, number>;
 }
 
-export const PlayerBadges: any = memo(function PlayerBadges({ entry, stat, subMinuteMap = {} }: PlayerBadgesProps) {
+export const PlayerBadges = memo(function PlayerBadges({ entry, stat, subMinuteMap = {} }: PlayerBadgesProps) {
   const goals  = stat?.goals      ?? entry.numberOfGoals ?? 0;
   const yellow = stat?.cardsYellow > 0 || entry.hasYellowCard;
   const red    = stat?.cardsRed    > 0 || entry.hasRedCard;

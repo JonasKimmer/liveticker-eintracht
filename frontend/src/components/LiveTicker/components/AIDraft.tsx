@@ -18,7 +18,7 @@ interface AIDraftProps {
   eventId?: number | null;
 }
 
-export const AIDraft: any = memo(function AIDraft({
+export const AIDraft = memo(function AIDraft({
   eventType,
   draftText,
   onAccept,

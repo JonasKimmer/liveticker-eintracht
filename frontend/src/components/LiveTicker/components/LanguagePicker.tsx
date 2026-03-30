@@ -12,7 +12,9 @@ const LANGUAGES = [
   { code: "fr", label: "Français" },
 ];
 
-export const LanguagePicker: any = memo<any>(function LanguagePicker({ language, onLanguageChange }: any) {
+interface LanguagePickerProps { language: string; onLanguageChange: (code: string) => void; }
+
+export const LanguagePicker = memo(function LanguagePicker({ language, onLanguageChange }: LanguagePickerProps) {
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
   useClickOutside(ref, () => setOpen(false));

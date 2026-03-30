@@ -13,7 +13,14 @@ import { ClipPublishModal } from "./ClipPublishModal";
 
 // ── Hauptkomponente ───────────────────────────────────────────
 
-export const ClipPickerPanel: any = memo<any>(function ClipPickerPanel({ matchId, match, currentMinute = 0, onPublished }: any) {
+interface ClipPickerPanelProps {
+  matchId: number;
+  match?: { homeTeam?: { name: string } | null; awayTeam?: { name: string } | null } | null;
+  currentMinute?: number;
+  onPublished?: () => void;
+}
+
+export const ClipPickerPanel = memo(function ClipPickerPanel({ matchId, match, currentMinute = 0, onPublished }: ClipPickerPanelProps) {
   const [open, setOpen] = useState(false);
   const [clips, setClips] = useState([]);
   const [loading, setLoading] = useState(false);
