@@ -218,8 +218,10 @@ class LLMService:
             return ""
         examples = "\n".join(f'- "{r}"' for r in style_references)
         return (
-            f"\n### STILREFERENZEN\n"
-            f"Schreibe in exakt diesem Stil (Rhythmus, Wortwahl, Emotionalität):\n"
+            f"\n### STILREFERENZEN (WICHTIG)\n"
+            f"Die folgenden Texte stammen von echten Eintracht-Redakteuren. "
+            f"Übernimm exakt diesen Stil — Rhythmus, Wortwahl, Satzlänge, Emotionalität. "
+            f"Verwende KEINE generischen Floskeln, sondern schreibe so wie diese Beispiele:\n"
             f"{examples}\n"
         )
 
@@ -273,7 +275,7 @@ class LLMService:
             f"{prematch_rule}"
             f"- Nur der fertige Ticker-Text, keine Erklärungen\n"
             f"- Ellipsen und kurze Hauptsätze bevorzugen\n"
-            f"- Präsens für laufende Szene, Perfekt für abgeschlossene Aktion\n"
+            f"- Präsens für laufende Szene, Perfekt für abmuss ichgeschlossene Aktion\n"
             f"- Bei Vorbericht/Spielvorschau/Direktvergleich/Verletzungsbericht/Teamstatistik: kompakten Analyse-Text schreiben (2–3 Sätze), KEIN Live-Kommentar\n"
             f"- Bei Tor: emotional, prägnant\n"
             f"- Das 'Verursachende Team' ist der Verein des handelnden Spielers – nicht zwingend das Heimteam\n"
