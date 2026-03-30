@@ -10,7 +10,7 @@
  */
 
 import { createContext, useContext } from "react";
-import type { TickerStyle, PublishToast } from "../types";
+import type { TickerStyle } from "../types";
 
 export interface TickerActionsContextValue {
   onGenerate: (eventId: number, style: TickerStyle) => Promise<void>;

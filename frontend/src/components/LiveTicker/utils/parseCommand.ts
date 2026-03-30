@@ -7,7 +7,33 @@
  * Gibt zusätzlich { meta: { icon, phase, minute } } zurück.
  */
 
-const CMD_MAP = {
+interface PhaseConfig {
+  text: string;
+  phase: string;
+  icon: string;
+  hasMinute: boolean;
+}
+
+interface CardColor {
+  emoji: string;
+  label: string;
+}
+
+interface ParseMeta {
+  icon: string;
+  phase: string | null;
+  minute: number | null;
+}
+
+export interface ParseResult {
+  type: string;
+  formatted: string;
+  warnings: string[];
+  isValid: boolean;
+  meta: ParseMeta;
+}
+
+const CMD_MAP: Record<string, string> = {
   "/goal": "goal",
   "/g": "goal",
   "/card": "card",
@@ -22,7 +48,7 @@ const CMD_MAP = {
   "/ep": "missed_penalty",
 };
 
-const PHASE_CMDS = {
+const PHASE_CMDS: Record<string, PhaseConfig> = {
   "/prematch":  { text: "Vorbericht",                    phase: "Before",                icon: "📣", hasMinute: false },
   "/anpfiff":   { text: "Anpfiff!",                      phase: "FirstHalf",             icon: "📣", hasMinute: true  },
   "/hz":        { text: "Halbzeit!",                     phase: "FirstHalfBreak",        icon: "🔔", hasMinute: false },
@@ -36,7 +62,7 @@ const PHASE_CMDS = {
   "/abpfiff":   { text: "Abpfiff!",                      phase: "After",                 icon: "📣", hasMinute: false },
 };
 
-const CARD_COLORS = {
+const CARD_COLORS: Record<string, CardColor> = {
   yellow: { emoji: "🟨", label: "Gelb" },
   y:      { emoji: "🟨", label: "Gelb" },
   red:    { emoji: "🟥", label: "Rot"  },
@@ -45,11 +71,11 @@ const CARD_COLORS = {
   rot:    { emoji: "🟥", label: "Rot"  },
 };
 
-export function parseCommand(input, currentMinute = 0) {
+export function parseCommand(input: string | null | undefined, currentMinute = 0): ParseResult {
   const trimmed = (input ?? "").trim();
 
   if (!trimmed.startsWith("/")) {
-    return { type: "invalid", formatted: trimmed, warnings: [], isValid: false, meta: {} };
+    return { type: "invalid", formatted: trimmed, warnings: [], isValid: false, meta: { icon: "📣", phase: null, minute: null } };
   }
 
   const tokens = trimmed.split(/\s+/).filter(Boolean);
@@ -78,7 +104,7 @@ export function parseCommand(input, currentMinute = 0) {
       formatted: trimmed,
       warnings: [`Unbekannter Command: ${cmdToken}`],
       isValid: false,
-      meta: {},
+      meta: { icon: "📣", phase: null, minute: null },
     };
   }
 
@@ -88,7 +114,7 @@ export function parseCommand(input, currentMinute = 0) {
     case "goal": {
       const player = args[0];
       const team = args[1];
-      const warnings = [];
+      const warnings: string[] = [];
       if (!player) warnings.push("Fehlend: Spieler");
       if (!team) warnings.push("Fehlend: Team");
       return {
@@ -102,11 +128,11 @@ export function parseCommand(input, currentMinute = 0) {
 
     case "card": {
       const colorArg = args.find((a) => CARD_COLORS[a.toLowerCase()]);
-      const cardColor = colorArg ? CARD_COLORS[colorArg.toLowerCase()] : CARD_COLORS.yellow;
+      const cardColor: CardColor = colorArg ? CARD_COLORS[colorArg.toLowerCase()] : CARD_COLORS["yellow"];
       const remaining = args.filter((a) => a.toLowerCase() !== colorArg?.toLowerCase());
       const player = remaining[0];
       const team = remaining[1];
-      const warnings = [];
+      const warnings: string[] = [];
       if (!player) warnings.push("Fehlend: Spieler");
       if (!team) warnings.push("Fehlend: Team");
       return {
@@ -122,7 +148,7 @@ export function parseCommand(input, currentMinute = 0) {
       const playerIn = args[0];
       const playerOut = args[1];
       const team = args[2];
-      const warnings = [];
+      const warnings: string[] = [];
       if (!playerIn) warnings.push("Fehlend: Spieler ein");
       if (!playerOut) warnings.push("Fehlend: Spieler aus");
       if (!team) warnings.push("Fehlend: Team");
@@ -137,7 +163,7 @@ export function parseCommand(input, currentMinute = 0) {
 
     case "note": {
       const noteText = args.join(" ");
-      const warnings = noteText ? [] : ["Fehlend: Text"];
+      const warnings: string[] = noteText ? [] : ["Fehlend: Text"];
       return {
         type: "note",
         formatted: noteText || "[TEXT]",
@@ -150,7 +176,7 @@ export function parseCommand(input, currentMinute = 0) {
     case "card_yellow": {
       const player = args[0];
       const team = args[1];
-      const warnings = [];
+      const warnings: string[] = [];
       if (!player) warnings.push("Fehlend: Spieler");
       if (!team) warnings.push("Fehlend: Team");
       return {
@@ -165,7 +191,7 @@ export function parseCommand(input, currentMinute = 0) {
     case "card_red": {
       const player = args[0];
       const team = args[1];
-      const warnings = [];
+      const warnings: string[] = [];
       if (!player) warnings.push("Fehlend: Spieler");
       if (!team) warnings.push("Fehlend: Team");
       return {
@@ -180,7 +206,7 @@ export function parseCommand(input, currentMinute = 0) {
     case "own_goal": {
       const player = args[0];
       const team = args[1];
-      const warnings = [];
+      const warnings: string[] = [];
       if (!player) warnings.push("Fehlend: Spieler");
       if (!team) warnings.push("Fehlend: Team");
       return {
@@ -195,7 +221,7 @@ export function parseCommand(input, currentMinute = 0) {
     case "missed_penalty": {
       const player = args[0];
       const team = args[1];
-      const warnings = [];
+      const warnings: string[] = [];
       if (!player) warnings.push("Fehlend: Spieler");
       if (!team) warnings.push("Fehlend: Team");
       return {
@@ -208,14 +234,19 @@ export function parseCommand(input, currentMinute = 0) {
     }
 
     default:
-      return { type: "invalid", formatted: trimmed, warnings: ["Ungültiger Command"], isValid: false, meta: {} };
+      return { type: "invalid", formatted: trimmed, warnings: ["Ungültiger Command"], isValid: false, meta: { icon: "📣", phase: null, minute: null } };
   }
+}
+
+interface EventMeta {
+  icon: string;
+  cssClass: string;
 }
 
 /**
  * Hilfsfunktion: Gibt Icon + CSS-Klasse für einen Event-Typ zurück.
  */
-export function getEventMeta(eventType, detail = "") {
+export function getEventMeta(eventType: string | null | undefined, detail = ""): EventMeta {
   const t = eventType?.toLowerCase();
   if (t === "goal") return { icon: "⚽", cssClass: "goal" };
   if (t === "own_goal") return { icon: "⚽", cssClass: "goal" };
@@ -235,17 +266,26 @@ export function getEventMeta(eventType, detail = "") {
   return { icon: "•", cssClass: "" };
 }
 
+interface RawEvent {
+  liveTickerEventType?: string | null;
+  type?: string | null;
+  description?: string | null;
+  player_name?: string | null;
+  assist_name?: string | null;
+  detail?: string | null;
+}
+
 /**
  * Hilfsfunktion: Rohtext für ein Event (ohne AI-Text).
  */
-export function getRawEventText(event) {
+export function getRawEventText(event: RawEvent): string {
   const eventType = event.liveTickerEventType || event.type;
   const t = eventType?.toLowerCase();
-  let desc: any = {};
+  let desc: Record<string, string> = {};
   try { if (event.description) desc = JSON.parse(event.description); } catch {}
-  const player = desc.player_name || event.player_name || "";
-  const assist = desc.assist_name || event.assist_name || "";
-  const detail = desc.detail || event.detail || "";
+  const player = desc["player_name"] || event.player_name || "";
+  const assist = desc["assist_name"] || event.assist_name || "";
+  const detail = desc["detail"] || event.detail || "";
 
   if (t === "goal") return `Tor! ${player}${assist ? ` (Assist: ${assist})` : ""}`;
   if (t === "own_goal") return `Eigentor! ${player}`;
@@ -265,10 +305,10 @@ export function getRawEventText(event) {
 /**
  * Hilfsfunktion: Match-Status normalisieren.
  */
-export function normalizeMatchStatus(status) {
+export function normalizeMatchStatus(status: string | null | undefined): "live" | "finished" | "scheduled" {
   const LIVE = ["1H", "2H", "HT", "ET", "live", "Live"];
   const FINISHED = ["FT", "AET", "PEN", "finished", "FullTime"];
-  if (LIVE.includes(status)) return "live";
-  if (FINISHED.includes(status)) return "finished";
+  if (status && LIVE.includes(status)) return "live";
+  if (status && FINISHED.includes(status)) return "finished";
   return "scheduled";
 }
