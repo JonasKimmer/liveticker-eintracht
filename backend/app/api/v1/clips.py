@@ -11,6 +11,7 @@ Endpunkte:
 - DELETE /clips/{clip_id}     → Clip löschen
 """
 
+import base64
 import logging
 from pathlib import Path
 from typing import Optional
@@ -236,15 +237,11 @@ def delete_clip(
 # ──────────────────────────────────────────────
 
 
-@router.post("/cache-thumbnail", summary="Instagram-Thumbnail lokal speichern")
+@router.post("/cache-thumbnail", summary="Instagram-Thumbnail als Base64 in DB speichern")
 def cache_thumbnail(
     req: CacheThumbnailRequest,
     db: Session = Depends(get_db),
 ) -> dict:
-    THUMBNAILS_DIR.mkdir(parents=True, exist_ok=True)
-    filename = f"{req.vid}.jpg"
-    filepath = THUMBNAILS_DIR / filename
-
     try:
         with httpx.Client(follow_redirects=True, timeout=15) as client:
             resp = client.get(
@@ -252,15 +249,16 @@ def cache_thumbnail(
                 headers={"Referer": "https://www.instagram.com/"},
             )
             resp.raise_for_status()
-            filepath.write_bytes(resp.content)
+            image_bytes = resp.content
     except Exception as e:
         raise HTTPException(status_code=502, detail=f"Download fehlgeschlagen: {e}")
 
-    local_url = f"{settings.PUBLIC_BASE_URL}/static/thumbnails/{filename}"
+    content_type = resp.headers.get("content-type", "image/jpeg").split(";")[0]
+    data_url = f"data:{content_type};base64,{base64.b64encode(image_bytes).decode()}"
 
     clip_repo = MediaClipRepository(db)
     clip = clip_repo.get_by_vid(req.vid)
     if clip:
-        clip_repo.update_thumbnail(clip, local_url)
+        clip_repo.update_thumbnail(clip, data_url)
 
-    return {"local_url": local_url}
+    return {"local_url": data_url[:80] + "…"}
