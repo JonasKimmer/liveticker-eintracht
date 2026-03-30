@@ -47,16 +47,20 @@ export const AIDraft = memo(function AIDraft({
       </div>
 
       <div className="lt-draft__actions">
-        <button className="lt-btn lt-btn--primary" onClick={onAccept}>
-          Annehmen <kbd className="lt-btn__kbd">TAB</kbd>
-        </button>
-        <button className="lt-btn lt-btn--ghost" onClick={onReject}>
-          Ablehnen <kbd className="lt-btn__kbd">ESC</kbd>
-        </button>
-        {onEdit && (
-          <button className="lt-btn lt-btn--ghost" onClick={onEdit}>
-            ✎ Bearbeiten
-          </button>
+        {!isGenerating && draftText && (
+          <>
+            <button className="lt-btn lt-btn--primary" onClick={onAccept}>
+              Annehmen <kbd className="lt-btn__kbd">TAB</kbd>
+            </button>
+            <button className="lt-btn lt-btn--ghost" onClick={onReject}>
+              Ablehnen <kbd className="lt-btn__kbd">ESC</kbd>
+            </button>
+            {onEdit && (
+              <button className="lt-btn lt-btn--ghost" onClick={onEdit}>
+                ✎ Bearbeiten
+              </button>
+            )}
+          </>
         )}
         {onGenerate && eventId && (
           <StylePickerDropdown
