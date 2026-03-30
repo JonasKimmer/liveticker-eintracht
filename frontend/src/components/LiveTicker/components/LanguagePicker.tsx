@@ -24,9 +24,9 @@ export const LanguagePicker = memo(function LanguagePicker({ language, onLanguag
       <button
         className="lt-lang-picker__trigger"
         onClick={() => setOpen((v) => !v)}
-        title="Ticker-Sprache wechseln"
+        title="Ausgabesprache für KI-generierte Ticker-Texte"
       >
-        🌐 {language.toUpperCase()}
+        Ticker: {language.toUpperCase()}
         <svg
           width="8"
           height="8"
@@ -45,6 +45,7 @@ export const LanguagePicker = memo(function LanguagePicker({ language, onLanguag
       </button>
       {open && (
         <div className="lt-lang-picker__menu">
+          <div className="lt-lang-picker__hint">Ausgabesprache für KI-Texte</div>
           {LANGUAGES.map(({ code, label }) => (
             <button
               key={code}

@@ -258,6 +258,13 @@
   overflow: hidden;
   min-width: 130px;
 }
+.lt-lang-picker__hint {
+  padding: 0.4rem 0.75rem 0.3rem;
+  font-size: 0.65rem;
+  color: var(--lt-text-muted);
+  border-bottom: 1px solid var(--lt-border);
+  white-space: nowrap;
+}
 .lt-lang-picker__item {
   display: flex;
   align-items: center;
