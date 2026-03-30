@@ -12,9 +12,15 @@ const LANGUAGES = [
   { code: "fr", label: "Français" },
 ];
 
-interface LanguagePickerProps { language: string; onLanguageChange: (code: string) => void; }
+interface LanguagePickerProps {
+  language: string;
+  onLanguageChange: (code: string) => void;
+}
 
-export const LanguagePicker = memo(function LanguagePicker({ language, onLanguageChange }: LanguagePickerProps) {
+export const LanguagePicker = memo(function LanguagePicker({
+  language,
+  onLanguageChange,
+}: LanguagePickerProps) {
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
   useClickOutside(ref, () => setOpen(false));
@@ -24,7 +30,7 @@ export const LanguagePicker = memo(function LanguagePicker({ language, onLanguag
       <button
         className="lt-lang-picker__trigger"
         onClick={() => setOpen((v) => !v)}
-        title="Ausgabesprache für KI-generierte Ticker-Texte"
+        title="Ausgabesprache für Ticker-Texte"
       >
         Ticker: {language.toUpperCase()}
         <svg
@@ -45,7 +51,9 @@ export const LanguagePicker = memo(function LanguagePicker({ language, onLanguag
       </button>
       {open && (
         <div className="lt-lang-picker__menu">
-          <div className="lt-lang-picker__hint">Ausgabesprache für KI-Texte</div>
+          <div className="lt-lang-picker__hint">
+            Ausgabesprache für KI-Texte
+          </div>
           {LANGUAGES.map(({ code, label }) => (
             <button
               key={code}
@@ -64,4 +72,3 @@ export const LanguagePicker = memo(function LanguagePicker({ language, onLanguag
     </div>
   );
 });
-

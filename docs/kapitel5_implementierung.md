@@ -14,12 +14,12 @@ Die Implementierung folgt dem Grundsatz **„so einfach wie nötig, so modular w
 
 ### 5.2.1 Projektstruktur
 
-Das Backend ist unterhalb von `backend/app/` in fünf funktionale Pakete gegliedert:
+Das Backend ist unterhalb von `backend/app/` in sieben funktionale Pakete gegliedert:
 
 ```
 backend/app/
 ├── api/v1/          # HTTP-Router (FastAPI)
-├── models/          # SQLAlchemy ORM-Modelle (15 Dateien)
+├── models/          # SQLAlchemy ORM-Modelle (17 Dateien)
 ├── repositories/    # Datenbankzugriff (je Entität eine Klasse)
 ├── schemas/         # Pydantic-Schemas (Request / Response)
 ├── services/        # Fachliche Services (llm_service, ticker_service)
@@ -42,42 +42,50 @@ app = FastAPI(
     docs_url="/api/docs",
 )
 PREFIX = "/api/v1"
-app.include_router(matches.router,   prefix=PREFIX)
-app.include_router(events.router,    prefix=PREFIX)
-app.include_router(ticker.router,    prefix=PREFIX)
-app.include_router(media.ws_router)  # /ws/media – kein API-Prefix
+app.include_router(countries.router,          prefix=PREFIX)
+app.include_router(teams.router,              prefix=PREFIX)
+app.include_router(teams.assignment_router,   prefix=PREFIX)  # POST /seasons/{id}/competitions/{id}/teams/{id}
+app.include_router(seasons.router,            prefix=PREFIX)
+app.include_router(competitions.router,       prefix=PREFIX)
+app.include_router(matches.router,            prefix=PREFIX)
+app.include_router(events.router,             prefix=PREFIX)
+app.include_router(ticker.router,             prefix=PREFIX)
+app.include_router(players.router,            prefix=PREFIX)
+app.include_router(clips.router,              prefix=PREFIX)
+app.include_router(media.router,              prefix=PREFIX)
+app.include_router(media.ws_router)           # /ws/media – kein API-Prefix
 ```
 
 Beim Start führt `Base.metadata.create_all(bind=engine)` ein idempotentes Schema-Bootstrapping durch, das bei erstmaliger Inbetriebnahme alle Tabellen anlegt. Im Produktionsbetrieb werden Schema-Änderungen via Alembic-Migrationen gesteuert.
 
 Die Anwendung stellt zwei Metaendpunkte bereit:
 
-| Endpunkt  | Funktion                                          |
-| --------- | ------------------------------------------------- |
-| `GET /`   | Statusantwort mit Version (`0.3.0`)               |
+| Endpunkt      | Funktion                                         |
+| ------------- | ------------------------------------------------ |
+| `GET /`       | Statusantwort mit Version (`0.3.0`)              |
 | `GET /health` | Datenbankverbindungscheck (`healthy`/`degraded`) |
 
 ---
 
 ### 5.2.3 Datenbankmodelle (SQLAlchemy ORM)
 
-Das Schema umfasst **15 ORM-Modelle** (17 Datenbanktabellen). Die zentralen Domänenobjekte sind:
+Das Schema umfasst **17 ORM-Modelle** (18 Datenbanktabellen, davon eine via Migration). Die zentralen Domänenobjekte sind:
 
-| Modell               | Tabelle               | Kernfelder                                              |
-| -------------------- | --------------------- | ------------------------------------------------------- |
-| `Country`            | `countries`           | `id`, `name`, `uid`                                     |
-| `Team`               | `teams`               | `id`, `uid`, `name`, `external_id`, `is_partner_team`   |
-| `Competition`        | `competitions`        | `id`, `title`, `season_id`                              |
-| `Match`              | `matches`             | `id`, `uid`, `match_state`, `match_phase`, `ticker_mode`|
-| `Event`              | `events`              | `id`, `match_id`, `event_type`, `time`, `description`   |
-| `SyntheticEvent`     | `synthetic_events`    | `id`, `match_id`, `type`, `data` (JSONB)               |
-| `TickerEntry`        | `ticker_entries`      | → siehe unten                                           |
-| `LineupPlayer`       | `lineup_players`      | `player_id`, `status`, `formation_place`, `position`    |
-| `MatchStatistic`     | `match_statistics`    | 19 typisierte Spalten (Pässe, Zweikämpfe, Schüsse…)    |
-| `PlayerStatistic`    | `player_statistics`   | `player_id`, `rating`, `goals`, `assists`, …            |
-| `StyleReference`     | `style_references`    | `event_type`, `instance`, `league`, `text` (Few-Shot)   |
-| `MediaQueue`         | `media_queue`         | `url`, `thumbnail_url`, `match_id`, `published`         |
-| `MediaClip`          | `media_clips`         | `source`, `vid`, `thumbnail_url`, `match_id`            |
+| Modell            | Tabelle             | Kernfelder                                               |
+| ----------------- | ------------------- | -------------------------------------------------------- |
+| `Country`         | `countries`         | `id`, `name`, `uid`                                      |
+| `Team`            | `teams`             | `id`, `uid`, `name`, `external_id`, `is_partner_team`    |
+| `Competition`     | `competitions`      | `id`, `title`, `season_id`                               |
+| `Match`           | `matches`           | `id`, `uid`, `match_state`, `match_phase`, `ticker_mode` |
+| `Event`           | `events`            | `id`, `match_id`, `event_type`, `time`, `description`    |
+| `SyntheticEvent`  | `synthetic_events`  | `id`, `match_id`, `type`, `data` (JSONB)                 |
+| `TickerEntry`     | `ticker_entries`    | → siehe unten                                            |
+| `Lineup`          | `lineups`           | `player_id`, `status`, `formation_place`, `position`     |
+| `MatchStatistic`  | `match_statistics`  | 19 typisierte Spalten (Pässe, Zweikämpfe, Schüsse…)      |
+| `PlayerStatistic` | `player_statistics` | `player_id`, `rating`, `goals`, `assists`, …             |
+| `StyleReference`  | `style_references`  | `event_type`, `instance`, `league`, `text` (Few-Shot)    |
+| `MediaQueue`      | `media_queue`       | `media_id`, `thumbnail_url`, `event_id`, `status`        |
+| `MediaClip`       | `media_clips`       | `source`, `vid`, `thumbnail_url`, `match_id`             |
 
 Das `TickerEntry`-Modell hat besondere Bedeutung im Lifecycle des Systems:
 
@@ -177,15 +185,15 @@ Diese Methode wird von der KI-Generierungsroute intensiv genutzt, da für jeden 
 
 Der Ticker-Bereich ist in drei Router aufgeteilt, die gemeinsam unter `/api/v1/ticker` eingehängt werden:
 
-| Router              | Datei               | Kernoperationen                                               |
-| ------------------- | ------------------- | ------------------------------------------------------------- |
-| `ticker_crud`       | `ticker_crud.py`    | GET list, GET single, PATCH status, DELETE, POST manual       |
-| `ticker_generate`   | `ticker_generate.py`| POST generate/{event_id}, generate-synthetic, generate-batch |
-| `ticker_batch`      | `ticker_batch.py`   | POST translate-batch, generate-match-phases                   |
+| Router            | Datei                | Kernoperationen                                              |
+| ----------------- | -------------------- | ------------------------------------------------------------ |
+| `ticker_crud`     | `ticker_crud.py`     | GET list, GET single, PATCH status, DELETE, POST manual      |
+| `ticker_generate` | `ticker_generate.py` | POST generate/{event_id}, generate-synthetic, generate-batch |
+| `ticker_batch`    | `ticker_batch.py`    | POST translate-batch, generate-match-phases                  |
 
 Diese Aufteilung verhindert, dass eine einzelne Routerdatei durch die Kombination aus CRUD-, Generierungs- und Batch-Endpunkten unübersichtlich wird.
 
-Die vollständige Liste der implementierten Endpunkte:
+Die wichtigsten Endpunkte (Auswahl der 70+ implementierten Routen):
 
 ```
 GET    /api/v1/teams/countries
@@ -210,10 +218,17 @@ POST   /api/v1/ticker/generate-synthetic-batch/{match_id}
 POST   /api/v1/ticker/generate-match-phases/{match_id}
 POST   /api/v1/ticker/translate-batch/{match_id}
 POST   /api/v1/media/incoming
-GET    /api/v1/media/queue/{match_id}
+GET    /api/v1/media/queue
 POST   /api/v1/media/publish
+POST   /api/v1/clips/import
+GET    /api/v1/clips/match/{match_id}
+POST   /api/v1/clips/{clip_id}/publish
+GET    /api/v1/players
+POST   /api/v1/players
 WS     /ws/media
 ```
+
+Ergänzend existieren CRUD-Endpunkte für Stammdaten (Countries, Seasons, Competitions, Players) sowie weitere Hilfsrouten (Lineup-Abruf, Spielerstatistiken, Verletzungen, Live-Synchronisation), die hier aus Platzgründen nicht einzeln aufgeführt werden.
 
 ---
 
@@ -404,23 +419,11 @@ Im Auto-Modus setzt n8n `auto_publish=True`; der Eintrag ist sofort publiziert. 
 
 ### 5.3.4 Zustandsautomat der Ticker-Einträge
 
-Der Lebenszyklus jedes Ticker-Eintrags folgt einem definierten Zustandsautomaten:
+Das konzeptionelle Statusmodell (`draft` → `published` / `rejected`, Undo-Übergang `published → draft`) ist vollständig in Abschnitt 4.3.2 beschrieben. Implementierungsseitig sind zwei Details hervorzuheben:
 
-```mermaid
-stateDiagram-v2
-    [*] --> draft : KI generiert (coop/manual)\nauto_publish=False
-    [*] --> published : KI generiert (auto)\nauto_publish=True
-    [*] --> published : Manuelle Eingabe\nPOST /ticker/manual
+Der Übergang `published → draft` (Undo) ist im Frontend als **Toast-Aktion** realisiert: Nach jeder Publikation erscheint für 5 Sekunden ein Widerruf-Button. Über `PATCH /api/v1/ticker/{id}` mit `{ "status": "draft" }` wird der Eintrag zurückgesetzt und steht erneut zur Bearbeitung bereit.
 
-    draft --> published : Redakteur bestätigt\nPATCH status=published
-    draft --> rejected : Redakteur verwirft\nPATCH status=rejected
-    published --> draft : Undo (Retract)\nPATCH status=draft
-
-    rejected --> [*] : bleibt erhalten\n(Auswertbarkeit)
-    published --> [*] : bleibt erhalten\n(Auswertbarkeit)
-```
-
-Der Übergang `published → draft` (Undo) ist im Frontend als Toast-Aktion implementiert: Nach jeder Publikation erscheint für 5 Sekunden eine Widerruf-Option. Das `rejected`-Objekt wird nicht gelöscht, sondern im System erhalten — eine bewusste Entscheidung für Reproduzierbarkeit der Evaluationen.
+`rejected`-Einträge werden nicht aus der Datenbank gelöscht, sondern behalten ihren Status. Diese Entscheidung sichert die Reproduzierbarkeit der Evaluation: Alle je generierten Einträge — auch verworfene — sind für spätere Qualitätsanalysen auswertbar.
 
 ---
 
@@ -444,14 +447,17 @@ graph TD
     CenterPanel --> EventCard
     CenterPanel --> EntryEditor
     CenterPanel --> AIDraft
-    CenterPanel --> SummaryDraftCard
-    CenterPanel --> MediaPanel
-    CenterPanel --> SocialPanel
+    CenterPanel --> SummarySection
+    CenterPanel --> MediaPickerPanel
+    CenterPanel --> ClipPickerPanel
+    CenterPanel --> YouTubePanel
+    CenterPanel --> TwitterPanel
+    CenterPanel --> InstagramPanel
 
     LeftPanel --> PublishedEntry
-    RightPanel --> LineupPanel
-    RightPanel --> StatsPanel
-    RightPanel --> PlayerStatsPanel
+    RightPanel --> Collapsible["Collapsible (Statistiken, Aufstellung, Spieler)"]
+    RightPanel --> FormationColumn
+    RightPanel --> StatRow
 
     EventCard --> |onGenerate| TickerActionsContext
     AIDraft --> |onPublished/onDraftActive| TickerActionsContext
@@ -470,10 +476,10 @@ Das Frontend verwendet drei spezialisierte Contexts, die in `LiveTicker` zusamme
 
 ```typescript
 interface TickerModeContextValue {
-  mode: TickerMode;            // "auto" | "coop" | "manual"
+  mode: TickerMode; // "auto" | "coop" | "manual"
   setMode: (mode: TickerMode) => void;
-  acceptDraft: () => Promise<void>;   // TAB-Shortcut
-  rejectDraft: () => Promise<void>;   // ESC-Shortcut
+  acceptDraft: () => Promise<void>; // TAB-Shortcut
+  rejectDraft: () => Promise<void>; // ESC-Shortcut
 }
 ```
 
@@ -488,6 +494,8 @@ interface TickerDataContextValue {
   lineups: unknown;
   matchStats: unknown;
   players: unknown[];
+  playerStats: unknown[];
+  injuries: unknown;
   reload: ReloadFunctions;
   generatingId: number | null;
 }
@@ -497,13 +505,13 @@ interface TickerDataContextValue {
 
 ```typescript
 interface TickerActionsContextValue {
-  onGenerate:       (eventId: number, style: TickerStyle) => Promise<void>;
-  onManualPublish:  (text, icon?, minute?, phase?, rawInput?) => Promise<void>;
-  onDraftActive:    (id: number, text: string) => void;
-  onPublished:      (id: number, text: string, isManual?: boolean) => void;
-  onEditEntry:      (id: number, text: string) => Promise<void>;
-  onDeleteEntry:    (id: number) => Promise<void>;
-  retractedText:    string | null;
+  onGenerate: (eventId: number, style: TickerStyle) => Promise<void>;
+  onManualPublish: (text, icon?, minute?, phase?, rawInput?) => Promise<void>;
+  onDraftActive: (id: number, text: string) => void;
+  onPublished: (id: number, text: string, isManual?: boolean) => void;
+  onEditEntry: (id: number, text: string) => Promise<void>;
+  onDeleteEntry: (id: number) => Promise<void>;
+  retractedText: string | null;
   clearRetractedText: () => void;
 }
 ```
@@ -520,32 +528,32 @@ Die Zustandslogik ist in zwei Ebenen von Hooks organisiert: gemeinsame Hooks unt
 
 Die wichtigsten Hooks und ihre Verantwortlichkeiten:
 
-| Hook                  | Paket          | Verantwortlichkeit                                              |
-| --------------------- | -------------- | --------------------------------------------------------------- |
-| `useNavigation`       | hooks/         | Land→Team→Wettbewerb→Spieltag→Spiel Navigationskette           |
-| `useMatchData`        | hooks/         | Polling aller Matchdaten (Match, Events, Ticker, Lineups)       |
-| `useMatchTriggers`    | hooks/         | n8n-Webhooks nach Matchauswahl und Statuswechseln               |
-| `useTickerMode`       | hooks/         | `mode`-State, PATCH zum Backend, Keyboard-Shortcuts             |
-| `useMediaWebSocket`   | hooks/         | WebSocket-Verbindung mit exponentiellem Reconnect-Backoff       |
-| `usePanelResize`      | hooks/         | Drag-Resize zwischen Center- und Right-Panel                    |
-| `useApiStatus`        | hooks/         | Health-Check gegen Backend (alle 30 s)                          |
-| `useTicker`           | LT/hooks/      | Ticker-Actions, Draft-Queue, Publish-Toast (Undo)               |
-| `useEventDraft`       | LT/hooks/      | Entwurfsansicht, Accept/Reject-Logik                            |
-| `useAutoPublisher`    | LT/hooks/      | Automatisches Publizieren im Auto-Modus                         |
-| `useRightPanelData`   | LT/hooks/      | Aufbereitung von Lineups, Stats, Spielerinfo für das rechte Panel|
+| Hook                | Paket     | Verantwortlichkeit                                                |
+| ------------------- | --------- | ----------------------------------------------------------------- |
+| `useNavigation`     | hooks/    | Land→Team→Wettbewerb→Spieltag→Spiel Navigationskette              |
+| `useMatchData`      | hooks/    | Polling aller Matchdaten (Match, Events, Ticker, Lineups)         |
+| `useMatchTriggers`  | hooks/    | n8n-Webhooks nach Matchauswahl und Statuswechseln                 |
+| `useTickerMode`     | hooks/    | `mode`-State, PATCH zum Backend, Keyboard-Shortcuts               |
+| `useMediaWebSocket` | hooks/    | WebSocket-Verbindung mit exponentiellem Reconnect-Backoff         |
+| `usePanelResize`    | hooks/    | Drag-Resize zwischen Center- und Right-Panel                      |
+| `useApiStatus`      | hooks/    | Health-Check gegen Backend (alle 30 s)                            |
+| `useTicker`         | LT/hooks/ | Ticker-Actions, Draft-Queue, Publish-Toast (Undo)                 |
+| `useEventDraft`     | LT/hooks/ | Entwurfsansicht, Accept/Reject-Logik                              |
+| `useAutoPublisher`  | LT/hooks/ | Automatisches Publizieren im Auto-Modus                           |
+| `useRightPanelData` | LT/hooks/ | Aufbereitung von Lineups, Stats, Spielerinfo für das rechte Panel |
 
-`useMatchData` steuert das Polling-Intervall dynamisch über die Hilfsfunktion `resolvePollingInterval()`:
+`useMatchData` steuert das Polling-Intervall über die Hilfsfunktion `resolvePollingInterval()`:
 
 ```typescript
 // src/utils/resolvePollingInterval.ts
 export function resolvePollingInterval(matchState: string | null): number {
-  if (matchState === "Live" || matchState === "FullTime") return 5_000;
-  if (matchState === "PreMatch") return 5_000;
-  return 30_000;  // Nicht-aktive Spiele
+  if (matchState === "Live" || matchState === "FullTime") return POLL_EVENTS_MS;   // 5000
+  if (matchState == null) return POLL_EVENTS_MS;                                    // 5000
+  return POLL_PREMATCH_MS;                                                          // 5000
 }
 ```
 
-Bei Live- und Prematch-Spielen beträgt das Intervall 5 Sekunden — ausreichend, um KI-Entwürfe zeitnah sichtbar zu machen (typische LLM-Latenz: 15–30 s).
+Aktuell sind beide Konstanten (`POLL_EVENTS_MS`, `POLL_PREMATCH_MS`) auf 5000 ms gesetzt, sodass alle Zustände mit einem einheitlichen 5-Sekunden-Intervall gepollt werden. Die Unterscheidung ist als Erweiterungspunkt vorgesehen, um bei Bedarf ruhigere Polling-Intervalle für inaktive Spiele einzuführen.
 
 ---
 
@@ -557,13 +565,13 @@ Die Funktion `parseCommand(input, currentMinute)` gibt ein typisiertes `ParseRes
 
 ```typescript
 export interface ParseResult {
-  type:      string;
+  type: string;
   formatted: string;
-  warnings:  string[];
-  isValid:   boolean;
+  warnings: string[];
+  isValid: boolean;
   meta: {
-    icon:   string;
-    phase:  string | null;
+    icon: string;
+    phase: string | null;
     minute: number | null;
   };
 }
@@ -571,15 +579,15 @@ export interface ParseResult {
 
 **Phasen-Commands** (11 Einträge in `PHASE_CMDS`) erzeugen vordefinierte Texte mit optionaler Minutenangabe:
 
-| Command      | Ausgabe                          | Phase              | Icon |
-| ------------ | -------------------------------- | ------------------ | ---- |
-| `/prematch`  | „Vorbericht"                    | `Before`           | 📣   |
-| `/anpfiff`   | „Anpfiff!"                      | `FirstHalf`        | 📣   |
-| `/hz`        | „Halbzeit!"                     | `FirstHalfBreak`   | 🔔   |
-| `/2hz`       | „Anstoß zur 2. Halbzeit"        | `SecondHalf`       | 📣   |
-| `/vz1`       | „Beginn der Verlängerung"       | `ExtraFirstHalf`   | 📣   |
-| `/elfmeter`  | „Elfmeterschießen beginnt"      | `PenaltyShootout`  | 🥅   |
-| `/abpfiff`   | „Abpfiff!"                      | `After`            | 📣   |
+| Command     | Ausgabe                    | Phase             | Icon |
+| ----------- | -------------------------- | ----------------- | ---- |
+| `/prematch` | „Vorbericht"               | `Before`          | 📣   |
+| `/anpfiff`  | „Anpfiff!"                 | `FirstHalf`       | 📣   |
+| `/hz`       | „Halbzeit!"                | `FirstHalfBreak`  | 🔔   |
+| `/2hz`      | „Anstoß zur 2. Halbzeit"   | `SecondHalf`      | 📣   |
+| `/vz1`      | „Beginn der Verlängerung"  | `ExtraFirstHalf`  | 📣   |
+| `/elfmeter` | „Elfmeterschießen beginnt" | `PenaltyShootout` | 🥅   |
+| `/abpfiff`  | „Abpfiff!"                 | `After`           | 📣   |
 
 **Event-Commands** (12 Einträge in `CMD_MAP`, 8 Typen nach Expansion) erzeugen strukturierte Texte mit Validierungshinweisen:
 
@@ -603,8 +611,8 @@ Der `useMediaWebSocket`-Hook verwaltet die Lebensdauer der WebSocket-Verbindung 
 
 ```typescript
 const delay = Math.min(
-  BASE_DELAY_MS * 2 ** retryCountRef.current,  // 1s → 2s → 4s → 8s → …
-  MAX_DELAY_MS                                  // max 30s
+  BASE_DELAY_MS * 2 ** retryCountRef.current, // 1s → 2s → 4s → 8s → …
+  MAX_DELAY_MS, // max 30s
 );
 ```
 
@@ -614,7 +622,7 @@ Ein `mountedRef` verhindert Zustandsänderungen nach dem Unmounten der Komponent
 
 ```typescript
 ws.onclose = () => {
-  if (!mountedRef.current) return;  // Kein setState nach Unmount
+  if (!mountedRef.current) return; // Kein setState nach Unmount
   // … retry-Logik
 };
 ```
@@ -627,11 +635,11 @@ Der Cleanup im `useEffect` setzt `ws.onclose = null`, bevor die WebSocket geschl
 
 Der aktive Modus (`auto` / `coop` / `manual`) steuert das Verhalten mehrerer Frontend-Komponenten. Die Implementierung verteilt sich auf drei Ebenen:
 
-**Persistenz und Synchronisation** — `useTickerMode` lädt den Modus beim Match-Wechsel aus dem Backend (`GET /matches/{id}`, Feld `ticker_mode`) und schreibt Änderungen über `PATCH /matches/{id}/ticker-mode` zurück. Lokale Optimistic-Updates vermeiden wahrnehmbare Latenz beim Umschalten.
+**Persistenz und Synchronisation** — `useTickerMode` initialisiert den Modus lokal mit `auto` als Standardwert und schreibt Änderungen über `PATCH /matches/{id}/ticker-mode` an das Backend zurück. Lokale Optimistic-Updates vermeiden wahrnehmbare Latenz beim Umschalten.
 
-**Keyboard-Shortcuts** — Im Co-op-Modus registriert `useKeyboardShortcuts` die Shortcuts `TAB` (acceptDraft) und `ESC` (rejectDraft). Im Auto- und Manual-Modus sind diese Shortcuts nicht aktiv. Die Shortcut-Registrierung ist an den Modus-Zustand gebunden und wird bei Moduswechsel automatisch aktualisiert.
+**Keyboard-Shortcuts** — Im Co-op-Modus registriert `useTickerMode` die Shortcuts `TAB` (acceptDraft) und `ESC` (rejectDraft) direkt als Keyboard-Event-Listener. Im Auto- und Manual-Modus sind diese Shortcuts nicht aktiv. Die Shortcut-Registrierung ist an den Modus-Zustand gebunden und wird bei Moduswechsel automatisch aktualisiert.
 
-**`useAutoPublisher`** — Im Auto-Modus überwacht dieser Hook die `tickerTexts` auf neue Draft-Einträge (`source="ai"`, `status="draft"`) und publiziert sie automatisch. Dies ist als Frontend-Fallback gedacht: Primär setzt n8n mit `auto_publish=True` den Status direkt beim Generieren; `useAutoPublisher` fängt Fälle auf, in denen das nicht geschehen ist.
+**`useAutoPublisher`** — Im Auto-Modus überwacht dieser Hook die `tickerTexts` auf neue Draft-Einträge (`status="draft"`) und publiziert sie automatisch. Dies ist als Frontend-Fallback gedacht: Primär setzt n8n mit `auto_publish=True` den Status direkt beim Generieren; `useAutoPublisher` fängt Fälle auf, in denen das nicht geschehen ist.
 
 **Modus-Umschalter** — Der `ModeSelector` rendert einen Portal-basierten Bestätigungsdialog, um unbeabsichtigte Moduswechsel während eines Live-Spiels zu verhindern. Eine Toast-Meldung (2200 ms sichtbar) bestätigt den Wechsel. Keyboard-Shortcuts `Ctrl+1` / `Ctrl+2` / `Ctrl+3` ermöglichen direkten Zugriff.
 
@@ -641,7 +649,7 @@ Der aktive Modus (`auto` / `coop` / `manual`) steuert das Verhalten mehrerer Fro
 
 Das Frontend wurde im Verlauf des Projekts von reinem JavaScript auf TypeScript migriert. Ziel war nicht die vollständige Auflösung aller `any`-Typen, sondern eine pragmatische Typisierung der systemkritischen Pfade mit messbaren Qualitätskennzahlen.
 
-**Migrationsstrategie** — Die Migration folgte einem schrittweisen Ansatz: Zuerst wurden alle `.js`- und `.jsx`-Dateien in `.ts` und `.tsx` umbenannt, dann `tsconfig.json` mit `"strict": true` konfiguriert. Anschließend wurden TypeScript-Fehler von innen nach außen behoben — beginnend mit dem Typ-System (`src/types/index.ts`) über Contexts bis zu den Komponenten.
+**Migrationsstrategie** — Die Migration folgte einem schrittweisen Ansatz: Zuerst wurden alle `.js`- und `.jsx`-Dateien in `.ts` und `.tsx` umbenannt, dann `tsconfig.json` konfiguriert. Anschließend wurden TypeScript-Fehler von innen nach außen behoben — beginnend mit dem Typ-System (`src/types/index.ts`) über Contexts bis zu den Komponenten. Der `strict`-Modus ist derzeit deaktiviert (`"strict": false`), um die inkrementelle Migration ohne blockierende Fehlereskalation zu ermöglichen.
 
 **Zentrale Typ-Definitionen** — `src/types/index.ts` definiert die gemeinsamen Domain-Interfaces:
 
@@ -667,59 +675,21 @@ export interface TickerEntry {
 }
 ```
 
-**Ergebnis** — Nach der Migration erzielt das Projekt **0 TypeScript-Compilerfehler** und eine **type-coverage von 91,33 %** (gemessen mit `type-coverage --strict`). Die verbleibenden 8,67 % `any`-Typen befinden sich überwiegend in React-Hook-Rückgaben mit heterogenen Datenlisten (Lineups, Stats), für die der praktische Nutzen strikter Typisierung den Aufwand nicht rechtfertigt.
+**Ergebnis** — Nach der Migration erzielt das Projekt **0 TypeScript-Compilerfehler** und eine **type-coverage von 91,33 %** (gemessen mit `type-coverage --strict`). Die detaillierte Darstellung der Migrationsergebnisse und die Analyse der verbleibenden untypisierten Stellen folgt in Kapitel 6.6.
 
 ---
 
 ## 5.6 Qualitätssicherung und Tests
 
-### 5.6.1 Frontend-Tests
+Die Qualitätssicherung folgt dem Testpyramiden-Modell nach Cohn (2009) mit drei Ebenen: Unit-Tests, Integrations-Tests und End-to-End-Tests. Insgesamt umfasst die Testsuite **391 Tests** (187 Frontend, 198 Backend, 6 E2E), die alle grün durchlaufen.
 
-Das Frontend verwendet **Vitest** als Test-Runner mit `@testing-library/react` für Komponenten- und Hook-Tests. Die Testsuite umfasst **248 Tests** in 23 Test-Dateien.
+**Frontend-Tests** — Das Frontend verwendet Jest mit `@testing-library/react` für 187 Tests in 15 Dateien. Besonders umfangreich getestet ist der `parseCommand`-Parser (45 Testfälle), da er die kritische manuelle Eingabeschicht bildet.
 
-Die Verteilung auf Testtypen:
+**Backend-Tests** — Das Backend nutzt pytest mit FastAPI `TestClient` und transaktionalem Rollback für 198 Tests bei 75 % Statement-Coverage. Die Integrations-Tests prüfen API-Endpunkte gegen eine PostgreSQL-Testdatenbank.
 
-| Kategorie               | Tests | Beschreibung                                       |
-| ----------------------- | ----- | -------------------------------------------------- |
-| Unit (Pure Functions)   | ~120  | `parseCommand`, `roundLabel`, `resolvePollingInterval`, Evaluationsmetriken |
-| Integration (Hooks)     | ~80   | `useMatchEvents`, `useMatchTicker`, `useRightPanelData`, `useSearchableDropdown` |
-| Komponenten             | ~48   | `CommandPalette`, `PublishedEntry`, `EntryEditor`  |
+**End-to-End-Tests** — Sechs Playwright-Tests validieren den stabilen Kern der Browser-Anwendung: korrektes Rendern, Fehlerfreiheit beim Laden und grundlegende Interaktionspunkte.
 
-Besonders umfangreich getestet ist der `parseCommand`-Parser (über 90 Testfälle), da er die kritische manuelle Eingabeschicht bildet. Die Tests prüfen vollständige Eingaben, Teilkorrektheit (Warnungen), Randfälle (leerer Input, unbekannte Commands) und alle 11 Phasen-Commands.
-
-### 5.6.2 Backend-Tests
-
-Das Backend verwendet **pytest** mit FastAPI `TestClient`. Die Testsuite umfasst **198 Tests** mit einer Coverage von **75 %** (gemessen via `pytest-cov`).
-
-Tests laufen gegen eine lokale PostgreSQL-Instanz mit transaktionalem Rollback nach jedem Test:
-
-```python
-@pytest.fixture
-def db():
-    connection = engine.connect()
-    transaction = connection.begin()
-    session = Session(bind=connection)
-    yield session
-    session.close()
-    transaction.rollback()
-    connection.close()
-```
-
-Abgedeckte Bereiche (Auswahl):
-
-| Modul                 | Tests | Coverage |
-| --------------------- | ----- | -------- |
-| Models                |    18 | ~100 %   |
-| Schemas (Pydantic)    |    22 | ~95 %    |
-| ticker_service        |    14 | ~90 %    |
-| llm_service           |    12 | ~88 %    |
-| API /ticker           |    31 | ~72 %    |
-| API /matches          |    27 | ~65 %    |
-| API /events           |    18 | ~60 %    |
-
-### 5.6.3 End-to-End-Tests
-
-Sechs E2E-Tests mit **Playwright** prüfen den vollständigen Redaktionsworkflow im Browser: Navigation zu einem Spiel, Co-op-Modus-Umschaltung, Draft-Annahme und manuelle Texteingabe via Slash-Command. Diese Tests laufen gegen eine gestartete Entwicklungsinstanz und stellen sicher, dass Frontend-Backend-Integration und Context-Propagation korrekt funktionieren.
+Die detaillierte Auswertung aller Testmetriken, Coverage-Verteilungen und konkreten Testbeispiele folgt in Kapitel 6.2–6.5.
 
 ---
 
@@ -760,11 +730,11 @@ Die Events werden von der Football-API (`/fixtures/events?fixture={id}`) abgeruf
 
 ```javascript
 const TYPE_MAP = {
-  'Goal':  'goal',
-  'Card':  'yellow_card',  // bzw. 'red_card' wenn detail 'red' enthält
-  'subst': 'substitution',
-  'Var':   'comment',
-  'Miss':  'missed_penalty',
+  Goal: "goal",
+  Card: "yellow_card", // bzw. 'red_card' wenn detail 'red' enthält
+  subst: "substitution",
+  Var: "comment",
+  Miss: "missed_penalty",
 };
 ```
 
@@ -812,14 +782,15 @@ Anschließend wird ein Ticker-Eintrag mit der Video-URL erzeugt — im Co-op-Mod
 
 ### 5.7.2 Prematch-Import-Workflow (`07_import_prematch.json`)
 
-Workflow `07` baut den Vorberichtskontext aus vier parallelen Football-API-Abfragen auf:
+Workflow `07` baut den Vorberichtskontext aus fünf parallelen Football-API-Abfragen auf:
 
-| Datenquelle         | API-Endpunkt                                              |
-| ------------------- | --------------------------------------------------------- |
-| Verletzungen        | `/injuries?fixture={id}`                                  |
-| Head-to-Head        | `/fixtures/headtohead?h2h={home}-{away}`                  |
-| Teamstatistiken     | `/teams/statistics?league={id}&season={year}&team={id}`   |
-| Tabellenstand       | `/standings?league={id}&season={year}`                    |
+| Datenquelle            | API-Endpunkt                                            |
+| ---------------------- | ------------------------------------------------------- |
+| Verletzungen           | `/injuries?fixture={id}`                                |
+| Head-to-Head           | `/fixtures/headtohead?h2h={home}-{away}`                |
+| Teamstatistiken (Heim) | `/teams/statistics?league={id}&season={year}&team={id}` |
+| Teamstatistiken (Gast) | `/teams/statistics?league={id}&season={year}&team={id}` |
+| Tabellenstand          | `/standings?league={id}&season={year}`                  |
 
 Jede Datenquelle erzeugt ein `synthetic_event` mit dem Typ `pre_match_injuries_{team_id}`, `pre_match_h2h`, `pre_match_team_stats_home/away` bzw. `pre_match_standings`. Die Insert-Strategie ist idempotent — bei erneutem Aufruf wird die `data`-Spalte aktualisiert, der Primärschlüssel bleibt stabil:
 
@@ -840,7 +811,7 @@ LEFT JOIN ticker_entries te
 WHERE te.id IS NULL
 ```
 
-Die WHERE-Bedingung am Ende ist eine wichtige Implementierungsdetail: Das synthetische Event wird nur zurückgegeben (und damit ein LLM-Aufruf getriggert), wenn noch kein nicht-verworfener Ticker-Eintrag für dieses Event existiert. Bereits generierte und eventuell publizierte Texte werden damit nicht erneut überschrieben.
+Die WHERE-Bedingung am Ende ist ein wichtiges Implementierungsdetail: Das synthetische Event wird nur zurückgegeben (und damit ein LLM-Aufruf getriggert), wenn noch kein nicht-verworfener Ticker-Eintrag für dieses Event existiert. Bereits generierte und eventuell publizierte Texte werden damit nicht erneut überschrieben.
 
 ---
 
@@ -850,12 +821,15 @@ Workflow `14` verarbeitet Spielzustands-Übergänge (Anpfiff, Halbzeit, Abpfiff 
 
 ```javascript
 const validFromStates = {
-  '1H':  ['PreMatch', 'ToBeConfirmed', null],
-  'HT':  ['Live'],
-  '2H':  ['Live'],
-  'FT':  ['Live', 'FullTime'],
-  'ET':  ['Live', 'FullTime'],
-  'PEN': ['Live', 'FullTime'],
+  "1H":  ["PreMatch", "ToBeConfirmed", null],
+  "HT":  ["Live"],
+  "2H":  ["Live"],
+  "FT":  ["Live", "FullTime"],
+  "ET":  ["Live", "FullTime"],
+  "BT":  ["Live"],
+  "P":   ["Live"],
+  "AET": ["Live", "FullTime"],
+  "PEN": ["Live", "FullTime"],
 };
 ```
 
@@ -922,11 +896,12 @@ Workflow `08` sucht Medien-Assets bei ScorePlay und übergibt sie an das Backend
 
 ```javascript
 // Normalisierung für robusteres Matching
-str.replace(/[äàáâã]/g, 'a')
-   .replace(/[ö]/g, 'o')
-   .replace(/[ü]/g, 'u')
-   .replace(/ß/g, 'ss')
-   .replace(/ø/g, 'o')
+str
+  .replace(/[äàáâã]/g, "a")
+  .replace(/[ö]/g, "o")
+  .replace(/[ü]/g, "u")
+  .replace(/ß/g, "ss")
+  .replace(/ø/g, "o");
 // Abgleich gegen: full_name, first_name, last_name, ai_name
 ```
 
@@ -960,9 +935,23 @@ Gefundene URLs (thumbnail, compressed, original) werden gesammelt und an `POST /
 
 ---
 
+### 5.7.7 Export zur Stackwork Demo App
+
+Die operative Implementierung ermöglicht den **Export publizierter Ticker-Inhalte** zur bereits existierenden Stackwork Demo App von Eintracht Frankfurt. Die beiden Systeme operieren vollständig getrennt — die Kommunikation erfolgt ausschließlich über HTTP-API-Aufrufe.
+
+**CMS-API-Export-Pipeline** — Zusätzlich zu den fünf dokumentierten Core-Workflows existieren **Export-Workflows**, die publizierte Ticker-Einträge aus der lokalen PostgreSQL-Datenbank lesen und über REST-API-Aufrufe an die CMS-Endpunkte der Stackwork Demo App übertragen. Der Export triggert ereignisgesteuert nach jeder `status=published`-Aktualisierung.
+
+**Manuelle Spielauswahl** — Der Initialisierungsprozess erfordert manuelle Eingabe der Spiel-ID in die n8n-Workflows. Diese bewusste Designentscheidung stellt sicher, dass nur explizit ausgewählte Spiele mit Live-Tickering versehen werden. Nach der Initialisierung erfolgt sowohl die Event-Reaktion als auch der Export vollautomatisch.
+
+**Systemabgrenzung** — Die Demo App ist eine separate, bereits produktive Anwendung mit eigenständiger Codebasis und Infrastruktur. Der Autor hat als Stackwork-Mitarbeiter ausschließlich Zugang zu den **CMS-API-Endpunkten**, nicht zum Quellcode der Demo App. Die n8n-Export-Workflows sind die einzige Verbindung zwischen beiden Systemen.
+
+**Deployment-Isolation** — Die Architektur implementiert bewusst eine **Zwei-System-Strategie**: Das entwickelte KI-Redaktionssystem läuft als eigenständige Anwendung, während die Stackwork Demo App als etablierte End-User-Plattform fungiert. Beide Systeme können unabhängig entwickelt, deployed und skaliert werden.
+
+---
+
 ## 5.8 Kritische Würdigung der Implementierung
 
-Die Implementierung realisiert alle drei konzipieren Betriebsmodi funktionsfähig und in einem strukturell stabilen Zustand. Besonders positiv ist die Trennschärfe zwischen den Schichten: llm_service hat keine Datenbankabhängigkeit, Repositories kapseln alle SQL-Details, und die drei Frontend-Contexts vermeiden sowohl Prop-Drilling als auch unnötige Re-Renders.
+Die Implementierung realisiert alle drei konzipierten Betriebsmodi funktionsfähig und in einem strukturell stabilen Zustand. Besonders positiv ist die Trennschärfe zwischen den Schichten: llm_service hat keine Datenbankabhängigkeit, Repositories kapseln alle SQL-Details, und die drei Frontend-Contexts vermeiden sowohl Prop-Drilling als auch unnötige Re-Renders.
 
 Vier Aspekte verdienen eine kritische Einordnung:
 
@@ -972,6 +961,8 @@ Vier Aspekte verdienen eine kritische Einordnung:
 
 **Drittens** existiert die WebSocket-Verbindung als In-Memory-Singleton pro Prozess. Bei einem Multi-Prozess-Deployment (z. B. mehrere Uvicorn-Worker hinter einem Load-Balancer) würden Medien-Updates nur an Clients übermittelt, die mit dem spezifischen Worker verbunden sind. Für den aktuellen Betrieb mit wenigen Redakteurs-Clients ist dies unproblematisch; eine Redis-Pub/Sub-Erweiterung wäre die natürliche Skalierungsstufe.
 
-**Viertens** laufen die 23 Frontend-Test-Dateien in einigen Fällen als parallele `.js`/`.ts`-Paare, da nicht alle Hooks vollständig migriert wurden. Die verbleibenden `.js`-Hooks funktionieren korrekt, sind aber nicht vollständig typisiert — ein nachvollziehbarer Kompromiss aus Projektzeit und Qualitätszielen.
+**Viertens** ist der `strict`-Modus in `tsconfig.json` derzeit deaktiviert. Dies war ein pragmatischer Kompromiss, um die inkrementelle TypeScript-Migration ohne blockierende Fehlerflut zu ermöglichen. Eine schrittweise Aktivierung von `strict`-Teilregeln (z. B. `noImplicitAny`, `strictNullChecks`) wäre ein sinnvoller nächster Schritt zur weiteren Härtung der Codebasis.
 
-Insgesamt belegen die Metriken — 0 TypeScript-Fehler, 91,33 % type-coverage, 248 Frontend-Tests, 198 Backend-Tests mit 75 % Coverage, 6 E2E-Tests — einen konsistenten Qualitätsanspruch, der für einen KI-gestützten Prototyp im akademischen Kontext als solide Grundlage einzuordnen ist.
+**Fünftens** ist die Few-Shot-Infrastruktur vollständig implementiert — der Scraping-Workflow befüllt `style_references` mit echten EF-Liveticker-Texten, `StyleReferenceRepository.get_samples()` lädt sie mit liga-spezifischer Suche und automatischem Fallback, und `_build_few_shot_block()` bettet sie in den Prompt ein. In der Praxis greifen jedoch zwei Einschränkungen: (a) Die Demo-App-Workflows (`13_Halftime_aftertime.json`) rufen OpenRouter direkt auf und umgehen das Backend-LLM-Service, sodass Few-Shot dort nicht wirksam wird. (b) Der Liga-Filter schlägt wegen eines Case-Mismatches (`style_references.league = "bundesliga"` vs. `competition.title = "Bundesliga"`) immer fehl und fällt auf die liga-agnostische Suche zurück. Beide Punkte sind behebbar, beeinträchtigen aber die grundsätzliche Funktionsfähigkeit der Stilgenerierung nicht.
+
+Insgesamt belegen die Metriken — 0 TypeScript-Fehler, 91,33 % type-coverage, 187 Frontend-Tests, 198 Backend-Tests mit 75 % Coverage, 6 E2E-Tests — einen konsistenten Qualitätsanspruch, der über den Rahmen eines typischen akademischen Projekts hinausgeht.
