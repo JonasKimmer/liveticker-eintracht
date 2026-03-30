@@ -131,7 +131,7 @@ async def call_llm(
             league=league,
         )
         style_references = [r.text for r in refs]
-        logger.debug(
+        logger.info(
             "Stilreferenzen geladen: %d für event_type=%s instance=%s league=%s",
             len(refs),
             normalized,
