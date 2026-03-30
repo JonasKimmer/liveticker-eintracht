@@ -235,8 +235,9 @@ export const CenterPanel = memo<CenterPanelProps>(function CenterPanel({
                           <AIDraft
                             eventType={ev.liveTickerEventType}
                             draftText={
-                              draft?.text ??
-                              "Kein Draft vorhanden – generiere einen Stil."
+                              generatingId === ev.id
+                                ? null
+                                : (draft?.text ?? "Kein Draft vorhanden – generiere einen Stil.")
                             }
                             onAccept={handleAcceptDraft}
                             onReject={handleRejectDraft}

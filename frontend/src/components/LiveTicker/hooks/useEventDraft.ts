@@ -92,15 +92,17 @@ export function useEventDraft() {
       const existing = tickerTexts.find(
         (t) => t.event_id === eventId && t.status !== "rejected",
       );
-      try {
-        if (existing) await api.deleteTicker(existing.id);
-        await onGenerate(eventId, style);
-      } catch (err) {
-        logger.error("handleRegenerateEventDraft failed", err);
-        await reload.loadTickerTexts();
+      if (existing) {
+        try {
+          await api.deleteTicker(existing.id);
+        } catch (err) {
+          // 404 oder Netzwerkfehler: Draft evtl. schon weg — trotzdem generieren
+          logger.warn("delete before regenerate failed (proceeding anyway)", err);
+        }
       }
+      await onGenerate(eventId, style);
     },
-    [tickerTexts, onGenerate, reload],
+    [tickerTexts, onGenerate],
   );
 
   const handleAcceptDraft = useCallback(async () => {
