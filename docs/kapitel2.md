@@ -37,6 +37,8 @@ Vereine und Verbände kommunizieren heute zunehmend direkt mit ihrer Anhängersc
 
 Der entscheidende Unterschied liegt im Blickwinkel. Während überregionale Medien neutral bleiben, betrachten Vereinsticker die Partie aus der Perspektive der eigenen Fans (Beils 2023, S. 57). Ein Ereignis muss je nach Medium anders getönt sein: emotional für den Vereinskanal, sachlich für neutrale Plattformen. Da Liveticker-Stellen häufig mit wechselndem Personal besetzt sind (Bluhm & Schäfer 2023, S. 32), ist eine konsistente Markenstimme über einen längeren Zeitraum manuell kaum zu gewährleisten. Eine technologische Lösung muss daher auch die stilistische Konsistenz adressieren.
 
+Im Softwarekontext wird dieses Problem durch sogenannte White-Label-Architekturen gelöst: Ein generisches Kernsystem wird so konzipiert, dass es für verschiedene Abnehmer individuell konfigurierbar ist — ohne den Quellcode zu ändern. Überträgt man dieses Prinzip auf die Liveticker-Produktion, ergibt sich die Anforderung, dass ein und dasselbe System sowohl einen vereinsspezifischen Ticker mit emotionaler Fanbindung als auch einen neutralen, anbieterunabhängigen Ticker bedienen können muss. Die stilistische Differenzierung — von der Wortwahl über die Tonalität bis hin zu vereinsspezifischen Redewendungen — muss dabei als Konfiguration abbildbar sein, nicht als separate Implementierung.
+
 ---
 
 ## 2.4 Anforderungsanalyse am Beispiel Eintracht Frankfurt
