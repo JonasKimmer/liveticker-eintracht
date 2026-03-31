@@ -101,6 +101,11 @@ Das hybride System verschiebt die Rolle des Liveticker-Redakteurs von der **Text
 
 Die White-Label-Architektur (`ef_whitelabel` vs. `generic`) adressiert den in Kapitel 2.3 beschriebenen strukturellen Wandel der Vereine zu eigenständigen Medienproduzenten. Ein einzelnes System kann — durch Instanzkonfiguration, Stilprofile und Few-Shot-Referenzen — verschiedene redaktionelle Stimmen bedienen, ohne separate Codebases zu erfordern. Für Vereine mit begrenzten Redaktionsressourcen senkt dies die Einstiegshürde in eine professionelle Liveticker-Berichterstattung.
 
+Die Zukunftsperspektive wird im Experteninterview (vgl. Interviewleitfaden, Kap. 2.4) durch folgende Fragen adressiert:
+
+- _F13: Könnten Sie sich vorstellen, KI-generierte Ticker im Regelbetrieb zu nutzen?_
+- _F14: Für welche Spielkategorien wäre ein vollautonomer Modus denkbar — zum Beispiel Testspiele, Jugendspiele, Freundschaftsspiele?_
+
 ### 7.5.3 Ethische Überlegungen
 
 Die automatisierte Generierung journalistischer Texte wirft die Frage der Transparenz auf: Sollten Leser wissen, ob ein Ticker-Eintrag von einem Menschen oder einer KI verfasst wurde? Das System speichert die Herkunft jedes Eintrags im Feld `source` (`"ai"`, `"manual"`, `"hybrid"`), legt die Kennzeichnung gegenüber dem Endnutzer aber nicht offen. Für einen produktiven Einsatz wäre eine Kennzeichnungspflicht — etwa durch ein dezentes Label wie „KI-unterstützt" — zu diskutieren, insbesondere im Kontext der EU-KI-Verordnung (AI Act), die ab 2026 Transparenzpflichten für KI-generierte Inhalte vorsieht.

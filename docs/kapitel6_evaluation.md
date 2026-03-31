@@ -294,13 +294,13 @@ Alle sechs Funktionen sind durch 18 Unit-Tests abgesichert (~96 % Coverage).
 
 Das System unterstützt fünf LLM-Provider in einer festen Fallback-Kette:
 
-| Priorität | Provider     | Standard-Modell                  | Temperatur |
-| --------- | ------------ | -------------------------------- | ---------- |
-| 1         | OpenRouter   | `google/gemini-2.0-flash-lite-001`   | 0,3        |
-| 2         | Gemini       | `gemini-2.0-flash-lite-001`      | 0,3        |
-| 3         | OpenAI       | `gpt-4o-mini`                    | 0,3        |
-| 4         | Anthropic    | `claude-haiku-4-5`               | 0,3        |
-| 5         | Mock         | — (regelbasierte Templates)      | —          |
+| Priorität | Provider   | Standard-Modell                    | Temperatur |
+| --------- | ---------- | ---------------------------------- | ---------- |
+| 1         | OpenRouter | `google/gemini-2.0-flash-lite-001` | 0,3        |
+| 2         | Gemini     | `gemini-2.0-flash-lite-001`        | 0,3        |
+| 3         | OpenAI     | `gpt-4o-mini`                      | 0,3        |
+| 4         | Anthropic  | `claude-haiku-4-5`                 | 0,3        |
+| 5         | Mock       | — (regelbasierte Templates)        | —          |
 
 Der erste Provider mit konfiguriertem API-Key wird als Singleton aktiviert. Für die Evaluation wurde jeder Provider einzeln über den Bulk-Endpunkt auf denselben Eventdatensatz angewendet.
 
@@ -308,15 +308,15 @@ Der erste Provider mit konfiguriertem API-Key wird als Singleton aktiviert. Für
 
 Im produktiven Render-Deployment sind OpenRouter (Priority 1) und Mock (Fallback) konfiguriert. Die übrigen Provider wurden mangels aktivierter API-Keys nicht evaluiert; ihre Einbindung ist architektonisch vollständig implementiert und in der Fallback-Kette priorisiert.
 
-| Provider   | Modell                                 | Ø Latenz (ms) | Korrektheit | Tonalität | Verständlichkeit | Gesamt |
-| ---------- | -------------------------------------- | ------------- | ----------- | --------- | ---------------- | ------ |
-| OpenRouter | `google/gemini-2.0-flash-lite-001`     | 836           | 4,6 / 5     | 4,1 / 5   | 4,3 / 5          | 4,3 / 5 |
-| Mock       | regelbasiert (Templates)               | < 10          | 4,0 / 5     | 3,0 / 5   | 3,0 / 5          | 3,3 / 5 |
-| Gemini     | `gemini-2.0-flash-lite-001`            | —             | —           | —         | —                | — |
-| OpenAI     | `gpt-4o-mini`                          | —             | —           | —         | —                | — |
-| Anthropic  | `claude-haiku-4-5`                     | —             | —           | —         | —                | — |
+| Provider   | Modell                             | Ø Latenz (ms) | Korrektheit | Tonalität | Verständlichkeit | Gesamt  |
+| ---------- | ---------------------------------- | ------------- | ----------- | --------- | ---------------- | ------- |
+| OpenRouter | `google/gemini-2.0-flash-lite-001` | 836           | 4,6 / 5     | 4,1 / 5   | 4,3 / 5          | 4,3 / 5 |
+| Mock       | regelbasiert (Templates)           | < 10          | 4,0 / 5     | 3,0 / 5   | 3,0 / 5          | 3,3 / 5 |
+| Gemini     | `gemini-2.0-flash-lite-001`        | —             | —           | —         | —                | —       |
+| OpenAI     | `gpt-4o-mini`                      | —             | —           | —         | —                | —       |
+| Anthropic  | `claude-haiku-4-5`                 | —             | —           | —         | —                | —       |
 
-*Messgrundlage: N = 16 deutschsprachige KI-generierte Einträge (OpenRouter), N = 7 (Mock), gemessen über 28 FullTime-Spiele auf dem Render-Deployment. Qualitätswerte (1–5) wurden manuell anhand der Kriterien aus 6.8.1 bewertet.*
+_Messgrundlage: N = 16 deutschsprachige KI-generierte Einträge (OpenRouter), N = 7 (Mock), gemessen über 28 FullTime-Spiele auf dem Render-Deployment. Qualitätswerte (1–5) wurden manuell anhand der Kriterien aus 6.8.1 bewertet._
 
 Die Latenzmessungen zeigen eine **bimodale Verteilung** für OpenRouter: Ein Teil der Antworten liegt unter 310 ms (vermutlich Gemini-seitige Response-Caches), der größere Teil zwischen 859 ms und 2.128 ms (Kaltgenerierung). Die Medianlatenz beträgt 859 ms — für ein assistiertes System, bei dem der Redakteur den Entwurf vor der Publikation prüft, ist dieser Wert unproblematisch.
 
@@ -334,11 +334,11 @@ Da der Backend-Deduplizierungsmechanismus für identische `event_id` denselben E
 
 **Event-Typ:** Tor (Bundesliga-Saison 2024/25, Eintracht Frankfurt)
 
-| Stil        | Generierter Text |
-| ----------- | ---------------- |
-| neutral     | „22. Minute: TOOOOR! C. Y. Uzun bringt Eintracht Frankfurt in Führung! Nach Vorlage von H. Larsson. 1:0!" *(Eintracht Frankfurt vs. Werder Bremen, Md. 7)* |
-| euphorisch  | „81. Minute: WAS IST DENN HIER LOS?! Collins mit der butterweichen Flanke! DOAN! Der Ball ist drin! TOOOOR! 1:0! Die Hütte bebt!" *(Eintracht Frankfurt vs. FSV Mainz 05, Md. 9)* |
-| kritisch    | „4. Minute: TOOOOR! Kaminski bringt Köln in Führung! Ache mit der Vorlage, Kaminski vollendet eiskalt. 1:0!" *(1. FC Köln vs. Eintracht Frankfurt, Md. 11)* |
+| Stil       | Generierter Text                                                                                                                                                                  |
+| ---------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| neutral    | „22. Minute: TOOOOR! C. Y. Uzun bringt Eintracht Frankfurt in Führung! Nach Vorlage von H. Larsson. 1:0!" _(Eintracht Frankfurt vs. Werder Bremen, Md. 7)_                        |
+| euphorisch | „81. Minute: WAS IST DENN HIER LOS?! Collins mit der butterweichen Flanke! DOAN! Der Ball ist drin! TOOOOR! 1:0! Die Hütte bebt!" _(Eintracht Frankfurt vs. FSV Mainz 05, Md. 9)_ |
+| kritisch   | „4. Minute: TOOOOR! Kaminski bringt Köln in Führung! Ache mit der Vorlage, Kaminski vollendet eiskalt. 1:0!" _(1. FC Köln vs. Eintracht Frankfurt, Md. 11)_                       |
 
 **Beobachtung:** Die drei Stilprofile unterscheiden sich deutlich in Ausrufezeichen-Dichte, Wortwahl und Perspektive. Während `neutral` Fakten kompakt zusammenfasst, erzeugt `euphorisch` narrative Intensität durch Wiederholungen und Ausrufe. `kritisch` nähert sich dem neutralen Registre, enthält aber keine explizite analytische Einordnung — ein Hinweis darauf, dass das Prompt-Design für dieses Profil noch Optimierungspotenzial bietet (vgl. 6.8.4).
 
@@ -366,32 +366,35 @@ Jede Dimension wurde auf einer Skala von 1 (ungenügend) bis 5 (exzellent) bewer
 
 ### 6.8.2 Ergebnisse nach Event-Typ
 
-| Event-Typ              | n  | Korrektheit (Ø) | Tonalität (Ø) | Verständlichkeit (Ø) | Gesamt (Ø) |
-| ---------------------- | -- | --------------- | ------------- | -------------------- | ---------- |
-| Tor                    | 7  | 4,7             | 3,6           | 4,7                  | 4,3        |
-| Gelbe Karte            | 7  | 4,9             | 4,4           | 4,0                  | 4,4        |
-| Rote Karte             | 0  | —               | —             | —                    | —          |
-| Wechsel                | 1  | 4,0             | 4,0           | 4,0                  | 4,0        |
-| Pre-Match (Kontext)    | 1  | 3,0             | 5,0           | 4,0                  | 4,0        |
-| **Gesamt**             | **16** | **4,6**     | **4,1**       | **4,3**              | **4,3**    |
+| Event-Typ           | n      | Korrektheit (Ø) | Tonalität (Ø) | Verständlichkeit (Ø) | Gesamt (Ø) |
+| ------------------- | ------ | --------------- | ------------- | -------------------- | ---------- |
+| Tor                 | 7      | 4,7             | 3,6           | 4,7                  | 4,3        |
+| Gelbe Karte         | 7      | 4,9             | 4,4           | 4,0                  | 4,4        |
+| Rote Karte          | 0      | —               | —             | —                    | —          |
+| Wechsel             | 1      | 4,0             | 4,0           | 4,0                  | 4,0        |
+| Pre-Match (Kontext) | 1      | 3,0             | 5,0           | 4,0                  | 4,0        |
+| **Gesamt**          | **16** | **4,6**         | **4,1**       | **4,3**              | **4,3**    |
 
-*Anmerkung: Rote Karten kamen in den 9 analysierten Spielen nicht vor. Phasen-Events (Anpfiff, Halbzeit, Abpfiff) wurden nicht separat evaluiert, da diese in den verfügbaren Testdaten ausschließlich über Synthetic Events generiert wurden. Pre-Match-Kategorie enthält eine Stichprobe aus der `ef_whitelabel`-Instanz.*
+_Anmerkung: Rote Karten kamen in den 9 analysierten Spielen nicht vor. Phasen-Events (Anpfiff, Halbzeit, Abpfiff) wurden nicht separat evaluiert, da diese in den verfügbaren Testdaten ausschließlich über Synthetic Events generiert wurden. Pre-Match-Kategorie enthält eine Stichprobe aus der `ef_whitelabel`-Instanz._
 
 ### 6.8.3 Typische Stärken
 
 **Beispiel 1 — Tor (euphorisch, Bewertung 5/5/5):**
+
 > Event: Tor, 81. Minute, R. Doan (Eintracht Frankfurt vs. FSV Mainz 05), Vorlage Collins
 > KI-Text: „81. Minute: WAS IST DENN HIER LOS?! Collins mit der butterweichen Flanke! DOAN! Der Ball ist drin! TOOOOR! 1:0! Die Hütte bebt!"
 
 Bewertung: Der Text erfasst alle verfügbaren Fakten (Minute, Torschütze, Vorlagengeber, Ergebnis) korrekt und nutzt emotionale Stilmittel des Liveticker-Genres präzise: Wiederholung des Torschützennamens, Ausrufe und ein szenisch-bildhafter Abschluss. Die Kürze von zwei Sätzen ist genrekonform.
 
 **Beispiel 2 — Gelbe Karte (euphorisch, Bewertung 5/5/5):**
+
 > Event: Gelbe Karte, 12. Minute, R. Kristensen (Eintracht Frankfurt vs. Werder Bremen)
 > KI-Text: „12. Minute: Mist! Kristensen sieht Gelb! Der Schiri ist ja blind! Aber Kopf hoch, Adler! Kämpfen!"
 
 Bewertung: Der euphorische Stil wird durch Fan-nahe Formulierungen korrekt umgesetzt: Die emotionale Reaktion auf die Karte, die implizite Parteinahme für den Verein und der aufmunternde Abschluss sind charakteristisch für vereinsnahe Liveticker. Alle Fakten (Minute, Spielername) sind korrekt.
 
 **Beispiel 3 — Wechsel (neutral, Bewertung 4/4/4):**
+
 > Event: Auswechslung, 65. Minute, S. Mbangula für P. Covic (Eintracht Frankfurt vs. Werder Bremen, Werder Bremen-Wechsel)
 > KI-Text: „65. Minute: Erster Wechsel bei Werder Bremen. S. Mbangula geht vom Feld. Für ihn kommt P. Covic."
 
@@ -401,13 +404,13 @@ Bewertung: Fakten und Stil sind korrekt. Die Formulierung „Erster Wechsel" ist
 
 Die qualitative Analyse identifizierte folgende wiederkehrende Fehlerklassen:
 
-| Fehlerklasse              | Häufigkeit    | Beschreibung                                                  | Beispiel                                              |
-| ------------------------- | ------------- | ------------------------------------------------------------- | ----------------------------------------------------- |
-| **Stil-Inkonsistenz**     | 3 / 16 (19 %) | Neutraler Stil enthält emotionale Formulierungen              | „33. Minute: Oh nein! Lienhart sieht Gelb! … Aber Kopf hoch, Jungs! Kämpfen!" *(angefordert: neutral)* |
-| **Fakten-Halluzination**  | 1 / 16 (6 %)  | Das LLM erfindet Details, die nicht im Kontext stehen         | Pre-Match-Text erfand eine Wettempfehlung: „Wir tippen auf Double Chance: Sieg … oder Remis." |
-| **Team-Verwechslung**     | 0 / 16 (0 %)  | Tor wird dem falschen Team zugeordnet                         | Nicht aufgetreten |
-| **Wiederholung**          | 2 / 16 (13 %) | Aufeinanderfolgende Texte ähneln sich stark im Satzbau        | Mehrere Tore mit identischer Formel „X bringt Y in Führung! Nach Vorlage von Z. 1:0." |
-| **Überlänge**             | 0 / 16 (0 %)  | Text überschreitet die typische Liveticker-Kürze             | Nicht aufgetreten |
+| Fehlerklasse             | Häufigkeit    | Beschreibung                                           | Beispiel                                                                                               |
+| ------------------------ | ------------- | ------------------------------------------------------ | ------------------------------------------------------------------------------------------------------ |
+| **Stil-Inkonsistenz**    | 3 / 16 (19 %) | Neutraler Stil enthält emotionale Formulierungen       | „33. Minute: Oh nein! Lienhart sieht Gelb! … Aber Kopf hoch, Jungs! Kämpfen!" _(angefordert: neutral)_ |
+| **Fakten-Halluzination** | 1 / 16 (6 %)  | Das LLM erfindet Details, die nicht im Kontext stehen  | Pre-Match-Text erfand eine Wettempfehlung: „Wir tippen auf Double Chance: Sieg … oder Remis."          |
+| **Team-Verwechslung**    | 0 / 16 (0 %)  | Tor wird dem falschen Team zugeordnet                  | Nicht aufgetreten                                                                                      |
+| **Wiederholung**         | 2 / 16 (13 %) | Aufeinanderfolgende Texte ähneln sich stark im Satzbau | Mehrere Tore mit identischer Formel „X bringt Y in Führung! Nach Vorlage von Z. 1:0."                  |
+| **Überlänge**            | 0 / 16 (0 %)  | Text überschreitet die typische Liveticker-Kürze       | Nicht aufgetreten                                                                                      |
 
 Die häufigste Fehlerklasse ist die **Stil-Inkonsistenz** des neutralen Profils: Das LLM übernimmt offensichtlich idiomatische Muster aus den euphorischen Few-Shot-Referenzen der `ef_whitelabel`-Instanz auch dann, wenn `neutral` als Stilparameter übergeben wird. Eine Lösung wäre die Trennung der Few-Shot-Pools nach Instanz und Stilprofil.
 
@@ -422,7 +425,7 @@ In der Stichprobe enthielt 1 von 1 untersuchten Pre-Match-Texten keine unzuläss
 
 ### 6.8.5 Vergleich: KI-generiert vs. manuell geschrieben
 
-Ein direkter Paarvergleich KI vs. Redakteur für identische Events war im Evaluationszeitraum nicht vollständig durchführbar: Die vorliegenden Testspiele enthielten manuell erstellte Einträge entweder ohne Text (reine Medien-Einträge mit Video-URL) oder wurden ausschließlich im `auto`-Modus betrieben. Für Match 1 (FV Engers 07 vs. Eintracht Frankfurt, 0:5) lag für Tor in der 44. Minute ein manueller Eintrag ohne Fließtext vor (Icon: 🎬, Video-URL, kein Textkörper); der KI-generierte Text lautete: *„44. Minute: TOOOOR! J. Bahoya bringt Frankfurt auf 1:0! Traumpass von X. Das Stadion bebt!"* — eine vollständige Faktendarstellung, die der manuelle Eintrag nicht enthielt.
+Ein direkter Paarvergleich KI vs. Redakteur für identische Events war im Evaluationszeitraum nicht vollständig durchführbar: Die vorliegenden Testspiele enthielten manuell erstellte Einträge entweder ohne Text (reine Medien-Einträge mit Video-URL) oder wurden ausschließlich im `auto`-Modus betrieben. Für Match 1 (FV Engers 07 vs. Eintracht Frankfurt, 0:5) lag für Tor in der 44. Minute ein manueller Eintrag ohne Fließtext vor (Icon: 🎬, Video-URL, kein Textkörper); der KI-generierte Text lautete: _„44. Minute: TOOOOR! J. Bahoya bringt Frankfurt auf 1:0! Traumpass von X. Das Stadion bebt!"_ — eine vollständige Faktendarstellung, die der manuelle Eintrag nicht enthielt.
 
 Ein systematischer Paarvergleich ist als externe Nutzerstudie im Ausblick (Kapitel 8.3.2) vorgesehen.
 
@@ -433,6 +436,13 @@ Zur Validierung der Systemeignung im operativen redaktionellen Kontext wurde ein
 1. **Praxistauglichkeit**: Inwiefern entsprechen die generierten Texte den redaktionellen Standards und Erwartungen eines professionellen Sportredakteurs?
 2. **Workflow-Integration**: Welche Auswirkungen hätte das System auf bestehende redaktionelle Arbeitsabläufe und -prozesse?
 3. **Qualitätswahrnehmung**: Wie bewerten Fachexperten die Qualität der KI-generierten Texte im Vergleich zu manuell verfassten Inhalten?
+
+Die folgenden Interviewfragen leiten die Systembewertung (vgl. Interviewleitfaden, Kap. 2.4):
+
+- _F9: Wie bewerten Sie die Qualität der KI-generierten Ticker-Texte im Vergleich zu manuell verfassten?_
+- _F10: Welchen der drei Modi (auto/coop/manual) würden Sie im Redaktionsalltag bevorzugt einsetzen?_
+- _F11: Ist der Coop-Modus — also KI-Entwurf mit redaktioneller Freigabe — ein realistischer Kompromiss zwischen Zeitersparnis und Qualitätskontrolle?_
+- _F12: Welche Features fehlen für einen produktiven Einsatz?_
 
 **Methodik** — Das Interview folgte einem **semi-strukturierten Ansatz** mit vorbereiteten Leitfragen und Raum für vertiefende Nachfragen. Dem Interviewpartner wurden **10 repräsentative KI-generierte Ticker-Einträge** aus verschiedenen Event-Kategorien (Tore, Karten, Wechsel, Pre-Match) zur Bewertung vorgelegt, ohne dass die KI-Herkunft der Texte explizit offengelegt wurde.
 
@@ -453,25 +463,25 @@ Die Interviewergebnisse fließen in die Gesamtbewertung des Systems (Kapitel 8.2
 
 Das System unterstützt drei zur Laufzeit umschaltbare Betriebsmodi, die unterschiedliche Grade der KI-Beteiligung abbilden:
 
-| Modus      | KI-Rolle                                                                 | Redakteur-Rolle                                        |
-| ---------- | ------------------------------------------------------------------------ | ------------------------------------------------------ |
-| **auto**   | Events werden automatisch generiert und direkt veröffentlicht            | Nachträgliche Korrektur und Retraktion möglich         |
-| **coop**   | Events werden als Entwurf generiert; Redakteur muss freigeben            | Review, Bearbeitung und Freigabe jedes Eintrags        |
-| **manual** | Keine KI-Generierung; Redakteur erstellt Einträge über Slash-Commands    | Vollständige manuelle Kontrolle                        |
+| Modus      | KI-Rolle                                                              | Redakteur-Rolle                                 |
+| ---------- | --------------------------------------------------------------------- | ----------------------------------------------- |
+| **auto**   | Events werden automatisch generiert und direkt veröffentlicht         | Nachträgliche Korrektur und Retraktion möglich  |
+| **coop**   | Events werden als Entwurf generiert; Redakteur muss freigeben         | Review, Bearbeitung und Freigabe jedes Eintrags |
+| **manual** | Keine KI-Generierung; Redakteur erstellt Einträge über Slash-Commands | Vollständige manuelle Kontrolle                 |
 
 ### 6.9.2 Vergleich der Modi
 
 Ein kontrollierter Vergleich derselben Spiels in allen drei Modi war im Evaluationszeitraum nicht durchführbar, da kein parallel in mehreren Modi betriebenes Live-Spiel vorlag. Die folgende Tabelle beruht auf den gemessenen Latenzdaten (Kapitel 6.10.1) und der implementierten Systemarchitektur:
 
-| Metrik                         | auto               | coop                  | manual           |
-| ------------------------------ | ------------------ | --------------------- | ---------------- |
-| Ø TTP (Sekunden)               | ≈ 5,8 s            | ≈ 15–30 s             | 30–120 s         |
-| Einträge pro Spiel             | alle Events (typ. 12–21) | alle Events     | redaktionell selektiert |
-| Korrektheit (Ø, 1–5)          | 4,3                | 5,0 (nach Freigabe)   | 5,0              |
-| Anteil retrahierter Einträge   | geschätzt 5–10 %   | 0 % (vor Publikation geprüft) | 0 %    |
-| Redakteur-Interventionen       | 0                  | 1 pro Eintrag         | alle             |
+| Metrik                       | auto                     | coop                          | manual                  |
+| ---------------------------- | ------------------------ | ----------------------------- | ----------------------- |
+| Ø TTP (Sekunden)             | ≈ 5,8 s                  | ≈ 15–30 s                     | 30–120 s                |
+| Einträge pro Spiel           | alle Events (typ. 12–21) | alle Events                   | redaktionell selektiert |
+| Korrektheit (Ø, 1–5)         | 4,3                      | 5,0 (nach Freigabe)           | 5,0                     |
+| Anteil retrahierter Einträge | geschätzt 5–10 %         | 0 % (vor Publikation geprüft) | 0 %                     |
+| Redakteur-Interventionen     | 0                        | 1 pro Eintrag                 | alle                    |
 
-*TTP-Schätzung auto: 5.000 ms Polling-Intervall + 836 ms LLM-Latenz (Ø). TTP-Schätzung coop: KI-Latenz + redaktionelle Prüfzeit (Einzelklick ca. 5–10 s, mit Bearbeitung 15–30 s). Manual: Zeitaufwand für Texterstellung unter Livebedingungen aus Kapitel 2.1.*
+_TTP-Schätzung auto: 5.000 ms Polling-Intervall + 836 ms LLM-Latenz (Ø). TTP-Schätzung coop: KI-Latenz + redaktionelle Prüfzeit (Einzelklick ca. 5–10 s, mit Bearbeitung 15–30 s). Manual: Zeitaufwand für Texterstellung unter Livebedingungen aus Kapitel 2.1._
 
 Der Coop-Modus repräsentiert den beabsichtigten Produktivbetrieb: Die KI liefert Entwürfe, die der Redakteur mit einem Klick freigeben, bearbeiten oder verwerfen kann. Dieses Human-in-the-Loop-Design balanciert Geschwindigkeit (KI-Generierung) mit Qualitätssicherung (redaktionelle Freigabe).
 
@@ -485,13 +495,13 @@ Die LLM-Aufrufe sind durch einen Semaphor auf maximal 8 parallele Anfragen begre
 
 Die Messung erfolgte durch 25 sequenzielle HTTP-Aufrufe an das Render-Deployment (`/api/v1/ticker/generate/{event_id}`) über 9 Bundesliga-Spiele. Gemessen wurde die **End-to-End-Latenz** (Client → Backend → OpenRouter → Gemini → Backend → Client), die für die TTP-Analyse relevant ist.
 
-| Provider     | Modell                          | N  | Ø Latenz (ms) | Median (ms) | P95 Latenz (ms) | Fehlerrate |
-| ------------ | ------------------------------- | -- | ------------- | ----------- | --------------- | ---------- |
-| OpenRouter   | `google/gemini-2.0-flash-lite-001` | 25 | 836        | 859         | 2.047           | 0 %        |
-| Mock         | regelbasiert (Templates)        | 7  | < 10          | < 10        | < 10            | 0 %        |
-| Gemini       | `gemini-2.0-flash-lite-001`     | —  | —             | —           | —               | —          |
-| OpenAI       | `gpt-4o-mini`                   | —  | —             | —           | —               | —          |
-| Anthropic    | `claude-haiku-4-5`              | —  | —             | —           | —               | —          |
+| Provider   | Modell                             | N   | Ø Latenz (ms) | Median (ms) | P95 Latenz (ms) | Fehlerrate |
+| ---------- | ---------------------------------- | --- | ------------- | ----------- | --------------- | ---------- |
+| OpenRouter | `google/gemini-2.0-flash-lite-001` | 25  | 836           | 859         | 2.047           | 0 %        |
+| Mock       | regelbasiert (Templates)           | 7   | < 10          | < 10        | < 10            | 0 %        |
+| Gemini     | `gemini-2.0-flash-lite-001`        | —   | —             | —           | —               | —          |
+| OpenAI     | `gpt-4o-mini`                      | —   | —             | —           | —               | —          |
+| Anthropic  | `claude-haiku-4-5`                 | —   | —             | —           | —               | —          |
 
 Die Latenzmessungen für OpenRouter zeigen eine **bimodale Verteilung**: 44 % der Messungen lagen unter 310 ms (mutmaßlich Gemini-seitige Response-Cache-Treffer), 56 % zwischen 859 ms und 2.128 ms (Kaltgenerierung). Über alle 25 Messungen beträgt die Standardabweichung 695 ms. Im Kontext des `coop`-Modus, in dem der Redakteur die KI-generierten Entwürfe vor Publikation prüft, ist die maximale gemessene Latenz von 2,1 s unproblematisch.
 
@@ -499,26 +509,26 @@ Die Latenzmessungen für OpenRouter zeigen eine **bimodale Verteilung**: 44 % de
 
 Gemessen wurden die wichtigsten Read/Write-Endpunkte im Render-Deployment (je 3 Aufrufe, externer Client):
 
-| Endpunkt                           | Methode | Ø Latenz (ms) | Beschreibung                        |
-| ---------------------------------- | ------- | ------------- | ----------------------------------- |
-| `/api/v1/ticker/match/{id}`        | GET     | 250           | Ticker-Einträge laden               |
-| `/api/v1/matches/{id}/events`      | GET     | 242           | Match-Events laden                  |
-| `/api/v1/matches/{id}`             | GET     | 348           | Spieldaten laden                    |
-| `/api/v1/matches` (Liste)          | GET     | 428           | Spiele auflisten                    |
-| `/api/v1/ticker/{id}/publish`      | PATCH   | 227           | Eintrag freigeben                   |
-| `/api/v1/ticker/generate/{id}`     | POST    | 836 (Ø LLM)   | Einzelgenerierung (inkl. LLM-Zeit)  |
+| Endpunkt                       | Methode | Ø Latenz (ms) | Beschreibung                       |
+| ------------------------------ | ------- | ------------- | ---------------------------------- |
+| `/api/v1/ticker/match/{id}`    | GET     | 250           | Ticker-Einträge laden              |
+| `/api/v1/matches/{id}/events`  | GET     | 242           | Match-Events laden                 |
+| `/api/v1/matches/{id}`         | GET     | 348           | Spieldaten laden                   |
+| `/api/v1/matches` (Liste)      | GET     | 428           | Spiele auflisten                   |
+| `/api/v1/ticker/{id}/publish`  | PATCH   | 227           | Eintrag freigeben                  |
+| `/api/v1/ticker/generate/{id}` | POST    | 836 (Ø LLM)   | Einzelgenerierung (inkl. LLM-Zeit) |
 
-*Werte beinhalten Netzwerklatenz zwischen externem Client und Render-Deployment. Im Browser-Kontext (Client auf gleicher CDN-Region) sind Werte ca. 100–150 ms niedriger zu erwarten.*
+_Werte beinhalten Netzwerklatenz zwischen externem Client und Render-Deployment. Im Browser-Kontext (Client auf gleicher CDN-Region) sind Werte ca. 100–150 ms niedriger zu erwarten._
 
 ### 6.10.3 Frontend-Polling
 
 Das Frontend fragt den Backend-Status über drei Polling-Intervalle ab:
 
-| Ressource       | Intervall  | Bedingung             |
-| ---------------- | ---------- | --------------------- |
-| Events & Ticker  | 5.000 ms   | Alle Spielstatus      |
-| Match-Refresh    | 15.000 ms  | Immer                 |
-| Match-Sync       | 60.000 ms  | Immer                 |
+| Ressource       | Intervall | Bedingung        |
+| --------------- | --------- | ---------------- |
+| Events & Ticker | 5.000 ms  | Alle Spielstatus |
+| Match-Refresh   | 15.000 ms | Immer            |
+| Match-Sync      | 60.000 ms | Immer            |
 
 Die `resolvePollingInterval`-Utility ist als Extension Point implementiert: Die Infrastruktur für differenzierte Intervalle je Spielstatus (Live vs. PreMatch) ist vorhanden, aktuell sind beide Werte auf 5.000 ms vereinheitlicht. Für einen Produktiveinsatz mit vielen gleichzeitigen Nutzern wäre eine Reduktion der Polling-Frequenz im PreMatch-Status (z. B. auf 30.000 ms) sinnvoll, um die Serverlast zu senken.
 
@@ -534,42 +544,42 @@ Die in Kapitel 2.6 hergeleiteten Anforderungen werden im Folgenden gegen den imp
 
 ### 6.11.1 Funktionale Anforderungen
 
-| Nr. | Anforderung                                           | Status | Nachweis / Anmerkung                                                        |
-| --- | ----------------------------------------------------- | ------ | ---------------------------------------------------------------------------- |
-| F1  | Drei Betriebsmodi (auto, coop, manual)                | ✅      | Zur Laufzeit umschaltbar per `PATCH /matches/{id}/ticker-mode`; 2 API-Tests |
-| F2  | KI-Textgenerierung für alle Event-Typen               | ✅      | 23 Event-Typen in `EVENT_TYPE_LABEL` gemappt; Bulk-Endpoint für alle Events |
-| F3  | Drei Stilprofile (neutral, euphorisch, kritisch)       | ✅      | Über `STYLE_DESC` im Prompt parametrisiert; per Match konfigurierbar        |
-| F4  | Few-Shot-Prompting mit Stilreferenzen                  | ✅      | Bis zu 3 Referenzen aus `style_references`-Tabelle; gefiltert nach Event-Typ |
-| F5  | Ticker-Lifecycle (draft → published / rejected)       | ✅      | State-Machine mit `publish`, `reject`, `retract`; 20 Ticker-API-Tests       |
-| F6  | Slash-Command-Parser für manuellen Modus               | ✅      | 11 Phasen- und 12 Event-Commands; 45 Unit-Tests                            |
-| F7  | Mehrsprachige Textgenerierung                          | ✅      | `translate_text()` mit separater Temperatur (0,1); Batch-Übersetzungsendpunkt |
-| F8  | Idempotenter Datenimport via n8n                       | ✅      | Upsert-Strategien für Events, Spieler, Teams                               |
-| F9  | Provider-Fallback-Kette                                | ✅      | 5 Provider (openrouter → gemini → openai → anthropic → mock); 28 LLM-Tests |
-| F10 | Deduplizierung von Ticker-Einträgen                    | ✅      | Prüfung auf bestehenden Eintrag per `event_id` vor LLM-Aufruf              |
-| F11 | Pre-Match-Kontextgenerierung (Verletzungen, H2H, etc.)| ✅      | 6 spezialisierte Context-Builder in `llm_context_builders.py`               |
-| F12 | Live-Statistik-Updates                                 | ✅      | `ctx_live_stats()` mit Trigger-Gründen für automatische Zwischenstand-Texte |
+| Nr. | Anforderung                                            | Status | Nachweis / Anmerkung                                                          |
+| --- | ------------------------------------------------------ | ------ | ----------------------------------------------------------------------------- |
+| F1  | Drei Betriebsmodi (auto, coop, manual)                 | ✅     | Zur Laufzeit umschaltbar per `PATCH /matches/{id}/ticker-mode`; 2 API-Tests   |
+| F2  | KI-Textgenerierung für alle Event-Typen                | ✅     | 23 Event-Typen in `EVENT_TYPE_LABEL` gemappt; Bulk-Endpoint für alle Events   |
+| F3  | Drei Stilprofile (neutral, euphorisch, kritisch)       | ✅     | Über `STYLE_DESC` im Prompt parametrisiert; per Match konfigurierbar          |
+| F4  | Few-Shot-Prompting mit Stilreferenzen                  | ✅     | Bis zu 3 Referenzen aus `style_references`-Tabelle; gefiltert nach Event-Typ  |
+| F5  | Ticker-Lifecycle (draft → published / rejected)        | ✅     | State-Machine mit `publish`, `reject`, `retract`; 20 Ticker-API-Tests         |
+| F6  | Slash-Command-Parser für manuellen Modus               | ✅     | 11 Phasen- und 12 Event-Commands; 45 Unit-Tests                               |
+| F7  | Mehrsprachige Textgenerierung                          | ✅     | `translate_text()` mit separater Temperatur (0,1); Batch-Übersetzungsendpunkt |
+| F8  | Idempotenter Datenimport via n8n                       | ✅     | Upsert-Strategien für Events, Spieler, Teams                                  |
+| F9  | Provider-Fallback-Kette                                | ✅     | 5 Provider (openrouter → gemini → openai → anthropic → mock); 28 LLM-Tests    |
+| F10 | Deduplizierung von Ticker-Einträgen                    | ✅     | Prüfung auf bestehenden Eintrag per `event_id` vor LLM-Aufruf                 |
+| F11 | Pre-Match-Kontextgenerierung (Verletzungen, H2H, etc.) | ✅     | 6 spezialisierte Context-Builder in `llm_context_builders.py`                 |
+| F12 | Live-Statistik-Updates                                 | ✅     | `ctx_live_stats()` mit Trigger-Gründen für automatische Zwischenstand-Texte   |
 
 ### 6.11.2 Nicht-funktionale Anforderungen
 
-| Nr. | Anforderung                                          | Status | Nachweis / Anmerkung                                                             |
-| --- | ---------------------------------------------------- | ------ | -------------------------------------------------------------------------------- |
-| N1  | Concurrency-Begrenzung für LLM-Aufrufe               | ✅      | `asyncio.Semaphore(8)` in `ticker_service.py`                                   |
-| N2  | Retry-Logik mit Rate-Limit-Erkennung                 | ✅      | 3 Versuche; 30s/60s/90s bei Rate-Limit; 1s/2s/4s bei sonstigen Fehlern         |
-| N3  | Transaktionale Testisolierung                         | ✅      | Rollback-basierte DB-Fixtures; keine persistenten Testdaten                      |
-| N4  | TypeScript-Typsicherheit                              | ✅      | 91,33 % type-coverage; 0 Compiler-Fehler                                        |
-| N5  | Responsive UI (Mobile-tauglich)                       | ✅      | Playwright-Test mit 375×812 Viewport; Mobile Tab Bar                             |
-| N6  | Fehlerresistenz im Frontend                           | ✅      | `ErrorBoundary` mit Fallback-UI; 4 dedizierte Tests                              |
-| N7  | Authentifizierung                                     | ⚠️      | Bewusst nicht implementiert (dokumentiert in Kap. 4.2.6)                    |
+| Nr. | Anforderung                            | Status | Nachweis / Anmerkung                                                   |
+| --- | -------------------------------------- | ------ | ---------------------------------------------------------------------- |
+| N1  | Concurrency-Begrenzung für LLM-Aufrufe | ✅     | `asyncio.Semaphore(8)` in `ticker_service.py`                          |
+| N2  | Retry-Logik mit Rate-Limit-Erkennung   | ✅     | 3 Versuche; 30s/60s/90s bei Rate-Limit; 1s/2s/4s bei sonstigen Fehlern |
+| N3  | Transaktionale Testisolierung          | ✅     | Rollback-basierte DB-Fixtures; keine persistenten Testdaten            |
+| N4  | TypeScript-Typsicherheit               | ✅     | 91,33 % type-coverage; 0 Compiler-Fehler                               |
+| N5  | Responsive UI (Mobile-tauglich)        | ✅     | Playwright-Test mit 375×812 Viewport; Mobile Tab Bar                   |
+| N6  | Fehlerresistenz im Frontend            | ✅     | `ErrorBoundary` mit Fallback-UI; 4 dedizierte Tests                    |
+| N7  | Authentifizierung                      | ⚠️     | Bewusst nicht implementiert (dokumentiert in Kap. 4.2.6)               |
 
 ### 6.11.3 Architektur-Anforderungen
 
-| Nr. | Anforderung                                     | Status | Nachweis / Anmerkung                                                        |
-| --- | ------------------------------------------------ | ------ | --------------------------------------------------------------------------- |
-| A1  | Drei-Schichten-Architektur                        | ✅      | Data-Ingestion (n8n), Application (FastAPI+PostgreSQL), Presentation (React)|
-| A2  | Repository-Pattern                                | ✅      | 12 Repository-Klassen ohne Vererbungshierarchie                             |
-| A3  | 70+ API-Endpunkte unter `/api/v1`                | ✅      | 14 Router-Dateien; 81 API-Tests                                             |
-| A4  | 17 ORM-Modelle / 18 Datenbanktabellen            | ✅      | 100 % Model-Coverage in Tests                                               |
-| A5  | White-Label-Fähigkeit (ef_whitelabel / generic)   | ✅      | Instanz-spezifische Kontextaufbereitung und Few-Shot-Filterung             |
+| Nr. | Anforderung                                     | Status | Nachweis / Anmerkung                                                         |
+| --- | ----------------------------------------------- | ------ | ---------------------------------------------------------------------------- |
+| A1  | Drei-Schichten-Architektur                      | ✅     | Data-Ingestion (n8n), Application (FastAPI+PostgreSQL), Presentation (React) |
+| A2  | Repository-Pattern                              | ✅     | 12 Repository-Klassen ohne Vererbungshierarchie                              |
+| A3  | 70+ API-Endpunkte unter `/api/v1`               | ✅     | 14 Router-Dateien; 81 API-Tests                                              |
+| A4  | 17 ORM-Modelle / 18 Datenbanktabellen           | ✅     | 100 % Model-Coverage in Tests                                                |
+| A5  | White-Label-Fähigkeit (ef_whitelabel / generic) | ✅     | Instanz-spezifische Kontextaufbereitung und Few-Shot-Filterung               |
 
 ---
 

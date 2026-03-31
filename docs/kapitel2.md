@@ -70,19 +70,7 @@ Aus den drei Problemdimensionen ergeben sich folgende vereinsspezifische Anforde
 - **Mehrsprachigkeit**: Mit einer internationalen Fanbasis — insbesondere in Japan, verstärkt durch Spieler wie Makoto Hasebe und Daichi Kamada — besteht Bedarf an Tickern in mindestens Deutsch und Englisch, perspektivisch auch Japanisch.
 - **Tonalität**: Vereinseigene Ticker folgen einer emotionalen, fanbezogenen Perspektive, die sich von der neutralen Berichterstattung überregionaler Medien unterscheidet (vgl. Beils 2023, S. 57). Das System muss diese stilistische Differenzierung abbilden können.
 
-Über die in den Kapiteln 2.1–2.3 eingebetteten Validierungsfragen (F1–F8) hinaus adressiert das Experteninterview zwei weitere Themenblöcke, die erst nach der Systemdemonstration beantwortet werden können:
-
-**Systembewertung** *(Evaluation Kap. 6.8):*
-
-9. Wie bewerten Sie die Qualität der KI-generierten Ticker-Texte im Vergleich zu manuell verfassten?
-10. Welchen der drei Modi (auto/coop/manual) würden Sie im Redaktionsalltag bevorzugt einsetzen?
-11. Ist der Coop-Modus — also KI-Entwurf mit redaktioneller Freigabe — ein realistischer Kompromiss zwischen Zeitersparnis und Qualitätskontrolle?
-12. Welche Features fehlen für einen produktiven Einsatz?
-
-**Zukunftsperspektive** *(Ausblick Kap. 7):*
-
-13. Könnten Sie sich vorstellen, KI-generierte Ticker im Regelbetrieb zu nutzen?
-14. Für welche Spielkategorien wäre ein vollautonomer Modus denkbar — zum Beispiel Testspiele, Jugendspiele, Freundschaftsspiele?
+Über die in den Kapiteln 2.1–2.3 eingebetteten Validierungsfragen (F1–F8) hinaus adressiert das Experteninterview zwei weitere Themenblöcke, die erst nach der Systemdemonstration beantwortet werden können: die **Systembewertung** (F9–F12, eingebettet in Kap. 6.8.6) und die **Zukunftsperspektive** (F13–F14, eingebettet in Kap. 7.5.2). Der vollständige Interviewleitfaden mit 18 Fragen ist als separates Dokument beigefügt.
 
 ---
 
