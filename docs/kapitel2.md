@@ -19,6 +19,13 @@ Das Skalierungsproblem verschärft sich an Spieltagen mit Parallelspielen erhebl
 
 Die personellen Konsequenzen sind in der Praxis spürbar. Liveticker-Stellen werden häufig mit freien Mitarbeitern oder studentischen Hilfskräften besetzt, die teils räumlich isoliert arbeiten (Bluhm & Schäfer 2023, S. 32). Der Aufwand bleibt hoch, die Ressourcen begrenzt, und die Qualität unterliegt einer strukturellen Inkonsistenz: Wechselndes Personal, unterschiedliche Erfahrungsstufen und variierende Arbeitsbedingungen — Stadion, Pressebereich oder Home-Office — führen dazu, dass Tonalität und sprachliches Niveau von Spiel zu Spiel schwanken. Diese Inkonsistenz ist kein individuelles Versagen, sondern eine systemische Folge des manuellen Produktionsprozesses (vgl. Bluhm & Schäfer 2023, S. 32, 35). Eine technologische Unterstützung ist daher keine optionale Ergänzung, sondern eine strukturelle Notwendigkeit.
 
+Die empirische Validierung dieser Problemdimension erfolgt über das Experteninterview (Kap. 2.4) mit folgenden Fragen:
+
+- *F1: Wie läuft die Liveticker-Produktion bei Eintracht Frankfurt aktuell ab? Beschreiben Sie bitte einen typischen Spieltag.*
+- *F2: Wie viele Personen sind an einem Spieltag für den Liveticker eingeteilt?*
+- *F3: Was sind die häufigsten Fehlerquellen unter Zeitdruck?*
+- *F5: Wie wird die Ticker-Abdeckung bei Parallelspielen oder Jugend-/Frauenspielen gehandhabt?*
+
 ---
 
 ## 2.2 Mehrsprachigkeit als Herausforderung
@@ -29,6 +36,10 @@ Die Herausforderung beschränkt sich dabei nicht auf eine reine Übersetzung exi
 
 Der operative Zeitdruck potenziert sich mit jeder zusätzlichen Sprache erheblich: Jede Sprache erfordert spezialisiertes Personal für zeitaufwendige Übersetzungs- und Anpassungsprozesse, die manuell kaum mit der Echtzeit-Anforderung vereinbar sind (vgl. Bluhm & Schäfer 2023, S. 32). Eine manuelle Skalierung auf mehrere Sprachen ist wirtschaftlich und personell für die meisten Vereinsredaktionen nicht darstellbar. Moderne Large Language Models eröffnen hier eine neue Perspektive: Sie können Texte nicht nur übersetzen, sondern direkt in der Zielsprache generieren — unter Berücksichtigung von Stil, Tonalität und kulturellem Kontext (vgl. OpenAI 2023, S. 1; Kap. 3.1). Diese Fähigkeit macht eine mehrsprachige Liveticker-Produktion erstmals ohne proportionalen Personalaufwand denkbar.
 
+Die empirische Validierung dieser Problemdimension erfolgt über das Experteninterview (Kap. 2.4) mit folgender Frage:
+
+- *F4: Gibt es Bedarf an mehrsprachigen Tickern? Wenn ja, welche Sprachen wären relevant?*
+
 ---
 
 ## 2.3 White-Label-Bedarf im Profisport
@@ -37,7 +48,15 @@ Vereine und Verbände kommunizieren heute zunehmend direkt mit ihrer Anhängersc
 
 Der entscheidende Unterschied liegt im Blickwinkel. Während überregionale Medien neutral bleiben, betrachten Vereinsticker die Partie aus der Perspektive der eigenen Fans (Beils 2023, S. 57). Ein Ereignis muss je nach Medium anders getönt sein: emotional für den Vereinskanal, sachlich für neutrale Plattformen. Da Liveticker-Stellen häufig mit wechselndem Personal besetzt sind (Bluhm & Schäfer 2023, S. 32), ist eine konsistente Markenstimme über einen längeren Zeitraum manuell kaum zu gewährleisten. Eine technologische Lösung muss daher auch die stilistische Konsistenz adressieren.
 
-Im Softwarekontext wird dieses Problem durch sogenannte White-Label-Architekturen gelöst: Ein generisches Kernsystem wird so konzipiert, dass es für verschiedene Abnehmer individuell konfigurierbar ist — ohne den Quellcode zu ändern (vgl. Kap. 4). Überträgt man dieses Prinzip auf die Liveticker-Produktion, ergibt sich die Anforderung, dass ein und dasselbe System sowohl einen vereinsspezifischen Ticker mit emotionaler Fanbindung als auch einen neutralen, anbieterunabhängigen Ticker bedienen können muss. Die stilistische Differenzierung — von der Wortwahl über die Tonalität bis hin zu vereinsspezifischen Redewendungen — muss dabei als Konfiguration abbildbar sein, nicht als separate Implementierung. Wie sich diese Anforderungen am konkreten Beispiel eines Bundesliga-Vereins ausprägen, zeigt der folgende Abschnitt.
+Im Softwarekontext wird dieses Problem durch sogenannte White-Label-Architekturen gelöst: Ein generisches Kernsystem wird so konzipiert, dass es für verschiedene Abnehmer individuell konfigurierbar ist — ohne den Quellcode zu ändern (vgl. Kap. 4). Überträgt man dieses Prinzip auf die Liveticker-Produktion, ergibt sich die Anforderung, dass ein und dasselbe System sowohl einen vereinsspezifischen Ticker mit emotionaler Fanbindung als auch einen neutralen, anbieterunabhängigen Ticker bedienen können muss. Die stilistische Differenzierung — von der Wortwahl über die Tonalität bis hin zu vereinsspezifischen Redewendungen — muss dabei als Konfiguration abbildbar sein, nicht als separate Implementierung.
+
+Die empirische Validierung dieser Problemdimension erfolgt über das Experteninterview (Kap. 2.4) mit folgenden Fragen:
+
+- *F6: Gibt es bei Eintracht Frankfurt einen definierten Schreibstil oder Styleguide für den Liveticker?*
+- *F7: Wie wird sichergestellt, dass verschiedene Autoren in einem konsistenten Stil schreiben?*
+- *F8: Unterscheidet sich der Vereinsticker bewusst von neutraler Berichterstattung? Wenn ja, wie?*
+
+Wie sich diese Anforderungen am konkreten Beispiel eines Bundesliga-Vereins ausprägen, zeigt der folgende Abschnitt.
 
 ---
 
