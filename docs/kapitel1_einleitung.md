@@ -38,32 +38,25 @@ Die Arbeit folgt einem konstruktiven Forschungsansatz im Sinne des **Design Scie
 
 Das methodische Vorgehen gliedert sich in fünf Phasen:
 
-1. **Problemanalyse und Anforderungserhebung** (Kapitel 2): Die drei Problemdimensionen werden literaturgestützt vertieft und in funktionale sowie nicht-funktionale Anforderungen überführt. Die linguistischen Merkmale der Textgattung Liveticker werden als Zielformat für die KI-Generierung herausgearbeitet.
-
-2. **Technologierecherche** (Kapitel 3): Der Stand der Technik in den Bereichen Large Language Models, Prompt Engineering, Natural Language Generation im Sport sowie Echtzeit-Architekturen wird aufgearbeitet und hinsichtlich seiner Eignung für das identifizierte Problem bewertet.
-
-3. **Systemkonzeption** (Kapitel 4): Aus den Anforderungen und der Technologierecherche wird eine dreischichtige Systemarchitektur (Datenbeschaffung, Anwendungslogik, Präsentation) mit Datenmodell, LLM-Pipeline und Prompt-Design abgeleitet.
-
-4. **Implementierung** (Kapitel 5): Das konzipierte System wird als produktionsfähige Webanwendung umgesetzt. Im Unterschied zu einem reinen Proof-of-Concept umfasst die Implementierung eine vollständige API mit über 70 Endpunkten, eine TypeScript-basierte Benutzeroberfläche, ein automatisiertes ETL-System sowie ein Deployment auf einer Cloud-Plattform (Render). Das System ist für den realen Einsatz im Spielbetrieb ausgelegt.
-
-5. **Evaluation** (Kapitel 6): Die Evaluation umfasst drei Ebenen: (a) technische Qualitätssicherung durch automatisierte Tests und statische Analyse, (b) Evaluation der KI-Textgenerierung anhand quantitativer Metriken und qualitativer Textanalyse sowie (c) einen systematischen Anforderungsabgleich.
+1. **Problemanalyse und Anforderungserhebung:** Literaturgestützte Vertiefung der Problemdimensionen und Ableitung funktionaler sowie nicht-funktionaler Anforderungen.
+2. **Technologierecherche:** Aufarbeitung des Stands der Technik in den relevanten Bereichen und Bewertung hinsichtlich der Eignung für das identifizierte Problem.
+3. **Systemkonzeption:** Entwurf einer dreischichtigen Systemarchitektur mit Datenmodell, LLM-Pipeline und Prompt-Design.
+4. **Implementierung:** Umsetzung als produktionsfähige Webanwendung mit vollständiger API, browserbasiertem Frontend, automatisiertem ETL-System und Cloud-Deployment.
+5. **Evaluation:** Technische Qualitätssicherung, Evaluation der KI-Textgenerierung sowie systematischer Anforderungsabgleich.
 
 Die Evaluationsmethodik operationalisiert die Forschungsfrage entlang zweier Dimensionen: Die **zeitliche Dimension** wird über die Time-to-Publish-Metrik (TTP) gemessen, die den Zeitraum zwischen Spielereignis und Veröffentlichung des Ticker-Eintrags erfasst. Die **qualitative Dimension** wird über eine manuelle Bewertung auf den Skalen Korrektheit, Tonalität und Verständlichkeit operationalisiert, ergänzt durch ein **strukturiertes Experteninterview** mit einem professionellen Sportredakteur zur Validierung der Systemeignung im redaktionellen Arbeitskontext. Für den statistischen Vergleich stehen nicht-parametrische Verfahren (Cliff's Delta, Bootstrap-Konfidenzintervalle) bereit.
 
 ### 1.3.1 Abgrenzung
 
-Das System geht bewusst über den Umfang eines typischen akademischen Projekts hinaus und zielt auf Produktionsfähigkeit: 391 automatisierte Tests, ein Cloud-Deployment und die Integration realer Datenquellen dokumentieren diesen Anspruch. Diese Praxisorientierung ist durch den beruflichen Kontext des Autors motiviert: Als Mitarbeiter der **Stackwork GmbH** im IT-Bereich von Eintracht Frankfurt entstand das System in direkter Kooperation mit den fachlichen Anforderungen einer professionellen Redaktion.
-
-Das Ergebnis ist ein **vollständiges, eigenständig lauffähiges Redaktionssystem**, bestehend aus einem FastAPI-Backend mit PostgreSQL-Datenbank, einem React/TypeScript-Frontend und einer automatisierten Daten-Pipeline über n8n-Workflows. Das System wird als Cloud-Service auf Render betrieben und verarbeitet alle Spiele der konfigurierten Wettbewerbe — von der automatischen Ereigniserfassung über die KI-gestützte Textgenerierung mit Few-Shot-Stilreferenzen bis zur Publikation im browserbasierten Liveticker. Über spezialisierte n8n-Export-Workflows werden publizierte Inhalte zusätzlich an die bereits existierende **Stackwork Demo App** übertragen — eine produktionsnahe Referenzimplementierung der offiziellen Eintracht Frankfurt Mainaquila-Anwendung mit den Bereichen "Spiele" und "Team/Kader". Damit umfasst das Projekt zwei voneinander unabhängige Zielsysteme — das eigene Redaktionssystem und die Demo App —, die über nahezu identische n8n-Workflows bedient werden. Diese Architektur demonstriert, dass dieselbe automatisierte Content-Pipeline mit minimalem Anpassungsaufwand mehrere Ausspielkanäle parallel befüllen kann.
+Das System geht bewusst über den Umfang eines typischen akademischen Projekts hinaus und zielt auf Produktionsfähigkeit: 391 automatisierte Tests, ein Cloud-Deployment und die Integration realer Datenquellen dokumentieren diesen Anspruch. Diese Praxisorientierung ist durch den beruflichen Kontext des Autors motiviert: Als Mitarbeiter der **Stackwork GmbH** im IT-Bereich von Eintracht Frankfurt entstand das System in direkter Kooperation mit den fachlichen Anforderungen einer professionellen Redaktion. Das Ergebnis ist ein vollständiges, eigenständig lauffähiges Redaktionssystem, das als Cloud-Service alle Spiele der konfigurierten Wettbewerbe verarbeitet. Zusätzlich werden publizierte Inhalte über Export-Workflows an die bestehende **Stackwork Demo App** übertragen, wodurch das Projekt zwei unabhängige Zielsysteme über nahezu identische Workflows bedient. Die technischen Details der Architektur und Implementierung werden in Kapitel 4 und 5 beschrieben.
 
 Gleichwohl bestehen Einschränkungen, die in Kapitel 7 kritisch reflektiert werden:
 
 - Das System verzichtet im aktuellen Stand auf eine Authentifizierungsschicht.
 - Die qualitative Evaluation erfolgt durch den Entwickler selbst; ergänzt wird sie durch ein **Experteninterview mit einem professionellen Sportredakteur** von Eintracht Frankfurt.
 - Der Fokus liegt auf Fußball; eine Generalisierung auf andere Sportarten ist architektonisch vorbereitet, aber nicht evaluiert.
-- Die Few-Shot-Stilreferenzen und die automatische Videoeinbindung bei Toren sind derzeit ausschließlich für die Eintracht-Frankfurt-Instanz (`ef_whitelabel`) verfügbar. Die generische Instanz generiert Texte ohne vereinsspezifische Stilvorlagen.
-- Social-Media-Integrationen (YouTube, Twitter) sind konzeptionell vorgesehen, aber im aktuellen Stand nicht implementiert. Es fehlt eine Oberfläche, über die Redakteure selbständig Social-Media-Links hinterlegen und einbetten können.
-- Die System-Prompts für die KI-Textgenerierung sind aktuell im Code definiert und nicht über die Benutzeroberfläche konfigurierbar. Eine redaktionelle Anpassung oder Ergänzung der Prompt-Vorlagen erfordert derzeit einen Eingriff im Backend.
+- Vereinsspezifische Funktionen wie Few-Shot-Stilreferenzen, die automatische Videoeinbindung bei Toren sowie die Einbettung von Medieninhalten sind derzeit ausschließlich für die Eintracht-Frankfurt-Instanz verfügbar. Die generische Instanz generiert Texte ohne diese Erweiterungen.
+- Die System-Prompts für die KI-Textgenerierung sind im Code definiert und nicht über die Benutzeroberfläche konfigurierbar. Eine redaktionelle Anpassung erfordert derzeit einen Eingriff im Backend.
 
 ---
 
@@ -71,11 +64,10 @@ Gleichwohl bestehen Einschränkungen, die in Kapitel 7 kritisch reflektiert werd
 
 Die vorliegende Arbeit gliedert sich in acht Kapitel:
 
-- **Kapitel 1:** Einleitung, Problemstellung und Forschungsfrage.
-- **Kapitel 2:** Vertiefung der Motivation (redaktioneller Aufwand, Mehrsprachigkeit, White-Label-Bedarf), Ableitung der Systemanforderungen am Beispiel Eintracht Frankfurt und formale Anforderungsdefinition.
-- **Kapitel 3:** Stand der Technik (LLMs, Prompt Engineering, Natural Language Generation im Sport, Echtzeit-Technologien und ETL-Prozesse).
-- **Kapitel 4:** Systemkonzept (Architektur, Datenmodell, Pipeline und Prompt-Design).
-- **Kapitel 5:** Dokumentation der Implementierung.
-- **Kapitel 6:** Evaluation — technische Qualitätssicherung (Tests, Coverage, Typsicherheit), Evaluation der KI-Textgenerierung und Anforderungsabgleich.
-- **Kapitel 7:** Diskussion — Einordnung in den Stand der Technik, kritische Reflexion und Implikationen für den Sportjournalismus.
-- **Kapitel 8:** Fazit — Zusammenfassung der Erkenntnisse, Beantwortung der Forschungsfrage und Ausblick.
+- **Kapitel 2 – Motivation und Anforderungen:** Vertiefung der drei Problemdimensionen (redaktioneller Aufwand, Mehrsprachigkeit, White-Label-Bedarf), Ableitung der Systemanforderungen am Beispiel Eintracht Frankfurt und formale Anforderungsdefinition.
+- **Kapitel 3 – Stand der Technik:** Large Language Models, Prompt Engineering, Natural Language Generation im Sport sowie Echtzeit-Technologien und ETL-Prozesse.
+- **Kapitel 4 – Systemkonzeption:** Dreischichtige Architektur, Datenmodell, LLM-Pipeline und Prompt-Design.
+- **Kapitel 5 – Implementierung:** Umsetzung als produktionsfähige Webanwendung mit über 70 API-Endpunkten, TypeScript-Frontend, n8n-ETL-System und Cloud-Deployment auf Render.
+- **Kapitel 6 – Evaluation:** Technische Qualitätssicherung (Tests, Coverage, Typsicherheit), Evaluation der KI-Textgenerierung und systematischer Anforderungsabgleich.
+- **Kapitel 7 – Diskussion:** Einordnung in den Stand der Technik, kritische Reflexion der Limitationen und Implikationen für den Sportjournalismus.
+- **Kapitel 8 – Fazit:** Zusammenfassung der Erkenntnisse, Beantwortung der Forschungsfrage und Ausblick.
