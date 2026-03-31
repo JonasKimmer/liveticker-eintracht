@@ -76,7 +76,7 @@ Aus den drei Problemdimensionen ergeben sich folgende vereinsspezifische Anforde
 
 ## 2.5 Linguistische Anforderungen an die Textgenerierung
 
-Liveticker stellen eine linguistisch eigenständige Textgattung dar (Hauser 2008, S. 1). Hauser charakterisiert sie als **schriftlich-grafische Simultanerzählung**. Im Gegensatz zum Spielbericht fehlt der _benefit of hindsight_; es handelt sich um eine quasi-synchrone Berichterstattung (Hauser 2008, S. 2).
+Neben den organisatorischen und stilistischen Anforderungen stellt die automatisierte Liveticker-Produktion auch spezifische **linguistische** Anforderungen. Liveticker stellen eine linguistisch eigenständige Textgattung dar (Hauser 2008, S. 1). Hauser charakterisiert sie als **schriftlich-grafische Simultanerzählung**. Im Gegensatz zum Spielbericht fehlt der _benefit of hindsight_; es handelt sich um eine quasi-synchrone Berichterstattung (Hauser 2008, S. 2).
 
 Zentrale linguistische Merkmale für das Prompt Design sind:
 
@@ -84,9 +84,8 @@ Zentrale linguistische Merkmale für das Prompt Design sind:
 - **Syntaktik:** Hoher Anteil an **Ellipsen** (verblosen Satzeinheiten). Sätze sollten idealerweise nicht mehr als 15 Wörter umfassen; Hauptsatzkonstruktionen sind dominant (Walter 2020, S. 40, 52).
 - **Tempora:** Präsens für gleichzeitige Situationen, Perfekt statt Präteritum für vergangene Ereignisse (Walter 2020, S. 39).
 - **Graphostilistik:** Einsatz von Großschreibung und Zeicheniterationen (z. B. „TOOOOR!") als Äquivalent zu Lautstärke und Tonhöhe (Smułczyński 2020, S. 54; Walter 2020, S. 41).
-- **Struktur:** Umgekehrte Chronologie (neuester Eintrag oben).
 
-Diese Merkmale definieren das Zielformat, auf das das LLM durch gezieltes Prompt Engineering konditioniert werden muss.
+Diese Merkmale definieren das Zielformat, auf das das LLM durch gezieltes Prompt Engineering konditioniert werden muss (vgl. Kap. 3.2). Im vorliegenden System werden sie sowohl über explizite Stilanweisungen im Prompt als auch über die Few-Shot-Referenzen operationalisiert, die genau diese sprachlichen Muster demonstrieren.
 
 ---
 
