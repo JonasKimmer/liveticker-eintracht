@@ -15,46 +15,56 @@ Die **Präsentationsschicht** ist als White-Label-Frontend in React realisiert. 
 Die folgende Abbildung zeigt die drei Schichten mit ihren Technologien und Kommunikationspfaden:
 
 ```mermaid
-graph TD
-    subgraph Präsentation["Präsentationsschicht"]
-        FE["React Frontend\n(TypeScript)"]
-    end
+graph LR
+    classDef schicht fill:#EFF6FF,stroke:#3B82F6,stroke-width:1.5px,color:#1E3A8A
+    classDef extern fill:#F9FAFB,stroke:#9CA3AF,stroke-width:1px,color:#374151
+    classDef db fill:#F0FDF4,stroke:#22C55E,stroke-width:1.5px,color:#14532D
 
-    subgraph Anwendung["Anwendungs- & Persistenzschicht"]
-        BE["FastAPI Backend\n(Python / Uvicorn)"]
-        DB[(PostgreSQL\n18 Tabellen)]
-        BE <--> DB
-    end
-
-    subgraph Orchestrierung["Datenbeschaffungs- & Automatisierungsschicht"]
-        N8N["n8n Workflows\n(15 JSON-Flows)"]
-    end
-
-    subgraph Extern["Externe Dienste"]
-        FAPI["Football-API\n(api-sports.io)"]
-        LLM["LLM Provider\n(OpenRouter / Gemini / OpenAI)"]
+    subgraph EXT["  Externe Dienste  "]
+        FAPI["Football-API\napi-sports.io"]
+        LLM["LLM Provider\nOpenRouter"]
         SP["ScorePlay\nMedia"]
-        EF["profis.eintracht.de\nSpieler-Daten"]
+        EF["EF Spielerdaten\nprofis.eintracht.de"]
     end
 
-    FE -- "REST Polling (5s)" --> BE
-    FE -- "WebSocket /ws/media" --> BE
-    FE -- "Webhook-Trigger" --> N8N
+    subgraph AUTO["  Automatisierungsschicht  "]
+        N8N["n8n\n15 Workflows"]
+    end
 
-    N8N -- "REST POST /api/v1/..." --> BE
-    N8N -- "HTTP GET" --> FAPI
-    N8N -- "HTTP GET/POST" --> SP
-    N8N -- "HTTP GET" --> EF
-    N8N -- "HTTP POST (Zusammenfassungen)" --> LLM
+    subgraph APP["  Anwendungs- & Persistenzschicht  "]
+        BE["FastAPI\nPython · Uvicorn"]
+        DB[("PostgreSQL\n18 Tabellen")]
+        BE <-->|"ORM"| DB
+    end
 
-    BE -- "HTTP (LLM-Service)" --> LLM
+    subgraph UI["  Präsentationsschicht  "]
+        FE["React Frontend\nTypeScript"]
+    end
+
+    N8N -->|"HTTP GET"| FAPI
+    N8N -->|"HTTP GET/POST"| SP
+    N8N -->|"HTTP GET"| EF
+    N8N -->|"Summarys"| LLM
+    N8N -->|"REST POST /api/v1"| BE
+
+    BE -->|"LLM-Aufrufe"| LLM
+
+    FE -->|"REST Polling · 5s"| BE
+    FE -.->|"WebSocket /ws/media"| BE
+    FE -->|"Webhook-Trigger"| N8N
+
+    class FE schicht
+    class BE schicht
+    class N8N schicht
+    class DB db
+    class FAPI,LLM,SP,EF extern
 ```
 
 ---
 
-## 4.1.2 Kommunikationsfluss
+### 4.1.1 Kommunikations- und Triggerarchitektur
 
-Der Kommunikationsfluss folgt einem Cache-first-Muster mit bedarfsgesteuerten Webhook-Triggern.
+Der Kommunikationsfluss folgt dem Prinzip **„read first, trigger if missing"**: Das Frontend liest zunächst den vorhandenen Datenbestand über REST; nur bei fehlenden Daten wird ein passender n8n-Webhook ausgelöst. Dadurch werden externe API-Aufrufe minimiert und redundante Importe vermieden.
 
 ```mermaid
 sequenceDiagram
@@ -84,19 +94,20 @@ sequenceDiagram
     BE-->>FE: WebSocket /ws/media → neue Medien
 ```
 
-1. Beim Öffnen der Anwendung lädt das Frontend zunächst Länder aus dem Backend (`GET /teams/countries`).
-2. Ist der Länderbestand leer, wird einmalig der n8n-Webhook `import-countries` ausgelöst; danach erfolgt ein erneuter Read aus dem Backend.
-3. Nach Länderauswahl lädt das Frontend die zugehörigen Teams (`GET /teams/by-country/{country}`). Nur bei leerem Ergebnis wird `import-teams-by-country` in n8n ausgelöst.
-4. Nach Teamauswahl werden Wettbewerbe geladen; ergänzend werden n8n-Importe für Wettbewerbe und Spiele gestartet, um den Datenbestand zu vervollständigen.
-5. Spieltage und Spiele werden anschließend aus der Backend-Datenbank gelesen (REST), nicht direkt aus n8n.
-6. Nach Auswahl eines konkreten Spiels startet eine automatische Importkette: Events, Aufstellungen, Match- und Spielerstatistiken sowie Prematch-Daten werden bei Bedarf über n8n nachgeladen.
-7. Auf Basis der importierten Daten werden KI-Texte erzeugt: n8n triggert für neue Events die Backend-Route `POST /api/v1/ticker/generate/{event_id}`; abhängig vom Modus werden Einträge als `draft` oder direkt als `published` gespeichert.
-8. Die Redaktion sieht die Vorschläge im Frontend, kann sie redigieren, freigeben oder verwerfen; Statusänderungen laufen über REST-Updates zurück ins Backend.
-9. Parallel werden ScorePlay-Medien über n8n an `POST /api/v1/media/incoming` übergeben. Das Backend speichert neue Medien und verteilt sie in Echtzeit über `/ws/media` an verbundene Clients.
+Die Systemkopplung erfolgt über drei klar getrennte Schnittstellentypen:
+
+- **REST-API** — stabiler Kern für alle Lese- und Schreiboperationen: Navigation, Ticker-CRUD, Statusübergänge (`draft` → `published` → `rejected`), manuelle Eingaben.
+- **n8n-Webhooks** — bedarfsgesteuerte Trigger für drei Klassen:
+  1. **Initialisierungs-Trigger** — Aufbau fehlender Stammdaten (Länder, Teams, Wettbewerbe, Spiele)
+  2. **Match-Kontext-Trigger** — spielbezogene Importe nach Matchauswahl (Events, Lineups, Statistiken, Prematch)
+  3. **Generierungs-Trigger** — Anstoß von KI-Textprozessen (Event-basiert, Matchphasen, Zusammenfassungen)
+- **WebSocket `/ws/media`** — Echtzeit-Push für latenzkritische Medieninhalte (ScorePlay-Bilder, Social-Media-Clips); Ticker- und Matchdaten bleiben bewusst im Polling-Modell.
+
+Diese hybride Triggerarchitektur unterstützt sowohl redaktionelle Kontrolle im Sinne eines **Human-in-the-Loop**-Ansatzes (Monarch 2021, S. 8) als auch weitgehend automatisierte Live-Prozesse.
 
 ---
 
-## 4.1.3 Partner-Team-Konzept und White-Label-Steuerung
+### 4.1.2 Partner-Team-Konzept und White-Label-Steuerung
 
 Das System unterscheidet zwischen dem **Partner-Team** — dem Verein, für den die White-Label-Instanz konfiguriert ist — und den jeweiligen Gegnern. Diese Unterscheidung wird im aktuellen Stand über ein konfigurierbares Team-Keyword (`"frankfurt"`) umgesetzt, das sowohl in n8n als auch im Frontend gegen den Teamnamen abgeglichen wird.
 
@@ -108,31 +119,11 @@ Im Frontend wird dasselbe Keyword aus der Konfigurationsdatei (`config/whitelabe
 
 ---
 
-## 4.1.4 Schnittstellen und Triggerlogik
-
-Die Systemkopplung erfolgt über klar getrennte Schnittstellentypen: REST-API (Backend), n8n-Webhooks (Orchestrierung) und WebSocket (Echtzeit-Medien). Diese Trennung reduziert Abhängigkeiten zwischen UI, Geschäftslogik und Datenimport und erlaubt eine gezielte Skalierung je Kommunikationsmuster.
-
-Die **REST-Schnittstellen** des Backends bilden den stabilen Kern für Lese- und Schreiboperationen im Redaktionsprozess. Hierzu zählen Navigationsabfragen (z. B. Länder, Teams, Wettbewerbe, Spiele), das Laden von Match-/Event-/Ticker-Daten sowie Statusänderungen von Ticker-Einträgen. REST wird auch für manuelle Eingaben (z. B. manuelle Tickertexte, Medienpublikation) genutzt und stellt damit den kontrollierten, transaktionalen Pfad für redaktionelle Entscheidungen dar.
-
-Die **n8n-Webhooks** werden als ereignis- bzw. bedarfsgetriebene Trigger verwendet. Funktional lassen sich drei Triggerklassen unterscheiden:
-
-1. **Initialisierungs-Trigger**: Aufbau fehlender Stammdaten (z. B. Länder, Teams, Wettbewerbe, Spiele), typischerweise bei leerem Datenbestand.
-2. **Match-Kontext-Trigger**: Import von spielbezogenen Daten nach Matchauswahl (Events, Lineups, Match-/Spielerstatistiken, Prematch-Daten).
-3. **Generierungs-Trigger**: Anstoß von KI-Textprozessen (Event-basierte Generierung, Matchphasen-/Summary-Generierung), abhängig von Matchzustand und Ticker-Modus.
-
-Die Triggerlogik folgt dabei dem Prinzip **„read first, trigger if missing"**: Das Frontend liest zunächst den vorhandenen Datenbestand über REST; nur bei fehlenden Daten wird ein passender n8n-Webhook ausgelöst. Dadurch werden externe API-Aufrufe minimiert und redundante Importe vermieden.
-
-Für Medieninhalte existiert ein separater Echtzeitpfad: n8n übergibt neue ScorePlay-Objekte an das Backend, das diese persistiert und anschließend über den WebSocket-Endpunkt `/ws/media` an verbundene Clients broadcastet. Ticker- und Matchdaten bleiben hingegen bewusst im Polling-Modell, um die Komplexität des Hauptdatenpfads niedrig zu halten.
-
-Insgesamt ergibt sich eine **hybride Triggerarchitektur**: REST für konsistente CRUD-Interaktionen, n8n für asynchrone Datenorchestrierung und WebSocket für latenzkritische Medien-Updates. Diese Kombination unterstützt sowohl redaktionelle Kontrolle im Sinne eines **Human-in-the-Loop**-Ansatzes (Monarch 2021, S. 8) als auch weitgehend automatisierte Live-Prozesse.
-
----
-
-## 4.1.5 Export zur Stackwork Demo App
+### 4.1.3 Export zur Stackwork Demo App
 
 Das entwickelte System ist als **eigenständige Anwendung** konzipiert, die über API-Export-Schnittstellen mit der bereits existierenden **Stackwork Demo App** von Eintracht Frankfurt kommuniziert. Beide Systeme operieren vollständig getrennt — es findet keine Code-Integration statt.
 
-**Systemabgrenzung** — Die Stackwork Demo App ist eine produktive Referenzimplementierung der offiziellen Eintracht Frankfurt Mainaquila-App mit den Bereichen **"Spiele"** und **"Team/Kader"**. Der Autor hat als Mitarbeiter der Stackwork GmbH Zugang zu den bestehenden **CMS-API-Endpunkten** dieser App, jedoch nicht zum Quellcode oder der Infrastruktur.
+**Systemabgrenzung** — Die Stackwork Demo App ist eine produktive Referenzimplementierung der offiziellen Eintracht Frankfurt Mainaquila-App mit den Bereichen **„Spiele"** und **„Team/Kader"**. Der Autor hat als Mitarbeiter der Stackwork GmbH Zugang zu den bestehenden **CMS-API-Endpunkten** dieser App, jedoch nicht zum Quellcode oder der Infrastruktur.
 
 **Export-Pipeline** — Die entwickelten **n8n-Workflows** lesen publizierte Ticker-Einträge aus der lokalen PostgreSQL-Datenbank und übertragen sie via HTTP-Requests an die CMS-API der Demo App. Diese Export-Workflows sind die einzige Verbindung zwischen beiden Systemen — der entwickelte Code läuft vollständig unabhängig.
 
@@ -146,13 +137,13 @@ Das entwickelte System ist als **eigenständige Anwendung** konzipiert, die übe
 
 ### 4.2.1 Framework-Wahl: FastAPI
 
-Als Backend-Framework wurde FastAPI gewählt (vgl. Abschnitt 3.7.2 für die technische Einordnung). Die Entscheidung begründet sich durch drei systemspezifische Anforderungen: Erstens erfordert die parallele Verarbeitung von LLM-Aufrufen, externen API-Abfragen und Medienverarbeitung native Unterstützung für asynchrone I/O. Zweitens vereinfacht die automatisch generierte OpenAPI-Spezifikation die Integration mit n8n-Workflows erheblich, da Endpunkte über Swagger UI direkt testbar sind. Drittens reduziert die enge Pydantic-Integration Schnittstellenfehler zwischen Frontend, Backend und n8n, indem alle Eingaben gegen typisierte Schemas validiert werden.
+Als Backend-Framework wurde FastAPI gewählt (vgl. Abschnitt 3.6.2 für die technische Einordnung). Die Entscheidung begründet sich durch drei systemspezifische Anforderungen: Erstens erfordert die parallele Verarbeitung von LLM-Aufrufen, externen API-Abfragen und Medienverarbeitung native Unterstützung für asynchrone I/O. Zweitens vereinfacht die automatisch generierte OpenAPI-Spezifikation die Integration mit n8n-Workflows erheblich, da Endpunkte über Swagger UI direkt testbar sind. Drittens reduziert die enge Pydantic-Integration Schnittstellenfehler zwischen Frontend, Backend und n8n, indem alle Eingaben gegen typisierte Schemas validiert werden.
 
 ---
 
 ### 4.2.2 Interne Struktur und Datenzugriff
 
-Die interne Struktur folgt einer klaren Trennung aus API-Routern, Repository-Schicht sowie ORM-Modellen und Pydantic-Schemas. Diese Schichtung orientiert sich am **Repository Pattern** (Fowler 2002, S. 322), das den Datenzugriff hinter einer abstrakten Schnittstelle kapselt und die Geschäftslogik von der Persistenztechnologie entkoppelt. Die Router bilden die HTTP-Schnittstelle und übernehmen Validierung, Statuscodes sowie die Orchestrierung einzelner Use Cases. Datenbankzugriffe sind in dedizierten Repositories gekapselt. Dadurch bleibt die API-Schicht frei von SQL-Details, während Persistenzlogik zentral gebündelt und wiederverwendbar gehalten wird.
+Die interne Struktur folgt einer klaren Trennung aus API-Routern, Repository-Schicht sowie **SQLAlchemy 2.0**-ORM-Modellen und Pydantic-Schemas. Diese Schichtung orientiert sich am **Repository Pattern** (Fowler 2002, S. 322), das den Datenzugriff hinter einer abstrakten Schnittstelle kapselt und die Geschäftslogik von der Persistenztechnologie entkoppelt. Die Router bilden die HTTP-Schnittstelle und übernehmen Validierung, Statuscodes sowie die Orchestrierung einzelner Use Cases. Datenbankzugriffe sind in dedizierten Repositories gekapselt. Dadurch bleibt die API-Schicht frei von SQL-Details, während Persistenzlogik zentral gebündelt und wiederverwendbar gehalten wird.
 
 Für LLM-nahe Abläufe wird ergänzend eine Service-Schicht genutzt (insbesondere `ticker_service` und `llm_service`). Die Service-Schicht wird dabei gezielt, aber nicht flächendeckend eingesetzt: Viele Standard-CRUD- und Listenoperationen folgen dem Muster Router → Repository, während komplexere Generierungs- und Orchestrierungspfade über Services laufen.
 
@@ -198,7 +189,7 @@ Das System adressiert Sicherheit auf drei Ebenen, wobei der Projektrahmen einer 
 
 **Transportebene:** Die gesamte Kommunikation zwischen Frontend, Backend und externen Diensten erfolgt über HTTPS. Die Render-Plattform übernimmt die TLS-Terminierung und Zertifikatsverwaltung automatisiert.
 
-**API-Absicherung:** Der Backend-Server konfiguriert eine **CORS-Whitelist** (Cross-Origin Resource Sharing), die Anfragen ausschließlich von autorisierten Frontend-Ursprüngen akzeptiert. Die API-Schlüssel externer Dienste (LLM-Provider, API-Football, ScorePlay) werden über Umgebungsvariablen injiziert und sind weder im Quellcode noch im Frontend exponiert. Die Pydantic-basierte Eingabevalidierung (vgl. Kapitel 3.7.2) schützt zusätzlich vor Injection-Angriffen, da sämtliche Request-Payloads gegen typisierte Schemas geprüft werden, bevor sie die Geschäftslogik erreichen.
+**API-Absicherung:** Der Backend-Server konfiguriert eine **CORS-Whitelist** (Cross-Origin Resource Sharing), die Anfragen ausschließlich von autorisierten Frontend-Ursprüngen akzeptiert. Die API-Schlüssel externer Dienste (LLM-Provider, API-Football, ScorePlay) werden über Umgebungsvariablen injiziert und sind weder im Quellcode noch im Frontend exponiert. Die Pydantic-basierte Eingabevalidierung (vgl. Kapitel 3.6.2) schützt zusätzlich vor Injection-Angriffen, da sämtliche Request-Payloads gegen typisierte Schemas geprüft werden, bevor sie die Geschäftslogik erreichen.
 
 **Authentifizierung und Autorisierung:** Eine feingranulare Benutzerauthentifizierung mit Rollenkonzept (z. B. Redakteur, Administrator) ist im aktuellen Stand **nicht implementiert**. Das System ist als internes Redaktionswerkzeug konzipiert und setzt auf Netzwerksegmentierung statt individueller Zugangskontrolle. Für einen produktiven Mehrbenutzerbetrieb wäre die Integration eines Authentifizierungsframeworks (z. B. OAuth 2.0 oder JWT-basierte Token-Authentifizierung) erforderlich — dies wird in Kapitel 7 als Erweiterungsperspektive eingeordnet.
 
@@ -452,11 +443,25 @@ In Summe bildet n8n eine tragfähige Orchestrierungsschicht, die externe Datenqu
 
 Die KI-Komponente ist als providerunabhängige Abstraktionsschicht implementiert. Der LLM-Dienst kapselt mehrere Anbieter hinter einer einheitlichen Schnittstelle und unterstützt aktuell OpenAI, Anthropic, Google Gemini, OpenRouter sowie einen Mock-Modus für Entwicklungs- und Fallbackszenarien ohne API-Key.
 
-Die initiale Providerwahl erfolgt schlüsselbasiert in einer festen Prioritätsreihenfolge:
+**Primärzugang: OpenRouter als API-Gateway**
+
+Das vorliegende System setzt primär **OpenRouter** als LLM-Gateway ein. OpenRouter fungiert als einheitliche API-Schnittstelle, über die mit einem einzelnen API-Schlüssel verschiedene Sprachmodelle unterschiedlicher Anbieter angesprochen werden können. Diese Architekturentscheidung bietet drei Vorteile:
+
+1. **Kein Vendor Lock-in**: Der Wechsel zwischen Modellen erfordert lediglich eine Änderung der Umgebungsvariable `OPENROUTER_MODEL`, keine Codeanpassung.
+2. **Vergleichbarkeit**: Verschiedene Modelle können auf demselben Prompt evaluiert werden (vgl. Kap. 6.7.3).
+3. **Kostenoptimierung**: Das jeweils kostengünstigste Modell für die Aufgabe kann gewählt werden.
+
+Im produktiven Einsatz wird aktuell **Gemini 2.0 Flash** (Modell-ID `google/gemini-2.0-flash-001`) über OpenRouter genutzt. Die Wahl dieses kompakten Modells begründet sich durch die Aufgabencharakteristik: Liveticker-Texte sind kurz (1–3 Sätze) und basieren auf strukturierten Eingabedaten (Spielereignisse, Kontext) — eine Aufgabe, die keine komplexe Inferenz oder umfangreiches Weltwissen voraussetzt. Kompakte Modelle wie Gemini 2.0 Flash bieten für solche faktenbasierten Textgenerierungsaufgaben eine vergleichbare Qualität wie größere Modelle, bei deutlich niedrigerer Latenz und Kosten. Für Vereinsredaktionen mit begrenztem Budget ist dieser Kostenvorteil ein entscheidender Faktor für die Praxistauglichkeit des Systems.
+
+**Fallback-Kette und Mock-Provider**
+
+Ergänzend implementiert das Backend eine **Fallback-Kette** für den Fall, dass OpenRouter nicht konfiguriert ist. Das System prüft zur Startzeit in der festen Prioritätsreihenfolge, ob ein API-Schlüssel hinterlegt ist, und aktiviert den ersten verfügbaren Provider als Singleton:
 
 > `openrouter` → `gemini` → `openai` → `anthropic` → `mock`
 
-Standardmodelle sind:
+Ist kein Schlüssel konfiguriert, wird auf einen regelbasierten **Mock-Provider** zurückgefallen, der Template-basierte Texte ohne LLM-Aufruf erzeugt. Diese Architektur stellt sicher, dass das System auch ohne LLM-Anbindung lauffähig bleibt — etwa für Entwicklung und Tests.
+
+Standardmodelle der Provider sind:
 
 | Provider   | Standardmodell                     |
 | ---------- | ---------------------------------- |
@@ -465,7 +470,7 @@ Standardmodelle sind:
 | OpenAI     | `gpt-4o-mini`                      |
 | Anthropic  | `claude-haiku-4-5-20251001`        |
 
-Zusätzlich kann die Auswahl in Generierungsrouten pro Request über `provider` und `model` überschrieben werden, was insbesondere für Evaluationsvergleiche zwischen Modellen genutzt wird.
+Zusätzlich kann die Auswahl in Generierungsrouten pro Request über `provider` und `model` überschrieben werden, was insbesondere für Evaluationsvergleiche zwischen Modellen genutzt wird (vgl. Kap. 6.7.3).
 
 ---
 
@@ -492,7 +497,9 @@ flowchart TD
     LLM --> T["Generierter\nTicker-Text"]
 ```
 
-Der Few-Shot-Block wird aus der Tabelle `style_references` gespeist und nach `event_type`, `instance` und optional `league` gefiltert. Für Pre-Match-Typen enthält der Prompt zusätzliche harte Restriktionen, um Live-Szenen-Halluzinationen zu vermeiden und die Ausgabe auf Vorschau- und Analyseinhalte zu begrenzen.
+Der Few-Shot-Block wird aus der Tabelle `style_references` gespeist, die manuell kuratierte Original-Tickertexte von Eintracht Frankfurt enthält. Pro LLM-Aufruf werden bis zu drei zufällige Referenzen selektiert, gefiltert nach `event_type`, `instance` und optional `league`. Durch die Randomisierung wird eine monotone Reproduktion vermieden, während der stilistische Korridor gewahrt bleibt. Für Pre-Match-Typen enthält der Prompt zusätzliche harte Restriktionen, um Live-Szenen-Halluzinationen zu vermeiden und die Ausgabe auf Vorschau- und Analyseinhalte zu begrenzen.
+
+Der Inferenzparameter **Temperature** wird für die Textgenerierung auf `0.3` festgelegt, um die faktische Korrektheit gegenüber kreativer Varianz zu priorisieren. Für Übersetzungsaufgaben wird ein noch niedrigerer Wert von `0.1` verwendet, um semantische Abweichungen vom Originaltext zu minimieren.
 
 ---
 
@@ -571,26 +578,56 @@ Die Umschaltung erfolgt über einen dedizierten `ModeSelector` mit Portal-basier
 
 ### 4.6.5 Kommunikationsmuster im Frontend
 
-Das Frontend nutzt einen hybriden Kommunikationsansatz:
+Das Frontend nutzt einen hybriden Kommunikationsansatz, der unterschiedliche Echtzeitanforderungen durch spezialisierte Mechanismen adressiert:
 
-1. **REST/Polling** für Match-, Event-, Ticker- und Statistikdaten. Das Polling-Intervall beträgt einheitlich **5 Sekunden** für alle Match-Zustände, um KI-Entwürfe zeitnah sichtbar zu machen. Die interne Trennung der Intervallkonstanten nach Spielphase ist als vorbereitete Differenzierungsmöglichkeit für spätere Optimierungen angelegt.
-2. **Webhook-Trigger über n8n** für bedarfsgesteuerte Importe und Generierungsprozesse.
-3. **WebSocket** ausschließlich für latenzkritische Media-Queue-Updates (`/ws/media`) mit automatischem Reconnect bei Verbindungsabbruch.
+**1. REST-Polling für Kerndaten**
+
+Für Match-Daten, Spielevents und Ticker-Einträge wird **intervallbasiertes HTTP-Polling** mit einer Abfragefrequenz von **5 Sekunden** eingesetzt. Die HTTP-Kommunikation erfolgt über **Axios** als HTTP-Client. Das Polling wird über drei spezialisierte React Hooks realisiert:
+
+- `useMatchCore` — lädt Match-Metadaten (Teams, Status, Spielstand, Minute)
+- `useMatchEvents` — lädt Spielereignisse (Tore, Karten, Auswechslungen)
+- `useMatchTicker` — lädt Ticker-Einträge (Entwürfe, publizierte Texte)
+
+Jeder Hook betreibt einen eigenen `setInterval`-Zyklus, der bei Mount startet und bei Unmount gestoppt wird. Die Intervallkonstanten sind intern nach Spielphase getrennt definiert, um bei Bedarf differenzierte Polling-Frequenzen zu ermöglichen; aktuell wird jedoch einheitlich 5 Sekunden verwendet.
+
+Dieser Ansatz wurde gegenüber persistenten Verbindungsmechanismen wie **Server-Sent Events (SSE)** gewählt, da die zustandslose HTTP-Architektur die Skalierbarkeit auf Render-Plattformen vereinfacht und keine serverseitige Connection-State-Verwaltung erfordert. Für die vorliegende Anwendung mit begrenzter gleichzeitiger Nutzerzahl und akzeptabler Latenztoleranz (wenige Sekunden) stellt Polling eine robuste und wartbare Lösung dar.
+
+**2. Webhook-Trigger über n8n**
+
+Bedarfsgesteuerte Importe und Generierungsprozesse werden über direkte HTTP-Webhook-Aufrufe an n8n ausgelöst (vgl. Abschnitt 4.4.2). Diese Trigger erfolgen einmalig bei leerem Datenbestand oder Statuswechseln, nicht periodisch.
+
+**3. WebSocket für Media-Queue**
+
+Für die Echtzeit-Benachrichtigung neuer **Medieninhalte** (ScorePlay-Bilder, YouTube-Videos, Instagram-Stories) wird ergänzend das **WebSocket-Protokoll** eingesetzt. Der Backend-Server verwaltet einen Pool aktiver WebSocket-Verbindungen über den Endpunkt `/ws/media` und broadcastet neue Medien-Assets als `new_media`-Nachrichten an alle verbundenen Clients.
+
+Der Client implementiert eine **Exponential-Backoff-Reconnect-Strategie** mit folgenden Parametern:
+
+- Basisverzögerung: **1 Sekunde**
+- Maximale Verzögerung: **30 Sekunden**
+- Exponentieller Anstieg bei wiederholten Verbindungsabbrüchen
+
+Diese Strategie kompensiert temporäre Netzwerkprobleme automatisch, ohne den Server durch aggressive Reconnect-Versuche zu belasten.
 
 ```mermaid
 flowchart LR
     FE["React Frontend"]
 
-    FE -- "REST Polling\n5s (alle Zustände)" --> BE["FastAPI Backend"]
+    FE -- "REST Polling\n5s (alle Zustände)\nuseMatchCore / useMatchEvents / useMatchTicker" --> BE["FastAPI Backend"]
     FE -- "Webhook-Trigger\n(bei leeren Daten / Statuswechsel)" --> N8N["n8n"]
-    FE -- "WebSocket\n(Echtzeit, Backoff 1–30s)" --> WS["/ws/media"]
+    FE -- "WebSocket\n(Echtzeit, Exp. Backoff 1–30s)" --> WS["/ws/media"]
 
     BE -- "Response" --> FE
     N8N -- "Daten-Import / LLM-Trigger" --> BE
     WS -- "new_media Events" --> FE
 ```
 
-Diese Aufteilung reduziert Komplexität in den Kerndatenflüssen und konzentriert Echtzeitmechanismen auf den Bereich mit höchstem redaktionellem Nutzen.
+Diese Aufteilung reduziert Komplexität in den Kerndatenflüssen (Polling für stabilen Hauptpfad) und konzentriert Echtzeitmechanismen auf den Bereich mit höchstem redaktionellem Nutzen (latenzkritische Media-Updates via WebSocket).
+
+---
+
+### 4.6.6 Styling-Konzept
+
+Das visuelle Design verwendet ausschließlich **handgeschriebenes CSS** ohne externe Frameworks (Tailwind, Bootstrap). Sämtliche Design-Tokens (Farben, Abstände, Schriftgrößen) sind über **CSS Custom Properties** (CSS-Variablen) in `:root` definiert, was eine zentrale Anpassung des Erscheinungsbilds ermöglicht und die White-Label-Fähigkeit unterstützt. Die Klassen folgen einer **BEM-artigen Namenskonvention** mit dem Prefix `lt-` (Liveticker), die Namenskollisionen vermeidet und die Zugehörigkeit der Styles zum System explizit macht.
 
 ---
 

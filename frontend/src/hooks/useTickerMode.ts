@@ -16,7 +16,7 @@ import type { TickerMode } from "../types";
  * @param {Function} onReject - Wird aufgerufen wenn Draft abgelehnt wird
  */
 export function useTickerMode(onAccept: () => void, onReject: () => void) {
-  const [mode, setMode] = useState<TickerMode>(MODES.AUTO);
+  const [mode, setMode] = useState<TickerMode>(MODES.COOP);
 
   const acceptDraft = useCallback(() => {
     if (typeof onAccept === "function") onAccept();
