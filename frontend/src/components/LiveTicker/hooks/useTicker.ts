@@ -30,9 +30,10 @@ interface UseTickerParams {
   reload: ReloadFunctions;
   instance: string;
   language: string;
+  matchTickerMode?: TickerMode;
 }
 
-export function useTicker({ selMatchId, reload, instance, language }: UseTickerParams) {
+export function useTicker({ selMatchId, reload, instance, language, matchTickerMode }: UseTickerParams) {
   // ── Aktiver Draft ─────────────────────────────────────────
   const [activeDraftId, setActiveDraftId] = useState<number | null>(null);
   const [activeDraftText, setActiveDraftText] = useState("");
@@ -103,13 +104,14 @@ export function useTicker({ selMatchId, reload, instance, language }: UseTickerP
     [setMode, selMatchId],
   );
 
-  // Modus in DB schreiben wenn Spiel gewechselt wird
-  const modeRef = useRef(mode);
-  modeRef.current = mode;
+  // Modus aus DB lesen wenn Spiel geladen wird (match.tickerMode überschreibt Initial-State)
+  const syncedMatchIdRef = useRef<number | null>(null);
   useEffect(() => {
-    if (!selMatchId) return;
-    api.setMatchTickerMode(selMatchId, modeRef.current as TickerMode).catch(() => {});
-  }, [selMatchId]);
+    if (!selMatchId || !matchTickerMode) return;
+    if (syncedMatchIdRef.current === selMatchId) return; // bereits synchronisiert
+    syncedMatchIdRef.current = selMatchId;
+    setMode(matchTickerMode);
+  }, [selMatchId, matchTickerMode, setMode]);
 
   const [generatingId, setGeneratingId] = useState<number | null>(null);
 

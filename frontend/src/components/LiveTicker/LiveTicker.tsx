@@ -127,7 +127,7 @@ export default function LiveTicker() {
     setPublishToast,
     handleRetract,
     deleteToast,
-  } = useTicker({ selMatchId, reload, instance, language });
+  } = useTicker({ selMatchId, reload, instance, language, matchTickerMode: match?.tickerMode });
 
   // ── Mobile Panel: Modus-abhängig wechseln ─────────────────
   useEffect(() => {
