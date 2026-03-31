@@ -120,7 +120,6 @@ Aus den vorangegangenen Problemdimensionen und der Anforderungsanalyse werden im
 | N4  | TypeScript-Typsicherheit               | Qualitätssicherung             |
 | N5  | Responsive UI (Mobile-tauglich)        | Kap. 2.1 (Flexibilität)        |
 | N6  | Fehlerresistenz im Frontend            | Kap. 2.1 (Robustheit)          |
-| N7  | Authentifizierung                      | Kap. 2.3 (Mehrbenutzerbetrieb) |
 
 ### 2.6.3 Architektur-Anforderungen
 

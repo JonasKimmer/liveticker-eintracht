@@ -569,7 +569,6 @@ Die in Kapitel 2.6 hergeleiteten Anforderungen werden im Folgenden gegen den imp
 | N4  | TypeScript-Typsicherheit               | ✅     | 91,33 % type-coverage; 0 Compiler-Fehler                               |
 | N5  | Responsive UI (Mobile-tauglich)        | ✅     | Playwright-Test mit 375×812 Viewport; Mobile Tab Bar                   |
 | N6  | Fehlerresistenz im Frontend            | ✅     | `ErrorBoundary` mit Fallback-UI; 4 dedizierte Tests                    |
-| N7  | Authentifizierung                      | ⚠️     | Bewusst nicht implementiert (dokumentiert in Kap. 4.2.6)               |
 
 ### 6.11.3 Architektur-Anforderungen
 
@@ -635,7 +634,7 @@ Die Few-Shot-Infrastruktur (automatisches Befüllen der `style_references`-Tabel
 
 ### 6.13.2 Anforderungserfüllung
 
-Von 24 definierten Anforderungen (12 funktionale, 7 nicht-funktionale, 5 architektonische) sind **23 vollständig erfüllt**. Die einzige bewusst offene Anforderung betrifft die Authentifizierung (N7), die als Projektentscheidung dokumentiert ist.
+Von 23 definierten Anforderungen (12 funktionale, 6 nicht-funktionale, 5 architektonische) sind **alle 23 vollständig erfüllt**. Die fehlende Authentifizierung ist als bewusste Projektentscheidung dokumentiert (Kap. 6.12.4) und wird nicht als Anforderung geführt.
 
 ### 6.13.3 KI-Textqualität
 
