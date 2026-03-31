@@ -43,7 +43,7 @@ Im Softwarekontext wird dieses Problem durch sogenannte White-Label-Architekture
 
 ## 2.4 Anforderungsanalyse am Beispiel Eintracht Frankfurt
 
-Eintracht Frankfurt dient in dieser Arbeit als konkreter Anwendungsfall für die vereinsspezifische White-Label-Instanz. Die Anforderungsanalyse stützt sich auf die in den vorangegangenen Abschnitten hergeleiteten Problemdimensionen sowie auf eine Analyse der öffentlich zugänglichen digitalen Kanäle des Vereins. Ein Experteninterview mit der Vereinsredaktion konnte im Rahmen dieser Arbeit nicht realisiert werden; die folgenden Anforderungen wurden daher aus der Literatur, der Analyse vergleichbarer Vereinsmedien und der eigenen Systemkonzeption abgeleitet.
+Eintracht Frankfurt dient in dieser Arbeit als konkreter Anwendungsfall für die vereinsspezifische White-Label-Instanz. Die Anforderungsanalyse stützt sich auf die in den vorangegangenen Abschnitten hergeleiteten Problemdimensionen, eine Analyse der öffentlich zugänglichen digitalen Kanäle des Vereins sowie ein **strukturiertes Experteninterview** mit einem professionellen Sportredakteur von Eintracht Frankfurt. Die theoretisch hergeleiteten Anforderungen werden dabei durch das Interview empirisch validiert — insbesondere hinsichtlich des redaktionellen Workflows (Kap. 2.1), des Bedarfs an mehrsprachiger Berichterstattung (Kap. 2.2) und der stilistischen Konsistenzanforderungen (Kap. 2.3). Die vollständige Auswertung des Interviews erfolgt in Kapitel 6.8.
 
 Aus den drei Problemdimensionen ergeben sich folgende vereinsspezifische Anforderungen:
 
@@ -51,7 +51,33 @@ Aus den drei Problemdimensionen ergeben sich folgende vereinsspezifische Anforde
 - **Mehrsprachigkeit**: Mit einer internationalen Fanbasis — insbesondere in Japan, verstärkt durch Spieler wie Makoto Hasebe und Daichi Kamada — besteht Bedarf an Tickern in mindestens Deutsch und Englisch, perspektivisch auch Japanisch.
 - **Tonalität**: Vereinseigene Ticker folgen einer emotionalen, fanbezogenen Perspektive, die sich von der neutralen Berichterstattung überregionaler Medien unterscheidet (vgl. Beils 2023, S. 57). Das System muss diese stilistische Differenzierung abbilden können.
 
-Die theoretische Anforderungsanalyse wird durch ein **strukturiertes Experteninterview** mit einem professionellen Sportredakteur von Eintracht Frankfurt ergänzt. Dieses Interview wird als qualitative Validierungsmethode in Kapitel 6.8 eingesetzt, um die praktische Relevanz der identifizierten Anforderungen und die Gebrauchstauglichkeit des entwickelten Systems aus Sicht der Zielnutzergruppe zu bewerten.
+Das Experteninterview adressiert dabei gezielt folgende Fragestellungen, die über die theoretische Herleitung hinausgehen. Die Fragen sind in vier thematische Blöcke gegliedert:
+
+**Problemverständnis** *(Validierung Kap. 2.1–2.3):*
+
+1. Wie läuft die Liveticker-Produktion bei Eintracht Frankfurt aktuell ab? Beschreiben Sie bitte einen typischen Spieltag.
+2. Wie viele Personen sind an einem Spieltag für den Liveticker eingeteilt?
+3. Was sind die häufigsten Fehlerquellen unter Zeitdruck?
+4. Gibt es Bedarf an mehrsprachigen Tickern? Wenn ja, welche Sprachen wären relevant?
+5. Wie wird die Ticker-Abdeckung bei Parallelspielen oder Jugend-/Frauenspielen gehandhabt?
+
+**Stilistik** *(Validierung Kap. 2.3, 2.5):*
+
+6. Gibt es bei Eintracht Frankfurt einen definierten Schreibstil oder Styleguide für den Liveticker?
+7. Wie wird sichergestellt, dass verschiedene Autoren in einem konsistenten Stil schreiben?
+8. Unterscheidet sich der Vereinsticker bewusst von neutraler Berichterstattung? Wenn ja, wie?
+
+**Systembewertung** *(Evaluation Kap. 6.8):*
+
+9. Wie bewerten Sie die Qualität der KI-generierten Ticker-Texte im Vergleich zu manuell verfassten?
+10. Welchen der drei Modi (auto/coop/manual) würden Sie im Redaktionsalltag bevorzugt einsetzen?
+11. Ist der Coop-Modus — also KI-Entwurf mit redaktioneller Freigabe — ein realistischer Kompromiss zwischen Zeitersparnis und Qualitätskontrolle?
+12. Welche Features fehlen für einen produktiven Einsatz?
+
+**Zukunftsperspektive** *(Ausblick Kap. 7):*
+
+13. Könnten Sie sich vorstellen, KI-generierte Ticker im Regelbetrieb zu nutzen?
+14. Für welche Spielkategorien wäre ein vollautonomer Modus denkbar — zum Beispiel Testspiele, Jugendspiele, Freundschaftsspiele?
 
 ---
 
