@@ -61,7 +61,9 @@ Gleichwohl bestehen Einschränkungen, die in Kapitel 7 kritisch reflektiert werd
 - Das System verzichtet im aktuellen Stand auf eine Authentifizierungsschicht.
 - Die qualitative Evaluation erfolgt durch den Entwickler selbst; ergänzt wird sie durch ein **Experteninterview mit einem professionellen Sportredakteur** von Eintracht Frankfurt.
 - Der Fokus liegt auf Fußball; eine Generalisierung auf andere Sportarten ist architektonisch vorbereitet, aber nicht evaluiert.
-- Social-Media-Integrationen (YouTube, Twitter) sind konzeptionell vorgesehen, aber im aktuellen Stand nicht implementiert.
+- Die Few-Shot-Stilreferenzen und die automatische Videoeinbindung bei Toren sind derzeit ausschließlich für die Eintracht-Frankfurt-Instanz (`ef_whitelabel`) verfügbar. Die generische Instanz generiert Texte ohne vereinsspezifische Stilvorlagen.
+- Social-Media-Integrationen (YouTube, Twitter) sind konzeptionell vorgesehen, aber im aktuellen Stand nicht implementiert. Es fehlt eine Oberfläche, über die Redakteure selbständig Social-Media-Links hinterlegen und einbetten können.
+- Die System-Prompts für die KI-Textgenerierung sind aktuell im Code definiert und nicht über die Benutzeroberfläche konfigurierbar. Eine redaktionelle Anpassung oder Ergänzung der Prompt-Vorlagen erfordert derzeit einen Eingriff im Backend.
 
 ---
 
