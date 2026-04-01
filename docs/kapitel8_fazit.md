@@ -25,7 +25,7 @@ Die qualitative Analyse von **16 KI-generierten Ticker-Einträgen** (Modell: `go
 
 ### 8.1.3 Systemarchitektur und Designentscheide
 
-Das System realisiert die in Kapitel 4 konzipierte dreischichtige Architektur vollständig: Die **Datenschicht** (n8n-ETL) importiert Spieldaten automatisiert und idempotent aus der Partner-API; die **Anwendungsschicht** (FastAPI, PostgreSQL) exponiert 70+ REST-Endpunkte über 14 Router-Module und stützt sich auf ein Datenmodell aus 17 ORM-Modellen plus einer konfigurierten Settings-Tabelle; die **Präsentationsschicht** (React, TypeScript) implementiert den vollständigen Redaktionsworkflow mit WebSocket-Anbindung, Slash-Command-Parser und modaler Ticker-Steuerung.
+Das System realisiert die in Kapitel 4 konzipierte dreischichtige Architektur vollständig: Die **Datenschicht** (n8n-ETL) importiert Spieldaten automatisiert und idempotent aus der Partner-API; die **Anwendungsschicht** (FastAPI, PostgreSQL) exponiert über 70 REST-Endpunkte und stützt sich auf 17 ORM-Modelle; die **Präsentationsschicht** (React, TypeScript) implementiert den vollständigen Redaktionsworkflow mit WebSocket-Anbindung, Slash-Command-Parser und modaler Ticker-Steuerung.
 
 Die **White-Label-Architektur** mit zwei konfigurierten Instanzen (`ef_whitelabel` für Eintracht Frankfurt, `generic` für beliebige Vereine) sowie die **drei Betriebsmodi** (`auto`, `coop`, `manual`) bilden die Kernbeiträge des Systemdesigns: Erstere ermöglicht stilistisch differenzierte Ticker ohne separate Codebases, letztere adressiert das gesamte Spektrum von vollautomatischer bis zu vollmanueller Produktion innerhalb eines einzigen Deployments.
 
@@ -41,7 +41,7 @@ Die Beantwortung erfolgt entlang der beiden in der Forschungsfrage angelegten Di
 
 ### 8.2.1 Zeitliche Dimension: Reduktion der Time-to-Publish
 
-Im `auto`-Modus (vollautonom) entfällt die manuelle Texterstellung vollständig — die Time-to-Publish wird durch die LLM-Latenz (gemessener Median: **859 ms**) plus die Polling-Verzögerung (max. 5.000 ms) bestimmt. Die Schätz-TTP beträgt damit **≈ 5,9 s** im Median. Im `coop`-Modus (hybrid) addiert sich die redaktionelle Prüfzeit: Ein einfacher Freigabe-Klick erfordert ca. 5–10 s, ein bearbeiteter Entwurf ca. 15–30 s — die geschätzte TTP liegt damit bei **≈ 15–30 s**. Im `manual`-Modus (Status quo) muss der Redakteur den gesamten Text selbst verfassen; die in Kapitel 2.1 zitierte Literatur beziffert die typische Texterstellungszeit unter Livebedingungen auf **30–120 s**.
+Im `auto`-Modus (vollautonom) entfällt die manuelle Texterstellung vollständig — die geschätzte TTP beträgt **≈ 5,9 s** im Median (vgl. Abschnitt 6.10.1). Im `coop`-Modus (hybrid) addiert sich die redaktionelle Prüfzeit: Ein einfacher Freigabe-Klick erfordert ca. 5–10 s, ein bearbeiteter Entwurf ca. 15–30 s — die geschätzte TTP liegt damit bei **≈ 15–30 s**. Im `manual`-Modus (Status quo) muss der Redakteur den gesamten Text selbst verfassen; die in Kapitel 2.1 zitierte Literatur beziffert die typische Texterstellungszeit unter Livebedingungen auf **30–120 s**.
 
 Da kein kontrolliertes Spielexperiment in allen drei Modi durchgeführt werden konnte, basiert der Vergleich auf gemessenen LLM-Latenzen und der implementierten Systemarchitektur (Kapitel 6.9.2). Ein Cliff's-Delta-Test auf real gemessenen TTP-Paaren (auto vs. manual) wäre mit einem zukünftigen Live-Spieltest durchführbar; die TTP-Metrik und die Bulk-Evaluationsinfrastruktur (Kapitel 6.7.1–6.7.2) sind dafür vorbereitet.
 
@@ -56,6 +56,8 @@ Die journalistische Qualität wurde entlang der drei in der Forschungsfrage defi
 2. **Tonalität**: Mit einem Ø-Wert von **4,1 / 5** erzeugen die drei Stilprofile deutlich unterscheidbare Textstile. Der euphorische Modus — primär für vereinsnahe Liveticker wie die `ef_whitelabel`-Instanz konzipiert — erzielt die stärksten qualitativen Ergebnisse: Die Beispieltexte in Kapitel 6.8.3 zeigen, dass emotionale Stilmittel des Liveticker-Genres (Wiederholungen, Ausrufe, szenische Abschlüsse) vom Modell zuverlässig umgesetzt werden. Das neutrale Profil zeigt die größte Inkonsistenz (19 % der Einträge zu emotional formuliert), bedingt durch die starken euphorischen Few-Shot-Referenzen.
 
 3. **Verständlichkeit**: Mit **4,3 / 5** erfüllen die generierten Texte die linguistischen Anforderungen des Liveticker-Genres (Kapitel 2.5) zuverlässig: kurze Satzkonstruktionen, Präsenskonstruktionen, idiomatische Ausrufe und konzeptionelle Mündlichkeit sind durchgehend vorhanden. Kein Eintrag überschritt die genretypische Kürze.
+
+Die Ergebnisse des Experteninterviews mit einem professionellen Sportredakteur von Eintracht Frankfurt (vgl. Kapitel 6.8.6) fließen ergänzend in diese Bewertung ein. [Ausstehend: Interviewergebnisse werden nach Durchführung hier integriert.]
 
 ### 8.2.3 Synthese
 
@@ -72,6 +74,8 @@ Das hybride System reduziert die Time-to-Publish im Vergleich zur rein manuellen
 **Server-Sent Events für Ticker-Updates**: Die Ablösung des 5-Sekunden-Pollings durch SSE für den Ticker-Datenfluss würde die End-to-End-Latenz im `coop`-Modus weiter reduzieren und die Serverlast bei vielen gleichzeitigen Nutzern senken.
 
 **Erweiterte E2E-Tests**: Die Ausweitung der Playwright-Tests auf den vollständigen Redaktionsworkflow mit laufendem Backend und Testdatenbank (Spiel auswählen, Events empfangen, Ticker-Einträge bearbeiten, Freigeben) würde die Regressionssicherheit erhöhen.
+
+**n8n-Workflow-Tests**: Die 15 n8n-Workflows (vgl. Kapitel 6.12.8) sind derzeit ausschließlich manuell verifiziert. Integrationstests gegen eine Staging-Datenbank würden die Zuverlässigkeit der Datenversorgungspipeline absichern.
 
 ### 8.3.2 Mittelfristige Erweiterungen
 
@@ -95,7 +99,7 @@ Das hybride System reduziert die Time-to-Publish im Vergleich zur rein manuellen
 
 ## 8.4 Schlusswort
 
-Die vorliegende Arbeit zeigt, dass ein hybrides KI-gestütztes Redaktionssystem den operativen Zeitdruck bei der Liveticker-Erstellung adressieren kann, ohne die redaktionelle Kontrolle aufzugeben. Der `coop`-Modus — in dem die KI Textvorschläge generiert und der Redakteur die finale Freigabe erteilt — realisiert das in Kapitel 1.1 formulierte Zielbild eines Systems, in dem „die finale Entscheidungshoheit und publizistische Verantwortung beim Menschen verbleiben".
+Die vorliegende Arbeit zeigt, dass ein hybrides KI-gestütztes Redaktionssystem den operativen Zeitdruck bei der Liveticker-Erstellung adressieren kann, ohne die redaktionelle Kontrolle aufzugeben. Der `coop`-Modus realisiert das in Kapitel 1.1 formulierte Zielbild eines Systems, in dem „die finale Entscheidungshoheit und publizistische Verantwortung beim Menschen verbleiben".
 
 Die technische Reife des Systems — belegt durch 391 Tests, 75 % Backend-Coverage und eine vollständige TypeScript-Migration — sowie die Erfüllung aller 23 definierten Anforderungen dokumentieren die Tragfähigkeit des Architekturansatzes. Die in Kapitel 7 diskutierten Limitationen (fehlende Nutzerstudie, keine Authentifizierung, Polling statt Push) markieren klare Erweiterungspfade, stellen aber die grundsätzliche Funktionalität nicht in Frage.
 

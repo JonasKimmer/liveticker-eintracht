@@ -1,4 +1,4 @@
-# 3. Stand der Technik
+# Kapitel 3 – Stand der Technik
 
 ## 3.1 Large Language Models
 

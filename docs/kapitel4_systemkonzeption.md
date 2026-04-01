@@ -4,7 +4,7 @@
 
 ## 4.1 Überblick und Schichtenmodell
 
-Das System ist als serviceorientierte, dreischichtige Architektur ausgelegt und trennt Datenbeschaffung, Anwendungslogik und Präsentation klar voneinander. Diese Schichtentrennung folgt dem etablierten Prinzip der _Separation of Concerns_ (Parnas 1972), das die unabhängige Weiterentwicklung einzelner Systemteile ermöglicht.
+Das System ist als **eigenständiger Cloud-Service** konzipiert, der alle Spiele der konfigurierten Wettbewerbe automatisch verarbeitet — von der Datenimportierung über die KI-Textgenerierung bis zur Publikation. Es ist eine serviceorientierte, dreischichtige Architektur, die Datenbeschaffung, Anwendungslogik und Präsentation klar voneinander trennt. Diese Schichtentrennung folgt dem etablierten Prinzip der _Separation of Concerns_ (Parnas 1972), das die unabhängige Weiterentwicklung einzelner Systemteile ermöglicht. Zusätzlich exportiert das System publizierte Inhalte über dedizierte n8n-Workflows an die bestehende **Stackwork Demo App** von Eintracht Frankfurt (vgl. Abschnitt 4.1.3).
 
 Die **Datenbeschaffungs- und Automatisierungsschicht** wird über n8n umgesetzt. Sie integriert externe Datenquellen (insbesondere Football-API sowie Medienquellen wie ScorePlay und Social-Feeds), transformiert die Rohdaten in ein einheitliches internes Format und schreibt diese strukturiert in die Persistenzschicht beziehungsweise über definierte Backend-Endpunkte in das System ein. Die Entkopplung der Integrationslogik in n8n ermöglicht eine schnelle Anpassung von Import-Workflows, ohne den Anwendungskern ändern zu müssen.
 
@@ -109,27 +109,21 @@ Diese hybride Triggerarchitektur unterstützt sowohl redaktionelle Kontrolle im 
 
 ### 4.1.2 Partner-Team-Konzept und White-Label-Steuerung
 
-Das System unterscheidet zwischen dem **Partner-Team** — dem Verein, für den die White-Label-Instanz konfiguriert ist — und den jeweiligen Gegnern. Diese Unterscheidung wird im aktuellen Stand über ein konfigurierbares Team-Keyword (`"frankfurt"`) umgesetzt, das sowohl in n8n als auch im Frontend gegen den Teamnamen abgeglichen wird.
+Das System unterscheidet zwischen dem **Partner-Team** — dem Verein, für den die White-Label-Instanz konfiguriert ist — und den jeweiligen Gegnern. Diese Unterscheidung wird über ein konfigurierbares Team-Keyword umgesetzt, das sowohl in den n8n-Workflows als auch im Frontend gegen den Teamnamen abgeglichen wird.
 
-Das Datenbankschema enthält zusätzlich ein `is_partner_team`-Flag im `teams`-Modell, das für zukünftige Erweiterungen vorgesehen ist; die laufende Erkennung basiert jedoch auf dem Namens-Matching.
+Auf Basis dieser Erkennung werden zwei Verarbeitungspfade gesteuert:
 
-In n8n (`09_events_llm_workflow`) erfolgt die Prüfung per SQL (`ht.name ILIKE '%Frankfurt%'`) direkt vor der Generierungs-Triggerentscheidung; das Ergebnis steuert, ob `ef_whitelabel` oder `generic` als Instanzbezeichner und ob `euphorisch` oder `neutral` als Stilvoreinstellung an das Backend übergeben wird.
+- **Instanz und Stil**: Partner-Team-Spiele verwenden den `ef_whitelabel`-Instanzpfad mit euphorischem Stil; alle anderen Spiele den `generic`-Pfad mit neutralem Stil.
+- **UI-Anpassung**: Das Frontend blendet vereinsspezifische Bereiche (Social-Media-Panels, Torjubel-Videos) ausschließlich bei erkannten Partner-Team-Spielen ein.
+- **Erweiterte Kontextdaten**: Für Tormomente des Partner-Teams werden zusätzlich Spielerdaten und Torjubel-Video-URLs aus einer externen Vereinsquelle in den Prompt-Kontext eingebettet.
 
-Im Frontend wird dasselbe Keyword aus der Konfigurationsdatei (`config/whitelabel.ts`) ausgelesen; `isEfMatch` aktiviert den `ef_whitelabel`-Instanzpfad sowie EF-spezifische UI-Bereiche (z. B. Social-Media-Panels über `isOurTeam`). Für EF-Tormomente enthält `09_events_llm_workflow` zusätzlich einen dedizierten Pfad, der Spielerdaten von `profis.eintracht.de` abruft und Torjubel-Video-URLs aus dem Spieler-Datensatz in den Prompt-Kontext einbettet. Dieses Konzept ermöglicht eine konfigurationsgesteuerte Trennung zwischen vereinsspezifischen und generischen Verarbeitungspfaden.
+Das Datenbankschema enthält ergänzend ein `is_partner_team`-Flag, das für zukünftige Erweiterungen vorgesehen ist. Die konkreten SQL-Abfragen und Code-Implementierungen sind in Kapitel 5.7.1 dokumentiert.
 
 ---
 
 ### 4.1.3 Export zur Stackwork Demo App
 
-Das entwickelte System ist als **eigenständige Anwendung** konzipiert, die über API-Export-Schnittstellen mit der bereits existierenden **Stackwork Demo App** von Eintracht Frankfurt kommuniziert. Beide Systeme operieren vollständig getrennt — es findet keine Code-Integration statt.
-
-**Systemabgrenzung** — Die Stackwork Demo App ist eine produktive Referenzimplementierung der offiziellen Eintracht Frankfurt Mainaquila-App mit den Bereichen **„Spiele"** und **„Team/Kader"**. Der Autor hat als Mitarbeiter der Stackwork GmbH Zugang zu den bestehenden **CMS-API-Endpunkten** dieser App, jedoch nicht zum Quellcode oder der Infrastruktur.
-
-**Export-Pipeline** — Die entwickelten **n8n-Workflows** lesen publizierte Ticker-Einträge aus der lokalen PostgreSQL-Datenbank und übertragen sie via HTTP-Requests an die CMS-API der Demo App. Diese Export-Workflows sind die einzige Verbindung zwischen beiden Systemen — der entwickelte Code läuft vollständig unabhängig.
-
-**Deployment-Isolation** — Das System implementiert eine **Zwei-System-Architektur**: Das KI-Redaktionssystem fungiert als spezialisiertes Backend-Tool, während die Demo App als etablierte Auslieferungsplattform für End-User dient. Diese Trennung minimiert das Risiko für die produktive App und ermöglicht unabhängige Entwicklungszyklen.
-
-**Betriebsmodell** — Der operative Workflow erfordert manuelle Initialisierung (Spiel-ID eingeben) und exportiert anschließend alle publizierten Inhalte automatisch. Die Demo App zeigt die exportierten Ticker-Texte in ihrer bestehenden UI an, ohne Modifikationen am Demo App-Code.
+Das entwickelte System ist als **eigenständige Anwendung** konzipiert. Publizierte Ticker-Einträge können über dedizierte n8n-Export-Workflows an die bestehende **Stackwork Demo App** von Eintracht Frankfurt übertragen werden — beide Systeme operieren vollständig getrennt, es findet keine Code-Integration statt. Der Autor hat als Mitarbeiter der Stackwork GmbH Zugang zu den CMS-API-Endpunkten der Demo App, jedoch nicht zum Quellcode oder der Infrastruktur.
 
 ---
 
@@ -143,7 +137,7 @@ Als Backend-Framework wurde FastAPI gewählt (vgl. Abschnitt 3.6.2 für die tech
 
 ### 4.2.2 Interne Struktur und Datenzugriff
 
-Die interne Struktur folgt einer klaren Trennung aus API-Routern, Repository-Schicht sowie **SQLAlchemy 2.0**-ORM-Modellen und Pydantic-Schemas. Diese Schichtung orientiert sich am **Repository Pattern** (Fowler 2002, S. 322), das den Datenzugriff hinter einer abstrakten Schnittstelle kapselt und die Geschäftslogik von der Persistenztechnologie entkoppelt. Die Router bilden die HTTP-Schnittstelle und übernehmen Validierung, Statuscodes sowie die Orchestrierung einzelner Use Cases. Datenbankzugriffe sind in dedizierten Repositories gekapselt. Dadurch bleibt die API-Schicht frei von SQL-Details, während Persistenzlogik zentral gebündelt und wiederverwendbar gehalten wird.
+Die interne Struktur folgt einer klaren Trennung aus API-Routern, Repository-Schicht (vgl. Kap. 3.6.3) sowie **SQLAlchemy 2.0**-ORM-Modellen und Pydantic-Schemas. Die Router bilden die HTTP-Schnittstelle und übernehmen Validierung, Statuscodes sowie die Orchestrierung einzelner Use Cases. Datenbankzugriffe sind in dedizierten Repositories gekapselt. Dadurch bleibt die API-Schicht frei von SQL-Details, während Persistenzlogik zentral gebündelt und wiederverwendbar gehalten wird.
 
 Für LLM-nahe Abläufe wird ergänzend eine Service-Schicht genutzt (insbesondere `ticker_service` und `llm_service`). Die Service-Schicht wird dabei gezielt, aber nicht flächendeckend eingesetzt: Viele Standard-CRUD- und Listenoperationen folgen dem Muster Router → Repository, während komplexere Generierungs- und Orchestrierungspfade über Services laufen.
 
@@ -173,9 +167,7 @@ Die Implementierung ist bewusst hybrid aus synchronen und asynchronen Pfaden auf
 
 Für den Live-Betrieb wurde das Backend auf robuste Fehlerbehandlung und kontrollierte Degradation ausgelegt. Fehler werden über konsistente HTTP-Antworten und strukturierte Meldungen zurückgegeben, sodass Frontend und n8n-Workflows differenziert reagieren können.
 
-Ein zentraler Robustheitsfaktor ist die **idempotente Import- und Persistenzstrategie**: Wiederholte Trigger führen nicht zu unkontrollierten Duplikaten, sondern aktualisieren den Datenbestand konsistent. Das ist für webhook-basierte Integrationen mit externen Diensten essenziell.
-
-Bei Teilausfällen bleibt das System funktionsfähig: Bereits persistierte Daten bleiben verfügbar, und redaktionelle Kernprozesse können eingeschränkt weitergeführt werden (z. B. manuelle Tickererstellung). Für Ticker- und Spieldaten wird bewusst kein harter Echtzeitanspruch verfolgt; der Polling-Ansatz priorisiert Stabilität und Vorhersagbarkeit. Echtzeit-Push ist auf den Medienkanal (`/ws/media`) fokussiert, wo der größte redaktionelle Mehrwert entsteht.
+Die Datenpersistenz ist auf **idempotente Verarbeitung** ausgelegt (vgl. Kap. 4.3.4 für Details zu Upsert-Strategien und Schlüsseldesign). Bei Teilausfällen externer Dienste bleibt das System eingeschränkt funktionsfähig — bereits persistierte Daten bleiben verfügbar, redaktionelle Kernprozesse (z. B. manuelle Tickererstellung) können fortgeführt werden.
 
 Ergänzend sichern Health-Checks, Logging, CORS-Konfiguration und klare Schnittstellentrennung die Betriebs- und Diagnosefähigkeit.
 
@@ -190,12 +182,6 @@ Das System adressiert Sicherheit auf drei Ebenen, wobei der Projektrahmen einer 
 **API-Absicherung:** Der Backend-Server konfiguriert eine **CORS-Whitelist** (Cross-Origin Resource Sharing), die Anfragen ausschließlich von autorisierten Frontend-Ursprüngen akzeptiert. Die API-Schlüssel externer Dienste (LLM-Provider, API-Football, ScorePlay) werden über Umgebungsvariablen injiziert und sind weder im Quellcode noch im Frontend exponiert. Die Pydantic-basierte Eingabevalidierung (vgl. Kapitel 3.6.2) schützt zusätzlich vor Injection-Angriffen, da sämtliche Request-Payloads gegen typisierte Schemas geprüft werden, bevor sie die Geschäftslogik erreichen.
 
 **Authentifizierung und Autorisierung:** Eine feingranulare Benutzerauthentifizierung mit Rollenkonzept (z. B. Redakteur, Administrator) ist im aktuellen Stand **nicht implementiert**. Das System ist als internes Redaktionswerkzeug konzipiert und setzt auf Netzwerksegmentierung statt individueller Zugangskontrolle. Für einen produktiven Mehrbenutzerbetrieb wäre die Integration eines Authentifizierungsframeworks (z. B. OAuth 2.0 oder JWT-basierte Token-Authentifizierung) erforderlich — dies wird in Kapitel 7 als Erweiterungsperspektive eingeordnet.
-
----
-
-### 4.2.7 Grenzen und Nicht-Ziele
-
-Die vorliegende Backend-Konzeption ist als produktionsnahe Referenzimplementierung ausgelegt, nicht als vollständig ausgehärtete Enterprise-Plattform. Zwei backend-spezifische Abgrenzungen sind dabei relevant: Die Verfügbarkeit externer Dienste (Football-API, LLM-Provider, ScorePlay, n8n) bleibt eine systemische Abhängigkeit und kann trotz Degradationsstrategien die Aktualität einzelner Funktionen begrenzen. Ferner ist eine feingranulare Authentifizierung und Autorisierung konzeptionell vorgesehen (vgl. 4.2.6), jedoch im aktuellen Stand nicht umgesetzt. Weiterführende Systemgrenzen (kein Event-Streaming, keine Enterprise-Härtung) werden in Abschnitt 4.7.5 eingeordnet.
 
 ---
 
@@ -351,34 +337,7 @@ graph LR
     FE -- "Medien-Suche" --> Medien
 ```
 
-**1. Stammdaten- und Strukturimporte**
-
-- `01_import_countries.json`
-- `02_import_teams_by_country.json`
-- `03_import_competitions_and_matches.json`
-- `04_import_matches.json`
-
-**2. Matchdaten-Importe (spielbezogen)**
-
-- `04_import_lineups.json`
-- `05_import_match_statistics.json`
-- `06_import_player_statistics.json`
-- `07_import_prematch.json`
-
-**3. Generierungs- und Phasenworkflows**
-
-- `09_events_llm_workflow.json`
-- `13_Halftime_aftertime.json`
-- `14_Game_ANpfiff_ABpfiff.json`
-
-**4. Medien- und Social-Ingestion**
-
-- `08_scoreplay_media_workflow.json`
-- `10_Twitter.json`
-- `11_youtube.json`
-- `12_insta.json`
-
-Diese Trennung reduziert Kopplung, erleichtert Fehlersuche und erlaubt es, einzelne Teilprozesse unabhängig anzupassen.
+Diese Trennung reduziert Kopplung, erleichtert Fehlersuche und erlaubt es, einzelne Teilprozesse unabhängig anzupassen. Die konkreten Workflow-Dateinamen und Implementierungsdetails sind in Kapitel 5.7 dokumentiert.
 
 ---
 
@@ -391,36 +350,11 @@ Das Frontend triggert n8n über Webhooks bedarfsgesteuert. Der zentrale Ablauf i
 3. **Phasen- und Statusereignisse** — `match-status` (synthetische Matchphasen-Events), `match-summary` (Halbzeit-/Abpfiff-Zusammenfassung)
 4. **Medien** — `scoreplay-media` (ScorePlay-Suche und Übergabe an Backend), dedizierte Webhooks für Twitter/X-, YouTube- und Instagram-Ingestion
 
-Wesentlich ist die Rollenverteilung: n8n orchestriert externe Aufrufe und Triggerketten; das Backend persistiert und stellt die fachlichen API-Endpunkte bereit; das Frontend konsumiert Resultate (Polling für Ticker/Matchdaten, WebSocket für Media-Queue).
+Wesentlich ist die Rollenverteilung: n8n orchestriert externe Aufrufe und Triggerketten; das Backend persistiert und stellt die fachlichen API-Endpunkte bereit; das Frontend konsumiert Resultate (Polling für Ticker/Matchdaten, WebSocket für Media-Queue). Die konkreten Datenflüsse, Idempotenz-Strategien und SQL-Implementierungen der Workflows sind in Kapitel 5.7 dokumentiert.
 
 ---
 
-### 4.4.3 Datenfluss pro Workflow-Gruppe
-
-**A) Stammdaten und Matchstruktur** — Die Workflows 01 bis 04 laden Länder, Teams, Wettbewerbe und Spielpläne aus API-Football und persistieren diese via Upsert-Strategien. Externe IDs dienen als stabile Zuordnungsschlüssel für konfliktfreie Aktualisierungen.
-
-**B) Spielbezogene Detaildaten** — Aufstellungen, Match- und Spielerstatistiken werden matchbezogen importiert. Der Prematch-Workflow erzeugt zusätzlich strukturierte Kontextdaten (Verletzungen, Head-to-Head, Tabellenstand) als synthetische Events, die dem LLM als Promptkontext dienen.
-
-**C) Eventbasierte KI-Generierung** — Der zentrale Event-Workflow importiert Live-Ereignisse und delegiert die Textgenerierung an den Backend-Endpunkt. Vorab wird per Datenbankabfrage bestimmt, ob es sich um ein Partner-Team-Spiel handelt, und die Stilparameter (`instance`, `style`) werden entsprechend übergeben. Für Tormomente des Partner-Teams existiert ein dedizierter Pfad, der Spielerdaten und Torjubel-Videos aus einer externen Vereinsquelle bezieht.
-
-**D) Matchphasen und Zusammenfassungen** — Der Phasen-Workflow validiert Status-Transitionen und erzeugt synthetische Phasenereignisse (Anpfiff, Halbzeit, Abpfiff). Der Zusammenfassungs-Workflow baut aus Match-, Event- und Statistikdaten einen eigenständigen Prompt und ruft den LLM-Provider direkt auf — im Gegensatz zu den Event-Workflows, die die Textgenerierung an das Backend delegieren.
-
-**E) ScorePlay und Social Media** — Der Media-Workflow übergibt neue Bildinhalte an das Backend, das diese über WebSocket verteilt. Die Social-Media-Workflows importieren Inhalte aus YouTube, Instagram und Twitter/X als Clips in die Datenbank. Diese Workflows dienen der Ingestion, nicht dem Publishing in externe Netzwerke.
-
----
-
-### 4.4.4 Idempotenz, Konsistenz und Fehlerrobustheit
-
-Die Workflows sind auf wiederholbare Ausführung ausgelegt:
-
-1. **Upsert-Strategien** — Mehrere Tabellen werden mit `ON CONFLICT DO UPDATE` oder `DO NOTHING` geschrieben, um Duplikate zu vermeiden.
-2. **Deterministische Schlüsselverwendung** — Externe IDs (`external_id`, `vid`, `source_id`) werden systematisch zur Wiedererkennung genutzt.
-3. **Kontrollierte Re-Triggers** — Wiederholte Aufrufe aktualisieren primär Bestände statt neue inkonsistente Datensätze zu erzeugen.
-4. **Statusbasierte Filterung** — Bei synthetischen Events und Ticker-Einträgen werden vorhandene Zustände berücksichtigt, um redundante Generierungen zu reduzieren.
-
----
-
-### 4.4.5 Workflow-Grenzen und projektspezifische Besonderheiten
+### 4.4.3 Workflow-Grenzen und projektspezifische Besonderheiten
 
 Die Workflow-Landschaft ist funktional umfassend, enthält aber bewusst pragmatische Projektentscheidungen:
 
@@ -560,68 +494,32 @@ Die Hauptansicht folgt einem responsiven Dreispalten-Ansatz mit klarer Aufgabenv
 
 ### 4.6.4 Moduslogik und Interaktionsdesign
 
-Die Modusumschaltung ist zentraler Bestandteil der Frontend-Konzeption:
-
-- **AUTO** — KI generiert und veröffentlicht weitgehend automatisch.
-- **CO-OP** — KI erzeugt Entwürfe, Redaktion bestätigt oder verwirft.
-- **MANUAL** — ausschließlich manuelle Redaktion.
-
-Die Umschaltung erfolgt über einen dedizierten `ModeSelector` mit Portal-basiertem Bestätigungsdialog, visueller Toast-Rückmeldung (2200 ms) und Tastatur-Shortcuts (`Ctrl+1` / `Ctrl+2` / `Ctrl+3`). Im kooperativen Modus sind zusätzliche Tastatur-Interaktionen für den Accept-/Reject-Flow (`TAB` / `ESC`) eingebunden, um den Redaktionsdurchsatz zu erhöhen.
+Die Modusumschaltung (vgl. Kap. 4.3.3 für Modi-Definition) ist zentraler Bestandteil der Frontend-Konzeption. Die Umschaltung erfolgt über einen dedizierten `ModeSelector` mit Portal-basiertem Bestätigungsdialog, visueller Toast-Rückmeldung (2200 ms) und Tastatur-Shortcuts (`Ctrl+1` / `Ctrl+2` / `Ctrl+3`). Im kooperativen Modus sind zusätzliche Tastatur-Interaktionen für den Accept-/Reject-Flow (`TAB` / `ESC`) eingebunden, um den Redaktionsdurchsatz zu erhöhen.
 
 ---
 
 ### 4.6.5 Kommunikationsmuster im Frontend
 
-Das Frontend nutzt einen hybriden Kommunikationsansatz, der unterschiedliche Echtzeitanforderungen durch spezialisierte Mechanismen adressiert:
+Das Frontend nutzt einen hybriden Kommunikationsansatz, der unterschiedliche Echtzeitanforderungen durch drei spezialisierte Mechanismen adressiert (vgl. Kap. 3.4 für den Technologievergleich):
 
-**1. REST-Polling für Kerndaten**
-
-Für Match-Daten, Spielevents und Ticker-Einträge wird **intervallbasiertes HTTP-Polling** mit einer Abfragefrequenz von **5 Sekunden** eingesetzt. Die HTTP-Kommunikation erfolgt über **Axios** als HTTP-Client. Das Polling wird über drei spezialisierte React Hooks realisiert:
-
-- `useMatchCore` — lädt Match-Metadaten (Teams, Status, Spielstand, Minute)
-- `useMatchEvents` — lädt Spielereignisse (Tore, Karten, Auswechslungen)
-- `useMatchTicker` — lädt Ticker-Einträge (Entwürfe, publizierte Texte)
-
-Jeder Hook betreibt einen eigenen `setInterval`-Zyklus, der bei Mount startet und bei Unmount gestoppt wird. Die Intervallkonstanten sind intern nach Spielphase getrennt definiert, um bei Bedarf differenzierte Polling-Frequenzen zu ermöglichen; aktuell wird jedoch einheitlich 5 Sekunden verwendet.
-
-Dieser Ansatz wurde gegenüber persistenten Verbindungsmechanismen wie **Server-Sent Events (SSE)** gewählt, da die zustandslose HTTP-Architektur die Skalierbarkeit auf Render-Plattformen vereinfacht und keine serverseitige Connection-State-Verwaltung erfordert. Für die vorliegende Anwendung mit begrenzter gleichzeitiger Nutzerzahl und akzeptabler Latenztoleranz (wenige Sekunden) stellt Polling eine robuste und wartbare Lösung dar.
-
-**2. Webhook-Trigger über n8n**
-
-Bedarfsgesteuerte Importe und Generierungsprozesse werden über direkte HTTP-Webhook-Aufrufe an n8n ausgelöst (vgl. Abschnitt 4.4.2). Diese Trigger erfolgen einmalig bei leerem Datenbestand oder Statuswechseln, nicht periodisch.
-
-**3. WebSocket für Media-Queue**
-
-Für die Echtzeit-Benachrichtigung neuer **Medieninhalte** (ScorePlay-Bilder, YouTube-Videos, Instagram-Stories) wird ergänzend das **WebSocket-Protokoll** eingesetzt. Der Backend-Server verwaltet einen Pool aktiver WebSocket-Verbindungen über den Endpunkt `/ws/media` und broadcastet neue Medien-Assets als `new_media`-Nachrichten an alle verbundenen Clients.
-
-Der Client implementiert eine **Exponential-Backoff-Reconnect-Strategie** mit folgenden Parametern:
-
-- Basisverzögerung: **1 Sekunde**
-- Maximale Verzögerung: **30 Sekunden**
-- Exponentieller Anstieg bei wiederholten Verbindungsabbrüchen
-
-Diese Strategie kompensiert temporäre Netzwerkprobleme automatisch, ohne den Server durch aggressive Reconnect-Versuche zu belasten.
+1. **REST-Polling für Kerndaten** — Match-Daten, Spielevents und Ticker-Einträge werden per intervallbasiertem HTTP-Polling (5 Sekunden) abgefragt. Dieser Ansatz wurde gegenüber SSE gewählt, da die zustandslose HTTP-Architektur die Skalierbarkeit auf Render vereinfacht.
+2. **Webhook-Trigger über n8n** — Bedarfsgesteuerte Importe und Generierungsprozesse werden über direkte HTTP-Webhook-Aufrufe an n8n ausgelöst (vgl. Kap. 4.4.2). Diese Trigger erfolgen einmalig bei leerem Datenbestand oder Statuswechseln, nicht periodisch.
+3. **WebSocket für Media-Queue** — Für die Echtzeit-Benachrichtigung neuer Medieninhalte (ScorePlay-Bilder, Social-Media-Clips) wird das WebSocket-Protokoll über `/ws/media` eingesetzt. Der Client implementiert eine Exponential-Backoff-Reconnect-Strategie.
 
 ```mermaid
 flowchart LR
     FE["React Frontend"]
 
-    FE -- "REST Polling\n5s (alle Zustände)\nuseMatchCore / useMatchEvents / useMatchTicker" --> BE["FastAPI Backend"]
-    FE -- "Webhook-Trigger\n(bei leeren Daten / Statuswechsel)" --> N8N["n8n"]
-    FE -- "WebSocket\n(Echtzeit, Exp. Backoff 1–30s)" --> WS["/ws/media"]
+    FE -- "REST Polling\n5s" --> BE["FastAPI Backend"]
+    FE -- "Webhook-Trigger\n(bei leeren Daten)" --> N8N["n8n"]
+    FE -- "WebSocket\n(Echtzeit)" --> WS["/ws/media"]
 
     BE -- "Response" --> FE
     N8N -- "Daten-Import / LLM-Trigger" --> BE
     WS -- "new_media Events" --> FE
 ```
 
-Diese Aufteilung reduziert Komplexität in den Kerndatenflüssen (Polling für stabilen Hauptpfad) und konzentriert Echtzeitmechanismen auf den Bereich mit höchstem redaktionellem Nutzen (latenzkritische Media-Updates via WebSocket).
-
----
-
-### 4.6.6 Styling-Konzept
-
-Das visuelle Design verwendet ausschließlich **handgeschriebenes CSS** ohne externe Frameworks (Tailwind, Bootstrap). Sämtliche Design-Tokens (Farben, Abstände, Schriftgrößen) sind über **CSS Custom Properties** (CSS-Variablen) in `:root` definiert, was eine zentrale Anpassung des Erscheinungsbilds ermöglicht und die White-Label-Fähigkeit unterstützt. Die Klassen folgen einer **BEM-artigen Namenskonvention** mit dem Prefix `lt-` (Liveticker), die Namenskollisionen vermeidet und die Zugehörigkeit der Styles zum System explizit macht.
+Diese Aufteilung konzentriert Echtzeitmechanismen auf den Bereich mit höchstem redaktionellem Nutzen (latenzkritische Media-Updates via WebSocket) und nutzt einfaches Polling für den stabilen Hauptpfad. Die konkreten Hook-Implementierungen und Reconnect-Parameter sind in Kapitel 5.4.3–5.4.5 dokumentiert.
 
 ---
 
@@ -661,13 +559,15 @@ n8n wird als separater Self-Hosting-Dienst betrieben und kommuniziert ausschlie�
 
 ### 4.7.5 Systemgrenzen und bekannte Limitationen
 
-Das System weist drei konzeptionell relevante Grenzen auf.
+Das System ist als produktionsnahe Referenzimplementierung ausgelegt, nicht als vollständig ausgehärtete Enterprise-Plattform. Es weist vier konzeptionell relevante Grenzen auf.
 
-**Erstens** hängt die Qualität aller generierten Texte direkt von der Qualität der eingehenden Ereignisdaten ab — fehlerhafte oder verzögerte Football-API-Daten propagieren direkt in die LLM-Pipeline.
+**Erstens** hängt die Qualität aller generierten Texte direkt von der Qualität der eingehenden Ereignisdaten ab — fehlerhafte oder verzögerte Football-API-Daten propagieren direkt in die LLM-Pipeline. Die Verfügbarkeit externer Dienste (Football-API, LLM-Provider, ScorePlay, n8n) bleibt eine systemische Abhängigkeit, die trotz Degradationsstrategien die Aktualität einzelner Funktionen begrenzen kann.
 
 **Zweitens** setzt das Short-Polling-Modell des Frontends einen Mindestabstand zwischen Ereignis und Dashboard-Aktualisierung: Das Polling-Intervall beträgt einheitlich fünf Sekunden für alle Match-Zustände.
 
 **Drittens** sind LLM-Ausgaben grundsätzlich nicht deterministisch — bei niedrigen Temperaturen ist die Varianz gering, aber nicht null. Für den `auto`-Modus bedeutet dies, dass gelegentlich suboptimale Texte ohne menschliche Kontrolle publiziert werden können.
+
+**Viertens** ist eine feingranulare Authentifizierung und Autorisierung konzeptionell vorgesehen (vgl. Kap. 4.2.6), jedoch im aktuellen Stand nicht umgesetzt.
 
 ---
 
@@ -675,4 +575,4 @@ Das System weist drei konzeptionell relevante Grenzen auf.
 
 Die Systemkonzeption legt vier interdependente Designpfeiler fest, die gemeinsam die Produktionsfähigkeit des Systems begründen. Die dreischichtige Architektur (Kap. 4.1) schafft die strukturelle Basis für eine unabhängige Weiterentwicklung der Automatisierungs-, Anwendungs- und Präsentationsschicht. Das relationale Datenbankschema mit seinem definierten Ticker-Lifecycle (Kap. 4.3) sichert referenzielle Integrität und Nachvollziehbarkeit aller redaktionellen Entscheidungen — auch für spätere Qualitätsanalysen. Die Multi-Provider-LLM-Architektur mit Few-Shot-Prompting und instanzspezifischen Stilprofilen (Kap. 4.5) maximiert Textqualität und Anbieterunabhängigkeit bei minimaler Infrastrukturkomplexität. Das Context-basierte Frontend-Design mit den drei Betriebsmodi (Kap. 4.6) ermöglicht redaktionelle Kontrolle ohne Latenzeinbußen und ohne Prop-Drilling über Komponentengrenzen.
 
-Die in Kapitel 4.7 beschriebenen Skalierungsansätze und die transparent verankerten Systemgrenzen (Kap. 4.7.5) begrenzen den Einsatzbereich nicht, definieren ihn aber klar — eine Voraussetzung für eine belastbare Evaluation in Kapitel 6. Das vorliegende Konzept ist damit als vollständige Spezifikation für die Implementierung formuliert, die Kapitel 5 dokumentiert.
+Das vorliegende Konzept ist damit als vollständige Spezifikation für die Implementierung formuliert, die Kapitel 5 dokumentiert; die systematische Evaluation folgt in Kapitel 6.

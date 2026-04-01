@@ -308,19 +308,17 @@ Der erste Provider mit konfiguriertem API-Key wird als Singleton aktiviert. Für
 
 Im produktiven Render-Deployment sind OpenRouter (Priority 1) und Mock (Fallback) konfiguriert. Die übrigen Provider wurden mangels aktivierter API-Keys nicht evaluiert; ihre Einbindung ist architektonisch vollständig implementiert und in der Fallback-Kette priorisiert.
 
-| Provider   | Modell                             | Ø Latenz (ms) | Korrektheit | Tonalität | Verständlichkeit | Gesamt  |
-| ---------- | ---------------------------------- | ------------- | ----------- | --------- | ---------------- | ------- |
-| OpenRouter | `google/gemini-2.0-flash-lite-001` | 836           | 4,6 / 5     | 4,1 / 5   | 4,3 / 5          | 4,3 / 5 |
-| Mock       | regelbasiert (Templates)           | < 10          | 4,0 / 5     | 3,0 / 5   | 3,0 / 5          | 3,3 / 5 |
-| Gemini     | `gemini-2.0-flash-lite-001`        | —             | —           | —         | —                | —       |
-| OpenAI     | `gpt-4o-mini`                      | —             | —           | —         | —                | —       |
-| Anthropic  | `claude-haiku-4-5-20251001`        | —             | —           | —         | —                | —       |
+| Provider   | Modell                             | Korrektheit | Tonalität | Verständlichkeit | Gesamt  |
+| ---------- | ---------------------------------- | ----------- | --------- | ---------------- | ------- |
+| OpenRouter | `google/gemini-2.0-flash-lite-001` | 4,6 / 5     | 4,1 / 5   | 4,3 / 5          | 4,3 / 5 |
+| Mock       | regelbasiert (Templates)           | 4,0 / 5     | 3,0 / 5   | 3,0 / 5          | 3,3 / 5 |
+| Gemini     | `gemini-2.0-flash-lite-001`        | —           | —         | —                | —       |
+| OpenAI     | `gpt-4o-mini`                      | —           | —         | —                | —       |
+| Anthropic  | `claude-haiku-4-5-20251001`        | —           | —         | —                | —       |
 
 _Messgrundlage: N = 16 deutschsprachige KI-generierte Einträge (OpenRouter), N = 7 (Mock), gemessen über 28 FullTime-Spiele auf dem Render-Deployment. Qualitätswerte (1–5) wurden manuell anhand der Kriterien aus 6.8.1 bewertet._
 
-Die Latenzmessungen zeigen eine **bimodale Verteilung** für OpenRouter: Ein Teil der Antworten liegt unter 310 ms (vermutlich Gemini-seitige Response-Caches), der größere Teil zwischen 859 ms und 2.128 ms (Kaltgenerierung). Die Medianlatenz beträgt 859 ms — für ein assistiertes System, bei dem der Redakteur den Entwurf vor der Publikation prüft, ist dieser Wert unproblematisch.
-
-Ein Cliff's-Delta-Vergleich zwischen OpenRouter und Mock ist aufgrund der kategorialen Qualitätsskala nicht sinnvoll; die deskriptiven Mittelwerte belegen einen klaren Qualitätsvorsprung des LLM-Providers in der Tonalitätstreue (Δ = 1,1 Skalenpunkte).
+Die detaillierte Latenzanalyse einschließlich der bimodalen Verteilung der Antwortzeiten findet sich in Abschnitt 6.10.1. Die deskriptiven Mittelwerte belegen einen klaren Qualitätsvorsprung des LLM-Providers gegenüber dem Mock in der Tonalitätstreue (Δ = 1,1 Skalenpunkte).
 
 ### 6.7.4 Einfluss der Stilprofile
 
@@ -461,13 +459,7 @@ Die Interviewergebnisse fließen in die Gesamtbewertung des Systems (Kapitel 8.2
 
 ### 6.9.1 Drei Betriebsmodi
 
-Das System unterstützt drei zur Laufzeit umschaltbare Betriebsmodi, die unterschiedliche Grade der KI-Beteiligung abbilden:
-
-| Modus      | KI-Rolle                                                              | Redakteur-Rolle                                 |
-| ---------- | --------------------------------------------------------------------- | ----------------------------------------------- |
-| **auto**   | Events werden automatisch generiert und direkt veröffentlicht         | Nachträgliche Korrektur und Retraktion möglich  |
-| **coop**   | Events werden als Entwurf generiert; Redakteur muss freigeben         | Review, Bearbeitung und Freigabe jedes Eintrags |
-| **manual** | Keine KI-Generierung; Redakteur erstellt Einträge über Slash-Commands | Vollständige manuelle Kontrolle                 |
+Das System unterstützt drei zur Laufzeit umschaltbare Betriebsmodi (`auto`, `coop`, `manual`), die in Abschnitt 4.3.3 konzeptionell beschrieben sind. Die folgende Evaluation vergleicht ihre Leistungsfähigkeit anhand messbarer Metriken.
 
 ### 6.9.2 Vergleich der Modi
 
@@ -481,7 +473,7 @@ Ein kontrollierter Vergleich derselben Spiels in allen drei Modi war im Evaluati
 | Anteil retrahierter Einträge | geschätzt 5–10 %         | 0 % (vor Publikation geprüft) | 0 %                     |
 | Redakteur-Interventionen     | 0                        | 1 pro Eintrag                 | alle                    |
 
-_TTP-Schätzung auto: 5.000 ms Polling-Intervall + 859 ms LLM-Latenz (Median). TTP-Schätzung coop: KI-Latenz + redaktionelle Prüfzeit (Einzelklick ca. 5–10 s, mit Bearbeitung 15–30 s). Manual: Zeitaufwand für Texterstellung unter Livebedingungen aus Kapitel 2.1._
+_TTP-Schätzungen basieren auf den Latenzmessungen aus Abschnitt 6.10.1 (Median: 859 ms) und dem Polling-Intervall von 5.000 ms (vgl. 6.10.3). Manual: Zeitaufwand für Texterstellung unter Livebedingungen aus Kapitel 2.1._
 
 Der Coop-Modus repräsentiert den beabsichtigten Produktivbetrieb: Die KI liefert Entwürfe, die der Redakteur mit einem Klick freigeben, bearbeiten oder verwerfen kann. Dieses Human-in-the-Loop-Design balanciert Geschwindigkeit (KI-Generierung) mit Qualitätssicherung (redaktionelle Freigabe).
 
@@ -491,9 +483,7 @@ Der Coop-Modus repräsentiert den beabsichtigten Produktivbetrieb: Die KI liefer
 
 ### 6.10.1 LLM-Latenz
 
-Die LLM-Aufrufe sind durch einen Semaphor auf maximal 8 parallele Anfragen begrenzt (`asyncio.Semaphore(settings.LLM_CONCURRENCY)`). Die Retry-Logik unterscheidet zwischen Rate-Limit-Fehlern (lineares Backoff: 30s/60s nach dem ersten und zweiten Fehlschlag) und sonstigen Fehlern (exponentielles Backoff: 1s/2s), mit maximal 3 Versuchen pro Aufruf.
-
-Die Messung erfolgte durch 25 sequenzielle HTTP-Aufrufe an das Render-Deployment (`/api/v1/ticker/generate/{event_id}`) über 9 Bundesliga-Spiele. Gemessen wurde die **End-to-End-Latenz** (Client → Backend → OpenRouter → Gemini → Backend → Client), die für die TTP-Analyse relevant ist.
+Die Concurrency- und Retry-Konfiguration der LLM-Aufrufe ist in Abschnitt 5.2.8 beschrieben. Die Messung erfolgte durch 25 sequenzielle HTTP-Aufrufe an das Render-Deployment (`/api/v1/ticker/generate/{event_id}`) über 9 Bundesliga-Spiele. Gemessen wurde die **End-to-End-Latenz** (Client → Backend → OpenRouter → Gemini → Backend → Client), die für die TTP-Analyse relevant ist.
 
 | Provider   | Modell                             | N   | Ø Latenz (ms) | Median (ms) | P95 Latenz (ms) | Fehlerrate |
 | ---------- | ---------------------------------- | --- | ------------- | ----------- | --------------- | ---------- |
@@ -520,6 +510,8 @@ Gemessen wurden die wichtigsten Read/Write-Endpunkte im Render-Deployment (je 3 
 
 _Werte beinhalten Netzwerklatenz zwischen externem Client und Render-Deployment. Im Browser-Kontext (Client auf gleicher CDN-Region) sind Werte ca. 100–150 ms niedriger zu erwarten._
 
+Die PostgreSQL-Verbindung ist mit einem Connection-Pool konfiguriert (`pool_size=20`, `max_overflow=30`, `pool_pre_ping=True`). Die `pool_pre_ping`-Option prüft die Verbindung vor jeder Nutzung und verhindert Fehler durch abgelaufene Verbindungen, was insbesondere auf Managed-Database-Diensten wie Render relevant ist.
+
 ### 6.10.3 Frontend-Polling
 
 Das Frontend fragt den Backend-Status über drei Polling-Intervalle ab:
@@ -531,10 +523,6 @@ Das Frontend fragt den Backend-Status über drei Polling-Intervalle ab:
 | Match-Sync      | 60.000 ms | Immer            |
 
 Die `resolvePollingInterval`-Utility ist als Extension Point implementiert: Die Infrastruktur für differenzierte Intervalle je Spielstatus (Live vs. PreMatch) ist vorhanden, aktuell sind beide Werte auf 5.000 ms vereinheitlicht. Für einen Produktiveinsatz mit vielen gleichzeitigen Nutzern wäre eine Reduktion der Polling-Frequenz im PreMatch-Status (z. B. auf 30.000 ms) sinnvoll, um die Serverlast zu senken.
-
-### 6.10.4 Datenbankverbindungen
-
-Die PostgreSQL-Verbindung ist mit einem Connection-Pool konfiguriert (`pool_size=20`, `max_overflow=30`, `pool_pre_ping=True`). Die `pool_pre_ping`-Option prüft die Verbindung vor jeder Nutzung und verhindert Fehler durch abgelaufene Verbindungen (Stale Connections), was insbesondere auf Managed-Database-Diensten wie Render relevant ist.
 
 ---
 
@@ -611,6 +599,10 @@ Die Frontend-Datenaktualisierung basiert auf Polling (5-Sekunden-Intervall). In 
 ### 6.12.7 Few-Shot-Reichweite
 
 Die Few-Shot-Infrastruktur (automatisches Befüllen der `style_references`-Tabelle aus EF-Liveticker-Archivtexten) wirkt nur bei Generierung über das Backend-LLM-Service. Die n8n-Demo-App-Workflows für Halbzeit- und Abpfiff-Zusammenfassungen rufen OpenRouter direkt auf und erhalten daher keine stilistischen Stilreferenzen. Zudem fällt der Liga-Filter bei zu wenigen liga-spezifischen Einträgen in der `style_references`-Tabelle auf eine liga-agnostische Suche zurück (der Filter selbst ist case-insensitiv über `func.lower()` implementiert). Das Few-Shot-System funktioniert damit grundsätzlich, liefert aber noch keine konsequent liga-spezifische Stilkonditionierung.
+
+### 6.12.8 Keine Tests für n8n-Workflows
+
+Die 15 n8n-Workflows (vgl. Kapitel 5.7) verfügen über keine automatisierten Tests. Ihre Korrektheit wurde ausschließlich durch manuelle Ausführung und Inspektion der Datenbank-Ergebnisse verifiziert. Eine testgetriebene Absicherung wäre über n8n-Workflow-Mocks oder Integrationstests gegen eine Staging-Datenbank möglich, wurde aber aufgrund der visuellen Natur der n8n-Entwicklungsumgebung nicht umgesetzt.
 
 ---
 

@@ -1,4 +1,4 @@
-# 2. Motivation
+# Kapitel 2 – Motivation und Anforderungen
 
 ## 2.1 Redaktioneller Aufwand bei Livetickern
 
@@ -26,6 +26,8 @@ Die empirische Validierung dieser Problemdimension erfolgt über das Expertenint
 - _F3: Was sind die häufigsten Fehlerquellen unter Zeitdruck?_
 - _F5: Wie wird die Ticker-Abdeckung bei Parallelspielen oder Jugend-/Frauenspielen gehandhabt?_
 
+_(F4 ist thematisch in Kap. 2.2 eingebettet.)_
+
 ---
 
 ## 2.2 Mehrsprachigkeit als Herausforderung
@@ -46,7 +48,7 @@ Die empirische Validierung dieser Problemdimension erfolgt über das Expertenint
 
 Vereine und Verbände kommunizieren heute zunehmend direkt mit ihrer Anhängerschaft und haben eigene Redaktionen aufgebaut (Beils 2023, S. 155). Die Konsequenz für die Liveticker-Produktion ist erheblich: Vereinseigene Inhalte folgen einer anderen Logik als neutrale Berichterstattung.
 
-Der entscheidende Unterschied liegt im Blickwinkel. Während überregionale Medien neutral bleiben, betrachten Vereinsticker die Partie aus der Perspektive der eigenen Fans (Beils 2023, S. 57). Ein Ereignis muss je nach Medium anders getönt sein: emotional für den Vereinskanal, sachlich für neutrale Plattformen. Da Liveticker-Stellen häufig mit wechselndem Personal besetzt sind (Bluhm & Schäfer 2023, S. 32), ist eine konsistente Markenstimme über einen längeren Zeitraum manuell kaum zu gewährleisten. Eine technologische Lösung muss daher auch die stilistische Konsistenz adressieren.
+Der entscheidende Unterschied liegt im Blickwinkel. Während überregionale Medien neutral bleiben, betrachten Vereinsticker die Partie aus der Perspektive der eigenen Fans (Beils 2023, S. 57). Ein Ereignis muss je nach Medium anders getönt sein: emotional für den Vereinskanal, sachlich für neutrale Plattformen. Die in Kapitel 2.1 beschriebene personelle Fluktuation verschärft das Problem zusätzlich: Eine konsistente Markenstimme ist mit wechselndem Personal manuell kaum zu gewährleisten. Eine technologische Lösung muss daher auch die stilistische Konsistenz adressieren.
 
 Im Softwarekontext wird dieses Problem durch sogenannte White-Label-Architekturen gelöst: Ein generisches Kernsystem wird so konzipiert, dass es für verschiedene Abnehmer individuell konfigurierbar ist — ohne den Quellcode zu ändern (vgl. Kap. 4). Überträgt man dieses Prinzip auf die Liveticker-Produktion, ergibt sich die Anforderung, dass ein und dasselbe System sowohl einen vereinsspezifischen Ticker mit emotionaler Fanbindung als auch einen neutralen, anbieterunabhängigen Ticker bedienen können muss. Die stilistische Differenzierung — von der Wortwahl über die Tonalität bis hin zu vereinsspezifischen Redewendungen — muss dabei als Konfiguration abbildbar sein, nicht als separate Implementierung.
 
@@ -62,12 +64,12 @@ Wie sich diese Anforderungen am konkreten Beispiel eines Bundesliga-Vereins ausp
 
 ## 2.4 Anforderungsanalyse am Beispiel Eintracht Frankfurt
 
-Eintracht Frankfurt dient in dieser Arbeit als konkreter Anwendungsfall für die vereinsspezifische White-Label-Instanz. Die Anforderungsanalyse stützt sich auf die in den vorangegangenen Abschnitten hergeleiteten Problemdimensionen, eine Analyse der öffentlich zugänglichen digitalen Kanäle des Vereins sowie ein **strukturiertes Experteninterview** mit einem professionellen Sportredakteur von Eintracht Frankfurt. Die theoretisch hergeleiteten Anforderungen werden dabei durch das Interview empirisch validiert — insbesondere hinsichtlich des redaktionellen Workflows (Kap. 2.1), des Bedarfs an mehrsprachiger Berichterstattung (Kap. 2.2) und der stilistischen Konsistenzanforderungen (Kap. 2.3). Die vollständige Auswertung des Interviews erfolgt in Kapitel 6.8.
+Eintracht Frankfurt dient in dieser Arbeit als konkreter Anwendungsfall für die vereinsspezifische White-Label-Instanz. Die Anforderungsanalyse stützt sich auf die in den vorangegangenen Abschnitten hergeleiteten Problemdimensionen, eine Analyse der öffentlich zugänglichen digitalen Kanäle des Vereins sowie ein **strukturiertes Experteninterview** mit einem professionellen Sportredakteur von Eintracht Frankfurt. Die theoretisch hergeleiteten Anforderungen werden dabei durch das Interview empirisch validiert — insbesondere hinsichtlich des redaktionellen Workflows (Kap. 2.1), des Bedarfs an mehrsprachiger Berichterstattung (Kap. 2.2) und der stilistischen Konsistenzanforderungen (Kap. 2.3). Die vollständige Auswertung des Interviews erfolgt in Kapitel 6.8.6.
 
 Aus den drei Problemdimensionen ergeben sich folgende vereinsspezifische Anforderungen:
 
 - **Zeitdruck**: Eintracht Frankfurt bestreitet pro Saison bis zu 60 Pflichtspiele (Bundesliga, DFB-Pokal, europäische Wettbewerbe). Pro Spiel fallen durchschnittlich 20–40 Ticker-Einträge an. Eine manuelle Abdeckung aller Spiele mit konsistenter Qualität erfordert einen Personalaufwand, der für Vereine außerhalb der absoluten Spitze kaum darstellbar ist.
-- **Mehrsprachigkeit**: Mit einer internationalen Fanbasis — insbesondere in Japan, verstärkt durch Spieler wie Makoto Hasebe und Daichi Kamada — besteht Bedarf an Tickern in mindestens Deutsch und Englisch, perspektivisch auch Japanisch.
+- **Mehrsprachigkeit**: Mit einer internationalen Fanbasis — insbesondere in Japan (vgl. Kap. 2.2) — besteht Bedarf an Tickern in mindestens Deutsch und Englisch, perspektivisch auch Japanisch.
 - **Tonalität**: Vereinseigene Ticker folgen einer emotionalen, fanbezogenen Perspektive, die sich von der neutralen Berichterstattung überregionaler Medien unterscheidet (vgl. Beils 2023, S. 57). Das System muss diese stilistische Differenzierung abbilden können.
 
 Über die in den Kapiteln 2.1–2.3 eingebetteten Validierungsfragen (F1–F8) hinaus adressiert das Experteninterview zwei weitere Themenblöcke, die erst nach der Systemdemonstration beantwortet werden können: die **Systembewertung** (F9–F12, eingebettet in Kap. 6.8.6) und die **Zukunftsperspektive** (F13–F14, eingebettet in Kap. 7.5.2). Der vollständige Interviewleitfaden mit 18 Fragen ist als separates Dokument beigefügt.
@@ -127,8 +129,8 @@ Aus den vorangegangenen Problemdimensionen und der Anforderungsanalyse werden im
 | --- | ----------------------------------------------- | --------------------------- |
 | A1  | Drei-Schichten-Architektur                      | Kap. 2.1, 2.3 (Modularität) |
 | A2  | Repository-Pattern                              | Wartbarkeit, Testbarkeit    |
-| A3  | Umfangreiche REST-API                           | Kap. 2.3 (White-Label)      |
+| A3  | REST-API mit über 70 Endpunkten                        | Kap. 2.3 (White-Label)      |
 | A4  | Vollständiges Datenmodell                       | Kap. 2.1, 2.4               |
 | A5  | White-Label-Fähigkeit (ef_whitelabel / generic) | Kap. 2.3, 2.4               |
 
-Die drei Problemdimensionen — operativer Zeitdruck, Mehrsprachigkeit und White-Label-Bedarf — sind dabei keine isolierten Herausforderungen, sondern greifen strukturell ineinander: Zeitdruck macht menschliche Skalierung unmöglich, Mehrsprachigkeit multipliziert diesen Aufwand, und White-Label-Anforderungen verlangen eine stilistische Konsistenz, die wechselndes Personal nicht zuverlässig gewährleisten kann. Dies begründet die Notwendigkeit einer integrierten technologischen Lösung: KI-gestützte Textgenerierung mit konfigurierber Stilsteuerung (F1–F4) als Antwort auf den Zeitdruck, mehrsprachige Generierung (F7) als Antwort auf die Internationalisierungsanforderung und eine konfigurierbare Instanzlogik (A5) als Antwort auf den White-Label-Bedarf. Die in den Tabellen 2.6.1–2.6.3 formalisierten 23 Anforderungen bilden damit das vollständige Pflichtenheft für die Systemkonzeption in Kapitel 4; die hierfür notwendigen technologischen Grundlagen werden in Kapitel 3 aufgearbeitet.
+Die drei Problemdimensionen — operativer Zeitdruck, Mehrsprachigkeit und White-Label-Bedarf — sind dabei keine isolierten Herausforderungen, sondern greifen strukturell ineinander: Zeitdruck macht menschliche Skalierung unmöglich, Mehrsprachigkeit multipliziert diesen Aufwand, und White-Label-Anforderungen verlangen eine stilistische Konsistenz, die wechselndes Personal nicht zuverlässig gewährleisten kann. Dies begründet die Notwendigkeit einer integrierten technologischen Lösung: KI-gestützte Textgenerierung mit konfigurierbare Stilsteuerung (F1–F4) als Antwort auf den Zeitdruck, mehrsprachige Generierung (F7) als Antwort auf die Internationalisierungsanforderung und eine konfigurierbare Instanzlogik (A5) als Antwort auf den White-Label-Bedarf. Die in den Tabellen 2.6.1–2.6.3 formalisierten 23 Anforderungen bilden damit das vollständige Pflichtenheft für die Systemkonzeption in Kapitel 4; die hierfür notwendigen technologischen Grundlagen werden in Kapitel 3 aufgearbeitet.

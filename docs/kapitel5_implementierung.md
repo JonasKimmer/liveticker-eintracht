@@ -193,42 +193,30 @@ Der Ticker-Bereich ist in drei Router aufgeteilt, die gemeinsam unter `/api/v1/t
 
 Diese Aufteilung verhindert, dass eine einzelne Routerdatei durch die Kombination aus CRUD-, Generierungs- und Batch-Endpunkten unübersichtlich wird.
 
-Die wichtigsten Endpunkte (Auswahl der 70+ implementierten Routen):
+Die wichtigsten Endpunkte gliedern sich in vier funktionale Bereiche:
 
 ```
-GET    /api/v1/teams/countries
-GET    /api/v1/teams/by-country/{country}
-GET    /api/v1/matches
-POST   /api/v1/matches
-GET    /api/v1/matches/{id}
-PATCH  /api/v1/matches/{id}
-DELETE /api/v1/matches/{id}
-PATCH  /api/v1/matches/{id}/ticker-mode
-PUT    /api/v1/matches/{id}/lineup
-PATCH  /api/v1/matches/{id}/statistics
-GET    /api/v1/events/{match_id}
-POST   /api/v1/events
-GET    /api/v1/ticker/{match_id}
-POST   /api/v1/ticker/manual
-PATCH  /api/v1/ticker/{id}
-DELETE /api/v1/ticker/{id}
+# Stammdaten
+GET    /api/v1/teams/countries          GET    /api/v1/matches
+POST   /api/v1/matches                  PATCH  /api/v1/matches/{id}
+
+# Ticker-Lifecycle
+GET    /api/v1/ticker/{match_id}        POST   /api/v1/ticker/manual
+PATCH  /api/v1/ticker/{id}              DELETE /api/v1/ticker/{id}
 POST   /api/v1/ticker/generate/{event_id}
-POST   /api/v1/ticker/generate-synthetic
 POST   /api/v1/ticker/generate-synthetic-batch/{match_id}
-POST   /api/v1/ticker/generate-match-phases/{match_id}
-POST   /api/v1/ticker/translate-batch/{match_id}
-POST   /api/v1/media/incoming
-GET    /api/v1/media/queue
-POST   /api/v1/media/publish
-POST   /api/v1/clips/import
-GET    /api/v1/clips/match/{match_id}
-POST   /api/v1/clips/{clip_id}/publish
-GET    /api/v1/players
-POST   /api/v1/players
+
+# Medien & Clips
+POST   /api/v1/media/incoming           GET    /api/v1/media/queue
+POST   /api/v1/clips/import             POST   /api/v1/clips/{clip_id}/publish
 WS     /ws/media
+
+# Spielkontext
+PUT    /api/v1/matches/{id}/lineup      PATCH  /api/v1/matches/{id}/statistics
+GET    /api/v1/events/{match_id}        POST   /api/v1/events
 ```
 
-Ergänzend existieren CRUD-Endpunkte für Stammdaten (Countries, Seasons, Competitions, Players) sowie weitere Hilfsrouten (Lineup-Abruf, Spielerstatistiken, Verletzungen, Live-Synchronisation), die hier aus Platzgründen nicht einzeln aufgeführt werden.
+Insgesamt umfasst die API über 70 Routen, einschließlich CRUD-Endpunkten für Stammdaten (Countries, Seasons, Competitions, Players) und Hilfsrouten (Spielerstatistiken, Verletzungen, Live-Synchronisation). Die vollständige Endpunktliste ist über die automatisch generierte OpenAPI-Dokumentation unter `/api/docs` einsehbar.
 
 ---
 
@@ -310,14 +298,7 @@ Schreibe in exakt diesem Stil (Rhythmus, Wortwahl, Emotionalität):
 
 **`_build_prematch_parts()`** ergänzt für Pre-Match-Typen eine zusätzliche harte Instruktion: Das Modell darf keine Live-Szenen erfinden, sondern ausschließlich Vorschau- und Analyseinhalte produzieren.
 
-Der vollständig zusammengesetzte System-Prompt enthält somit:
-
-1. Rollen- und Stilinstruktion (`Du bist ein {style}-Liveticker-Redakteur`)
-2. Faktenblock (Ereignistyp, Minute, Spieler, Team)
-3. Match-Kontext (Spielstand, Teams, Liga)
-4. Optional: Prematch-Instruktion
-5. Few-Shot-Block (0–3 Stilreferenzen)
-6. Regel-Block (Zeichenlimit, kein Markdown, Sprache)
+Der vollständig zusammengesetzte System-Prompt folgt der in Abschnitt 4.5.2 beschriebenen modularen Struktur aus sechs Bausteinen (Rolleninstruktion, Faktenblock, Match-Kontext, optionale Prematch-Instruktion, Few-Shot-Block, Regelblock). Die vier `_build_*`-Methoden erzeugen die Bausteine unabhängig voneinander, sodass fehlende Informationen (z. B. kein Spieler bei Phasenereignissen) den Prompt nicht invalidieren, sondern den entsprechenden Block auslassen.
 
 LLM-Parameter: `temperature=0.3` für konsistente Ausgaben, `max_tokens` aus `LLM_MAX_TOKENS` (konfigurierbar). Bei Rate-Limit-Fehlern oder transienten Ausnahmen werden bis zu `LLM_RETRY_ATTEMPTS` (3) Versuche mit Backoff `30 s / 60 s` unternommen.
 
@@ -407,13 +388,13 @@ Dies macht den Endpunkt idempotent gegenüber Mehrfachaufrufen — ein wichtiges
 
 ### 5.3.3 Statusentscheidung und Modus-Steuerung
 
-Der initiale Status des erzeugten Ticker-Eintrags hängt vom Aufrufparameter `auto_publish` ab, den n8n aus dem `ticker_mode` des Spiels ableitet:
+Der initiale Status des erzeugten Ticker-Eintrags wird über den Aufrufparameter `auto_publish` gesteuert, den n8n aus dem `ticker_mode` des Spiels ableitet (vgl. Kap. 4.3.3 für die konzeptionelle Beschreibung der drei Betriebsmodi):
 
 ```python
 status=TickerStatus.published if data.auto_publish else TickerStatus.draft
 ```
 
-Im Auto-Modus setzt n8n `auto_publish=True`; der Eintrag ist sofort publiziert. Im Co-op-Modus ist `auto_publish=False` (Standard); der Eintrag wartet als Entwurf auf redaktionelle Freigabe. Dies macht die Modus-Logik zu einem Aufrufparameter des Backends — die Entscheidungsinstanz ist n8n auf Basis des in der Datenbank gespeicherten `ticker_mode`.
+Damit wird die Modus-Logik zu einem reinen Aufrufparameter des Backends — die Entscheidungsinstanz ist n8n auf Basis des in der Datenbank gespeicherten `ticker_mode`.
 
 ---
 
@@ -531,7 +512,10 @@ Die wichtigsten Hooks und ihre Verantwortlichkeiten:
 | Hook                | Paket     | Verantwortlichkeit                                                |
 | ------------------- | --------- | ----------------------------------------------------------------- |
 | `useNavigation`     | hooks/    | Land→Team→Wettbewerb→Spieltag→Spiel Navigationskette              |
-| `useMatchData`      | hooks/    | Polling aller Matchdaten (Match, Events, Ticker, Lineups)         |
+| `useMatchData`      | hooks/    | Aggregiert die drei Polling-Hooks und koordiniert Reload-Zyklen   |
+| `useMatchCore`      | hooks/    | Polling der Match-Metadaten (Teams, Status, Spielstand, Minute)   |
+| `useMatchEvents`    | hooks/    | Polling der Spielereignisse (Tore, Karten, Auswechslungen)        |
+| `useMatchTicker`    | hooks/    | Polling der Ticker-Einträge (Entwürfe, publizierte Texte)         |
 | `useMatchTriggers`  | hooks/    | n8n-Webhooks nach Matchauswahl und Statuswechseln                 |
 | `useTickerMode`     | hooks/    | `mode`-State, PATCH zum Backend, Keyboard-Shortcuts               |
 | `useMediaWebSocket` | hooks/    | WebSocket-Verbindung mit exponentiellem Reconnect-Backoff         |
@@ -541,6 +525,8 @@ Die wichtigsten Hooks und ihre Verantwortlichkeiten:
 | `useEventDraft`     | LT/hooks/ | Entwurfsansicht, Accept/Reject-Logik                              |
 | `useAutoPublisher`  | LT/hooks/ | Automatisches Publizieren im Auto-Modus                           |
 | `useRightPanelData` | LT/hooks/ | Aufbereitung von Lineups, Stats, Spielerinfo für das rechte Panel |
+
+`useMatchCore`, `useMatchEvents` und `useMatchTicker` betreiben jeweils einen eigenen `setInterval`-Zyklus, der bei Mount startet und bei Unmount gestoppt wird. Die HTTP-Kommunikation erfolgt über **Axios** als HTTP-Client. `useMatchData` aggregiert die drei Hooks und stellt die Daten über `TickerDataContext` bereit.
 
 `useMatchData` steuert das Polling-Intervall über die Hilfsfunktion `resolvePollingInterval()`:
 
@@ -633,15 +619,13 @@ Der Cleanup im `useEffect` setzt `ws.onclose = null`, bevor die WebSocket geschl
 
 ### 5.4.6 Modusimplementierung im Frontend
 
-Der aktive Modus (`auto` / `coop` / `manual`) steuert das Verhalten mehrerer Frontend-Komponenten. Die Implementierung verteilt sich auf drei Ebenen:
+Der aktive Modus (`auto` / `coop` / `manual`) steuert das Verhalten mehrerer Frontend-Komponenten (vgl. Kap. 4.6.4 für die konzeptionelle Einordnung der Moduslogik und Interaktionsdesign). Die Implementierung verteilt sich auf drei Ebenen:
 
 **Persistenz und Synchronisation** — `useTickerMode` initialisiert den Modus lokal mit `coop` als Standardwert und überschreibt diesen beim Laden eines Spiels mit dem in der Datenbank gespeicherten `ticker_mode`. Änderungen werden über `PATCH /matches/{id}/ticker-mode` ans Backend zurückgeschrieben. Lokale Optimistic-Updates vermeiden wahrnehmbare Latenz beim Umschalten.
 
-**Keyboard-Shortcuts** — Im Co-op-Modus registriert `useTickerMode` die Shortcuts `TAB` (acceptDraft) und `ESC` (rejectDraft) direkt als Keyboard-Event-Listener. Im Auto- und Manual-Modus sind diese Shortcuts nicht aktiv. Die Shortcut-Registrierung ist an den Modus-Zustand gebunden und wird bei Moduswechsel automatisch aktualisiert.
+**Keyboard-Shortcuts** — Im Co-op-Modus registriert `useTickerMode` die Shortcuts `TAB` (acceptDraft) und `ESC` (rejectDraft) direkt als Keyboard-Event-Listener. Die Shortcut-Registrierung ist an den Modus-Zustand gebunden und wird bei Moduswechsel automatisch aktualisiert.
 
 **`useAutoPublisher`** — Im Auto-Modus überwacht dieser Hook die `tickerTexts` auf neue Draft-Einträge (`status="draft"`) und publiziert sie automatisch. Dies ist als Frontend-Fallback gedacht: Primär setzt n8n mit `auto_publish=True` den Status direkt beim Generieren; `useAutoPublisher` fängt Fälle auf, in denen das nicht geschehen ist.
-
-**Modus-Umschalter** — Der `ModeSelector` rendert einen Portal-basierten Bestätigungsdialog, um unbeabsichtigte Moduswechsel während eines Live-Spiels zu verhindern. Eine Toast-Meldung (2200 ms sichtbar) bestätigt den Wechsel. Keyboard-Shortcuts `Ctrl+1` / `Ctrl+2` / `Ctrl+3` ermöglichen direkten Zugriff.
 
 ---
 
@@ -649,7 +633,7 @@ Der aktive Modus (`auto` / `coop` / `manual`) steuert das Verhalten mehrerer Fro
 
 Das Frontend wurde im Verlauf des Projekts von reinem JavaScript auf TypeScript migriert. Ziel war nicht die vollständige Auflösung aller `any`-Typen, sondern eine pragmatische Typisierung der systemkritischen Pfade mit messbaren Qualitätskennzahlen.
 
-**Migrationsstrategie** — Die Migration folgte einem schrittweisen Ansatz: Zuerst wurden alle `.js`- und `.jsx`-Dateien in `.ts` und `.tsx` umbenannt, dann `tsconfig.json` konfiguriert. Anschließend wurden TypeScript-Fehler von innen nach außen behoben — beginnend mit dem Typ-System (`src/types/index.ts`) über Contexts bis zu den Komponenten. Der `strict`-Modus ist derzeit deaktiviert (`"strict": false`), um die inkrementelle Migration ohne blockierende Fehlereskalation zu ermöglichen.
+**Migrationsstrategie** — Die Migration folgte einem schrittweisen Ansatz: Zuerst wurden alle `.js`- und `.jsx`-Dateien in `.ts` und `.tsx` umbenannt, dann `tsconfig.json` konfiguriert (`target: es2015`, `module: esnext`, `jsx: react-jsx`, `moduleResolution: node`). Anschließend wurden TypeScript-Fehler von innen nach außen behoben — beginnend mit dem Typ-System (`src/types/index.ts`) über Contexts bis zu den Komponenten. Der `strict`-Modus ist derzeit deaktiviert (`"strict": false`), um die inkrementelle Migration ohne blockierende Fehlereskalation zu ermöglichen.
 
 **Zentrale Typ-Definitionen** — `src/types/index.ts` definiert die gemeinsamen Domain-Interfaces:
 
@@ -683,9 +667,20 @@ export interface TickerEntry {
 
 Die Qualitätssicherung folgt dem Testpyramiden-Modell nach Cohn (2009) mit drei Ebenen: Unit-Tests, Integrations-Tests und End-to-End-Tests. Insgesamt umfasst die Testsuite **391 Tests** (187 Frontend, 198 Backend, 6 E2E), die alle grün durchlaufen.
 
-**Frontend-Tests** — Das Frontend verwendet Jest mit `@testing-library/react` für 187 Tests in 15 Dateien. Besonders umfangreich getestet ist der `parseCommand`-Parser (45 Testfälle), da er die kritische manuelle Eingabeschicht bildet.
+**Frontend-Tests** — Das Frontend verwendet Jest mit `@testing-library/react` für 187 Tests in 15 Dateien. Die Testdateien sind kolokiert mit ihrem Quellcode: Komponentendateien unter `components/LiveTicker/components/`, Hook-Tests unter `hooks/` und Utility-Tests unter `utils/`. Besonders umfangreich getestet ist der `parseCommand`-Parser (45 Testfälle), da er die kritische manuelle Eingabeschicht bildet. Ein exemplarischer Testfall illustriert das Prüfmuster:
 
-**Backend-Tests** — Das Backend nutzt pytest mit FastAPI `TestClient` und transaktionalem Rollback für 198 Tests bei 75 % Statement-Coverage. Die Integrations-Tests prüfen API-Endpunkte gegen eine PostgreSQL-Testdatenbank.
+```typescript
+test("vollstaendiger Command ist valid", () => {
+  const result = parseCommand("/g Muller EIN", 32);
+  expect(result.isValid).toBe(true);
+  expect(result.type).toBe("goal");
+  expect(result.formatted).toBe("TOR -- Muller (EIN)");
+  expect(result.meta.icon).toBe("⚽");
+  expect(result.warnings).toHaveLength(0);
+});
+```
+
+**Backend-Tests** — Das Backend nutzt pytest mit FastAPI `TestClient` und transaktionalem Rollback für 198 Tests bei 75 % Statement-Coverage. Die Tests gliedern sich in API-Integrations-Tests (`test_ticker_api.py`, `test_matches_api.py`, `test_events_api.py` u. a.), die Endpunkte gegen eine PostgreSQL-Testdatenbank prüfen, sowie Unit-Tests für Services (`test_llm_service.py`, `test_ticker_service.py`) und Repositories (`test_ticker_entry_repository.py`). Gemeinsame Fixtures (Datenbankverbindung, Test-Match, Test-Events) sind in `conftest.py` zentralisiert.
 
 **End-to-End-Tests** — Sechs Playwright-Tests validieren den stabilen Kern der Browser-Anwendung: korrektes Rendern, Fehlerfreiheit beim Laden und grundlegende Interaktionspunkte.
 
@@ -695,7 +690,17 @@ Die detaillierte Auswertung aller Testmetriken, Coverage-Verteilungen und konkre
 
 ## 5.7 n8n Workflow-Implementierung
 
-Die n8n-Workflows bilden die Orchestrierungsschicht zwischen externen Datenquellen, dem FastAPI-Backend und dem LLM-Dienst. Alle 15 Workflow-Dateien liegen als versionierte JSON-Exporte im Projektverzeichnis `n8n/` vor und können direkt in eine n8n-Instanz importiert werden. Dieser Abschnitt dokumentiert die Implementierungsdetails der fünf zentralen Workflows.
+Die n8n-Workflows bilden die Orchestrierungsschicht zwischen externen Datenquellen, dem FastAPI-Backend und dem LLM-Dienst. Alle 15 Workflow-Dateien liegen als versionierte JSON-Exporte im Projektverzeichnis `n8n/` vor und können direkt in eine n8n-Instanz importiert werden. Die Workflows gliedern sich in vier funktionale Gruppen:
+
+**A) Stammdaten und Matchstruktur** — Die Workflows `01_import_countries`, `02_import_teams_by_country`, `03_import_competitions_and_matches` und `04_import_matches` laden Länder, Teams, Wettbewerbe und Spielpläne aus API-Football und persistieren diese via Upsert-Strategien. Externe IDs dienen als stabile Zuordnungsschlüssel für konfliktfreie Aktualisierungen.
+
+**B) Spielbezogene Detaildaten** — `04_import_lineups`, `05_import_match_statistics`, `06_import_player_statistics` und `07_import_prematch` importieren Aufstellungen, Match- und Spielerstatistiken matchbezogen. Der Prematch-Workflow erzeugt zusätzlich strukturierte Kontextdaten (Verletzungen, Head-to-Head, Tabellenstand) als synthetische Events, die dem LLM als Promptkontext dienen.
+
+**C) KI-Generierung** — `09_events_llm_workflow`, `13_Halftime_aftertime` und `14_Game_ANpfiff_ABpfiff` importieren Live-Ereignisse, erzeugen synthetische Phasenereignisse und delegieren die Textgenerierung an das Backend. Der Zusammenfassungs-Workflow (`13`) ruft den LLM-Provider direkt auf, da Halbzeit-/Abpfiff-Zusammenfassungen einen umfangreicheren Prompt mit Statistiken erfordern.
+
+**D) Medien und Social Media** — `08_scoreplay_media_workflow`, `10_Twitter`, `11_youtube` und `12_insta` importieren Medien- und Social-Media-Inhalte. Der Media-Workflow übergibt Bilder an das Backend, das diese über WebSocket verteilt; die Social-Media-Workflows speichern Clips in der Datenbank. Diese Workflows dienen der Ingestion, nicht dem Publishing.
+
+Dieser Abschnitt dokumentiert die Implementierungsdetails der fünf zentralen Workflows (Gruppen B–D).
 
 ---
 
@@ -923,21 +928,23 @@ Gefundene URLs (thumbnail, compressed, original) werden gesammelt und an `POST /
 
 ### 5.7.6 Implementierungsübergreifende Muster
 
-Über alle Workflows hinweg lassen sich vier Implementierungsmuster identifizieren:
+Über alle Workflows hinweg lassen sich fünf Implementierungsmuster identifizieren:
 
-**1. Idempotente UPSERT-Strategie** — Alle Insert-Operationen verwenden `ON CONFLICT DO UPDATE` oder `DO NOTHING`. Als Konfliktschlüssel dienen externe IDs (`source_id`, `external_id`), zusammengesetzte Schlüssel (`match_id, type`) oder Unique-Constraints auf Namensfeldern. Das macht alle Workflows bei Mehrfachausführung sicher.
+**1. Idempotente UPSERT-Strategie** — Alle Insert-Operationen verwenden `ON CONFLICT DO UPDATE` oder `DO NOTHING`. Als Konfliktschlüssel dienen externe IDs (`source_id`, `external_id`, `vid`), zusammengesetzte Schlüssel (`match_id, type`) oder Unique-Constraints auf Namensfeldern. Das macht alle Workflows bei Mehrfachausführung sicher.
 
 **2. Filter-vor-Trigger-Muster** — Vor jedem LLM-Trigger steht ein Filter-Knoten, der nur Rows mit einer `id` (erfolgreicher DB-Insert) durchlässt. Events mit `DO NOTHING`-Konflikten (bereits importiert) erzeugen keinen neuen LLM-Aufruf.
 
-**3. Ticker-Mode-Propagation** — `ticker_mode` aus der Datenbank wird in allen Generierungsworkflows als `auto_publish`-Flag an das Backend weitergegeben: `auto_publish = (ticker_mode === 'auto')`. Die Moduslogik sitzt damit vollständig in der Datenbank; n8n liest sie bei jedem Aufruf neu aus.
+**3. Statusbasierte Filterung** — Bei synthetischen Events und Ticker-Einträgen werden vorhandene Zustände berücksichtigt, um redundante Generierungen zu vermeiden: Ein LLM-Aufruf wird nur getriggert, wenn noch kein nicht-verworfener Ticker-Eintrag für das Event existiert (vgl. die WHERE-Bedingungen in 5.7.2 und 5.7.3). Bei Re-Triggern werden bereits publizierte Phasen-Texte auf `draft` zurückgestuft (`demote`-CTE in 5.7.3).
 
-**4. Instanz-Routing** — Die Unterscheidung zwischen `ef_whitelabel` und `generic` erfolgt per `ILIKE '%Frankfurt%'`-Abfrage auf Teamnamen. Das Ergebnis steuert Stilwahl, Few-Shot-Auswahl im Backend und ob der Torjubel-Video-Pfad aktiviert wird.
+**4. Ticker-Mode-Propagation** — `ticker_mode` wird in allen Generierungsworkflows als `auto_publish`-Flag an das Backend weitergegeben (vgl. Kap. 5.3.3). Die Moduslogik sitzt damit vollständig in der Datenbank; n8n liest sie bei jedem Aufruf neu aus.
+
+**5. Instanz-Routing** — Die Unterscheidung zwischen `ef_whitelabel` und `generic` erfolgt per `ILIKE '%Frankfurt%'`-Abfrage auf Teamnamen. Das Ergebnis steuert Stilwahl, Few-Shot-Auswahl im Backend und ob der Torjubel-Video-Pfad aktiviert wird.
 
 ---
 
 ### 5.7.7 Export zur Stackwork Demo App
 
-Das Architekturkonzept des Exports (Zwei-System-Strategie, Systemabgrenzung, CMS-API-Zugang) ist in Abschnitt 4.1.3 beschrieben. Implementierungsseitig sind zwei Details relevant: Erstens triggert der Export **ereignisgesteuert** — jede `PATCH`-Operation, die einen Ticker-Eintrag auf `status=published` setzt, löst den n8n-Export-Workflow aus, der den Eintrag unmittelbar an die CMS-API-Endpunkte der Demo App überträgt. Zweitens erfordert die Initialisierung eine **manuelle Spielauswahl**: Die Spiel-ID wird einmalig in den n8n-Workflow eingetragen; erst danach laufen Event-Reaktion und Export vollautomatisch. Diese bewusste Designentscheidung stellt sicher, dass ausschließlich explizit ausgewählte Spiele mit Live-Tickering versehen werden.
+Ergänzend zu den fünf Kernworkflows existieren **12 Sync-Workflows** im Verzeichnis `n8n_demoAPP/`, die publizierte Ticker-Einträge und Stammdaten an die CMS-API der Stackwork Demo App übertragen (vgl. Abschnitt 4.1.3). Die Workflows decken Stammdaten-Synchronisation, Matchdaten-Export und ereignisgesteuerten Liveticker-Export ab.
 
 ---
 
@@ -945,7 +952,7 @@ Das Architekturkonzept des Exports (Zwei-System-Strategie, Systemabgrenzung, CMS
 
 Die Implementierung realisiert alle drei konzipierten Betriebsmodi funktionsfähig und in einem strukturell stabilen Zustand. Besonders positiv ist die Trennschärfe zwischen den Schichten: llm_service hat keine Datenbankabhängigkeit, Repositories kapseln alle SQL-Details, und die drei Frontend-Contexts vermeiden sowohl Prop-Drilling als auch unnötige Re-Renders.
 
-Vier Aspekte verdienen eine kritische Einordnung:
+Fünf Aspekte verdienen eine kritische Einordnung:
 
 **Erstens** ist die Provider-Auswahl im LLM-Service als schlüsselbasierte Priorisierung implementiert, nicht als konfigurierbare Laufzeit-Strategie. Für ein Produktionssystem wäre ein expliziterer Konfigurationsmechanismus (z. B. ein Konfigurationsfeld in der Datenbank pro Spiel) robuster.
 

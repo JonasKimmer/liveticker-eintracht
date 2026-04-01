@@ -42,13 +42,15 @@ Das Polling-Modell (vgl. Kapitel 6.12.6) stellt für den Einzelbetrieb keine Ein
 
 Die fehlende Authentifizierung (vgl. Kapitel 6.12.4) ist im Kontext eines internen Redaktionswerkzeugs vertretbar, schließt aber einen offenen Mehrbenutzerbetrieb ohne Netzwerkabsicherung aus. Die Architektur ist durch die saubere Middleware-Schichtung (FastAPI Dependencies) für eine nachträgliche JWT-Integration vorbereitet.
 
+Die 15 n8n-Workflows (vgl. Kapitel 6.12.8) stellen den größten nicht automatisiert getesteten Systemteil dar. Da sie die gesamte Datenversorgung des Systems verantworten, wäre eine Absicherung durch Integrationstests gegen eine Staging-Datenbank für den Produktivbetrieb prioritär.
+
 ### 7.2.3 Inhaltliche Reflexion
 
 Die in Kapitel 2.5 hergeleiteten linguistischen Anforderungen an Liveticker — Ellipsen, konzeptionelle Mündlichkeit, Graphostilistik (z. B. „TOOOOR!") — stellen besondere Anforderungen an die Prompt-Gestaltung. Die Erfahrung zeigt, dass LLMs dazu neigen, in einem formelleren Register zu schreiben als es das Genre Liveticker erfordert. Die Few-Shot-Referenzen aus der `style_references`-Tabelle sind das primäre Mittel, um diese stilistische Lücke zu schließen.
 
 Die Evaluationsergebnisse (Kapitel 6.8) zeigen, dass die Few-Shot-Referenzen das Format zuverlässig konditionieren — Minutenangaben, TOOOOR-Konvention und Textkürze werden konsistent übernommen. Die stilistische Lücke ist damit teilweise geschlossen: Faktentreue (4,6 / 5) und Verständlichkeit (4,3 / 5) profitieren von der strukturierten Kontextübergabe, während Tonalität (4,1 / 5) als schwächste Dimension verbleibt. Die häufigste Fehlerklasse — Stil-Inkonsistenz (19 %) — tritt gerade dort auf, wo euphorische Few-Shot-Muster in den neutralen Stil bluten. Eine Trennung der Referenz-Pools nach Stilprofil wäre die naheliegende Korrektur.
 
-Der in Kapitel 3.1 beschriebene Halluzinationseffekt ist im Kontext von Livetickern besonders kritisch, da fehlerhafte Fakten (falscher Torschütze, falsches Ergebnis) unmittelbar die Glaubwürdigkeit zerstören. Die explizite Schutzregel für Pre-Match-Prompts und die niedrige Temperatur (0,3) sind Gegenmaßnahmen, deren Wirksamkeit jedoch nur im `coop`-Modus durch die redaktionelle Kontrolle vollständig abgesichert ist. Im `auto`-Modus verbleibt ein Restrisiko fehlerhafter Veröffentlichungen.
+Der in Kapitel 3.1 beschriebene Halluzinationseffekt ist im Kontext von Livetickern besonders kritisch, da fehlerhafte Fakten (falscher Torschütze, falsches Ergebnis) unmittelbar die Glaubwürdigkeit zerstören. Die explizite Schutzregel für Pre-Match-Prompts und die niedrige Temperatur (vgl. Abschnitt 7.4.2) sind Gegenmaßnahmen, deren Wirksamkeit jedoch nur im `coop`-Modus durch die redaktionelle Kontrolle vollständig abgesichert ist. Im `auto`-Modus verbleibt ein Restrisiko fehlerhafter Veröffentlichungen.
 
 ---
 
@@ -58,11 +60,11 @@ Die drei Betriebsmodi (`auto`, `coop`, `manual`) wurden in Kapitel 4.3.3 konzipi
 
 ### 7.3.1 Auto-Modus: Geschwindigkeit auf Kosten der Kontrolle
 
-Der `auto`-Modus eliminiert die menschliche Latenz vollständig — Einträge werden direkt mit Status `published` erstellt. Die Stärke dieses Modus liegt in der Geschwindigkeit: Eine geschätzte Ø TTP von ≈ 5,9 s (5.000 ms Polling-Intervall + 859 ms LLM-Median) ist im Liveticker-Kontext kaum wahrnehmbar. Das Risiko besteht in unkontrollierten Halluzinationen, die ohne redaktionelle Prüfung veröffentlicht werden. Im journalistischen Kontext, in dem Glaubwürdigkeit eine zentrale Ressource darstellt (Beils 2023, S. 57), ist dieser Modus daher nur für unkritische Event-Typen (z. B. Phasenwechsel wie „Anpfiff" oder „Halbzeit") vertretbar.
+Der `auto`-Modus eliminiert die menschliche Latenz vollständig — Einträge werden direkt mit Status `published` erstellt. Die Stärke dieses Modus liegt in der Geschwindigkeit: Eine geschätzte Ø TTP von ≈ 5,9 s (vgl. Abschnitt 6.9.2) ist im Liveticker-Kontext kaum wahrnehmbar. Das Risiko besteht in unkontrollierten Halluzinationen, die ohne redaktionelle Prüfung veröffentlicht werden. Im journalistischen Kontext, in dem Glaubwürdigkeit eine zentrale Ressource darstellt (Beils 2023, S. 57), ist dieser Modus daher nur für unkritische Event-Typen (z. B. Phasenwechsel wie „Anpfiff" oder „Halbzeit") vertretbar.
 
 ### 7.3.2 Coop-Modus: Der intendierte Produktivbetrieb
 
-Der `coop`-Modus bildet den Kern der Arbeit ab: Die KI liefert Entwürfe, der Redakteur gibt frei, bearbeitet oder verwirft. Dieses Human-in-the-Loop-Design balanciert zwei gegenläufige Anforderungen: Die kognitive Last des Textverfassens entfällt, während jeder Eintrag vor der Veröffentlichung eine redaktionelle Kontrolle durchläuft. Im Optimalfall reduziert sich die Redakteursarbeit auf einen Tastendruck (TAB zur Freigabe).
+Der `coop`-Modus (vgl. 4.3.3) bildet den Kern der Arbeit ab: Das Human-in-the-Loop-Design balanciert zwei gegenläufige Anforderungen: Die kognitive Last des Textverfassens entfällt, während jeder Eintrag vor der Veröffentlichung eine redaktionelle Kontrolle durchläuft. Im Optimalfall reduziert sich die Redakteursarbeit auf einen Tastendruck (TAB zur Freigabe).
 
 Im Evaluationszeitraum wurden im Coop-Modus keine Einträge nach Freigabe retrahiert — ein Hinweis darauf, dass die redaktionelle Prüfung als Qualitätsstufe wirksam ist. Ob einzelne Entwürfe vor der Freigabe inhaltlich editiert wurden, wurde nicht systematisch erfasst; Bearbeitungen sind über das Frontend jedoch jederzeit möglich.
 
@@ -87,7 +89,7 @@ Die dynamische Einbindung von bis zu drei Stilreferenzen aus der `style_referenc
 1. **Anpassbarkeit ohne Codeänderung**: Neue Stilbeispiele können über die Datenbank hinzugefügt werden, ohne den Prompt-Code zu modifizieren.
 2. **Instanzspezifik**: Die Filterung nach Event-Typ und Instanz (`ef_whitelabel` vs. `generic`) ermöglicht unterschiedliche Stilprofile für verschiedene Einsatzkontexte.
 
-Ein kontrollierter A/B-Test (mit vs. ohne Referenzen) war nicht durchführbar, da das Backend keine API-seitige Steuerung der Referenzanzahl pro Request exponiert (vgl. Kapitel 6.7.5). Qualitativ zeigt die Evaluation konsistente Formatierungsmuster in der `ef_whitelabel`-Instanz — insbesondere bei TOOOOR-Konvention und Minutenformat. Der Effekt ist sichtbar, aber statistisch nicht isoliert messbar.
+Ein kontrollierter A/B-Test (mit vs. ohne Referenzen) war nicht durchführbar (vgl. Kapitel 6.7.5). Qualitativ zeigt die Evaluation konsistente Formatierungsmuster in der `ef_whitelabel`-Instanz — insbesondere bei TOOOOR-Konvention und Minutenformat. Der Effekt ist sichtbar, aber statistisch nicht isoliert messbar.
 
 ### 7.4.2 Temperatur und Determinismus
 
@@ -95,7 +97,7 @@ Die gewählte Temperatur von 0,3 für die Textgenerierung und 0,1 für Übersetz
 
 ### 7.4.3 Kontext-Aufbereitung
 
-Die sechs spezialisierten Context-Builder (`ctx_injuries`, `ctx_prediction`, `ctx_h2h`, `ctx_team_stats`, `ctx_standings`, `ctx_live_stats`) strukturieren die Fakten vor der Übergabe an das LLM. Diese Vorverarbeitung reduziert die Wahrscheinlichkeit von Halluzinationen, da das Modell nicht aus unstrukturierten Rohdaten extrahieren muss, sondern bereits aufbereitete Faktenblöcke erhält. Die Wirksamkeit dieses Ansatzes zeigt sich insbesondere bei Pre-Match-Einträgen, wo die Faktengrundlage (z. B. Verletzungslisten, H2H-Statistiken) klar abgegrenzt ist.
+Die sechs spezialisierten Context-Builder (vgl. Abschnitt 5.3.1) strukturieren die Fakten vor der Übergabe an das LLM. Diese Vorverarbeitung reduziert die Wahrscheinlichkeit von Halluzinationen, da das Modell nicht aus unstrukturierten Rohdaten extrahieren muss, sondern bereits aufbereitete Faktenblöcke erhält. Die Wirksamkeit dieses Ansatzes zeigt sich insbesondere bei Pre-Match-Einträgen, wo die Faktengrundlage (z. B. Verletzungslisten, H2H-Statistiken) klar abgegrenzt ist.
 
 ---
 
@@ -115,6 +117,8 @@ Die Zukunftsperspektive wird im Experteninterview (vgl. Interviewleitfaden, Kap.
 
 - _F13: Könnten Sie sich vorstellen, KI-generierte Ticker im Regelbetrieb zu nutzen?_
 - _F14: Für welche Spielkategorien wäre ein vollautonomer Modus denkbar — zum Beispiel Testspiele, Jugendspiele, Freundschaftsspiele?_
+
+**Ergebnisse** — [Ausstehend: Die Interviewergebnisse werden nach Durchführung hier ergänzt und fließen in die Gesamtbewertung (Kapitel 8.2) ein.]
 
 ### 7.5.3 Ethische Überlegungen
 

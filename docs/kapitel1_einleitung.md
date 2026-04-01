@@ -1,4 +1,4 @@
-# 1. Einleitung
+# Kapitel 1 – Einleitung
 
 ## 1.1 Problemstellung und Zielsetzung
 
@@ -16,9 +16,9 @@ Das übergeordnete Ziel der vorliegenden Arbeit ist daher die Konzeption und Imp
 
 Um dieses Ziel zu operationalisieren, definiert und evaluiert die Arbeit drei Betriebsmodi:
 
-1.  **Status quo:** Vollmanuelle Erstellung als Vergleichsbasis.
-2.  **Vollautonom:** KI-basierte Texterstellung und Publikation ohne menschliches Korrektiv.
-3.  **Hybrid:** Kombination aus KI-generierten Textvorschlägen mit redaktioneller Prüfung und Freigabe.
+1.  **Status quo (`manual`):** Vollmanuelle Erstellung als Vergleichsbasis.
+2.  **Vollautonom (`auto`):** KI-basierte Texterstellung und Publikation ohne menschliches Korrektiv.
+3.  **Hybrid (`coop`):** Kombination aus KI-generierten Textvorschlägen mit redaktioneller Prüfung und Freigabe.
 
 ---
 
@@ -28,7 +28,7 @@ Aus der in Kapitel 1.1 entwickelten Zielsetzung ergibt sich folgende Forschungsf
 
 > Inwiefern reduziert ein hybrides KI-gestütztes Redaktionssystem die Time-to-Publish bei der Liveticker-Erstellung im Profifußball im Vergleich zur rein manuellen Erstellung, ohne die journalistische Qualität hinsichtlich Korrektheit, Tonalität und Verständlichkeit zu beeinträchtigen?
 
-Die Frage ist bewusst zweiteilig formuliert: Sie erfasst einerseits eine **zeitliche Dimension** — die Reduktion der Publikationslatenz — und andererseits eine **qualitative Dimension**, die sicherstellt, dass Geschwindigkeit nicht auf Kosten journalistischer Standards erzielt wird. Beide Dimensionen sind für die Praxis gleichermaßen relevant, da Schnelligkeit zwar als oberstes Qualitätskriterium gilt (Beils 2023, S. 57), sprachliche und inhaltliche Korrektheit jedoch selbst unter hohem Zeitdruck nicht verhandelbar sind (Bluhm & Schäfer 2023, S. 35). Die Operationalisierung erfolgt entlang dieser beiden Dimensionen, deren Messmethodik in Kapitel 6 beschrieben wird.
+Die Frage ist bewusst zweiteilig formuliert: Sie erfasst einerseits eine **zeitliche Dimension** — die Reduktion der Publikationslatenz — und andererseits eine **qualitative Dimension**, die sicherstellt, dass Geschwindigkeit nicht auf Kosten journalistischer Standards erzielt wird. Beide Dimensionen sind für die Praxis gleichermaßen relevant, da Schnelligkeit zwar als oberstes Qualitätskriterium gilt (Beils 2023, S. 57), sprachliche und inhaltliche Korrektheit jedoch selbst unter hohem Zeitdruck nicht verhandelbar sind (Bluhm & Schäfer 2023, S. 35). Die Operationalisierung beider Dimensionen wird in Kapitel 1.3 und 6 beschrieben.
 
 ---
 
@@ -48,9 +48,9 @@ Die Evaluationsmethodik operationalisiert die Forschungsfrage entlang zweier Dim
 
 ### 1.3.1 Abgrenzung
 
-Das System geht bewusst über den Umfang eines typischen akademischen Projekts hinaus und zielt auf Produktionsfähigkeit: 391 automatisierte Tests, ein Cloud-Deployment und die Integration realer Datenquellen dokumentieren diesen Anspruch. Diese Praxisorientierung ist durch den beruflichen Kontext des Autors motiviert: Als Mitarbeiter der **Stackwork GmbH** im IT-Bereich von Eintracht Frankfurt entstand das System in direkter Kooperation mit den fachlichen Anforderungen einer professionellen Redaktion. Das Ergebnis ist ein vollständiges, eigenständig lauffähiges Redaktionssystem, das als Cloud-Service alle Spiele der konfigurierten Wettbewerbe verarbeitet. Zusätzlich werden publizierte Inhalte über Export-Workflows an die bestehende **Stackwork Demo App** übertragen, wodurch das Projekt zwei unabhängige Zielsysteme über nahezu identische Workflows bedient. Die technischen Details der Architektur und Implementierung werden in Kapitel 4 und 5 beschrieben.
+Das System geht bewusst über den Umfang eines typischen akademischen Projekts hinaus und zielt auf Produktionsfähigkeit: Eine umfassende automatisierte Testsuite, ein Cloud-Deployment und die Integration realer Datenquellen dokumentieren diesen Anspruch. Diese Praxisorientierung ist durch den beruflichen Kontext des Autors motiviert: Als Mitarbeiter der **Stackwork GmbH** im IT-Bereich von Eintracht Frankfurt entstand das System in direkter Kooperation mit den fachlichen Anforderungen einer professionellen Redaktion. Das Ergebnis ist ein vollständiges, eigenständig lauffähiges Redaktionssystem, das als Cloud-Service alle Spiele der konfigurierten Wettbewerbe verarbeitet. Zusätzlich werden publizierte Inhalte über Export-Workflows an die bestehende **Stackwork Demo App** übertragen, wodurch das Projekt zwei unabhängige Zielsysteme über nahezu identische Workflows bedient. Die technischen Details der Architektur und Implementierung werden in Kapitel 4 und 5 beschrieben.
 
-Gleichwohl bestehen Einschränkungen, die in Kapitel 7 kritisch reflektiert werden:
+Dennoch bestehen Einschränkungen, die in Kapitel 7 kritisch reflektiert werden:
 
 - Das System verzichtet im aktuellen Stand auf eine Authentifizierungsschicht.
 - Die qualitative Evaluation erfolgt durch den Entwickler selbst; ergänzt wird sie durch ein **Experteninterview mit einem professionellen Sportredakteur** von Eintracht Frankfurt.
@@ -64,10 +64,10 @@ Gleichwohl bestehen Einschränkungen, die in Kapitel 7 kritisch reflektiert werd
 
 Die vorliegende Arbeit gliedert sich in acht Kapitel:
 
-- **Kapitel 2 – Motivation und Anforderungen:** Vertiefung der drei Problemdimensionen (redaktioneller Aufwand, Mehrsprachigkeit, White-Label-Bedarf), Ableitung der Systemanforderungen am Beispiel Eintracht Frankfurt und formale Anforderungsdefinition.
+- **Kapitel 2 – Motivation und Anforderungen:** Vertiefung der drei Problemdimensionen (redaktioneller Aufwand, Mehrsprachigkeit, White-Label-Bedarf), Ableitung der Systemanforderungen am Beispiel Eintracht Frankfurt, Experteninterview-Leitfaden und formale Anforderungsdefinition.
 - **Kapitel 3 – Stand der Technik:** Large Language Models, Prompt Engineering, Natural Language Generation im Sport sowie Echtzeit-Technologien und ETL-Prozesse.
 - **Kapitel 4 – Systemkonzeption:** Dreischichtige Architektur, Datenmodell, LLM-Pipeline und Prompt-Design.
 - **Kapitel 5 – Implementierung:** Umsetzung als produktionsfähige Webanwendung mit über 70 API-Endpunkten, TypeScript-Frontend und n8n-ETL-System; ergänzt durch TypeScript-Migration, automatisierte Testsuite und kritische Würdigung.
 - **Kapitel 6 – Evaluation:** Technische Qualitätssicherung (Tests, Coverage, Typsicherheit), Evaluation der KI-Textgenerierung und systematischer Anforderungsabgleich.
 - **Kapitel 7 – Diskussion:** Einordnung in den Stand der Technik, kritische Reflexion der Limitationen und Implikationen für den Sportjournalismus.
-- **Kapitel 8 – Fazit:** Zusammenfassung der Erkenntnisse, Beantwortung der Forschungsfrage und Ausblick.
+- **Kapitel 8 – Fazit und Ausblick:** Zusammenfassung der Erkenntnisse, Beantwortung der Forschungsfrage und Ausblick.
