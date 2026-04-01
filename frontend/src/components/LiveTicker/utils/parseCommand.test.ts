@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { parseCommand, getEventMeta } from "./parseCommand";
 import { normalizeMatchStatus } from "../../../utils/matchStatus";
 
@@ -187,9 +188,12 @@ describe("normalizeMatchStatus", () => {
     expect(normalizeMatchStatus(s)).toBe("live");
   });
 
-  test.each(["FT", "AET", "PEN", "finished", "FullTime"])("'%s' → finished", (s) => {
-    expect(normalizeMatchStatus(s)).toBe("finished");
-  });
+  test.each(["FT", "AET", "PEN", "finished", "FullTime"])(
+    "'%s' → finished",
+    (s) => {
+      expect(normalizeMatchStatus(s)).toBe("finished");
+    },
+  );
 
   test.each(["NS", "TBD", "", null, undefined])("'%s' → scheduled", (s) => {
     expect(normalizeMatchStatus(s)).toBe("scheduled");

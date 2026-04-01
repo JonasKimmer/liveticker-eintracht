@@ -1,21 +1,10 @@
 import { useMemo, useCallback } from "react";
-
+import type { Match, MatchEvent, Player, LineupEntry, PlayerStat, MatchStat, InjuryGroup } from "../../../types";
 
 /**
  * Berechnet alle abgeleiteten Daten für RightPanel.
  * Kein State, keine Side-Effects — nur memoized Derivationen.
- *
- * @param {object} opts
- * @param {object|null} opts.match
- * @param {Array}  opts.matchStats
- * @param {Array}  opts.players
- * @param {Array}  opts.playerStats
- * @param {Array}  opts.lineups
- * @param {Array}  opts.events
- * @param {Array}  opts.injuries
  */
-import type { Match, MatchEvent, Player, LineupEntry, PlayerStat, MatchStat, InjuryGroup } from "../../../types";
-
 interface UseRightPanelDataParams {
   match: Match | null;
   matchStats: MatchStat[];
