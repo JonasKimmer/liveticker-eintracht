@@ -1,4 +1,5 @@
-import { parseCommand, normalizeMatchStatus, getEventMeta } from "./parseCommand";
+import { parseCommand, getEventMeta } from "./parseCommand";
+import { normalizeMatchStatus } from "../../../utils/matchStatus";
 
 // ──────────────────────────────────────────────
 // parseCommand

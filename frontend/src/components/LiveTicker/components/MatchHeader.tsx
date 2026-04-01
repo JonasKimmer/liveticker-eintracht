@@ -2,7 +2,7 @@
 // MatchHeader.jsx
 // ============================================================
 import { memo, useEffect } from "react";
-import { normalizeMatchStatus } from "../utils/parseCommand";
+import { normalizeMatchStatus } from "../../../utils/matchStatus";
 import { useLiveMinute } from "hooks/useLiveMinute";
 import { SYNC_MATCH_INTERVAL_MS } from "../constants";
 import * as api from "api";
@@ -16,14 +16,19 @@ interface MatchHeaderProps {
   onMinuteSync?: () => void;
 }
 
-export const MatchHeader = memo(function MatchHeader({ match, leagueSeason, onMinuteSync }: MatchHeaderProps) {
+export const MatchHeader = memo(function MatchHeader({
+  match,
+  leagueSeason,
+  onMinuteSync,
+}: MatchHeaderProps) {
   const status = normalizeMatchStatus(match?.matchState);
   const liveMinute = useLiveMinute(match);
 
   useEffect(() => {
     if (status !== "live" || !match?.externalId) return;
     const sync = () =>
-      api.triggerMinuteUpdate(match.externalId)
+      api
+        .triggerMinuteUpdate(match.externalId)
         .then(() => onMinuteSync?.())
         .catch((e) => logger.warn("[MatchHeader] sync error", e));
     sync();
@@ -50,23 +55,35 @@ export const MatchHeader = memo(function MatchHeader({ match, leagueSeason, onMi
             ) : (
               <div className="lt-match-header__team-abbr">{homeAbbr}</div>
             )}
-            <div className="lt-match-header__team-name">{match.homeTeam.name}</div>
+            <div className="lt-match-header__team-name">
+              {match.homeTeam.name}
+            </div>
           </div>
         </div>
 
         {/* Score */}
         <div className="lt-match-header__score-wrap">
-          <span className={`lt-match-header__status lt-match-header__status--${status}`}>
+          <span
+            className={`lt-match-header__status lt-match-header__status--${status}`}
+          >
             {status === "live"
-              ? (["FirstHalfBreak", "HalfTime", "ExtraBreak"].includes(match.matchPhase)
-                  ? "HZ"
-                  : liveMinute > 0 ? `${liveMinute}'` : match.matchState)
+              ? ["FirstHalfBreak", "HalfTime", "ExtraBreak"].includes(
+                  match.matchPhase,
+                )
+                ? "HZ"
+                : liveMinute > 0
+                  ? `${liveMinute}'`
+                  : match.matchState
               : match.matchState}
           </span>
           <div className="lt-match-header__scores-row">
-            <span className="lt-match-header__score">{match.teamHomeScore}</span>
+            <span className="lt-match-header__score">
+              {match.teamHomeScore}
+            </span>
             <span className="lt-match-header__score-sep">–</span>
-            <span className="lt-match-header__score">{match.teamAwayScore}</span>
+            <span className="lt-match-header__score">
+              {match.teamAwayScore}
+            </span>
           </div>
         </div>
 
@@ -82,7 +99,9 @@ export const MatchHeader = memo(function MatchHeader({ match, leagueSeason, onMi
             ) : (
               <div className="lt-match-header__team-abbr">{awayAbbr}</div>
             )}
-            <div className="lt-match-header__team-name">{match.awayTeam.name}</div>
+            <div className="lt-match-header__team-name">
+              {match.awayTeam.name}
+            </div>
           </div>
         </div>
       </div>
@@ -95,4 +114,3 @@ export const MatchHeader = memo(function MatchHeader({ match, leagueSeason, onMi
     </div>
   );
 });
-
