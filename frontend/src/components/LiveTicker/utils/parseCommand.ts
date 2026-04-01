@@ -49,33 +49,97 @@ const CMD_MAP: Record<string, string> = {
 };
 
 const PHASE_CMDS: Record<string, PhaseConfig> = {
-  "/prematch":  { text: "Vorbericht",                    phase: "Before",                icon: "📣", hasMinute: false },
-  "/anpfiff":   { text: "Anpfiff!",                      phase: "FirstHalf",             icon: "📣", hasMinute: true  },
-  "/hz":        { text: "Halbzeit!",                     phase: "FirstHalfBreak",        icon: "🔔", hasMinute: false },
-  "/2hz":       { text: "Anstoß zur 2. Halbzeit",        phase: "SecondHalf",            icon: "📣", hasMinute: true  },
-  "/pause":     { text: "Pause",                         phase: "SecondHalfBreak",       icon: "🔔", hasMinute: false },
-  "/vz1":       { text: "Beginn der Verlängerung",       phase: "ExtraFirstHalf",        icon: "📣", hasMinute: true  },
-  "/vzp":       { text: "Verlängerungspause",            phase: "ExtraBreak",            icon: "🔔", hasMinute: false },
-  "/vz2":       { text: "2. Hälfte der Verlängerung",    phase: "ExtraSecondHalf",       icon: "📣", hasMinute: true  },
-  "/elfp":      { text: "Elfmeterpause",                 phase: "ExtraSecondHalfBreak",  icon: "🔔", hasMinute: false },
-  "/elfmeter":  { text: "Elfmeterschießen beginnt",      phase: "PenaltyShootout",       icon: "🥅", hasMinute: false },
-  "/abpfiff":   { text: "Abpfiff!",                      phase: "After",                 icon: "📣", hasMinute: false },
+  "/prematch": {
+    text: "Vorbericht",
+    phase: "Before",
+    icon: "📣",
+    hasMinute: false,
+  },
+  "/anpfiff": {
+    text: "Anpfiff!",
+    phase: "FirstHalf",
+    icon: "📣",
+    hasMinute: true,
+  },
+  "/hz": {
+    text: "Halbzeit!",
+    phase: "FirstHalfBreak",
+    icon: "🔔",
+    hasMinute: false,
+  },
+  "/2hz": {
+    text: "Anstoß zur 2. Halbzeit",
+    phase: "SecondHalf",
+    icon: "📣",
+    hasMinute: true,
+  },
+  "/pause": {
+    text: "Pause",
+    phase: "SecondHalfBreak",
+    icon: "🔔",
+    hasMinute: false,
+  },
+  "/vz1": {
+    text: "Beginn der Verlängerung",
+    phase: "ExtraFirstHalf",
+    icon: "📣",
+    hasMinute: true,
+  },
+  "/vzp": {
+    text: "Verlängerungspause",
+    phase: "ExtraBreak",
+    icon: "🔔",
+    hasMinute: false,
+  },
+  "/vz2": {
+    text: "2. Hälfte der Verlängerung",
+    phase: "ExtraSecondHalf",
+    icon: "📣",
+    hasMinute: true,
+  },
+  "/elfp": {
+    text: "Elfmeterpause",
+    phase: "ExtraSecondHalfBreak",
+    icon: "🔔",
+    hasMinute: false,
+  },
+  "/elfmeter": {
+    text: "Elfmeterschießen beginnt",
+    phase: "PenaltyShootout",
+    icon: "🥅",
+    hasMinute: false,
+  },
+  "/abpfiff": {
+    text: "Abpfiff!",
+    phase: "After",
+    icon: "📣",
+    hasMinute: false,
+  },
 };
 
 const CARD_COLORS: Record<string, CardColor> = {
   yellow: { emoji: "🟨", label: "Gelb" },
-  y:      { emoji: "🟨", label: "Gelb" },
-  red:    { emoji: "🟥", label: "Rot"  },
-  r:      { emoji: "🟥", label: "Rot"  },
-  gelb:   { emoji: "🟨", label: "Gelb" },
-  rot:    { emoji: "🟥", label: "Rot"  },
+  y: { emoji: "🟨", label: "Gelb" },
+  red: { emoji: "🟥", label: "Rot" },
+  r: { emoji: "🟥", label: "Rot" },
+  gelb: { emoji: "🟨", label: "Gelb" },
+  rot: { emoji: "🟥", label: "Rot" },
 };
 
-export function parseCommand(input: string | null | undefined, currentMinute = 0): ParseResult {
+export function parseCommand(
+  input: string | null | undefined,
+  currentMinute = 0,
+): ParseResult {
   const trimmed = (input ?? "").trim();
 
   if (!trimmed.startsWith("/")) {
-    return { type: "invalid", formatted: trimmed, warnings: [], isValid: false, meta: { icon: "📣", phase: null, minute: null } };
+    return {
+      type: "invalid",
+      formatted: trimmed,
+      warnings: [],
+      isValid: false,
+      meta: { icon: "📣", phase: null, minute: null },
+    };
   }
 
   const tokens = trimmed.split(/\s+/).filter(Boolean);
@@ -85,8 +149,11 @@ export function parseCommand(input: string | null | undefined, currentMinute = 0
   const phasedef = PHASE_CMDS[cmdToken];
   if (phasedef) {
     const minuteArg = tokens[1] ? parseInt(tokens[1], 10) : null;
-    const minute = phasedef.hasMinute ? (minuteArg || currentMinute || null) : null;
-    const warnings = phasedef.hasMinute && !minute ? ["Minute angeben: z.B. /anpfiff 45"] : [];
+    const minute = phasedef.hasMinute
+      ? minuteArg || currentMinute || null
+      : null;
+    const warnings =
+      phasedef.hasMinute && !minute ? ["Minute angeben: z.B. /anpfiff 45"] : [];
     return {
       type: "phase",
       formatted: phasedef.text,
@@ -128,8 +195,12 @@ export function parseCommand(input: string | null | undefined, currentMinute = 0
 
     case "card": {
       const colorArg = args.find((a) => CARD_COLORS[a.toLowerCase()]);
-      const cardColor: CardColor = colorArg ? CARD_COLORS[colorArg.toLowerCase()] : CARD_COLORS["yellow"];
-      const remaining = args.filter((a) => a.toLowerCase() !== colorArg?.toLowerCase());
+      const cardColor: CardColor = colorArg
+        ? CARD_COLORS[colorArg.toLowerCase()]
+        : CARD_COLORS["yellow"];
+      const remaining = args.filter(
+        (a) => a.toLowerCase() !== colorArg?.toLowerCase(),
+      );
       const player = remaining[0];
       const team = remaining[1];
       const warnings: string[] = [];
@@ -140,7 +211,11 @@ export function parseCommand(input: string | null | undefined, currentMinute = 0
         formatted: `${cardColor.label} — ${player ?? "[SPIELER]"} (${team ?? "[TEAM]"})`,
         warnings,
         isValid: !!(player && team),
-        meta: { icon: cardColor.emoji, phase: null, minute: currentMinute || null },
+        meta: {
+          icon: cardColor.emoji,
+          phase: null,
+          minute: currentMinute || null,
+        },
       };
     }
 
@@ -234,7 +309,13 @@ export function parseCommand(input: string | null | undefined, currentMinute = 0
     }
 
     default:
-      return { type: "invalid", formatted: trimmed, warnings: ["Ungültiger Command"], isValid: false, meta: { icon: "📣", phase: null, minute: null } };
+      return {
+        type: "invalid",
+        formatted: trimmed,
+        warnings: ["Ungültiger Command"],
+        isValid: false,
+        meta: { icon: "📣", phase: null, minute: null },
+      };
   }
 }
 
@@ -246,7 +327,10 @@ interface EventMeta {
 /**
  * Hilfsfunktion: Gibt Icon + CSS-Klasse für einen Event-Typ zurück.
  */
-export function getEventMeta(eventType: string | null | undefined, detail = ""): EventMeta {
+export function getEventMeta(
+  eventType: string | null | undefined,
+  detail = "",
+): EventMeta {
   const t = eventType?.toLowerCase();
   if (t === "goal") return { icon: "⚽", cssClass: "goal" };
   if (t === "own_goal") return { icon: "⚽", cssClass: "goal" };
@@ -254,14 +338,37 @@ export function getEventMeta(eventType: string | null | undefined, detail = ""):
   if (t === "yellow_card") return { icon: "🟨", cssClass: "card" };
   if (t === "red_card") return { icon: "🟥", cssClass: "card" };
   if (t === "substitution") return { icon: "🔄", cssClass: "sub" };
-  if (t === "kick_off" || t === "match_kickoff" || t === "match_second_half" || t === "extra_time_start") return { icon: "📣", cssClass: "" };
-  if (t === "halftime" || t === "match_halftime" || t === "extra_halftime" || t === "halftime_comment") return { icon: "🔔", cssClass: "" };
-  if (t === "fulltime" || t === "match_fulltime" || t === "fulltime_aet" || t === "fulltime_pen") return { icon: "📣", cssClass: "" };
+  if (
+    t === "kick_off" ||
+    t === "match_kickoff" ||
+    t === "match_second_half" ||
+    t === "extra_time_start"
+  )
+    return { icon: "📣", cssClass: "" };
+  if (
+    t === "halftime" ||
+    t === "match_halftime" ||
+    t === "extra_halftime" ||
+    t === "halftime_comment"
+  )
+    return { icon: "🔔", cssClass: "" };
+  if (
+    t === "fulltime" ||
+    t === "match_fulltime" ||
+    t === "fulltime_aet" ||
+    t === "fulltime_pen"
+  )
+    return { icon: "📣", cssClass: "" };
   if (t === "match_penalties") return { icon: "🥅", cssClass: "" };
   if (t === "comment" || t === "var") return { icon: "📢", cssClass: "" };
-  if (t === "pre_match" || t === "post_match") return { icon: "📣", cssClass: "" };
+  if (t === "pre_match" || t === "post_match")
+    return { icon: "📣", cssClass: "" };
   if (eventType === "Goal") return { icon: "⚽", cssClass: "goal" };
-  if (eventType === "Card") return { icon: detail?.toLowerCase().includes("red") ? "🟥" : "🟨", cssClass: "card" };
+  if (eventType === "Card")
+    return {
+      icon: detail?.toLowerCase().includes("red") ? "🟥" : "🟨",
+      cssClass: "card",
+    };
   if (eventType === "subst") return { icon: "🔄", cssClass: "sub" };
   return { icon: "•", cssClass: "" };
 }
@@ -282,33 +389,28 @@ export function getRawEventText(event: RawEvent): string {
   const eventType = event.liveTickerEventType || event.type;
   const t = eventType?.toLowerCase();
   let desc: Record<string, string> = {};
-  try { if (event.description) desc = JSON.parse(event.description); } catch {}
+  try {
+    if (event.description) desc = JSON.parse(event.description);
+  } catch {}
   const player = desc["player_name"] || event.player_name || "";
   const assist = desc["assist_name"] || event.assist_name || "";
   const detail = desc["detail"] || event.detail || "";
 
-  if (t === "goal") return `Tor! ${player}${assist ? ` (Assist: ${assist})` : ""}`;
+  if (t === "goal")
+    return `Tor! ${player}${assist ? ` (Assist: ${assist})` : ""}`;
   if (t === "own_goal") return `Eigentor! ${player}`;
   if (t === "missed_penalty") return `Elfmeter verschossen — ${player}`;
   if (t === "yellow_card") return `Gelb — ${player}`;
   if (t === "red_card") return `Rot — ${player}`;
-  if (t === "substitution") return `↑ ${assist}${player ? ` / ↓ ${player}` : ""}`;
+  if (t === "substitution")
+    return `↑ ${assist}${player ? ` / ↓ ${player}` : ""}`;
   if (t === "kick_off") return "Anstoß";
   if (t === "halftime") return "Halbzeit";
   if (t === "fulltime") return "Abpfiff";
-  if (eventType === "Goal") return `Tor! ${player}${assist ? ` (Assist: ${assist})` : ""}`;
+  if (eventType === "Goal")
+    return `Tor! ${player}${assist ? ` (Assist: ${assist})` : ""}`;
   if (eventType === "Card") return `${detail} — ${player}`;
-  if (eventType === "subst") return `↑ ${assist}${player ? ` / ↓ ${player}` : ""}`;
+  if (eventType === "subst")
+    return `↑ ${assist}${player ? ` / ↓ ${player}` : ""}`;
   return detail;
-}
-
-/**
- * Hilfsfunktion: Match-Status normalisieren.
- */
-export function normalizeMatchStatus(status: string | null | undefined): "live" | "finished" | "scheduled" {
-  const LIVE = ["1H", "2H", "HT", "ET", "live", "Live"];
-  const FINISHED = ["FT", "AET", "PEN", "finished", "FullTime"];
-  if (status && LIVE.includes(status)) return "live";
-  if (status && FINISHED.includes(status)) return "finished";
-  return "scheduled";
 }

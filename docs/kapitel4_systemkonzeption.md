@@ -187,11 +187,11 @@ Das System adressiert Sicherheit auf drei Ebenen, wobei der Projektrahmen einer 
 
 ## 4.3 Datenbankkonzeption
 
-Die Persistenzschicht basiert auf PostgreSQL und umfasst in der aktuellen Fassung **18 Tabellen**. Das Schema ist auf einen stabilen Live-Betrieb mit wiederholbaren Importen, klaren Zustandsübergängen und nachvollziehbaren Redaktionsentscheidungen ausgelegt.
+Die Persistenzschicht basiert auf PostgreSQL und umfasst in der aktuellen Fassung **18 Tabellen** (17 ORM-Modelle sowie eine schlüsselwertbasierte `settings`-Tabelle, die ausschließlich über eine Alembic-Migration verwaltet wird). Das Schema ist auf einen stabilen Live-Betrieb mit wiederholbaren Importen, klaren Zustandsübergängen und nachvollziehbaren Redaktionsentscheidungen ausgelegt.
 
 ### 4.3.1 Schemadesign-Prinzipien
 
-Das Datenbankschema umfasst 18 Tabellen (17 ORM-Modelle sowie eine schlüsselwertbasierte `settings`-Tabelle, die ausschließlich über eine Alembic-Migration verwaltet wird). Die folgende Abbildung zeigt die zentralen Entitäten und ihre Beziehungen:
+Die folgende Abbildung zeigt die zentralen Entitäten und ihre Beziehungen: Die folgende Abbildung zeigt die zentralen Entitäten und ihre Beziehungen:
 
 ```mermaid
 erDiagram
@@ -455,7 +455,7 @@ Die Zielsprache ist ein expliziter Parameter der Generierungsendpunkte (`languag
 Zur Stabilisierung der KI-Laufzeit sind mehrere Kontrollmechanismen implementiert:
 
 1. **Konkurrenzbegrenzung** — Gleichzeitige LLM-Aufrufe werden über einen Semaphore-Mechanismus auf maximal 8 parallele Anfragen pro Prozessinstanz limitiert (vgl. Abschnitt 4.2.4).
-2. **Retry-Mechanismus mit Backoff** — Bei transienten Fehlern und Rate-Limits erfolgen automatische Wiederholungsversuche (3 Versuche, Backoff 30 s / 60 s).
+2. **Retry-Mechanismus mit Backoff** — Bei Rate-Limit-Fehlern erfolgen automatische Wiederholungsversuche mit linearem Backoff (3 Versuche, 30 s / 60 s / 90 s); bei sonstigen transienten Fehlern greift exponentielles Backoff (1 s / 2 s / 4 s).
 3. **Fachliche Einbettung in den Ticker-Lifecycle** — Generierte Inhalte werden in die Statuslogik (`draft` / `published` / `rejected`) überführt und können im kooperativen Modus redaktionell kontrolliert werden.
 
 ---

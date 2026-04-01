@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { MODES } from "../components/LiveTicker/constants";
+import { MODES } from "../constants";
 import type { TickerMode } from "../types";
 
 /**

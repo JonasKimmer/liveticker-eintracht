@@ -40,7 +40,7 @@ export function useRightPanelData({
 
   // externalId (Partner-API) → interne DB-ID
   const extToInternal = useMemo(() => {
-    const map = {};
+    const map: Record<number, number> = {};
     for (const pl of players) {
       if (pl.externalId != null) map[pl.externalId] = pl.id;
     }
@@ -49,7 +49,7 @@ export function useRightPanelData({
 
   // subMinuteMap: playerId → Auswechselminute; "in_<id>" → Einwechselminute
   const subMinuteMap = useMemo(() => {
-    const map = {};
+    const map: Record<string | number, number> = {};
     for (const ev of events) {
       if (ev.liveTickerEventType !== "substitution") continue;
       try {

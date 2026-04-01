@@ -6,7 +6,8 @@ import { useState, useCallback, useMemo, useRef, useEffect } from "react";
 import * as api from "api";
 import logger from "utils/logger";
 import { useTickerMode } from "hooks/useTickerMode";
-import type { TickerMode, ReloadFunctions } from "../../../types";
+import type { TickerMode, ReloadFunctions, TickerStyle, MatchPhase } from "../../../types";
+import type { TickerModeContextValue } from "../../../context/TickerModeContext";
 
 /**
  * Kapselt alle Ticker-Actions, Drafts, Toasts und Modus-Verwaltung.
@@ -33,23 +34,38 @@ interface UseTickerParams {
   matchTickerMode?: TickerMode;
 }
 
-export function useTicker({ selMatchId, reload, instance, language, matchTickerMode }: UseTickerParams) {
+export function useTicker({
+  selMatchId,
+  reload,
+  instance,
+  language,
+  matchTickerMode,
+}: UseTickerParams) {
   // ── Aktiver Draft ─────────────────────────────────────────
   const [activeDraftId, setActiveDraftId] = useState<number | null>(null);
   const [activeDraftText, setActiveDraftText] = useState("");
 
   // ── Publish Toast (Undo) ───────────────────────────────────
-  const [publishToast, setPublishToast] = useState<{ id: number; text: string; isManual: boolean } | null>(null);
+  const [publishToast, setPublishToast] = useState<{
+    id: number;
+    text: string;
+    isManual: boolean;
+  } | null>(null);
   const [retractedText, setRetractedText] = useState<string | null>(null);
   const clearRetractedText = useCallback(() => setRetractedText(null), []);
 
   // ── Delete Toast ───────────────────────────────────────────
   const [deleteToast, setDeleteToast] = useState(false);
-  const deleteToastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const deleteToastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(
+    null,
+  );
 
-  const showPublishToast = useCallback((id: number, text: string, isManual = false) => {
-    setPublishToast({ id, text, isManual });
-  }, []);
+  const showPublishToast = useCallback(
+    (id: number, text: string, isManual = false) => {
+      setPublishToast({ id, text, isManual });
+    },
+    [],
+  );
 
   const handleRetract = useCallback(async () => {
     if (!publishToast) return;
@@ -117,7 +133,7 @@ export function useTicker({ selMatchId, reload, instance, language, matchTickerM
 
   // ── Ticker-Callbacks ──────────────────────────────────────
   const handleGenerate = useCallback(
-    async (eventId: number, style: import("../../../types").TickerStyle) => {
+    async (eventId: number, style: TickerStyle) => {
       setGeneratingId(eventId);
       try {
         await api.generateTicker(eventId, style, instance, language);
@@ -132,7 +148,13 @@ export function useTicker({ selMatchId, reload, instance, language, matchTickerM
   );
 
   const handleManualPublish = useCallback(
-    async (text: string, icon = "📝", minute?: number | null, phase?: import("../../../types").MatchPhase | null, rawInput?: string) => {
+    async (
+      text: string,
+      icon = "📝",
+      minute?: number | null,
+      phase?: MatchPhase | null,
+      rawInput?: string,
+    ) => {
       try {
         const res = await api.createManualTicker(
           selMatchId,
@@ -142,7 +164,8 @@ export function useTicker({ selMatchId, reload, instance, language, matchTickerM
           phase,
         );
         await reload.loadTickerTexts();
-        if (res?.data?.id) showPublishToast(res.data.id, rawInput || text, true);
+        if (res?.data?.id)
+          showPublishToast(res.data.id, rawInput || text, true);
       } catch (err) {
         logger.error("manualPublish error:", err);
       }
@@ -167,15 +190,19 @@ export function useTicker({ selMatchId, reload, instance, language, matchTickerM
     async (id: number) => {
       await api.deleteTicker(id);
       await reload.loadTickerTexts();
-      if (deleteToastTimerRef.current) clearTimeout(deleteToastTimerRef.current);
+      if (deleteToastTimerRef.current)
+        clearTimeout(deleteToastTimerRef.current);
       setDeleteToast(true);
-      deleteToastTimerRef.current = setTimeout(() => setDeleteToast(false), 2500);
+      deleteToastTimerRef.current = setTimeout(
+        () => setDeleteToast(false),
+        2500,
+      );
     },
     [reload],
   );
 
   // ── Context-Werte ─────────────────────────────────────────
-  const tickerModeCtx = useMemo(
+  const tickerModeCtx: TickerModeContextValue = useMemo(
     () => ({ mode, setMode: handleModeChange, acceptDraft, rejectDraft }),
     [mode, handleModeChange, acceptDraft, rejectDraft],
   );

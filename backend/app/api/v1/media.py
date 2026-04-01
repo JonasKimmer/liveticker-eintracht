@@ -13,7 +13,14 @@ Flow:
 
 import logging
 
-from fastapi import APIRouter, Depends, HTTPException, WebSocket, WebSocketDisconnect, status
+from fastapi import (
+    APIRouter,
+    Depends,
+    HTTPException,
+    WebSocket,
+    WebSocketDisconnect,
+    status,
+)
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
@@ -26,7 +33,11 @@ from app.schemas.media_queue import (
     MediaItemResponse,
     PublishMediaRequest,
 )
-from app.schemas.ticker_entry import TickerEntryCreate, TickerEntryResponse, TickerStatus
+from app.schemas.ticker_entry import (
+    TickerEntryCreate,
+    TickerEntryResponse,
+    TickerStatus,
+)
 from app.services.llm_service import generate_ticker_text
 
 logger = logging.getLogger(__name__)
@@ -64,7 +75,7 @@ class MediaConnectionManager:
         for ws in self.active_connections:
             try:
                 await ws.send_json(data)
-            except Exception:
+            except (WebSocketDisconnect, RuntimeError):
                 dead.append(ws)
         for ws in dead:
             self.disconnect(ws)
@@ -113,7 +124,9 @@ async def media_incoming(
             "items": [i.model_dump() for i in saved],
         }
         await manager.broadcast(payload)
-        logger.info("Saved %d new media items and broadcasted to WS clients.", len(saved))
+        logger.info(
+            "Saved %d new media items and broadcasted to WS clients.", len(saved)
+        )
 
     return {
         "saved": len(saved),
@@ -173,7 +186,10 @@ def media_publish(
     4. Gibt den fertigen Ticker-Eintrag zurück
     """
     media_repo = MediaQueueRepository(db)
-    media = require_or_404(media_repo.get_by_media_id(data.media_id), f"Media mit media_id={data.media_id} nicht gefunden.")
+    media = require_or_404(
+        media_repo.get_by_media_id(data.media_id),
+        f"Media mit media_id={data.media_id} nicht gefunden.",
+    )
 
     entry = TickerEntryRepository(db).create(
         TickerEntryCreate(
@@ -205,7 +221,9 @@ async def generate_media_caption(
     db: Session = Depends(get_db),
 ) -> dict:
     """Generiert per LLM einen Ticker-Text für ein ScorePlay-Bild."""
-    media = require_or_404(MediaQueueRepository(db).get_by_media_id(media_id), "Bild nicht gefunden")
+    media = require_or_404(
+        MediaQueueRepository(db).get_by_media_id(media_id), "Bild nicht gefunden"
+    )
 
     detail = media.name or f"ScorePlay Bild #{media_id}"
     text, model = await generate_ticker_text(

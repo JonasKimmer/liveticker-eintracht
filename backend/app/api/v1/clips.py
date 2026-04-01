@@ -250,7 +250,7 @@ def cache_thumbnail(
             )
             resp.raise_for_status()
             image_bytes = resp.content
-    except Exception as e:
+    except httpx.HTTPError as e:
         raise HTTPException(status_code=502, detail=f"Download fehlgeschlagen: {e}")
 
     content_type = resp.headers.get("content-type", "image/jpeg").split(";")[0]

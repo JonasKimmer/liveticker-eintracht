@@ -227,9 +227,9 @@ Die `type-coverage`-Metrik (Anteil explizit getypter Ausdrücke an allen Ausdrü
 | Migrationsbeginn                               | 78,33 %       | 885               |
 | Nach Grundmigration                            | ~84 %         | 0                 |
 | Nach Interface-Ausbau (Hooks, Panels)          | ~89 %         | 0                 |
-| **Endstand (nach `parseCommand`-Typisierung)** | **91,33 %**   | **0**             |
+| **Endstand (nach `parseCommand`-Typisierung)** | **95,84 %**   | **0**             |
 
-Der Wert von 91,33 % bedeutet: Von 18.460 gemessenen Typausdrücken sind 16.861 explizit getypt. Die verbleibenden ~8,7 % verteilen sich auf wenige, bewusst offen gelassene Stellen:
+Der Wert von 95,84 % bedeutet: Von 18.813 gemessenen Typausdrücken sind 18.031 explizit getypt. Die verbleibenden ~4,2 % verteilen sich auf wenige, bewusst offen gelassene Stellen:
 
 - **`MatchSelectorModal.tsx`**: Ein großes Modal mit komplexem internen State, in dem die Typisierung stark von einer kommenden API-Stabilisierung abhängt.
 - **`MediaPickerPanel.tsx` / `YouTubePanel.tsx` / `ClipPickerPanel.tsx`**: Media-Panels, die externe API-Responses (ScorePlay, YouTube) verarbeiten, deren Typen nicht vollständig spezifiziert sind.
@@ -292,7 +292,7 @@ Alle sechs Funktionen sind durch 18 Unit-Tests abgesichert (~96 % Coverage).
 
 ### 6.7.3 Provider-Vergleich
 
-Das System unterstützt fünf LLM-Provider in einer festen Fallback-Kette:
+Das System unterstützt fünf LLM-Provider in einer festen Prioritätskette, die beim Serverstart den ersten Provider mit gültigem API-Key als Singleton aktiviert:
 
 | Priorität | Provider   | Standard-Modell                    | Temperatur |
 | --------- | ---------- | ---------------------------------- | ---------- |
@@ -306,7 +306,7 @@ Der erste Provider mit konfiguriertem API-Key wird als Singleton aktiviert. Für
 
 **Ergebnisse des Provider-Vergleichs:**
 
-Im produktiven Render-Deployment sind OpenRouter (Priority 1) und Mock (Fallback) konfiguriert. Die übrigen Provider wurden mangels aktivierter API-Keys nicht evaluiert; ihre Einbindung ist architektonisch vollständig implementiert und in der Fallback-Kette priorisiert.
+Im produktiven Render-Deployment sind OpenRouter (Priority 1) und Mock (Fallback) konfiguriert. Die übrigen Provider wurden mangels aktivierter API-Keys nicht evaluiert; ihre Einbindung ist architektonisch vollständig implementiert und in der Prioritätskette vorgesehen.
 
 | Provider   | Modell                             | Korrektheit | Tonalität | Verständlichkeit | Gesamt  |
 | ---------- | ---------------------------------- | ----------- | --------- | ---------------- | ------- |
@@ -338,7 +338,7 @@ Da der Backend-Deduplizierungsmechanismus für identische `event_id` denselben E
 | euphorisch | „81. Minute: WAS IST DENN HIER LOS?! Collins mit der butterweichen Flanke! DOAN! Der Ball ist drin! TOOOOR! 1:0! Die Hütte bebt!" _(Eintracht Frankfurt vs. FSV Mainz 05, Md. 9)_ |
 | kritisch   | „4. Minute: TOOOOR! Kaminski bringt Köln in Führung! Ache mit der Vorlage, Kaminski vollendet eiskalt. 1:0!" _(1. FC Köln vs. Eintracht Frankfurt, Md. 11)_                       |
 
-**Beobachtung:** Die drei Stilprofile unterscheiden sich deutlich in Ausrufezeichen-Dichte, Wortwahl und Perspektive. Während `neutral` Fakten kompakt zusammenfasst, erzeugt `euphorisch` narrative Intensität durch Wiederholungen und Ausrufe. `kritisch` nähert sich dem neutralen Registre, enthält aber keine explizite analytische Einordnung — ein Hinweis darauf, dass das Prompt-Design für dieses Profil noch Optimierungspotenzial bietet (vgl. 6.8.4).
+**Beobachtung:** Die drei Stilprofile unterscheiden sich deutlich in Ausrufezeichen-Dichte, Wortwahl und Perspektive. Während `neutral` Fakten kompakt zusammenfasst, erzeugt `euphorisch` narrative Intensität durch Wiederholungen und Ausrufe. `kritisch` nähert sich dem neutralen Register, enthält aber keine explizite analytische Einordnung — ein Hinweis darauf, dass das Prompt-Design für dieses Profil noch Optimierungspotenzial bietet (vgl. 6.8.4).
 
 ### 6.7.5 Einfluss von Few-Shot-Referenzen
 
@@ -467,13 +467,13 @@ Ein kontrollierter Vergleich derselben Spiels in allen drei Modi war im Evaluati
 
 | Metrik                       | auto                     | coop                          | manual                  |
 | ---------------------------- | ------------------------ | ----------------------------- | ----------------------- |
-| Ø TTP (Sekunden)             | ≈ 5,9 s                  | ≈ 15–30 s                     | 30–120 s                |
+| Ø TTP (Sekunden)             | ≈ 3,4–5,9 s              | ≈ 15–30 s                     | ≈ 30–120 s (geschätzt)  |
 | Einträge pro Spiel           | alle Events (typ. 12–21) | alle Events                   | redaktionell selektiert |
 | Korrektheit (Ø, 1–5)         | 4,3                      | 5,0 (nach Freigabe)           | 5,0                     |
 | Anteil retrahierter Einträge | geschätzt 5–10 %         | 0 % (vor Publikation geprüft) | 0 %                     |
 | Redakteur-Interventionen     | 0                        | 1 pro Eintrag                 | alle                    |
 
-_TTP-Schätzungen basieren auf den Latenzmessungen aus Abschnitt 6.10.1 (Median: 859 ms) und dem Polling-Intervall von 5.000 ms (vgl. 6.10.3). Manual: Zeitaufwand für Texterstellung unter Livebedingungen aus Kapitel 2.1._
+_TTP-Schätzungen basieren auf den Latenzmessungen aus Abschnitt 6.10.1 (Median: 859 ms) und dem Polling-Intervall von 5.000 ms (vgl. 6.10.3). Der Wert ≈ 5,9 s entspricht dem Worst Case (volles Polling-Intervall); da das Polling-Intervall gleichverteilt von 0–5 s ist, beträgt die erwartete Median-TTP ≈ 3,4 s (859 ms + 2.500 ms Erwartungswert). Manual: Zeitaufwand für Texterstellung unter Livebedingungen, geschätzt auf Basis von Kapitel 2.1._
 
 Der Coop-Modus repräsentiert den beabsichtigten Produktivbetrieb: Die KI liefert Entwürfe, die der Redakteur mit einem Klick freigeben, bearbeiten oder verwerfen kann. Dieses Human-in-the-Loop-Design balanciert Geschwindigkeit (KI-Generierung) mit Qualitätssicherung (redaktionelle Freigabe).
 
@@ -535,7 +535,7 @@ Die in Kapitel 2.6 hergeleiteten Anforderungen werden im Folgenden gegen den imp
 | Nr. | Anforderung                                            | Status | Nachweis / Anmerkung                                                          |
 | --- | ------------------------------------------------------ | ------ | ----------------------------------------------------------------------------- |
 | F1  | Drei Betriebsmodi (auto, coop, manual)                 | ✅     | Zur Laufzeit umschaltbar per `PATCH /matches/{id}/ticker-mode`; 2 API-Tests   |
-| F2  | KI-Textgenerierung für alle Event-Typen                | ✅     | 23 Event-Typen in `EVENT_TYPE_LABEL` gemappt; Bulk-Endpoint für alle Events   |
+| F2  | KI-Textgenerierung für alle Event-Typen                | ✅     | 24 Event-Typen in `EVENT_TYPE_LABEL` gemappt; Bulk-Endpoint für alle Events   |
 | F3  | Drei Stilprofile (neutral, euphorisch, kritisch)       | ✅     | Über `STYLE_DESC` im Prompt parametrisiert; per Match konfigurierbar          |
 | F4  | Few-Shot-Prompting mit Stilreferenzen                  | ✅     | Bis zu 3 Referenzen aus `style_references`-Tabelle; gefiltert nach Event-Typ  |
 | F5  | Ticker-Lifecycle (draft → published / rejected)        | ✅     | State-Machine mit `publish`, `reject`, `retract`; 20 Ticker-API-Tests         |
@@ -554,7 +554,7 @@ Die in Kapitel 2.6 hergeleiteten Anforderungen werden im Folgenden gegen den imp
 | N1  | Concurrency-Begrenzung für LLM-Aufrufe | ✅     | `asyncio.Semaphore(8)` in `ticker_service.py`                                                                          |
 | N2  | Retry-Logik mit Rate-Limit-Erkennung   | ✅     | 3 Versuche; 30s/60s bei Rate-Limit (`LLM_RATE_LIMIT_WAIT_BASE_S × attempt`); 1s/2s bei sonstigen Fehlern (`2^attempt`) |
 | N3  | Transaktionale Testisolierung          | ✅     | Rollback-basierte DB-Fixtures; keine persistenten Testdaten                                                            |
-| N4  | TypeScript-Typsicherheit               | ✅     | 91,33 % type-coverage; 0 Compiler-Fehler                                                                               |
+| N4  | TypeScript-Typsicherheit               | ✅     | 95,84 % type-coverage; 0 Compiler-Fehler                                                                               |
 | N5  | Responsive UI (Mobile-tauglich)        | ✅     | Playwright-Test mit 375×812 Viewport; Mobile Tab Bar                                                                   |
 | N6  | Fehlerresistenz im Frontend            | ✅     | `ErrorBoundary` mit Fallback-UI; 4 dedizierte Tests                                                                    |
 
@@ -563,7 +563,7 @@ Die in Kapitel 2.6 hergeleiteten Anforderungen werden im Folgenden gegen den imp
 | Nr. | Anforderung                                     | Status | Nachweis / Anmerkung                                                         |
 | --- | ----------------------------------------------- | ------ | ---------------------------------------------------------------------------- |
 | A1  | Drei-Schichten-Architektur                      | ✅     | Data-Ingestion (n8n), Application (FastAPI+PostgreSQL), Presentation (React) |
-| A2  | Repository-Pattern                              | ✅     | 12 Repository-Klassen ohne Vererbungshierarchie                              |
+| A2  | Repository-Pattern                              | ✅     | 13 Repository-Klassen ohne Vererbungshierarchie                              |
 | A3  | 70+ API-Endpunkte unter `/api/v1`               | ✅     | 14 Router-Dateien; 81 API-Tests                                              |
 | A4  | 17 ORM-Modelle / 18 Datenbanktabellen           | ✅     | 100 % Model-Coverage in Tests                                                |
 | A5  | White-Label-Fähigkeit (ef_whitelabel / generic) | ✅     | Instanz-spezifische Kontextaufbereitung und Few-Shot-Filterung               |
@@ -620,7 +620,7 @@ Die 15 n8n-Workflows (vgl. Kapitel 5.7) verfügen über keine automatisierten Te
 | Backend-Tests          | Testanzahl         | **198 Tests**        |
 | Backend-Tests          | Ergebnis           | **198/198 grün**     |
 | Backend-Coverage       | Statement Coverage | **75 %**             |
-| TypeScript-Migration   | type-coverage      | **91,33 %**          |
+| TypeScript-Migration   | type-coverage      | **95,84 %**          |
 | TypeScript-Migration   | Compiler-Fehler    | **0**                |
 | TypeScript-Migration   | Ausgangspunkt      | 78,33 % / 885 Fehler |
 
@@ -630,11 +630,11 @@ Von 23 definierten Anforderungen (12 funktionale, 6 nicht-funktionale, 5 archite
 
 ### 6.13.3 KI-Textqualität
 
-Die KI-generierten Texte (Modell: `google/gemini-2.0-flash-lite-001`, N = 16) erreichten auf einer 5-Punkte-Skala einen **Gesamtdurchschnitt von 4,3 / 5** (Korrektheit: 4,6, Tonalität: 4,1, Verständlichkeit: 4,3). Die größten Stärken liegen in der Faktentreue und der Genrekonformität (kurze, mündlichkeitsnahe Texte); die häufigste Fehlerklasse ist die Stil-Inkonsistenz des neutralen Profils (19 %). Die gemessene LLM-Latenz (Median: 859 ms) ermöglicht im `auto`-Modus eine geschätzte TTP von ≈ 5,9 s. Der `coop`-Modus erweist sich als optimaler Kompromiss: er kombiniert KI-Geschwindigkeit mit redaktioneller Qualitätssicherung.
+Die KI-generierten Texte (Modell: `google/gemini-2.0-flash-lite-001`, N = 16) erreichten auf einer 5-Punkte-Skala einen **Gesamtdurchschnitt von 4,3 / 5** (Korrektheit: 4,6, Tonalität: 4,1, Verständlichkeit: 4,3). Die größten Stärken liegen in der Faktentreue und der Genrekonformität (kurze, mündlichkeitsnahe Texte); die häufigste Fehlerklasse ist die Stil-Inkonsistenz des neutralen Profils (19 %). Die gemessene LLM-Latenz (Median: 859 ms) ermöglicht im `auto`-Modus eine geschätzte TTP von ≈ 3,4–5,9 s (Erwartungswert bis Worst Case, vgl. 6.9.2). Der `coop`-Modus erweist sich als optimaler Kompromiss: er kombiniert KI-Geschwindigkeit mit redaktioneller Qualitätssicherung.
 
 ### 6.13.4 Gesamtbewertung
 
-Die Kombination aus 391 automatisierten Tests (187 Frontend + 198 Backend + 6 E2E), einer TypeScript-Coverage von 91,33 % bei null Compiler-Fehlern und einer vollständig umgesetzten Testpyramide dokumentiert eine technisch reife Codebasis. Die Teststrategie priorisiert bewusst den kritischen Redaktionspfad: Alle Kern-Workflows (Command-Parsing, Ticker-Lifecycle, LLM-Integration, Event-Verarbeitung) sind durch Unit- und Integrationstests abgesichert.
+Die Kombination aus 391 automatisierten Tests (187 Frontend + 198 Backend + 6 E2E), einer TypeScript-Coverage von 95,84 % bei null Compiler-Fehlern und einer vollständig umgesetzten Testpyramide dokumentiert eine technisch reife Codebasis. Die Teststrategie priorisiert bewusst den kritischen Redaktionspfad: Alle Kern-Workflows (Command-Parsing, Ticker-Lifecycle, LLM-Integration, Event-Verarbeitung) sind durch Unit- und Integrationstests abgesichert.
 
 Die funktionale Evaluation zeigt, dass alle 12 Kernanforderungen an das System erfüllt sind. Die qualitative Textanalyse identifiziert sowohl Stärken (Geschwindigkeit, Formatierungstreue, Faktenübernahme aus dem Kontext) als auch Grenzen (stilistische Wiederholungen, gelegentliche Halluzinationen ohne Few-Shot-Referenzen) der KI-Generierung. Für einen produktiven Einsatz sind insbesondere die Ergänzung einer Authentifizierungsschicht, die Ausweitung der E2E-Tests auf den vollständigen Redaktionsworkflow und eine externe Nutzerstudie mit professionellen Sportredakteuren empfehlenswert.
 

@@ -300,7 +300,7 @@ Schreibe in exakt diesem Stil (Rhythmus, Wortwahl, Emotionalität):
 
 Der vollständig zusammengesetzte System-Prompt folgt der in Abschnitt 4.5.2 beschriebenen modularen Struktur aus sechs Bausteinen (Rolleninstruktion, Faktenblock, Match-Kontext, optionale Prematch-Instruktion, Few-Shot-Block, Regelblock). Die vier `_build_*`-Methoden erzeugen die Bausteine unabhängig voneinander, sodass fehlende Informationen (z. B. kein Spieler bei Phasenereignissen) den Prompt nicht invalidieren, sondern den entsprechenden Block auslassen.
 
-LLM-Parameter: `temperature=0.3` für konsistente Ausgaben, `max_tokens` aus `LLM_MAX_TOKENS` (konfigurierbar). Bei Rate-Limit-Fehlern oder transienten Ausnahmen werden bis zu `LLM_RETRY_ATTEMPTS` (3) Versuche mit Backoff `30 s / 60 s` unternommen.
+LLM-Parameter: `temperature=0.3` für konsistente Ausgaben, `max_tokens` aus `LLM_MAX_TOKENS` (konfigurierbar). Bei Rate-Limit-Fehlern werden bis zu `LLM_RETRY_ATTEMPTS` (3) Versuche mit linearem Backoff (`30 s / 60 s / 90 s`) unternommen; bei sonstigen transienten Fehlern greift exponentielles Backoff (`1 s / 2 s / 4 s`).
 
 **Normalisierung des Event-Typs** erfolgt vorab in `_normalize_event_type()`. Die `EVENT_TYPE_MAP` übersetzt externe Strings (Partner-API: `PartnerGoal`, Football-API: `Goal`) auf interne Bezeichner (`goal`). Nicht erkannte Typen fallen auf `"comment"` zurück.
 
@@ -659,7 +659,7 @@ export interface TickerEntry {
 }
 ```
 
-**Ergebnis** — Nach der Migration erzielt das Projekt **0 TypeScript-Compilerfehler** und eine **type-coverage von 91,33 %** (gemessen mit `type-coverage --strict`). Die detaillierte Darstellung der Migrationsergebnisse und die Analyse der verbleibenden untypisierten Stellen folgt in Kapitel 6.6.
+**Ergebnis** — Nach der Migration erzielt das Projekt **0 TypeScript-Compilerfehler** und eine **type-coverage von 95,84 %** (gemessen mit `type-coverage --strict`). Die detaillierte Darstellung der Migrationsergebnisse und die Analyse der verbleibenden untypisierten Stellen folgt in Kapitel 6.6.
 
 ---
 
@@ -964,4 +964,4 @@ Fünf Aspekte verdienen eine kritische Einordnung:
 
 **Fünftens** ist die Few-Shot-Infrastruktur vollständig implementiert — der Scraping-Workflow befüllt `style_references` mit echten EF-Liveticker-Texten, `StyleReferenceRepository.get_samples()` lädt sie mit liga-spezifischer Suche und automatischem Fallback, und `_build_few_shot_block()` bettet sie in den Prompt ein. In der Praxis greifen jedoch zwei Einschränkungen: (a) Die Demo-App-Workflows (`13_Halftime_aftertime.json`) rufen OpenRouter direkt auf und umgehen das Backend-LLM-Service, sodass Few-Shot dort nicht wirksam wird. (b) Der liga-spezifische Filter (`func.lower(style_references.league) == league.lower()`) fällt auf die liga-agnostische Suche zurück, wenn zu wenige Beispieleinträge für die konkrete Liga in der Datenbank vorhanden sind — was bei kleinen Stildatenbeständen häufig der Fall ist. Beide Punkte sind behebbar, beeinträchtigen aber die grundsätzliche Funktionsfähigkeit der Stilgenerierung nicht.
 
-Insgesamt belegen die Metriken — 0 TypeScript-Fehler, 91,33 % type-coverage, 187 Frontend-Tests, 198 Backend-Tests mit 75 % Coverage, 6 E2E-Tests — einen konsistenten Qualitätsanspruch, der über den Rahmen eines typischen akademischen Projekts hinausgeht. Die vollständige Implementierung bildet damit die Grundlage für die systematische Evaluation in Kapitel 6, die sowohl die technischen Qualitätsmetriken als auch die KI-Textgenerierung gegen die in Kapitel 2.6 definierten Anforderungen prüft und die Forschungsfrage aus Kapitel 1.2 quantitativ beantwortet.
+Insgesamt belegen die Metriken — 0 TypeScript-Fehler, 95,84 % type-coverage, 187 Frontend-Tests, 198 Backend-Tests mit 75 % Coverage, 6 E2E-Tests — einen konsistenten Qualitätsanspruch, der über den Rahmen eines typischen akademischen Projekts hinausgeht. Die vollständige Implementierung bildet damit die Grundlage für die systematische Evaluation in Kapitel 6, die sowohl die technischen Qualitätsmetriken als auch die KI-Textgenerierung gegen die in Kapitel 2.6 definierten Anforderungen prüft und die Forschungsfrage aus Kapitel 1.2 quantitativ beantwortet.

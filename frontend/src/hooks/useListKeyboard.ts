@@ -9,7 +9,13 @@ import { useState, useEffect, useCallback, useRef } from "react";
  *
  * Tasten: ArrowDown / ArrowUp navigieren, Enter wählt aus, Escape schließt.
  */
-export function useListKeyboard(items: any[], { onSelect, onClose }: { onSelect?: (item: any) => void; onClose?: () => void } = {}) {
+export function useListKeyboard<T>(
+  items: T[],
+  {
+    onSelect,
+    onClose,
+  }: { onSelect?: (item: T) => void; onClose?: () => void } = {},
+) {
   const [activeIdx, setActiveIdx] = useState(0);
 
   // Index zurücksetzen wenn sich die Liste ändert (z.B. durch Suche)
@@ -21,10 +27,18 @@ export function useListKeyboard(items: any[], { onSelect, onClose }: { onSelect?
   const onSelectRef = useRef(onSelect);
   const onCloseRef = useRef(onClose);
 
-  useEffect(() => { itemsRef.current = items; }, [items]);
-  useEffect(() => { activeIdxRef.current = activeIdx; }, [activeIdx]);
-  useEffect(() => { onSelectRef.current = onSelect; }, [onSelect]);
-  useEffect(() => { onCloseRef.current = onClose; }, [onClose]);
+  useEffect(() => {
+    itemsRef.current = items;
+  }, [items]);
+  useEffect(() => {
+    activeIdxRef.current = activeIdx;
+  }, [activeIdx]);
+  useEffect(() => {
+    onSelectRef.current = onSelect;
+  }, [onSelect]);
+  useEffect(() => {
+    onCloseRef.current = onClose;
+  }, [onClose]);
 
   const onKeyDown = useCallback((e) => {
     const its = itemsRef.current;

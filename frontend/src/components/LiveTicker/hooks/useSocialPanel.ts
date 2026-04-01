@@ -1,21 +1,27 @@
 import { useState, useCallback, useEffect } from "react";
 import { deleteClip } from "api";
+import type { Clip } from "../../../types";
+
+type StatusMsg = { type: "error" | "success"; text: string };
 
 /**
  * useSocialPanel
  *
  * Shared state + logic for Instagram and Twitter panels.
  *
- * @param {() => Promise} fetchFn   – API call to load posts (e.g. fetchInstagramPosts)
- * @param {() => Promise} importFn  – API call to trigger n8n import
+ * @param fetchFn   – API call to load posts (e.g. fetchInstagramPosts)
+ * @param importFn  – API call to trigger n8n import
  */
-export function useSocialPanel(fetchFn, importFn) {
+export function useSocialPanel(
+  fetchFn: () => Promise<{ data: Clip[] }>,
+  importFn: () => Promise<unknown>,
+) {
   const [open, setOpen] = useState(false);
-  const [posts, setPosts] = useState([]);
+  const [posts, setPosts] = useState<Clip[]>([]);
   const [loading, setLoading] = useState(false);
   const [importing, setImporting] = useState(false);
-  const [modalPost, setModalPost] = useState(null);
-  const [statusMsg, setStatusMsg] = useState(null);
+  const [modalPost, setModalPost] = useState<Clip | null>(null);
+  const [statusMsg, setStatusMsg] = useState<StatusMsg | null>(null);
 
   const loadPosts = useCallback(async () => {
     setLoading(true);
@@ -40,22 +46,28 @@ export function useSocialPanel(fetchFn, importFn) {
     setStatusMsg(null);
     try {
       await importFn();
-      setStatusMsg({ type: "success", text: "Import gestartet – lade in 3s neu…" });
+      setStatusMsg({
+        type: "success",
+        text: "Import gestartet – lade in 3s neu…",
+      });
       setTimeout(() => loadPosts(), 3000);
     } catch {
-      setStatusMsg({ type: "error", text: "n8n-Workflow konnte nicht gestartet werden." });
+      setStatusMsg({
+        type: "error",
+        text: "n8n-Workflow konnte nicht gestartet werden.",
+      });
     } finally {
       setImporting(false);
     }
   }, [importFn, loadPosts]);
 
-  const handlePublished = useCallback((postId) => {
+  const handlePublished = useCallback((postId: number) => {
     setPosts((prev) => prev.filter((p) => p.id !== postId));
     setModalPost(null);
     setStatusMsg({ type: "success", text: "✓ Im Liveticker veröffentlicht!" });
   }, []);
 
-  const handleDelete = useCallback(async (postId) => {
+  const handleDelete = useCallback(async (postId: number) => {
     try {
       await deleteClip(postId);
       setPosts((prev) => prev.filter((p) => p.id !== postId));
@@ -72,11 +84,13 @@ export function useSocialPanel(fetchFn, importFn) {
   }, [statusMsg]);
 
   return {
-    open, setOpen,
+    open,
+    setOpen,
     posts,
     loading,
     importing,
-    modalPost, setModalPost,
+    modalPost,
+    setModalPost,
     statusMsg,
     loadPosts,
     handleImport,

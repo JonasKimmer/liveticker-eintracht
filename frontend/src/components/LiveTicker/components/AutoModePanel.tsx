@@ -1,4 +1,4 @@
-import { EventCard } from "./EventCard";
+import { EventCard } from "./entry/EventCard";
 import { useTickerDataContext } from "context/TickerDataContext";
 
 /**
@@ -15,7 +15,10 @@ interface AutoModePanelProps {
   autoError: string | null;
 }
 
-export function AutoModePanel({ pendingEvents, autoError }: AutoModePanelProps) {
+export function AutoModePanel({
+  pendingEvents,
+  autoError,
+}: AutoModePanelProps) {
   const { tickerTexts } = useTickerDataContext();
   return (
     <>
@@ -56,4 +59,3 @@ export function AutoModePanel({ pendingEvents, autoError }: AutoModePanelProps) 
     </>
   );
 }
-

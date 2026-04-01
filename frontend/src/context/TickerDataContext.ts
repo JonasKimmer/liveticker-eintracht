@@ -9,23 +9,35 @@
  */
 
 import { createContext, useContext } from "react";
-import type { Match, MatchEvent, TickerEntry, ReloadFunctions } from "../types";
+import type {
+  Match,
+  MatchEvent,
+  TickerEntry,
+  ReloadFunctions,
+  LineupEntry,
+  MatchStat,
+  Player,
+  PlayerStat,
+  InjuryGroup,
+} from "../types";
 
 export interface TickerDataContextValue {
   match: Match | null;
   events: MatchEvent[];
   tickerTexts: TickerEntry[];
   prematch: TickerEntry[];
-  lineups: unknown;
-  matchStats: unknown;
-  players: unknown[];
-  playerStats: unknown[];
-  injuries: unknown;
+  lineups: LineupEntry[];
+  matchStats: MatchStat[];
+  players: Player[];
+  playerStats: PlayerStat[];
+  injuries: InjuryGroup[];
   reload: ReloadFunctions;
   generatingId: number | null;
 }
 
-export const TickerDataContext = createContext<TickerDataContextValue | null>(null);
+export const TickerDataContext = createContext<TickerDataContextValue | null>(
+  null,
+);
 
 /**
  * Hook zum Konsumieren des TickerDataContext.
@@ -33,6 +45,9 @@ export const TickerDataContext = createContext<TickerDataContextValue | null>(nu
  */
 export function useTickerDataContext(): TickerDataContextValue {
   const ctx = useContext(TickerDataContext);
-  if (!ctx) throw new Error("useTickerDataContext must be used within TickerDataContext.Provider");
+  if (!ctx)
+    throw new Error(
+      "useTickerDataContext must be used within TickerDataContext.Provider",
+    );
   return ctx;
 }

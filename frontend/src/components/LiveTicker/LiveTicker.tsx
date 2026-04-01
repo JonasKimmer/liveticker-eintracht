@@ -20,7 +20,7 @@ import { TickerDataContext } from "../../context/TickerDataContext";
 import { TickerActionsContext } from "../../context/TickerActionsContext";
 import config from "../../config/whitelabel";
 
-import { NAV_TABS } from "./constants";
+import { NAV_TABS, API_STATUS_CFG } from "./constants";
 import { LoadingScreen } from "./components/LoadingScreen";
 import { MatchHeader } from "./components/MatchHeader";
 import { ModeSelector } from "./components/ModeSelector";
@@ -32,7 +32,7 @@ import { StartScreen } from "./components/StartScreen";
 import { Breadcrumb } from "./components/Breadcrumb";
 import { NavDrawer } from "./components/NavDrawer";
 import { LanguagePicker } from "./components/LanguagePicker";
-import { useApiStatus, API_STATUS_CFG } from "../../hooks/useApiStatus";
+import { useApiStatus } from "../../hooks/useApiStatus";
 import { useKeyboardShortcuts } from "../../hooks/useKeyboardShortcuts";
 import { useMatchTriggers } from "../../hooks/useMatchTriggers";
 import { usePanelResize } from "../../hooks/usePanelResize";
@@ -40,6 +40,7 @@ import { CommandsModal } from "./components/CommandsModal";
 import { PublishToast } from "./components/PublishToast";
 import { useTicker } from "./hooks/useTicker";
 import ErrorBoundary from "../ErrorBoundary";
+import { isOurTeamMatch } from "../../utils/isOurTeamMatch";
 
 export default function LiveTicker() {
   // ── Navigation (Länder / Teams / Wettbewerbe / Spiele) ────
@@ -87,21 +88,18 @@ export default function LiveTicker() {
   const apiCfg = API_STATUS_CFG[apiStatus];
 
   // ── Instance + Style: automatisch EF wenn Frankfurt-Spiel ──
-  const isEfMatch = useMemo(() => {
-    const kw = config.teamKeyword?.toLowerCase() ?? "";
-    if (!kw || !match) return false;
-    const home = match.homeTeam?.name?.toLowerCase() ?? "";
-    const away = match.awayTeam?.name?.toLowerCase() ?? "";
-    return home.includes(kw) || away.includes(kw);
-  }, [match]);
+  const isEfMatch = useMemo(
+    () => isOurTeamMatch(match, config.teamKeyword ?? ""),
+    [match],
+  );
   const instance = isEfMatch ? "ef_whitelabel" : "generic";
   const efStyle = isEfMatch ? "euphorisch" : "neutral";
 
   // ── Language ───────────────────────────────────────────────
   const [language, setLanguage] = useState("de");
-  const translateDebounceRef = useRef(null);
+  const translateDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const handleLanguageChange = useCallback(
-    (lang) => {
+    (lang: string) => {
       setLanguage(lang);
       if (!selMatchId || lang === language) return;
       if (translateDebounceRef.current)
@@ -127,7 +125,13 @@ export default function LiveTicker() {
     setPublishToast,
     handleRetract,
     deleteToast,
-  } = useTicker({ selMatchId, reload, instance, language, matchTickerMode: match?.tickerMode });
+  } = useTicker({
+    selMatchId,
+    reload,
+    instance,
+    language,
+    matchTickerMode: match?.tickerMode,
+  });
 
   // ── Mobile Panel: Modus-abhängig wechseln ─────────────────
   useEffect(() => {
@@ -136,8 +140,32 @@ export default function LiveTicker() {
   }, [mode]);
 
   const tickerDataCtx = useMemo(
-    () => ({ match, events, tickerTexts, prematch, lineups, matchStats, players, playerStats, injuries, reload, generatingId }),
-    [match, events, tickerTexts, prematch, lineups, matchStats, players, playerStats, injuries, reload, generatingId],
+    () => ({
+      match,
+      events,
+      tickerTexts,
+      prematch,
+      lineups,
+      matchStats,
+      players,
+      playerStats,
+      injuries,
+      reload,
+      generatingId,
+    }),
+    [
+      match,
+      events,
+      tickerTexts,
+      prematch,
+      lineups,
+      matchStats,
+      players,
+      playerStats,
+      injuries,
+      reload,
+      generatingId,
+    ],
   );
 
   // ── n8n Webhooks + Auto-Imports ───────────────────────────
@@ -162,7 +190,7 @@ export default function LiveTicker() {
     onShowCommands: () => setShowCommands(true),
   });
 
-  const topBarRef = useRef(null);
+  const topBarRef = useRef<HTMLDivElement | null>(null);
 
   // Synchron vor Paint messen wenn Match sich ändert (MatchHeader/ModeBar erscheinen)
   useLayoutEffect(() => {
@@ -200,7 +228,7 @@ export default function LiveTicker() {
   }
 
   return (
-    <TickerModeContext.Provider value={tickerModeCtx as any}>
+    <TickerModeContext.Provider value={tickerModeCtx}>
       <TickerDataContext.Provider value={tickerDataCtx}>
         <TickerActionsContext.Provider value={tickerActionsCtx}>
           <div className="lt">
@@ -312,7 +340,6 @@ export default function LiveTicker() {
                   <ErrorBoundary>
                     <CenterPanel
                       currentMinute={liveMinute}
-                      generatingId={generatingId}
                       instance={instance}
                       lineups={lineups}
                       players={players}
@@ -345,15 +372,7 @@ export default function LiveTicker() {
                   }}
                 />
                 <ErrorBoundary>
-                  <RightPanel
-                    match={match}
-                    matchStats={matchStats}
-                    players={players}
-                    playerStats={playerStats}
-                    lineups={lineups}
-                    events={events}
-                    injuries={injuries}
-                  />
+                  <RightPanel />
                 </ErrorBoundary>
               </div>
             </main>

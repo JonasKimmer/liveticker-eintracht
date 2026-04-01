@@ -1,16 +1,16 @@
 import { useState, useEffect, memo, useMemo } from "react";
-import { AIDraft } from "../components/AIDraft";
+import { AIDraft } from "../components/entry/AIDraft";
 import { AutoModePanel } from "../components/AutoModePanel";
 import { CollapsibleSection } from "../components/CollapsibleSection";
-import { EntryEditor } from "../components/EntryEditor";
-import { EventCard } from "../components/EventCard";
-import { MediaPickerPanel } from "../components/MediaPickerPanel";
-import { ClipPickerPanel } from "../components/ClipPickerPanel";
-import { SummarySection } from "../components/SummarySection";
-import { PublishedSummarySection } from "../components/PublishedSummarySection";
-import { YouTubePanel } from "../components/YouTubePanel";
-import { TwitterPanel } from "../components/TwitterPanel";
-import { InstagramPanel } from "../components/InstagramPanel";
+import { EntryEditor } from "../components/entry/EntryEditor";
+import { EventCard } from "../components/entry/EventCard";
+import { MediaPickerPanel } from "../components/media/MediaPickerPanel";
+import { ClipPickerPanel } from "../components/media/ClipPickerPanel";
+import { SummarySection } from "../components/summary/SummarySection";
+import { PublishedSummarySection } from "../components/summary/PublishedSummarySection";
+import { YouTubePanel } from "../components/social/YouTubePanel";
+import { TwitterPanel } from "../components/social/TwitterPanel";
+import { InstagramPanel } from "../components/social/InstagramPanel";
 import { MODES, AUTO_ERROR_TIMEOUT_MS } from "../constants";
 import { useTickerModeContext } from "context/TickerModeContext";
 import { useTickerDataContext } from "context/TickerDataContext";
@@ -18,11 +18,11 @@ import { useAutoPublisher } from "../hooks/useAutoPublisher";
 import { useBulkActions } from "../hooks/useBulkActions";
 import { useEventDraft } from "../hooks/useEventDraft";
 import config from "config/whitelabel";
+import { isOurTeamMatch } from "utils/isOurTeamMatch";
 import type { LineupEntry, Player } from "../../../types";
 
 interface CenterPanelProps {
   currentMinute?: number;
-  generatingId: number | null;
   instance?: string;
   lineups: LineupEntry[];
   players: Player[];
@@ -30,13 +30,12 @@ interface CenterPanelProps {
 
 export const CenterPanel = memo<CenterPanelProps>(function CenterPanel({
   currentMinute = 0,
-  generatingId,
   instance = "ef_whitelabel",
   lineups = [],
   players = [],
 }: CenterPanelProps) {
   const { mode } = useTickerModeContext();
-  const { match, tickerTexts } = useTickerDataContext();
+  const { match, tickerTexts, generatingId } = useTickerDataContext();
 
   const playerNames = useMemo(() => {
     const fromLineup = lineups.map((l) => l.playerName).filter(Boolean);
@@ -51,14 +50,14 @@ export const CenterPanel = memo<CenterPanelProps>(function CenterPanel({
                 `${p.firstName ?? ""} ${p.lastName ?? ""}`.trim(),
             )
             .filter(Boolean);
-    const teamNames = [match?.homeTeam?.name, match?.awayTeam?.name].filter(Boolean);
+    const teamNames = [match?.homeTeam?.name, match?.awayTeam?.name].filter(
+      Boolean,
+    );
     return [...new Set([...fromPlayers, ...teamNames])];
   }, [lineups, players, match]);
 
   const isOurTeam = useMemo(
-    () =>
-      match?.homeTeam?.name?.toLowerCase().includes(config.teamKeyword) ||
-      match?.awayTeam?.name?.toLowerCase().includes(config.teamKeyword),
+    () => isOurTeamMatch(match, config.teamKeyword ?? ""),
     [match],
   );
 
@@ -106,7 +105,8 @@ export const CenterPanel = memo<CenterPanelProps>(function CenterPanel({
   useEffect(() => {
     if (!pendingAutoExpandId) return;
     const targetDraft = tickerTexts.find(
-      (t) => t.id === pendingAutoExpandId && t.status === "draft" && !t.event_id,
+      (t) =>
+        t.id === pendingAutoExpandId && t.status === "draft" && !t.event_id,
     );
     if (targetDraft) {
       setSelectedSummaryDraftId(pendingAutoExpandId);
@@ -128,7 +128,6 @@ export const CenterPanel = memo<CenterPanelProps>(function CenterPanel({
   return (
     <div className="lt-col lt-col--events">
       <div className="lt-center__inner">
-
         {/* ── AUTO ──────────────────────────────────────────── */}
         {mode === MODES.AUTO && (
           <AutoModePanel pendingEvents={pendingEvents} autoError={autoError} />
@@ -171,13 +170,16 @@ export const CenterPanel = memo<CenterPanelProps>(function CenterPanel({
               <CollapsibleSection
                 title="Events"
                 count={pendingEvents.length}
-                onToggle={(open) => { if (!open) setSelectedEventId(null); }}
+                onToggle={(open) => {
+                  if (!open) setSelectedEventId(null);
+                }}
                 actions={
                   pendingEvents.length > 1 ? (
                     <div style={{ display: "flex", gap: "0.4rem" }}>
                       {pendingEvents.some((ev) =>
                         tickerTexts.find(
-                          (t) => t.event_id === ev.id && t.status !== "published",
+                          (t) =>
+                            t.event_id === ev.id && t.status !== "published",
                         ),
                       ) && (
                         <button
@@ -298,7 +300,10 @@ export const CenterPanel = memo<CenterPanelProps>(function CenterPanel({
               <TwitterPanel matchId={match.id} currentMinute={currentMinute} />
             </div>
             <div style={{ marginTop: "0.5rem" }}>
-              <InstagramPanel matchId={match.id} currentMinute={currentMinute} />
+              <InstagramPanel
+                matchId={match.id}
+                currentMinute={currentMinute}
+              />
             </div>
           </>
         )}

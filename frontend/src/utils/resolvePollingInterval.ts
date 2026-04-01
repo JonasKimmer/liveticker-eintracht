@@ -1,4 +1,4 @@
-import { POLL_EVENTS_MS, POLL_PREMATCH_MS } from "../components/LiveTicker/constants";
+import { POLL_EVENTS_MS, POLL_PREMATCH_MS } from "../constants";
 
 /**
  * Gibt das Polling-Intervall in ms basierend auf dem Spielstatus zurück.
@@ -10,9 +10,11 @@ import { POLL_EVENTS_MS, POLL_PREMATCH_MS } from "../components/LiveTicker/const
  * @param {string|null} matchState
  * @returns {number}
  */
-export function resolvePollingInterval(matchState: string | null | undefined): number {
-  if (matchState === "Live")     return POLL_EVENTS_MS;
+export function resolvePollingInterval(
+  matchState: string | null | undefined,
+): number {
+  if (matchState === "Live") return POLL_EVENTS_MS;
   if (matchState === "FullTime") return POLL_EVENTS_MS;
-  if (matchState == null)        return POLL_EVENTS_MS;
+  if (matchState == null) return POLL_EVENTS_MS;
   return POLL_PREMATCH_MS;
 }

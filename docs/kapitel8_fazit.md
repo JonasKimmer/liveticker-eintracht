@@ -12,14 +12,14 @@ Die technische Evaluation (Kapitel 6.2–6.6) dokumentiert eine produktionsnahe 
 
 - **391 automatisierte Tests** (187 Frontend, 198 Backend, 6 E2E), alle grün
 - **75 % Backend-Coverage** mit vollständiger Abdeckung der Modell- und Schema-Schichten
-- **91,33 % TypeScript-Coverage** bei null Compiler-Fehlern, ausgehend von einer reinen JavaScript-Codebasis (78,33 %, 885 Fehler)
+- **95,84 % TypeScript-Coverage** bei null Compiler-Fehlern, ausgehend von einer reinen JavaScript-Codebasis (78,33 %, 885 Fehler)
 - Vollständig umgesetzte **Testpyramide** nach Cohn (2009)
 
 Der Anforderungsabgleich (Kapitel 6.11) zeigt, dass **alle 23 definierten Anforderungen** vollständig erfüllt sind. Die bewusst ausgeklammerte Authentifizierungsschicht ist als Systembeschränkung dokumentiert (vgl. Kapitel 6.12.4), wurde jedoch nicht als formale Anforderung geführt.
 
 ### 8.1.2 KI-Textgenerierung
 
-Die Multi-Provider-Architektur mit Fallback-Kette (OpenRouter, Gemini, OpenAI, Anthropic, Mock) gewährleistet eine hohe Verfügbarkeit der Textgenerierung. Die Prompt-Architektur kombiniert Rollen- und Stilinstruktion, strukturierte Faktenblöcke, dynamischen Matchkontext und bis zu drei Few-Shot-Referenzen aus einer kuratierten Datenbank.
+Die Multi-Provider-Architektur mit Prioritätskette (OpenRouter, Gemini, OpenAI, Anthropic, Mock) gewährleistet eine hohe Verfügbarkeit der Textgenerierung — beim Start wird automatisch der erste Provider mit gültigem API-Key aktiviert. Die Prompt-Architektur kombiniert Rollen- und Stilinstruktion, strukturierte Faktenblöcke, dynamischen Matchkontext und bis zu drei Few-Shot-Referenzen aus einer kuratierten Datenbank.
 
 Die qualitative Analyse von **16 KI-generierten Ticker-Einträgen** (Modell: `google/gemini-2.0-flash-lite-001`) aus **9 Bundesliga-Spielen** ergab einen Gesamtdurchschnitt von **4,3 / 5** auf der Bewertungsskala (Korrektheit: 4,6 / 5, Tonalität: 4,1 / 5, Verständlichkeit: 4,3 / 5). Die stärkste Einschränkung liegt in der Stil-Inkonsistenz des neutralen Profils, das in 3 von 16 Fällen (19 %) unbeabsichtigt emotionale Formulierungen produzierte.
 
@@ -41,7 +41,7 @@ Die Beantwortung erfolgt entlang der beiden in der Forschungsfrage angelegten Di
 
 ### 8.2.1 Zeitliche Dimension: Reduktion der Time-to-Publish
 
-Im `auto`-Modus (vollautonom) entfällt die manuelle Texterstellung vollständig — die geschätzte TTP beträgt **≈ 5,9 s** im Median (vgl. Abschnitt 6.10.1). Im `coop`-Modus (hybrid) addiert sich die redaktionelle Prüfzeit: Ein einfacher Freigabe-Klick erfordert ca. 5–10 s, ein bearbeiteter Entwurf ca. 15–30 s — die geschätzte TTP liegt damit bei **≈ 15–30 s**. Im `manual`-Modus (Status quo) muss der Redakteur den gesamten Text selbst verfassen; die in Kapitel 2.1 zitierte Literatur beziffert die typische Texterstellungszeit unter Livebedingungen auf **30–120 s**.
+Im `auto`-Modus (vollautonom) entfällt die manuelle Texterstellung vollständig — die geschätzte TTP beträgt **≈ 3,4–5,9 s** (erwarteter Median bis Worst Case, vgl. Abschnitt 6.9.2). Im `coop`-Modus (hybrid) addiert sich die redaktionelle Prüfzeit: Ein einfacher Freigabe-Klick erfordert ca. 5–10 s, ein bearbeiteter Entwurf ca. 15–30 s — die geschätzte TTP liegt damit bei **≈ 15–30 s**. Im `manual`-Modus (Status quo) muss der Redakteur den gesamten Text selbst verfassen; auf Basis der in Kapitel 2.1 beschriebenen Produktionsbedingungen wird die typische Texterstellungszeit unter Livebedingungen auf **30–120 s** geschätzt.
 
 Da kein kontrolliertes Spielexperiment in allen drei Modi durchgeführt werden konnte, basiert der Vergleich auf gemessenen LLM-Latenzen und der implementierten Systemarchitektur (Kapitel 6.9.2). Ein Cliff's-Delta-Test auf real gemessenen TTP-Paaren (auto vs. manual) wäre mit einem zukünftigen Live-Spieltest durchführbar; die TTP-Metrik und die Bulk-Evaluationsinfrastruktur (Kapitel 6.7.1–6.7.2) sind dafür vorbereitet.
 
@@ -61,7 +61,7 @@ Die Ergebnisse des Experteninterviews mit einem professionellen Sportredakteur v
 
 ### 8.2.3 Synthese
 
-Das hybride System reduziert die Time-to-Publish im Vergleich zur rein manuellen Erstellung **messbar und strukturell signifikant**: Im `auto`-Modus beträgt die geschätzte TTP ≈ 5,9 s gegenüber 30–120 s im `manual`-Modus — ein Reduktionsfaktor von 5× bis 20×. Die journalistische Qualität bleibt dabei **auf hohem Niveau erhalten** (Gesamt-Ø 4,3 / 5), wobei der `coop`-Modus als optimaler Kompromiss fungiert: Er vereint die Geschwindigkeit der automatischen Generierung mit der Qualitätssicherung durch redaktionelle Kontrolle. Die verbleibenden Qualitätsrisiken — insbesondere Stil-Inkonsistenz im neutralen Profil (19 %) und selektive Fakten-Halluzination (6 %) — werden durch das Human-in-the-Loop-Design des `coop`-Modus aufgefangen, in dem der Redakteur jeden Entwurf vor der Veröffentlichung prüft und gegebenenfalls korrigiert.
+Das hybride System reduziert die Time-to-Publish im Vergleich zur rein manuellen Erstellung **messbar und strukturell signifikant**: Im `auto`-Modus beträgt die geschätzte TTP ≈ 3,4–5,9 s (Erwartungswert bis Worst Case) gegenüber 30–120 s im `manual`-Modus — ein Reduktionsfaktor von 5× bis 35×. Die journalistische Qualität bleibt dabei **auf hohem Niveau erhalten** (Gesamt-Ø 4,3 / 5), wobei der `coop`-Modus als optimaler Kompromiss fungiert: Er vereint die Geschwindigkeit der automatischen Generierung mit der Qualitätssicherung durch redaktionelle Kontrolle. Die verbleibenden Qualitätsrisiken — insbesondere Stil-Inkonsistenz im neutralen Profil (19 %) und selektive Fakten-Halluzination (6 %) — werden durch das Human-in-the-Loop-Design des `coop`-Modus aufgefangen, in dem der Redakteur jeden Entwurf vor der Veröffentlichung prüft und gegebenenfalls korrigiert.
 
 ---
 

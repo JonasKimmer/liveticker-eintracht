@@ -60,7 +60,7 @@ Die drei Betriebsmodi (`auto`, `coop`, `manual`) wurden in Kapitel 4.3.3 konzipi
 
 ### 7.3.1 Auto-Modus: Geschwindigkeit auf Kosten der Kontrolle
 
-Der `auto`-Modus eliminiert die menschliche Latenz vollständig — Einträge werden direkt mit Status `published` erstellt. Die Stärke dieses Modus liegt in der Geschwindigkeit: Eine geschätzte Ø TTP von ≈ 5,9 s (vgl. Abschnitt 6.9.2) ist im Liveticker-Kontext kaum wahrnehmbar. Das Risiko besteht in unkontrollierten Halluzinationen, die ohne redaktionelle Prüfung veröffentlicht werden. Im journalistischen Kontext, in dem Glaubwürdigkeit eine zentrale Ressource darstellt (Beils 2023, S. 57), ist dieser Modus daher nur für unkritische Event-Typen (z. B. Phasenwechsel wie „Anpfiff" oder „Halbzeit") vertretbar.
+Der `auto`-Modus eliminiert die menschliche Latenz vollständig — Einträge werden direkt mit Status `published` erstellt. Die Stärke dieses Modus liegt in der Geschwindigkeit: Eine geschätzte Ø TTP von ≈ 3,4–5,9 s (vgl. Abschnitt 6.9.2) ist im Liveticker-Kontext kaum wahrnehmbar. Das Risiko besteht in unkontrollierten Halluzinationen, die ohne redaktionelle Prüfung veröffentlicht werden. Im journalistischen Kontext, in dem Glaubwürdigkeit eine zentrale Ressource darstellt (Beils 2023, S. 57), ist dieser Modus daher nur für unkritische Event-Typen (z. B. Phasenwechsel wie „Anpfiff" oder „Halbzeit") vertretbar.
 
 ### 7.3.2 Coop-Modus: Der intendierte Produktivbetrieb
 
@@ -70,7 +70,7 @@ Im Evaluationszeitraum wurden im Coop-Modus keine Einträge nach Freigabe retrah
 
 ### 7.3.3 Manual-Modus: Status quo als Vergleichsbasis
 
-Der `manual`-Modus repräsentiert den redaktionellen Status quo und dient primär als Vergleichsbasis für die Effizienzgewinne der KI-gestützten Modi. Hier erstellt der Redakteur alle Ticker-Einträge selbst über den Slash-Command-Parser — ohne KI-Unterstützung, aber mit allen strukturellen Hilfen (Autocomplete, Formatierungsvorschau, Keyboard-Shortcuts). Die typische TTP liegt laut Literatur bei 30–120 Sekunden (Kapitel 2.1), abhängig von Event-Typ und Erfahrungsstand.
+Der `manual`-Modus repräsentiert den redaktionellen Status quo und dient primär als Vergleichsbasis für die Effizienzgewinne der KI-gestützten Modi. Hier erstellt der Redakteur alle Ticker-Einträge selbst über den Slash-Command-Parser — ohne KI-Unterstützung, aber mit allen strukturellen Hilfen (Autocomplete, Formatierungsvorschau, Keyboard-Shortcuts). Die typische TTP wird auf Basis der in Kapitel 2.1 beschriebenen Produktionsbedingungen auf 30–120 Sekunden geschätzt, abhängig von Event-Typ und Erfahrungsstand.
 
 Dieser Modus ist nicht als Rückschritt zu verstehen, sondern als genuiner Betriebspfad für Situationen, in denen redaktionelle Eigenständigkeit bewusst priorisiert wird — etwa bei hochkritischen Ereignissen (Spielabbruch, Verletzung) oder bei Redakteuren, die zunächst Vertrauen in das System aufbauen möchten. Die Laufzeit-Umschaltbarkeit zwischen den Modi stellt sicher, dass der `manual`-Modus jederzeit als Rückfalloption verfügbar ist.
 
@@ -97,7 +97,7 @@ Die gewählte Temperatur von 0,3 für die Textgenerierung und 0,1 für Übersetz
 
 ### 7.4.3 Kontext-Aufbereitung
 
-Die sechs spezialisierten Context-Builder (vgl. Abschnitt 5.3.1) strukturieren die Fakten vor der Übergabe an das LLM. Diese Vorverarbeitung reduziert die Wahrscheinlichkeit von Halluzinationen, da das Modell nicht aus unstrukturierten Rohdaten extrahieren muss, sondern bereits aufbereitete Faktenblöcke erhält. Die Wirksamkeit dieses Ansatzes zeigt sich insbesondere bei Pre-Match-Einträgen, wo die Faktengrundlage (z. B. Verletzungslisten, H2H-Statistiken) klar abgegrenzt ist.
+Die sechs spezialisierten Context-Builder (vgl. Abschnitt 5.2.8) strukturieren die Fakten vor der Übergabe an das LLM. Diese Vorverarbeitung reduziert die Wahrscheinlichkeit von Halluzinationen, da das Modell nicht aus unstrukturierten Rohdaten extrahieren muss, sondern bereits aufbereitete Faktenblöcke erhält. Die Wirksamkeit dieses Ansatzes zeigt sich insbesondere bei Pre-Match-Einträgen, wo die Faktengrundlage (z. B. Verletzungslisten, H2H-Statistiken) klar abgegrenzt ist.
 
 ---
 

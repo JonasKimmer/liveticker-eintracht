@@ -15,6 +15,8 @@ import json
 import logging
 from typing import Optional
 
+from sqlalchemy.exc import SQLAlchemyError
+
 from sqlalchemy.orm import Session
 
 from app.core.config import settings
@@ -138,7 +140,7 @@ async def call_llm(
             instance,
             league,
         )
-    except Exception:
+    except SQLAlchemyError:
         logger.warning("Stilreferenzen konnten nicht geladen werden", exc_info=True)
         db.rollback()
 

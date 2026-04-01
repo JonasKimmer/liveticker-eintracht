@@ -1,5 +1,5 @@
 import { memo, useMemo } from "react";
-import { PublishedEntry } from "../components/PublishedEntry";
+import { PublishedEntry } from "../components/entry/PublishedEntry";
 import { PHASE_SORT, PHASE_MINUTE_DEFAULT, PHASE_START } from "../constants";
 import { useTickerDataContext } from "context/TickerDataContext";
 import { useTickerActionsContext } from "context/TickerActionsContext";
@@ -7,7 +7,12 @@ import type { MatchEvent, TickerEntry } from "../../../types";
 
 type PublishedEntryItem =
   | { key: string; minute: number; type: "manual"; data: TickerEntry }
-  | { key: string; minute: number; type: "event"; data: { event: MatchEvent; tickerText: TickerEntry } };
+  | {
+      key: string;
+      minute: number;
+      type: "event";
+      data: { event: MatchEvent; tickerText: TickerEntry };
+    };
 
 const sortMinute = (t: TickerEntry) => {
   if (!t.phase) return t.minute ?? 0;
@@ -44,30 +49,47 @@ export const LeftPanel = memo(function LeftPanel() {
         data: t,
       }));
 
-    const eventEntries: PublishedEntryItem[] = events
-      .flatMap((ev) => {
-        const tt = publishedTexts.find((t) => t.event_id === ev.id);
-        if (!tt) return [];
-        return [{ key: `ev-${ev.id}`, minute: ev.time ?? 0, type: "event" as const, data: { event: ev, tickerText: tt } }];
-      });
-
-    return ([...manualEntries, ...eventEntries] as PublishedEntryItem[]).sort((a, b) => {
-      if (b.minute !== a.minute) return b.minute - a.minute;
-      const aPhase = a.type === "manual" ? a.data.phase : a.data.tickerText.phase;
-      const bPhase = b.type === "manual" ? b.data.phase : b.data.tickerText.phase;
-      if (PHASE_START.has(aPhase) && !PHASE_START.has(bPhase)) return 1;
-      if (!PHASE_START.has(aPhase) && PHASE_START.has(bPhase)) return -1;
-      // 🎬 Video-Einträge vor Text-Einträgen (auch bei leicht unterschiedlicher Minute)
-      const aIsVideo = a.type === "manual" && a.data.icon === "🎬";
-      const bIsVideo = b.type === "manual" && b.data.icon === "🎬";
-      if (aIsVideo && !bIsVideo) return 1;
-      if (!aIsVideo && bIsVideo) return -1;
-      // created_at: ältere Einträge zuerst (Video wird vor LLM-Text erstellt)
-      const aTime = a.type === "manual" ? a.data.created_at : a.data.tickerText.created_at;
-      const bTime = b.type === "manual" ? b.data.created_at : b.data.tickerText.created_at;
-      if (aTime && bTime) return new Date(aTime).getTime() - new Date(bTime).getTime();
-      return 0;
+    const eventEntries: PublishedEntryItem[] = events.flatMap((ev) => {
+      const tt = publishedTexts.find((t) => t.event_id === ev.id);
+      if (!tt) return [];
+      return [
+        {
+          key: `ev-${ev.id}`,
+          minute: ev.time ?? 0,
+          type: "event" as const,
+          data: { event: ev, tickerText: tt },
+        },
+      ];
     });
+
+    return ([...manualEntries, ...eventEntries] as PublishedEntryItem[]).sort(
+      (a, b) => {
+        if (b.minute !== a.minute) return b.minute - a.minute;
+        const aPhase =
+          a.type === "manual" ? a.data.phase : a.data.tickerText.phase;
+        const bPhase =
+          b.type === "manual" ? b.data.phase : b.data.tickerText.phase;
+        if (PHASE_START.has(aPhase) && !PHASE_START.has(bPhase)) return 1;
+        if (!PHASE_START.has(aPhase) && PHASE_START.has(bPhase)) return -1;
+        // 🎬 Video-Einträge vor Text-Einträgen (auch bei leicht unterschiedlicher Minute)
+        const aIsVideo = a.type === "manual" && a.data.icon === "🎬";
+        const bIsVideo = b.type === "manual" && b.data.icon === "🎬";
+        if (aIsVideo && !bIsVideo) return 1;
+        if (!aIsVideo && bIsVideo) return -1;
+        // created_at: ältere Einträge zuerst (Video wird vor LLM-Text erstellt)
+        const aTime =
+          a.type === "manual"
+            ? a.data.created_at
+            : a.data.tickerText.created_at;
+        const bTime =
+          b.type === "manual"
+            ? b.data.created_at
+            : b.data.tickerText.created_at;
+        if (aTime && bTime)
+          return new Date(aTime).getTime() - new Date(bTime).getTime();
+        return 0;
+      },
+    );
   }, [tickerTexts, events]);
 
   const hasContent = allEntries.length > 0;
@@ -96,7 +118,13 @@ export const LeftPanel = memo(function LeftPanel() {
       {allEntries.map((entry) => {
         if (entry.type === "manual") {
           return (
-            <PublishedEntry key={entry.key} tickerText={entry.data} isManual onEdit={onEditEntry} onDelete={onDeleteEntry} />
+            <PublishedEntry
+              key={entry.key}
+              tickerText={entry.data}
+              isManual
+              onEdit={onEditEntry}
+              onDelete={onDeleteEntry}
+            />
           );
         }
         if (entry.type === "event") {

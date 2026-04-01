@@ -1,7 +1,7 @@
 import { memo } from "react";
 import config from "config/whitelabel";
-import { CountryDropdown } from "./CountryDropdown";
-import { Dropdown } from "./Dropdown";
+import { CountryDropdown } from "./dropdown/CountryDropdown";
+import { Dropdown } from "./dropdown/Dropdown";
 import { MatchdayPicker } from "./MatchdayPicker";
 import type { Team, Competition, Match } from "../../../types";
 
@@ -84,9 +84,13 @@ export const StartScreen = memo(function StartScreen({
             value={selCompetitionId}
             placeholder="Wettbewerb auswählen"
             displayValue={
-              competitions.find((c) => c.id === selCompetitionId)?.title ?? undefined
+              competitions.find((c) => c.id === selCompetitionId)?.title ??
+              undefined
             }
-            items={competitions.map((c) => ({ value: c.id, label: c.title ?? String(c.id) }))}
+            items={competitions.map((c) => ({
+              value: c.id,
+              label: c.title ?? String(c.id),
+            }))}
             onSelect={(v) => onCompetitionChange(parseInt(String(v)))}
           />
         </div>

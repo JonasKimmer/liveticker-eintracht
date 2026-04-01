@@ -7,7 +7,7 @@
  */
 import { useState } from "react";
 import { publishClip } from "api";
-import { resolvePublishPayload } from "../components/CommandPalette";
+import { resolvePublishPayload } from "../utils/publishPayload";
 import type { MatchPhase } from "../../../types";
 
 /**
@@ -21,26 +21,55 @@ import type { MatchPhase } from "../../../types";
  * }}
  */
 export function useMediaPublishForm(currentMinute) {
-  const [minute, setMinute]   = useState(currentMinute ?? 0);
-  const [phase, setPhase]     = useState("");
+  const [minute, setMinute] = useState(currentMinute ?? 0);
+  const [phase, setPhase] = useState("");
   const [loading, setLoading] = useState(false);
-  const [error, setError]     = useState(null);
+  const [error, setError] = useState(null);
 
   async function submit(itemId, matchId, text, onPublished) {
-    if (!text.trim()) { setError("Text darf nicht leer sein."); return; }
+    if (!text.trim()) {
+      setError("Text darf nicht leer sein.");
+      return;
+    }
     setLoading(true);
     setError(null);
     try {
-      const publishMinute = phase === "Halftime" ? 45 : phase ? null : (minute || null);
-      const { text: publishText, icon } = resolvePublishPayload(text, publishMinute);
-      await publishClip(itemId, matchId, publishText, publishMinute, (phase || null) as MatchPhase | null, icon);
+      const publishMinute =
+        phase === "Halftime" ? 45 : phase ? null : minute || null;
+      const { text: publishText, icon } = resolvePublishPayload(
+        text,
+        publishMinute,
+      );
+      await publishClip(
+        itemId,
+        matchId,
+        publishText,
+        publishMinute,
+        (phase || null) as MatchPhase | null,
+        icon,
+      );
       onPublished(itemId);
     } catch (err) {
       const detail = err?.response?.data?.detail;
-      setError(typeof detail === "string" ? detail : detail ? JSON.stringify(detail) : (err.message ?? "Fehler"));
+      setError(
+        typeof detail === "string"
+          ? detail
+          : detail
+            ? JSON.stringify(detail)
+            : (err.message ?? "Fehler"),
+      );
       setLoading(false);
     }
   }
 
-  return { minute, setMinute, phase, setPhase, loading, error, setError, submit };
+  return {
+    minute,
+    setMinute,
+    phase,
+    setPhase,
+    loading,
+    error,
+    setError,
+    submit,
+  };
 }

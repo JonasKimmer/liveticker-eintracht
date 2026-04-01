@@ -2,7 +2,10 @@ import { useState, useEffect, useCallback } from "react";
 import type { MatchEvent } from "../types";
 import * as api from "../api";
 import logger from "../utils/logger";
-import { POLL_EVENTS_MS, POLL_MATCH_REFRESH_MS } from "../components/LiveTicker/constants";
+import {
+  POLL_EVENTS_MS,
+  POLL_MATCH_REFRESH_MS,
+} from "../constants";
 import { resolvePollingInterval } from "../utils/resolvePollingInterval";
 
 /**
@@ -11,8 +14,11 @@ import { resolvePollingInterval } from "../utils/resolvePollingInterval";
  * @param {number|null} selectedMatchId
  * @param {string|null} matchState - aus useMatchCore, steuert Polling-Intervall
  */
-export function useMatchEvents(selectedMatchId: number | null, matchState: string | null) {
-  const [events, setEvents] = useState([]);
+export function useMatchEvents(
+  selectedMatchId: number | null,
+  matchState: string | null,
+) {
+  const [events, setEvents] = useState<MatchEvent[]>([]);
 
   const loadEvents = useCallback(async () => {
     if (!selectedMatchId) return;
@@ -33,8 +39,11 @@ export function useMatchEvents(selectedMatchId: number | null, matchState: strin
     loadEvents();
     const t1 = setTimeout(loadEvents, POLL_EVENTS_MS);
     const t2 = setTimeout(loadEvents, POLL_MATCH_REFRESH_MS);
-    return () => { clearTimeout(t1); clearTimeout(t2); };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    return () => {
+      clearTimeout(t1);
+      clearTimeout(t2);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedMatchId]);
 
   // Polling: Intervall abhängig von matchState

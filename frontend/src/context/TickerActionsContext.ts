@@ -10,11 +10,17 @@
  */
 
 import { createContext, useContext } from "react";
-import type { TickerStyle } from "../types";
+import type { TickerStyle, MatchPhase } from "../types";
 
 export interface TickerActionsContextValue {
   onGenerate: (eventId: number, style: TickerStyle) => Promise<void>;
-  onManualPublish: (text: string, icon?: string, minute?: number | null, phase?: string | null, rawInput?: string) => Promise<void>;
+  onManualPublish: (
+    text: string,
+    icon?: string,
+    minute?: number | null,
+    phase?: MatchPhase | null,
+    rawInput?: string,
+  ) => Promise<void>;
   onDraftActive: (id: number, text: string) => void;
   onPublished: (id: number, text: string, isManual?: boolean) => void;
   onEditEntry: (id: number, text: string) => Promise<void>;
@@ -23,7 +29,8 @@ export interface TickerActionsContextValue {
   clearRetractedText: () => void;
 }
 
-export const TickerActionsContext = createContext<TickerActionsContextValue | null>(null);
+export const TickerActionsContext =
+  createContext<TickerActionsContextValue | null>(null);
 
 /**
  * Hook zum Konsumieren des TickerActionsContext.
@@ -31,6 +38,9 @@ export const TickerActionsContext = createContext<TickerActionsContextValue | nu
  */
 export function useTickerActionsContext(): TickerActionsContextValue {
   const ctx = useContext(TickerActionsContext);
-  if (!ctx) throw new Error("useTickerActionsContext must be used within TickerActionsContext.Provider");
+  if (!ctx)
+    throw new Error(
+      "useTickerActionsContext must be used within TickerActionsContext.Provider",
+    );
   return ctx;
 }

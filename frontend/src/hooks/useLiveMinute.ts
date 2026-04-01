@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
-import { normalizeMatchStatus } from "../components/LiveTicker/utils/parseCommand";
-import { MATCH_PHASES } from "../components/LiveTicker/constants";
+import { normalizeMatchStatus } from "../utils/matchStatus";
+import { MATCH_PHASES } from "../constants";
 import type { Match } from "../types";
 
 /**
@@ -26,7 +26,8 @@ export function useLiveMinute(match: Match | null) {
   if (match.minute != null) return match.minute;
 
   // Compute from kickoff or startsAt
-  const kickoffTime = (match as any).kickoff || match.startsAt;
+  const kickoffTime =
+    (match as Match & { kickoff?: string }).kickoff || match.startsAt;
   if (!kickoffTime) return 0;
 
   const kickoffMs = new Date(kickoffTime).getTime();
