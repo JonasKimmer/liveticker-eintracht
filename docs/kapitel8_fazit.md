@@ -15,13 +15,19 @@ Die technische Evaluation (Kapitel 6.2–6.6) dokumentiert eine produktionsnahe 
 - **91,33 % TypeScript-Coverage** bei null Compiler-Fehlern, ausgehend von einer reinen JavaScript-Codebasis (78,33 %, 885 Fehler)
 - Vollständig umgesetzte **Testpyramide** nach Cohn (2009)
 
-Der Anforderungsabgleich (Kapitel 6.11) zeigt, dass **23 von 24 definierten Anforderungen** erfüllt sind. Die einzige offene Anforderung — Authentifizierung (N7) — wurde als bewusste Projektentscheidung dokumentiert.
+Der Anforderungsabgleich (Kapitel 6.11) zeigt, dass **alle 23 definierten Anforderungen** vollständig erfüllt sind. Die bewusst ausgeklammerte Authentifizierungsschicht ist als Systembeschränkung dokumentiert (vgl. Kapitel 6.12.4), wurde jedoch nicht als formale Anforderung geführt.
 
 ### 8.1.2 KI-Textgenerierung
 
 Die Multi-Provider-Architektur mit Fallback-Kette (OpenRouter, Gemini, OpenAI, Anthropic, Mock) gewährleistet eine hohe Verfügbarkeit der Textgenerierung. Die Prompt-Architektur kombiniert Rollen- und Stilinstruktion, strukturierte Faktenblöcke, dynamischen Matchkontext und bis zu drei Few-Shot-Referenzen aus einer kuratierten Datenbank.
 
 Die qualitative Analyse von **16 KI-generierten Ticker-Einträgen** (Modell: `google/gemini-2.0-flash-lite-001`) aus **9 Bundesliga-Spielen** ergab einen Gesamtdurchschnitt von **4,3 / 5** auf der Bewertungsskala (Korrektheit: 4,6 / 5, Tonalität: 4,1 / 5, Verständlichkeit: 4,3 / 5). Die stärkste Einschränkung liegt in der Stil-Inkonsistenz des neutralen Profils, das in 3 von 16 Fällen (19 %) unbeabsichtigt emotionale Formulierungen produzierte.
+
+### 8.1.3 Systemarchitektur und Designentscheide
+
+Das System realisiert die in Kapitel 4 konzipierte dreischichtige Architektur vollständig: Die **Datenschicht** (n8n-ETL) importiert Spieldaten automatisiert und idempotent aus der Partner-API; die **Anwendungsschicht** (FastAPI, PostgreSQL) exponiert 70+ REST-Endpunkte über 14 Router-Module und stützt sich auf ein Datenmodell aus 17 ORM-Modellen plus einer konfigurierten Settings-Tabelle; die **Präsentationsschicht** (React, TypeScript) implementiert den vollständigen Redaktionsworkflow mit WebSocket-Anbindung, Slash-Command-Parser und modaler Ticker-Steuerung.
+
+Die **White-Label-Architektur** mit zwei konfigurierten Instanzen (`ef_whitelabel` für Eintracht Frankfurt, `generic` für beliebige Vereine) sowie die **drei Betriebsmodi** (`auto`, `coop`, `manual`) bilden die Kernbeiträge des Systemdesigns: Erstere ermöglicht stilistisch differenzierte Ticker ohne separate Codebases, letztere adressiert das gesamte Spektrum von vollautomatischer bis zu vollmanueller Produktion innerhalb eines einzigen Deployments.
 
 ---
 
@@ -47,7 +53,7 @@ Die journalistische Qualität wurde entlang der drei in der Forschungsfrage defi
 
 1. **Korrektheit**: Die generierten Texte erreichen einen Ø-Wert von **4,6 / 5**. In 15 von 16 bewerteten Einträgen (94 %) wurden alle verfügbaren Fakten (Spieler, Team, Minute, Ergebnis) korrekt wiedergegeben. Die Pre-Match-Schutzregel verhindert zuverlässig die Erfindung von Live-Spielszenen; eine Wettempfehlung (1 von 16 Einträgen, 6 %) stellt eine inhaltliche Halluzination geringerer Schwere dar.
 
-2. **Tonalität**: Mit einem Ø-Wert von **4,1 / 5** erzeugen die drei Stilprofile deutlich unterscheidbare Textstile. Der euphorische Modus — primär für vereinsnahe Liveticker wie die `ef_whitelabel`-Instanz konzipiert — erreicht den höchsten Tonalitätswert (Ø 4,4 für Gelbe-Karte-Einträge). Das neutrale Profil zeigt die größte Inkonsistenz (19 % der Einträge zu emotional formuliert), bedingt durch die starken euphorischen Few-Shot-Referenzen.
+2. **Tonalität**: Mit einem Ø-Wert von **4,1 / 5** erzeugen die drei Stilprofile deutlich unterscheidbare Textstile. Der euphorische Modus — primär für vereinsnahe Liveticker wie die `ef_whitelabel`-Instanz konzipiert — erzielt die stärksten qualitativen Ergebnisse: Die Beispieltexte in Kapitel 6.8.3 zeigen, dass emotionale Stilmittel des Liveticker-Genres (Wiederholungen, Ausrufe, szenische Abschlüsse) vom Modell zuverlässig umgesetzt werden. Das neutrale Profil zeigt die größte Inkonsistenz (19 % der Einträge zu emotional formuliert), bedingt durch die starken euphorischen Few-Shot-Referenzen.
 
 3. **Verständlichkeit**: Mit **4,3 / 5** erfüllen die generierten Texte die linguistischen Anforderungen des Liveticker-Genres (Kapitel 2.5) zuverlässig: kurze Satzkonstruktionen, Präsenskonstruktionen, idiomatische Ausrufe und konzeptionelle Mündlichkeit sind durchgehend vorhanden. Kein Eintrag überschritt die genretypische Kürze.
 
@@ -91,6 +97,6 @@ Das hybride System reduziert die Time-to-Publish im Vergleich zur rein manuellen
 
 Die vorliegende Arbeit zeigt, dass ein hybrides KI-gestütztes Redaktionssystem den operativen Zeitdruck bei der Liveticker-Erstellung adressieren kann, ohne die redaktionelle Kontrolle aufzugeben. Der `coop`-Modus — in dem die KI Textvorschläge generiert und der Redakteur die finale Freigabe erteilt — realisiert das in Kapitel 1.1 formulierte Zielbild eines Systems, in dem „die finale Entscheidungshoheit und publizistische Verantwortung beim Menschen verbleiben".
 
-Die technische Reife des Systems — belegt durch 391 Tests, 75 % Backend-Coverage und eine vollständige TypeScript-Migration — sowie die Erfüllung von 23 der 24 definierten Anforderungen dokumentieren die Tragfähigkeit des Architekturansatzes. Die in Kapitel 7 diskutierten Limitationen (fehlende Nutzerstudie, keine Authentifizierung, Polling statt Push) markieren klare Erweiterungspfade, stellen aber die grundsätzliche Funktionalität nicht in Frage.
+Die technische Reife des Systems — belegt durch 391 Tests, 75 % Backend-Coverage und eine vollständige TypeScript-Migration — sowie die Erfüllung aller 23 definierten Anforderungen dokumentieren die Tragfähigkeit des Architekturansatzes. Die in Kapitel 7 diskutierten Limitationen (fehlende Nutzerstudie, keine Authentifizierung, Polling statt Push) markieren klare Erweiterungspfade, stellen aber die grundsätzliche Funktionalität nicht in Frage.
 
 Die KI-gestützte Liveticker-Generierung ersetzt den Redakteur nicht — sie gibt ihm die Zeit zurück, die er braucht, um seiner eigentlichen Aufgabe nachzukommen: Journalismus.

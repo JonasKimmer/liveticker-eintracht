@@ -4,7 +4,7 @@
 
 ## 4.1 Überblick und Schichtenmodell
 
-Das System ist als serviceorientierte, dreischichtige Architektur ausgelegt und trennt Datenbeschaffung, Anwendungslogik und Präsentation klar voneinander. Diese Schichtentrennung folgt dem etablierten Prinzip der *Separation of Concerns* (Parnas 1972), das die unabhängige Weiterentwicklung einzelner Systemteile ermöglicht.
+Das System ist als serviceorientierte, dreischichtige Architektur ausgelegt und trennt Datenbeschaffung, Anwendungslogik und Präsentation klar voneinander. Diese Schichtentrennung folgt dem etablierten Prinzip der _Separation of Concerns_ (Parnas 1972), das die unabhängige Weiterentwicklung einzelner Systemteile ermöglicht.
 
 Die **Datenbeschaffungs- und Automatisierungsschicht** wird über n8n umgesetzt. Sie integriert externe Datenquellen (insbesondere Football-API sowie Medienquellen wie ScorePlay und Social-Feeds), transformiert die Rohdaten in ein einheitliches internes Format und schreibt diese strukturiert in die Persistenzschicht beziehungsweise über definierte Backend-Endpunkte in das System ein. Die Entkopplung der Integrationslogik in n8n ermöglicht eine schnelle Anpassung von Import-Workflows, ohne den Anwendungskern ändern zu müssen.
 
@@ -44,7 +44,7 @@ graph LR
     N8N -->|"HTTP GET"| FAPI
     N8N -->|"HTTP GET/POST"| SP
     N8N -->|"HTTP GET"| EF
-    N8N -->|"Summarys"| LLM
+    N8N -->|"Zusammenfassungen"| LLM
     N8N -->|"REST POST /api/v1"| BE
 
     BE -->|"LLM-Aufrufe"| LLM
@@ -77,7 +77,7 @@ sequenceDiagram
     alt Keine Daten vorhanden
         FE->>N8N: Webhook import-countries
         N8N->>FAPI: GET /countries
-        N8N->>BE: INSERT countries
+        N8N->>BE: POST /api/v1/countries (Upsert)
         FE->>BE: GET /teams/countries (erneut)
     end
 
@@ -165,9 +165,7 @@ Die Laufzeitkonzeption setzt Asynchronität gezielt auf I/O-intensiven Pfaden ei
 
 Die Anzahl gleichzeitiger LLM-Aufrufe wird über einen konfigurierbaren **Semaphore-Mechanismus** begrenzt (Standard: 8 parallele Anfragen). Diese Begrenzung reduziert Lastspitzen und verringert die Wahrscheinlichkeit von Rate-Limit-Problemen seitens der LLM-Provider. Der Semaphore wirkt dabei pro Prozessinstanz — bei horizontaler Skalierung steigt die effektive Gesamtkonkurrenz entsprechend der Anzahl laufender Instanzen.
 
-Die Implementierung ist bewusst hybrid aus synchronen und asynchronen Pfaden aufgebaut. Nicht alle Endpunkte sind vollständig asynchronisiert; stattdessen wurde ein pragmatischer Kompromiss zwischen Performance, Komplexität und Wartbarkeit gewählt.
-
-Architektonisch ist das System zudem hybrid in der Datenübertragung: Ticker- und Spieldaten werden überwiegend per Polling aktualisiert, während latenzkritische Medienupdates per WebSocket übertragen werden. Langlaufende Integrationslogik ist in n8n ausgelagert, wodurch der API-Server als transaktionaler Kern entlastet wird.
+Die Implementierung ist bewusst hybrid aus synchronen und asynchronen Pfaden aufgebaut. Nicht alle Endpunkte sind vollständig asynchronisiert; stattdessen wurde ein pragmatischer Kompromiss zwischen Performance, Komplexität und Wartbarkeit gewählt. Langlaufende Integrationslogik ist in n8n ausgelagert, wodurch der API-Server als transaktionaler Kern entlastet wird.
 
 ---
 
@@ -197,14 +195,7 @@ Das System adressiert Sicherheit auf drei Ebenen, wobei der Projektrahmen einer 
 
 ### 4.2.7 Grenzen und Nicht-Ziele
 
-Die vorliegende Backend-Konzeption ist als produktionsnahe Referenzimplementierung ausgelegt, nicht als vollständig ausgehärtete Enterprise-Plattform. Entsprechend wurden bewusst Abgrenzungen vorgenommen:
-
-1. Für Ticker- und Spieldaten wird kein vollständiger Event-Streaming-Ansatz verfolgt; die Aktualisierung erfolgt überwiegend über Polling.
-2. Die Verfügbarkeit externer Dienste (Football-API, LLM-Provider, ScorePlay, n8n) bleibt eine systemische Abhängigkeit und kann trotz Degradationsstrategien die Aktualität einzelner Funktionen begrenzen.
-3. Eine feingranulare Authentifizierung und Autorisierung ist konzeptionell vorgesehen (vgl. 4.2.6), jedoch im aktuellen Stand nicht umgesetzt.
-4. Ziel der Arbeit ist nicht die vollständige betriebliche Härtung (z. B. Multi-Region-Betrieb, umfassende SLO-/SLA-Absicherung), sondern der Nachweis eines tragfähigen, erweiterbaren End-to-End-Ansatzes für KI-gestützte Liveticker-Generierung.
-
-Diese Abgrenzung ist für die wissenschaftliche Einordnung wesentlich, da sie den realisierten Funktionsumfang klar von weiterführenden Betriebszielen trennt und die Ergebnisse im Kontext des Projektzeitraums korrekt bewertet.
+Die vorliegende Backend-Konzeption ist als produktionsnahe Referenzimplementierung ausgelegt, nicht als vollständig ausgehärtete Enterprise-Plattform. Zwei backend-spezifische Abgrenzungen sind dabei relevant: Die Verfügbarkeit externer Dienste (Football-API, LLM-Provider, ScorePlay, n8n) bleibt eine systemische Abhängigkeit und kann trotz Degradationsstrategien die Aktualität einzelner Funktionen begrenzen. Ferner ist eine feingranulare Authentifizierung und Autorisierung konzeptionell vorgesehen (vgl. 4.2.6), jedoch im aktuellen Stand nicht umgesetzt. Weiterführende Systemgrenzen (kein Event-Streaming, keine Enterprise-Härtung) werden in Abschnitt 4.7.5 eingeordnet.
 
 ---
 
@@ -237,6 +228,10 @@ erDiagram
 
     players ||--o{ lineups : "spielt"
     players ||--o{ player_statistics : "hat Statistiken"
+
+    seasons ||--o{ standings : "hat Standings"
+    competitions ||--o{ standings : "hat Standings"
+    teams ||--o{ standings : "Rang"
 ```
 
 > **Hinweis:** Die Tabellen `media_queue`, `media_clips`, `style_references` und `settings` sind als eigenständige Entitäten ohne Fremdschlüsselbeziehungen modelliert und daher im ER-Diagramm nicht abgebildet. `style_references` dient als Few-Shot-Datenquelle für die LLM-Promptgenerierung; `media_queue` wird applikationsseitig über die Media-Endpunkte verwaltet.
@@ -265,7 +260,7 @@ stateDiagram-v2
 
     draft --> published : Redakteur bestätigt\nPATCH status=published
     draft --> rejected  : Redakteur verwirft\nPATCH status=rejected
-    published --> draft : Undo (Retract)\nPATCH status=draft
+    published --> draft : PATCH status=draft
 
     note right of rejected : Bleibt erhalten\n(Auswertbarkeit)
 ```
@@ -294,8 +289,8 @@ flowchart LR
     M -->|manual| X[Kein KI-Aufruf\nManuelle Eingabe]
 
     D --> R{Redakteur}
-    R -->|TAB / Bestätigen| P
-    R -->|ESC / Verwerfen| REJ[status = rejected]
+    R -->|Bestätigt| P
+    R -->|Verworfen| REJ[status = rejected]
 ```
 
 Damit wird der Moduswechsel als Laufzeitparameter auf Datenbankebene abgebildet, ohne Deploy oder Neustart des Systems.
@@ -451,7 +446,7 @@ Das vorliegende System setzt primär **OpenRouter** als LLM-Gateway ein. OpenRou
 2. **Vergleichbarkeit**: Verschiedene Modelle können auf demselben Prompt evaluiert werden (vgl. Kap. 6.7.3).
 3. **Kostenoptimierung**: Das jeweils kostengünstigste Modell für die Aufgabe kann gewählt werden.
 
-Im produktiven Einsatz wird aktuell **Gemini 2.0 Flash** (Modell-ID `google/gemini-2.0-flash-001`) über OpenRouter genutzt. Die Wahl dieses kompakten Modells begründet sich durch die Aufgabencharakteristik: Liveticker-Texte sind kurz (1–3 Sätze) und basieren auf strukturierten Eingabedaten (Spielereignisse, Kontext) — eine Aufgabe, die keine komplexe Inferenz oder umfangreiches Weltwissen voraussetzt. Kompakte Modelle wie Gemini 2.0 Flash bieten für solche faktenbasierten Textgenerierungsaufgaben eine vergleichbare Qualität wie größere Modelle, bei deutlich niedrigerer Latenz und Kosten. Für Vereinsredaktionen mit begrenztem Budget ist dieser Kostenvorteil ein entscheidender Faktor für die Praxistauglichkeit des Systems.
+Im produktiven Einsatz wird aktuell **Gemini 2.0 Flash Lite** (Modell-ID `google/gemini-2.0-flash-lite-001`) über OpenRouter genutzt. Die Wahl dieses kompakten Modells begründet sich durch die Aufgabencharakteristik: Liveticker-Texte sind kurz (1–3 Sätze) und basieren auf strukturierten Eingabedaten (Spielereignisse, Kontext) — eine Aufgabe, die keine komplexe Inferenz oder umfangreiches Weltwissen voraussetzt. Kompakte Modelle wie Gemini 2.0 Flash bieten für solche faktenbasierten Textgenerierungsaufgaben eine vergleichbare Qualität wie größere Modelle, bei deutlich niedrigerer Latenz und Kosten. Für Vereinsredaktionen mit begrenztem Budget ist dieser Kostenvorteil ein entscheidender Faktor für die Praxistauglichkeit des Systems.
 
 **Fallback-Kette und Mock-Provider**
 
@@ -527,8 +522,7 @@ Zur Stabilisierung der KI-Laufzeit sind mehrere Kontrollmechanismen implementier
 
 1. **Konkurrenzbegrenzung** — Gleichzeitige LLM-Aufrufe werden über einen Semaphore-Mechanismus auf maximal 8 parallele Anfragen pro Prozessinstanz limitiert (vgl. Abschnitt 4.2.4).
 2. **Retry-Mechanismus mit Backoff** — Bei transienten Fehlern und Rate-Limits erfolgen automatische Wiederholungsversuche (3 Versuche, Backoff 30 s / 60 s).
-3. **Konservative Temperatur** — Für die Textgenerierung wird `temperature=0.3` genutzt, um konsistentere Ausgaben zu erhalten.
-4. **Fachliche Einbettung in den Ticker-Lifecycle** — Generierte Inhalte werden in die Statuslogik (`draft` / `published` / `rejected`) überführt und können im kooperativen Modus redaktionell kontrolliert werden.
+3. **Fachliche Einbettung in den Ticker-Lifecycle** — Generierte Inhalte werden in die Statuslogik (`draft` / `published` / `rejected`) überführt und können im kooperativen Modus redaktionell kontrolliert werden.
 
 ---
 
@@ -674,3 +668,11 @@ Das System weist drei konzeptionell relevante Grenzen auf.
 **Zweitens** setzt das Short-Polling-Modell des Frontends einen Mindestabstand zwischen Ereignis und Dashboard-Aktualisierung: Das Polling-Intervall beträgt einheitlich fünf Sekunden für alle Match-Zustände.
 
 **Drittens** sind LLM-Ausgaben grundsätzlich nicht deterministisch — bei niedrigen Temperaturen ist die Varianz gering, aber nicht null. Für den `auto`-Modus bedeutet dies, dass gelegentlich suboptimale Texte ohne menschliche Kontrolle publiziert werden können.
+
+---
+
+## 4.8 Fazit der Systemkonzeption
+
+Die Systemkonzeption legt vier interdependente Designpfeiler fest, die gemeinsam die Produktionsfähigkeit des Systems begründen. Die dreischichtige Architektur (Kap. 4.1) schafft die strukturelle Basis für eine unabhängige Weiterentwicklung der Automatisierungs-, Anwendungs- und Präsentationsschicht. Das relationale Datenbankschema mit seinem definierten Ticker-Lifecycle (Kap. 4.3) sichert referenzielle Integrität und Nachvollziehbarkeit aller redaktionellen Entscheidungen — auch für spätere Qualitätsanalysen. Die Multi-Provider-LLM-Architektur mit Few-Shot-Prompting und instanzspezifischen Stilprofilen (Kap. 4.5) maximiert Textqualität und Anbieterunabhängigkeit bei minimaler Infrastrukturkomplexität. Das Context-basierte Frontend-Design mit den drei Betriebsmodi (Kap. 4.6) ermöglicht redaktionelle Kontrolle ohne Latenzeinbußen und ohne Prop-Drilling über Komponentengrenzen.
+
+Die in Kapitel 4.7 beschriebenen Skalierungsansätze und die transparent verankerten Systemgrenzen (Kap. 4.7.5) begrenzen den Einsatzbereich nicht, definieren ihn aber klar — eine Voraussetzung für eine belastbare Evaluation in Kapitel 6. Das vorliegende Konzept ist damit als vollständige Spezifikation für die Implementierung formuliert, die Kapitel 5 dokumentiert.

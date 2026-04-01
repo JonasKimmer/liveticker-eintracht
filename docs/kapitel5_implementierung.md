@@ -4,7 +4,7 @@
 
 ## 5.1 Überblick und Implementierungsstrategie
 
-Dieses Kapitel dokumentiert die konkrete Umsetzung des in Kapitel 4 konzipierten Systems. Im Fokus stehen die technischen Entscheidungen auf Code-Ebene: die interne Struktur des FastAPI-Backends mit seinen Schichten aus Modellen, Repositories, Services und Routern; die KI-Generierungspipeline von der Ereigniserkennung bis zum Ticker-Eintrag; sowie die Frontend-Implementierung mit React, Context-basiertem Zustandsmanagement und dem slash-command-getriebenen Eingabesystem. Ergänzend werden die TypeScript-Migration und die Testabdeckung als Qualitätsmerkmale des Entwicklungsprozesses dokumentiert.
+Dieses Kapitel dokumentiert die konkrete Umsetzung des in Kapitel 4 konzipierten Systems. Im Fokus stehen die technischen Entscheidungen auf Code-Ebene: die interne Struktur des FastAPI-Backends mit seinen Schichten aus Modellen, Repositories, Services und Routern; die KI-Generierungspipeline von der Ereigniserkennung bis zum Ticker-Eintrag; die Frontend-Implementierung mit React, Context-basiertem Zustandsmanagement und dem slash-command-getriebenen Eingabesystem; sowie die n8n-Workflow-Implementierung der fünf zentralen Automatisierungsworkflows. Ergänzend werden die TypeScript-Migration und die Testabdeckung als Qualitätsmerkmale des Entwicklungsprozesses dokumentiert.
 
 Die Implementierung folgt dem Grundsatz **„so einfach wie nötig, so modular wie sinnvoll"**: Standardpfade (CRUD, Listabfragen) sind bewusst direkt gehalten (Router → Repository), während die LLM-Generierung mit ihren Retry-, Semaphore- und Few-Shot-Mechanismen in einen dedizierten Service extrahiert ist.
 
@@ -44,16 +44,16 @@ app = FastAPI(
 PREFIX = "/api/v1"
 app.include_router(countries.router,          prefix=PREFIX)
 app.include_router(teams.router,              prefix=PREFIX)
-app.include_router(teams.assignment_router,   prefix=PREFIX)  # POST /seasons/{id}/competitions/{id}/teams/{id}
 app.include_router(seasons.router,            prefix=PREFIX)
 app.include_router(competitions.router,       prefix=PREFIX)
+app.include_router(teams.assignment_router,   prefix=PREFIX)  # POST /seasons/{id}/competitions/{id}/teams/{id}
 app.include_router(matches.router,            prefix=PREFIX)
 app.include_router(events.router,             prefix=PREFIX)
 app.include_router(ticker.router,             prefix=PREFIX)
-app.include_router(players.router,            prefix=PREFIX)
-app.include_router(clips.router,              prefix=PREFIX)
 app.include_router(media.router,              prefix=PREFIX)
 app.include_router(media.ws_router)           # /ws/media – kein API-Prefix
+app.include_router(players.router,            prefix=PREFIX)
+app.include_router(clips.router,              prefix=PREFIX)
 ```
 
 Beim Start führt `Base.metadata.create_all(bind=engine)` ein idempotentes Schema-Bootstrapping durch, das bei erstmaliger Inbetriebnahme alle Tabellen anlegt. Im Produktionsbetrieb werden Schema-Änderungen via Alembic-Migrationen gesteuert.
@@ -547,9 +547,9 @@ Die wichtigsten Hooks und ihre Verantwortlichkeiten:
 ```typescript
 // src/utils/resolvePollingInterval.ts
 export function resolvePollingInterval(matchState: string | null): number {
-  if (matchState === "Live" || matchState === "FullTime") return POLL_EVENTS_MS;   // 5000
-  if (matchState == null) return POLL_EVENTS_MS;                                    // 5000
-  return POLL_PREMATCH_MS;                                                          // 5000
+  if (matchState === "Live" || matchState === "FullTime") return POLL_EVENTS_MS; // 5000
+  if (matchState == null) return POLL_EVENTS_MS; // 5000
+  return POLL_PREMATCH_MS; // 5000
 }
 ```
 
@@ -594,7 +594,7 @@ export interface ParseResult {
 ```
 /g Mustermann EF  → "TOR — Mustermann (EF)"  + icon ⚽
 /gelb Müller EF   → "Gelb — Müller (EF)"     + icon 🟨
-/rot Huber Bayern → "Rot — Huber (Bayern)"   + icon 🟥
+/rot Huber Bayern → "Rote Karte — Huber (Bayern)" + icon 🟥
 /s EinRaus AusRein EF → "Wechsel — EinRaus ↔ AusRein (EF)" + icon 🔄
 /n Freistoß knapp über das Tor → "Freistoß knapp über das Tor"
 ```
@@ -635,7 +635,7 @@ Der Cleanup im `useEffect` setzt `ws.onclose = null`, bevor die WebSocket geschl
 
 Der aktive Modus (`auto` / `coop` / `manual`) steuert das Verhalten mehrerer Frontend-Komponenten. Die Implementierung verteilt sich auf drei Ebenen:
 
-**Persistenz und Synchronisation** — `useTickerMode` initialisiert den Modus lokal mit `auto` als Standardwert und schreibt Änderungen über `PATCH /matches/{id}/ticker-mode` an das Backend zurück. Lokale Optimistic-Updates vermeiden wahrnehmbare Latenz beim Umschalten.
+**Persistenz und Synchronisation** — `useTickerMode` initialisiert den Modus lokal mit `coop` als Standardwert und überschreibt diesen beim Laden eines Spiels mit dem in der Datenbank gespeicherten `ticker_mode`. Änderungen werden über `PATCH /matches/{id}/ticker-mode` ans Backend zurückgeschrieben. Lokale Optimistic-Updates vermeiden wahrnehmbare Latenz beim Umschalten.
 
 **Keyboard-Shortcuts** — Im Co-op-Modus registriert `useTickerMode` die Shortcuts `TAB` (acceptDraft) und `ESC` (rejectDraft) direkt als Keyboard-Event-Listener. Im Auto- und Manual-Modus sind diese Shortcuts nicht aktiv. Die Shortcut-Registrierung ist an den Modus-Zustand gebunden und wird bei Moduswechsel automatisch aktualisiert.
 
@@ -821,15 +821,15 @@ Workflow `14` verarbeitet Spielzustands-Übergänge (Anpfiff, Halbzeit, Abpfiff 
 
 ```javascript
 const validFromStates = {
-  "1H":  ["PreMatch", "ToBeConfirmed", null],
-  "HT":  ["Live"],
-  "2H":  ["Live"],
-  "FT":  ["Live", "FullTime"],
-  "ET":  ["Live", "FullTime"],
-  "BT":  ["Live"],
-  "P":   ["Live"],
-  "AET": ["Live", "FullTime"],
-  "PEN": ["Live", "FullTime"],
+  "1H": ["PreMatch", "ToBeConfirmed", null],
+  HT: ["Live"],
+  "2H": ["Live"],
+  FT: ["Live", "FullTime"],
+  ET: ["Live", "FullTime"],
+  BT: ["Live"],
+  P: ["Live"],
+  AET: ["Live", "FullTime"],
+  PEN: ["Live", "FullTime"],
 };
 ```
 
@@ -937,15 +937,7 @@ Gefundene URLs (thumbnail, compressed, original) werden gesammelt und an `POST /
 
 ### 5.7.7 Export zur Stackwork Demo App
 
-Die operative Implementierung ermöglicht den **Export publizierter Ticker-Inhalte** zur bereits existierenden Stackwork Demo App von Eintracht Frankfurt. Die beiden Systeme operieren vollständig getrennt — die Kommunikation erfolgt ausschließlich über HTTP-API-Aufrufe.
-
-**CMS-API-Export-Pipeline** — Zusätzlich zu den fünf dokumentierten Core-Workflows existieren **Export-Workflows**, die publizierte Ticker-Einträge aus der lokalen PostgreSQL-Datenbank lesen und über REST-API-Aufrufe an die CMS-Endpunkte der Stackwork Demo App übertragen. Der Export triggert ereignisgesteuert nach jeder `status=published`-Aktualisierung.
-
-**Manuelle Spielauswahl** — Der Initialisierungsprozess erfordert manuelle Eingabe der Spiel-ID in die n8n-Workflows. Diese bewusste Designentscheidung stellt sicher, dass nur explizit ausgewählte Spiele mit Live-Tickering versehen werden. Nach der Initialisierung erfolgt sowohl die Event-Reaktion als auch der Export vollautomatisch.
-
-**Systemabgrenzung** — Die Demo App ist eine separate, bereits produktive Anwendung mit eigenständiger Codebasis und Infrastruktur. Der Autor hat als Stackwork-Mitarbeiter ausschließlich Zugang zu den **CMS-API-Endpunkten**, nicht zum Quellcode der Demo App. Die n8n-Export-Workflows sind die einzige Verbindung zwischen beiden Systemen.
-
-**Deployment-Isolation** — Die Architektur implementiert bewusst eine **Zwei-System-Strategie**: Das entwickelte KI-Redaktionssystem läuft als eigenständige Anwendung, während die Stackwork Demo App als etablierte End-User-Plattform fungiert. Beide Systeme können unabhängig entwickelt, deployed und skaliert werden.
+Das Architekturkonzept des Exports (Zwei-System-Strategie, Systemabgrenzung, CMS-API-Zugang) ist in Abschnitt 4.1.3 beschrieben. Implementierungsseitig sind zwei Details relevant: Erstens triggert der Export **ereignisgesteuert** — jede `PATCH`-Operation, die einen Ticker-Eintrag auf `status=published` setzt, löst den n8n-Export-Workflow aus, der den Eintrag unmittelbar an die CMS-API-Endpunkte der Demo App überträgt. Zweitens erfordert die Initialisierung eine **manuelle Spielauswahl**: Die Spiel-ID wird einmalig in den n8n-Workflow eingetragen; erst danach laufen Event-Reaktion und Export vollautomatisch. Diese bewusste Designentscheidung stellt sicher, dass ausschließlich explizit ausgewählte Spiele mit Live-Tickering versehen werden.
 
 ---
 
@@ -963,6 +955,6 @@ Vier Aspekte verdienen eine kritische Einordnung:
 
 **Viertens** ist der `strict`-Modus in `tsconfig.json` derzeit deaktiviert. Dies war ein pragmatischer Kompromiss, um die inkrementelle TypeScript-Migration ohne blockierende Fehlerflut zu ermöglichen. Eine schrittweise Aktivierung von `strict`-Teilregeln (z. B. `noImplicitAny`, `strictNullChecks`) wäre ein sinnvoller nächster Schritt zur weiteren Härtung der Codebasis.
 
-**Fünftens** ist die Few-Shot-Infrastruktur vollständig implementiert — der Scraping-Workflow befüllt `style_references` mit echten EF-Liveticker-Texten, `StyleReferenceRepository.get_samples()` lädt sie mit liga-spezifischer Suche und automatischem Fallback, und `_build_few_shot_block()` bettet sie in den Prompt ein. In der Praxis greifen jedoch zwei Einschränkungen: (a) Die Demo-App-Workflows (`13_Halftime_aftertime.json`) rufen OpenRouter direkt auf und umgehen das Backend-LLM-Service, sodass Few-Shot dort nicht wirksam wird. (b) Der Liga-Filter schlägt wegen eines Case-Mismatches (`style_references.league = "bundesliga"` vs. `competition.title = "Bundesliga"`) immer fehl und fällt auf die liga-agnostische Suche zurück. Beide Punkte sind behebbar, beeinträchtigen aber die grundsätzliche Funktionsfähigkeit der Stilgenerierung nicht.
+**Fünftens** ist die Few-Shot-Infrastruktur vollständig implementiert — der Scraping-Workflow befüllt `style_references` mit echten EF-Liveticker-Texten, `StyleReferenceRepository.get_samples()` lädt sie mit liga-spezifischer Suche und automatischem Fallback, und `_build_few_shot_block()` bettet sie in den Prompt ein. In der Praxis greifen jedoch zwei Einschränkungen: (a) Die Demo-App-Workflows (`13_Halftime_aftertime.json`) rufen OpenRouter direkt auf und umgehen das Backend-LLM-Service, sodass Few-Shot dort nicht wirksam wird. (b) Der liga-spezifische Filter (`func.lower(style_references.league) == league.lower()`) fällt auf die liga-agnostische Suche zurück, wenn zu wenige Beispieleinträge für die konkrete Liga in der Datenbank vorhanden sind — was bei kleinen Stildatenbeständen häufig der Fall ist. Beide Punkte sind behebbar, beeinträchtigen aber die grundsätzliche Funktionsfähigkeit der Stilgenerierung nicht.
 
-Insgesamt belegen die Metriken — 0 TypeScript-Fehler, 91,33 % type-coverage, 187 Frontend-Tests, 198 Backend-Tests mit 75 % Coverage, 6 E2E-Tests — einen konsistenten Qualitätsanspruch, der über den Rahmen eines typischen akademischen Projekts hinausgeht.
+Insgesamt belegen die Metriken — 0 TypeScript-Fehler, 91,33 % type-coverage, 187 Frontend-Tests, 198 Backend-Tests mit 75 % Coverage, 6 E2E-Tests — einen konsistenten Qualitätsanspruch, der über den Rahmen eines typischen akademischen Projekts hinausgeht. Die vollständige Implementierung bildet damit die Grundlage für die systematische Evaluation in Kapitel 6, die sowohl die technischen Qualitätsmetriken als auch die KI-Textgenerierung gegen die in Kapitel 2.6 definierten Anforderungen prüft und die Forschungsfrage aus Kapitel 1.2 quantitativ beantwortet.

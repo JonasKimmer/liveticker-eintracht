@@ -299,7 +299,7 @@ Das System unterstützt fünf LLM-Provider in einer festen Fallback-Kette:
 | 1         | OpenRouter | `google/gemini-2.0-flash-lite-001` | 0,3        |
 | 2         | Gemini     | `gemini-2.0-flash-lite-001`        | 0,3        |
 | 3         | OpenAI     | `gpt-4o-mini`                      | 0,3        |
-| 4         | Anthropic  | `claude-haiku-4-5`                 | 0,3        |
+| 4         | Anthropic  | `claude-haiku-4-5-20251001`        | 0,3        |
 | 5         | Mock       | — (regelbasierte Templates)        | —          |
 
 Der erste Provider mit konfiguriertem API-Key wird als Singleton aktiviert. Für die Evaluation wurde jeder Provider einzeln über den Bulk-Endpunkt auf denselben Eventdatensatz angewendet.
@@ -314,7 +314,7 @@ Im produktiven Render-Deployment sind OpenRouter (Priority 1) und Mock (Fallback
 | Mock       | regelbasiert (Templates)           | < 10          | 4,0 / 5     | 3,0 / 5   | 3,0 / 5          | 3,3 / 5 |
 | Gemini     | `gemini-2.0-flash-lite-001`        | —             | —           | —         | —                | —       |
 | OpenAI     | `gpt-4o-mini`                      | —             | —           | —         | —                | —       |
-| Anthropic  | `claude-haiku-4-5`                 | —             | —           | —         | —                | —       |
+| Anthropic  | `claude-haiku-4-5-20251001`        | —             | —           | —         | —                | —       |
 
 _Messgrundlage: N = 16 deutschsprachige KI-generierte Einträge (OpenRouter), N = 7 (Mock), gemessen über 28 FullTime-Spiele auf dem Render-Deployment. Qualitätswerte (1–5) wurden manuell anhand der Kriterien aus 6.8.1 bewertet._
 
@@ -475,13 +475,13 @@ Ein kontrollierter Vergleich derselben Spiels in allen drei Modi war im Evaluati
 
 | Metrik                       | auto                     | coop                          | manual                  |
 | ---------------------------- | ------------------------ | ----------------------------- | ----------------------- |
-| Ø TTP (Sekunden)             | ≈ 5,8 s                  | ≈ 15–30 s                     | 30–120 s                |
+| Ø TTP (Sekunden)             | ≈ 5,9 s                  | ≈ 15–30 s                     | 30–120 s                |
 | Einträge pro Spiel           | alle Events (typ. 12–21) | alle Events                   | redaktionell selektiert |
 | Korrektheit (Ø, 1–5)         | 4,3                      | 5,0 (nach Freigabe)           | 5,0                     |
 | Anteil retrahierter Einträge | geschätzt 5–10 %         | 0 % (vor Publikation geprüft) | 0 %                     |
 | Redakteur-Interventionen     | 0                        | 1 pro Eintrag                 | alle                    |
 
-_TTP-Schätzung auto: 5.000 ms Polling-Intervall + 836 ms LLM-Latenz (Ø). TTP-Schätzung coop: KI-Latenz + redaktionelle Prüfzeit (Einzelklick ca. 5–10 s, mit Bearbeitung 15–30 s). Manual: Zeitaufwand für Texterstellung unter Livebedingungen aus Kapitel 2.1._
+_TTP-Schätzung auto: 5.000 ms Polling-Intervall + 859 ms LLM-Latenz (Median). TTP-Schätzung coop: KI-Latenz + redaktionelle Prüfzeit (Einzelklick ca. 5–10 s, mit Bearbeitung 15–30 s). Manual: Zeitaufwand für Texterstellung unter Livebedingungen aus Kapitel 2.1._
 
 Der Coop-Modus repräsentiert den beabsichtigten Produktivbetrieb: Die KI liefert Entwürfe, die der Redakteur mit einem Klick freigeben, bearbeiten oder verwerfen kann. Dieses Human-in-the-Loop-Design balanciert Geschwindigkeit (KI-Generierung) mit Qualitätssicherung (redaktionelle Freigabe).
 
@@ -491,7 +491,7 @@ Der Coop-Modus repräsentiert den beabsichtigten Produktivbetrieb: Die KI liefer
 
 ### 6.10.1 LLM-Latenz
 
-Die LLM-Aufrufe sind durch einen Semaphor auf maximal 8 parallele Anfragen begrenzt (`asyncio.Semaphore(settings.LLM_CONCURRENCY)`). Die Retry-Logik unterscheidet zwischen Rate-Limit-Fehlern (30s/60s/90s Backoff) und sonstigen Fehlern (1s/2s/4s exponentielles Backoff), mit maximal 3 Versuchen pro Aufruf.
+Die LLM-Aufrufe sind durch einen Semaphor auf maximal 8 parallele Anfragen begrenzt (`asyncio.Semaphore(settings.LLM_CONCURRENCY)`). Die Retry-Logik unterscheidet zwischen Rate-Limit-Fehlern (lineares Backoff: 30s/60s nach dem ersten und zweiten Fehlschlag) und sonstigen Fehlern (exponentielles Backoff: 1s/2s), mit maximal 3 Versuchen pro Aufruf.
 
 Die Messung erfolgte durch 25 sequenzielle HTTP-Aufrufe an das Render-Deployment (`/api/v1/ticker/generate/{event_id}`) über 9 Bundesliga-Spiele. Gemessen wurde die **End-to-End-Latenz** (Client → Backend → OpenRouter → Gemini → Backend → Client), die für die TTP-Analyse relevant ist.
 
@@ -501,7 +501,7 @@ Die Messung erfolgte durch 25 sequenzielle HTTP-Aufrufe an das Render-Deployment
 | Mock       | regelbasiert (Templates)           | 7   | < 10          | < 10        | < 10            | 0 %        |
 | Gemini     | `gemini-2.0-flash-lite-001`        | —   | —             | —           | —               | —          |
 | OpenAI     | `gpt-4o-mini`                      | —   | —             | —           | —               | —          |
-| Anthropic  | `claude-haiku-4-5`                 | —   | —             | —           | —               | —          |
+| Anthropic  | `claude-haiku-4-5-20251001`        | —   | —             | —           | —               | —          |
 
 Die Latenzmessungen für OpenRouter zeigen eine **bimodale Verteilung**: 44 % der Messungen lagen unter 310 ms (mutmaßlich Gemini-seitige Response-Cache-Treffer), 56 % zwischen 859 ms und 2.128 ms (Kaltgenerierung). Über alle 25 Messungen beträgt die Standardabweichung 695 ms. Im Kontext des `coop`-Modus, in dem der Redakteur die KI-generierten Entwürfe vor Publikation prüft, ist die maximale gemessene Latenz von 2,1 s unproblematisch.
 
@@ -561,14 +561,14 @@ Die in Kapitel 2.6 hergeleiteten Anforderungen werden im Folgenden gegen den imp
 
 ### 6.11.2 Nicht-funktionale Anforderungen
 
-| Nr. | Anforderung                            | Status | Nachweis / Anmerkung                                                   |
-| --- | -------------------------------------- | ------ | ---------------------------------------------------------------------- |
-| N1  | Concurrency-Begrenzung für LLM-Aufrufe | ✅     | `asyncio.Semaphore(8)` in `ticker_service.py`                          |
-| N2  | Retry-Logik mit Rate-Limit-Erkennung   | ✅     | 3 Versuche; 30s/60s/90s bei Rate-Limit; 1s/2s/4s bei sonstigen Fehlern |
-| N3  | Transaktionale Testisolierung          | ✅     | Rollback-basierte DB-Fixtures; keine persistenten Testdaten            |
-| N4  | TypeScript-Typsicherheit               | ✅     | 91,33 % type-coverage; 0 Compiler-Fehler                               |
-| N5  | Responsive UI (Mobile-tauglich)        | ✅     | Playwright-Test mit 375×812 Viewport; Mobile Tab Bar                   |
-| N6  | Fehlerresistenz im Frontend            | ✅     | `ErrorBoundary` mit Fallback-UI; 4 dedizierte Tests                    |
+| Nr. | Anforderung                            | Status | Nachweis / Anmerkung                                                                                                   |
+| --- | -------------------------------------- | ------ | ---------------------------------------------------------------------------------------------------------------------- |
+| N1  | Concurrency-Begrenzung für LLM-Aufrufe | ✅     | `asyncio.Semaphore(8)` in `ticker_service.py`                                                                          |
+| N2  | Retry-Logik mit Rate-Limit-Erkennung   | ✅     | 3 Versuche; 30s/60s bei Rate-Limit (`LLM_RATE_LIMIT_WAIT_BASE_S × attempt`); 1s/2s bei sonstigen Fehlern (`2^attempt`) |
+| N3  | Transaktionale Testisolierung          | ✅     | Rollback-basierte DB-Fixtures; keine persistenten Testdaten                                                            |
+| N4  | TypeScript-Typsicherheit               | ✅     | 91,33 % type-coverage; 0 Compiler-Fehler                                                                               |
+| N5  | Responsive UI (Mobile-tauglich)        | ✅     | Playwright-Test mit 375×812 Viewport; Mobile Tab Bar                                                                   |
+| N6  | Fehlerresistenz im Frontend            | ✅     | `ErrorBoundary` mit Fallback-UI; 4 dedizierte Tests                                                                    |
 
 ### 6.11.3 Architektur-Anforderungen
 
@@ -610,7 +610,7 @@ Die Frontend-Datenaktualisierung basiert auf Polling (5-Sekunden-Intervall). In 
 
 ### 6.12.7 Few-Shot-Reichweite
 
-Die Few-Shot-Infrastruktur (automatisches Befüllen der `style_references`-Tabelle aus EF-Liveticker-Archivtexten) wirkt nur bei Generierung über das Backend-LLM-Service. Die n8n-Demo-App-Workflows für Halbzeit- und Abpfiff-Zusammenfassungen rufen OpenRouter direkt auf und erhalten daher keine stilistischen Stilreferenzen. Zudem verfehlt der Liga-Filter wegen eines Case-Mismatches (`"bundesliga"` vs. `"Bundesliga"`) und fällt auf eine liga-agnostische Suche zurück. Das Few-Shot-System funktioniert damit, liefert aber noch keine liga-spezifische Stilkonditionierung.
+Die Few-Shot-Infrastruktur (automatisches Befüllen der `style_references`-Tabelle aus EF-Liveticker-Archivtexten) wirkt nur bei Generierung über das Backend-LLM-Service. Die n8n-Demo-App-Workflows für Halbzeit- und Abpfiff-Zusammenfassungen rufen OpenRouter direkt auf und erhalten daher keine stilistischen Stilreferenzen. Zudem fällt der Liga-Filter bei zu wenigen liga-spezifischen Einträgen in der `style_references`-Tabelle auf eine liga-agnostische Suche zurück (der Filter selbst ist case-insensitiv über `func.lower()` implementiert). Das Few-Shot-System funktioniert damit grundsätzlich, liefert aber noch keine konsequent liga-spezifische Stilkonditionierung.
 
 ---
 
@@ -645,3 +645,5 @@ Die KI-generierten Texte (Modell: `google/gemini-2.0-flash-lite-001`, N = 16) er
 Die Kombination aus 391 automatisierten Tests (187 Frontend + 198 Backend + 6 E2E), einer TypeScript-Coverage von 91,33 % bei null Compiler-Fehlern und einer vollständig umgesetzten Testpyramide dokumentiert eine technisch reife Codebasis. Die Teststrategie priorisiert bewusst den kritischen Redaktionspfad: Alle Kern-Workflows (Command-Parsing, Ticker-Lifecycle, LLM-Integration, Event-Verarbeitung) sind durch Unit- und Integrationstests abgesichert.
 
 Die funktionale Evaluation zeigt, dass alle 12 Kernanforderungen an das System erfüllt sind. Die qualitative Textanalyse identifiziert sowohl Stärken (Geschwindigkeit, Formatierungstreue, Faktenübernahme aus dem Kontext) als auch Grenzen (stilistische Wiederholungen, gelegentliche Halluzinationen ohne Few-Shot-Referenzen) der KI-Generierung. Für einen produktiven Einsatz sind insbesondere die Ergänzung einer Authentifizierungsschicht, die Ausweitung der E2E-Tests auf den vollständigen Redaktionsworkflow und eine externe Nutzerstudie mit professionellen Sportredakteuren empfehlenswert.
+
+Die Evaluation liefert damit die empirische Evidenz, auf der die kritische Einordnung in Kapitel 7 — Stärken, Limitationen und Implikationen für den Sportjournalismus — aufbaut. Die Beantwortung der Forschungsfrage erfolgt auf Grundlage dieser Ergebnisse in Kapitel 8.2.

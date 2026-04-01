@@ -21,10 +21,10 @@ Die personellen Konsequenzen sind in der Praxis spürbar. Liveticker-Stellen wer
 
 Die empirische Validierung dieser Problemdimension erfolgt über das Experteninterview (Kap. 2.4) mit folgenden Fragen:
 
-- *F1: Wie läuft die Liveticker-Produktion bei Eintracht Frankfurt aktuell ab? Beschreiben Sie bitte einen typischen Spieltag.*
-- *F2: Wie viele Personen sind an einem Spieltag für den Liveticker eingeteilt?*
-- *F3: Was sind die häufigsten Fehlerquellen unter Zeitdruck?*
-- *F5: Wie wird die Ticker-Abdeckung bei Parallelspielen oder Jugend-/Frauenspielen gehandhabt?*
+- _F1: Wie läuft die Liveticker-Produktion bei Eintracht Frankfurt aktuell ab? Beschreiben Sie bitte einen typischen Spieltag._
+- _F2: Wie viele Personen sind an einem Spieltag für den Liveticker eingeteilt?_
+- _F3: Was sind die häufigsten Fehlerquellen unter Zeitdruck?_
+- _F5: Wie wird die Ticker-Abdeckung bei Parallelspielen oder Jugend-/Frauenspielen gehandhabt?_
 
 ---
 
@@ -38,7 +38,7 @@ Der operative Zeitdruck potenziert sich mit jeder zusätzlichen Sprache erheblic
 
 Die empirische Validierung dieser Problemdimension erfolgt über das Experteninterview (Kap. 2.4) mit folgender Frage:
 
-- *F4: Gibt es Bedarf an mehrsprachigen Tickern? Wenn ja, welche Sprachen wären relevant?*
+- _F4: Gibt es Bedarf an mehrsprachigen Tickern? Wenn ja, welche Sprachen wären relevant?_
 
 ---
 
@@ -52,9 +52,9 @@ Im Softwarekontext wird dieses Problem durch sogenannte White-Label-Architekture
 
 Die empirische Validierung dieser Problemdimension erfolgt über das Experteninterview (Kap. 2.4) mit folgenden Fragen:
 
-- *F6: Gibt es bei Eintracht Frankfurt einen definierten Schreibstil oder Styleguide für den Liveticker?*
-- *F7: Wie wird sichergestellt, dass verschiedene Autoren in einem konsistenten Stil schreiben?*
-- *F8: Unterscheidet sich der Vereinsticker bewusst von neutraler Berichterstattung? Wenn ja, wie?*
+- _F6: Gibt es bei Eintracht Frankfurt einen definierten Schreibstil oder Styleguide für den Liveticker?_
+- _F7: Wie wird sichergestellt, dass verschiedene Autoren in einem konsistenten Stil schreiben?_
+- _F8: Unterscheidet sich der Vereinsticker bewusst von neutraler Berichterstattung? Wenn ja, wie?_
 
 Wie sich diese Anforderungen am konkreten Beispiel eines Bundesliga-Vereins ausprägen, zeigt der folgende Abschnitt.
 
@@ -112,14 +112,14 @@ Aus den vorangegangenen Problemdimensionen und der Anforderungsanalyse werden im
 
 ### 2.6.2 Nicht-funktionale Anforderungen
 
-| Nr. | Anforderung                            | Herleitung                     |
-| --- | -------------------------------------- | ------------------------------ |
-| N1  | Concurrency-Begrenzung für LLM-Aufrufe | Kap. 2.1 (Zeitdruck)           |
-| N2  | Retry-Logik mit Rate-Limit-Erkennung   | Kap. 3.1 (Robustheit)          |
-| N3  | Transaktionale Testisolierung          | Qualitätssicherung             |
-| N4  | TypeScript-Typsicherheit               | Qualitätssicherung             |
-| N5  | Responsive UI (Mobile-tauglich)        | Kap. 2.1 (Flexibilität)        |
-| N6  | Fehlerresistenz im Frontend            | Kap. 2.1 (Robustheit)          |
+| Nr. | Anforderung                            | Herleitung              |
+| --- | -------------------------------------- | ----------------------- |
+| N1  | Concurrency-Begrenzung für LLM-Aufrufe | Kap. 2.1 (Zeitdruck)    |
+| N2  | Retry-Logik mit Rate-Limit-Erkennung   | Kap. 3.1 (Robustheit)   |
+| N3  | Transaktionale Testisolierung          | Qualitätssicherung      |
+| N4  | TypeScript-Typsicherheit               | Qualitätssicherung      |
+| N5  | Responsive UI (Mobile-tauglich)        | Kap. 2.1 (Flexibilität) |
+| N6  | Fehlerresistenz im Frontend            | Kap. 2.1 (Robustheit)   |
 
 ### 2.6.3 Architektur-Anforderungen
 
@@ -131,4 +131,4 @@ Aus den vorangegangenen Problemdimensionen und der Anforderungsanalyse werden im
 | A4  | Vollständiges Datenmodell                       | Kap. 2.1, 2.4               |
 | A5  | White-Label-Fähigkeit (ef_whitelabel / generic) | Kap. 2.3, 2.4               |
 
-Damit sind die Anforderungen vollständig hergeleitet; die technischen Grundlagen folgen in Kapitel 3.
+Die drei Problemdimensionen — operativer Zeitdruck, Mehrsprachigkeit und White-Label-Bedarf — sind dabei keine isolierten Herausforderungen, sondern greifen strukturell ineinander: Zeitdruck macht menschliche Skalierung unmöglich, Mehrsprachigkeit multipliziert diesen Aufwand, und White-Label-Anforderungen verlangen eine stilistische Konsistenz, die wechselndes Personal nicht zuverlässig gewährleisten kann. Dies begründet die Notwendigkeit einer integrierten technologischen Lösung: KI-gestützte Textgenerierung mit konfigurierber Stilsteuerung (F1–F4) als Antwort auf den Zeitdruck, mehrsprachige Generierung (F7) als Antwort auf die Internationalisierungsanforderung und eine konfigurierbare Instanzlogik (A5) als Antwort auf den White-Label-Bedarf. Die in den Tabellen 2.6.1–2.6.3 formalisierten 23 Anforderungen bilden damit das vollständige Pflichtenheft für die Systemkonzeption in Kapitel 4; die hierfür notwendigen technologischen Grundlagen werden in Kapitel 3 aufgearbeitet.
