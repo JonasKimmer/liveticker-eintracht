@@ -99,62 +99,55 @@
    wechseln wir zu Einzel-Panel-Ansicht mit Tabs unten.
    Flexbox übernimmt die Höhenverteilung — kein magic-calc nötig.
    ─────────────────────────────────────────────────────────── */
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+
 @media (max-width: 1100px) {
   /* Nav-Tabs im Header verstecken */
   .lt-header__nav-tab {
     display: none;
   }
 
-  /* Viewport-füllendes Flex-Layout.
-     padding-top wird per ResizeObserver dynamisch als --lt-top-bar-h gesetzt */
+  /* Viewport-füllendes Flex-Layout */
   .lt {
     height: 100dvh;
     display: flex;
     flex-direction: column;
     overflow: hidden;
     box-sizing: border-box;
-    padding-top: var(--lt-top-bar-h, 0px);
+    /* Nutzt dynamische Höhe oder Fallback für fixierten Header */
+    padding-top: var(--lt-top-bar-h, 110px);
     padding-bottom: calc(56px + env(safe-area-inset-bottom, 0px));
   }
 
-  /* Top-Bar: Header + MatchHeader + ModeBar zusammen fixed */
+  /* --- FIX: Top-Bar (Header) fixieren --- */
   .lt-top-bar {
-    position: fixed;
+    position: fixed !important;
     top: 0;
     left: 0;
     right: 0;
-    z-index: 300;
+    z-index: 999;
+    background: var(--lt-bg-card);
+    border-bottom: 1px solid var(--lt-border);
     transition:
       transform 0.2s ease,
       opacity 0.2s ease;
   }
 
-  /* Modal offen → Top-Bar wegblenden damit NavDrawer voll sichtbar */
   .lt-top-bar--hidden {
     transform: translateY(-100%);
     opacity: 0;
     pointer-events: none;
   }
 
-  /* Spalten-Block wächst in den verbleibenden Platz */
-  .lt-columns,
-  .lt-columns--auto {
-    display: flex !important;
-    flex-direction: column !important;
-    flex: 1;
-    min-height: 0;
-    width: 100%;
-  }
-
-  /* Breadcrumb: aus absolutem Centered-Elem → Flex-Item */
+  /* --- FIX: Breadcrumb im Header zentrieren --- */
   .lt-breadcrumb {
-    position: relative !important;
-    left: 0;
-    right: 0;
-    top: 0;
-    margin: 0 auto !important;
-    width: 100% !important;
-    max-width: 100vw !important;
+    position: absolute !important;
+    left: 50% !important;
+    top: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    margin: 0 !important;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -163,39 +156,52 @@
     border: none;
     box-shadow: none;
     padding: 0 !important;
+    white-space: nowrap;
   }
-  /* StartScreen: zentriert und untereinander auf Mobile */
+
+  /* --- FIX: StartScreen Boxen untereinander --- */
+  .lt-columns,
+  .lt-columns--auto {
+    display: block !important; /* Grid aufheben */
+    width: 100%;
+    flex: 1;
+    min-height: 0;
+  }
+
   .lt-start__inner {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 1.5rem;
+    padding: 1rem;
     width: 100%;
     max-width: 480px;
     margin: 0 auto;
     box-sizing: border-box;
   }
-  /* Land + Team ausblenden — Liga + Spieltag + Match bleiben */
+
+  .lt-start__selects {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 1rem;
+  }
+
+  /* --- Restliche Mobile-Logik --- */
   .lt-breadcrumb__seg--country,
   .lt-breadcrumb__seg--team {
     display: none;
   }
-  /* Erstes sichtbares Sep (vor Liga) ebenfalls weg */
-  .lt-breadcrumb__seg--country + .lt-breadcrumb__sep,
-  .lt-breadcrumb__seg--team + .lt-breadcrumb__sep {
-    display: none;
-  }
 
-  /* Alle Panels verstecken, nur aktives anzeigen */
   .lt-panel-wrap {
     display: none;
   }
+
   .lt-panel-wrap--active {
     display: flex;
     flex: 1;
     min-height: 0;
   }
 
-  /* Spalten-Scroll füllt den Flex-Container */
   .lt-col {
     flex: 1;
     height: auto !important;
@@ -204,12 +210,10 @@
     overflow-x: hidden;
   }
 
-  /* Resize-Handles verstecken */
   [title="Breite ziehen"] {
     display: none !important;
   }
 
-  /* Start-Screen scrollbar innerhalb des Flex-Containers */
   .lt-start {
     display: block !important;
     width: 100%;
@@ -220,14 +224,12 @@
     box-sizing: border-box;
   }
 
-  /* Header: normales Kind von lt-top-bar (kein eigenes fixed mehr nötig) */
   .lt-header {
     position: relative;
     padding-top: env(safe-area-inset-top, 0px);
     height: calc(var(--lt-header-h) + env(safe-area-inset-top, 0px));
   }
 
-  /* Bottom-Tabs: komplett fixed — scrollt nie mit */
   .lt-mobile-tabs {
     display: flex;
     position: fixed;
@@ -241,6 +243,7 @@
     border-top: 1px solid var(--lt-border);
     box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.25);
   }
+
   .lt-mobile-tab {
     flex: 1;
     display: flex;
@@ -256,13 +259,13 @@
     cursor: pointer;
     transition: color 0.15s;
   }
-  .lt-mobile-tab span:first-child {
-    font-size: 1.1rem;
-  }
+
   .lt-mobile-tab--active {
     color: var(--lt-accent);
   }
 }
+
+/* Ab hier folgen deine vorhandenen @media (max-width: 768px) Regeln... */
 
 /* ── ≤768px: Kompakte Header- und Match-Darstellung ────────── */
 @media (max-width: 768px) {
