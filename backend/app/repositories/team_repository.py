@@ -5,9 +5,7 @@ Datenbankzugriff für Vereinsdaten inkl. Paginierung und externer ID-Suche.
 """
 
 import logging
-import math
 from typing import Optional
-from uuid import UUID
 
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
@@ -50,22 +48,15 @@ class TeamRepository(BaseRepository[Team]):
             .limit(page_size)
             .all()
         )
-        page_count = math.ceil(total / page_size) if page_size else 1
-        return PaginatedTeamResponse(
+        return PaginatedTeamResponse.create(
             items=[TeamResponse.model_validate(t) for t in items],
             total=total,
             page=page,
             page_size=page_size,
-            page_count=page_count,
-            has_previous_page=page > 1,
-            has_next_page=page < page_count,
         )
 
     def get_by_id(self, team_id: int) -> Optional[Team]:
         return self.db.query(Team).filter(Team.id == team_id).first()
-
-    def get_by_uid(self, uid: UUID) -> Optional[Team]:
-        return self.db.query(Team).filter(Team.uid == uid).first()
 
     def get_by_country(self, country_name: str) -> list[Team]:
         return (

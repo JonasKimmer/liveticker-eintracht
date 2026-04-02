@@ -17,3 +17,8 @@ class TickerStatus(str, Enum):
 class TickerSource(str, Enum):
     ai = "ai"
     manual = "manual"
+
+
+class MediaQueueStatus(str, Enum):
+    pending = "pending"
+    published = "published"

@@ -53,10 +53,3 @@ class StyleReferenceRepository:
             .limit(limit)
             .all()
         )
-
-    def bulk_insert(self, records: list[dict]) -> int:
-        """Für n8n-Import: Liste von Dicts einfügen."""
-        objs = [StyleReference(**r) for r in records]
-        self.db.bulk_save_objects(objs)
-        self.db.commit()
-        return len(objs)

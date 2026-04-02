@@ -22,10 +22,11 @@ class EventRepository:
         self.db = db
 
     @staticmethod
-    def _serialize(data: EventCreate | EventUpdate, *, exclude_source_id: bool = False) -> dict:
+    def _serialize(
+        data: EventCreate | EventUpdate, *, exclude_source_id: bool = False
+    ) -> dict:
         """Dump event schema to dict, stripping non-column fields."""
         d = data.model_dump(exclude_unset=True, by_alias=False)
-        d.pop("players", None)
         if exclude_source_id:
             d.pop("source_id", None)
         return d
@@ -86,7 +87,9 @@ class EventRepository:
         if data.source_id:
             existing = self.get_by_source_id(data.source_id)
             if existing:
-                for field, value in self._serialize(data, exclude_source_id=True).items():
+                for field, value in self._serialize(
+                    data, exclude_source_id=True
+                ).items():
                     setattr(existing, field, value)
                 try:
                     self.db.commit()
@@ -112,7 +115,8 @@ class EventRepository:
                 if existing:
                     logger.debug(
                         "Event race resolved: source_id=%s already exists as id=%s",
-                        data.source_id, existing.id,
+                        data.source_id,
+                        existing.id,
                     )
                     return existing, False
             raise

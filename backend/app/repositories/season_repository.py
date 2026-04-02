@@ -5,9 +5,7 @@ Datenbankzugriff für Saisons inkl. Spieltag-Navigation und Tabellenabfragen.
 """
 
 import logging
-import math
 from typing import Literal, Optional
-from uuid import UUID
 
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
@@ -58,22 +56,15 @@ class SeasonRepository(BaseRepository[Season]):
             .limit(page_size)
             .all()
         )
-        page_count = math.ceil(total / page_size) if page_size else 1
-        return PaginatedSeasonResponse(
+        return PaginatedSeasonResponse.create(
             items=[SeasonResponse.model_validate(s) for s in items],
             total=total,
             page=page,
             page_size=page_size,
-            page_count=page_count,
-            has_previous_page=page > 1,
-            has_next_page=page < page_count,
         )
 
     def get_by_id(self, season_id: int) -> Optional[Season]:
         return self.db.query(Season).filter(Season.id == season_id).first()
-
-    def get_by_uid(self, uid: UUID) -> Optional[Season]:
-        return self.db.query(Season).filter(Season.uid == uid).first()
 
     # ------------------------------------------------------------------ #
     # Writes                                                               #

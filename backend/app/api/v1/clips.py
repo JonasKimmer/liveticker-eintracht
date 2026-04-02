@@ -13,14 +13,13 @@ Endpunkte:
 
 import base64
 import logging
-from pathlib import Path
-from typing import Optional
+from typing import Literal, Optional
 
 import httpx
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
-from app.core.config import settings
+from app.core.constants import DEFAULT_TICKER_INSTANCE
 from app.core.database import get_db
 from app.utils.http_errors import require_or_404
 from app.repositories.match_repository import MatchRepository
@@ -38,8 +37,6 @@ from app.schemas.ticker_entry import TickerEntryResponse
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/clips", tags=["Clips"])
-
-THUMBNAILS_DIR = Path(__file__).parents[3] / "static" / "thumbnails"
 
 
 # ──────────────────────────────────────────────
@@ -80,54 +77,21 @@ def get_clips_for_match(
 
 
 # ──────────────────────────────────────────────
-# GET: YouTube-Videos (source='youtube', kein match_id Pflicht)
+# GET: Clips nach Quelle (youtube / twitter / instagram)
 # ──────────────────────────────────────────────
 
 
 @router.get(
-    "/youtube",
+    "/by-source",
     response_model=list[MediaClipResponse],
-    summary="Alle YouTube-Videos aus DB (source=youtube)",
+    summary="Clips nach Quelle filtern (youtube, twitter, instagram)",
 )
-def get_youtube_clips(
+def get_clips_by_source(
+    source: Literal["youtube", "twitter", "instagram"],
     include_published: bool = False,
     db: Session = Depends(get_db),
 ) -> list[MediaClipResponse]:
-    return MediaClipRepository(db).get_by_source("youtube", include_published)
-
-
-# ──────────────────────────────────────────────
-# GET: Twitter/X Posts (source='twitter')
-# ──────────────────────────────────────────────
-
-
-@router.get(
-    "/twitter",
-    response_model=list[MediaClipResponse],
-    summary="Alle Twitter/X-Posts aus DB (source=twitter)",
-)
-def get_twitter_posts(
-    include_published: bool = False,
-    db: Session = Depends(get_db),
-) -> list[MediaClipResponse]:
-    return MediaClipRepository(db).get_by_source("twitter", include_published)
-
-
-# ──────────────────────────────────────────────
-# GET: Instagram Posts (source='instagram')
-# ──────────────────────────────────────────────
-
-
-@router.get(
-    "/instagram",
-    response_model=list[MediaClipResponse],
-    summary="Alle Instagram-Posts aus DB (source=instagram)",
-)
-def get_instagram_posts(
-    include_published: bool = False,
-    db: Session = Depends(get_db),
-) -> list[MediaClipResponse]:
-    return MediaClipRepository(db).get_by_source("instagram", include_published)
+    return MediaClipRepository(db).get_by_source(source, include_published)
 
 
 # ──────────────────────────────────────────────
@@ -167,7 +131,7 @@ async def generate_clip_draft(
             },
             match_context=match_context,
             db=db,
-            instance="ef_whitelabel",
+            instance=DEFAULT_TICKER_INSTANCE,
         )
     except Exception as e:
         logger.exception("Draft generation failed for clip_id=%s", clip_id)

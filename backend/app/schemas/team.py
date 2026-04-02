@@ -4,6 +4,8 @@ from uuid import UUID
 from pydantic import BaseModel, ConfigDict, Field, HttpUrl, field_validator
 from pydantic.alias_generators import to_camel
 
+from app.schemas.base import PaginatedResponse
+
 
 class TeamCategory(BaseModel):
     de: Optional[str] = Field(None, max_length=100)
@@ -81,16 +83,5 @@ class TeamResponse(BaseModel):
     hidden: bool
 
 
-class PaginatedTeamResponse(BaseModel):
-    model_config = ConfigDict(
-        populate_by_name=True,
-        alias_generator=to_camel,
-    )
-
-    items: list[TeamResponse]
-    total: int
-    page: int
-    page_size: int
-    page_count: int
-    has_previous_page: bool
-    has_next_page: bool
+class PaginatedTeamResponse(PaginatedResponse[TeamResponse]):
+    pass

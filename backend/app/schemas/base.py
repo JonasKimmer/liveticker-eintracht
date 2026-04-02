@@ -1,16 +1,21 @@
 """
 schemas/base.py
 ===============
-Gemeinsame Basisschemas (generische Paginierung).
+Gemeinsame Basisschemas (generische Paginierung, wiederverwendete Sub-Schemas).
 """
 
 from math import ceil
-from typing import Generic, TypeVar
+from typing import Generic, Optional, TypeVar
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 from pydantic.alias_generators import to_camel
 
 ItemT = TypeVar("ItemT")
+
+
+class LocalizedTitle(BaseModel):
+    de: Optional[str] = Field(None, max_length=200)
+    en: Optional[str] = Field(None, max_length=200)
 
 
 class PaginatedResponse(BaseModel, Generic[ItemT]):

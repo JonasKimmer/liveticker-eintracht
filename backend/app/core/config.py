@@ -37,30 +37,12 @@ class Settings(BaseSettings):
     # Server
     PUBLIC_BASE_URL: str = "http://localhost:8001"
 
-    # WebSocket
-    WS_HEARTBEAT_INTERVAL: int = 30
-
     # LLM Settings
     OPENROUTER_MODEL: Optional[str] = "google/gemini-2.0-flash-lite-001"
     LLM_CONCURRENCY: int = 8  # Max gleichzeitige LLM-Requests (Semaphore)
 
     # API-Football Settings
     API_FOOTBALL_BASE_URL: str = "https://v3.football.api-sports.io"
-    API_FOOTBALL_RATE_LIMIT: int = 100
-
-    # n8n Webhooks
-    N8N_WEBHOOK_LINEUP: str = "http://localhost:5678/webhook/lineups"
-    N8N_WEBHOOK_EVENTS: str = "http://localhost:5678/webhook/Events"
-    N8N_WEBHOOK_STATISTICS: str = "http://localhost:5678/webhook/statistics"
-    N8N_WEBHOOK_PLAYER_STATISTICS: str = (
-        "http://localhost:5678/webhook/Player-Statistics"
-    )
-    N8N_WEBHOOK_PREMATCH: str = "http://localhost:5678/webhook/import-prematch"
-    N8N_WEBHOOK_COMPETITIONS: str = (
-        "http://localhost:5678/webhook/import-team-competitions"
-    )
-    N8N_WEBHOOK_MATCHES: str = "http://localhost:5678/webhook/import-matches"
-    N8N_WEBHOOK_COUNTRY: str = "http://localhost:5678/webhook/import-country"
 
     model_config = SettingsConfigDict(
         env_file=".env",

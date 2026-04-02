@@ -230,10 +230,7 @@ def get_lineup(
     matchId: int, db: Session = Depends(get_db)
 ) -> list[LineupPlayerResponse]:
     repo = MatchRepository(db)
-    if not repo.exists(matchId):
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Match not found"
-        )
+    require_or_404(repo.get_by_id(matchId), "Match not found")
     return repo.get_lineup(matchId)
 
 
@@ -274,10 +271,7 @@ def get_statistics(
     matchId: int, db: Session = Depends(get_db)
 ) -> list[MatchStatisticResponse]:
     repo = MatchRepository(db)
-    if not repo.exists(matchId):
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Match not found"
-        )
+    require_or_404(repo.get_by_id(matchId), "Match not found")
     return repo.get_statistics(matchId)
 
 
@@ -318,10 +312,7 @@ def get_player_statistics(
     matchId: int, db: Session = Depends(get_db)
 ) -> list[PlayerStatisticResponse]:
     repo = MatchRepository(db)
-    if not repo.exists(matchId):
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Match not found"
-        )
+    require_or_404(repo.get_by_id(matchId), "Match not found")
     rows = repo.get_player_statistics(matchId)
     return [PlayerStatisticResponse.model_validate(r) for r in rows]
 
@@ -337,9 +328,6 @@ def get_player_statistics(
 )
 def get_injuries(matchId: int, db: Session = Depends(get_db)) -> list[dict]:
     repo = MatchRepository(db)
-    if not repo.exists(matchId):
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Match not found"
-        )
+    require_or_404(repo.get_by_id(matchId), "Match not found")
     rows = SyntheticEventRepository(db).get_injuries(matchId)
     return [r.data for r in rows if r.data]

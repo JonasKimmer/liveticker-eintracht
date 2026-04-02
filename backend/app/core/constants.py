@@ -146,6 +146,9 @@ LLM_TRANSLATION_TEMPERATURE: float = 0.1
 LLM_RETRY_ATTEMPTS: int = 3
 LLM_RATE_LIMIT_WAIT_BASE_S: int = 30  # Sekunden; verdoppelt sich pro Attempt
 
+# ── Ticker-Instanzen ─────────────────────────────────────────
+DEFAULT_TICKER_INSTANCE: str = "ef_whitelabel"
+
 
 def resolve_phase(event_type: str) -> Optional[str]:
     """Resolve a synthetic event type string to its ticker phase.

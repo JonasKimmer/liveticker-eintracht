@@ -6,7 +6,6 @@ Datenbankzugriff für Wettbewerbe (Ligen, Pokale).
 
 import logging
 from typing import Optional
-from uuid import UUID
 
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
@@ -49,9 +48,6 @@ class CompetitionRepository(BaseRepository[Competition]):
         return (
             self.db.query(Competition).filter(Competition.id == competition_id).first()
         )
-
-    def get_by_uid(self, uid: UUID) -> Optional[Competition]:
-        return self.db.query(Competition).filter(Competition.uid == uid).first()
 
     # ------------------------------------------------------------------ #
     # Writes                                                               #

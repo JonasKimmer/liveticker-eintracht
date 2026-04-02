@@ -1,14 +1,9 @@
-"""
-MediaQueueRepository
-====================
-Datenbankzugriff für MediaQueue (ScorePlay-Bilder-Queue).
-"""
-
 import logging
 from typing import Optional
 
 from sqlalchemy.orm import Session
 
+from app.core.enums import MediaQueueStatus
 from app.models.media_queue import MediaQueue
 from app.schemas.media_queue import MediaItemIn
 
@@ -30,17 +25,13 @@ class MediaQueueRepository:
     def get_pending(self) -> list[MediaQueue]:
         return (
             self.db.query(MediaQueue)
-            .filter(MediaQueue.status == "pending")
+            .filter(MediaQueue.status == MediaQueueStatus.pending)
             .order_by(MediaQueue.created_at.desc())
             .all()
         )
 
     def get_by_media_id(self, media_id: int) -> Optional[MediaQueue]:
-        return (
-            self.db.query(MediaQueue)
-            .filter(MediaQueue.media_id == media_id)
-            .first()
-        )
+        return self.db.query(MediaQueue).filter(MediaQueue.media_id == media_id).first()
 
     def save(self, item: MediaItemIn) -> MediaQueue:
         obj = MediaQueue(
@@ -50,7 +41,7 @@ class MediaQueueRepository:
             compressed_url=item.compressed_url,
             original_url=item.original_url,
             event_id=item.event_id,
-            status="pending",
+            status=MediaQueueStatus.pending,
         )
         self.db.add(obj)
         return obj
@@ -62,10 +53,12 @@ class MediaQueueRepository:
         return objs
 
     def clear_pending(self) -> None:
-        self.db.query(MediaQueue).filter(MediaQueue.status == "pending").delete()
+        self.db.query(MediaQueue).filter(
+            MediaQueue.status == MediaQueueStatus.pending
+        ).delete()
         self.db.commit()
 
     def publish(self, media: MediaQueue, description: str) -> None:
-        media.status = "published"
+        media.status = MediaQueueStatus.published
         media.description = description
         self.db.commit()

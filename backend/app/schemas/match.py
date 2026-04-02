@@ -7,7 +7,7 @@ from uuid import UUID
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 from pydantic.alias_generators import to_camel
 
-from app.schemas.base import PaginatedResponse
+from app.schemas.base import LocalizedTitle, PaginatedResponse
 
 
 # ------------------------------------------------------------------ #
@@ -38,11 +38,6 @@ class MatchPhase(str, Enum):
 # ------------------------------------------------------------------ #
 # Sub-schemas                                                          #
 # ------------------------------------------------------------------ #
-
-
-class LocalizedTitle(BaseModel):
-    de: Optional[str] = Field(None, max_length=200)
-    en: Optional[str] = Field(None, max_length=200)
 
 
 class JerseyInfo(BaseModel):
