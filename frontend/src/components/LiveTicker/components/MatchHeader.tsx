@@ -3,7 +3,7 @@
 // ============================================================
 import { memo, useEffect } from "react";
 import { normalizeMatchStatus } from "../../../utils/matchStatus";
-import { useLiveMinute } from "hooks/useLiveMinute";
+import { useLiveMinute } from "../hooks/useLiveMinute";
 import { SYNC_MATCH_INTERVAL_MS } from "../constants";
 import * as api from "api";
 import logger from "utils/logger";

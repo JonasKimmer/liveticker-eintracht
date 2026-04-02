@@ -13,7 +13,7 @@ import "./LiveTicker.css";
 
 import * as api from "../../api";
 import { useMatchData } from "./hooks/useMatchData";
-import { useLiveMinute } from "../../hooks/useLiveMinute";
+import { useLiveMinute } from "./hooks/useLiveMinute";
 import { useNavigation } from "./hooks/useNavigation";
 import { TickerModeContext } from "../../context/TickerModeContext";
 import { TickerDataContext } from "../../context/TickerDataContext";

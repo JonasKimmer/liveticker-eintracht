@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
-import { normalizeMatchStatus } from "../utils/matchStatus";
+import { normalizeMatchStatus } from "../../../utils/matchStatus";
 import { MATCH_PHASES } from "../constants";
-import type { Match } from "../types";
+import type { Match } from "../../../types";
 
 /**
  * Berechnet die aktuelle Spielminute basierend auf Matchstatus und Anstoßzeit.
@@ -26,8 +26,7 @@ export function useLiveMinute(match: Match | null) {
   if (match.minute != null) return match.minute;
 
   // Compute from kickoff or startsAt
-  const kickoffTime =
-    match.kickoff || match.startsAt;
+  const kickoffTime = match.kickoff || match.startsAt;
   if (!kickoffTime) return 0;
 
   const kickoffMs = new Date(kickoffTime).getTime();
