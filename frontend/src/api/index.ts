@@ -213,9 +213,9 @@ export const fetchClips = (matchId: number, teamName?: string) =>
   api.get(
     `/clips/match/${matchId}${teamName ? `?team_name=${encodeURIComponent(teamName)}` : ""}`,
   );
-export const fetchYoutubeClips = () => api.get("/clips/youtube");
-export const fetchTwitterPosts = () => api.get("/clips/twitter");
-export const fetchInstagramPosts = () => api.get("/clips/instagram");
+export const fetchYoutubeClips = () => api.get("/clips/by-source?source=youtube");
+export const fetchTwitterPosts = () => api.get("/clips/by-source?source=twitter");
+export const fetchInstagramPosts = () => api.get("/clips/by-source?source=instagram");
 export const generateClipDraft = (
   clipId: number,
   matchId: number,

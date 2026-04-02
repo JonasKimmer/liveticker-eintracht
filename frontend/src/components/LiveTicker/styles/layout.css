@@ -100,28 +100,26 @@
     display: none;
   }
 
-  /* Viewport-füllendes Flex-Layout */
+  /* Viewport-füllendes Flex-Layout.
+     padding-top wird per ResizeObserver dynamisch als --lt-top-bar-h gesetzt */
   .lt {
     height: 100dvh;
     display: flex;
     flex-direction: column;
     overflow: hidden;
     box-sizing: border-box;
-    /* FIX: Abstand oben, damit Inhalt nicht unter dem fixierten Header verschwindet */
-    padding-top: var(--lt-top-bar-h, 110px) !important;
+    padding-top: var(--lt-top-bar-h, 0px);
     padding-bottom: calc(56px + env(safe-area-inset-bottom, 0px));
   }
 
-  /* --- FIX 1: Top-Bar (Header) oben fest fixieren --- */
+  /* Top-Bar: Header + MatchHeader + ModeBar zusammen fixed */
   .lt-top-bar {
-    position: fixed !important;
+    position: fixed;
     top: 0;
     left: 0;
     right: 0;
-    z-index: 999;
-    background: var(
-      --lt-bg-card
-    ) !important; /* Verhindert Durchscheinen beim Scrollen */
+    z-index: 300;
+    background: var(--lt-bg-card);
     border-bottom: 1px solid var(--lt-border);
     transition:
       transform 0.2s ease,
@@ -134,53 +132,29 @@
     pointer-events: none;
   }
 
-  /* --- FIX 2: Breadcrumb im Header zentrieren (nicht schwebend) --- */
+  /* Breadcrumb: Flex-Item zentriert im Header */
   .lt-breadcrumb {
-    position: absolute !important;
-    left: 50% !important;
-    top: 50% !important;
-    transform: translate(-50%, -50%) !important;
-    margin: 0 !important;
-    display: flex !important;
+    position: static;
+    transform: none;
+    flex: 1;
+    min-width: 0;
+    display: flex;
     justify-content: center;
-    align-items: center;
-    z-index: 1010;
-    background: transparent !important;
-    border: none !important;
-    box-shadow: none !important;
-    padding: 0 !important;
+    overflow: hidden;
     white-space: nowrap;
-    width: auto !important;
+    font-size: 0.75rem;
   }
 
-  /* --- FIX 3: Grid aufheben, damit Boxen untereinander stehen --- */
+  /* Spalten-Block wächst in den verbleibenden Platz */
   .lt-columns,
   .lt-columns--auto {
-    display: block !important; /* DAS IST DER WICHTIGSTE TEIL */
-    width: 100% !important;
+    display: flex !important;
+    flex-direction: column;
     flex: 1;
     min-height: 0;
   }
 
-  .lt-start__inner {
-    display: flex !important;
-    flex-direction: column !important; /* Stapelt die Boxen */
-    align-items: stretch !important; /* Boxen nutzen volle Breite */
-    gap: 1.5rem;
-    padding: 1rem;
-    width: 100%;
-    max-width: 480px;
-    margin: 0 auto;
-    box-sizing: border-box;
-  }
-
-  .lt-start__selects {
-    display: grid !important;
-    grid-template-columns: 1fr !important; /* Nur 1 Spalte für die Selects */
-    gap: 1rem;
-  }
-
-  /* --- Restliche Logik --- */
+  /* Land + Team ausblenden — Liga + Spieltag + Match bleiben */
   .lt-breadcrumb__seg--country,
   .lt-breadcrumb__seg--team {
     display: none;
@@ -191,6 +165,7 @@
     display: none;
   }
 
+  /* Alle Panels verstecken, nur aktives anzeigen */
   .lt-panel-wrap {
     display: none;
   }
@@ -201,6 +176,7 @@
     min-height: 0;
   }
 
+  /* Spalten-Scroll füllt den Flex-Container */
   .lt-col {
     flex: 1;
     height: auto !important;
@@ -213,16 +189,14 @@
     display: none !important;
   }
 
+  /* Start-Screen scrollbar innerhalb des Flex-Containers */
   .lt-start {
-    display: block !important;
-    width: 100%;
-    flex: none !important;
+    flex: 1;
     min-height: 0;
     overflow-y: auto;
-    margin: 0 auto;
-    box-sizing: border-box;
   }
 
+  /* Header: normales Kind von lt-top-bar (kein eigenes fixed mehr nötig) */
   .lt-header {
     position: relative;
     padding-top: env(safe-area-inset-top, 0px);
