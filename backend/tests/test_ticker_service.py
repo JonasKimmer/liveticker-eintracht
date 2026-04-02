@@ -164,3 +164,22 @@ class TestMakeAiEntry:
             icon="🟨",
         )
         assert entry.icon == "🟨"
+
+    def test_generation_ms_passed_through(self):
+        entry = make_ai_entry(
+            match_id=1,
+            text="Test",
+            model_used="mock",
+            style="neutral",
+            generation_ms=1234,
+        )
+        assert entry.generation_ms == 1234
+
+    def test_generation_ms_defaults_to_none(self):
+        entry = make_ai_entry(
+            match_id=1,
+            text="Test",
+            model_used="mock",
+            style="neutral",
+        )
+        assert entry.generation_ms is None

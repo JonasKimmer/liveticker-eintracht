@@ -229,3 +229,37 @@ class TestCreateManualEntry:
         assert first.status_code == 201
         assert second.status_code == 201
         assert first.json()["id"] == second.json()["id"]
+
+
+# ──────────────────────────────────────────────
+# POST /ticker/generate-synthetic
+# ──────────────────────────────────────────────
+
+
+class TestGenerateSyntheticTTP:
+    """Prüft dass generation_ms (TTP-Messung) korrekt gesetzt wird."""
+
+    def test_generation_ms_is_positive_integer(self, client, db, sample_match):
+        from unittest.mock import patch, AsyncMock
+        from app.models.synthetic_event import SyntheticEvent
+
+        synthetic = SyntheticEvent(
+            match_id=sample_match.id, type="match_kickoff", minute=1
+        )
+        db.add(synthetic)
+        db.commit()
+        db.refresh(synthetic)
+
+        with patch(
+            "app.api.v1.ticker_generate.ts.call_llm",
+            new=AsyncMock(return_value=("Anpfiff! Das Spiel beginnt.", "mock")),
+        ):
+            response = client.post(
+                "/api/v1/ticker/generate-synthetic",
+                json={"synthetic_event_id": synthetic.id},
+            )
+
+        assert response.status_code == 201
+        data = response.json()
+        assert isinstance(data["generation_ms"], int)
+        assert data["generation_ms"] >= 0
