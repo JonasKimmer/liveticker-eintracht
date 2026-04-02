@@ -102,7 +102,7 @@ test("2. Halbzeit: Offset wird korrekt berechnet", () => {
 
 ### 6.4.1 Übersicht
 
-Das Backend verfügt über **198 Tests** in 11 Test-Dateien, die mit einer Gesamt-Coverage von **75 %** abgeschlossen werden. Alle 198 Tests laufen grün durch (`198 passed`).
+Das Backend verfügt über **210 Tests** in 11 Test-Dateien, die mit einer Gesamt-Coverage von **75 %** abgeschlossen werden. Alle 210 Tests laufen grün durch (`210 passed`).
 
 ```
 $ pytest tests/ --cov=app -q
@@ -338,7 +338,15 @@ Da der Backend-Deduplizierungsmechanismus für identische `event_id` denselben E
 | euphorisch | „81. Minute: WAS IST DENN HIER LOS?! Collins mit der butterweichen Flanke! DOAN! Der Ball ist drin! TOOOOR! 1:0! Die Hütte bebt!" _(Eintracht Frankfurt vs. FSV Mainz 05, Md. 9)_ |
 | kritisch   | „4. Minute: TOOOOR! Kaminski bringt Köln in Führung! Ache mit der Vorlage, Kaminski vollendet eiskalt. 1:0!" _(1. FC Köln vs. Eintracht Frankfurt, Md. 11)_                       |
 
-**Beobachtung:** Die drei Stilprofile unterscheiden sich deutlich in Ausrufezeichen-Dichte, Wortwahl und Perspektive. Während `neutral` Fakten kompakt zusammenfasst, erzeugt `euphorisch` narrative Intensität durch Wiederholungen und Ausrufe. `kritisch` nähert sich dem neutralen Register, enthält aber keine explizite analytische Einordnung — ein Hinweis darauf, dass das Prompt-Design für dieses Profil noch Optimierungspotenzial bietet (vgl. 6.8.4).
+**Ergänzender Direktvergleich — identisches Event, alle drei Stile** (synthetischer Kontext: Eintracht Frankfurt vs. FC Bayern München, 78. Minute, Tor Omar Marmoush):
+
+| Stil       | Generierter Text                                                                                                                    |
+| ---------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| euphorisch | „78. Minute: MARMOOOSH! Der Ball zappelt im Netz! Unglaublich! Die Hütte explodiert! Was für ein Strahl! Eintracht führt! TOOOOR!" |
+| neutral    | „78. Minute: TOOOOR! Omar Marmoush bringt Eintracht Frankfurt in Führung!"                                                          |
+| kritisch   | „78. Minute: TOOOOR! Marmoush mit dem Ausgleich für die Eintracht! Die Bayern-Abwehr pennt. Frankfurt nutzt die Chance eiskalt."   |
+
+**Beobachtung:** Die drei Stilprofile unterscheiden sich deutlich in Ausrufezeichen-Dichte, Wortwahl und Perspektive. Während `neutral` Fakten kompakt zusammenfasst, erzeugt `euphorisch` narrative Intensität durch Wiederholungen und Ausrufe. `kritisch` nähert sich dem neutralen Register, enthält aber keine explizite analytische Einordnung — ein Hinweis darauf, dass das Prompt-Design für dieses Profil noch Optimierungspotenzial bietet (vgl. 6.8.4). Der kontrollierte Direktvergleich zeigt außerdem eine Inkonsistenz in der Spielstands-Interpretation: `euphorisch` beschreibt den Treffer als „Führung", `kritisch` als „Ausgleich" — obwohl der übergebene Spielstand (1:2 für Bayern) den Treffer als Anschlusstreffer ausweisen würde. Diese Divergenz ist ein weiterer Beleg für die Unzuverlässigkeit der Spielstand-Verarbeitung im euphorischen Profil.
 
 ### 6.7.5 Einfluss von Few-Shot-Referenzen
 
@@ -647,7 +655,7 @@ Die 15 n8n-Workflows (vgl. Kapitel 5.7) verfügen über keine automatisierten Te
 | Frontend Unit-Tests    | Ergebnis           | **187/187 grün**     |
 | E2E-Tests (Playwright) | Testanzahl         | **6 Tests**          |
 | E2E-Tests (Playwright) | Ergebnis           | **6/6 grün**         |
-| Backend-Tests          | Testanzahl         | **198 Tests**        |
+| Backend-Tests          | Testanzahl         | **210 Tests**        |
 | Backend-Tests          | Ergebnis           | **198/198 grün**     |
 | Backend-Coverage       | Statement Coverage | **75 %**             |
 | TypeScript-Migration   | type-coverage      | **95,84 %**          |
