@@ -48,7 +48,7 @@ Die 15 n8n-Workflows (vgl. Kapitel 6.12.8) stellen den größten nicht automatis
 
 Die in Kapitel 2.5 hergeleiteten linguistischen Anforderungen an Liveticker — Ellipsen, konzeptionelle Mündlichkeit, Graphostilistik (z. B. „TOOOOR!") — stellen besondere Anforderungen an die Prompt-Gestaltung. Die Erfahrung zeigt, dass LLMs dazu neigen, in einem formelleren Register zu schreiben als es das Genre Liveticker erfordert. Die Few-Shot-Referenzen aus der `style_references`-Tabelle sind das primäre Mittel, um diese stilistische Lücke zu schließen.
 
-Die Evaluationsergebnisse (Kapitel 6.8) zeigen, dass die Few-Shot-Referenzen das Format zuverlässig konditionieren — Minutenangaben, TOOOOR-Konvention und Textkürze werden konsistent übernommen. Die stilistische Lücke ist damit teilweise geschlossen: Faktentreue (4,6 / 5) und Verständlichkeit (4,3 / 5) profitieren von der strukturierten Kontextübergabe, während Tonalität (4,1 / 5) als schwächste Dimension verbleibt. Die häufigste Fehlerklasse — Stil-Inkonsistenz (19 %) — tritt gerade dort auf, wo euphorische Few-Shot-Muster in den neutralen Stil bluten. Eine Trennung der Referenz-Pools nach Stilprofil wäre die naheliegende Korrektur.
+Die Evaluationsergebnisse (Kapitel 6.8) zeigen, dass die Few-Shot-Referenzen das Format zuverlässig konditionieren — Minutenangaben, TOOOOR-Konvention und Textkürze werden konsistent übernommen. Die stilistische Lücke ist damit teilweise geschlossen: Faktentreue und Verständlichkeit profitieren von der strukturierten Kontextübergabe, während Tonalität als schwächste Dimension verbleibt. Die häufigste Fehlerklasse — Stil-Inkonsistenz (vgl. Tabelle 6.8.4) — tritt gerade dort auf, wo euphorische Few-Shot-Muster in den neutralen Stil bluten. Eine Trennung der Referenz-Pools nach Stilprofil wäre die naheliegende Korrektur.
 
 Der in Kapitel 3.1 beschriebene Halluzinationseffekt ist im Kontext von Livetickern besonders kritisch, da fehlerhafte Fakten (falscher Torschütze, falsches Ergebnis) unmittelbar die Glaubwürdigkeit zerstören. Die explizite Schutzregel für Pre-Match-Prompts und die niedrige Temperatur (vgl. Abschnitt 7.4.2) sind Gegenmaßnahmen, deren Wirksamkeit jedoch nur im `coop`-Modus durch die redaktionelle Kontrolle vollständig abgesichert ist. Im `auto`-Modus verbleibt ein Restrisiko fehlerhafter Veröffentlichungen.
 
@@ -60,7 +60,7 @@ Die drei Betriebsmodi (`auto`, `coop`, `manual`) wurden in Kapitel 4.3.3 konzipi
 
 ### 7.3.1 Auto-Modus: Geschwindigkeit auf Kosten der Kontrolle
 
-Der `auto`-Modus eliminiert die menschliche Latenz vollständig — Einträge werden direkt mit Status `published` erstellt. Die Stärke dieses Modus liegt in der Geschwindigkeit: Eine geschätzte Ø TTP von ≈ 3,4–5,9 s (vgl. Abschnitt 6.9.2) ist im Liveticker-Kontext kaum wahrnehmbar. Das Risiko besteht in unkontrollierten Halluzinationen, die ohne redaktionelle Prüfung veröffentlicht werden. Im journalistischen Kontext, in dem Glaubwürdigkeit eine zentrale Ressource darstellt (Beils 2023, S. 57), ist dieser Modus daher nur für unkritische Event-Typen (z. B. Phasenwechsel wie „Anpfiff" oder „Halbzeit") vertretbar.
+Der `auto`-Modus eliminiert die menschliche Latenz vollständig — Einträge werden direkt mit Status `published` erstellt. Die Stärke dieses Modus liegt in der Geschwindigkeit (vgl. TTP-Messung in Abschnitt 6.9.2). Das Risiko besteht in unkontrollierten Halluzinationen, die ohne redaktionelle Prüfung veröffentlicht werden. Im journalistischen Kontext, in dem Glaubwürdigkeit eine zentrale Ressource darstellt (Beils 2023, S. 57), ist dieser Modus daher nur für unkritische Event-Typen (z. B. Phasenwechsel wie „Anpfiff" oder „Halbzeit") vertretbar.
 
 ### 7.3.2 Coop-Modus: Der intendierte Produktivbetrieb
 
@@ -70,9 +70,7 @@ Im Evaluationszeitraum wurden im Coop-Modus keine Einträge nach Freigabe retrah
 
 ### 7.3.3 Manual-Modus: Status quo als Vergleichsbasis
 
-Der `manual`-Modus repräsentiert den redaktionellen Status quo und dient primär als Vergleichsbasis für die Effizienzgewinne der KI-gestützten Modi. Hier erstellt der Redakteur alle Ticker-Einträge selbst über den Slash-Command-Parser — ohne KI-Unterstützung, aber mit allen strukturellen Hilfen (Autocomplete, Formatierungsvorschau, Keyboard-Shortcuts). Die typische TTP wird auf Basis der in Kapitel 2.1 beschriebenen Produktionsbedingungen auf 30–120 Sekunden geschätzt, abhängig von Event-Typ und Erfahrungsstand.
-
-Dieser Modus ist nicht als Rückschritt zu verstehen, sondern als genuiner Betriebspfad für Situationen, in denen redaktionelle Eigenständigkeit bewusst priorisiert wird — etwa bei hochkritischen Ereignissen (Spielabbruch, Verletzung) oder bei Redakteuren, die zunächst Vertrauen in das System aufbauen möchten. Die Laufzeit-Umschaltbarkeit zwischen den Modi stellt sicher, dass der `manual`-Modus jederzeit als Rückfalloption verfügbar ist.
+Der `manual`-Modus repräsentiert den redaktionellen Status quo und dient primär als Vergleichsbasis für die Effizienzgewinne der KI-gestützten Modi. Hier erstellt der Redakteur alle Ticker-Einträge selbst über den Slash-Command-Parser — ohne KI-Unterstützung, aber mit allen strukturellen Hilfen (Autocomplete, Formatierungsvorschau, Keyboard-Shortcuts). Die Laufzeit-Umschaltbarkeit zwischen den Modi stellt sicher, dass der `manual`-Modus jederzeit als Rückfalloption verfügbar ist — etwa bei hochkritischen Ereignissen oder bei Redakteuren, die zunächst Vertrauen in das System aufbauen möchten.
 
 ### 7.3.4 Implikationen für die Praxis
 
@@ -113,12 +111,7 @@ Praktisch bedeutet dies, dass der kognitive Engpass der Liveticker-Produktion �
 
 Die White-Label-Architektur (`ef_whitelabel` vs. `generic`) adressiert den in Kapitel 2.3 beschriebenen strukturellen Wandel der Vereine zu eigenständigen Medienproduzenten. Ein einzelnes System kann — durch Instanzkonfiguration, Stilprofile und Few-Shot-Referenzen — verschiedene redaktionelle Stimmen bedienen, ohne separate Codebases zu erfordern. Für Vereine mit begrenzten Redaktionsressourcen senkt dies die Einstiegshürde in eine professionelle Liveticker-Berichterstattung.
 
-Die Zukunftsperspektive wird im Experteninterview (vgl. Interviewleitfaden, Kap. 2.4) durch folgende Fragen adressiert:
-
-- _F13: Könnten Sie sich vorstellen, KI-generierte Ticker im Regelbetrieb zu nutzen?_
-- _F14: Für welche Spielkategorien wäre ein vollautonomer Modus denkbar — zum Beispiel Testspiele, Jugendspiele, Freundschaftsspiele?_
-
-**Ergebnisse** — Das Interview konnte im Abgabezeitraum nicht durchgeführt werden. Die Skalierbarkeits- und White-Label-Bewertung in diesem Abschnitt stützt sich daher ausschließlich auf die in Kapitel 5 dokumentierte Systemarchitektur und die Deployment-Erfahrung mit der bestehenden `ef_whitelabel`-Instanz. Eine externe Nutzerstudie ist als mittelfristige Erweiterung in Abschnitt 8.3.2 vorgesehen.
+Die Zukunftsperspektive wird im Experteninterview (vgl. Interviewleitfaden, Kap. 2.4, Fragen F13–F14) adressiert. Die Skalierbarkeits- und White-Label-Bewertung stützt sich auf die in Kapitel 5 dokumentierte Systemarchitektur und die Deployment-Erfahrung mit der bestehenden `ef_whitelabel`-Instanz; eine externe Nutzerstudie ist in Abschnitt 8.3.2 vorgesehen.
 
 ### 7.5.3 Ethische Überlegungen
 

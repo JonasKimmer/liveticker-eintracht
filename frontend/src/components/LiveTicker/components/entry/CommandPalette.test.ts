@@ -1,4 +1,4 @@
-import { resolvePublishPayload } from "./commandPalette";
+import { resolvePublishPayload } from "../../utils/publishPayload";
 
 describe("resolvePublishPayload", () => {
   test("freier Text ohne Slash → icon null, Text unverändert", () => {

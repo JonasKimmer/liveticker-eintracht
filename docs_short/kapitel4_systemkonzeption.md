@@ -265,21 +265,7 @@ Das Feld `ticker_mode` in `matches` steuert das Verhalten der Generierungspipeli
 2. **`coop`** (kooperativ / Human-in-the-Loop) — KI erzeugt Entwürfe (`draft`), die Redaktion entscheidet über Veröffentlichung oder Ablehnung. Dieser Modus bildet das primäre Zielbild des Systems.
 3. **`manual`** (rein redaktionell) — Einträge werden manuell erstellt; KI-Generierung ist nicht leitend für den Veröffentlichungsprozess. Dieser Modus dient als Referenz für Vergleiche in der Evaluation.
 
-```mermaid
-flowchart LR
-    E[Neues Spielereignis\nvia n8n] --> G[KI generiert Text\nPOST /ticker/generate]
-
-    G --> M{ticker_mode}
-    M -->|auto| P[status = published\nSofort sichtbar]
-    M -->|coop| D[status = draft\nWartet auf Freigabe]
-    M -->|manual| X[Kein KI-Aufruf\nManuelle Eingabe]
-
-    D --> R{Redakteur}
-    R -->|Bestätigt| P
-    R -->|Verworfen| REJ[status = rejected]
-```
-
-Damit wird der Moduswechsel als Laufzeitparameter auf Datenbankebene abgebildet, ohne Deploy oder Neustart des Systems.
+Der Moduswechsel ist als Laufzeitparameter auf Datenbankebene abgebildet; der Statusfluss ist im State-Diagramm in Abschnitt 4.3.2 dargestellt.
 
 ---
 
@@ -302,40 +288,12 @@ Die Workflow-Schicht ist als entkoppelte Orchestrierungsebene zwischen externen 
 
 Die n8n-Landschaft gliedert sich in vier funktionale Klassen. Die folgende Übersicht zeigt alle 15 Workflows und ihren Auslöser:
 
-```mermaid
-graph LR
-    subgraph Stammdaten["Stammdaten & Matchstruktur"]
-        W01["01 Import Countries\nWebhook"]
-        W02["02 Import Teams\nWebhook"]
-        W03["03 Import Competitions\nWebhook"]
-        W04a["04 Import Matches\nWebhook"]
-    end
-
-    subgraph Matchdaten["Matchdaten-Importe"]
-        W04b["04 Import Lineups\nWebhook"]
-        W05["05 Match Statistics\nWebhook"]
-        W06["06 Player Statistics\nWebhook"]
-        W07["07 Import Prematch\nWebhook"]
-    end
-
-    subgraph KI["KI-Generierung"]
-        W09["09 Events LLM\nWebhook /Events"]
-        W13["13 Halftime/Aftertime\nWebhook /match-summary"]
-        W14["14 Anpfiff/Abpfiff\nWebhook /match-status"]
-    end
-
-    subgraph Medien["Medien & Social"]
-        W08["08 ScorePlay Media\nWebhook"]
-        W10["10 Twitter/X\nWebhook"]
-        W11["11 YouTube\nWebhook"]
-        W12["12 Instagram\nWebhook"]
-    end
-
-    FE["Frontend"] -- "bei leeren Daten" --> Stammdaten
-    FE -- "nach Match-Auswahl" --> Matchdaten
-    FE -- "Modussteuerung" --> KI
-    FE -- "Medien-Suche" --> Medien
-```
+| Gruppe | Workflows | Trigger |
+| ------ | --------- | ------- |
+| **A) Stammdaten** | 01–04: Countries, Teams, Competitions, Matches | Bei leeren Daten |
+| **B) Matchdaten** | 04–07: Lineups, Match-/Player-Statistics, Prematch | Nach Matchauswahl |
+| **C) KI-Generierung** | 09 Events-LLM, 13 Halftime/Aftertime, 14 Anpfiff/Abpfiff | Modus- und Event-gesteuert |
+| **D) Medien & Social** | 08 ScorePlay, 10 Twitter/X, 11 YouTube, 12 Instagram | Medien-Suche |
 
 Diese Trennung reduziert Kopplung, erleichtert Fehlersuche und erlaubt es, einzelne Teilprozesse unabhängig anzupassen. Die konkreten Workflow-Dateinamen und Implementierungsdetails sind in Kapitel 5.7 dokumentiert.
 
@@ -504,26 +462,7 @@ Die Modusumschaltung (vgl. Kap. 4.3.3 für Modi-Definition) ist zentraler Bestan
 
 ### 4.6.5 Kommunikationsmuster im Frontend
 
-Das Frontend nutzt einen hybriden Kommunikationsansatz, der unterschiedliche Echtzeitanforderungen durch drei spezialisierte Mechanismen adressiert (vgl. Kap. 3.4 für den Technologievergleich):
-
-1. **REST-Polling für Kerndaten** — Match-Daten, Spielevents und Ticker-Einträge werden per intervallbasiertem HTTP-Polling (5 Sekunden) abgefragt. Dieser Ansatz wurde gegenüber SSE gewählt, da die zustandslose HTTP-Architektur die Skalierbarkeit auf Render vereinfacht.
-2. **Webhook-Trigger über n8n** — Bedarfsgesteuerte Importe und Generierungsprozesse werden über direkte HTTP-Webhook-Aufrufe an n8n ausgelöst (vgl. Kap. 4.4.2). Diese Trigger erfolgen einmalig bei leerem Datenbestand oder Statuswechseln, nicht periodisch.
-3. **WebSocket für Media-Queue** — Für die Echtzeit-Benachrichtigung neuer Medieninhalte (ScorePlay-Bilder, Social-Media-Clips) wird das WebSocket-Protokoll über `/ws/media` eingesetzt. Der Client implementiert eine Exponential-Backoff-Reconnect-Strategie.
-
-```mermaid
-flowchart LR
-    FE["React Frontend"]
-
-    FE -- "REST Polling\n5s" --> BE["FastAPI Backend"]
-    FE -- "Webhook-Trigger\n(bei leeren Daten)" --> N8N["n8n"]
-    FE -- "WebSocket\n(Echtzeit)" --> WS["/ws/media"]
-
-    BE -- "Response" --> FE
-    N8N -- "Daten-Import / LLM-Trigger" --> BE
-    WS -- "new_media Events" --> FE
-```
-
-Diese Aufteilung konzentriert Echtzeitmechanismen auf den Bereich mit höchstem redaktionellem Nutzen (latenzkritische Media-Updates via WebSocket) und nutzt einfaches Polling für den stabilen Hauptpfad. Die konkreten Hook-Implementierungen und Reconnect-Parameter sind in Kapitel 5.4.3–5.4.5 dokumentiert.
+Das Frontend setzt die in Kapitel 4.1.1 definierte hybride Triggerarchitektur mit drei spezialisierten Mechanismen um: **REST-Polling** (5-Sekunden-Intervall) für Kerndaten wie Ticker-Einträge und Spielevents, **Webhook-Trigger** für bedarfsgesteuerte n8n-Importe (vgl. Kap. 4.4.2) sowie **WebSocket** (`/ws/media`) mit Exponential-Backoff-Reconnect für latenzkritische Medieninhalte. REST-Polling wurde gegenüber SSE gewählt, da die zustandslose HTTP-Architektur die Skalierbarkeit auf Render vereinfacht. Die konkreten Hook-Implementierungen und Reconnect-Parameter sind in Kapitel 5.4.3–5.4.5 dokumentiert.
 
 ---
 
@@ -531,9 +470,7 @@ Diese Aufteilung konzentriert Echtzeitmechanismen auf den Bereich mit höchstem 
 
 ### 4.7.1 Horizontale Skalierung des Backends
 
-Die Anwendungsschicht ist zustandslos konzipiert und kann horizontal skaliert werden, indem zusätzliche Uvicorn-Prozesse hinter einem Load-Balancer gestartet werden. Der gemeinsame PostgreSQL-Connection-Pool (`QueuePool` mit `pool_size=20`, `max_overflow=30`) stellt sicher, dass mehrere Backend-Instanzen dieselbe Datenbankverbindungskapazität teilen, ohne diese zu erschöpfen. n8n kommuniziert ausschließlich über die REST-API mit dem Backend — Backend-Skalierung hat damit keinen Einfluss auf die Workflow-Logik.
-
-Die WebSocket-Verbindungen für ScorePlay-Medien stellen eine Skalierungseinschränkung dar: Da der in-Memory-`MediaConnectionManager` eine einfache Liste aktiver Verbindungen hält und nicht über Prozessgrenzen hinweg funktioniert, müsste bei einem Multi-Prozess-Deployment ein verteiltes Pub/Sub-System (z. B. Redis) als Broadcast-Schicht ergänzt werden. Für den aktuellen Betrieb mit wenigen gleichzeitigen Redakteurs-Clients ist diese Einschränkung nicht relevant.
+Die Anwendungsschicht ist zustandslos konzipiert und kann horizontal skaliert werden, indem zusätzliche Uvicorn-Prozesse hinter einem Load-Balancer gestartet werden. Der gemeinsame PostgreSQL-Connection-Pool (`QueuePool` mit `pool_size=20`, `max_overflow=30`) stellt sicher, dass mehrere Backend-Instanzen dieselbe Datenbankverbindungskapazität teilen. Die WebSocket-Verbindungen für Medien stellen eine Skalierungseinschränkung dar: Der in-Memory-`MediaConnectionManager` funktioniert nicht über Prozessgrenzen hinweg und müsste bei Multi-Prozess-Deployment durch ein verteiltes Pub/Sub-System (z. B. Redis) ergänzt werden.
 
 ---
 

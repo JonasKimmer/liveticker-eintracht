@@ -266,7 +266,7 @@ class LLMService:
         context_data: Optional[dict] = None,
         style_references: Optional[list[str]] = None,
     ) -> str:
-        lang = "Deutsch" if language == "de" else "English"
+        lang = self._LANG_NAMES.get(language, language)
         style_desc = STYLE_DESC.get(style, STYLE_DESC["neutral"])
 
         event_lines = self._build_event_lines(

@@ -55,8 +55,6 @@ Die Übertragung von Daten zwischen Frontend und Backend erfordert eine ausgewog
 
 **WebSocket** etabliert eine vollständig bidirektionale, persistente Verbindung über das WebSocket-Protokoll (RFC 6455). Nach einem initialen HTTP-Handshake wechselt die Verbindung in ein binäres Protokoll mit minimalen Framing-Overhead (Fette & Melnikov 2011, S. 1). WebSocket eignet sich für latenzkritische Echtzeitanwendungen, bei denen sowohl Client als auch Server jederzeit Nachrichten senden müssen. RFC 6455 nennt Börsen-Ticker explizit als Einsatzszenario — eine strukturelle Parallele zum Sport-Liveticker. Der Preis für niedrige Latenz sind höhere Implementierungskomplexität (Connection-Management, Reconnect-Strategien) und erhöhter Server-Ressourcenbedarf durch persistente Verbindungen.
 
-**Long-Polling** kombiniert Elemente beider Ansätze: Der Client sendet eine Anfrage, die der Server erst dann beantwortet, wenn neue Daten verfügbar sind oder ein Timeout eintritt. Anschließend sendet der Client sofort eine neue Anfrage. Long-Polling reduziert Latenz gegenüber kurzem Polling, bleibt aber aufwändiger als SSE oder WebSocket.
-
 Die Wahl des Kommunikationsmusters hängt von den Anforderungen der Anwendung ab: Polling bevorzugt Einfachheit, SSE bietet effizienten unidirektionalen Push, WebSocket minimiert Latenz bei bidirektionaler Kommunikation. Hybridansätze nutzen verschiedene Muster für unterschiedliche Datenströme innerhalb derselben Anwendung, um Trade-offs gezielt zu optimieren.
 
 Die konkrete Umsetzung im vorliegenden System wird in Kapitel 4.6.5 beschrieben.
@@ -87,15 +85,15 @@ Die konkrete Umsetzung der ETL-Architektur im vorliegenden System — einschlie�
 
 ### 3.6.2 ASGI und asynchrone Web-Frameworks
 
-Moderne Python-Web-Frameworks unterscheiden sich grundlegend in ihrem Verarbeitungsmodell. Das klassische **WSGI-Protokoll** (Web Server Gateway Interface) verarbeitet Anfragen synchron — jede Anfrage blockiert einen Thread, bis die Antwort vollständig erzeugt ist. Das neuere **ASGI-Protokoll** (Asynchronous Server Gateway Interface) ermöglicht hingegen eine nicht-blockierende Verarbeitung auf Basis von Pythons `asyncio`-Eventloop (Grigorev 2019). ASGI-Frameworks wie FastAPI oder Starlette können während wartender I/O-Operationen (Datenbankabfragen, API-Aufrufe) andere Anfragen bearbeiten, was insbesondere für Anwendungen mit vielen externen Abhängigkeiten — wie LLM-API-Aufrufe — eine signifikant höhere Durchsatzrate ermöglicht.
+Das **ASGI-Protokoll** (Asynchronous Server Gateway Interface) ermöglicht im Gegensatz zum klassischen synchronen WSGI eine nicht-blockierende Verarbeitung auf Basis von Pythons `asyncio`-Eventloop (Grigorev 2019). ASGI-Frameworks wie FastAPI können während wartender I/O-Operationen (Datenbankabfragen, LLM-API-Aufrufe) andere Anfragen bearbeiten, was insbesondere für Anwendungen mit vielen externen Abhängigkeiten eine signifikant höhere Durchsatzrate ermöglicht.
 
 ### 3.6.3 ORM und Repository Pattern
 
-Das **Object-Relational Mapping (ORM)** bildet Programmiersprachenklassen auf relationale Datenbanktabellen ab und abstrahiert den direkten SQL-Zugriff. ORMs wie SQLAlchemy oder Django ORM ermöglichen eine deklarative Modellierung von Entitäten und Beziehungen, wobei SQL automatisch generiert wird. Ein ergänzendes Architekturmuster ist das **Repository Pattern** (Fowler 2002, S. 322), das den Datenzugriff in dedizierte Klassen kapselt und eine abstrahierte Schnittstelle zur darüberliegenden Service-Schicht bietet. Diese Trennung erleichtert die Testbarkeit und ermöglicht den Austausch der Persistenzschicht ohne Änderungen an der Geschäftslogik.
+Das **Object-Relational Mapping (ORM)** bildet Programmiersprachenklassen auf relationale Datenbanktabellen ab und abstrahiert den direkten SQL-Zugriff. Das ergänzende **Repository Pattern** (Fowler 2002, S. 322) kapselt den Datenzugriff in dedizierte Klassen und bietet eine abstrahierte Schnittstelle zur Service-Schicht — das erleichtert Testbarkeit und ermöglicht den Austausch der Persistenzschicht ohne Änderungen an der Geschäftslogik.
 
 ### 3.6.4 Relationale Datenbanken
 
-**Relationale Datenbankmanagementsysteme (RDBMS)** organisieren Daten in Tabellen mit definierten Schemata und erzwingen referenzielle Integrität über Fremdschlüssel-Constraints. Das **relationale Modell** (Codd 1970) bildet die theoretische Grundlage: Daten werden als Relationen modelliert, Operationen basieren auf der relationalen Algebra. RDBMS wie PostgreSQL garantieren **ACID-Eigenschaften** (Atomicity, Consistency, Isolation, Durability), die transaktionssichere Operationen gewährleisten. Für Anwendungen mit stark strukturierten, relational verknüpften Entitäten (z. B. Spiele, Teams, Ereignisse, Texte) bieten relationale Datenbanken gegenüber dokumentbasierten NoSQL-Alternativen Vorteile hinsichtlich Datenkonsistenz und Abfragekomplexität.
+**Relationale Datenbankmanagementsysteme (RDBMS)** organisieren Daten in Tabellen mit definierten Schemata und erzwingen referenzielle Integrität über Fremdschlüssel-Constraints (Codd 1970). RDBMS wie PostgreSQL garantieren **ACID-Eigenschaften** (Atomicity, Consistency, Isolation, Durability) und bieten für Anwendungen mit stark strukturierten, relational verknüpften Entitäten (Spiele, Teams, Ereignisse, Texte) Vorteile hinsichtlich Datenkonsistenz und Abfragekomplexität gegenüber dokumentbasierten Alternativen.
 
 Die konkrete Backend-Architektur des vorliegenden Systems wird in Kapitel 4.2 beschrieben.
 
@@ -105,17 +103,15 @@ Die konkrete Backend-Architektur des vorliegenden Systems wird in Kapitel 4.2 be
 
 ### 3.7.1 TypeScript
 
-**TypeScript** erweitert JavaScript um ein statisches Typsystem, das Typfehler bereits zur Entwicklungszeit erkennt, ohne die Laufzeitsemantik zu verändern (Microsoft 2012). Der TypeScript-Compiler (`tsc`) transpiliert den typisierten Quellcode in Standard-JavaScript, sodass keine zusätzliche Laufzeitumgebung erforderlich ist. Für größere Codebasen reduziert statische Typisierung die Fehlerquote und verbessert die Wartbarkeit durch IDE-Autocompletion und automatisierte Refactoring-Unterstützung.
+**TypeScript** erweitert JavaScript um ein statisches Typsystem, das Typfehler bereits zur Entwicklungszeit erkennt (Microsoft 2012). Der Compiler transpiliert den typisierten Quellcode in Standard-JavaScript. Für größere Codebasen reduziert statische Typisierung die Fehlerquote und verbessert die Wartbarkeit durch IDE-Autocompletion und automatisierte Refactoring-Unterstützung.
 
 ### 3.7.2 Komponentenbasierte UI-Architekturen
 
-Moderne Frontend-Frameworks folgen einem **komponentenbasierten Architekturmuster**, bei dem die Benutzeroberfläche in wiederverwendbare, isolierte Bausteine zerlegt wird. Jede Komponente kapselt Markup, Logik und ggf. Styling. **React** (Meta 2013) implementiert dieses Muster mit einer deklarativen, zustandsgesteuerten Rendering-Logik: Die Oberfläche wird als Funktion des Anwendungszustands beschrieben, und React übernimmt die effiziente Aktualisierung des DOM bei Zustandsänderungen (Virtual DOM / Reconciliation).
-
-Mit der Einführung von **React Hooks** (ab React 16.8) wurde das funktionale Programmiermodell gestärkt: Hooks wie `useState` und `useEffect` ermöglichen die Verwaltung von Zustand und Seiteneffekten in funktionalen Komponenten, ohne auf Klassenkomponenten zurückgreifen zu müssen. **Custom Hooks** erlauben die Extraktion und Wiederverwendung zustandsbehafteter Logik über Komponentengrenzen hinweg.
+**React** (Meta 2013) implementiert ein komponentenbasiertes Architekturmuster — die Benutzeroberfläche wird in wiederverwendbare, isolierte Bausteine zerlegt, die Markup, Logik und Styling kapseln. React nutzt eine deklarative, zustandsgesteuerte Rendering-Logik: Die Oberfläche wird als Funktion des Anwendungszustands beschrieben, und React übernimmt die effiziente DOM-Aktualisierung (Virtual DOM / Reconciliation). **React Hooks** (ab 16.8) ermöglichen die Verwaltung von Zustand und Seiteneffekten in funktionalen Komponenten; **Custom Hooks** erlauben die Extraktion wiederverwendbarer zustandsbehafteter Logik.
 
 ### 3.7.3 Single-Page Applications
 
-**Single-Page Applications (SPAs)** laden die gesamte Anwendungslogik beim initialen Seitenaufruf und aktualisieren die Darstellung anschließend dynamisch über JavaScript, ohne vollständige Seitenneuladen. Dieses Modell ermöglicht flüssige Benutzerinteraktionen und reduziert die Server-Last, da nur Daten (typischerweise JSON über REST-APIs) und keine vollständigen HTML-Seiten übertragen werden. SPAs eignen sich insbesondere für interaktive Werkzeuge mit häufigen Zustandsänderungen — wie Redaktionsoberflächen oder Echtzeit-Dashboards.
+**Single-Page Applications (SPAs)** laden die Anwendungslogik beim initialen Seitenaufruf und aktualisieren die Darstellung dynamisch über JavaScript, ohne vollständige Seitenneuladen. Dieses Modell eignet sich für interaktive Werkzeuge mit häufigen Zustandsänderungen — wie Redaktionsoberflächen oder Echtzeit-Dashboards.
 
 Die konkrete Frontend-Architektur des vorliegenden Systems wird in Kapitel 4.6 beschrieben.
 
@@ -125,15 +121,15 @@ Die konkrete Frontend-Architektur des vorliegenden Systems wird in Kapitel 4.6 b
 
 ### 3.8.1 Containerisierung
 
-**Containerisierung** ermöglicht die Paketierung einer Anwendung mitsamt ihrer Laufzeitumgebung, Abhängigkeiten und Konfiguration in eine portable, isolierte Einheit. **Docker** (Merkel 2014) hat sich als De-facto-Standard für Containerisierung etabliert. Ein Docker-Image definiert den vollständigen Zustand einer Anwendungsumgebung; aus diesem Image lassen sich beliebig viele identische Container instanziieren. Die zentrale Eigenschaft ist **Reproduzierbarkeit**: Dieselbe Anwendung verhält sich auf der lokalen Entwicklungsmaschine identisch zur Produktionsumgebung.
+**Docker** (Merkel 2014) ermöglicht die Paketierung einer Anwendung mitsamt Laufzeitumgebung und Abhängigkeiten in portable, isolierte Container. Die zentrale Eigenschaft ist **Reproduzierbarkeit**: Dieselbe Anwendung verhält sich lokal identisch zur Produktionsumgebung.
 
 ### 3.8.2 Platform-as-a-Service (PaaS)
 
-**Platform-as-a-Service (PaaS)**-Anbieter abstrahieren die Infrastrukturverwaltung (Server-Provisionierung, Netzwerk, Skalierung) und ermöglichen Entwicklern, Anwendungen direkt aus Quellcode oder Container-Images zu deployen. Anbieter wie Render, Heroku, Railway oder Fly.io übernehmen Build-Prozesse, TLS-Terminierung, Logging und Restart-Strategien. Für kleine Teams ohne dedizierte DevOps-Kapazitäten reduziert PaaS den operativen Aufwand erheblich.
+**PaaS**-Anbieter wie Render oder Heroku abstrahieren die Infrastrukturverwaltung und ermöglichen Deployments direkt aus Quellcode oder Container-Images. Für kleine Teams ohne dedizierte DevOps-Kapazitäten reduziert PaaS den operativen Aufwand erheblich.
 
 ### 3.8.3 Stateless Design und Skalierung
 
-PaaS-Plattformen setzen typischerweise ein **Stateless-Design** voraus: Jede Instanz einer Anwendung ist austauschbar und speichert keinen sitzungsbezogenen Zustand im Arbeitsspeicher. Persistente Daten werden in externe Dienste (Datenbanken, Object Storage) ausgelagert. Dieses Entwurfsmuster ermöglicht **horizontale Skalierung** — bei erhöhter Last können zusätzliche Instanzen gestartet werden, ohne Zustandskonsistenz zwischen ihnen sicherstellen zu müssen.
+PaaS-Plattformen setzen typischerweise ein **Stateless-Design** voraus: Persistente Daten werden in externe Dienste ausgelagert, sodass bei erhöhter Last zusätzliche Instanzen ohne Zustandskonsistenz gestartet werden können (**horizontale Skalierung**).
 
 Die konkrete Deployment-Architektur des vorliegenden Systems wird in Kapitel 4.7.4 beschrieben.
 

@@ -51,20 +51,8 @@ def _get_engine():
     return _engine
 
 
-@pytest.fixture()
-def db():
-    """Transaktionale DB-Session — rollt nach jedem Test zurück.
-
-    Wird übersprungen wenn keine PostgreSQL-Verbindung verfügbar ist.
-    """
-    engine = _get_engine()
-    if engine is None:
-        pytest.skip("Keine Datenbankverbindung verfügbar (PostgreSQL nicht erreichbar)")
-
-    from sqlalchemy.orm import sessionmaker
-    from app.core.database import Base
-
-    # Alle Models importieren damit SQLAlchemy die Mapper registriert
+def _import_all_models():
+    """Importiere alle Models damit SQLAlchemy die Mapper registriert."""
     import app.models.country  # noqa: F401
     import app.models.team  # noqa: F401
     import app.models.season  # noqa: F401
@@ -83,7 +71,41 @@ def db():
     import app.models.media_clip  # noqa: F401
     import app.models.style_reference  # noqa: F401
 
+
+@pytest.fixture(scope="session", autouse=True)
+def reset_schema():
+    """Setzt das DB-Schema einmalig pro Test-Session zurück (drop_all + create_all).
+
+    Stellt sicher dass alle aktuellen Modell-Spalten vorhanden sind —
+    auch wenn die DB aus einer früheren Version des Schemas stammt.
+    Wird übersprungen wenn keine PostgreSQL-Verbindung verfügbar ist.
+    """
+    engine = _get_engine()
+    if engine is None:
+        return
+
+    from app.core.database import Base
+
+    _import_all_models()
+    Base.metadata.drop_all(bind=engine)
     Base.metadata.create_all(bind=engine)
+
+
+@pytest.fixture()
+def db():
+    """Transaktionale DB-Session — rollt nach jedem Test zurück.
+
+    Wird übersprungen wenn keine PostgreSQL-Verbindung verfügbar ist.
+    """
+    engine = _get_engine()
+    if engine is None:
+        pytest.skip("Keine Datenbankverbindung verfügbar (PostgreSQL nicht erreichbar)")
+
+    from sqlalchemy.orm import sessionmaker
+    from app.core.database import Base
+
+    _import_all_models()
+
     TestSession = sessionmaker(autocommit=False, autoflush=False, bind=engine)
     session = TestSession()
 
@@ -113,6 +135,7 @@ def client(db):
 
 
 # ── Beispieldaten ────────────────────────────────────────────────────────────
+
 
 @pytest.fixture()
 def sample_match(db):

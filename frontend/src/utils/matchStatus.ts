@@ -6,7 +6,9 @@ import { LIVE_STATUSES, FINISHED_STATUSES } from "../constants";
 export function normalizeMatchStatus(
   status: string | null | undefined,
 ): "live" | "finished" | "scheduled" {
-  if (status && LIVE_STATUSES.includes(status)) return "live";
-  if (status && FINISHED_STATUSES.includes(status)) return "finished";
+  if (!status) return "scheduled";
+  const s = status.toLowerCase();
+  if (LIVE_STATUSES.some((v) => v.toLowerCase() === s)) return "live";
+  if (FINISHED_STATUSES.some((v) => v.toLowerCase() === s)) return "finished";
   return "scheduled";
 }

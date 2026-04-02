@@ -33,28 +33,7 @@ Diese Aufteilung entspricht dem klassischen Repository-Service-Router-Muster: Ro
 
 ### 5.2.2 Application Entry Point und Router-Registrierung
 
-`app/main.py` ist der einzige Einstiegspunkt. Er registriert alle Router, konfiguriert CORS-Middleware und bindet statische Dateien (Thumbnail-Cache) ein. Alle inhaltlichen Endpunkte erhalten den Pfad-Prefix `/api/v1`; der WebSocket-Endpunkt `/ws/media` wird ohne diesen Prefix eingehängt, da er kein REST-Ressourcenpfad ist.
-
-```python
-app = FastAPI(
-    title="Liveticker AI Backend",
-    version="0.3.0",
-    docs_url="/api/docs",
-)
-PREFIX = "/api/v1"
-app.include_router(countries.router,          prefix=PREFIX)
-app.include_router(teams.router,              prefix=PREFIX)
-app.include_router(seasons.router,            prefix=PREFIX)
-app.include_router(competitions.router,       prefix=PREFIX)
-app.include_router(teams.assignment_router,   prefix=PREFIX)  # POST /seasons/{id}/competitions/{id}/teams/{id}
-app.include_router(matches.router,            prefix=PREFIX)
-app.include_router(events.router,             prefix=PREFIX)
-app.include_router(ticker.router,             prefix=PREFIX)
-app.include_router(media.router,              prefix=PREFIX)
-app.include_router(media.ws_router)           # /ws/media – kein API-Prefix
-app.include_router(players.router,            prefix=PREFIX)
-app.include_router(clips.router,              prefix=PREFIX)
-```
+`app/main.py` ist der einzige Einstiegspunkt. Er registriert alle 12 Router unter dem Pfad-Prefix `/api/v1`, konfiguriert CORS-Middleware und bindet statische Dateien (Thumbnail-Cache) ein. Der WebSocket-Endpunkt `/ws/media` wird ohne API-Prefix eingehängt, da er kein REST-Ressourcenpfad ist.
 
 Beim Start führt `Base.metadata.create_all(bind=engine)` ein idempotentes Schema-Bootstrapping durch, das bei erstmaliger Inbetriebnahme alle Tabellen anlegt. Im Produktionsbetrieb werden Schema-Änderungen via Alembic-Migrationen gesteuert.
 
@@ -87,38 +66,7 @@ Das Schema umfasst **17 ORM-Modelle** (18 Datenbanktabellen, davon eine via Migr
 | `MediaQueue`      | `media_queue`       | `media_id`, `thumbnail_url`, `event_id`, `status`        |
 | `MediaClip`       | `media_clips`       | `source`, `vid`, `thumbnail_url`, `match_id`             |
 
-Das `TickerEntry`-Modell hat besondere Bedeutung im Lifecycle des Systems:
-
-```python
-class TickerEntry(Base):
-    __tablename__ = "ticker_entries"
-
-    id                = Column(Integer, primary_key=True)
-    match_id          = Column(Integer, ForeignKey("matches.id", ondelete="CASCADE"))
-    event_id          = Column(Integer, ForeignKey("events.id",  ondelete="SET NULL"))
-    synthetic_event_id= Column(Integer, ForeignKey("synthetic_events.id", ondelete="SET NULL"))
-    text              = Column(Text,   nullable=False)
-    style             = Column(String(50))   # neutral / euphorisch / kritisch
-    icon              = Column(String(50))
-    llm_model         = Column(String(100))
-    status            = Column(SAEnum(TickerStatus))  # draft / published / rejected
-    source            = Column(SAEnum(TickerSource))  # ai / manual
-    minute            = Column(Integer)
-    phase             = Column(String(50))
-    image_url         = Column(Text)
-    video_url         = Column(Text)
-    created_at        = Column(TIMESTAMP(timezone=True), server_default=func.now())
-```
-
-Drei zusammengesetzte Indizes optimieren die häufigsten Abfragen:
-
-```python
-Index("ix_ticker_match_status", "match_id", "status"),   # publizierte Einträge je Spiel
-Index("ix_ticker_match_phase",  "match_id", "phase"),    # Phase-Filter
-Index("ix_ticker_event_id",     "event_id"),             # Dedup-Check per Event
-```
-
-Das Status-Enum `TickerStatus` (`draft`, `published`, `rejected`) wird als nicht-nativ gespeichert (`native_enum=False`), damit Migrationen ohne Enum-Typ-Änderungen in PostgreSQL auskommen.
+Das `TickerEntry`-Modell hat besondere Bedeutung im Lifecycle des Systems: Es verknüpft über `event_id` (FK auf `events`) und `synthetic_event_id` (FK auf `synthetic_events`) den generierten Text mit seinem Auslöser. Die Felder `status` (`draft`/`published`/`rejected`) und `source` (`ai`/`manual`) bilden den Ticker-Lifecycle ab (vgl. Kap. 4.3.2). Drei zusammengesetzte Indizes (`ix_ticker_match_status`, `ix_ticker_match_phase`, `ix_ticker_event_id`) optimieren die häufigsten Abfragen: publizierte Einträge je Spiel, Phase-Filter und den Deduplizierungs-Check per Event. Das Status-Enum wird als nicht-nativ gespeichert (`native_enum=False`), damit Migrationen ohne Enum-Typ-Änderungen in PostgreSQL auskommen.
 
 ---
 
@@ -203,30 +151,7 @@ Diese Aufteilung verhindert, dass eine einzelne Routerdatei durch die Kombinatio
 
 Ein kapselndes Hilfsmuster zieht sich durch alle Router: `require_or_404(value, message)` — eine schmale Utility-Funktion in `utils/http_errors.py`, die `None`-Rückgaben aus Repository-Aufrufen direkt in eine `HTTPException(404)` überführt. Das eliminiert das repetitive `if obj is None: raise HTTPException(404, ...)` in Routern und stellt sicher, dass alle 404-Antworten einheitlich formuliert sind. Der Batch-Endpunkt `POST /api/v1/ticker/translate-batch/{match_id}` ruft für alle publizierten KI-Einträge eines Spiels den LLM-Service mit reduzierter Temperatur (`0.1`) auf, um sprachlich deterministische Übersetzungen zu erzeugen — eine gegenüber der Originalgenerierung bewusst andere Parametrisierung.
 
-Die wichtigsten Endpunkte gliedern sich in vier funktionale Bereiche:
-
-```
-# Stammdaten
-GET    /api/v1/teams/countries          GET    /api/v1/matches
-POST   /api/v1/matches                  PATCH  /api/v1/matches/{id}
-
-# Ticker-Lifecycle
-GET    /api/v1/ticker/{match_id}        POST   /api/v1/ticker/manual
-PATCH  /api/v1/ticker/{id}              DELETE /api/v1/ticker/{id}
-POST   /api/v1/ticker/generate/{event_id}
-POST   /api/v1/ticker/generate-synthetic-batch/{match_id}
-
-# Medien & Clips
-POST   /api/v1/media/incoming           GET    /api/v1/media/queue
-POST   /api/v1/clips/import             POST   /api/v1/clips/{clip_id}/publish
-WS     /ws/media
-
-# Spielkontext
-PUT    /api/v1/matches/{id}/lineup      PATCH  /api/v1/matches/{id}/statistics
-GET    /api/v1/events/{match_id}        POST   /api/v1/events
-```
-
-Insgesamt umfasst die API über 70 Routen, einschließlich CRUD-Endpunkten für Stammdaten (Countries, Seasons, Competitions, Players) und Hilfsrouten (Spielerstatistiken, Verletzungen, Live-Synchronisation). Die vollständige Endpunktliste ist über die automatisch generierte OpenAPI-Dokumentation unter `/api/docs` einsehbar.
+Die wichtigsten Endpunkte gliedern sich in vier funktionale Bereiche: **Stammdaten** (Countries, Teams, Matches, Seasons, Competitions), **Ticker-Lifecycle** (CRUD, Generierung per Event, Batch-Generierung für Synthetic Events, Übersetzung), **Medien & Clips** (ScorePlay-Import, Media-Queue, WebSocket) und **Spielkontext** (Lineups, Statistiken, Events). Insgesamt umfasst die API über 70 Routen; die vollständige Endpunktliste ist über die automatisch generierte OpenAPI-Dokumentation unter `/api/docs` einsehbar.
 
 ---
 
@@ -236,26 +161,7 @@ Der `ticker_service` kapselt die Domänenlogik für KI-Einträge. Er koordiniert
 
 Die vier zentralen Funktionen:
 
-**`score_at_event()`** berechnet den Spielstand zum Zeitpunkt eines Torereignisses. Da die Football-API den kumulativen Stand liefert, muss der Stand _vor_ dem aktuellen Event rekonstruiert werden. Die Funktion lädt alle Tore bis zur `position` des Events, unterscheidet zwischen regulären Toren und Eigentoren und akkumuliert die Scores für Heim- und Auswärtsteam:
-
-```python
-def score_at_event(event_repo, event, match) -> Optional[str]:
-    goals = event_repo.get_goals_up_to(
-        match.id, position=event.position, event_id=event.id
-    )
-    home_score = away_score = 0
-    for g in goals:
-        d = json.loads(g.description or "{}")
-        tid = d.get("team_id")
-        if g.event_type == "own_goal":
-            # Eigentor → zählt für Gegner
-            if tid == home_ext: away_score += 1
-            elif tid == away_ext: home_score += 1
-        else:
-            if tid == home_ext: home_score += 1
-            elif tid == away_ext: away_score += 1
-    return f"{home_score}:{away_score}"
-```
+**`score_at_event()`** berechnet den Spielstand zum Zeitpunkt eines Torereignisses. Da die Football-API den kumulativen Stand liefert, muss der Stand _vor_ dem aktuellen Event rekonstruiert werden. Die Funktion lädt alle Tore bis zur `position` des Events, unterscheidet zwischen regulären Toren und Eigentoren (letztere zählen für den Gegner) und akkumuliert die Scores für Heim- und Auswärtsteam.
 
 **`build_match_context()`** erstellt das Kontext-Dictionary für den LLM-Prompt: Teamnamen, aktueller Stand, Matchzustand, Spielminute und Liga.
 
@@ -413,11 +319,11 @@ Damit wird die Modus-Logik zu einem reinen Aufrufparameter des Backends — die 
 
 Die drei Modi übersetzen sich auf Implementierungsebene in drei verschiedene Pfade:
 
-| Modus | `auto_publish` | Ergebnis | Redakteurs-Eingriff |
-| ------- | -------------- | ---------- | ------------------- |
-| `auto` | `True` | `published` | — |
-| `coop` | `False` | `draft` | TAB (accept) / ESC (reject) |
-| `manual` | — | — | Slash-Command → `POST /manual` |
+| Modus    | `auto_publish` | Ergebnis    | Redakteurs-Eingriff            |
+| -------- | -------------- | ----------- | ------------------------------ |
+| `auto`   | `True`         | `published` | —                              |
+| `coop`   | `False`        | `draft`     | TAB (accept) / ESC (reject)    |
+| `manual` | —              | —           | Slash-Command → `POST /manual` |
 
 Im `manual`-Modus wird der Generierungs-Endpunkt gar nicht aufgerufen: n8n importiert zwar weiterhin Ereignisse, triggert aber keinen LLM-Aufruf. Ticker-Einträge entstehen ausschließlich über den `POST /api/v1/ticker/manual`-Endpunkt, den das Frontend aus dem Slash-Command-Parser heraus bedient. Der Eintrag wird dort direkt mit `status=published` angelegt, da die Redakteurin den Text selbst verfasst hat und keine weitere Freigabe erforderlich ist.
 
@@ -713,14 +619,14 @@ test("vollstaendiger Command ist valid", () => {
 
 **Evaluations-Infrastruktur** — Ergänzend zur Testsuite enthält `backend/app/utils/evaluation_metrics.py` sechs statistische Hilfsfunktionen, die speziell für die Qualitätsevaluation der KI-Textgenerierung implementiert wurden:
 
-| Funktion | Aufgabe |
-| -------- | ------- |
-| `compute_ttp_stats(entries)` | Berechnet TTP-Statistiken (Mean, Median, Perzentile) aus gemessenen Latenzen |
-| `cliffs_delta(group_a, group_b)` | Effektstärkemaß nach Cliff (1993) für ordinal-skalierte Vergleiche (z. B. auto vs. manual TTP) |
-| `bootstrap_ci(data, n_resamples)` | Bootstrap-Konfidenzintervall (95 %) über nichtparametrisches Resampling |
-| `cohens_kappa(rater_a, rater_b)` | Inter-Rater-Übereinstimmungsmaß nach Cohen (1960) für die Qualitätsbewertung |
-| `distribution_summary(scores)` | Deskriptive Zusammenfassung (Mean, SD, Min, Max) für Bewertungslisten |
-| `aggregate_quality_by_group(entries)` | Aggregiert Qualitätsscores nach Gruppe (Stil, Ereignistyp, Instanz) |
+| Funktion                              | Aufgabe                                                                                        |
+| ------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| `compute_ttp_stats(entries)`          | Berechnet TTP-Statistiken (Mean, Median, Perzentile) aus gemessenen Latenzen                   |
+| `cliffs_delta(group_a, group_b)`      | Effektstärkemaß nach Cliff (1993) für ordinal-skalierte Vergleiche (z. B. auto vs. manual TTP) |
+| `bootstrap_ci(data, n_resamples)`     | Bootstrap-Konfidenzintervall (95 %) über nichtparametrisches Resampling                        |
+| `cohens_kappa(rater_a, rater_b)`      | Inter-Rater-Übereinstimmungsmaß nach Cohen (1960) für die Qualitätsbewertung                   |
+| `distribution_summary(scores)`        | Deskriptive Zusammenfassung (Mean, SD, Min, Max) für Bewertungslisten                          |
+| `aggregate_quality_by_group(entries)` | Aggregiert Qualitätsscores nach Gruppe (Stil, Ereignistyp, Instanz)                            |
 
 Diese Funktionen werden in Kapitel 6.7–6.10 direkt genutzt: `cliffs_delta` für den TTP-Vergleich, `cohens_kappa` für die Bewertungsübereinstimmung und `aggregate_quality_by_group` für die profilspezifische Qualitätsanalyse. Die Implementierung in einem dedizierten `utils`-Modul (statt im Test-Code) macht die Statistikfunktionen wiederverwendbar — etwa für einen zukünftigen automatisierten Scoring-Dienst im Produktivbetrieb (vgl. Kap. 8.3.3).
 
@@ -746,223 +652,31 @@ Dieser Abschnitt dokumentiert die Implementierungsdetails der fünf zentralen Wo
 
 ### 5.7.1 Events-LLM-Workflow (`09_events_llm_workflow.json`)
 
-Der Workflow `09` ist der kritischste im System: Er importiert Live-Ereignisse, persistiert sie und triggert für jedes neue Ereignis die KI-Generierung. Er wird via Webhook (`POST /Events`) mit einer `fixture_id` aufgerufen.
-
-**Instanz- und Stil-Bestimmung**
-
-Als erster Schritt wird per SQL ermittelt, ob das Spiel ein Frankfurt-Spiel ist, und daraus `instance` und `style` abgeleitet:
-
-```sql
-SELECT
-  CASE WHEN (ht.name ILIKE '%Frankfurt%' OR at.name ILIKE '%Frankfurt%')
-       THEN 'ef_whitelabel' ELSE 'generic' END AS instance,
-  CASE WHEN (ht.name ILIKE '%Frankfurt%' OR at.name ILIKE '%Frankfurt%')
-       THEN 'euphorisch' ELSE 'neutral' END AS style,
-  m.id AS match_id,
-  m.ticker_mode
-FROM matches m
-JOIN teams ht ON ht.id = m.home_team_id
-JOIN teams at ON at.id = m.away_team_id
-WHERE m.external_id = $1::integer
-LIMIT 1
-```
-
-Das Ergebnis (`ef_whitelabel`/`generic`, `euphorisch`/`neutral`, `ticker_mode`) fließt in alle nachgelagerten LLM-Aufrufe ein.
-
-**Ereignis-Import**
-
-Die Events werden von der Football-API (`/fixtures/events?fixture={id}`) abgerufen. Ein JavaScript-Code-Knoten normalisiert die Ereignistypen:
-
-```javascript
-const TYPE_MAP = {
-  Goal: "goal",
-  Card: "yellow_card", // bzw. 'red_card' wenn detail 'red' enthält
-  subst: "substitution",
-  Var: "comment",
-  Miss: "missed_penalty",
-};
-```
-
-Der Kontext (Spieler, Team, Details) wird als JSON-Blob in das `description`-Feld gespeichert. Die UPSERT-Strategie verhindert Duplikate durch eine `source_id` im Format `apifootball_{fixture_id}_{minute}_{type}_{player_id}`:
-
-```sql
-INSERT INTO events (match_id, time, event_type, description, source, source_id)
-VALUES (...)
-ON CONFLICT (source_id) WHERE source_id IS NOT NULL
-DO NOTHING
-RETURNING id, event_type, time, description
-```
-
-**LLM-Trigger**
-
-Nur Events mit einer zurückgegebenen `id` (erfolgreich insert, nicht Konflikt) passieren einen `Filter`-Knoten und triggern den Backend-Endpunkt:
-
-```http
-POST /api/v1/ticker/generate/{event_id}
-{
-  "style": "euphorisch",       ← aus instance/style-Abfrage
-  "instance": "ef_whitelabel",
-  "language": "de",
-  "auto_publish": true          ← ticker_mode === 'auto'
-}
-```
-
-`auto_publish` wird direkt aus `ticker_mode` abgeleitet: `ticker_mode === 'auto'` → `true`, sonst `false`.
-
-**Torjubel-Video-Pipeline (EF-spezifisch)**
-
-Für Frankfurt-Torereignisse läuft ein dedizierter Zweig: Der Workflow liest Spielerdaten von `profis.eintracht.de/page-data/kader/page-data.json`, baut S3-Video-URLs aus Spieler-IDs auf (Format: `000/492/931` aus neunstellig aufgefüllter ID) und aktualisiert das Backend:
-
-```sql
-UPDATE players
-SET image_url = $1, video_url = $2, updated_at = NOW()
-WHERE jersey_number = $3
-  AND team_id IN (SELECT id FROM teams WHERE name ILIKE '%Frankfurt%')
-RETURNING id, display_name, jersey_number, video_url
-```
-
-Anschließend wird ein Ticker-Eintrag mit der Video-URL erzeugt — im Co-op-Modus als `draft`, im Auto-Modus direkt als `published`. Dies ermöglicht das Einbetten von Torjubel-Videos direkt in den Ticker.
+Workflow `09` ist der kritischste im System: Er importiert Live-Ereignisse via Webhook (`POST /Events`), persistiert sie per UPSERT (`ON CONFLICT (source_id) DO NOTHING`) und triggert die KI-Generierung für jeden neuen Event. Eine initiale SQL-Abfrage bestimmt anhand der Teamzugehörigkeit, ob die Instanz `ef_whitelabel` oder `generic` und der Stil `euphorisch` oder `neutral` ist; `auto_publish` wird direkt aus `ticker_mode` des Spiels gesetzt. Nur Events mit erfolgreicher Datenbankzeile (zurückgegebene `id`, kein `DO NOTHING`-Konflikt) passieren den Filter-Knoten und triggern den Backend-Endpunkt. Ein zusätzlicher EF-spezifischer Zweig liest Spielerdaten von `profis.eintracht.de`, baut S3-Video-URLs aus neunstellig aufgefüllten Spieler-IDs auf und persistiert Torjubel-Videos als Ticker-Einträge.
 
 ---
 
 ### 5.7.2 Prematch-Import-Workflow (`07_import_prematch.json`)
 
-Workflow `07` baut den Vorberichtskontext aus fünf parallelen Football-API-Abfragen auf:
-
-| Datenquelle            | API-Endpunkt                                            |
-| ---------------------- | ------------------------------------------------------- |
-| Verletzungen           | `/injuries?fixture={id}`                                |
-| Head-to-Head           | `/fixtures/headtohead?h2h={home}-{away}`                |
-| Teamstatistiken (Heim) | `/teams/statistics?league={id}&season={year}&team={id}` |
-| Teamstatistiken (Gast) | `/teams/statistics?league={id}&season={year}&team={id}` |
-| Tabellenstand          | `/standings?league={id}&season={year}`                  |
-
-Jede Datenquelle erzeugt ein `synthetic_event` mit dem Typ `pre_match_injuries_{team_id}`, `pre_match_h2h`, `pre_match_team_stats_home/away` bzw. `pre_match_standings`. Die Insert-Strategie ist idempotent — bei erneutem Aufruf wird die `data`-Spalte aktualisiert, der Primärschlüssel bleibt stabil:
-
-```sql
-WITH ins AS (
-  INSERT INTO synthetic_events (match_id, type, data)
-  VALUES (
-    (SELECT id FROM matches WHERE external_id = $1),
-    $2,
-    $3::jsonb
-  )
-  ON CONFLICT (match_id, type) DO UPDATE SET data = EXCLUDED.data
-  RETURNING id
-)
-SELECT ins.id FROM ins
-LEFT JOIN ticker_entries te
-  ON te.synthetic_event_id = ins.id AND te.status != 'rejected'
-WHERE te.id IS NULL
-```
-
-Die WHERE-Bedingung am Ende ist ein wichtiges Implementierungsdetail: Das synthetische Event wird nur zurückgegeben (und damit ein LLM-Aufruf getriggert), wenn noch kein nicht-verworfener Ticker-Eintrag für dieses Event existiert. Bereits generierte und eventuell publizierte Texte werden damit nicht erneut überschrieben.
+Workflow `07` baut den Vorberichtskontext aus fünf parallelen Football-API-Abfragen auf (Verletzungen, Head-to-Head, Teamstatistiken Heim/Gast, Tabellenstand) und persistiert die Ergebnisse als `synthetic_events` mit idempotenter `ON CONFLICT (match_id, type) DO UPDATE`-Strategie. Ein LLM-Trigger wird nur ausgelöst, wenn noch kein nicht-verworfener Ticker-Eintrag für das jeweilige synthetische Event existiert (`WHERE te.id IS NULL`) — bereits generierte und eventuell publizierte Texte werden damit nicht überschrieben.
 
 ---
 
 ### 5.7.3 Matchphasen-Workflow (`14_Game_ANpfiff_ABpfiff.json`)
 
-Workflow `14` verarbeitet Spielzustands-Übergänge (Anpfiff, Halbzeit, Abpfiff etc.) via Webhook (`POST /match-status`). Ein JavaScript-Knoten implementiert eine Übergangsprüfung:
-
-```javascript
-const validFromStates = {
-  "1H": ["PreMatch", "ToBeConfirmed", null],
-  HT: ["Live"],
-  "2H": ["Live"],
-  FT: ["Live", "FullTime"],
-  ET: ["Live", "FullTime"],
-  BT: ["Live"],
-  P: ["Live"],
-  AET: ["Live", "FullTime"],
-  PEN: ["Live", "FullTime"],
-};
-```
-
-Ungültige Übergänge (z. B. direkt von `PreMatch` zu `2H`) werden zurückgewiesen. Für Vollzeit-Ereignisse (`FT`, `AET`, `PEN`) generiert der Workflow automatisch die gesamte Phasensequenz rückwirkend — ein `FT`-Signal erzeugt also vier synthetische Events: Anstoß, Halbzeit, 2. Halbzeit, Abpfiff.
-
-Das zentrale SQL-Statement kombiniert drei Operationen in einer einzigen Transaktion:
-
-```sql
-WITH upd AS (
-  UPDATE matches SET match_state = $1, match_phase = $5, minute = $6
-  WHERE id = $2
-),
-ins AS (
-  INSERT INTO synthetic_events (match_id, type, data)
-  VALUES ($2, $3, $4::jsonb)
-  ON CONFLICT (match_id, type) DO UPDATE SET data = EXCLUDED.data
-  RETURNING id, type
-),
-demote AS (
-  -- Bereits publizierte Phase-Einträge auf draft zurückstufen
-  UPDATE ticker_entries SET status = 'draft'
-  FROM ins
-  WHERE ticker_entries.synthetic_event_id = ins.id
-    AND ticker_entries.status = 'published'
-  RETURNING ticker_entries.synthetic_event_id
-)
-SELECT ins.id, ins.type FROM ins
-LEFT JOIN ticker_entries te ON te.synthetic_event_id = ins.id
-  AND te.status = 'draft'
-LEFT JOIN demote d ON d.synthetic_event_id = ins.id
-WHERE te.id IS NULL AND d.synthetic_event_id IS NULL
-```
-
-Die `demote`-CTE ist besonders relevant: Wenn ein Status-Signal erneut gesendet wird (z. B. bei einem Korrektur-Trigger), wird ein bereits publizierter Phasen-Text zurück auf `draft` gesetzt. Damit kann die Redaktion ihn überprüfen, bevor er erneut publiziert wird.
+Workflow `14` verarbeitet Spielzustands-Übergänge (Anpfiff, Halbzeit, Abpfiff etc.) via Webhook (`POST /match-status`). Ein JavaScript-Knoten validiert Zustandsübergänge gegen eine Matrix erlaubter Vorzustände — ungültige Übergänge (z. B. direkt von `PreMatch` zu `2H`) werden zurückgewiesen. Für Vollzeit-Ereignisse (`FT`, `AET`, `PEN`) generiert der Workflow die gesamte Phasensequenz rückwirkend: Ein `FT`-Signal erzeugt vier synthetische Events (Anstoß, Halbzeit, 2. Halbzeit, Abpfiff). Das zentrale SQL-Statement kombiniert Match-Update, Event-Insert und eine `demote`-CTE in einer einzigen Transaktion — Letztere stuft bereits publizierte Phasen-Texte bei Re-Triggers auf `draft` zurück, sodass die Redaktion sie erneut prüfen kann.
 
 ---
 
 ### 5.7.4 Halbzeit/Abpfiff-Zusammenfassung (`13_Halftime_aftertime.json`)
 
-Workflow `13` erzeugt narrative Zusammenfassungen für Halbzeit und Abpfiff. Im Gegensatz zu `09` — der das Backend-LLM-Service nutzt — ruft `13` OpenRouter **direkt** auf, da Zusammenfassungen keinen Few-Shot-Stil aus der Datenbank benötigen, sondern einen umfangreicheren Prompt mit Statistiken erfordern.
-
-Der Workflow lädt parallel Ereignisse, Statistiken und Spieler-Ratings von der Football-API, baut daraus einen deutschen Prompt zusammen:
-
-```
-Ballbesitz:          61% vs 39%
-Schüsse gesamt:       14 vs  8
-Schüsse aufs Tor:      5 vs  2
-Ecken:                 6 vs  3
-Fouls:                12 vs  9
-Pässe:              412 (87%) vs 283 (78%)
-Bestes Spieler-Rating: Mustermann (8.4), ...
-
-Schreibe einen Halbzeitbericht (2–3 lebhafte Sätze auf Deutsch,
-direkte Fansprache).
-```
-
-Der LLM-Aufruf geht an OpenRouter (`google/gemini-2.0-flash-lite-001`, `max_tokens: 450`). Das Ergebnis wird über `POST /api/v1/ticker/manual` als manueller Ticker-Eintrag gespeichert — je nach `ticker_mode` direkt als `published` oder als `draft`.
+Workflow `13` erzeugt narrative Zusammenfassungen für Halbzeit und Abpfiff. Im Gegensatz zu `09` ruft er OpenRouter (`google/gemini-2.0-flash-lite-001`) **direkt** auf, da Zusammenfassungen keinen Few-Shot-Stil aus der Datenbank benötigen, sondern einen umfangreicheren Prompt mit parallel geladenen Statistiken (Ballbesitz, Schüsse, Pässe, Spieler-Ratings) erfordern. Das Ergebnis wird über `POST /api/v1/ticker/manual` als Ticker-Eintrag gespeichert — je nach `ticker_mode` direkt als `published` oder als `draft`.
 
 ---
 
 ### 5.7.5 ScorePlay-Medien-Workflow (`08_scoreplay_media_workflow.json`)
 
-Workflow `08` sucht Medien-Assets bei ScorePlay und übergibt sie an das Backend. Die Spieler-Suche (`GET /v1/tag/search?query={lastName}`) gibt mehrere Treffer zurück; ein JavaScript-Knoten implementiert Fuzzy-Matching mit Normalisierung:
-
-```javascript
-// Normalisierung für robusteres Matching
-str
-  .replace(/[äàáâã]/g, "a")
-  .replace(/[ö]/g, "o")
-  .replace(/[ü]/g, "u")
-  .replace(/ß/g, "ss")
-  .replace(/ø/g, "o");
-// Abgleich gegen: full_name, first_name, last_name, ai_name
-```
-
-Die Mediensuche erfolgt als POST mit strukturiertem Filter-Body:
-
-```json
-{
-  "media_type": "photo",
-  "order_by": "created_at",
-  "order_type": "desc",
-  "validated_accessible": true,
-  "players": [matched_player_id]
-}
-```
-
-Gefundene URLs (thumbnail, compressed, original) werden gesammelt und an `POST /api/v1/media/incoming` übertragen. Das Backend persistiert sie und sendet sie über `/ws/media` an alle verbundenen Frontend-Clients.
+Workflow `08` sucht Medien-Assets bei ScorePlay für Spieler eines Torereignisses. Die Spieler-Suche (`GET /v1/tag/search`) normalisiert Umlaute (ä→a, ö→o, ü→u, ß→ss) und matcht gegen vier Namensfelder (`full_name`, `first_name`, `last_name`, `ai_name`). Gefundene Thumbnail-, Compressed- und Original-URLs werden an `POST /api/v1/media/incoming` übertragen und vom Backend per WebSocket an verbundene Frontend-Clients verteilt.
 
 ---
 
@@ -988,30 +702,30 @@ Ergänzend zu den fünf Kernworkflows existieren **12 Sync-Workflows** im Verzei
 
 **A) Stammdaten-Synchronisation** — Vier Workflows synchronisieren die Basisdaten:
 
-| Workflow | Inhalt |
-| -------- | ------ |
-| `Sync_01_Seasons_Competitions` | Wettbewerbe und Saisonen |
-| `Sync_02_Matches_Fixtures` | Spielplan und Fixture-IDs |
-| `Sync_03_Squads_Players` | Kader-Einträge pro Verein |
-| `Sync_12_Spieler_Herkunft` | Spieler-Metadaten (Geburtstag, Herkunft) |
+| Workflow                       | Inhalt                                   |
+| ------------------------------ | ---------------------------------------- |
+| `Sync_01_Seasons_Competitions` | Wettbewerbe und Saisonen                 |
+| `Sync_02_Matches_Fixtures`     | Spielplan und Fixture-IDs                |
+| `Sync_03_Squads_Players`       | Kader-Einträge pro Verein                |
+| `Sync_12_Spieler_Herkunft`     | Spieler-Metadaten (Geburtstag, Herkunft) |
 
 **B) Matchdaten-Export** — Vier Workflows exportieren spielbezogene Zusatzdaten nach Spielende:
 
-| Workflow | Inhalt |
-| -------- | ------ |
-| `Sync_04_Match_Lineups` | Aufstellungen (Post-Match) |
-| `Sync_05_Match_Statistics` | Spielstatistiken (Post-Match) |
-| `Sync_06_League_Standings` | Tabellenstand der Liga |
+| Workflow                            | Inhalt                           |
+| ----------------------------------- | -------------------------------- |
+| `Sync_04_Match_Lineups`             | Aufstellungen (Post-Match)       |
+| `Sync_05_Match_Statistics`          | Spielstatistiken (Post-Match)    |
+| `Sync_06_League_Standings`          | Tabellenstand der Liga           |
 | `Sync_11_Spieler_Saisonstatistiken` | Individuelle Spieler-Saisonwerte |
 
 **C) Liveticker-Export** — Vier Workflows übertragen die Ticker-Einträge in Echtzeit:
 
-| Workflow | Inhalt |
-| -------- | ------ |
-| `Sync_07_Liveticker` | Tore, Karten, Auswechslungen — ereignisgesteuert |
-| `Sync_08_Prematch_Liveticker` | Vorberichts-Einträge |
-| `Sync_09_Halbzeit_Aftermatch` | Halbzeit- und Abschlussbericht |
-| `Sync_10_Spielphasen` | Phasen-Einträge (Anpfiff, Halbzeit etc.) |
+| Workflow                      | Inhalt                                           |
+| ----------------------------- | ------------------------------------------------ |
+| `Sync_07_Liveticker`          | Tore, Karten, Auswechslungen — ereignisgesteuert |
+| `Sync_08_Prematch_Liveticker` | Vorberichts-Einträge                             |
+| `Sync_09_Halbzeit_Aftermatch` | Halbzeit- und Abschlussbericht                   |
+| `Sync_10_Spielphasen`         | Phasen-Einträge (Anpfiff, Halbzeit etc.)         |
 
 Das Übertragungsprinzip ist bei allen Liveticker-Workflows identisch: Ein Webhook im Produktiv-Backend empfängt ein `publish`-Event, sobald ein Ticker-Eintrag den Status `published` erhält. Der Sync-Workflow liest den vollständigen Eintrag aus dem Backend (`GET /api/v1/ticker/{id}`), transformiert ihn in das CMS-Schema der Demo App und schreibt ihn über deren REST-API. Das One-Way-Push-Modell (Liveticker-Backend → Demo App) stellt sicher, dass keine bidirektionalen Konflikte entstehen — die Demo App ist ausschließlich Konsument.
 
