@@ -58,43 +58,11 @@ Das Frontend verfügt über **187 Unit-Tests** in 15 Testdateien, die alle mit `
 
 ### 6.3.2 Kernmodul: `parseCommand`
 
-Der `parseCommand`-Utility ist das komplex­este Stück Geschäftslogik im Frontend — er transformiert Slash-Commands (z. B. `/g Müller SGE`) in strukturierte Ticker-Einträge. Die 45 Tests decken alle 11 Command-Typen (Tor, Eigenton, Gelbe/Rote Karte, Wechsel, Notiz, verfehlter Elfmeter und alle 11 Phasen-Commands) sowie explizit die Fehlerfälle ab:
-
-```typescript
-// Beispiel aus parseCommand.test.ts
-test("vollständiger Command ist valid", () => {
-  const result = parseCommand("/g Müller EIN", 32);
-  expect(result.isValid).toBe(true);
-  expect(result.type).toBe("goal");
-  expect(result.formatted).toBe("TOR — Müller (EIN)");
-  expect(result.meta.icon).toBe("⚽");
-  expect(result.meta.minute).toBe(32);
-  expect(result.warnings).toHaveLength(0);
-});
-
-test("ohne Spieler und Team → invalid mit Warnings", () => {
-  const result = parseCommand("/g", 10);
-  expect(result.isValid).toBe(false);
-  expect(result.warnings).toContain("Fehlend: Spieler");
-  expect(result.warnings).toContain("Fehlend: Team");
-});
-```
+Der `parseCommand`-Utility ist das komplexeste Stück Geschäftslogik im Frontend — er transformiert Slash-Commands (z. B. `/g Müller SGE`) in strukturierte Ticker-Einträge. Die 45 Tests decken alle 11 Command-Typen (Tor, Eigentor, Gelbe/Rote Karte, Wechsel, Notiz, verfehlter Elfmeter und alle 11 Phasen-Commands) sowie explizit die Fehlerfälle ab: Jeder Test prüft `isValid`, `type`, `formatted`, `meta.icon` und `warnings` — unvollständige Eingaben liefern gezielte Hinweise (`"Fehlend: Spieler"`) statt Laufzeitfehler (vgl. `parseCommand.test.ts`).
 
 ### 6.3.3 Beispiel: `useLiveMinute`
 
-Der Hook `useLiveMinute` berechnet die aktuelle Spielminute aus dem Anstoßzeitpunkt, sofern keine Minuten-Information direkt im Match-Objekt vorhanden ist. Tests decken sowohl die Halbzeit-Korrektur (+46 Minuten ab der 60. Minute) als auch den Puffer bei fehlendem Kickoff-Timestamp ab:
-
-```typescript
-test("2. Halbzeit: Offset wird korrekt berechnet", () => {
-  const match = {
-    ...baseMatch,
-    matchPhase: "SecondHalf",
-    startsAt: iso60MinAgo,
-  };
-  const { result } = renderHook(() => useLiveMinute(match));
-  expect(result.current).toBeGreaterThanOrEqual(46);
-});
-```
+Der Hook `useLiveMinute` berechnet die aktuelle Spielminute aus dem Anstoßzeitpunkt, sofern keine Minuten-Information direkt im Match-Objekt vorhanden ist. Die 10 Tests decken sowohl die Halbzeit-Korrektur (+46 Minuten ab der 60. Minute) als auch den Puffer bei fehlendem Kickoff-Timestamp ab (vgl. `useLiveMinute.test.ts`).
 
 ---
 
@@ -129,50 +97,7 @@ TOTAL  3230  793  75%
 
 ### 6.4.3 API-Integrations-Tests
 
-Die API-Tests nutzen FastAPIs `TestClient` mit einer transaktionalen PostgreSQL-Session, die nach jedem Test per Rollback zurückgesetzt wird. Dadurch sind Tests voneinander isoliert und hinterlassen keine persistenten Daten:
-
-```python
-@pytest.fixture()
-def db():
-    """Transaktionale DB-Session — rollt nach jedem Test zurück."""
-    TestSession = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-    session = TestSession()
-    yield session
-    session.rollback()   # ← vollständige Isolation
-    session.close()
-```
-
-Der `client`-Fixture überschreibt die `get_db`-Dependency-Injection von FastAPI, sodass alle Route-Handler dieselbe transaktionale Session verwenden:
-
-```python
-@pytest.fixture()
-def client(db):
-    def override_get_db():
-        yield db
-    app.dependency_overrides[get_db] = override_get_db
-    with TestClient(app, raise_server_exceptions=False) as c:
-        yield c
-```
-
-Exemplarischer Test für die Ticker-Mode-Route — ein zentraler Workflow im System:
-
-```python
-class TestSetTickerMode:
-    def test_sets_coop_mode(self, client, sample_match):
-        response = client.patch(
-            f"/api/v1/matches/{sample_match.id}/ticker-mode",
-            json={"mode": "coop"},
-        )
-        assert response.status_code == 200
-        assert response.json()["tickerMode"] == "coop"
-
-    def test_rejects_invalid_mode(self, client, sample_match):
-        response = client.patch(
-            f"/api/v1/matches/{sample_match.id}/ticker-mode",
-            json={"mode": "invalid"},
-        )
-        assert response.status_code == 422
-```
+Die API-Tests nutzen FastAPIs `TestClient` mit einer transaktionalen PostgreSQL-Session, die nach jedem Test per Rollback zurückgesetzt wird. Dadurch sind Tests voneinander isoliert und hinterlassen keine persistenten Daten. Der `db`-Fixture erzeugt eine Session mit `autocommit=False` und führt nach dem `yield` ein `session.rollback()` aus; der `client`-Fixture überschreibt die `get_db`-Dependency-Injection von FastAPI, sodass alle Route-Handler dieselbe transaktionale Session verwenden. Exemplarisch wird ein Test für die Ticker-Mode-Route gezeigt, der sowohl den Erfolgsfall (`mode: "coop"` → 200) als auch die Validierung (`mode: "invalid"` → 422) abdeckt.
 
 ### 6.4.4 Coverage-Verteilung nach Schicht
 
@@ -216,7 +141,7 @@ Die E2E-Tests decken absichtlich den _stabilen Kern_ der UI ab — das initiale 
 
 ### 6.6.1 Ausgangslage und Migration
 
-Das Frontend wurde im Rahmen dieser Arbeit vollständig von JavaScript (`.jsx`) zu TypeScript (`.tsx`/`.ts`) migriert. Der Ausgangszustand war eine reine JavaScript-Codebasis ohne statische Typen.
+Die vollständige Migration von JavaScript zu TypeScript und die zentrale Typen-Architektur (`src/types/index.ts` mit Domain-Interfaces, Union-Types und `as const`-Konstanten) sind in Kapitel 5.5 dokumentiert.
 
 ### 6.6.2 Ergebnis
 
@@ -235,18 +160,7 @@ Der Wert von 95,84 % bedeutet: Von 18.813 gemessenen Typausdrücken sind 18.031 
 - **`MediaPickerPanel.tsx` / `YouTubePanel.tsx` / `ClipPickerPanel.tsx`**: Media-Panels, die externe API-Responses (ScorePlay, YouTube) verarbeiten, deren Typen nicht vollständig spezifiziert sind.
 - **Exports in `components/index.ts`**: Barrel-Exports mit `export { X }` ohne explizite Typ-Annotationen — technisch korrekt, aber von `type-coverage` als untypiert gezählt.
 
-### 6.6.3 Zentrale Typen-Architektur
-
-Alle domänenrelevanten Typen sind in einer zentralen Datei [src/types/index.ts](../frontend/src/types/index.ts) konsolidiert. Dies umfasst:
-
-- **Entitätstypen**: `Match`, `MatchEvent`, `TickerEntry`, `Team`, `Competition`, `Player`, `LineupEntry`, `PlayerStat`, `MatchStat`
-- **Union-Types**: `TickerMode` (`"auto" | "coop" | "manual"`), `TickerStyle`, `MatchPhase`
-- **Payload-Interfaces**: `PublishPayload`, `ReloadFunctions`, `RoundLabel`
-- **Konstanten**: `MODES` als `as const`-Objekt, sodass `MODES.AUTO` direkt als `TickerMode` inferiert wird
-
-Alle zentralen Hooks (`useMatchCore`, `useNavigation`, `useRightPanelData`, `useTicker`, `useMatchTriggers`) sowie alle UI-Komponenten verfügen über vollständige Props-Interfaces.
-
-### 6.6.4 Nutzen im Entwicklungsprozess
+### 6.6.3 Nutzen im Entwicklungsprozess
 
 Die TypeScript-Migration hat im Verlauf der Implementierung mehrere Fehler früh aufgedeckt, die sonst erst zur Laufzeit sichtbar geworden wären:
 
@@ -406,14 +320,7 @@ Bewertung: Der Text erfasst alle verfügbaren Fakten (Minute, Torschütze, Vorla
 > Event: Rote Karte, 70. Minute, Thomas Müller (FC Bayern München), Spielstand 1:2
 > KI-Text: „70. Minute: Rot! Müller fliegt! Der Wahnsinn! Die Bayern mit zehn Mann! Frankfurt, jetzt geht was! Die SGE, sie lebt! Der Rasen brennt!"
 
-Bewertung: Alle Fakten (Minute, Spieler, Team) korrekt. Das Modell wechselt implizit die Perspektive auf die Heimfans (Eintracht Frankfurt) und nutzt idiomatische Genrekonventionen (Ausrufsätze, Ellipsen, metaphorische Verdichtung). Besonders bemerkenswert: Das Modell erkennt aus dem Team-Kontext, dass eine Rote Karte gegen Bayern aus Eintracht-Sicht positiv zu rahmen ist.
-
-**Beispiel 3 — Gelbe Karte (euphorisch, Bewertung 5/5/5):**
-
-> Event: Gelbe Karte, 12. Minute, R. Kristensen (Eintracht Frankfurt vs. Werder Bremen)
-> KI-Text: „12. Minute: Mist! Kristensen sieht Gelb! Der Schiri ist ja blind! Aber Kopf hoch, Adler! Kämpfen!"
-
-Bewertung: Der euphorische Stil wird durch Fan-nahe Formulierungen korrekt umgesetzt: Die emotionale Reaktion auf die Karte, die implizite Parteinahme für den Verein und der aufmunternde Abschluss sind charakteristisch für vereinsnahe Liveticker. Alle Fakten (Minute, Spielername) sind korrekt.
+Bewertung: Alle Fakten (Minute, Spieler, Team) korrekt. Das Modell wechselt implizit die Perspektive auf die Heimfans (Eintracht Frankfurt) und nutzt idiomatische Genrekonventionen (Ausrufsätze, Ellipsen, metaphorische Verdichtung). Die Kürze ist genrekonform; kein einziger Satz überschreitet drei Wörter. Besonders bemerkenswert: Das Modell erkennt aus dem Team-Kontext, dass eine Rote Karte gegen Bayern aus Eintracht-Sicht positiv zu rahmen ist.
 
 **Beispiel 3 — Wechsel (neutral, Bewertung 4/4/4):**
 
@@ -421,6 +328,13 @@ Bewertung: Der euphorische Stil wird durch Fan-nahe Formulierungen korrekt umges
 > KI-Text: „65. Minute: Erster Wechsel bei Werder Bremen. S. Mbangula geht vom Feld. Für ihn kommt P. Covic."
 
 Bewertung: Fakten und Stil sind korrekt. Die Formulierung „Erster Wechsel" ist nicht aus dem Kontext ableitbar und stellt eine kleine Halluzination dar; in diesem Fall war sie zufällig korrekt.
+
+**Beispiel 3 — Tor (English, euphorisch, Übersetzung via translate_ticker_text):**
+
+> Event: Tor, 81. Minute, R. Doan (Eintracht Frankfurt vs. FSV Mainz 05), Vorlage Collins
+> KI-Text (EN): "81st minute: WHAT IS GOING ON?! Collins with the silky cross! DOAN! The ball is in! GOOOAL! 1-0! The house is rocking!"
+
+Bewertung: Die Übersetzung überträgt alle Fakten korrekt und erhält die emotionale Intensität des euphorischen Stils. Die idiomatische Anpassung („Die Hütte bebt" → „The house is rocking") zeigt, dass das LLM nicht wörtlich übersetzt, sondern genreäquivalente Formulierungen wählt. Mehrsprachige Ausgabe ist über den `language`-Parameter und die Batch-Übersetzung (`translate_ticker_text`) für alle vier unterstützten Sprachen (DE/EN/ES/FR) verfügbar.
 
 ### 6.8.4 Typische Schwächen und Fehlerklassen
 
@@ -638,34 +552,4 @@ Die 15 n8n-Workflows (vgl. Kapitel 5.7) verfügen über keine automatisierten Te
 
 ## 6.13 Zusammenfassung
 
-### 6.13.1 Technische Qualitätsmetriken
-
-| Dimension              | Metrik             | Wert                 |
-| ---------------------- | ------------------ | -------------------- |
-| Frontend Unit-Tests    | Testanzahl         | **187 Tests**        |
-| Frontend Unit-Tests    | Test-Suiten        | **15 Suiten**        |
-| Frontend Unit-Tests    | Ergebnis           | **187/187 grün**     |
-| E2E-Tests (Playwright) | Testanzahl         | **6 Tests**          |
-| E2E-Tests (Playwright) | Ergebnis           | **6/6 grün**         |
-| Backend-Tests          | Testanzahl         | **198 Tests**        |
-| Backend-Tests          | Ergebnis           | **198/198 grün**     |
-| Backend-Coverage       | Statement Coverage | **75 %**             |
-| TypeScript-Migration   | type-coverage      | **95,84 %**          |
-| TypeScript-Migration   | Compiler-Fehler    | **0**                |
-| TypeScript-Migration   | Ausgangspunkt      | 78,33 % / 885 Fehler |
-
-### 6.13.2 Anforderungserfüllung
-
-Von 23 definierten Anforderungen (12 funktionale, 6 nicht-funktionale, 5 architektonische) sind **alle 23 vollständig erfüllt**. Die fehlende Authentifizierung ist als bewusste Projektentscheidung dokumentiert (Kap. 6.12.4) und wird nicht als Anforderung geführt.
-
-### 6.13.3 KI-Textqualität
-
-Die KI-generierten Texte (Modell: `google/gemini-2.0-flash-lite-001`, N = 16) erreichten auf einer 5-Punkte-Skala einen **Gesamtdurchschnitt von 4,3 / 5** (Korrektheit: 4,6, Tonalität: 4,1, Verständlichkeit: 4,3). Die größten Stärken liegen in der Faktentreue und der Genrekonformität (kurze, mündlichkeitsnahe Texte); die häufigste Fehlerklasse ist die Stil-Inkonsistenz des neutralen Profils (19 %). Die gemessene LLM-Latenz (Median: 859 ms) ermöglicht im `auto`-Modus eine geschätzte TTP von ≈ 3,4–5,9 s (Erwartungswert bis Worst Case, vgl. 6.9.2). Der `coop`-Modus erweist sich als optimaler Kompromiss: er kombiniert KI-Geschwindigkeit mit redaktioneller Qualitätssicherung.
-
-### 6.13.4 Gesamtbewertung
-
-Die Kombination aus 391 automatisierten Tests (187 Frontend + 198 Backend + 6 E2E), einer TypeScript-Coverage von 95,84 % bei null Compiler-Fehlern und einer vollständig umgesetzten Testpyramide dokumentiert eine technisch reife Codebasis. Die Teststrategie priorisiert bewusst den kritischen Redaktionspfad: Alle Kern-Workflows (Command-Parsing, Ticker-Lifecycle, LLM-Integration, Event-Verarbeitung) sind durch Unit- und Integrationstests abgesichert.
-
-Die funktionale Evaluation zeigt, dass alle 12 Kernanforderungen an das System erfüllt sind. Die qualitative Textanalyse identifiziert sowohl Stärken (Geschwindigkeit, Formatierungstreue, Faktenübernahme aus dem Kontext) als auch Grenzen (stilistische Wiederholungen, gelegentliche Halluzinationen ohne Few-Shot-Referenzen) der KI-Generierung. Für einen produktiven Einsatz sind insbesondere die Ergänzung einer Authentifizierungsschicht, die Ausweitung der E2E-Tests auf den vollständigen Redaktionsworkflow und eine externe Nutzerstudie mit professionellen Sportredakteuren empfehlenswert.
-
-Die Evaluation liefert damit die empirische Evidenz, auf der die kritische Einordnung in Kapitel 7 — Stärken, Limitationen und Implikationen für den Sportjournalismus — aufbaut. Die Beantwortung der Forschungsfrage erfolgt auf Grundlage dieser Ergebnisse in Kapitel 8.2.
+Die Evaluation belegt eine technisch reife Codebasis (391 Tests, 95,84 % TypeScript-Coverage, 0 Compiler-Fehler) mit vollständiger Erfüllung aller 23 definierten Anforderungen. Die KI-generierten Texte erreichen einen Gesamtdurchschnitt von 4,3/5 bei einer LLM-Latenz von Median 859 ms, was im `auto`-Modus eine geschätzte TTP von 3,4–5,9 s ermöglicht. Stärken liegen in der Faktentreue und Genrekonformität; die häufigste Fehlerklasse ist die Stil-Inkonsistenz des neutralen Profils (19 %). Die strukturellen Grenzen des aktuellen Systems — insbesondere die Selbstevaluation ohne zweiten Rater und die eingeschränkte Stichprobengröße — sind in Kapitel 6.12 dokumentiert. Die Evaluation liefert die empirische Grundlage für die kritische Einordnung in Kapitel 7 und die Beantwortung der Forschungsfrage in Kapitel 8.2.
