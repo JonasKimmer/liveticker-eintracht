@@ -101,7 +101,8 @@ class MatchCreate(BaseModel):
 # ------------------------------------------------------------------ #
 
 
-class MatchUpdate(BaseModel):    model_config = ConfigDict(populate_by_name=True, alias_generator=to_camel)
+class MatchUpdate(BaseModel):
+    model_config = ConfigDict(populate_by_name=True, alias_generator=to_camel)
 
     home_score: Optional[int] = Field(None, ge=0, alias="teamHomeScore")
     away_score: Optional[int] = Field(None, ge=0, alias="teamAwayScore")
