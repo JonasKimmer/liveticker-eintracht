@@ -49,6 +49,7 @@ class TickerEntry(Base):
     phase = Column(String(50), nullable=True)
     image_url = Column(Text, nullable=True)
     video_url = Column(Text, nullable=True)
+    generation_ms = Column(Integer, nullable=True)
     created_at = Column(
         TIMESTAMP(timezone=True), server_default=func.now(), nullable=False
     )

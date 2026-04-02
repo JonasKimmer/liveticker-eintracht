@@ -12,6 +12,7 @@ Enthält:
 
 import json
 import logging
+import time
 from json import JSONDecodeError
 from typing import Optional
 
@@ -120,6 +121,7 @@ async def generate_for_event(
     data: GenerateEventRequest = Body(default_factory=GenerateEventRequest),
     db: Session = Depends(get_db),
 ) -> TickerEntryResponse:
+    t0 = time.monotonic()
     event = require_or_404(EventRepository(db).get_by_id(event_id), "Event not found")
 
     ticker_repo = TickerEntryRepository(db)
@@ -183,6 +185,7 @@ async def generate_for_event(
             minute=event.time,
             instance=data.instance,
             status=TickerStatus.published if data.auto_publish else TickerStatus.draft,
+            generation_ms=int((time.monotonic() - t0) * 1000),
         )
     )
 
@@ -197,6 +200,7 @@ async def generate_for_synthetic_event(
     data: GenerateSyntheticRequest,
     db: Session = Depends(get_db),
 ) -> TickerEntryResponse:
+    t0 = time.monotonic()
     synthetic = require_or_404(
         SyntheticEventRepository(db).get_by_id(data.synthetic_event_id),
         "SyntheticEvent not found",
@@ -241,6 +245,7 @@ async def generate_for_synthetic_event(
             minute=event_minute,
             instance=data.instance,
             status=TickerStatus.published if data.auto_publish else TickerStatus.draft,
+            generation_ms=int((time.monotonic() - t0) * 1000),
         )
     )
 

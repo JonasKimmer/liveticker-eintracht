@@ -210,6 +210,7 @@ def make_ai_entry(
     minute: Optional[int] = None,
     icon: Optional[str] = None,
     instance: Optional[str] = None,
+    generation_ms: Optional[int] = None,
 ) -> TickerEntryCreate:
     """Erstellt ein TickerEntryCreate-Schema für einen KI-generierten Eintrag."""
     return TickerEntryCreate(
@@ -225,4 +226,5 @@ def make_ai_entry(
         minute=minute,
         status=status,
         icon=icon,
+        generation_ms=generation_ms,
     )
