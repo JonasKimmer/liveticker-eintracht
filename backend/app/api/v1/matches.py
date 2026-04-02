@@ -26,8 +26,8 @@ from app.schemas.match import (
     MatchUpdate,
     PaginatedMatchResponse,
     StatisticsBulkUpdate,
+    TickerModeUpdate,
 )
-from pydantic import BaseModel
 from app.schemas.player import PlayerStatisticResponse
 
 logger = logging.getLogger(__name__)
@@ -134,10 +134,6 @@ def delete_match(matchId: int, db: Session = Depends(get_db)) -> None:
 # ------------------------------------------------------------------ #
 
 
-class TickerModeUpdate(BaseModel):
-    mode: str  # auto | coop | manual
-
-
 @router.patch(
     "/{matchId}/ticker-mode",
     response_model=MatchResponse,
@@ -149,15 +145,15 @@ def set_ticker_mode(
     data: TickerModeUpdate,
     db: Session = Depends(get_db),
 ) -> MatchResponse:
-    if data.mode not in ("auto", "coop", "manual"):
-        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="mode must be auto, coop or manual")
-    return require_or_404(MatchRepository(db).update(matchId, MatchUpdate(ticker_mode=data.mode)), "Match not found")
+    return require_or_404(
+        MatchRepository(db).update(matchId, MatchUpdate(ticker_mode=data.mode)),
+        "Match not found",
+    )
 
 
 # ------------------------------------------------------------------ #
 # Football API live sync                                               #
 # ------------------------------------------------------------------ #
-
 
 
 @router.post(
@@ -166,7 +162,7 @@ def set_ticker_mode(
     response_model_by_alias=True,
     summary="Sync live minute and phase from Football API",
 )
-def sync_live(matchId: int, db: Session = Depends(get_db)) -> MatchResponse:
+async def sync_live(matchId: int, db: Session = Depends(get_db)) -> MatchResponse:
     repo = MatchRepository(db)
     match = require_or_404(repo.get_by_id(matchId), "Match not found")
 
@@ -182,20 +178,25 @@ def sync_live(matchId: int, db: Session = Depends(get_db)) -> MatchResponse:
         )
 
     try:
-        resp = httpx.get(
-            f"{settings.API_FOOTBALL_BASE_URL}/fixtures",
-            params={"id": match.external_id},
-            headers={"x-apisports-key": settings.API_FOOTBALL_KEY},
-            timeout=5,
-        )
+        async with httpx.AsyncClient(timeout=5) as client:
+            resp = await client.get(
+                f"{settings.API_FOOTBALL_BASE_URL}/fixtures",
+                params={"id": match.external_id},
+                headers={"x-apisports-key": settings.API_FOOTBALL_KEY},
+            )
         resp.raise_for_status()
         fixtures = resp.json().get("response", [])
     except httpx.HTTPError as exc:
         logger.error("Football API request failed: %s", exc)
-        raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail="Football API unavailable")
+        raise HTTPException(
+            status_code=status.HTTP_502_BAD_GATEWAY, detail="Football API unavailable"
+        )
 
     if not fixtures:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Fixture not found in Football API")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Fixture not found in Football API",
+        )
 
     fixture_status = fixtures[0].get("fixture", {}).get("status", {})
     elapsed: Optional[int] = fixture_status.get("elapsed")
@@ -334,9 +335,7 @@ def get_player_statistics(
     "/{matchId}/injuries",
     summary="Get pre-match injury data for a match",
 )
-def get_injuries(
-    matchId: int, db: Session = Depends(get_db)
-) -> list[dict]:
+def get_injuries(matchId: int, db: Session = Depends(get_db)) -> list[dict]:
     repo = MatchRepository(db)
     if not repo.exists(matchId):
         raise HTTPException(

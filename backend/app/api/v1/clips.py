@@ -33,8 +33,7 @@ from app.schemas.media_clip import (
     MediaClipResponse,
     ClipPublishRequest,
 )
-from app.schemas.ticker_entry import TickerEntryCreate, TickerEntryResponse, TickerStatus
-from app.services.llm_service import generate_ticker_text
+from app.schemas.ticker_entry import TickerEntryResponse
 
 logger = logging.getLogger(__name__)
 
@@ -148,12 +147,12 @@ async def generate_clip_draft(
 ) -> dict:
     clip = require_or_404(MediaClipRepository(db).get_by_id(clip_id), "Clip not found")
 
-    match = MatchRepository(db).load_with_teams(match_id)
+    match = MatchRepository(db).get_by_id(match_id)
     match_context = ts.build_match_context(match, event_minute=None)
 
     is_youtube = clip.source == "youtube"
     try:
-        text, model_used = await generate_ticker_text(
+        text, model_used = await ts.call_llm(
             event_type="youtube_video" if is_youtube else "goal",
             event_detail=clip.title or "",
             minute=None,
@@ -197,16 +196,14 @@ def publish_clip(
     clip = require_or_404(clip_repo.get_by_id(clip_id), "Clip not found")
 
     entry = TickerEntryRepository(db).create(
-        TickerEntryCreate(
+        ts.make_manual_entry(
             match_id=data.match_id,
             text=data.text,
-            source="manual",
             icon=data.icon or "🎬",
             minute=data.minute,
             phase=data.phase,
             image_url=clip.thumbnail_url,
             video_url=clip.video_url,
-            status=TickerStatus.published,
         )
     )
     clip_repo.publish(clip)

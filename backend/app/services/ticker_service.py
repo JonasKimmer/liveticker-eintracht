@@ -22,7 +22,7 @@ from sqlalchemy.orm import Session
 from app.core.config import settings
 from app.repositories.event_repository import EventRepository
 from app.schemas.ticker_entry import TickerEntryCreate, TickerStatus
-from app.services.llm_service import generate_ticker_text
+from app.services.llm_service import generate_ticker_text, translate_ticker_text
 
 logger = logging.getLogger(__name__)
 
@@ -160,6 +160,41 @@ async def call_llm(
             provider=provider,
             model=model,
         )
+
+
+async def call_translate(text: str, language: str) -> str:
+    """Semaphore-gesicherter LLM-Übersetzungs-Aufruf."""
+    async with _llm_semaphore:
+        return await translate_ticker_text(text, language)
+
+
+def make_manual_entry(
+    match_id: int,
+    text: str,
+    *,
+    event_id: Optional[int] = None,
+    style: Optional[str] = None,
+    icon: Optional[str] = None,
+    minute: Optional[int] = None,
+    phase: Optional[str] = None,
+    image_url: Optional[str] = None,
+    video_url: Optional[str] = None,
+    status: TickerStatus = TickerStatus.published,
+) -> TickerEntryCreate:
+    """Erstellt ein TickerEntryCreate-Schema für einen manuellen Eintrag."""
+    return TickerEntryCreate(
+        match_id=match_id,
+        event_id=event_id,
+        text=text,
+        source="manual",
+        style=style,
+        icon=icon,
+        minute=minute,
+        phase=phase,
+        image_url=image_url,
+        video_url=video_url,
+        status=status,
+    )
 
 
 def make_ai_entry(

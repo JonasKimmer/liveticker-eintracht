@@ -127,7 +127,7 @@ async def generate_for_event(
     if existing:
         return existing
 
-    match = MatchRepository(db).load_with_teams(event.match_id)
+    match = MatchRepository(db).get_by_id(event.match_id)
     match_context = ts.build_match_context(match, event.time)
 
     try:
@@ -202,7 +202,7 @@ async def generate_for_synthetic_event(
         "SyntheticEvent not found",
     )
 
-    match = MatchRepository(db).load_with_teams(synthetic.match_id)
+    match = MatchRepository(db).get_by_id(synthetic.match_id)
     match_context = ts.build_match_context(match, synthetic.minute)
 
     text, model_used = await _call_llm_or_502(
@@ -265,7 +265,7 @@ async def generate_synthetic_batch(
 
     ticker_repo = TickerEntryRepository(db)
     existing_ids = ticker_repo.get_existing_synthetic_ids(match_id)
-    match = MatchRepository(db).load_with_teams(match_id)
+    match = MatchRepository(db).get_by_id(match_id)
     results = []
     failed: list[tuple[int, str]] = []
 
@@ -318,7 +318,7 @@ async def generate_match_phases(
     db: Session = Depends(get_db),
 ) -> list[TickerEntryResponse]:
     match = require_or_404(
-        MatchRepository(db).load_with_teams(match_id), "Match not found"
+        MatchRepository(db).get_by_id(match_id), "Match not found"
     )
 
     ticker_repo = TickerEntryRepository(db)

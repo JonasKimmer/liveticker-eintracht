@@ -12,15 +12,18 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from app.models.competition import Competition
+from app.repositories.base import BaseRepository
 from app.schemas.competition import CompetitionCreate, CompetitionUpdate
 from app.utils.db_utils import str_or_none as _str_or_none
 
 logger = logging.getLogger(__name__)
 
 
-class CompetitionRepository:
+class CompetitionRepository(BaseRepository[Competition]):
+    model = Competition
+
     def __init__(self, db: Session) -> None:
-        self.db = db
+        super().__init__(db)
 
     # ------------------------------------------------------------------ #
     # Reads                                                                #
@@ -49,14 +52,6 @@ class CompetitionRepository:
 
     def get_by_uid(self, uid: UUID) -> Optional[Competition]:
         return self.db.query(Competition).filter(Competition.uid == uid).first()
-
-    def exists(self, competition_id: int) -> bool:
-        return (
-            self.db.query(Competition.id)
-            .filter(Competition.id == competition_id)
-            .scalar()
-            is not None
-        )
 
     # ------------------------------------------------------------------ #
     # Writes                                                               #
@@ -101,8 +96,13 @@ class CompetitionRepository:
         for url_field in ("logo_url", "matchcenter_image_url"):
             if url_field in update_data:
                 update_data[url_field] = _str_or_none(update_data[url_field])
-        if "localized_title" in update_data and update_data["localized_title"] is not None:
-            update_data["localized_title"] = data.localized_title.model_dump(exclude_none=True)
+        if (
+            "localized_title" in update_data
+            and update_data["localized_title"] is not None
+        ):
+            update_data["localized_title"] = data.localized_title.model_dump(
+                exclude_none=True
+            )
 
         for field, value in update_data.items():
             setattr(competition, field, value)

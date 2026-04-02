@@ -197,12 +197,7 @@ class LLMService:
         team_name: Optional[str],
     ) -> list[str]:
         """Baut die FAKTEN-Sektion des Prompts auf."""
-        _et = (
-            "pre_match_injuries"
-            if event_type.startswith("pre_match_injuries")
-            else event_type
-        )
-        event_label = EVENT_TYPE_LABEL.get(_et, event_type)
+        event_label = EVENT_TYPE_LABEL.get(event_type, event_type)
         minute_str = f"{minute}. Minute" if minute else "Vor/Nach dem Spiel"
 
         lines = [f"Ereignistyp: {event_label}"]

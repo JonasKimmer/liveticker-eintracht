@@ -42,7 +42,9 @@ def ctx_prediction(d: dict) -> str:
 def ctx_h2h(d: dict) -> str:
     matches = d.get("matches", [])
     if not matches:
-        return _format_context_section(["Direktvergleich: Keine historischen Begegnungen."])
+        return _format_context_section(
+            ["Direktvergleich: Keine historischen Begegnungen."]
+        )
     lines = ["Direktvergleich (letzte Spiele):"] + [f"  - {m}" for m in matches[:5]]
     return _format_context_section(lines)
 
@@ -107,7 +109,7 @@ def build_context_str(event_type: str, context_data: dict | None) -> str:
     if event_type.startswith("pre_match_injuries"):
         normalized_type = "pre_match_injuries"
 
-    builders = {
+    builders: dict[str, object] = {
         "pre_match_injuries": ctx_injuries,
         "pre_match_prediction": ctx_prediction,
         "pre_match_h2h": ctx_h2h,
@@ -117,8 +119,6 @@ def build_context_str(event_type: str, context_data: dict | None) -> str:
     }
     builder = builders.get(normalized_type)
     if builder:
-        return builder(context_data)
+        return builder(context_data)  # type: ignore[operator]
 
-    return (
-        f"\n### KONTEXT\n{json.dumps(context_data, ensure_ascii=False, indent=2)}\n"
-    )
+    return f"\n### KONTEXT\n{json.dumps(context_data, ensure_ascii=False, indent=2)}\n"

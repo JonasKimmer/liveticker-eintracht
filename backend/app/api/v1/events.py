@@ -11,12 +11,18 @@ from app.core.database import get_db
 from app.utils.http_errors import handle_integrity_error, require_or_404
 from app.repositories.event_repository import EventRepository
 from app.repositories.match_repository import MatchRepository
-from app.schemas.event import EventCreate, EventResponse, EventUpdate, PaginatedEventResponse
+from app.models.match import Match
+from app.schemas.event import (
+    EventCreate,
+    EventResponse,
+    EventUpdate,
+    PaginatedEventResponse,
+)
 
 router = APIRouter(prefix="/matches/{matchId}/events", tags=["Events"])
 
 
-def _get_match_or_404(match_id: int, db: Session):
+def _get_match_or_404(match_id: int, db: Session) -> Match:
     return require_or_404(MatchRepository(db).get_by_id(match_id), "Match not found")
 
 
@@ -57,7 +63,9 @@ def create_event(
     db: Session = Depends(get_db),
 ) -> EventResponse:
     _get_match_or_404(matchId, db)
-    with handle_integrity_error("Event with this sourceId already exists with conflicting data."):
+    with handle_integrity_error(
+        "Event with this sourceId already exists with conflicting data."
+    ):
         event, _ = EventRepository(db).upsert(matchId, data)
         return event
 
@@ -80,7 +88,9 @@ def update_event(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
             detail="Request body must contain at least one field to update.",
         )
-    return require_or_404(EventRepository(db).update_by_source_id(sourceId, data), "Event not found")
+    return require_or_404(
+        EventRepository(db).update_by_source_id(sourceId, data), "Event not found"
+    )
 
 
 @router.delete(

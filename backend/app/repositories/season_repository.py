@@ -13,6 +13,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from app.models.season import Season
+from app.repositories.base import BaseRepository
 from app.schemas.season import (
     PaginatedSeasonResponse,
     SeasonCreate,
@@ -32,9 +33,11 @@ _ORDER_MAP = {
 }
 
 
-class SeasonRepository:
+class SeasonRepository(BaseRepository[Season]):
+    model = Season
+
     def __init__(self, db: Session) -> None:
-        self.db = db
+        super().__init__(db)
 
     # ------------------------------------------------------------------ #
     # Reads                                                                #
@@ -71,11 +74,6 @@ class SeasonRepository:
 
     def get_by_uid(self, uid: UUID) -> Optional[Season]:
         return self.db.query(Season).filter(Season.uid == uid).first()
-
-    def exists(self, season_id: int) -> bool:
-        return (
-            self.db.query(Season.id).filter(Season.id == season_id).scalar() is not None
-        )
 
     # ------------------------------------------------------------------ #
     # Writes                                                               #

@@ -24,11 +24,11 @@ from app.utils.http_errors import require_or_404
 from app.repositories.ticker_entry_repository import TickerEntryRepository
 from app.schemas.ticker_entry import (
     ManualEntryRequest,
-    TickerEntryCreate,
     TickerEntryUpdate,
     TickerEntryResponse,
     TickerStatus,
 )
+from app.services import ticker_service as ts
 
 logger = logging.getLogger(__name__)
 
@@ -59,7 +59,9 @@ def get_ticker_entry(
     entry_id: int,
     db: Session = Depends(get_db),
 ) -> TickerEntryResponse:
-    return require_or_404(TickerEntryRepository(db).get_by_id(entry_id), "Entry not found")
+    return require_or_404(
+        TickerEntryRepository(db).get_by_id(entry_id), "Entry not found"
+    )
 
 
 @router.delete(
@@ -89,7 +91,9 @@ def update_ticker_entry(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
             detail="Mindestens ein Feld muss gesetzt sein.",
         )
-    return require_or_404(TickerEntryRepository(db).update(entry_id, data), "Entry not found")
+    return require_or_404(
+        TickerEntryRepository(db).update(entry_id, data), "Entry not found"
+    )
 
 
 @router.patch(
@@ -144,11 +148,10 @@ def create_manual_entry(
             return existing
 
     return ticker_repo.create(
-        TickerEntryCreate(
+        ts.make_manual_entry(
             match_id=data.match_id,
             event_id=data.event_id,
             text=data.text,
-            source="manual",
             style=data.style,
             icon=data.icon,
             minute=data.minute,

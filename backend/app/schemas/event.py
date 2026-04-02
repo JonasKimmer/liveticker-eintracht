@@ -1,9 +1,10 @@
-from math import ceil
 from enum import Enum
 from typing import Optional
 
 from pydantic import BaseModel, ConfigDict, Field
 from pydantic.alias_generators import to_camel
+
+from app.schemas.base import PaginatedResponse
 
 
 class LiveTickerEventType(str, Enum):
@@ -95,36 +96,11 @@ class EventResponse(BaseModel):
     phase: Optional[str] = Field(None, serialization_alias="liveTickerPhaseType")
     event_type: Optional[str] = Field(None, serialization_alias="liveTickerEventType")
     description: Optional[str] = None
-    html_description: Optional[str] = Field(
-        None, serialization_alias="htmlDescription"
-    )
+    html_description: Optional[str] = Field(None, serialization_alias="htmlDescription")
     image_url: Optional[str] = None
     video_url: Optional[str] = None
-    players: Optional[list] = None
+    players: Optional[list[EventPlayerDto]] = None
 
 
-class PaginatedEventResponse(BaseModel):
-    model_config = ConfigDict(populate_by_name=True, alias_generator=to_camel)
-
-    items: list[EventResponse]
-    total: int
-    page: int
-    page_size: int
-    page_count: int
-    has_previous_page: bool
-    has_next_page: bool
-
-    @classmethod
-    def create(
-        cls, items: list[EventResponse], total: int, page: int, page_size: int
-    ) -> "PaginatedEventResponse":
-        page_count = ceil(total / page_size) if page_size > 0 else 0
-        return cls(
-            items=items,
-            total=total,
-            page=page,
-            page_size=page_size,
-            page_count=page_count,
-            has_previous_page=page > 1,
-            has_next_page=page < page_count,
-        )
+class PaginatedEventResponse(PaginatedResponse[EventResponse]):
+    pass

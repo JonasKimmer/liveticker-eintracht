@@ -14,15 +14,18 @@ from sqlalchemy.orm import Session
 
 from app.models.country import Country
 from app.models.team import Team
+from app.repositories.base import BaseRepository
 from app.schemas.team import PaginatedTeamResponse, TeamCreate, TeamResponse, TeamUpdate
 from app.utils.db_utils import str_or_none as _str_or_none
 
 logger = logging.getLogger(__name__)
 
 
-class TeamRepository:
+class TeamRepository(BaseRepository[Team]):
+    model = Team
+
     def __init__(self, db: Session) -> None:
-        self.db = db
+        super().__init__(db)
 
     # ------------------------------------------------------------------ #
     # Reads                                                                #
@@ -73,17 +76,12 @@ class TeamRepository:
             .all()
         )
 
-    def exists(self, team_id: int) -> bool:
-        return self.db.query(Team.id).filter(Team.id == team_id).scalar() is not None
-
     # ------------------------------------------------------------------ #
     # Writes                                                               #
     # ------------------------------------------------------------------ #
 
     def _resolve_country_id(self, country_name: str) -> Optional[int]:
-        country = (
-            self.db.query(Country).filter(Country.name == country_name).first()
-        )
+        country = self.db.query(Country).filter(Country.name == country_name).first()
         return country.id if country else None
 
     def create(self, data: TeamCreate) -> Team:

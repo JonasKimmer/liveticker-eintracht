@@ -34,11 +34,9 @@ from app.schemas.media_queue import (
     PublishMediaRequest,
 )
 from app.schemas.ticker_entry import (
-    TickerEntryCreate,
     TickerEntryResponse,
-    TickerStatus,
 )
-from app.services.llm_service import generate_ticker_text
+from app.services import ticker_service as ts
 
 logger = logging.getLogger(__name__)
 
@@ -192,11 +190,9 @@ def media_publish(
     )
 
     entry = TickerEntryRepository(db).create(
-        TickerEntryCreate(
+        ts.make_manual_entry(
             match_id=data.match_id,
             text=data.description,
-            source="manual",
-            status=TickerStatus.published,
             icon=data.icon or "📷",
             minute=data.minute,
             image_url=media.compressed_url or media.original_url or media.thumbnail_url,
@@ -226,13 +222,20 @@ async def generate_media_caption(
     )
 
     detail = media.name or f"ScorePlay Bild #{media_id}"
-    text, model = await generate_ticker_text(
-        event_type="comment",
-        event_detail=f"Foto: {detail}",
-        style=body.style,
-        instance=body.instance,
-        db=db,
-    )
+    try:
+        text, model = await ts.call_llm(
+            event_type="comment",
+            event_detail=f"Foto: {detail}",
+            style=body.style,
+            language="de",
+            context_data={},
+            match_context={},
+            db=db,
+            instance=body.instance,
+        )
+    except Exception as e:
+        logger.exception("Caption generation failed for media_id=%s", media_id)
+        raise HTTPException(status_code=502, detail=f"LLM error: {e}")
     return {"text": text, "model": model}
 
 

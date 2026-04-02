@@ -26,7 +26,6 @@ from app.schemas.ticker_entry import (
     TranslateBatchRequest,
 )
 from app.services import ticker_service as ts
-from app.services.llm_service import translate_ticker_text
 
 logger = logging.getLogger(__name__)
 
@@ -51,7 +50,7 @@ async def generate_bulk_for_match(
             detail="Keine Events für dieses Spiel",
         )
 
-    match = MatchRepository(db).load_with_teams(match_id)
+    match = MatchRepository(db).get_by_id(match_id)
     ticker_repo = TickerEntryRepository(db)
     results = []
     failed: list[tuple[int, str]] = []
@@ -116,7 +115,7 @@ async def translate_batch(
 
     async def _translate_one(entry):
         try:
-            translated = await translate_ticker_text(entry.text, data.language)
+            translated = await ts.call_translate(entry.text, data.language)
             return ticker_repo.update(entry.id, TickerEntryUpdate(text=translated))
         except Exception:
             logger.exception("Translation failed for entry_id=%s", entry.id)

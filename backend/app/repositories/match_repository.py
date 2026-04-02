@@ -17,6 +17,7 @@ from app.models.match import Match
 from app.models.match_statistic import MatchStatistic
 from app.models.player import Player
 from app.models.player_statistic import PlayerStatistic
+from app.repositories.base import BaseRepository
 from app.schemas.match import (
     LineupBulkUpdate,
     LineupPlayerInput,
@@ -29,9 +30,11 @@ from app.schemas.match import (
 logger = logging.getLogger(__name__)
 
 
-class MatchRepository:
+class MatchRepository(BaseRepository[Match]):
+    model = Match
+
     def __init__(self, db: Session) -> None:
-        self.db = db
+        super().__init__(db)
 
     # ------------------------------------------------------------------ #
     # Internal helpers                                                     #
@@ -80,13 +83,6 @@ class MatchRepository:
 
     def get_by_id(self, match_id: int) -> Optional[Match]:
         return self._base_query().filter(Match.id == match_id).first()
-
-    def load_with_teams(self, match_id: int) -> Optional[Match]:
-        """Eager-load Match mit Home/Away-Teams und Wettbewerb (für LLM-Kontext)."""
-        return self._base_query().filter(Match.id == match_id).first()
-
-    def exists(self, match_id: int) -> bool:
-        return self.db.query(Match.id).filter(Match.id == match_id).scalar() is not None
 
     def get_matchdays(self, team_id: int, competition_id: int) -> list[int]:
         """Return sorted distinct matchday numbers for a team in a competition."""
@@ -226,13 +222,14 @@ class MatchRepository:
         if missing:
             external_ids = [l.player_id for l in missing]
             players = (
-                self.db.query(Player)
-                .filter(Player.external_id.in_(external_ids))
-                .all()
+                self.db.query(Player).filter(Player.external_id.in_(external_ids)).all()
             )
             name_map = {
-                p.external_id: (p.known_name or p.display_name or
-                                f"{p.first_name or ''} {p.last_name or ''}".strip())
+                p.external_id: (
+                    p.known_name
+                    or p.display_name
+                    or f"{p.first_name or ''} {p.last_name or ''}".strip()
+                )
                 for p in players
             }
             for l in missing:
@@ -340,6 +337,9 @@ class MatchRepository:
         return (
             self.db.query(PlayerStatistic)
             .filter(PlayerStatistic.match_id == match_id)
-            .order_by(PlayerStatistic.rating.desc().nulls_last(), PlayerStatistic.minutes.desc())
+            .order_by(
+                PlayerStatistic.rating.desc().nulls_last(),
+                PlayerStatistic.minutes.desc(),
+            )
             .all()
         )
