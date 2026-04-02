@@ -3,10 +3,12 @@
 // Stats, Aufstellung, Torschützen, Karten, Kader
 // ============================================================
 import { memo } from "react";
-import { Collapsible, CollapsibleCat } from "../components/Collapsible";
-import { PlayerBadges } from "../components/stats/PlayerBadges";
+import { Collapsible } from "../components/Collapsible";
 import { FormationColumn } from "../components/stats/FormationColumn";
 import { StatRow } from "../components/stats/StatRow";
+import { SubstitutionsSection } from "../components/stats/SubstitutionsSection";
+import { InjuriesSection } from "../components/stats/InjuriesSection";
+import { StatCategorySection } from "../components/stats/StatCategorySection";
 import { useRightPanelData } from "../hooks/useRightPanelData";
 import { useTickerDataContext } from "../../../context/TickerDataContext";
 
@@ -161,151 +163,15 @@ export const RightPanel = memo(function RightPanel() {
             </div>
           )}
 
-          {(homeSubs.length > 0 || awaySubs.length > 0) && (
-            <>
-              <div
-                className="lt-right__section-title"
-                style={{ marginTop: "12px" }}
-              >
-                🔄 Einwechslungen
-              </div>
-              <div className="lt-lineup-grid">
-                <ul className="lt-lineup-list">
-                  {homeSubs
-                    .sort(
-                      (a, b) => (a.jerseyNumber ?? 99) - (b.jerseyNumber ?? 99),
-                    )
-                    .map((p) => (
-                      <li key={p.id}>
-                        {p.jerseyNumber != null && (
-                          <span className="lt-lineup-num">
-                            #{p.jerseyNumber}
-                          </span>
-                        )}
-                        <span>
-                          {playerName(p.playerId) ??
-                            `#${p.jerseyNumber ?? "?"}`}
-                        </span>
-                        <PlayerBadges
-                          entry={p}
-                          stat={playerStats.find(
-                            (s) => s.playerId === p.playerId,
-                          )}
-                          subMinuteMap={subMinuteMap}
-                        />
-                      </li>
-                    ))}
-                </ul>
-                <ul className="lt-lineup-list">
-                  {awaySubs
-                    .sort(
-                      (a, b) => (a.jerseyNumber ?? 99) - (b.jerseyNumber ?? 99),
-                    )
-                    .map((p) => (
-                      <li key={p.id}>
-                        {p.jerseyNumber != null && (
-                          <span className="lt-lineup-num">
-                            #{p.jerseyNumber}
-                          </span>
-                        )}
-                        <span>
-                          {playerName(p.playerId) ??
-                            `#${p.jerseyNumber ?? "?"}`}
-                        </span>
-                        <PlayerBadges
-                          entry={p}
-                          stat={playerStats.find(
-                            (s) => s.playerId === p.playerId,
-                          )}
-                          subMinuteMap={subMinuteMap}
-                        />
-                      </li>
-                    ))}
-                </ul>
-              </div>
-            </>
-          )}
+          <SubstitutionsSection
+            homeSubs={homeSubs}
+            awaySubs={awaySubs}
+            playerName={playerName}
+            playerStats={playerStats}
+            subMinuteMap={subMinuteMap}
+          />
 
-          {injuriesBlock && (
-            <>
-              <div
-                className="lt-right__section-title"
-                style={{ marginTop: "12px" }}
-              >
-                🤕 Verletzt / Fraglich
-              </div>
-              <div className="lt-lineup-grid">
-                <div>
-                  <div className="lt-pcat__col-hd lt-pcat__col-hd--home">
-                    {injuriesBlock.homeName}
-                  </div>
-                  <ul className="lt-lineup-list">
-                    {injuriesBlock.homePlayers.map((p, i) => (
-                      <li
-                        key={i}
-                        style={{
-                          color: "var(--lt-text-muted)",
-                          fontSize: "0.78rem",
-                        }}
-                      >
-                        <span>{p.player_name ?? p.name}</span>
-                        {p.reason && (
-                          <span style={{ marginLeft: 4, opacity: 0.7 }}>
-                            · {p.reason}
-                          </span>
-                        )}
-                      </li>
-                    ))}
-                    {injuriesBlock.homePlayers.length === 0 && (
-                      <li
-                        style={{
-                          color: "var(--lt-text-muted)",
-                          fontSize: "0.78rem",
-                          opacity: 0.5,
-                        }}
-                      >
-                        –
-                      </li>
-                    )}
-                  </ul>
-                </div>
-                <div>
-                  <div className="lt-pcat__col-hd lt-pcat__col-hd--away">
-                    {injuriesBlock.awayName}
-                  </div>
-                  <ul className="lt-lineup-list">
-                    {injuriesBlock.awayPlayers.map((p, i) => (
-                      <li
-                        key={i}
-                        style={{
-                          color: "var(--lt-text-muted)",
-                          fontSize: "0.78rem",
-                        }}
-                      >
-                        <span>{p.player_name ?? p.name}</span>
-                        {p.reason && (
-                          <span style={{ marginLeft: 4, opacity: 0.7 }}>
-                            · {p.reason}
-                          </span>
-                        )}
-                      </li>
-                    ))}
-                    {injuriesBlock.awayPlayers.length === 0 && (
-                      <li
-                        style={{
-                          color: "var(--lt-text-muted)",
-                          fontSize: "0.78rem",
-                          opacity: 0.5,
-                        }}
-                      >
-                        –
-                      </li>
-                    )}
-                  </ul>
-                </div>
-              </div>
-            </>
-          )}
+          <InjuriesSection injuriesBlock={injuriesBlock} />
         </Collapsible>
       )}
 
@@ -394,54 +260,20 @@ export const RightPanel = memo(function RightPanel() {
               filter: (p) => p.tacklesTotal > 0,
               fmt: (p) => p.tacklesTotal,
             },
-          ].map(({ label, key, filter, fmt }) => {
-            const homeTop = [...playerStats]
-              .filter((s) => s.teamId === match.teamHomeId && filter(s))
-              .sort((a, b) => b[key] - a[key])
-              .slice(0, 3)
-              .map((s) => ({ ...s, resolvedName: playerName(s.playerId) }));
-            const awayTop = [...playerStats]
-              .filter((s) => s.teamId === match.teamAwayId && filter(s))
-              .sort((a, b) => b[key] - a[key])
-              .slice(0, 3)
-              .map((s) => ({ ...s, resolvedName: playerName(s.playerId) }));
-            if (homeTop.length === 0 && awayTop.length === 0) return null;
-            return (
-              <CollapsibleCat key={key} title={label}>
-                <div className="lt-pcat__cols">
-                  <div>
-                    <div className="lt-pcat__col-hd lt-pcat__col-hd--home">
-                      {homeAbbr}
-                    </div>
-                    {homeTop.map((p) => (
-                      <div key={p.id} className="lt-pcat__row">
-                        <span className="lt-pcat__val">{fmt(p)}</span>
-                        <span className="lt-pcat__name">
-                          {p.resolvedName ?? `#${p.jerseyNumber ?? "?"}`}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                  <div>
-                    <div className="lt-pcat__col-hd lt-pcat__col-hd--away">
-                      {awayAbbr}
-                    </div>
-                    {awayTop.map((p) => (
-                      <div
-                        key={p.id}
-                        className="lt-pcat__row lt-pcat__row--away"
-                      >
-                        <span className="lt-pcat__name">
-                          {p.resolvedName ?? `#${p.jerseyNumber ?? "?"}`}
-                        </span>
-                        <span className="lt-pcat__val">{fmt(p)}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </CollapsibleCat>
-            );
-          })}
+          ].map(({ label, key, filter, fmt }) => (
+            <StatCategorySection
+              key={key}
+              label={label}
+              statKey={key}
+              filter={filter}
+              fmt={fmt}
+              playerStats={playerStats}
+              match={match}
+              homeAbbr={homeAbbr}
+              awayAbbr={awayAbbr}
+              playerName={playerName}
+            />
+          ))}
         </Collapsible>
       )}
 

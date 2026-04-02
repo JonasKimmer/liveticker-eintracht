@@ -355,3 +355,23 @@
   grid-template-columns: 1fr 1fr;
   gap: 0.5rem;
 }
+
+/* ── Mono-Label Utilities ─────────────────────────────── */
+.lt-mono-label {
+  font-family: var(--lt-font-mono);
+  font-size: 0.65rem;
+  color: var(--lt-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+.lt-mono-hint {
+  font-family: var(--lt-font-mono);
+  font-size: 0.6rem;
+  color: var(--lt-text-muted);
+  letter-spacing: 0.05em;
+}
+.lt-mono-value {
+  font-family: var(--lt-font-mono);
+  font-size: 0.75rem;
+  color: var(--lt-text-dim);
+}

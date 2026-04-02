@@ -91,15 +91,7 @@ export function PublishModalShell({
                   gap: "0.5rem",
                 }}
               >
-                <label
-                  style={{
-                    fontFamily: "var(--lt-font-mono)",
-                    fontSize: "0.65rem",
-                    color: "var(--lt-text-muted)",
-                    textTransform: "uppercase",
-                    letterSpacing: "0.08em",
-                  }}
-                >
+                <label className="lt-mono-label">
                   Ticker-Text
                 </label>
                 {labelExtra}
