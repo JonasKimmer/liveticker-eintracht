@@ -328,6 +328,13 @@
   border-radius: 4px;
   white-space: nowrap;
 }
+.lt-formation-player__rating {
+  font-size: 0.55rem;
+  font-weight: 700;
+  color: #f5a623;
+  text-align: center;
+  line-height: 1;
+}
 
 /* ── lt-pcat: Kategorie-Stats Tabelle ───────────────────── */
 .lt-pcat {
