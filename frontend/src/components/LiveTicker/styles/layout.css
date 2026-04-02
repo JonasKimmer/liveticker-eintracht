@@ -94,11 +94,6 @@
   display: none;
 }
 
-/* ── ≤1100px: Single-Panel + Bottom-Tabs ──────────────────────
-   Sobald nicht alle 3 Spalten gleichzeitig sichtbar sind,
-   wechseln wir zu Einzel-Panel-Ansicht mit Tabs unten.
-   Flexbox übernimmt die Höhenverteilung — kein magic-calc nötig.
-   ─────────────────────────────────────────────────────────── */
 /* ============================================================
    RESPONSIVE
    ============================================================ */
@@ -116,8 +111,8 @@
     flex-direction: column;
     overflow: hidden;
     box-sizing: border-box;
-    /* Nutzt dynamische Höhe oder Fallback für fixierten Header */
-    padding-top: var(--lt-top-bar-h, 110px);
+    /* Abstand oben, damit Inhalt nicht unter dem fixierten Header verschwindet */
+    padding-top: var(--lt-top-bar-h, 110px) !important;
     padding-bottom: calc(56px + env(safe-area-inset-bottom, 0px));
   }
 
@@ -128,7 +123,7 @@
     left: 0;
     right: 0;
     z-index: 999;
-    background: var(--lt-bg-card);
+    background: var(--lt-bg-card) !important; /* Hintergrund zwingend deckend */
     border-bottom: 1px solid var(--lt-border);
     transition:
       transform 0.2s ease,
@@ -141,28 +136,28 @@
     pointer-events: none;
   }
 
-  /* --- FIX: Breadcrumb im Header zentrieren --- */
+  /* --- FIX: Breadcrumb im Header fest zentrieren --- */
   .lt-breadcrumb {
     position: absolute !important;
     left: 50% !important;
     top: 50% !important;
     transform: translate(-50%, -50%) !important;
     margin: 0 !important;
-    display: flex;
+    display: flex !important;
     justify-content: center;
     align-items: center;
-    z-index: 10;
-    background: transparent;
-    border: none;
-    box-shadow: none;
+    z-index: 1010;
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
     padding: 0 !important;
     white-space: nowrap;
   }
 
-  /* --- FIX: StartScreen Boxen untereinander --- */
+  /* --- FIX: StartScreen Boxen untereinander erzwingen --- */
   .lt-columns,
   .lt-columns--auto {
-    display: block !important; /* Grid aufheben */
+    display: block !important; /* Grid auflösen */
     width: 100%;
     flex: 1;
     min-height: 0;
@@ -170,8 +165,8 @@
 
   .lt-start__inner {
     display: flex !important;
-    flex-direction: column !important;
-    align-items: stretch !important;
+    flex-direction: column !important; /* Spalten-Layout */
+    align-items: stretch !important; /* Boxen auf volle Breite */
     gap: 1.5rem;
     padding: 1rem;
     width: 100%;
@@ -182,13 +177,18 @@
 
   .lt-start__selects {
     display: grid !important;
-    grid-template-columns: 1fr !important;
+    grid-template-columns: 1fr !important; /* Nur 1 Spalte für Select-Boxen */
     gap: 1rem;
   }
 
   /* --- Restliche Mobile-Logik --- */
   .lt-breadcrumb__seg--country,
   .lt-breadcrumb__seg--team {
+    display: none;
+  }
+
+  .lt-breadcrumb__seg--country + .lt-breadcrumb__sep,
+  .lt-breadcrumb__seg--team + .lt-breadcrumb__sep {
     display: none;
   }
 
@@ -264,8 +264,6 @@
     color: var(--lt-accent);
   }
 }
-
-/* Ab hier folgen deine vorhandenen @media (max-width: 768px) Regeln... */
 
 /* ── ≤768px: Kompakte Header- und Match-Darstellung ────────── */
 @media (max-width: 768px) {
