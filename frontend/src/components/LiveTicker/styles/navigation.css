@@ -112,7 +112,7 @@
 .lt-start__selects {
   width: 100%;
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(3, 1fr); /* FIX MUSS HIER REIN */
   gap: 1.25rem;
 }
 .lt-start__select-wrap {

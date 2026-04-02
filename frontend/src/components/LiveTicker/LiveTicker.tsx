@@ -97,7 +97,9 @@ export default function LiveTicker() {
 
   // ── Language ───────────────────────────────────────────────
   const [language, setLanguage] = useState("de");
-  const translateDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const translateDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(
+    null,
+  );
   const handleLanguageChange = useCallback(
     (lang: string) => {
       setLanguage(lang);
