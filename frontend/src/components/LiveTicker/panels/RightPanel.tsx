@@ -4,9 +4,9 @@
 // ============================================================
 import { memo } from "react";
 import { Collapsible, CollapsibleCat } from "../components/Collapsible";
-import { PlayerBadges } from "../components/PlayerBadges";
-import { FormationColumn } from "../components/FormationColumn";
-import { StatRow } from "../components/StatRow";
+import { PlayerBadges } from "../components/stats/PlayerBadges";
+import { FormationColumn } from "../components/stats/FormationColumn";
+import { StatRow } from "../components/stats/StatRow";
 import { useRightPanelData } from "../hooks/useRightPanelData";
 import { useTickerDataContext } from "../../../context/TickerDataContext";
 

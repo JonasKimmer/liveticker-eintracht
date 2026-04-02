@@ -20,13 +20,18 @@ import type { MatchPhase } from "../../../types";
  *   submit: (itemId: number, matchId: number, text: string, onPublished: Function) => Promise<void>
  * }}
  */
-export function useMediaPublishForm(currentMinute) {
+export function useMediaPublishForm(currentMinute: number) {
   const [minute, setMinute] = useState(currentMinute ?? 0);
   const [phase, setPhase] = useState("");
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState<string | null>(null);
 
-  async function submit(itemId, matchId, text, onPublished) {
+  async function submit(
+    itemId: number | string,
+    matchId: number,
+    text: string,
+    onPublished: (id: number | string) => void,
+  ) {
     if (!text.trim()) {
       setError("Text darf nicht leer sein.");
       return;
@@ -41,7 +46,7 @@ export function useMediaPublishForm(currentMinute) {
         publishMinute,
       );
       await publishClip(
-        itemId,
+        Number(itemId),
         matchId,
         publishText,
         publishMinute,

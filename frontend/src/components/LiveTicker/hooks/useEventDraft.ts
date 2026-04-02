@@ -21,10 +21,10 @@ export function useEventDraft() {
     clearRetractedText,
   } = useTickerActionsContext();
 
-  const [selectedEventId, setSelectedEventId] = useState(null);
+  const [selectedEventId, setSelectedEventId] = useState<number | null>(null);
   const [editMode, setEditMode] = useState(false);
   const [editorValue, setEditorValue] = useState("");
-  const [dismissedIds, setDismissedIds] = useState(new Set());
+  const [dismissedIds, setDismissedIds] = useState<Set<number>>(new Set());
   const editorValueRef = useRef("");
   editorValueRef.current = editorValue;
 

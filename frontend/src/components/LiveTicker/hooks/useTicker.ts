@@ -5,7 +5,7 @@
 import { useState, useCallback, useMemo, useRef, useEffect } from "react";
 import * as api from "api";
 import logger from "utils/logger";
-import { useTickerMode } from "hooks/useTickerMode";
+import { useTickerMode } from "./useTickerMode";
 import type { TickerMode, ReloadFunctions, TickerStyle, MatchPhase } from "../../../types";
 import type { TickerModeContextValue } from "../../../context/TickerModeContext";
 

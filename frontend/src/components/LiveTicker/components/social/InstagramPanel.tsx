@@ -3,7 +3,7 @@
 // Flow: n8n RSS → DB → Klick → Modal → Ticker
 // ============================================================
 
-import { memo, useState, useRef } from "react";
+import { memo, useState, useRef, type CSSProperties } from "react";
 import { createPortal } from "react-dom";
 import { fetchInstagramPosts, triggerInstagramImport } from "api";
 import { useSocialPanel } from "../../hooks/useSocialPanel";
@@ -57,8 +57,8 @@ interface InstaCardProps {
 
 function InstaCard({ post, onClick, onDelete }: InstaCardProps) {
   const [hovered, setHovered] = useState(false);
-  const [previewStyle, setPreviewStyle] = useState(null);
-  const btnRef = useRef(null);
+  const [previewStyle, setPreviewStyle] = useState<CSSProperties | null>(null);
+  const btnRef = useRef<HTMLButtonElement>(null);
 
   function handleMouseEnter() {
     setHovered(true);

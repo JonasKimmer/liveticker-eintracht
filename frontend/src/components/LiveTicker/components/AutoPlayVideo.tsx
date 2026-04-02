@@ -6,10 +6,16 @@ import { memo, useRef, useEffect } from "react";
  */
 import type React from "react";
 
-interface AutoPlayVideoProps { src: string; style?: React.CSSProperties; }
+interface AutoPlayVideoProps {
+  src: string;
+  style?: React.CSSProperties;
+}
 
-export const AutoPlayVideo = memo(function AutoPlayVideo({ src, style }: AutoPlayVideoProps) {
-  const ref = useRef(null);
+export const AutoPlayVideo = memo(function AutoPlayVideo({
+  src,
+  style,
+}: AutoPlayVideoProps) {
+  const ref = useRef<HTMLVideoElement>(null);
   useEffect(() => {
     const el = ref.current;
     if (el) el.play().catch(() => {});
@@ -18,4 +24,3 @@ export const AutoPlayVideo = memo(function AutoPlayVideo({ src, style }: AutoPla
     <video ref={ref} src={src} loop muted playsInline controls style={style} />
   );
 });
-

@@ -1,5 +1,5 @@
-import { useMemo } from "react";
-import { CollapsibleSection } from "../CollapsibleSection";
+import { useCallback, useMemo } from "react";
+import { CollapsibleSection } from "../Collapsible";
 import { SummaryDraftCard } from "./SummaryDraftCard";
 import { SummaryRow, getDraftLabel } from "./SummaryRow";
 import { AutoPlayVideo } from "../AutoPlayVideo";
@@ -43,6 +43,18 @@ export function SummarySection({
 }: SummarySectionProps) {
   const { tickerTexts, reload } = useTickerDataContext();
   const { onPublished } = useTickerActionsContext();
+
+  const handleReject = useCallback(async (draftId: number) => {
+    await api.deleteTicker(draftId);
+    await reload.loadTickerTexts();
+    onSelect(null);
+  }, [reload, onSelect]);
+
+  const handlePublish = useCallback(async (draftId: number, text: string) => {
+    await api.publishTicker(draftId, text);
+    await reload.loadTickerTexts();
+    onPublished?.(draftId, text);
+  }, [reload, onPublished]);
 
   const sectionKey = isPrematch ? "prematch" : "spielphasen";
   const isBulkPublishing = generatingId === sectionKey;
@@ -94,27 +106,15 @@ export function SummarySection({
               onSelect={() =>
                 onSelect((prev) => (prev === draft.id ? null : draft.id))
               }
-              onReject={async () => {
-                await api.deleteTicker(draft.id);
-                await reload.loadTickerTexts();
-                if (selectedId === draft.id) onSelect(null);
-              }}
+              onReject={() => handleReject(draft.id)}
             />
 
             {isSelected && isPrematch && (
               <SummaryDraftCard
                 draft={draft}
                 label={getDraftLabel(draft)}
-                onPublish={async (text) => {
-                  await api.publishTicker(draft.id, text);
-                  await reload.loadTickerTexts();
-                  onPublished?.(draft.id, text);
-                }}
-                onReject={async () => {
-                  await api.deleteTicker(draft.id);
-                  await reload.loadTickerTexts();
-                  onSelect(null);
-                }}
+                onPublish={(text) => handlePublish(draft.id, text)}
+                onReject={() => handleReject(draft.id)}
                 onGenerate={onRegenerate}
                 generatingId={generatingId}
               />
@@ -180,11 +180,7 @@ export function SummarySection({
                       background: "rgba(239,68,68,0.1)",
                       color: "#f87171",
                     }}
-                    onClick={async () => {
-                      await api.deleteTicker(draft.id);
-                      await reload.loadTickerTexts();
-                      onSelect(null);
-                    }}
+                    onClick={() => handleReject(draft.id)}
                   >
                     ✕ Ablehnen
                   </button>
@@ -196,16 +192,8 @@ export function SummarySection({
               <SummaryDraftCard
                 draft={draft}
                 label={getDraftLabel(draft)}
-                onPublish={async (text) => {
-                  await api.publishTicker(draft.id, text);
-                  await reload.loadTickerTexts();
-                  onPublished?.(draft.id, text);
-                }}
-                onReject={async () => {
-                  await api.deleteTicker(draft.id);
-                  await reload.loadTickerTexts();
-                  onSelect(null);
-                }}
+                onPublish={(text) => handlePublish(draft.id, text)}
+                onReject={() => handleReject(draft.id)}
                 onGenerate={onRegenerate}
                 generatingId={generatingId}
               />

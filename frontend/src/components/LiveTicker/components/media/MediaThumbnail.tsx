@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, type CSSProperties } from "react";
 import { createPortal } from "react-dom";
 
 interface MediaItem {
@@ -14,8 +14,8 @@ interface MediaThumbnailProps {
 
 export function MediaThumbnail({ item, onDoubleClick }: MediaThumbnailProps) {
   const [hovered, setHovered] = useState(false);
-  const [previewStyle, setPreviewStyle] = useState(null);
-  const btnRef = useRef(null);
+  const [previewStyle, setPreviewStyle] = useState<CSSProperties | null>(null);
+  const btnRef = useRef<HTMLButtonElement>(null);
 
   function handleMouseEnter() {
     setHovered(true);

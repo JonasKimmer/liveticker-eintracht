@@ -27,7 +27,7 @@ export function useLiveMinute(match: Match | null) {
 
   // Compute from kickoff or startsAt
   const kickoffTime =
-    (match as Match & { kickoff?: string }).kickoff || match.startsAt;
+    match.kickoff || match.startsAt;
   if (!kickoffTime) return 0;
 
   const kickoffMs = new Date(kickoffTime).getTime();

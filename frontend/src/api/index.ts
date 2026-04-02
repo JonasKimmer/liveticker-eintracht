@@ -18,9 +18,6 @@ export const fetchCountries = (): Promise<AxiosResponse<string[]>> =>
 export const fetchTeamsByCountry = (country: string) =>
   api.get(`/teams/by-country/${encodeURIComponent(country)}`);
 
-export const fetchTeams = () => api.get("/teams");
-export const fetchPartnerTeams = () => api.get("/teams/partners");
-
 // Team-first Navigation
 export const fetchTeamCompetitions = (teamId: number) =>
   api.get(`/teams/${teamId}/competitions`);
@@ -38,7 +35,6 @@ export const fetchTeamMatchesByMatchday = (
 // ── Matches ────────────────────────────────────────────
 export const fetchMatch = (id: number): Promise<AxiosResponse<Match>> =>
   api.get(`/matches/${id}`);
-export const syncLiveMatch = (id: number) => api.post(`/matches/${id}/sync-live`);
 export const setMatchTickerMode = (matchId: number, mode: TickerMode) =>
   api.patch(`/matches/${matchId}/ticker-mode`, { mode });
 
@@ -55,8 +51,7 @@ export const fetchTickerTexts = (
   api.get(`/ticker/match/${matchId}?all_entries=true`);
 export const fetchPrematch = (
   matchId: number,
-): Promise<AxiosResponse<TickerEntry[]>> =>
-  api.get(`/ticker/match/${matchId}`);
+): Promise<AxiosResponse<TickerEntry[]>> => api.get(`/ticker/match/${matchId}`);
 export const generateTicker = (
   eventId: number,
   style: TickerStyle,
@@ -114,16 +109,6 @@ export const generateSyntheticBatch = (
     language,
     auto_publish: tickerMode === "auto",
   });
-export const generateSynthetic = (
-  syntheticEventId: number,
-  style = "neutral",
-  autoPublish = false,
-) =>
-  api.post(`/ticker/generate-synthetic`, {
-    synthetic_event_id: syntheticEventId,
-    style,
-    auto_publish: autoPublish,
-  });
 export const generateMatchPhases = (
   matchId: number,
   style = "neutral",
@@ -153,18 +138,6 @@ export const fetchInjuries = (matchId: number) =>
 // ── Players ────────────────────────────────────────────
 export const fetchPlayers = (teamId: number) =>
   api.get(`/players?teamId=${teamId}&pageSize=100`);
-export const createPlayer = (data: Record<string, unknown>) =>
-  api.post("/players", data);
-export const updatePlayer = (
-  playerId: number,
-  data: Record<string, unknown>,
-) => api.put(`/players/${playerId}`, data);
-export const deletePlayer = (playerId: number) =>
-  api.delete(`/players/${playerId}`);
-export const updatePlayerStats = (
-  playerId: number,
-  statistics: Record<string, unknown>,
-) => api.patch(`/players/${playerId}/statistics`, { statistics });
 
 // ── Media ───────────────────────────────────────────────
 export const generateMediaCaption = (
@@ -198,11 +171,15 @@ export const publishMedia = ({
 // ── n8n Webhooks ───────────────────────────────────────
 export const importCountries = () => n8n.post("/import-countries");
 
-export const importTeamsByCountry = (country: string, season: number | string) =>
-  n8n.post("/import-teams-by-country", { country, season });
+export const importTeamsByCountry = (
+  country: string,
+  season: number | string,
+) => n8n.post("/import-teams-by-country", { country, season });
 
-export const importCompetitionsForTeam = (teamId: number, season: number | string) =>
-  n8n.post("/import-competitions", { teamId, season });
+export const importCompetitionsForTeam = (
+  teamId: number,
+  season: number | string,
+) => n8n.post("/import-competitions", { teamId, season });
 
 export const importEvents = (fixtureId: number, tickerMode = "auto") =>
   n8n.post("/Events", { fixture_id: fixtureId, ticker_mode: tickerMode });
@@ -286,18 +263,6 @@ export const triggerMatchStatus = (
     language,
     style,
     ticker_mode: tickerMode,
-  });
-export const triggerMatchPhases = (
-  fixtureId: number,
-  minute: number | null,
-  instance = "generic",
-  language = "de",
-) =>
-  n8n.post("/match-phases", {
-    fixture_id: fixtureId,
-    minute: minute ?? null,
-    instance,
-    language,
   });
 export const generateMatchSummary = (
   matchId: number,

@@ -9,9 +9,14 @@ interface PublishToastProps {
   onDismiss: () => void;
 }
 
-export function PublishToast({ entryId, text, onRetract, onDismiss }: PublishToastProps) {
+export function PublishToast({
+  entryId,
+  text,
+  onRetract,
+  onDismiss,
+}: PublishToastProps) {
   const [timeLeft, setTimeLeft] = useState(DURATION);
-  const intervalRef = useRef(null);
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const startRef = useRef(Date.now());
 
   useEffect(() => {
@@ -53,4 +58,3 @@ export function PublishToast({ entryId, text, onRetract, onDismiss }: PublishToa
     </div>
   );
 }
-

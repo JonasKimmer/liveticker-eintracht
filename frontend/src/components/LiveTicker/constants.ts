@@ -16,38 +16,6 @@ export {
   POLL_PREMATCH_MS,
 } from "../../constants";
 
-export const MODE_META = {
-  auto: {
-    label: "AUTO",
-    description: "AI generiert & veröffentlicht automatisch",
-  },
-  coop: { label: "CO-OP", description: "AI-Draft anzeigen, du entscheidest" },
-  manual: { label: "MANUAL", description: "Volle manuelle Kontrolle" },
-};
-
-// ── Event-Typen ──────────────────────────────────────────────
-export const EVENT_TYPES = {
-  GOAL: "Goal",
-  CARD: "Card",
-  SUBST: "subst",
-};
-
-export const EVENT_META = {
-  [EVENT_TYPES.GOAL]: { icon: "⚽", cssClass: "goal", label: "Tor" },
-  [EVENT_TYPES.CARD]: { icon: "🟨", cssClass: "card", label: "Karte" },
-  [EVENT_TYPES.SUBST]: { icon: "🔄", cssClass: "sub", label: "Wechsel" },
-};
-
-// ── Manual Icons ─────────────────────────────────────────────
-export const MANUAL_ICONS = [
-  { icon: "⚽", label: "Tor" },
-  { icon: "🟨", label: "Gelb" },
-  { icon: "🟥", label: "Rot" },
-  { icon: "🔄", label: "Wechsel" },
-  { icon: "📋", label: "Info" },
-  { icon: "⚡", label: "Highlight" },
-];
-
 // ── Ticker-Styles (für API-Calls) ────────────────────────────
 export const TICKER_STYLES = ["neutral", "euphorisch", "kritisch"] as const;
 

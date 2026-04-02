@@ -1,7 +1,7 @@
 import { useState, useEffect, memo, useMemo } from "react";
 import { AIDraft } from "../components/entry/AIDraft";
-import { AutoModePanel } from "../components/AutoModePanel";
-import { CollapsibleSection } from "../components/CollapsibleSection";
+import { AutoModePanel } from "../components/mode/AutoModePanel";
+import { CollapsibleSection } from "../components/Collapsible";
 import { EntryEditor } from "../components/entry/EntryEditor";
 import { EventCard } from "../components/entry/EventCard";
 import { MediaPickerPanel } from "../components/media/MediaPickerPanel";
@@ -61,9 +61,9 @@ export const CenterPanel = memo<CenterPanelProps>(function CenterPanel({
     [match],
   );
 
-  const [selectedSummaryDraftId, setSelectedSummaryDraftId] = useState(null);
-  const [pendingAutoExpandId, setPendingAutoExpandId] = useState(null);
-  const [autoError, setAutoError] = useState(null);
+  const [selectedSummaryDraftId, setSelectedSummaryDraftId] = useState<number | null>(null);
+  const [pendingAutoExpandId, setPendingAutoExpandId] = useState<number | null>(null);
+  const [autoError, setAutoError] = useState<string | null>(null);
 
   const {
     pendingEvents,

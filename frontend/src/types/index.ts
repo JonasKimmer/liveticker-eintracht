@@ -9,9 +9,6 @@ export type TickerMode = "auto" | "coop" | "manual";
 // ── Ticker-Styles ─────────────────────────────────────────────
 export type TickerStyle = "neutral" | "euphorisch" | "kritisch";
 
-// ── Ticker-Status ─────────────────────────────────────────────
-export type TickerStatus = "draft" | "published" | "rejected";
-
 // ── Match-Phase ───────────────────────────────────────────────
 export type MatchPhase =
   | "Before"
@@ -28,14 +25,6 @@ export type MatchPhase =
   | "PenaltyShootout"
   | "FullTime"
   | "After";
-
-// ── Country ───────────────────────────────────────────────────
-export interface Country {
-  id: number;
-  name: string;
-  code?: string | null;
-  externalId?: number;
-}
 
 // ── Team ─────────────────────────────────────────────────────
 export interface Team {
@@ -80,6 +69,7 @@ export interface Match {
   minute?: number | null;
   matchday?: number | null;
   startsAt?: string | null;
+  kickoff?: string | null;
   tickerMode?: TickerMode;
   externalId?: number;
 }
@@ -106,23 +96,12 @@ export interface MatchEvent {
   detail?: string | null;
 }
 
-// ── SyntheticEvent ────────────────────────────────────────────
-export interface SyntheticEvent {
-  id: number;
-  matchId: number;
-  eventType: string;
-  phase?: MatchPhase | null;
-  minute?: number | null;
-  position?: number;
-  description?: string | null;
-}
-
 // ── TickerEntry (snake_case matches API response format) ──────
 export interface TickerEntry {
   id: number;
   match_id: number;
   text: string;
-  status: TickerStatus;
+  status: "draft" | "published" | "rejected";
   source: "ai" | "manual";
   style?: TickerStyle | null;
   icon?: string | null;
@@ -248,10 +227,4 @@ export interface InjuryGroup {
   team_id?: number;
   team_name?: string;
   players?: InjuryPlayer[];
-}
-
-// ── RoundLabel ────────────────────────────────────────────────
-export interface RoundLabel {
-  short: (r: number | string) => string;
-  full: (r: number | string) => string;
 }

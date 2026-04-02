@@ -1,0 +1,307 @@
+/* ============================================================
+   LiveTicker – Navigation (Navbar, Start Screen, Matchday Picker)
+   ============================================================ */
+
+/* ── Navbar ────────────────────────────────────────────────── */
+.lt-nav {
+  background: var(--lt-bg-card);
+  border-bottom: 1px solid var(--lt-border);
+  padding: 0.75rem 1.5rem;
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  align-items: flex-end;
+}
+
+.lt-nav__select-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  min-width: 140px;
+  flex: 1;
+}
+.lt-nav__label {
+  font-size: 0.7rem;
+  font-family: var(--lt-font-mono);
+  color: var(--lt-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+.lt-nav__select {
+  background: var(--lt-bg-card-2);
+  border: 1px solid var(--lt-border);
+  color: var(--lt-text);
+  padding: 0.45rem 0.75rem;
+  border-radius: var(--lt-radius);
+  font-size: 0.85rem;
+  font-family: var(--lt-font-mono);
+  cursor: pointer;
+  transition: border-color 0.2s;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236b7385' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.6rem center;
+  padding-right: 2rem;
+}
+.lt-nav__select:hover,
+.lt-nav__select:focus {
+  border-color: var(--lt-accent);
+  outline: none;
+}
+.lt-nav__select:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* ============================================================
+   START SCREEN (Zustand 1)
+   ============================================================ */
+.lt-start {
+  min-height: 100vh;
+  background: var(--lt-bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+}
+.lt-start--compact {
+  min-height: unset;
+  background: transparent;
+  padding: 1.5rem 1.25rem;
+  align-items: flex-start;
+}
+.lt-start__inner {
+  width: 100%;
+  max-width: 760px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.75rem;
+}
+.lt-start--compact .lt-start__inner {
+  max-width: 100%;
+  align-items: stretch;
+  gap: 1.25rem;
+}
+.lt-start--compact .lt-start__selects {
+  grid-template-columns: 1fr;
+}
+.lt-start--compact .lt-mdp {
+  width: 100%;
+}
+.lt-start__logo {
+  font-family: var(--lt-font-display);
+  font-size: 1.6rem;
+  color: var(--lt-accent);
+  letter-spacing: 0.05em;
+}
+.lt-start__title {
+  font-family: var(--lt-font-mono);
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--lt-text);
+  text-align: center;
+  margin: 0;
+}
+.lt-start__sub {
+  font-family: var(--lt-font-mono);
+  font-size: 0.85rem;
+  color: var(--lt-text-muted);
+  margin: -0.75rem 0 0;
+}
+.lt-start__selects {
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.25rem;
+}
+.lt-start__select-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+.lt-start__label {
+  font-size: 0.72rem;
+  font-family: var(--lt-font-mono);
+  color: var(--lt-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.lt-start__select {
+  background: var(--lt-bg-card-2);
+  border: 1px solid var(--lt-border);
+  color: var(--lt-text);
+  padding: 0.7rem 0.9rem;
+  border-radius: var(--lt-radius);
+  font-size: 0.95rem;
+  font-family: var(--lt-font-mono);
+  cursor: pointer;
+  transition: border-color 0.2s;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236b7385' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  padding-right: 2.25rem;
+  width: 100%;
+}
+.lt-start__select:focus {
+  border-color: var(--lt-accent);
+  outline: none;
+}
+.lt-start__select:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+/* Letztes Select (Spiel) highlighten wenn enabled */
+.lt-start__select-wrap:last-child .lt-start__select:not(:disabled) {
+  border-color: var(--lt-accent);
+  background-color: var(--lt-accent-dim);
+}
+.lt-start__hint {
+  font-family: var(--lt-font-mono);
+  font-size: 0.7rem;
+  color: var(--lt-text-faint);
+  margin-top: 0.5rem;
+}
+
+/* ── Matchday Picker ──────────────────────────────────────── */
+.lt-mdp {
+  width: 100%;
+  position: relative;
+}
+
+.lt-mdp__trigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  text-align: left;
+  cursor: pointer;
+  width: 100%;
+}
+
+.lt-mdp__trigger:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.lt-mdp__trigger--open {
+  border-color: var(--lt-accent) !important;
+}
+
+.lt-mdp__panel {
+  margin-top: 0.5rem;
+  background: var(--lt-bg-card);
+  border: 1px solid var(--lt-border);
+  border-radius: var(--lt-radius-lg);
+  padding: 1rem;
+  max-height: 340px;
+  overflow-y: auto;
+}
+
+.lt-mdp__section-label {
+  font-size: 0.7rem;
+  font-family: var(--lt-font-mono);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--lt-text-muted);
+  margin-bottom: 0.6rem;
+}
+
+.lt-mdp__grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin-bottom: 1rem;
+}
+
+.lt-mdp__day {
+  width: 2.2rem;
+  height: 2.2rem;
+  border-radius: var(--lt-radius);
+  border: 1px solid var(--lt-border);
+  background: var(--lt-bg-card-2);
+  color: var(--lt-text-muted);
+  font-size: 0.75rem;
+  font-family: var(--lt-font-mono);
+  cursor: pointer;
+  transition:
+    background 0.15s,
+    border-color 0.15s,
+    color 0.15s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.lt-mdp__day:hover {
+  border-color: var(--lt-accent);
+  color: var(--lt-text);
+}
+
+.lt-mdp__day--active {
+  background: var(--lt-accent);
+  border-color: var(--lt-accent);
+  color: #fff;
+  font-weight: 600;
+}
+
+.lt-mdp__matches {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.lt-mdp__match {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.6rem 0.75rem;
+  border-radius: var(--lt-radius);
+  border: 1px solid var(--lt-border);
+  background: var(--lt-bg-card-2);
+  cursor: pointer;
+  transition: border-color 0.15s;
+  width: 100%;
+}
+
+.lt-mdp__match:hover {
+  border-color: var(--lt-accent);
+  background: var(--lt-accent-dim);
+}
+
+.lt-mdp__match-team {
+  font-size: 0.85rem;
+  color: var(--lt-text);
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-family: var(--lt-font-mono);
+}
+
+.lt-mdp__match-team--home {
+  text-align: right;
+}
+.lt-mdp__match-team--away {
+  text-align: left;
+}
+
+.lt-mdp__match-score {
+  font-family: var(--lt-font-mono);
+  font-size: 0.75rem;
+  color: var(--lt-text-muted);
+  white-space: nowrap;
+  padding: 0.1rem 0.4rem;
+  border-radius: 4px;
+  border: 1px solid var(--lt-border);
+}
+
+.lt-mdp__empty {
+  font-size: 0.8rem;
+  color: var(--lt-text-muted);
+  text-align: center;
+  padding: 0.75rem;
+  font-family: var(--lt-font-mono);
+}

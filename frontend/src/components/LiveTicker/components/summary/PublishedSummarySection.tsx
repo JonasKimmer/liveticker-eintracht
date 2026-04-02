@@ -1,4 +1,4 @@
-import { CollapsibleSection } from "../CollapsibleSection";
+import { CollapsibleSection } from "../Collapsible";
 import { getSummaryMeta, getDraftLabel } from "./SummaryRow";
 import { useTickerDataContext } from "context/TickerDataContext";
 import * as api from "api";

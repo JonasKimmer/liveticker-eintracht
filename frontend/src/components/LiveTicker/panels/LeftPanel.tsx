@@ -45,7 +45,7 @@ export const LeftPanel = memo(function LeftPanel() {
       .map((t) => ({
         key: `man-${t.id}`,
         minute: sortMinute(t),
-        type: "manual",
+        type: "manual" as const,
         data: t,
       }));
 
@@ -62,7 +62,7 @@ export const LeftPanel = memo(function LeftPanel() {
       ];
     });
 
-    return ([...manualEntries, ...eventEntries] as PublishedEntryItem[]).sort(
+    return ([...manualEntries, ...eventEntries]).sort(
       (a, b) => {
         if (b.minute !== a.minute) return b.minute - a.minute;
         const aPhase =

@@ -1,5 +1,5 @@
 import { parseCommand } from "./parseCommand";
-import { COMMAND_PALETTE } from "../components/CommandPalette";
+import { COMMAND_PALETTE } from "../components/entry/CommandPalette";
 
 /**
  * Gibt { text, icon } für einen Publish-Vorgang zurück.

@@ -2,8 +2,8 @@ import React from "react";
 import { render, screen } from "@testing-library/react";
 import "@testing-library/jest-dom";
 import { Collapsible, CollapsibleCat } from "./Collapsible";
-import { PlayerBadges } from "./PlayerBadges";
-import { StatRow } from "./StatRow";
+import { PlayerBadges } from "./stats/PlayerBadges";
+import { StatRow } from "./stats/StatRow";
 import userEvent from "@testing-library/user-event";
 
 // ──────────────────────────────────────────────
@@ -20,7 +20,13 @@ describe("StatRow", () => {
 
   test("rendert Balken wenn homeVal und awayVal gesetzt", () => {
     const { container } = render(
-      <StatRow label="Ballbesitz" home="60%" away="40%" homeVal={60} awayVal={40} />
+      <StatRow
+        label="Ballbesitz"
+        home="60%"
+        away="40%"
+        homeVal={60}
+        awayVal={40}
+      />,
     );
     expect(container.querySelector(".lt-stat-bar__home")).toBeInTheDocument();
     expect(container.querySelector(".lt-stat-bar__away")).toBeInTheDocument();
@@ -28,12 +34,21 @@ describe("StatRow", () => {
 
   test("rendert keinen Balken ohne homeVal/awayVal", () => {
     const { container } = render(<StatRow label="Fouls" home="3" away="4" />);
-    expect(container.querySelector(".lt-stat-bar__home")).not.toBeInTheDocument();
+    expect(
+      container.querySelector(".lt-stat-bar__home"),
+    ).not.toBeInTheDocument();
   });
 
   test("standalone rendert separaten Balken-Block", () => {
     const { container } = render(
-      <StatRow label="x" home="50" away="50" homeVal={50} awayVal={50} standalone />
+      <StatRow
+        label="x"
+        home="50"
+        away="50"
+        homeVal={50}
+        awayVal={50}
+        standalone
+      />,
     );
     // standalone nutzt lt-stat-bar ohne --inline
     const bar = container.querySelector(".lt-stat-bar");
@@ -43,7 +58,14 @@ describe("StatRow", () => {
 
   test("gleichgewichteter Balken bei total=0 → 50/50", () => {
     const { container } = render(
-      <StatRow label="x" home="0" away="0" homeVal={0} awayVal={0} standalone />
+      <StatRow
+        label="x"
+        home="0"
+        away="0"
+        homeVal={0}
+        awayVal={0}
+        standalone
+      />,
     );
     const homeBar = container.querySelector(".lt-stat-bar__home");
     expect(homeBar.style.width).toBe("50%");
@@ -107,7 +129,7 @@ describe("Collapsible", () => {
     render(
       <Collapsible title="Aufstellung">
         <p>Inhalt</p>
-      </Collapsible>
+      </Collapsible>,
     );
     expect(screen.getByText("Inhalt")).toBeVisible();
   });
@@ -116,7 +138,7 @@ describe("Collapsible", () => {
     const { container } = render(
       <Collapsible title="Statistiken" defaultOpen={false}>
         <p>Versteckter Inhalt</p>
-      </Collapsible>
+      </Collapsible>,
     );
     const content = container.querySelector("div[style]");
     expect(content.style.display).toBe("none");
@@ -126,7 +148,7 @@ describe("Collapsible", () => {
     const { container } = render(
       <Collapsible title="Toggle-Test" defaultOpen={true}>
         <p>Inhalt</p>
-      </Collapsible>
+      </Collapsible>,
     );
     const btn = screen.getByText(/Toggle-Test/);
     await userEvent.click(btn);
@@ -141,7 +163,7 @@ describe("Collapsible", () => {
     render(
       <Collapsible title="Pfeil">
         <span />
-      </Collapsible>
+      </Collapsible>,
     );
     expect(screen.getByText("▲")).toBeInTheDocument();
     await userEvent.click(screen.getByText(/Pfeil/));
@@ -158,7 +180,7 @@ describe("CollapsibleCat", () => {
     render(
       <CollapsibleCat title="Kategorie">
         <span>Kind</span>
-      </CollapsibleCat>
+      </CollapsibleCat>,
     );
     expect(screen.getByText("Kind")).toBeInTheDocument();
   });
@@ -167,7 +189,7 @@ describe("CollapsibleCat", () => {
     render(
       <CollapsibleCat title="Kat" defaultOpen={false}>
         <span>Unsichtbar</span>
-      </CollapsibleCat>
+      </CollapsibleCat>,
     );
     expect(screen.queryByText("Unsichtbar")).not.toBeInTheDocument();
   });
@@ -176,7 +198,7 @@ describe("CollapsibleCat", () => {
     render(
       <CollapsibleCat title="Kat" defaultOpen={false}>
         <span>Inhalt</span>
-      </CollapsibleCat>
+      </CollapsibleCat>,
     );
     expect(screen.queryByText("Inhalt")).not.toBeInTheDocument();
     await userEvent.click(screen.getByText(/Kat/));
