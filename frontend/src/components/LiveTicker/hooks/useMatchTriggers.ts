@@ -184,6 +184,22 @@ export function useMatchTriggers({
     if (matchStatusTriggeredRef.current.has(key)) return;
     matchStatusTriggeredRef.current.add(key);
 
+    // Nicht triggern wenn für diese Phase bereits veröffentlichte Texte existieren
+    const phasesForStatus: Record<string, string[]> = {
+      "1H": ["FirstHalf"],
+      "HT": ["FirstHalfBreak"],
+      "2H": ["SecondHalf"],
+      "FT": ["FullTime", "After"],
+      "ET": ["ExtraFirstHalf", "ExtraSecondHalf"],
+    };
+    const relevantPhases = phasesForStatus[status] ?? [];
+    const alreadyPublished = relevantPhases.some((phase) =>
+      tickerTexts.some(
+        (t) => t.match_id === selMatchId && t.phase === phase && t.status === "published",
+      ),
+    );
+    if (alreadyPublished) return;
+
     // Anchor-Reloads ab jetzt — unabhängig vom API-Timing (n8n kann busy sein)
     const scheduledFor = selMatchId;
     POST_MATCH_RELOAD_DELAYS_MS.forEach((delay) => {
@@ -219,7 +235,7 @@ export function useMatchTriggers({
         ),
       );
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selMatchId, match?.matchState, match?.matchPhase]);
+  }, [selMatchId, match?.matchState, match?.matchPhase, tickerTexts]);
 
   // ── Auto-Import: Events ───────────────────────────────────
   useEffect(() => {

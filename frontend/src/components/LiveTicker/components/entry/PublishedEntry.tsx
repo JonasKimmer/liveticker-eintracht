@@ -1,7 +1,7 @@
 // ============================================================
 // PublishedEntry.jsx  (React.memo — rendert oft)
 // ============================================================
-import React, { memo, useState, useCallback, useRef } from "react";
+import React, { memo, useState, useCallback, useRef, useEffect } from "react";
 import { getEventMeta } from "../../utils/parseCommand";
 import {
   PHASE_SHORT_LABEL,
@@ -18,7 +18,7 @@ interface PublishedEntryProps {
   entry?: MatchEvent | null;
   isManual?: boolean;
   isPrematch?: boolean;
-  onEdit?: (id: number, text: string) => Promise<void>;
+  onEdit?: (id: number, text: string, minute?: number | null) => Promise<void>;
   onDelete?: (id: number) => Promise<void>;
 }
 
@@ -33,7 +33,14 @@ export const PublishedEntry = memo(function PublishedEntry({
   const [editing, setEditing] = useState(false);
   const [editText, setEditText] = useState("");
   const [saving, setSaving] = useState(false);
+  const [minuteEditing, setMinuteEditing] = useState(false);
+  const [editMinute, setEditMinute] = useState<number>(tickerText?.minute ?? 0);
+  const minuteInputRef = useRef<HTMLInputElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  useEffect(() => {
+    if (minuteEditing) minuteInputRef.current?.select();
+  }, [minuteEditing]);
 
   const startEdit = useCallback(() => {
     setEditText(tickerText?.text ?? "");
@@ -51,6 +58,12 @@ export const PublishedEntry = memo(function PublishedEntry({
       setSaving(false);
     }
   }, [onEdit, tickerText?.id, editText]);
+
+  const saveMinute = useCallback(async () => {
+    if (!onEdit || !tickerText?.id) return;
+    setMinuteEditing(false);
+    await onEdit(tickerText.id, tickerText.text ?? "", editMinute);
+  }, [onEdit, tickerText?.id, tickerText?.text, editMinute]);
 
   const eventType =
     entry?.liveTickerEventType ?? entry?.event_type ?? entry?.type;
@@ -97,7 +110,32 @@ export const PublishedEntry = memo(function PublishedEntry({
       (tickerText?.minute != null ? `${tickerText.minute}'` : "–");
     return (
       <div className="lt-entry lt-entry--manual">
-        <span className="lt-entry__minute">{minuteDisplay}</span>
+        {onEdit && !phaseLabel && minuteEditing ? (
+          <input
+            ref={minuteInputRef}
+            type="number"
+            min={0}
+            max={150}
+            value={editMinute}
+            onChange={(e) => setEditMinute(Number(e.target.value))}
+            onBlur={saveMinute}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") saveMinute();
+              if (e.key === "Escape") setMinuteEditing(false);
+            }}
+            className="lt-entry__minute"
+            style={{ width: 40, textAlign: "center", background: "var(--lt-bg-input)", border: "1px solid var(--lt-accent)", borderRadius: 4, color: "var(--lt-accent)", fontFamily: "var(--lt-font-mono)", fontSize: "0.72rem", padding: "1px 2px" }}
+          />
+        ) : (
+          <span
+            className="lt-entry__minute"
+            onClick={onEdit && !phaseLabel ? () => { setEditMinute(tickerText?.minute ?? 0); setMinuteEditing(true); } : undefined}
+            title={onEdit && !phaseLabel ? "Minute bearbeiten" : undefined}
+            style={onEdit && !phaseLabel ? { cursor: "text" } : undefined}
+          >
+            {minuteDisplay}
+          </span>
+        )}
         {tickerText?.phase !== "Before" && (
           <span className="lt-entry__icon">
             {getMediaIcon(

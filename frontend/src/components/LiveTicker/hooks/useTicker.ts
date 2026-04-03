@@ -179,8 +179,8 @@ export function useTicker({
   }, []);
 
   const handleEditEntry = useCallback(
-    async (id: number, text: string) => {
-      await api.updateTicker(id, { text });
+    async (id: number, text: string, minute?: number | null) => {
+      await api.updateTicker(id, { text, ...(minute != null ? { minute } : {}) });
       await reload.loadTickerTexts();
     },
     [reload],

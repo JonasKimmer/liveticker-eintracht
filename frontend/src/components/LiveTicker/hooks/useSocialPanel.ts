@@ -28,7 +28,12 @@ export function useSocialPanel(
     setStatusMsg(null);
     try {
       const res = await fetchFn();
-      setPosts(res.data ?? []);
+      // Normalize snake_case API fields to camelCase (e.g. thumbnail_url → thumbnailUrl)
+      const normalized = (res.data ?? []).map((p: Clip & { thumbnail_url?: string | null }) => ({
+        ...p,
+        thumbnailUrl: p.thumbnailUrl ?? p.thumbnail_url ?? null,
+      }));
+      setPosts(normalized);
     } catch {
       setStatusMsg({ type: "error", text: "Fehler beim Laden der Posts." });
     } finally {

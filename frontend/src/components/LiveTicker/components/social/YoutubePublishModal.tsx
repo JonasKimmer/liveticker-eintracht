@@ -3,7 +3,7 @@
 // Extracted from YouTubePanel.tsx and refactored to use PublishModalShell.
 // ============================================================
 
-import { useState, useEffect, useRef, type FormEvent } from "react";
+import { useState, useRef, type FormEvent } from "react";
 import { useCommandPalette, CommandPalettePortal } from "../entry/CommandPalette";
 import { generateYoutubeDraft } from "api";
 import {
@@ -56,7 +56,7 @@ export function YoutubePublishModal({
   onClose,
   onPublished,
 }: YoutubePublishModalProps) {
-  const [text, setText] = useState("");
+  const [text, setText] = useState(clip.title ?? "");
   const [style, setStyle] = useState("neutral");
   const [generating, setGenerating] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -79,19 +79,7 @@ export function YoutubePublishModal({
     handlePaletteKeyDown,
   } = useCommandPalette(text);
 
-  useEffect(() => {
-    if (!clip.title) return;
-    setGenerating(true);
-    generateYoutubeDraft(clip.id, style)
-      .then((res) => setText(res.data.text ?? ""))
-      .catch((err) =>
-        logger.warn(
-          "[YouTubePanel] generateYoutubeDraft silenced:",
-          err?.message,
-        ),
-      )
-      .finally(() => setGenerating(false));
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  // Kein Auto-Generate beim Öffnen — Text ist direkt der Videotitel
 
   async function handleRegenerate() {
     setGenerating(true);
