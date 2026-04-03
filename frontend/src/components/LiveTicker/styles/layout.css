@@ -132,19 +132,6 @@
     pointer-events: none;
   }
 
-  /* Breadcrumb: Flex-Item zentriert im Header */
-  .lt-breadcrumb {
-    position: static;
-    transform: none;
-    flex: 1;
-    min-width: 0;
-    display: flex;
-    justify-content: center;
-    overflow: hidden;
-    white-space: nowrap;
-    font-size: 0.75rem;
-  }
-
   /* Spalten-Block wächst in den verbleibenden Platz */
   .lt-columns,
   .lt-columns--auto {
@@ -329,10 +316,7 @@
   .lt-start {
     padding: 1.25rem;
   }
-  .lt-start__selects {
-    grid-template-columns: 1fr;
-  }
-  .lt-start__title {
+.lt-start__title {
     font-size: 1.1rem;
   }
 }
