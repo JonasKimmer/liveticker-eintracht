@@ -5,7 +5,6 @@ import React, {
   useMemo,
   useCallback,
 } from "react";
-import type { RefObject } from "react";
 import { useClickOutside } from "hooks/useClickOutside";
 import { useListKeyboard } from "hooks/useListKeyboard";
 import { knockoutThreshold, makeRoundLabel } from "utils/roundLabel";
@@ -20,7 +19,6 @@ interface MatchdayPickerProps {
   matches: Match[];
   onMatchChange: (id: number) => void;
   disabled?: boolean;
-  triggerRef?: RefObject<HTMLButtonElement>;
 }
 
 export function MatchdayPicker({
@@ -32,7 +30,6 @@ export function MatchdayPicker({
   matches,
   onMatchChange,
   disabled,
-  triggerRef,
 }: MatchdayPickerProps) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
@@ -124,7 +121,6 @@ export function MatchdayPicker({
       <div className="lt-start__select-wrap">
         <label className="lt-start__label">Spieltag</label>
         <button
-          ref={triggerRef}
           className={`lt-mdp__trigger lt-start__select${open ? " lt-mdp__trigger--open" : ""}`}
           disabled={disabled || matchdaysLoading || !matchdays.length}
           onClick={() => setOpen((v) => !v)}

@@ -1,4 +1,4 @@
-import { memo, useRef } from "react";
+import { memo } from "react";
 import config from "config/whitelabel";
 import { CountryDropdown } from "../dropdown/CountryDropdown";
 import { Dropdown } from "../dropdown/Dropdown";
@@ -48,11 +48,6 @@ export const StartScreen = memo(function StartScreen({
   onMatchChange,
   compact = false,
 }: StartScreenProps) {
-  // Refs to focus next field after selection (Enter/Tab-flow)
-  const teamInputRef = useRef<HTMLInputElement>(null);
-  const competitionInputRef = useRef<HTMLInputElement>(null);
-  const matchdayBtnRef = useRef<HTMLButtonElement>(null);
-
   return (
     <div className={compact ? "lt-start lt-start--compact" : "lt-start"}>
       <div className="lt-start__inner">
@@ -71,7 +66,6 @@ export const StartScreen = memo(function StartScreen({
             countries={countries}
             value={selCountry}
             onSelect={onCountryChange}
-            onAfterSelect={() => teamInputRef.current?.focus()}
           />
 
           <Dropdown
@@ -82,8 +76,6 @@ export const StartScreen = memo(function StartScreen({
             displayValue={teams.find((t) => t.id === selTeamId)?.name}
             items={teams.map((t) => ({ value: t.id, label: t.name }))}
             onSelect={(v) => onTeamChange(parseInt(String(v)))}
-            onAfterSelect={() => competitionInputRef.current?.focus()}
-            inputRef={teamInputRef}
           />
 
           <Dropdown
@@ -100,8 +92,6 @@ export const StartScreen = memo(function StartScreen({
               label: c.title ?? String(c.id),
             }))}
             onSelect={(v) => onCompetitionChange(parseInt(String(v)))}
-            onAfterSelect={() => matchdayBtnRef.current?.focus()}
-            inputRef={competitionInputRef}
           />
         </div>
 
@@ -114,7 +104,6 @@ export const StartScreen = memo(function StartScreen({
           matches={matches}
           onMatchChange={onMatchChange}
           disabled={!selCompetitionId}
-          triggerRef={matchdayBtnRef}
         />
 
         {!compact && (

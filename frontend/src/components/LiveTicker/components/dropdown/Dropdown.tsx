@@ -1,9 +1,9 @@
-import { useState, useMemo, useCallback, useRef } from "react";
-import type { RefObject } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { useClickOutside } from "hooks/useClickOutside";
 import { useListKeyboard } from "hooks/useListKeyboard";
 import { DropdownList } from "./DropdownList";
 import { DROPDOWN_INPUT_STYLE } from "./dropdownStyles";
+import { useRef } from "react";
 
 interface DropdownItem {
   value: number | string;
@@ -18,8 +18,6 @@ interface DropdownProps {
   displayValue?: string;
   items: DropdownItem[];
   onSelect: (val: number | string) => void;
-  onAfterSelect?: () => void;
-  inputRef?: RefObject<HTMLInputElement>;
 }
 
 export function Dropdown({
@@ -30,14 +28,11 @@ export function Dropdown({
   displayValue,
   items,
   onSelect,
-  onAfterSelect,
-  inputRef: externalInputRef,
 }: DropdownProps) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const ref = useRef<HTMLDivElement>(null);
-  const internalInputRef = useRef<HTMLInputElement>(null);
-  const inputRef = externalInputRef ?? internalInputRef;
+  const inputRef = useRef<HTMLInputElement>(null);
 
   useClickOutside(ref, () => {
     setOpen(false);
@@ -64,16 +59,15 @@ export function Dropdown({
       setOpen(false);
       setQuery("");
       inputRef.current?.blur();
-      onAfterSelect?.();
     },
-    [onSelect, onAfterSelect, inputRef],
+    [onSelect],
   );
 
   const handleClose = useCallback(() => {
     setOpen(false);
     setQuery("");
     inputRef.current?.blur();
-  }, [inputRef]);
+  }, []);
 
   const filteredVals = useMemo(() => filtered.map((f) => f.val), [filtered]);
   const { activeIdx, onKeyDown } = useListKeyboard(filteredVals, {

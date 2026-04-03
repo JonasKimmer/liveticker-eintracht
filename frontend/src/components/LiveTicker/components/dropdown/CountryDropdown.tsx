@@ -7,14 +7,12 @@ interface CountryDropdownProps {
   countries: string[];
   value: string | null;
   onSelect: (c: string | null) => void;
-  onAfterSelect?: () => void;
 }
 
 export function CountryDropdown({
   countries,
   value,
   onSelect,
-  onAfterSelect,
 }: CountryDropdownProps) {
   const {
     open,
@@ -30,9 +28,8 @@ export function CountryDropdown({
   } = useSearchableDropdown({
     items: countries,
     onSelect,
-    getLabel: (c) => c as string,
-    getValue: (c) => c as string,
-    onAfterSelect,
+    getLabel: (c) => c,
+    getValue: (c) => c,
   });
 
   function handleClear(e: React.MouseEvent) {

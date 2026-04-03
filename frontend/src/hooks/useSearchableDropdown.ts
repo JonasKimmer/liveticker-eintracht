@@ -33,16 +33,8 @@ export function useSearchableDropdown({
   items,
   onSelect,
   getLabel,
-  getValue = (item) => item as string | number,
+  getValue = (item) => item,
   disabled = false,
-  onAfterSelect = undefined,
-}: {
-  items: unknown[];
-  onSelect: (val: string | number) => void;
-  getLabel: (item: unknown) => string;
-  getValue?: (item: unknown) => string | number;
-  disabled?: boolean;
-  onAfterSelect?: () => void;
 }) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
@@ -78,9 +70,8 @@ export function useSearchableDropdown({
       setOpen(false);
       setQuery("");
       inputRef.current?.blur();
-      onAfterSelect?.();
     },
-    [onSelect, onAfterSelect],
+    [onSelect],
   );
 
   const handleClose = useCallback(() => {
