@@ -4,6 +4,7 @@
 // ============================================================
 
 import { memo, useState, useRef, type CSSProperties } from "react";
+import { useIsMobile } from "hooks/useIsMobile";
 import { createPortal } from "react-dom";
 import {
   fetchYoutubeClips,
@@ -27,12 +28,14 @@ interface YouTubeThumbnailProps {
 }
 
 function YouTubeThumbnail({ clip, onClick, onDelete }: YouTubeThumbnailProps) {
+  const isMobile = useIsMobile();
   const [hovered, setHovered] = useState(false);
   const [previewStyle, setPreviewStyle] = useState<CSSProperties | null>(null);
   const btnRef = useRef<HTMLButtonElement>(null);
   const thumbnail = getThumbnail(clip);
 
   function handleMouseEnter() {
+    if (isMobile) return;
     setHovered(true);
     if (btnRef.current && thumbnail) {
       const r = btnRef.current.getBoundingClientRect();

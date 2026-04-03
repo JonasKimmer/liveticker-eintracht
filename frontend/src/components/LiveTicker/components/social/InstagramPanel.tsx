@@ -10,6 +10,7 @@ import { useSocialPanel } from "../../hooks/useSocialPanel";
 import { SocialPublishModal } from "./SocialPublishModal";
 import { SocialPanelShell } from "./SocialPanelShell";
 import { INSTA_GRADIENT } from "../../constants";
+import { useIsMobile } from "hooks/useIsMobile";
 
 // ── Publish Modal ─────────────────────────────────────────────
 
@@ -56,11 +57,13 @@ interface InstaCardProps {
 }
 
 function InstaCard({ post, onClick, onDelete }: InstaCardProps) {
+  const isMobile = useIsMobile();
   const [hovered, setHovered] = useState(false);
   const [previewStyle, setPreviewStyle] = useState<CSSProperties | null>(null);
   const btnRef = useRef<HTMLButtonElement>(null);
 
   function handleMouseEnter() {
+    if (isMobile) return;
     setHovered(true);
     if (btnRef.current && post.thumbnailUrl) {
       const r = btnRef.current.getBoundingClientRect();

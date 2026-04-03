@@ -35,6 +35,8 @@ export function MatchdayPicker({
   const ref = useRef<HTMLDivElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
   const matchItemRefs = useRef<HTMLElement[]>([]);
+  const hasAutoOpenedRef = useRef(false);
+  const mouseIsDownRef = useRef(false);
   const { short: roundShort, full: roundFull } = useMemo(
     () => makeRoundLabel(matchdays),
     [matchdays],
@@ -49,8 +51,12 @@ export function MatchdayPicker({
     return [...group, ...knockout];
   }, [matchdays]);
 
+  // Nur beim ersten Laden auto-öffnen, nicht bei jedem Polling-Update
   useEffect(() => {
-    if (matchdays.length > 0) setOpen(true);
+    if (matchdays.length > 0 && !hasAutoOpenedRef.current) {
+      setOpen(true);
+      hasAutoOpenedRef.current = true;
+    }
   }, [matchdays]);
   useClickOutside(ref, () => setOpen(false));
   useEffect(() => {
@@ -123,9 +129,12 @@ export function MatchdayPicker({
         <button
           className={`lt-mdp__trigger lt-start__select${open ? " lt-mdp__trigger--open" : ""}`}
           disabled={disabled || matchdaysLoading || !matchdays.length}
+          onMouseDown={() => { mouseIsDownRef.current = true; }}
           onClick={() => setOpen((v) => !v)}
           onFocus={() => {
-            if (!disabled && matchdays.length) setOpen(true);
+            // Nur bei Tastatur-Fokus (Tab) öffnen, nicht bei Mausklick
+            if (!mouseIsDownRef.current && !disabled && matchdays.length) setOpen(true);
+            mouseIsDownRef.current = false;
           }}
           style={{
             display: "flex",

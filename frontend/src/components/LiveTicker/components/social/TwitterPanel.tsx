@@ -4,6 +4,7 @@
 // ============================================================
 
 import { memo, useState } from "react";
+import { useIsMobile } from "hooks/useIsMobile";
 import { createPortal } from "react-dom";
 import { fetchTwitterPosts, triggerTwitterImport } from "api";
 import { useSocialPanel } from "../../hooks/useSocialPanel";
@@ -56,6 +57,7 @@ interface TweetCardProps {
 }
 
 function TweetCard({ post, onClick, onDelete }: TweetCardProps) {
+  const isMobile = useIsMobile();
   const [hovered, setHovered] = useState(false);
   const hasThumbnail = !!post.thumbnailUrl;
 
@@ -63,8 +65,8 @@ function TweetCard({ post, onClick, onDelete }: TweetCardProps) {
     return (
       <div
         style={{ position: "relative", borderRadius: 6, overflow: "hidden" }}
-        onMouseEnter={() => setHovered(true)}
-        onMouseLeave={() => setHovered(false)}
+        onMouseEnter={isMobile ? undefined : () => setHovered(true)}
+        onMouseLeave={isMobile ? undefined : () => setHovered(false)}
       >
         <button
           onDoubleClick={() => onClick(post)}

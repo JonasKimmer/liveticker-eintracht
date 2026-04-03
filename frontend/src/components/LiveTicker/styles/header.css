@@ -208,6 +208,15 @@
   }
 }
 
+/* ── Breadcrumb-Bar (eigene Zeile über dem Header) ─────────── */
+.lt-breadcrumb-bar {
+  background: var(--lt-bg-card);
+  border-bottom: 1px solid var(--lt-border);
+  padding: 0.25rem 1rem;
+  display: flex;
+  align-items: center;
+}
+
 /* ============================================================
    BREADCRUMB (Header, Zustand 2)
    ============================================================ */
@@ -218,36 +227,17 @@
   background: none;
   border: 1px solid transparent;
   border-radius: var(--lt-radius);
-  padding: 0.3rem 0.6rem;
+  padding: 0.25rem 0.5rem;
   cursor: pointer;
   transition:
     border-color 0.2s,
     background 0.2s;
   font-family: var(--lt-font-mono);
-  font-size: 0.8rem;
+  font-size: 0.78rem;
   color: var(--lt-text-muted);
-}
-
-@media (min-width: 1101px) {
-  .lt-breadcrumb {
-    position: absolute;
-    left: 50%;
-    transform: translateX(-50%);
-  }
-}
-
-/* Mobile: höhere Spezifität (0,2,0) schlägt immer den Base-Style (0,1,0),
-   unabhängig von Datei-Ladereihenfolge oder Media-Query-Kaskade */
-.lt--mobile .lt-breadcrumb {
-  position: static;
-  transform: none;
-  flex: 1;
-  min-width: 0;
-  display: flex;
-  justify-content: center;
-  overflow: hidden;
   white-space: nowrap;
-  font-size: 0.75rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .lt-breadcrumb:hover {
   border-color: var(--lt-border);
