@@ -4,30 +4,12 @@
 
 .lt-mode-bar {
   display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
+  align-items: center;
+  gap: 0.75rem;
   padding: 0.45rem 1rem;
   background: var(--lt-bg-card);
   border-bottom: 1px solid var(--lt-border);
   flex-wrap: wrap;
-}
-
-.lt-mode-bar--with-lang .lt-mode-bar__main {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-}
-
-.lt-mode-bar--with-lang .lt-mode-bar__lang {
-  margin-left: 1.5rem;
-  display: flex;
-  align-items: center;
-}
-
-.lt-mode-bar__hints {
-  margin-left: auto;
-  margin-right: 0;
-  align-self: flex-end;
 }
 
 /* Status dot + text */
@@ -122,7 +104,7 @@
   outline-offset: 1px;
 }
 
-/* Language picker box — same visual level as mode buttons */
+/* Language picker box — identical look to .lt-mode-bar__group */
 .lt-mode-bar__lang {
   display: flex;
   background: rgba(0, 0, 0, 0.3);
@@ -131,12 +113,25 @@
   padding: 3px;
 }
 .lt-mode-bar__lang .lt-lang-picker__trigger {
-  padding: 0.38rem 0.75rem;
+  padding: 0.38rem 1.05rem;
   border: none;
   border-radius: 1px;
   background: none;
+  font-family: var(--lt-font-mono);
   font-size: 0.7rem;
-  letter-spacing: 0.06em;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--lt-text-muted);
+  white-space: nowrap;
+  transition:
+    color 0.15s,
+    background 0.15s;
+}
+.lt-mode-bar__lang .lt-lang-picker__trigger:hover {
+  color: var(--lt-text);
+  background: rgba(255, 255, 255, 0.05);
+  border-color: unset;
 }
 
 /* Keyboard hints */
