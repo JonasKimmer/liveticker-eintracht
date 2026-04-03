@@ -272,7 +272,7 @@ export const EntryEditor = memo(function EntryEditor({
     <div className="lt-summary-editor">
       <div className="lt-editor__toolbar">
         <span className="lt-editor__label">
-          {mode === MODES.MANUAL ? "✎ Manueller Eintrag" : "✎ Entwurf bearbeiten"}
+          {mode === MODES.MANUAL ? "✎ Manueller Eintrag" : "✎ Event bearbeiten"}
         </span>
         <MinuteEditor
           minute={minute}
@@ -285,7 +285,7 @@ export const EntryEditor = memo(function EntryEditor({
         />
       </div>
 
-      <div className="lt-editor__input-wrap" style={{ position: "relative" }}>
+      <div style={{ position: "relative" }}>
         {/* Command palette */}
         {showPalette && (
           <div className="lt-cmd-palette">

@@ -50,8 +50,8 @@ export function SummarySection({
     onSelect(null);
   }, [reload, onSelect]);
 
-  const handlePublish = useCallback(async (draftId: number, text: string) => {
-    await api.publishTicker(draftId, text);
+  const handlePublish = useCallback(async (draftId: number, text: string, minute?: number | null) => {
+    await api.updateTicker(draftId, { text, status: "published", ...(minute != null ? { minute } : {}) });
     await reload.loadTickerTexts();
     onPublished?.(draftId, text);
   }, [reload, onPublished]);
@@ -113,7 +113,7 @@ export function SummarySection({
               <SummaryDraftCard
                 draft={draft}
                 label={getDraftLabel(draft)}
-                onPublish={(text) => handlePublish(draft.id, text)}
+                onPublish={(text, minute) => handlePublish(draft.id, text, minute)}
                 onReject={() => handleReject(draft.id)}
                 onGenerate={onRegenerate}
                 generatingId={generatingId}
@@ -192,10 +192,11 @@ export function SummarySection({
               <SummaryDraftCard
                 draft={draft}
                 label={getDraftLabel(draft)}
-                onPublish={(text) => handlePublish(draft.id, text)}
+                onPublish={(text, minute) => handlePublish(draft.id, text, minute)}
                 onReject={() => handleReject(draft.id)}
                 onGenerate={onRegenerate}
                 generatingId={generatingId}
+                showMinute
               />
             )}
           </div>

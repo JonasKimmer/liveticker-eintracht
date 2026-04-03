@@ -1,14 +1,17 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { StylePickerDropdown } from "../StylePickerDropdown";
+import { MinuteEditor } from "../entry/MinuteEditor";
+import { useLiveMinuteEditor } from "../../hooks/useLiveMinuteEditor";
 import type { TickerEntry, TickerStyle } from "../../../../types";
 
 interface SummaryDraftCardProps {
   draft: TickerEntry;
   label?: string;
-  onPublish: (text: string) => void;
+  onPublish: (text: string, minute?: number | null) => void;
   onReject: () => void;
   onGenerate?: (id: number, style: TickerStyle) => void;
   generatingId?: string | number | null;
+  showMinute?: boolean;
 }
 
 export function SummaryDraftCard({
@@ -18,11 +21,21 @@ export function SummaryDraftCard({
   onReject,
   onGenerate,
   generatingId,
+  showMinute = false,
 }: SummaryDraftCardProps) {
   const [editing, setEditing] = useState(false);
   const [text, setText] = useState(draft.text ?? "");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const isGenerating = generatingId === "regenerating";
+
+  const {
+    minute,
+    setMinute,
+    minuteEditing,
+    setMinuteEditing,
+    minuteOverride,
+    setMinuteOverride,
+  } = useLiveMinuteEditor(draft.minute ?? 0);
 
   // Auto-resize textarea to fit content
   useEffect(() => {
@@ -43,8 +56,8 @@ export function SummaryDraftCard({
   }, [editing]);
 
   const handleAccept = useCallback(() => {
-    onPublish(text);
-  }, [onPublish, text]);
+    onPublish(text, showMinute ? minute : undefined);
+  }, [onPublish, text, minute, showMinute]);
 
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -70,7 +83,17 @@ export function SummaryDraftCard({
       <div className="lt-summary-editor" style={{ marginBottom: "0.5rem" }}>
         <div className="lt-editor__toolbar">
           <span className="lt-editor__label">✎ {label} bearbeiten</span>
-
+          {showMinute && (
+            <MinuteEditor
+              minute={minute}
+              setMinute={setMinute}
+              minuteEditing={minuteEditing}
+              setMinuteEditing={setMinuteEditing}
+              minuteOverride={minuteOverride}
+              setMinuteOverride={setMinuteOverride}
+              currentMinute={draft.minute ?? 0}
+            />
+          )}
         </div>
         <textarea
           ref={textareaRef}
@@ -123,7 +146,7 @@ export function SummaryDraftCard({
       <div className="lt-draft__actions">
         <button
           className="lt-btn lt-btn--primary"
-          onClick={() => onPublish(text)}
+          onClick={() => onPublish(text, showMinute ? minute : undefined)}
         >
           Annehmen <kbd className="lt-btn__kbd">TAB</kbd>
         </button>
