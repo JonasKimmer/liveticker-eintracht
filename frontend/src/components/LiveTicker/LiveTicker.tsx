@@ -288,10 +288,7 @@ export default function LiveTicker() {
                     </span>
                   )}
                   <span className="lt-header__sep">|</span>
-                  <LanguagePicker
-                    language={language}
-                    onLanguageChange={handleLanguageChange}
-                  />
+                  {/* LanguagePicker moved below to be on the same level as ModeSelector */}
                   <button
                     className="lt-header__hint"
                     onClick={() => setShowHints(true)}
@@ -310,7 +307,20 @@ export default function LiveTicker() {
                 />
               )}
               {match && (
-                <ModeSelector mode={mode} onModeChange={handleModeChange} />
+                <div
+                  style={{
+                    display: "flex",
+                    gap: 16,
+                    alignItems: "center",
+                    marginBottom: 8,
+                  }}
+                >
+                  <ModeSelector mode={mode} onModeChange={handleModeChange} />
+                  <LanguagePicker
+                    language={language}
+                    onLanguageChange={handleLanguageChange}
+                  />
+                </div>
               )}
             </div>
             {/* /lt-top-bar */}
