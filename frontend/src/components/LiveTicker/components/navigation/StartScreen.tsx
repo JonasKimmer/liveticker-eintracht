@@ -1,10 +1,8 @@
-import { memo } from "react";
+import { memo, useRef } from "react";
 import config from "config/whitelabel";
 import { CountryDropdown } from "../dropdown/CountryDropdown";
 import { Dropdown } from "../dropdown/Dropdown";
 import { MatchdayPicker } from "./MatchdayPicker";
-import { MobileStartWizard } from "./MobileStartWizard";
-import { useIsMobile } from "../../../../hooks/useIsMobile";
 import type { Team, Competition, Match } from "../../../../types";
 
 export interface StartScreenProps {
@@ -50,31 +48,10 @@ export const StartScreen = memo(function StartScreen({
   onMatchChange,
   compact = false,
 }: StartScreenProps) {
-  const isMobile = useIsMobile();
-
-  if (isMobile && !compact) {
-    return (
-      <MobileStartWizard
-        countries={countries}
-        selCountry={selCountry}
-        onCountryChange={onCountryChange}
-        teams={teams}
-        teamsLoading={teamsLoading}
-        selTeamId={selTeamId}
-        onTeamChange={onTeamChange}
-        competitions={competitions}
-        competitionsLoading={competitionsLoading}
-        selCompetitionId={selCompetitionId}
-        onCompetitionChange={onCompetitionChange}
-        matchdays={matchdays}
-        matchdaysLoading={matchdaysLoading}
-        selRound={selRound}
-        onRoundChange={onRoundChange}
-        matches={matches}
-        onMatchChange={onMatchChange}
-      />
-    );
-  }
+  // Refs to focus next field after selection (Enter/Tab-flow)
+  const teamInputRef = useRef<HTMLInputElement>(null);
+  const competitionInputRef = useRef<HTMLInputElement>(null);
+  const matchdayBtnRef = useRef<HTMLButtonElement>(null);
 
   return (
     <div className={compact ? "lt-start lt-start--compact" : "lt-start"}>
@@ -94,6 +71,7 @@ export const StartScreen = memo(function StartScreen({
             countries={countries}
             value={selCountry}
             onSelect={onCountryChange}
+            onAfterSelect={() => teamInputRef.current?.focus()}
           />
 
           <Dropdown
@@ -104,6 +82,8 @@ export const StartScreen = memo(function StartScreen({
             displayValue={teams.find((t) => t.id === selTeamId)?.name}
             items={teams.map((t) => ({ value: t.id, label: t.name }))}
             onSelect={(v) => onTeamChange(parseInt(String(v)))}
+            onAfterSelect={() => competitionInputRef.current?.focus()}
+            inputRef={teamInputRef}
           />
 
           <Dropdown
@@ -120,6 +100,8 @@ export const StartScreen = memo(function StartScreen({
               label: c.title ?? String(c.id),
             }))}
             onSelect={(v) => onCompetitionChange(parseInt(String(v)))}
+            onAfterSelect={() => matchdayBtnRef.current?.focus()}
+            inputRef={competitionInputRef}
           />
         </div>
 
@@ -132,6 +114,7 @@ export const StartScreen = memo(function StartScreen({
           matches={matches}
           onMatchChange={onMatchChange}
           disabled={!selCompetitionId}
+          triggerRef={matchdayBtnRef}
         />
 
         {!compact && (
