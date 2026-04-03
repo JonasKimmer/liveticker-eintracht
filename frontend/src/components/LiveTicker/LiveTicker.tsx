@@ -33,6 +33,7 @@ import { Breadcrumb } from "./components/navigation/Breadcrumb";
 import { NavDrawer } from "./components/navigation/NavDrawer";
 import { LanguagePicker } from "./components/navigation/LanguagePicker";
 import { useApiStatus } from "../../hooks/useApiStatus";
+import { useIsMobile } from "../../hooks/useIsMobile";
 import { useKeyboardShortcuts } from "./hooks/useKeyboardShortcuts";
 import { useMatchTriggers } from "./hooks/useMatchTriggers";
 import { usePanelResize } from "../../hooks/usePanelResize";
@@ -53,6 +54,8 @@ export default function LiveTicker() {
     teams,
     curCompetition,
   } = useNavigation();
+
+  const isMobile = useIsMobile();
 
   // ── UI State ──────────────────────────────────────────────
   const [modalOpen, setModalOpen] = useState(false);
@@ -223,7 +226,7 @@ export default function LiveTicker() {
 
   if (!selMatchId) {
     return (
-      <div className="lt">
+      <div className={`lt${isMobile ? " lt--mobile" : ""}`}>
         <StartScreen {...navProps} />
       </div>
     );
@@ -233,7 +236,7 @@ export default function LiveTicker() {
     <TickerModeContext.Provider value={tickerModeCtx}>
       <TickerDataContext.Provider value={tickerDataCtx}>
         <TickerActionsContext.Provider value={tickerActionsCtx}>
-          <div className="lt">
+          <div className={`lt${isMobile ? " lt--mobile" : ""}`}>
             <div
               className={`lt-top-bar${modalOpen ? " lt-top-bar--hidden" : ""}`}
               ref={topBarRef}

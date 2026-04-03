@@ -236,18 +236,18 @@
   }
 }
 
-@media (max-width: 1100px) {
-  .lt-breadcrumb {
-    position: static;
-    transform: none;
-    flex: 1;
-    min-width: 0;
-    display: flex;
-    justify-content: center;
-    overflow: hidden;
-    white-space: nowrap;
-    font-size: 0.75rem;
-  }
+/* Mobile: höhere Spezifität (0,2,0) schlägt immer den Base-Style (0,1,0),
+   unabhängig von Datei-Ladereihenfolge oder Media-Query-Kaskade */
+.lt--mobile .lt-breadcrumb {
+  position: static;
+  transform: none;
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  justify-content: center;
+  overflow: hidden;
+  white-space: nowrap;
+  font-size: 0.75rem;
 }
 .lt-breadcrumb:hover {
   border-color: var(--lt-border);

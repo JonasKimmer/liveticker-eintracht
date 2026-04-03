@@ -116,10 +116,9 @@
   gap: 1.25rem;
 }
 
-@media (min-width: 769px) {
-  .lt-start__selects {
-    grid-template-columns: repeat(3, 1fr);
-  }
+/* Desktop: 3 Spalten */
+.lt:not(.lt--mobile) .lt-start__selects {
+  grid-template-columns: repeat(3, 1fr);
 }
 .lt-start__select-wrap {
   display: flex;
