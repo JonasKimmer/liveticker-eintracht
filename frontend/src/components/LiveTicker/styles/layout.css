@@ -11,6 +11,14 @@
   user-select: none;
 }
 
+/* Desktop: Top-Bar sticky (Header + MatchHeader + ModeBar als Einheit) */
+.lt-top-bar {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  background: var(--lt-bg-card);
+}
+
 /* ============================================================
    LOADING
    ============================================================ */
@@ -54,16 +62,16 @@
 .lt-columns {
   display: grid;
   grid-template-columns: 320px 1fr 380px;
-  min-height: calc(100vh - var(--lt-header-h) - var(--lt-nav-h));
+  min-height: calc(100vh - var(--lt-top-bar-h, 224px));
 }
 .lt-columns--auto {
   grid-template-columns: 1fr 380px;
 }
 .lt-col {
   overflow-y: auto;
-  height: calc(100vh - var(--lt-header-h) - var(--lt-nav-h));
+  height: calc(100vh - var(--lt-top-bar-h, 224px));
   position: sticky;
-  top: calc(var(--lt-header-h) + var(--lt-nav-h));
+  top: var(--lt-top-bar-h, 224px);
 }
 .lt-col--events {
   border-right: 1px solid var(--lt-border);

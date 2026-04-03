@@ -11,9 +11,7 @@
   display: grid;
   grid-template-columns: 1fr auto 1fr;
   align-items: center;
-  position: sticky;
-  top: 0;
-  z-index: 20;
+  position: relative;
 }
 .lt-header__logo {
   font-family: var(--lt-font-display);
