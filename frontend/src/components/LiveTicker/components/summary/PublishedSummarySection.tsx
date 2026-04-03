@@ -20,7 +20,7 @@ export function PublishedSummarySection({
   const { tickerTexts, reload } = useTickerDataContext();
 
   const published = tickerTexts
-    .filter((t) => t.status === "published" && !t.event_id)
+    .filter((t) => t.status === "published")
     .sort(
       (a, b) =>
         new Date(b.created_at as string).getTime() -

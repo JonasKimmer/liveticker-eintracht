@@ -64,6 +64,7 @@ export function SummarySection({
       (t) =>
         t.status === "draft" &&
         !t.event_id &&
+        !t.video_url &&
         (isPrematch
           ? PREMATCH_PHASES.has(t.phase)
           : !PREMATCH_PHASES.has(t.phase)),

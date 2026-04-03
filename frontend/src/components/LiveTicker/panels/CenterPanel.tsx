@@ -4,6 +4,7 @@ import { AutoModePanel } from "../components/mode/AutoModePanel";
 import { CollapsibleSection } from "../components/Collapsible";
 import { EntryEditor } from "../components/entry/EntryEditor";
 import { EventCard } from "../components/entry/EventCard";
+import { SummaryDraftCard } from "../components/summary/SummaryDraftCard";
 import { MediaPickerPanel } from "../components/media/MediaPickerPanel";
 import { ClipPickerPanel } from "../components/media/ClipPickerPanel";
 import { SummarySection } from "../components/summary/SummarySection";
@@ -14,9 +15,11 @@ import { InstagramPanel } from "../components/social/InstagramPanel";
 import { MODES, AUTO_ERROR_TIMEOUT_MS } from "../constants";
 import { useTickerModeContext } from "context/TickerModeContext";
 import { useTickerDataContext } from "context/TickerDataContext";
+import { useTickerActionsContext } from "context/TickerActionsContext";
 import { useAutoPublisher } from "../hooks/useAutoPublisher";
 import { useBulkActions } from "../hooks/useBulkActions";
 import { useEventDraft } from "../hooks/useEventDraft";
+import * as api from "api";
 import config from "config/whitelabel";
 import { isOurTeamMatch } from "utils/isOurTeamMatch";
 import type { LineupEntry, Player } from "../../../types";
@@ -35,7 +38,8 @@ export const CenterPanel = memo<CenterPanelProps>(function CenterPanel({
   players = [],
 }: CenterPanelProps) {
   const { mode } = useTickerModeContext();
-  const { match, tickerTexts, generatingId } = useTickerDataContext();
+  const { match, tickerTexts, generatingId, reload } = useTickerDataContext();
+  const { onPublished } = useTickerActionsContext();
 
   const playerNames = useMemo(() => {
     const fromLineup = lineups.map((l) => l.playerName).filter(Boolean);
@@ -59,6 +63,16 @@ export const CenterPanel = memo<CenterPanelProps>(function CenterPanel({
   const isOurTeam = useMemo(
     () => isOurTeamMatch(match, config.teamKeyword ?? ""),
     [match],
+  );
+
+  const videoDrafts = useMemo(
+    () => tickerTexts.filter((t) => t.status === "draft" && !t.event_id && !!t.video_url),
+    [tickerTexts],
+  );
+
+  const hasPendingSummaries = useMemo(
+    () => tickerTexts.some((t) => t.status === "draft" && !t.event_id && !t.video_url),
+    [tickerTexts],
   );
 
   const [selectedSummaryDraftId, setSelectedSummaryDraftId] = useState<number | null>(null);
@@ -159,17 +173,17 @@ export const CenterPanel = memo<CenterPanelProps>(function CenterPanel({
             <PublishedSummarySection onRetract={setPendingAutoExpandId} />
 
             {/* Events */}
-            {pendingEvents.length === 0 && (
+            {pendingEvents.length === 0 && videoDrafts.length === 0 && !hasPendingSummaries && (
               <div className="lt-empty">
                 <div className="lt-empty__icon">✓</div>
                 Alle Events verarbeitet
               </div>
             )}
 
-            {pendingEvents.length > 0 && (
+            {(pendingEvents.length > 0 || videoDrafts.length > 0) && (
               <CollapsibleSection
                 title="Events"
-                count={pendingEvents.length}
+                count={pendingEvents.length + videoDrafts.length}
                 onToggle={(open) => {
                   if (!open) setSelectedEventId(null);
                 }}
@@ -207,6 +221,23 @@ export const CenterPanel = memo<CenterPanelProps>(function CenterPanel({
                   ) : null
                 }
               >
+                {videoDrafts.map((draft) => (
+                  <SummaryDraftCard
+                    key={draft.id}
+                    draft={draft}
+                    label="🎬 Jubelvideo"
+                    onPublish={async (text) => {
+                      await api.updateTicker(draft.id, { text, status: "published" });
+                      await reload.loadTickerTexts();
+                      onPublished?.(draft.id, text);
+                    }}
+                    onReject={async () => {
+                      await api.updateTicker(draft.id, { status: "rejected" });
+                      await reload.loadTickerTexts();
+                    }}
+                    showMinute
+                  />
+                ))}
                 {pendingEvents.map((ev) => {
                   const draft = tickerTexts.find((t) => t.event_id === ev.id);
                   const isSelected = selectedEvent?.id === ev.id;
