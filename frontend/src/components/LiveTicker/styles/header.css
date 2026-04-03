@@ -208,17 +208,8 @@
   }
 }
 
-/* ── Breadcrumb-Bar (eigene Zeile über dem Header) ─────────── */
-.lt-breadcrumb-bar {
-  background: var(--lt-bg-card);
-  border-bottom: 1px solid var(--lt-border);
-  padding: 0.25rem 1rem;
-  display: flex;
-  align-items: center;
-}
-
 /* ============================================================
-   BREADCRUMB (Header, Zustand 2)
+   BREADCRUMB (im Header, mittig zentriert)
    ============================================================ */
 .lt-breadcrumb {
   display: inline-flex;
@@ -227,7 +218,7 @@
   background: none;
   border: 1px solid transparent;
   border-radius: var(--lt-radius);
-  padding: 0.25rem 0.5rem;
+  padding: 0.3rem 0.6rem;
   cursor: pointer;
   transition:
     border-color 0.2s,
@@ -237,7 +228,21 @@
   color: var(--lt-text-muted);
   white-space: nowrap;
   overflow: hidden;
-  text-overflow: ellipsis;
+  /* Mittig zwischen Logo und Status */
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  max-width: calc(100% - 400px);
+}
+
+.lt--mobile .lt-breadcrumb {
+  position: static;
+  transform: none;
+  flex: 1;
+  min-width: 0;
+  max-width: none;
+  justify-content: center;
+  font-size: 0.72rem;
 }
 .lt-breadcrumb:hover {
   border-color: var(--lt-border);

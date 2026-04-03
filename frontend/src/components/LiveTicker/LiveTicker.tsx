@@ -241,7 +241,14 @@ export default function LiveTicker() {
               className={`lt-top-bar${modalOpen ? " lt-top-bar--hidden" : ""}`}
               ref={topBarRef}
             >
-              <div className="lt-breadcrumb-bar">
+              <header className="lt-header">
+                <div
+                  className="lt-header__logo"
+                  onClick={() => setSelMatchId(null)}
+                  title="Zurück zur Startseite"
+                >
+                  {config.clubName}
+                </div>
                 <Breadcrumb
                   match={match}
                   competition={curCompetition}
@@ -251,15 +258,6 @@ export default function LiveTicker() {
                   matchdays={navProps.matchdays}
                   onOpen={() => setModalOpen(true)}
                 />
-              </div>
-              <header className="lt-header">
-                <div
-                  className="lt-header__logo"
-                  onClick={() => setSelMatchId(null)}
-                  title="Zurück zur Startseite"
-                >
-                  {config.clubName}
-                </div>
                 <div className="lt-header__status">
                   {NAV_TABS.filter((t) => t.id !== "teams").map(
                     ({ id, label }) => (
