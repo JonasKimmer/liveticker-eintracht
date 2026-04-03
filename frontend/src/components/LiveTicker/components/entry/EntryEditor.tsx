@@ -397,7 +397,7 @@ export const EntryEditor = memo(function EntryEditor({
           onClick={handlePublish}
           disabled={publishDisabled}
         >
-          Veröffentlichen <kbd className="lt-btn__kbd">↵</kbd>
+          Annehmen <kbd className="lt-btn__kbd">⌘↵</kbd>
         </button>
         {onCancel && (
           <button className="lt-btn lt-btn--ghost lt-btn--sm" onClick={onCancel}>
