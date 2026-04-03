@@ -5,6 +5,7 @@ import React, { memo, useState, useRef, useEffect, useCallback } from "react";
 import { createPortal } from "react-dom";
 import { MODES, TOAST_DURATION_MS } from "../../constants";
 import type { TickerMode } from "../../../../types";
+import { LanguagePicker } from "../navigation/LanguagePicker";
 
 const MODE_CFG = {
   [MODES.AUTO]: {
@@ -42,13 +43,16 @@ const MODE_CFG = {
 interface ModeSelectorProps {
   mode: TickerMode;
   onModeChange: (mode: TickerMode) => void | Promise<void>;
+  language: string;
+  onLanguageChange: (lang: string) => void;
 }
 
 export const ModeSelector = memo(function ModeSelector({
   mode,
   onModeChange,
-  children,
-}: ModeSelectorProps & { children?: React.ReactNode }) {
+  language,
+  onLanguageChange,
+}: ModeSelectorProps) {
   const [pending, setPending] = useState<TickerMode | null>(null);
   const [popPos, setPopPos] = useState<{ top: number; left: number } | null>(
     null,
@@ -160,8 +164,8 @@ export const ModeSelector = memo(function ModeSelector({
   const pendingCfg = pending ? MODE_CFG[pending] : null;
 
   return (
-    <div className="lt-mode-bar lt-mode-bar--with-lang">
-      <div className="lt-mode-bar__main">
+    <>
+      <div className="lt-mode-bar">
         <div className="lt-mode-status">
           <span className={`lt-mode-dot lt-mode-dot--${activeCfg.key}`} />
           <span className="lt-mode-status__text">{activeCfg.status}</span>
@@ -192,22 +196,28 @@ export const ModeSelector = memo(function ModeSelector({
             );
           })}
         </div>
-        {children && <div className="lt-mode-bar__lang">{children}</div>}
-      </div>
-      <div className="lt-mode-bar__hints">
-        <span>
-          <kbd className="lt-mode-kbd">Ctrl+1</kbd> Auto
-        </span>
-        <span>
-          <kbd className="lt-mode-kbd">Ctrl+2</kbd> CO-OP
-        </span>
-        <span>
-          <kbd className="lt-mode-kbd">Ctrl+3</kbd> Manual
-        </span>
-      </div>
-      {/* Popover and Toast remain unchanged below */}
 
-      {/* Popover and Toast remain unchanged below */}
+        {/* Language picker */}
+        <div className="lt-mode-bar__lang">
+          <LanguagePicker
+            language={language}
+            onLanguageChange={onLanguageChange}
+          />
+        </div>
+
+        {/* Keyboard hints */}
+        <div className="lt-mode-bar__hints">
+          <span>
+            <kbd className="lt-mode-kbd">Ctrl+1</kbd> Auto
+          </span>
+          <span>
+            <kbd className="lt-mode-kbd">Ctrl+2</kbd> CO-OP
+          </span>
+          <span>
+            <kbd className="lt-mode-kbd">Ctrl+3</kbd> Manual
+          </span>
+        </div>
+      </div>
       {pending &&
         popPos &&
         pendingCfg &&
@@ -283,6 +293,6 @@ export const ModeSelector = memo(function ModeSelector({
           </div>,
           document.body,
         )}
-    </div>
+    </>
   );
 });

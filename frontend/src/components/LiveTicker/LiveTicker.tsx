@@ -287,8 +287,6 @@ export default function LiveTicker() {
                       EF
                     </span>
                   )}
-                  <span className="lt-header__sep">|</span>
-                  {/* LanguagePicker moved below to be on the same level as ModeSelector */}
                   <button
                     className="lt-header__hint"
                     onClick={() => setShowHints(true)}
@@ -307,12 +305,12 @@ export default function LiveTicker() {
                 />
               )}
               {match && (
-                <ModeSelector mode={mode} onModeChange={handleModeChange}>
-                  <LanguagePicker
-                    language={language}
-                    onLanguageChange={handleLanguageChange}
-                  />
-                </ModeSelector>
+                <ModeSelector
+                  mode={mode}
+                  onModeChange={handleModeChange}
+                  language={language}
+                  onLanguageChange={handleLanguageChange}
+                />
               )}
             </div>
             {/* /lt-top-bar */}

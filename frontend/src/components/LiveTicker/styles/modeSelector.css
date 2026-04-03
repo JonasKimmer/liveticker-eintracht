@@ -122,6 +122,23 @@
   outline-offset: 1px;
 }
 
+/* Language picker box — same visual level as mode buttons */
+.lt-mode-bar__lang {
+  display: flex;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid var(--lt-border);
+  border-radius: 2px;
+  padding: 3px;
+}
+.lt-mode-bar__lang .lt-lang-picker__trigger {
+  padding: 0.38rem 0.75rem;
+  border: none;
+  border-radius: 1px;
+  background: none;
+  font-size: 0.7rem;
+  letter-spacing: 0.06em;
+}
+
 /* Keyboard hints */
 .lt-mode-bar__hints {
   display: flex;
