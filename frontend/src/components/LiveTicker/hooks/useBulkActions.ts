@@ -89,7 +89,7 @@ export function useBulkActions({ instance, pendingEvents, setSelectedSummaryDraf
     try {
       const freshRes = await api.fetchTickerTexts(match.id);
       const drafts = (freshRes.data ?? []).filter(
-        (t) => t.status === "draft" && !t.event_id && !PREMATCH_PHASES.has(t.phase),
+        (t) => t.status === "draft" && !t.event_id && !t.video_url && !PREMATCH_PHASES.has(t.phase),
       );
       for (const d of drafts) {
         if (d.icon === "🎬" || d.video_url) {
