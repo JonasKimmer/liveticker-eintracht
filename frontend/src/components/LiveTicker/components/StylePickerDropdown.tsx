@@ -1,16 +1,25 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { TICKER_STYLES, STYLE_META } from "../constants";
 import type { TickerStyle } from "../../../types";
+import { useClickOutside } from "hooks/useClickOutside";
 
 /**
  * Wiederverwendbarer KI-Stil-Picker (AIDraft + SummaryDraftCard).
  * Zeigt einen Toggle-Button; bei Klick öffnet sich ein Dropdown mit Stil-Optionen.
  */
-export function StylePickerDropdown({ onSelect, disabled }: { onSelect: (style: TickerStyle) => void; disabled?: boolean }) {
+export function StylePickerDropdown({
+  onSelect,
+  disabled,
+}: {
+  onSelect: (style: TickerStyle) => void;
+  disabled?: boolean;
+}) {
   const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+  useClickOutside(ref, () => setOpen(false));
 
   return (
-    <div style={{ position: "relative" }}>
+    <div style={{ position: "relative" }} ref={ref}>
       <button
         className="lt-btn lt-btn--ghost"
         onClick={() => setOpen((v) => !v)}
@@ -50,16 +59,30 @@ export function StylePickerDropdown({ onSelect, disabled }: { onSelect: (style: 
             return (
               <button
                 key={s}
-                onClick={() => { onSelect(s); setOpen(false); }}
-                style={{
-                  display: "flex", alignItems: "center", gap: "0.5rem",
-                  width: "100%", background: "none", border: "none",
-                  padding: "0.35rem 0.5rem", cursor: "pointer",
-                  fontSize: "0.8rem", color: "var(--lt-text)",
-                  borderRadius: 5, textAlign: "left",
+                onClick={() => {
+                  onSelect(s);
+                  setOpen(false);
                 }}
-                onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(255,255,255,0.07)"; }}
-                onMouseLeave={(e) => { e.currentTarget.style.background = "none"; }}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "0.5rem",
+                  width: "100%",
+                  background: "none",
+                  border: "none",
+                  padding: "0.35rem 0.5rem",
+                  cursor: "pointer",
+                  fontSize: "0.8rem",
+                  color: "var(--lt-text)",
+                  borderRadius: 5,
+                  textAlign: "left",
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = "rgba(255,255,255,0.07)";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = "none";
+                }}
               >
                 <span>{meta.emoji}</span>
                 <span>{meta.label}</span>
@@ -71,4 +94,3 @@ export function StylePickerDropdown({ onSelect, disabled }: { onSelect: (style: 
     </div>
   );
 }
-
