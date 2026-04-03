@@ -12,7 +12,7 @@ import { useTickerMode } from "../../hooks/useTickerMode";
 import { TickerModeContext } from "../../context/TickerModeContext";
 import config from "../../config/whitelabel";
 
-import { NAV_TABS } from "./constants";
+import { NAV_TABS, TICKER_STYLES } from "./constants";
 import { LoadingScreen } from "./components/LoadingScreen";
 import { MatchHeader } from "./components/MatchHeader";
 import { ModeSelector } from "./components/ModeSelector";
@@ -168,6 +168,9 @@ export default function LiveTicker() {
 
   // ── Instance ──────────────────────────────────────────────
   const [instance, setInstance] = useState("ef_whitelabel");
+
+  // ── Ticker-Stil (Sprache) ─────────────────────────────────
+  const [tickerStyle, setTickerStyle] = useState(TICKER_STYLES[0]);
 
   // ── Import-Loading States ─────────────────────────────────
   const [importingTeams, setImportingTeams] = useState(false);
@@ -606,7 +609,7 @@ export default function LiveTicker() {
             onMinuteSync={reload.loadMatch}
           />
         )}
-        {match && <ModeSelector mode={mode} onModeChange={setMode} />}
+        {match && <ModeSelector mode={mode} onModeChange={setMode} tickerStyle={tickerStyle} onTickerStyleChange={setTickerStyle} />}
 
         <main
           className={`lt-columns${mode === "auto" ? " lt-columns--auto" : ""}`}
@@ -647,6 +650,7 @@ export default function LiveTicker() {
                 }}
                 reload={reload}
                 instance={instance}
+                tickerStyle={tickerStyle}
                 lineups={lineups}
                 players={players}
               />

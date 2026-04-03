@@ -3,7 +3,7 @@
 // ============================================================
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import { createPortal } from "react-dom";
-import { MODES } from "../constants";
+import { MODES, TICKER_STYLES } from "../constants";
 
 const MODE_CFG = {
   [MODES.AUTO]: {
@@ -38,7 +38,7 @@ const MODE_CFG = {
   },
 };
 
-export function ModeSelector({ mode, onModeChange }) {
+export function ModeSelector({ mode, onModeChange, tickerStyle, onTickerStyleChange }) {
   const [pending, setPending] = useState(null);
   const [popPos, setPopPos]   = useState(null);
   const [toast, setToast]     = useState(null);
@@ -150,6 +150,22 @@ export function ModeSelector({ mode, onModeChange }) {
             );
           })}
         </div>
+
+        {/* Sprache / Ticker-Stil */}
+        {onTickerStyleChange && (
+          <div className="lt-mode-bar__group">
+            {TICKER_STYLES.map((s) => (
+              <button
+                key={s}
+                className={`lt-mode-bar__btn${tickerStyle === s ? " lt-mode-bar__btn--active lt-mode-bar__btn--style" : ""}`}
+                style={tickerStyle === s ? { "--btn-bg": "var(--lt-text-faint)", "--btn-fg": "#0d0d0d" } : undefined}
+                onClick={() => onTickerStyleChange(s)}
+              >
+                {s}
+              </button>
+            ))}
+          </div>
+        )}
 
         {/* Keyboard hints */}
         <div className="lt-mode-bar__hints">
