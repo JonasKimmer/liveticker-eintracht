@@ -58,7 +58,16 @@ export function Dropdown({
       onSelect(val);
       setOpen(false);
       setQuery("");
-      // Fokus bleibt auf dem Input, damit Tab das nächste Dropdown öffnet
+      // Nach Auswahl: Fokus aufs nächste nicht-disabled Input im selben Container
+      requestAnimationFrame(() => {
+        const el = ref.current;
+        const inputEl = inputRef.current;
+        const parent = el?.closest(".lt-start__selects") ?? el?.parentElement?.parentElement;
+        if (!parent || !inputEl) return;
+        const inputs = Array.from(parent.querySelectorAll("input:not([disabled])")) as HTMLInputElement[];
+        const idx = inputs.indexOf(inputEl);
+        if (idx >= 0 && idx + 1 < inputs.length) inputs[idx + 1].focus();
+      });
     },
     [onSelect],
   );

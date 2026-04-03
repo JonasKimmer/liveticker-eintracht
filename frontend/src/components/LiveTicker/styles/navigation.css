@@ -116,9 +116,9 @@
   gap: 1.25rem;
 }
 
-/* Desktop: 3 Spalten */
+/* Selects immer untereinander (auch Desktop, auch im Drawer) */
 .lt:not(.lt--mobile) .lt-start__selects {
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: 1fr;
 }
 .lt-start__select-wrap {
   display: flex;

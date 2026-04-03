@@ -359,7 +359,7 @@ export const TwitterPanel = memo(function TwitterPanel({
         importLabel="𝕏 Tweets importieren"
         importBackground="#000"
         emptyLabel="Keine Tweets – erst importieren"
-        hintLabel="Klick → Text bearbeiten + veröffentlichen"
+        hintLabel="Doppelklick → Veröffentlichen"
         statusMsg={statusMsg}
         gridColumns={hasThumbnails ? "1fr 1fr" : "1fr"}
       >

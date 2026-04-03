@@ -16,6 +16,17 @@ export function CountryDropdown({
   onSelect,
   focusRef,
 }: CountryDropdownProps) {
+  // Nach Auswahl: Fokus aufs nächste Eingabefeld im selben Container
+  const afterSelect = () => {
+    const el = ref.current as HTMLElement | null;
+    const inputEl = inputRef.current as HTMLInputElement | null;
+    const parent = el?.closest(".lt-start__selects") ?? el?.parentElement?.parentElement;
+    if (!parent || !inputEl) return;
+    const inputs = Array.from(parent.querySelectorAll("input:not([disabled])")) as HTMLInputElement[];
+    const idx = inputs.indexOf(inputEl);
+    if (idx >= 0 && idx + 1 < inputs.length) inputs[idx + 1].focus();
+  };
+
   const {
     open,
     query,
@@ -33,6 +44,7 @@ export function CountryDropdown({
     onSelect,
     getLabel: (c) => c,
     getValue: (c) => c,
+    afterSelect,
   });
 
   // Merge external focusRef with internal inputRef so callers can imperatively focus

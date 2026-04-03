@@ -26,7 +26,8 @@ import { useListKeyboard } from "hooks/useListKeyboard";
  *   onSelect: Function,
  *   getLabel: (item: unknown) => string,
  *   getValue?: (item: unknown) => unknown,
- *   disabled?: boolean
+ *   disabled?: boolean,
+ *   afterSelect?: () => void
  * }} params
  */
 export function useSearchableDropdown({
@@ -35,6 +36,7 @@ export function useSearchableDropdown({
   getLabel,
   getValue = (item) => item,
   disabled = false,
+  afterSelect = undefined,
 }) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
@@ -69,9 +71,10 @@ export function useSearchableDropdown({
       onSelect(val);
       setOpen(false);
       setQuery("");
-      // Fokus bleibt auf dem Input, damit Tab das nächste Dropdown öffnet
+      if (afterSelect) requestAnimationFrame(afterSelect);
     },
-    [onSelect],
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [onSelect, afterSelect],
   );
 
   const handleClose = useCallback(() => {

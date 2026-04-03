@@ -69,10 +69,38 @@ export const PublishedEntry = memo(function PublishedEntry({
     entry?.liveTickerEventType ?? entry?.event_type ?? entry?.type;
   const { icon, cssClass } = getEventMeta(eventType, entry?.detail);
 
+  const minuteInputEl = (
+    <input
+      ref={minuteInputRef}
+      type="number"
+      min={0}
+      max={150}
+      value={editMinute}
+      onChange={(e) => setEditMinute(Number(e.target.value))}
+      onBlur={saveMinute}
+      onKeyDown={(e) => {
+        if (e.key === "Enter") saveMinute();
+        if (e.key === "Escape") setMinuteEditing(false);
+      }}
+      className="lt-entry__minute"
+      style={{ width: 40, textAlign: "center", background: "var(--lt-bg-input)", border: "1px solid var(--lt-accent)", borderRadius: 4, color: "var(--lt-accent)", fontFamily: "var(--lt-font-mono)", fontSize: "0.72rem", padding: "1px 2px" }}
+    />
+  );
+
   if (isPrematch) {
+    const prematchDisplay = tickerText?.minute != null ? `${tickerText.minute}'` : "Vor";
     return (
       <div className="lt-entry lt-entry--pre">
-        <span className="lt-entry__minute lt-entry__minute--pre">Vor</span>
+        {onEdit && minuteEditing ? minuteInputEl : (
+          <span
+            className="lt-entry__minute lt-entry__minute--pre"
+            onClick={onEdit ? () => { setEditMinute(tickerText?.minute ?? 0); setMinuteEditing(true); } : undefined}
+            title={onEdit ? "Minute bearbeiten" : undefined}
+            style={onEdit ? { cursor: "text" } : undefined}
+          >
+            {prematchDisplay}
+          </span>
+        )}
         <span className="lt-entry__icon">📣</span>
         <div className="lt-entry__body">
           {editing ? (
@@ -115,23 +143,7 @@ export const PublishedEntry = memo(function PublishedEntry({
       : (tickerText?.minute != null ? `${tickerText.minute}'` : "–");
     return (
       <div className="lt-entry lt-entry--manual">
-        {onEdit && (!hasPhaseLabel || phaseLabel === null) && minuteEditing ? (
-          <input
-            ref={minuteInputRef}
-            type="number"
-            min={0}
-            max={150}
-            value={editMinute}
-            onChange={(e) => setEditMinute(Number(e.target.value))}
-            onBlur={saveMinute}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") saveMinute();
-              if (e.key === "Escape") setMinuteEditing(false);
-            }}
-            className="lt-entry__minute"
-            style={{ width: 40, textAlign: "center", background: "var(--lt-bg-input)", border: "1px solid var(--lt-accent)", borderRadius: 4, color: "var(--lt-accent)", fontFamily: "var(--lt-font-mono)", fontSize: "0.72rem", padding: "1px 2px" }}
-          />
-        ) : (
+        {onEdit && (!hasPhaseLabel || phaseLabel === null) && minuteEditing ? minuteInputEl : (
           <span
             className="lt-entry__minute"
             onClick={onEdit && (!hasPhaseLabel || phaseLabel === null) ? () => { setEditMinute(tickerText?.minute ?? 0); setMinuteEditing(true); } : undefined}
@@ -183,9 +195,19 @@ export const PublishedEntry = memo(function PublishedEntry({
 
   if (!tickerText) return null;
 
+  const eventMinute = tickerText.minute ?? entry.time ?? entry.minute;
   return (
     <div className={`lt-entry${cssClass ? ` lt-entry--${cssClass}` : ""}`}>
-      <span className="lt-entry__minute">{entry.time ?? entry.minute}'</span>
+      {onEdit && minuteEditing ? minuteInputEl : (
+        <span
+          className="lt-entry__minute"
+          onClick={onEdit ? () => { setEditMinute(eventMinute ?? 0); setMinuteEditing(true); } : undefined}
+          title={onEdit ? "Minute bearbeiten" : undefined}
+          style={onEdit ? { cursor: "text" } : undefined}
+        >
+          {eventMinute != null ? `${eventMinute}'` : "–"}
+        </span>
+      )}
       <span className="lt-entry__icon">{icon}</span>
       <div className="lt-entry__body">
         {editing ? (
