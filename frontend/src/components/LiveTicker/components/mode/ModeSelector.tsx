@@ -47,7 +47,8 @@ interface ModeSelectorProps {
 export const ModeSelector = memo(function ModeSelector({
   mode,
   onModeChange,
-}: ModeSelectorProps) {
+  children,
+}: ModeSelectorProps & { children?: React.ReactNode }) {
   const [pending, setPending] = useState<TickerMode | null>(null);
   const [popPos, setPopPos] = useState<{ top: number; left: number } | null>(
     null,
@@ -159,15 +160,12 @@ export const ModeSelector = memo(function ModeSelector({
   const pendingCfg = pending ? MODE_CFG[pending] : null;
 
   return (
-    <>
-      <div className="lt-mode-bar">
-        {/* Status */}
+    <div className="lt-mode-bar lt-mode-bar--with-lang">
+      <div className="lt-mode-bar__main">
         <div className="lt-mode-status">
           <span className={`lt-mode-dot lt-mode-dot--${activeCfg.key}`} />
           <span className="lt-mode-status__text">{activeCfg.status}</span>
         </div>
-
-        {/* Buttons */}
         <div className="lt-mode-bar__group">
           {Object.values(MODES).map((m) => {
             const cfg = MODE_CFG[m];
@@ -194,22 +192,22 @@ export const ModeSelector = memo(function ModeSelector({
             );
           })}
         </div>
-
-        {/* Keyboard hints */}
-        <div className="lt-mode-bar__hints">
-          <span>
-            <kbd className="lt-mode-kbd">Ctrl+1</kbd> Auto
-          </span>
-          <span>
-            <kbd className="lt-mode-kbd">Ctrl+2</kbd> CO-OP
-          </span>
-          <span>
-            <kbd className="lt-mode-kbd">Ctrl+3</kbd> Manual
-          </span>
-        </div>
+        {children && <div className="lt-mode-bar__lang">{children}</div>}
       </div>
+      <div className="lt-mode-bar__hints">
+        <span>
+          <kbd className="lt-mode-kbd">Ctrl+1</kbd> Auto
+        </span>
+        <span>
+          <kbd className="lt-mode-kbd">Ctrl+2</kbd> CO-OP
+        </span>
+        <span>
+          <kbd className="lt-mode-kbd">Ctrl+3</kbd> Manual
+        </span>
+      </div>
+      {/* Popover and Toast remain unchanged below */}
 
-      {/* Popover — fixed via portal */}
+      {/* Popover and Toast remain unchanged below */}
       {pending &&
         popPos &&
         pendingCfg &&
@@ -274,7 +272,6 @@ export const ModeSelector = memo(function ModeSelector({
           document.body,
         )}
 
-      {/* Toast */}
       {toast &&
         createPortal(
           <div className="lt-mode-toast">
@@ -286,6 +283,6 @@ export const ModeSelector = memo(function ModeSelector({
           </div>,
           document.body,
         )}
-    </>
+    </div>
   );
 });

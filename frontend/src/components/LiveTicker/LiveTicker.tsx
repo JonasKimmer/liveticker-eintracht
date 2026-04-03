@@ -307,20 +307,12 @@ export default function LiveTicker() {
                 />
               )}
               {match && (
-                <div
-                  style={{
-                    display: "flex",
-                    gap: 16,
-                    alignItems: "center",
-                    marginBottom: 8,
-                  }}
-                >
-                  <ModeSelector mode={mode} onModeChange={handleModeChange} />
+                <ModeSelector mode={mode} onModeChange={handleModeChange}>
                   <LanguagePicker
                     language={language}
                     onLanguageChange={handleLanguageChange}
                   />
-                </div>
+                </ModeSelector>
               )}
             </div>
             {/* /lt-top-bar */}
