@@ -4,7 +4,7 @@ import { AutoModePanel } from "../components/mode/AutoModePanel";
 import { CollapsibleSection } from "../components/Collapsible";
 import { EntryEditor } from "../components/entry/EntryEditor";
 import { EventCard } from "../components/entry/EventCard";
-import { SummaryDraftCard } from "../components/summary/SummaryDraftCard";
+import { AutoPlayVideo } from "../components/AutoPlayVideo";
 import { MediaPickerPanel } from "../components/media/MediaPickerPanel";
 import { ClipPickerPanel } from "../components/media/ClipPickerPanel";
 import { SummarySection } from "../components/summary/SummarySection";
@@ -222,21 +222,49 @@ export const CenterPanel = memo<CenterPanelProps>(function CenterPanel({
                 }
               >
                 {videoDrafts.map((draft) => (
-                  <SummaryDraftCard
+                  <div
                     key={draft.id}
-                    draft={draft}
-                    label="🎬 Jubelvideo"
-                    onPublish={async (text) => {
-                      await api.updateTicker(draft.id, { text, status: "published" });
-                      await reload.loadTickerTexts();
-                      onPublished?.(draft.id, text);
+                    style={{
+                      background: "var(--lt-surface)",
+                      borderRadius: 8,
+                      padding: "0.75rem",
+                      border: "1px solid var(--lt-border)",
+                      marginBottom: "0.5rem",
                     }}
-                    onReject={async () => {
-                      await api.updateTicker(draft.id, { status: "rejected" });
-                      await reload.loadTickerTexts();
-                    }}
-                    showMinute
-                  />
+                  >
+                    <div style={{ fontFamily: "var(--lt-font-mono)", fontSize: "0.7rem", color: "var(--lt-text-muted)", marginBottom: "0.5rem" }}>
+                      🎬 Jubelvideo
+                    </div>
+                    {draft.video_url && (
+                      <AutoPlayVideo
+                        src={draft.video_url}
+                        style={{ width: "100%", borderRadius: 6, marginBottom: "0.5rem", maxHeight: 220 }}
+                      />
+                    )}
+                    <div style={{ display: "flex", gap: "0.5rem", marginTop: "0.5rem" }}>
+                      <button
+                        className="lt-event-card__gen-btn"
+                        style={{ flex: 1, background: "rgba(34,197,94,0.15)", color: "#4ade80" }}
+                        onClick={async () => {
+                          await api.updateTicker(draft.id, { status: "published" });
+                          await reload.loadTickerTexts();
+                          onPublished?.(draft.id, draft.text || "🎬 Jubelvideo");
+                        }}
+                      >
+                        ✓ Veröffentlichen
+                      </button>
+                      <button
+                        className="lt-event-card__gen-btn"
+                        style={{ flex: 1, background: "rgba(239,68,68,0.1)", color: "#f87171" }}
+                        onClick={async () => {
+                          await api.updateTicker(draft.id, { status: "rejected" });
+                          await reload.loadTickerTexts();
+                        }}
+                      >
+                        ✕ Ablehnen
+                      </button>
+                    </div>
+                  </div>
                 ))}
                 {pendingEvents.map((ev) => {
                   const draft = tickerTexts.find((t) => t.event_id === ev.id);
