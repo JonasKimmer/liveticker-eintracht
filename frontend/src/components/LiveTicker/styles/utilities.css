@@ -56,6 +56,10 @@
   font-size: 0.65rem;
   letter-spacing: 0;
 }
+.lt-btn--sm {
+  padding: 0.25rem 0.6rem;
+  font-size: 0.7rem;
+}
 
 /* ============================================================
    EMPTY / ERROR STATES

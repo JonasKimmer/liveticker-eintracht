@@ -70,16 +70,7 @@ export function SummaryDraftCard({
       <div className="lt-summary-editor" style={{ marginBottom: "0.5rem" }}>
         <div className="lt-editor__toolbar">
           <span className="lt-editor__label">✎ {label} bearbeiten</span>
-          <span
-            className="lt-editor__hint"
-            style={{
-              fontSize: "0.62rem",
-              color: "var(--lt-text-faint)",
-              fontFamily: "var(--lt-font-mono)",
-            }}
-          >
-            ⌘↵ Annehmen · Esc Abbrechen
-          </span>
+
         </div>
         <textarea
           ref={textareaRef}
@@ -95,11 +86,11 @@ export function SummaryDraftCard({
           }}
         />
         <div className="lt-entry__edit-actions" style={{ marginTop: "0.5rem" }}>
-          <button className="lt-btn lt-btn--primary" onClick={handleAccept}>
+          <button className="lt-btn lt-btn--primary lt-btn--sm" onClick={handleAccept}>
             Annehmen <kbd className="lt-btn__kbd">⌘↵</kbd>
           </button>
           <button
-            className="lt-btn lt-btn--ghost"
+            className="lt-btn lt-btn--ghost lt-btn--sm"
             onClick={() => setEditing(false)}
           >
             Abbrechen <kbd className="lt-btn__kbd">Esc</kbd>

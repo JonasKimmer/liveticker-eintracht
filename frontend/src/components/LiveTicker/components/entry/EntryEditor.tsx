@@ -1,7 +1,7 @@
 // ============================================================
 // EntryEditor.jsx  — Slash-Command Editor mit Autocomplete
 // ============================================================
-import React, { memo, useState, useMemo, useCallback, useRef } from "react";
+import React, { memo, useState, useMemo, useCallback, useRef, useEffect } from "react";
 import { parseCommand } from "../../utils/parseCommand";
 import { COMMAND_PALETTE, NEEDS_ARG } from "./CommandPalette";
 import { MODES, COMMAND_PREFIX_REGEX } from "../../constants";
@@ -33,6 +33,14 @@ export const EntryEditor = memo(function EntryEditor({
   const [paletteOpen, setPaletteOpen] = useState(false);
   const [paletteIdx, setPaletteIdx] = useState(0);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  // Auto-grow textarea
+  useEffect(() => {
+    const el = textareaRef.current;
+    if (!el) return;
+    el.style.height = "auto";
+    el.style.height = el.scrollHeight + "px";
+  }, [value]);
 
   // Live minute — syncs from prop, ticks every 60s, can be manually overridden
   const {
@@ -264,7 +272,7 @@ export const EntryEditor = memo(function EntryEditor({
     <div className="lt-summary-editor">
       <div className="lt-editor__toolbar">
         <span className="lt-editor__label">
-          {mode === MODES.MANUAL ? "Manueller Eintrag" : "Entwurf bearbeiten"}
+          {mode === MODES.MANUAL ? "✎ Manueller Eintrag" : "✎ Entwurf bearbeiten"}
         </span>
         <MinuteEditor
           minute={minute}
@@ -340,7 +348,7 @@ export const EntryEditor = memo(function EntryEditor({
           onChange={handleChange}
           onKeyDown={handleKeyDown}
           placeholder="Ticker-Eintrag …"
-          rows={3}
+          style={{ overflow: "hidden", resize: "none" }}
         />
 
         {!value && (
@@ -385,16 +393,16 @@ export const EntryEditor = memo(function EntryEditor({
 
       <div className="lt-editor__actions">
         {onCancel && (
-          <button className="lt-btn lt-btn--ghost" onClick={onCancel}>
-            Abbrechen
+          <button className="lt-btn lt-btn--ghost lt-btn--sm" onClick={onCancel}>
+            Abbrechen <kbd className="lt-btn__kbd">Esc</kbd>
           </button>
         )}
         <button
-          className="lt-btn lt-btn--primary"
+          className="lt-btn lt-btn--primary lt-btn--sm"
           onClick={handlePublish}
           disabled={publishDisabled}
         >
-          Veröffentlichen
+          Veröffentlichen <kbd className="lt-btn__kbd">↵</kbd>
         </button>
       </div>
     </div>
