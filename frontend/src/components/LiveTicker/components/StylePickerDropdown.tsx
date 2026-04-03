@@ -3,10 +3,6 @@ import { TICKER_STYLES, STYLE_META } from "../constants";
 import type { TickerStyle } from "../../../types";
 import { useClickOutside } from "hooks/useClickOutside";
 
-/**
- * Wiederverwendbarer KI-Stil-Picker (AIDraft + SummaryDraftCard).
- * Zeigt einen Toggle-Button; bei Klick öffnet sich ein Dropdown mit Stil-Optionen.
- */
 export function StylePickerDropdown({
   onSelect,
   disabled,
@@ -21,71 +17,42 @@ export function StylePickerDropdown({
   return (
     <div style={{ position: "relative" }} ref={ref}>
       <button
-        className="lt-btn lt-btn--ghost"
+        className={`lt-btn lt-btn--ghost lt-style-picker__trigger${open ? " lt-style-picker__trigger--open" : ""}`}
         onClick={() => setOpen((v) => !v)}
         disabled={disabled}
-        style={{ fontSize: "0.75rem" }}
       >
-        {disabled ? "…" : `✦ KI-Stil${open ? " ▲" : " ▼"}`}
-      </button>
-      {open && (
-        <div
+        ✦ KI-Stil
+        <svg
+          width="8"
+          height="8"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2.5"
           style={{
-            position: "absolute",
-            bottom: "calc(100% + 6px)",
-            left: 0,
-            background: "var(--lt-bg)",
-            border: "1px solid var(--lt-border)",
-            borderRadius: 8,
-            padding: "0.3rem",
-            zIndex: 30,
-            minWidth: 150,
-            boxShadow: "0 4px 16px rgba(0,0,0,0.4)",
+            transition: "transform 0.15s",
+            transform: open ? "rotate(180deg)" : "rotate(0deg)",
           }}
         >
-          <div
-            style={{
-              fontSize: "0.65rem",
-              color: "var(--lt-text-muted)",
-              padding: "0.2rem 0.5rem 0.35rem",
-              marginBottom: "0.2rem",
-              borderBottom: "1px solid var(--lt-border)",
-            }}
-          >
-            KI-Schreibstil
-          </div>
+          <path d="M6 9l6 6 6-6" />
+        </svg>
+      </button>
+      {open && (
+        <div className="lt-style-picker__menu">
+          <div className="lt-style-picker__hint">Schreibstil wählen</div>
           {TICKER_STYLES.map((s) => {
             const meta = STYLE_META[s] ?? { emoji: "✦", label: s };
             return (
               <button
                 key={s}
+                className="lt-style-picker__item"
                 onClick={() => {
                   onSelect(s);
                   setOpen(false);
                 }}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "0.5rem",
-                  width: "100%",
-                  background: "none",
-                  border: "none",
-                  padding: "0.35rem 0.5rem",
-                  cursor: "pointer",
-                  fontSize: "0.8rem",
-                  color: "var(--lt-text)",
-                  borderRadius: 5,
-                  textAlign: "left",
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.background = "rgba(255,255,255,0.07)";
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.background = "none";
-                }}
               >
-                <span>{meta.emoji}</span>
-                <span>{meta.label}</span>
+                <span className="lt-style-picker__emoji">{meta.emoji}</span>
+                <span className="lt-style-picker__label">{meta.label}</span>
               </button>
             );
           })}
