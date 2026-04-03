@@ -77,7 +77,7 @@ export function useSearchableDropdown({
   const handleClose = useCallback(() => {
     setOpen(false);
     setQuery("");
-    inputRef.current?.blur();
+    // kein blur() — Fokus bleibt, damit Tab natürlich zum nächsten Feld springt
   }, []);
 
   const filteredVals = useMemo(() => filtered.map((f) => f.val), [filtered]);
