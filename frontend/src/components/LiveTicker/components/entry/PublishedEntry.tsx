@@ -100,17 +100,20 @@ export const PublishedEntry = memo(function PublishedEntry({
   }
 
   if (isManual) {
-    const phaseLabel = PHASE_SHORT_LABEL[tickerText?.phase];
+    const phase = tickerText?.phase;
+    const hasPhaseLabel = phase != null && phase in PHASE_SHORT_LABEL;
+    const phaseLabel = hasPhaseLabel ? PHASE_SHORT_LABEL[phase] : undefined;
     const phaseIcon = PHASE_DEFAULT_ICON[tickerText?.phase] ?? icon ?? "•";
     // Dedup-Keys (z.B. "pass_h_90") sind kein Emoji → Fallback auf 📊
     const isCodeKey = tickerText?.icon && /^[a-z0-9_]+$/i.test(tickerText.icon);
     const displayIcon = isCodeKey ? "📊" : (tickerText?.icon ?? phaseIcon);
-    const minuteDisplay =
-      phaseLabel ??
-      (tickerText?.minute != null ? `${tickerText.minute}'` : "–");
+    // hasPhaseLabel + null → leere Minutenspalte; kein hasPhaseLabel → echte Minute
+    const minuteDisplay = hasPhaseLabel
+      ? (phaseLabel ?? "")
+      : (tickerText?.minute != null ? `${tickerText.minute}'` : "–");
     return (
       <div className="lt-entry lt-entry--manual">
-        {onEdit && !phaseLabel && minuteEditing ? (
+        {onEdit && !hasPhaseLabel && minuteEditing ? (
           <input
             ref={minuteInputRef}
             type="number"
@@ -129,9 +132,9 @@ export const PublishedEntry = memo(function PublishedEntry({
         ) : (
           <span
             className="lt-entry__minute"
-            onClick={onEdit && !phaseLabel ? () => { setEditMinute(tickerText?.minute ?? 0); setMinuteEditing(true); } : undefined}
-            title={onEdit && !phaseLabel ? "Minute bearbeiten" : undefined}
-            style={onEdit && !phaseLabel ? { cursor: "text" } : undefined}
+            onClick={onEdit && !hasPhaseLabel ? () => { setEditMinute(tickerText?.minute ?? 0); setMinuteEditing(true); } : undefined}
+            title={onEdit && !hasPhaseLabel ? "Minute bearbeiten" : undefined}
+            style={onEdit && !hasPhaseLabel ? { cursor: "text" } : undefined}
           >
             {minuteDisplay}
           </span>

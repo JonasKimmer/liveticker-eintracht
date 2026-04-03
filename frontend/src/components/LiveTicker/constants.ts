@@ -90,13 +90,13 @@ export const PREMATCH_PHASES = new Set(["Before", "PreMatch"]);
 
 // ── Kurzbezeichnungen für Phasen (Minuten-Spalte im Ticker) ──
 // Kurze Anzeige-Labels z.B. "HZ", "FT" — getrennt von PHASE_LABEL (vollständige Namen).
-export const PHASE_SHORT_LABEL = {
+// null = Phase bekannt, aber Minutenspalte bleibt leer.
+export const PHASE_SHORT_LABEL: Partial<Record<string, string | null>> = {
   Before: "i",
   After: "i",
-  FullTime: "FT",
-  Halftime: "HZ",
-  FirstHalfBreak: "HZ",
-  SecondHalf: "Anstoß",
+  FullTime: null,        // Abpfiff → leere Minutenspalte
+  Halftime: "i",         // Halbzeitanalyse → Info-Icon
+  FirstHalfBreak: null,  // Abpfiff 1. HZ → leere Minutenspalte
   SecondHalfBreak: "Pause",
   ExtraBreak: "VZ·P",
   ExtraSecondHalfBreak: "Elfm.P",

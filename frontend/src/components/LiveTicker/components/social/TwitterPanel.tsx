@@ -67,7 +67,7 @@ function TweetCard({ post, onClick, onDelete }: TweetCardProps) {
         onMouseLeave={() => setHovered(false)}
       >
         <button
-          onClick={() => onClick(post)}
+          onDoubleClick={() => onClick(post)}
           style={{
             width: "100%",
             padding: 0,
@@ -204,7 +204,7 @@ function TweetCard({ post, onClick, onDelete }: TweetCardProps) {
       onMouseLeave={() => setHovered(false)}
     >
       <button
-        onClick={() => onClick(post)}
+        onDoubleClick={() => onClick(post)}
         style={{
           width: "100%",
           textAlign: "left",
