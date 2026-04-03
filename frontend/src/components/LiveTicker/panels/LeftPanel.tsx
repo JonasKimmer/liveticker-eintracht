@@ -55,7 +55,7 @@ export const LeftPanel = memo(function LeftPanel() {
       return [
         {
           key: `ev-${ev.id}`,
-          minute: ev.time ?? 0,
+          minute: tt.minute ?? ev.time ?? 0,
           type: "event" as const,
           data: { event: ev, tickerText: tt },
         },

@@ -68,6 +68,7 @@ function TweetCard({ post, onClick, onDelete }: TweetCardProps) {
       >
         <button
           onDoubleClick={() => onClick(post)}
+          title="Doppelklick zum Veröffentlichen"
           style={{
             width: "100%",
             padding: 0,
@@ -121,6 +122,27 @@ function TweetCard({ post, onClick, onDelete }: TweetCardProps) {
                   outlineOffset: "-2px",
                 }}
               />
+            )}
+            {/* Doppelklick-Hint on hover */}
+            {hovered && (
+              <div
+                style={{
+                  position: "absolute",
+                  top: "50%",
+                  left: "50%",
+                  transform: "translate(-50%, -50%)",
+                  background: "rgba(0,0,0,0.7)",
+                  color: "#fff",
+                  fontFamily: "var(--lt-font-mono)",
+                  fontSize: "0.6rem",
+                  padding: "0.25rem 0.5rem",
+                  borderRadius: 4,
+                  whiteSpace: "nowrap",
+                  pointerEvents: "none",
+                }}
+              >
+                Doppelklick zum Veröffentlichen
+              </div>
             )}
             {/* X badge */}
             <div
@@ -205,6 +227,7 @@ function TweetCard({ post, onClick, onDelete }: TweetCardProps) {
     >
       <button
         onDoubleClick={() => onClick(post)}
+        title="Doppelklick zum Veröffentlichen"
         style={{
           width: "100%",
           textAlign: "left",
@@ -359,7 +382,7 @@ export const TwitterPanel = memo(function TwitterPanel({
         importLabel="𝕏 Tweets importieren"
         importBackground="#000"
         emptyLabel="Keine Tweets – erst importieren"
-        hintLabel="Doppelklick → Veröffentlichen"
+        hintLabel="Doppelklick zum Veröffentlichen"
         statusMsg={statusMsg}
         gridColumns={hasThumbnails ? "1fr 1fr" : "1fr"}
       >

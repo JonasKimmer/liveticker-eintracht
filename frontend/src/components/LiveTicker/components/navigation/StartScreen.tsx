@@ -73,7 +73,7 @@ export const StartScreen = memo(function StartScreen({
 
           <Dropdown
             label={teamsLoading ? "Team (lädt…)" : "Team"}
-            disabled={!selCountry || !teams.length}
+            disabled={!selCountry}
             value={selTeamId}
             placeholder="Team auswählen"
             displayValue={teams.find((t) => t.id === selTeamId)?.name}
@@ -83,7 +83,7 @@ export const StartScreen = memo(function StartScreen({
 
           <Dropdown
             label={competitionsLoading ? "Wettbewerb (lädt…)" : "Wettbewerb"}
-            disabled={!selTeamId || !competitions.length}
+            disabled={!selTeamId}
             value={selCompetitionId}
             placeholder="Wettbewerb auswählen"
             displayValue={
