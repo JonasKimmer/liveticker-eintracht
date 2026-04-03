@@ -54,9 +54,9 @@ export const StartScreen = memo(function StartScreen({
         {!compact && (
           <>
             <div className="lt-start__logo">{config.clubName}</div>
-            <h1 className="lt-start__title">Select a Match to Start</h1>
+            <h1 className="lt-start__title">Spiel auswählen</h1>
             <p className="lt-start__sub">
-              Choose a match to open the live ticker
+              Wähle ein Spiel, um den Live-Ticker zu starten
             </p>
           </>
         )}
