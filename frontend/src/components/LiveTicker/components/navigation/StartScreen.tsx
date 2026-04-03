@@ -3,6 +3,8 @@ import config from "config/whitelabel";
 import { CountryDropdown } from "../dropdown/CountryDropdown";
 import { Dropdown } from "../dropdown/Dropdown";
 import { MatchdayPicker } from "./MatchdayPicker";
+import { MobileStartWizard } from "./MobileStartWizard";
+import { useIsMobile } from "../../../../hooks/useIsMobile";
 import type { Team, Competition, Match } from "../../../../types";
 
 export interface StartScreenProps {
@@ -48,6 +50,32 @@ export const StartScreen = memo(function StartScreen({
   onMatchChange,
   compact = false,
 }: StartScreenProps) {
+  const isMobile = useIsMobile();
+
+  if (isMobile && !compact) {
+    return (
+      <MobileStartWizard
+        countries={countries}
+        selCountry={selCountry}
+        onCountryChange={onCountryChange}
+        teams={teams}
+        teamsLoading={teamsLoading}
+        selTeamId={selTeamId}
+        onTeamChange={onTeamChange}
+        competitions={competitions}
+        competitionsLoading={competitionsLoading}
+        selCompetitionId={selCompetitionId}
+        onCompetitionChange={onCompetitionChange}
+        matchdays={matchdays}
+        matchdaysLoading={matchdaysLoading}
+        selRound={selRound}
+        onRoundChange={onRoundChange}
+        matches={matches}
+        onMatchChange={onMatchChange}
+      />
+    );
+  }
+
   return (
     <div className={compact ? "lt-start lt-start--compact" : "lt-start"}>
       <div className="lt-start__inner">
