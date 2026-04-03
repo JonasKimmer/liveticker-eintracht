@@ -58,7 +58,7 @@ export function Dropdown({
       onSelect(val);
       setOpen(false);
       setQuery("");
-      inputRef.current?.blur();
+      // Fokus bleibt auf dem Input, damit Tab das nächste Dropdown öffnet
     },
     [onSelect],
   );

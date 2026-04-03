@@ -124,6 +124,9 @@ export function MatchdayPicker({
           className={`lt-mdp__trigger lt-start__select${open ? " lt-mdp__trigger--open" : ""}`}
           disabled={disabled || matchdaysLoading || !matchdays.length}
           onClick={() => setOpen((v) => !v)}
+          onFocus={() => {
+            if (!disabled && matchdays.length) setOpen(true);
+          }}
           style={{
             display: "flex",
             alignItems: "center",
