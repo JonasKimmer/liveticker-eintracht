@@ -24,6 +24,7 @@ export function CountryDropdown({
     inputRef,
     handleOpen,
     handleSelect,
+    handleClose,
     handleKeyDown,
   } = useSearchableDropdown({
     items: countries,
@@ -38,7 +39,12 @@ export function CountryDropdown({
     setQuery("");
     inputRef.current?.focus();
   }
-  function handleBlur() {} // click-outside handles close
+  function handleBlur(e: React.FocusEvent<HTMLInputElement>) {
+    // Schließen wenn Fokus das gesamte Dropdown verlässt (z.B. Tab)
+    if (!ref.current?.contains(e.relatedTarget as Node)) {
+      handleClose();
+    }
+  }
 
   return (
     <div

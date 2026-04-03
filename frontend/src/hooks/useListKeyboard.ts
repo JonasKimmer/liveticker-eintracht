@@ -57,6 +57,9 @@ export function useListKeyboard<T>(
     } else if (e.key === "Escape") {
       e.preventDefault();
       onCloseRef.current?.();
+    } else if (e.key === "Tab") {
+      // Tab schließt dropdown, lässt aber den natürlichen Fokus-Wechsel zu
+      onCloseRef.current?.();
     }
   }, []); // stabil – liest immer aktuelle Werte via Refs
 
