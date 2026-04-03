@@ -212,9 +212,6 @@
    BREADCRUMB (Header, Zustand 2)
    ============================================================ */
 .lt-breadcrumb {
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
@@ -229,6 +226,14 @@
   font-family: var(--lt-font-mono);
   font-size: 0.8rem;
   color: var(--lt-text-muted);
+}
+
+@media (min-width: 1101px) {
+  .lt-breadcrumb {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+  }
 }
 .lt-breadcrumb:hover {
   border-color: var(--lt-border);

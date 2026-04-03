@@ -112,8 +112,14 @@
 .lt-start__selects {
   width: 100%;
   display: grid;
-  grid-template-columns: repeat(3, 1fr); /* FIX MUSS HIER REIN */
+  grid-template-columns: 1fr;
   gap: 1.25rem;
+}
+
+@media (min-width: 769px) {
+  .lt-start__selects {
+    grid-template-columns: repeat(3, 1fr);
+  }
 }
 .lt-start__select-wrap {
   display: flex;
