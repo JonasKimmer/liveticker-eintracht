@@ -158,7 +158,7 @@ export function ModeSelector({ mode, onModeChange, tickerStyle, onTickerStyleCha
               <button
                 key={s}
                 className={`lt-mode-bar__btn${tickerStyle === s ? " lt-mode-bar__btn--active lt-mode-bar__btn--style" : ""}`}
-                style={tickerStyle === s ? { "--btn-bg": "var(--lt-text-faint)", "--btn-fg": "#0d0d0d" } : undefined}
+                style={tickerStyle === s ? { "--btn-bg": "var(--lt-text-faint)", "--btn-fg": "var(--lt-bg)" } : undefined}
                 onClick={() => onTickerStyleChange(s)}
               >
                 {s}
