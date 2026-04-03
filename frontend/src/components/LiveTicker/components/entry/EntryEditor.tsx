@@ -285,7 +285,7 @@ export const EntryEditor = memo(function EntryEditor({
         />
       </div>
 
-      <div className="lt-editor__input-wrap">
+      <div className="lt-editor__input-wrap" style={{ position: "relative" }}>
         {/* Command palette */}
         {showPalette && (
           <div className="lt-cmd-palette">
@@ -343,12 +343,12 @@ export const EntryEditor = memo(function EntryEditor({
 
         <textarea
           ref={textareaRef}
-          className="lt-editor__textarea"
+          className="lt-entry__edit-textarea"
           value={value}
           onChange={handleChange}
           onKeyDown={handleKeyDown}
           placeholder="Ticker-Eintrag …"
-          style={{ overflow: "hidden", resize: "none" }}
+          style={{ overflow: "hidden", resize: "none", minHeight: 120, display: "block" }}
         />
 
         {!value && (
@@ -391,12 +391,7 @@ export const EntryEditor = memo(function EntryEditor({
         </div>
       )}
 
-      <div className="lt-editor__actions">
-        {onCancel && (
-          <button className="lt-btn lt-btn--ghost lt-btn--sm" onClick={onCancel}>
-            Abbrechen <kbd className="lt-btn__kbd">Esc</kbd>
-          </button>
-        )}
+      <div className="lt-entry__edit-actions" style={{ marginTop: "0.5rem" }}>
         <button
           className="lt-btn lt-btn--primary lt-btn--sm"
           onClick={handlePublish}
@@ -404,6 +399,11 @@ export const EntryEditor = memo(function EntryEditor({
         >
           Veröffentlichen <kbd className="lt-btn__kbd">↵</kbd>
         </button>
+        {onCancel && (
+          <button className="lt-btn lt-btn--ghost lt-btn--sm" onClick={onCancel}>
+            Abbrechen <kbd className="lt-btn__kbd">Esc</kbd>
+          </button>
+        )}
       </div>
     </div>
   );
