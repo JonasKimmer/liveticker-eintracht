@@ -81,11 +81,12 @@ export function Dropdown({
       setQuery("");
     }
   }
-  function handleBlur() {
-    setTimeout(() => {
+  function handleBlur(e: React.FocusEvent<HTMLInputElement>) {
+    // relatedTarget statt setTimeout — verhindert Race mit dem nächsten Dropdown
+    if (!ref.current?.contains(e.relatedTarget as Node)) {
       setOpen(false);
       setQuery("");
-    }, 150);
+    }
   }
 
   return (
