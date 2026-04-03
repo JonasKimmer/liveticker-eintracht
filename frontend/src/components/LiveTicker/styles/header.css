@@ -7,9 +7,10 @@
   background: var(--lt-bg-card);
   border-bottom: 1px solid var(--lt-border);
   padding: 0 1.5rem;
-  display: flex;
+  /* Grid: Logo links | Breadcrumb mittig | Status rechts */
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
   align-items: center;
-  justify-content: space-between;
   position: sticky;
   top: 0;
   z-index: 20;
@@ -74,6 +75,7 @@
 .lt-header__status {
   display: flex;
   align-items: center;
+  justify-content: flex-end;
   gap: 0.5rem;
   font-family: var(--lt-font-mono);
   font-size: 0.75rem;
@@ -209,11 +211,12 @@
 }
 
 /* ============================================================
-   BREADCRUMB (im Header, mittig zentriert)
+   BREADCRUMB (Grid-Mitte des Headers)
    ============================================================ */
 .lt-breadcrumb {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 0.35rem;
   background: none;
   border: 1px solid transparent;
@@ -228,21 +231,18 @@
   color: var(--lt-text-muted);
   white-space: nowrap;
   overflow: hidden;
-  /* Mittig zwischen Logo und Status */
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
-  max-width: calc(100% - 400px);
+  max-width: 100%;
 }
 
-.lt--mobile .lt-breadcrumb {
-  position: static;
-  transform: none;
-  flex: 1;
-  min-width: 0;
-  max-width: none;
-  justify-content: center;
-  font-size: 0.72rem;
+@media (max-width: 1100px) {
+  .lt-header {
+    grid-template-columns: auto 1fr auto;
+  }
+  .lt-breadcrumb {
+    font-size: 0.72rem;
+    min-width: 0;
+    text-overflow: ellipsis;
+  }
 }
 .lt-breadcrumb:hover {
   border-color: var(--lt-border);

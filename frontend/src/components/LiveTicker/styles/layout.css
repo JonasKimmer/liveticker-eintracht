@@ -143,7 +143,9 @@
 
   /* Land + Team ausblenden — Liga + Spieltag + Match bleiben */
   .lt-breadcrumb__seg--country,
-  .lt-breadcrumb__seg--team {
+  .lt-breadcrumb__seg--team,
+  .lt--mobile .lt-breadcrumb__seg--country,
+  .lt--mobile .lt-breadcrumb__seg--team {
     display: none;
   }
 
