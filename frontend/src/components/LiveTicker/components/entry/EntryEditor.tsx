@@ -261,7 +261,7 @@ export const EntryEditor = memo(function EntryEditor({
   }, [preview, value]);
 
   return (
-    <div className="lt-editor">
+    <div className="lt-summary-editor">
       <div className="lt-editor__toolbar">
         <span className="lt-editor__label">
           {mode === MODES.MANUAL ? "Manueller Eintrag" : "Entwurf bearbeiten"}
