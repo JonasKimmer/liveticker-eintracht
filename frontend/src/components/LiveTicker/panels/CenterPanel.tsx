@@ -222,66 +222,74 @@ export const CenterPanel = memo<CenterPanelProps>(function CenterPanel({
                   ) : null
                 }
               >
-                {videoDrafts.map((draft) => {
-                  const isVideoSelected = selectedVideoDraftId === draft.id;
-                  return (
-                    <div key={draft.id}>
-                      <div
-                        className={`lt-event-card lt-event-card__summary--video${isVideoSelected ? " lt-event-card--selected" : ""}`}
-                        onClick={() => setSelectedVideoDraftId(isVideoSelected ? null : draft.id)}
-                        role="button"
-                        tabIndex={0}
-                      >
-                        <div className="lt-event-card__row">
-                          <span className="lt-event-card__icon">🎬</span>
-                          <span className="lt-event-card__raw">Jubelvideo</span>
-                        </div>
-                      </div>
-                      {isVideoSelected && (
+                {[
+                  ...videoDrafts.map((d) => ({ type: "video" as const, minute: d.minute ?? 0, item: d })),
+                  ...pendingEvents.map((ev) => ({ type: "event" as const, minute: ev.time ?? 0, item: ev })),
+                ]
+                  .sort((a, b) => a.minute - b.minute)
+                  .map(({ type, item }) => {
+                  if (type === "video") {
+                    const draft = item;
+                    const isVideoSelected = selectedVideoDraftId === draft.id;
+                    return (
+                      <div key={`video-${draft.id}`}>
                         <div
-                          style={{
-                            background: "var(--lt-surface)",
-                            borderRadius: 8,
-                            padding: "0.75rem",
-                            border: "1px solid var(--lt-border)",
-                            marginBottom: "0.5rem",
-                          }}
+                          className={`lt-event-card lt-event-card__summary--video${isVideoSelected ? " lt-event-card--selected" : ""}`}
+                          onClick={() => setSelectedVideoDraftId(isVideoSelected ? null : draft.id)}
+                          role="button"
+                          tabIndex={0}
                         >
-                          {draft.video_url && (
-                            <AutoPlayVideo
-                              src={draft.video_url}
-                              style={{ width: "100%", borderRadius: 6, marginBottom: "0.5rem", maxHeight: 220 }}
-                            />
-                          )}
-                          <div style={{ display: "flex", gap: "0.5rem", marginTop: "0.5rem" }}>
-                            <button
-                              className="lt-event-card__gen-btn"
-                              style={{ flex: 1, background: "rgba(34,197,94,0.15)", color: "#4ade80" }}
-                              onClick={async () => {
-                                await api.updateTicker(draft.id, { status: "published" });
-                                await reload.loadTickerTexts();
-                                onPublished?.(draft.id, draft.text || "🎬 Jubelvideo");
-                              }}
-                            >
-                              ✓ Veröffentlichen
-                            </button>
-                            <button
-                              className="lt-event-card__gen-btn"
-                              style={{ flex: 1, background: "rgba(239,68,68,0.1)", color: "#f87171" }}
-                              onClick={async () => {
-                                await api.updateTicker(draft.id, { status: "rejected" });
-                                await reload.loadTickerTexts();
-                              }}
-                            >
-                              ✕ Ablehnen
-                            </button>
+                          <div className="lt-event-card__row">
+                            <span className="lt-event-card__minute">{draft.minute ? `${draft.minute}'` : ""}</span>
+                            <span className="lt-event-card__icon">🎬</span>
+                            <span className="lt-event-card__raw">Jubelvideo</span>
                           </div>
                         </div>
-                      )}
-                    </div>
-                  );
-                })}
-                {pendingEvents.map((ev) => {
+                        {isVideoSelected && (
+                          <div
+                            style={{
+                              background: "var(--lt-surface)",
+                              borderRadius: 8,
+                              padding: "0.75rem",
+                              border: "1px solid var(--lt-border)",
+                              marginBottom: "0.5rem",
+                            }}
+                          >
+                            {draft.video_url && (
+                              <AutoPlayVideo
+                                src={draft.video_url}
+                                style={{ width: "100%", borderRadius: 6, marginBottom: "0.5rem", maxHeight: 220 }}
+                              />
+                            )}
+                            <div style={{ display: "flex", gap: "0.5rem", marginTop: "0.5rem" }}>
+                              <button
+                                className="lt-event-card__gen-btn"
+                                style={{ flex: 1, background: "rgba(34,197,94,0.15)", color: "#4ade80" }}
+                                onClick={async () => {
+                                  await api.updateTicker(draft.id, { status: "published" });
+                                  await reload.loadTickerTexts();
+                                  onPublished?.(draft.id, draft.text || "🎬 Jubelvideo");
+                                }}
+                              >
+                                ✓ Veröffentlichen
+                              </button>
+                              <button
+                                className="lt-event-card__gen-btn"
+                                style={{ flex: 1, background: "rgba(239,68,68,0.1)", color: "#f87171" }}
+                                onClick={async () => {
+                                  await api.updateTicker(draft.id, { status: "rejected" });
+                                  await reload.loadTickerTexts();
+                                }}
+                              >
+                                ✕ Ablehnen
+                              </button>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  }
+                  const ev = item;
                   const draft = tickerTexts.find((t) => t.event_id === ev.id);
                   const isSelected = selectedEvent?.id === ev.id;
                   return (
@@ -326,7 +334,7 @@ export const CenterPanel = memo<CenterPanelProps>(function CenterPanel({
                     </div>
                   );
                 })}
-              </CollapsibleSection>
+                </CollapsibleSection>
             )}
           </>
         )}
