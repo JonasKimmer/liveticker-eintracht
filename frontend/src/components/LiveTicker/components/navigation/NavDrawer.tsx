@@ -1,6 +1,7 @@
 // ============================================================
 // NavDrawer.jsx — Slide-in Drawer für Match-Wechsel
 // ============================================================
+import { useRef, useEffect } from "react";
 import { StartScreen } from "./StartScreen";
 import type { StartScreenProps } from "./StartScreen";
 
@@ -11,6 +12,14 @@ interface NavDrawerProps {
 }
 
 export function NavDrawer({ open, onClose, navProps }: NavDrawerProps) {
+  const firstInputRef = useRef<HTMLInputElement>(null);
+
+  // Fokus auf erstes Eingabefeld nach Drawer-Animation (280ms)
+  useEffect(() => {
+    if (!open) return;
+    const id = setTimeout(() => firstInputRef.current?.focus(), 300);
+    return () => clearTimeout(id);
+  }, [open]);
   return (
     <>
       {/* Overlay */}
@@ -93,6 +102,7 @@ export function NavDrawer({ open, onClose, navProps }: NavDrawerProps) {
           <StartScreen
             {...navProps}
             compact
+            firstInputRef={firstInputRef}
             onMatchChange={(id) => {
               navProps.onMatchChange(id);
               onClose();

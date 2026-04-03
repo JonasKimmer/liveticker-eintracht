@@ -7,12 +7,14 @@ interface CountryDropdownProps {
   countries: string[];
   value: string | null;
   onSelect: (c: string | null) => void;
+  focusRef?: React.RefObject<HTMLInputElement>;
 }
 
 export function CountryDropdown({
   countries,
   value,
   onSelect,
+  focusRef,
 }: CountryDropdownProps) {
   const {
     open,
@@ -32,6 +34,12 @@ export function CountryDropdown({
     getLabel: (c) => c,
     getValue: (c) => c,
   });
+
+  // Merge external focusRef with internal inputRef so callers can imperatively focus
+  const mergedRef = (el: HTMLInputElement | null) => {
+    (inputRef as React.MutableRefObject<HTMLInputElement | null>).current = el;
+    if (focusRef) (focusRef as React.MutableRefObject<HTMLInputElement | null>).current = el;
+  };
 
   function handleClear(e: React.MouseEvent) {
     e.stopPropagation();
@@ -55,7 +63,7 @@ export function CountryDropdown({
       <label className="lt-start__label">Land</label>
       <div style={{ position: "relative" }}>
         <input
-          ref={inputRef}
+          ref={mergedRef}
           value={open ? query : (value ?? "")}
           placeholder="Land auswählen"
           onChange={(e) => setQuery(e.target.value)}

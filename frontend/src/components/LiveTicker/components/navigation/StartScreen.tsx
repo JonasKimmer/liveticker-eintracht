@@ -1,4 +1,4 @@
-import { memo } from "react";
+import { memo, type RefObject } from "react";
 import config from "config/whitelabel";
 import { CountryDropdown } from "../dropdown/CountryDropdown";
 import { Dropdown } from "../dropdown/Dropdown";
@@ -25,6 +25,7 @@ export interface StartScreenProps {
   matches: Match[];
   onMatchChange: (id: number) => void;
   compact?: boolean;
+  firstInputRef?: RefObject<HTMLInputElement>;
 }
 
 export const StartScreen = memo(function StartScreen({
@@ -47,6 +48,7 @@ export const StartScreen = memo(function StartScreen({
   matches,
   onMatchChange,
   compact = false,
+  firstInputRef,
 }: StartScreenProps) {
   return (
     <div className={compact ? "lt-start lt-start--compact" : "lt-start"}>
@@ -66,6 +68,7 @@ export const StartScreen = memo(function StartScreen({
             countries={countries}
             value={selCountry}
             onSelect={onCountryChange}
+            focusRef={firstInputRef}
           />
 
           <Dropdown
