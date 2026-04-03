@@ -11,7 +11,7 @@ import { useTickerModeContext } from "../../../context/TickerModeContext";
 import { getEventMeta, getRawEventText } from "../utils/parseCommand";
 import * as api from "../../../api";
 
-// Welcher Stil im AUTO-Modus verwendet wird
+// Welcher Stil im AUTO-Modus verwendet wird (Fallback falls kein tickerStyle übergeben)
 const AUTO_STYLE = TICKER_STYLES[0];
 
 export function CenterPanel({
@@ -25,10 +25,12 @@ export function CenterPanel({
   onDraftActive,
   reload,
   instance = "ef_whitelabel",
+  tickerStyle,
   lineups = [],
   players = [],
 }) {
   const { mode } = useTickerModeContext();
+  const activeStyle = tickerStyle ?? AUTO_STYLE;
 
   // Player + team names for autocomplete
   const playerNames = useMemo(() => {
@@ -102,7 +104,7 @@ export function CenterPanel({
         // Noch kein Draft → generieren, dann publishen
         processingRef.current.add(ev.id);
         api
-          .generateTicker(ev.id, AUTO_STYLE, instance)
+          .generateTicker(ev.id, activeStyle, instance)
           .then(() => reload.loadTickerTexts())
           .then(async () => {
             const res = await api.fetchTickerTexts(match.id);
@@ -135,7 +137,7 @@ export function CenterPanel({
         (ev) => !tickerTexts.find((t) => t.event_id === ev.id),
       );
       for (const ev of withoutDraft) {
-        await api.generateTicker(ev.id, AUTO_STYLE, instance);
+        await api.generateTicker(ev.id, activeStyle, instance);
       }
 
       // 2. Alle Drafts (inkl. neu generierte) publishen
@@ -154,7 +156,7 @@ export function CenterPanel({
     } finally {
       setBulkGenerating(false);
     }
-  }, [pendingEvents, tickerTexts, match, reload, instance]);
+  }, [pendingEvents, tickerTexts, match, reload, instance, activeStyle]);
 
   const handleEditPublish = useCallback(async ({ text } = {}) => {
     const textToPublish = text ?? editorValue.trim();
@@ -255,6 +257,7 @@ export function CenterPanel({
                       }}
                       onDismiss={() => handleDismissEvent(ev, draft)}
                       showGenButtons
+                      style={activeStyle}
                     />
                   );
                 })}
@@ -302,19 +305,13 @@ export function CenterPanel({
 
             {selectedEvent && !selectedDraft && (
               <div style={{ marginTop: "0.75rem" }}>
-                <div className="lt-center__section-title">Stil wählen</div>
-                <div className="lt-event-card__gen-btns">
-                  {TICKER_STYLES.map((s) => (
-                    <button
-                      key={s}
-                      className="lt-event-card__gen-btn"
-                      onClick={() => onGenerate(selectedEvent.id, s)}
-                      disabled={generatingId === selectedEvent.id}
-                    >
-                      {generatingId === selectedEvent.id ? "…" : `✦ ${s}`}
-                    </button>
-                  ))}
-                </div>
+                <button
+                  className="lt-event-card__gen-btn"
+                  onClick={() => onGenerate(selectedEvent.id, activeStyle)}
+                  disabled={generatingId === selectedEvent.id}
+                >
+                  {generatingId === selectedEvent.id ? "…" : `✦ ${activeStyle} generieren`}
+                </button>
               </div>
             )}
           </>
@@ -374,6 +371,7 @@ const EventCard = memo(function EventCard({
   onSelect,
   onDismiss,
   showGenButtons,
+  style,
 }) {
   const { icon, cssClass } = getEventMeta(event.liveTickerEventType, null);
 
@@ -401,19 +399,16 @@ const EventCard = memo(function EventCard({
 
       {showGenButtons && !draft && (
         <div className="lt-event-card__gen-btns">
-          {TICKER_STYLES.map((s) => (
-            <button
-              key={s}
-              className="lt-event-card__gen-btn"
-              onClick={(e) => {
-                e.stopPropagation();
-                onGenerate(event.id, s);
-              }}
-              disabled={generatingId === event.id}
-            >
-              {generatingId === event.id ? "…" : `✦ ${s}`}
-            </button>
-          ))}
+          <button
+            className="lt-event-card__gen-btn"
+            onClick={(e) => {
+              e.stopPropagation();
+              onGenerate(event.id, style ?? AUTO_STYLE);
+            }}
+            disabled={generatingId === event.id}
+          >
+            {generatingId === event.id ? "…" : `✦ ${style ?? AUTO_STYLE}`}
+          </button>
         </div>
       )}
     </div>
