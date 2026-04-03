@@ -107,13 +107,15 @@ export const PublishedEntry = memo(function PublishedEntry({
     // Dedup-Keys (z.B. "pass_h_90") sind kein Emoji → Fallback auf 📊
     const isCodeKey = tickerText?.icon && /^[a-z0-9_]+$/i.test(tickerText.icon);
     const displayIcon = isCodeKey ? "📊" : (tickerText?.icon ?? phaseIcon);
-    // hasPhaseLabel + null → leere Minutenspalte; kein hasPhaseLabel → echte Minute
+    // null-Label: minute vorhanden → echte Minute zeigen, sonst leer
+    // string-Label: immer das Label zeigen
+    // kein Label in PHASE_SHORT_LABEL → echte Minute oder "–"
     const minuteDisplay = hasPhaseLabel
-      ? (phaseLabel ?? "")
+      ? (phaseLabel !== null ? phaseLabel : (tickerText?.minute != null ? `${tickerText.minute}'` : ""))
       : (tickerText?.minute != null ? `${tickerText.minute}'` : "–");
     return (
       <div className="lt-entry lt-entry--manual">
-        {onEdit && !hasPhaseLabel && minuteEditing ? (
+        {onEdit && (!hasPhaseLabel || phaseLabel === null) && minuteEditing ? (
           <input
             ref={minuteInputRef}
             type="number"
@@ -132,9 +134,9 @@ export const PublishedEntry = memo(function PublishedEntry({
         ) : (
           <span
             className="lt-entry__minute"
-            onClick={onEdit && !hasPhaseLabel ? () => { setEditMinute(tickerText?.minute ?? 0); setMinuteEditing(true); } : undefined}
-            title={onEdit && !hasPhaseLabel ? "Minute bearbeiten" : undefined}
-            style={onEdit && !hasPhaseLabel ? { cursor: "text" } : undefined}
+            onClick={onEdit && (!hasPhaseLabel || phaseLabel === null) ? () => { setEditMinute(tickerText?.minute ?? 0); setMinuteEditing(true); } : undefined}
+            title={onEdit && (!hasPhaseLabel || phaseLabel === null) ? "Minute bearbeiten" : undefined}
+            style={onEdit && (!hasPhaseLabel || phaseLabel === null) ? { cursor: "text" } : undefined}
           >
             {minuteDisplay}
           </span>

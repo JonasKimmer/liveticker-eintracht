@@ -94,9 +94,10 @@ export const PREMATCH_PHASES = new Set(["Before", "PreMatch"]);
 export const PHASE_SHORT_LABEL: Partial<Record<string, string | null>> = {
   Before: "i",
   After: "i",
-  FullTime: null,        // Abpfiff → leere Minutenspalte
-  Halftime: "i",         // Halbzeitanalyse → Info-Icon
-  FirstHalfBreak: null,  // Abpfiff 1. HZ → leere Minutenspalte
+  FullTime: null,        // Abpfiff → leere Minutenspalte (kein minute-Wert erwartet)
+  Halftime: "i",         // Halbzeitanalyse via Halftime-Phase → Info-Icon
+  FirstHalfBreak: null,  // Halbzeit-Event/Analyse: null → leer wenn minute=null, sonst echte Minute
+  SecondHalf: "i",       // Anstoß 2. HZ → Info-Icon
   SecondHalfBreak: "Pause",
   ExtraBreak: "VZ·P",
   ExtraSecondHalfBreak: "Elfm.P",
