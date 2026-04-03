@@ -122,8 +122,15 @@
 }
 
 /* Entry Editor */
-.lt-editor {
+.lt-editor,
+.lt-summary-editor {
   margin-bottom: 1.25rem;
+}
+.lt-summary-editor {
+  background: var(--lt-bg-card-2);
+  border: 2px solid var(--lt-border-focus);
+  border-radius: var(--lt-radius-lg);
+  padding: 1.25rem;
 }
 .lt-editor__toolbar {
   display: flex;
