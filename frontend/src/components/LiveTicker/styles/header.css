@@ -116,6 +116,13 @@
 .lt-lang-picker {
   position: relative;
 }
+.lt-lang-picker__prefix {
+  color: var(--lt-text-faint);
+  margin-right: 3px;
+}
+@media (max-width: 768px) {
+  .lt-lang-picker__prefix { display: none; }
+}
 .lt-lang-picker__trigger {
   display: flex;
   align-items: center;

@@ -81,21 +81,6 @@ export const updateTicker = (entryId: number, data: Partial<TickerEntry>) =>
   api.patch(`/ticker/${entryId}`, data);
 export const deleteTicker = (entryId: number) =>
   api.delete(`/ticker/${entryId}`);
-export const publishClipTicker = (
-  matchId: number,
-  text: string,
-  videoUrl: string,
-  thumbnailUrl: string | null,
-  minute: number | null,
-) =>
-  api.post("/ticker/manual", {
-    match_id: matchId,
-    text,
-    icon: "🎬",
-    minute: minute ?? null,
-    image_url: thumbnailUrl ?? null,
-    video_url: videoUrl ?? null,
-  });
 export const generateSyntheticEvent = (
   syntheticEventId: number,
   style = "neutral",
@@ -211,8 +196,6 @@ export const importPrematch = (fixtureId: number, tickerMode = "coop") =>
 export const importPlayerStatistics = (matchId: number) =>
   n8n.post("/player-statistics", { match_id: matchId });
 
-export const fetchGoalClips = (matchId: number) =>
-  n8n.post("/Tor Clip", matchId ? { match_id: matchId } : {});
 export const triggerYoutubeScrape = () =>
   n8n.post("/3555f418-e7a5-4d9b-ac87-5b591b4bc0d0");
 export const triggerTwitterImport = () =>
@@ -221,10 +204,6 @@ export const triggerInstagramImport = () =>
   n8n.post("/149b541b-34f0-44f8-b3ce-c66bd3d75714");
 
 // ── Clips (persistent DB) ───────────────────────────────────
-export const fetchClips = (matchId: number, teamName?: string) =>
-  api.get(
-    `/clips/match/${matchId}${teamName ? `?team_name=${encodeURIComponent(teamName)}` : ""}`,
-  );
 export const fetchYoutubeClips = () => api.get("/clips/by-source?source=youtube");
 export const fetchTwitterPosts = () => api.get("/clips/by-source?source=twitter");
 export const fetchInstagramPosts = () => api.get("/clips/by-source?source=instagram");

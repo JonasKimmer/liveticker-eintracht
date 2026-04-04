@@ -4,9 +4,7 @@ import { AutoModePanel } from "../components/mode/AutoModePanel";
 import { CollapsibleSection } from "../components/Collapsible";
 import { EntryEditor } from "../components/entry/EntryEditor";
 import { EventCard } from "../components/entry/EventCard";
-import { AutoPlayVideo } from "../components/AutoPlayVideo";
 import { MediaPickerPanel } from "../components/media/MediaPickerPanel";
-import { ClipPickerPanel } from "../components/media/ClipPickerPanel";
 import { SummarySection } from "../components/summary/SummarySection";
 import { PublishedSummarySection } from "../components/summary/PublishedSummarySection";
 import { YouTubePanel } from "../components/social/YouTubePanel";
@@ -69,18 +67,12 @@ export const CenterPanel = memo<CenterPanelProps>(function CenterPanel({
     [match],
   );
 
-  const videoDrafts = useMemo(
-    () => tickerTexts.filter((t) => t.status === "draft" && !t.event_id && !!t.video_url),
-    [tickerTexts],
-  );
-
   const hasPendingSummaries = useMemo(
     () => tickerTexts.some((t) => t.status === "draft" && !t.event_id && !t.video_url),
     [tickerTexts],
   );
 
   const [selectedSummaryDraftId, setSelectedSummaryDraftId] = useState<number | null>(null);
-  const [selectedVideoDraftId, setSelectedVideoDraftId] = useState<number | null>(null);
   const [pendingAutoExpandId, setPendingAutoExpandId] = useState<number | null>(null);
   const [autoError, setAutoError] = useState<string | null>(null);
 
@@ -178,17 +170,17 @@ export const CenterPanel = memo<CenterPanelProps>(function CenterPanel({
             <PublishedSummarySection onRetract={setPendingAutoExpandId} />
 
             {/* Events */}
-            {pendingEvents.length === 0 && videoDrafts.length === 0 && !hasPendingSummaries && (
+            {pendingEvents.length === 0 && !hasPendingSummaries && (
               <div className="lt-empty">
                 <div className="lt-empty__icon">✓</div>
                 Alle Events verarbeitet
               </div>
             )}
 
-            {(pendingEvents.length > 0 || videoDrafts.length > 0) && (
+            {pendingEvents.length > 0 && (
               <CollapsibleSection
                 title="Events"
-                count={pendingEvents.length + videoDrafts.length}
+                count={pendingEvents.length}
                 onToggle={(open) => {
                   if (!open) setSelectedEventId(null);
                 }}
@@ -226,74 +218,10 @@ export const CenterPanel = memo<CenterPanelProps>(function CenterPanel({
                   ) : null
                 }
               >
-                {[
-                  ...videoDrafts.map((d) => ({ type: "video" as const, minute: d.minute ?? 0, item: d })),
-                  ...pendingEvents.map((ev) => ({ type: "event" as const, minute: ev.time ?? 0, item: ev })),
-                ]
-                  .sort((a, b) => a.minute - b.minute)
-                  .map(({ type, item }) => {
-                  if (type === "video") {
-                    const draft = item;
-                    const isVideoSelected = selectedVideoDraftId === draft.id;
-                    return (
-                      <div key={`video-${draft.id}`}>
-                        <div
-                          className={`lt-event-card lt-event-card__summary--video${isVideoSelected ? " lt-event-card--selected" : ""}`}
-                          onClick={() => setSelectedVideoDraftId(isVideoSelected ? null : draft.id)}
-                          role="button"
-                          tabIndex={0}
-                        >
-                          <div className="lt-event-card__row">
-                            <span className="lt-event-card__minute">{draft.minute ? `${draft.minute}'` : ""}</span>
-                            <span className="lt-event-card__icon">🎬</span>
-                            <span className="lt-event-card__raw">Jubelvideo</span>
-                          </div>
-                        </div>
-                        {isVideoSelected && (
-                          <div
-                            style={{
-                              background: "var(--lt-surface)",
-                              borderRadius: 8,
-                              padding: "0.75rem",
-                              border: "1px solid var(--lt-border)",
-                              marginBottom: "0.5rem",
-                            }}
-                          >
-                            {draft.video_url && (
-                              <AutoPlayVideo
-                                src={draft.video_url}
-                                style={{ width: "100%", borderRadius: 6, marginBottom: "0.5rem", maxHeight: 220 }}
-                              />
-                            )}
-                            <div style={{ display: "flex", gap: "0.5rem", marginTop: "0.5rem" }}>
-                              <button
-                                className="lt-event-card__gen-btn"
-                                style={{ flex: 1, background: "rgba(34,197,94,0.15)", color: "#4ade80" }}
-                                onClick={async () => {
-                                  await api.updateTicker(draft.id, { status: "published" });
-                                  await reload.loadTickerTexts();
-                                  onPublished?.(draft.id, draft.text || "🎬 Jubelvideo");
-                                }}
-                              >
-                                ✓ Veröffentlichen
-                              </button>
-                              <button
-                                className="lt-event-card__gen-btn"
-                                style={{ flex: 1, background: "rgba(239,68,68,0.1)", color: "#f87171" }}
-                                onClick={async () => {
-                                  await api.updateTicker(draft.id, { status: "rejected" });
-                                  await reload.loadTickerTexts();
-                                }}
-                              >
-                                ✕ Ablehnen
-                              </button>
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    );
-                  }
-                  const ev = item;
+                {pendingEvents
+                  .slice()
+                  .sort((a, b) => (a.time ?? 0) - (b.time ?? 0))
+                  .map((ev) => {
                   const draft = tickerTexts.find((t) => t.event_id === ev.id);
                   const isSelected = selectedEvent?.id === ev.id;
                   return (
@@ -363,16 +291,6 @@ export const CenterPanel = memo<CenterPanelProps>(function CenterPanel({
             playerNames={playerNames}
             currentMinute={currentMinute}
             lineups={lineups}
-          />
-        </div>
-
-        {/* ── Tor-Clips ─────────────────────────────────────── */}
-        <div style={{ marginTop: "0.5rem" }}>
-          <ClipPickerPanel
-            matchId={match.id}
-            match={match}
-            currentMinute={currentMinute}
-            onPublished={() => {}} // reload via TickerDataContext polling
           />
         </div>
 

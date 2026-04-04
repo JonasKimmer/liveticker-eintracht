@@ -32,6 +32,7 @@ export const LanguagePicker = memo(function LanguagePicker({
         onClick={() => setOpen((v) => !v)}
         title="Ausgabesprache für KI-Texte"
       >
+        <span className="lt-lang-picker__prefix">Sprache:</span>
         {language.toUpperCase()}
         <svg
           width="8"

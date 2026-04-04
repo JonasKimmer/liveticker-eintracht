@@ -1,11 +1,10 @@
 """
 Clips Router
 ============
-Persistente Tor-Clips aus n8n Bundesliga-Scraper.
+Clips für YouTube, Twitter, Instagram (Social Media).
 
 Endpunkte:
-- POST /clips/import          → n8n schickt gescrapte Clips rein
-- GET  /clips/match/{match_id} → Frontend holt Clips für ein Spiel
+- GET  /clips/by-source       → Social-Clips nach Quelle (youtube/twitter/instagram)
 - POST /clips/{clip_id}/draft → KI-Textentwurf generieren
 - POST /clips/{clip_id}/publish → Im Ticker veröffentlichen
 - DELETE /clips/{clip_id}     → Clip löschen
@@ -13,7 +12,7 @@ Endpunkte:
 
 import base64
 import logging
-from typing import Literal, Optional
+from typing import Literal
 
 import httpx
 from fastapi import APIRouter, Depends, HTTPException, status
@@ -28,7 +27,6 @@ from app.repositories.ticker_entry_repository import TickerEntryRepository
 from app.services import ticker_service as ts
 from app.schemas.media_clip import (
     CacheThumbnailRequest,
-    MediaClipImportRequest,
     MediaClipResponse,
     ClipPublishRequest,
 )
@@ -37,43 +35,6 @@ from app.schemas.ticker_entry import TickerEntryResponse
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/clips", tags=["Clips"])
-
-
-# ──────────────────────────────────────────────
-# POST: n8n importiert Clips
-# ──────────────────────────────────────────────
-
-
-@router.post(
-    "/import",
-    response_model=list[MediaClipResponse],
-    status_code=status.HTTP_201_CREATED,
-    summary="n8n: Tor-Clips in DB speichern (Upsert per vid)",
-)
-def import_clips(
-    data: MediaClipImportRequest,
-    db: Session = Depends(get_db),
-) -> list[MediaClipResponse]:
-    return MediaClipRepository(db).upsert_batch(data.match_id, data.clips)
-
-
-# ──────────────────────────────────────────────
-# GET: Clips für ein Spiel
-# ──────────────────────────────────────────────
-
-
-@router.get(
-    "/match/{match_id}",
-    response_model=list[MediaClipResponse],
-    summary="Alle Clips für ein Spiel (optional nach Team filtern)",
-)
-def get_clips_for_match(
-    match_id: int,
-    team_name: Optional[str] = None,
-    include_published: bool = False,
-    db: Session = Depends(get_db),
-) -> list[MediaClipResponse]:
-    return MediaClipRepository(db).get_by_match(match_id, include_published, team_name)
 
 
 # ──────────────────────────────────────────────
