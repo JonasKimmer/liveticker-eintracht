@@ -1,11 +1,18 @@
+"""
+Players Router
+==============
+Endpunkte für Spielerdaten und Statistiken.
+"""
+
 import logging
 from typing import Optional
 
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, Query, status
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
-from app.models.player import Player
+from app.utils.http_errors import require_or_404
+from app.repositories.player_repository import PlayerRepository
 from app.schemas.player import (
     PaginatedPlayerResponse,
     PlayerCreate,
@@ -17,6 +24,10 @@ from app.schemas.player import (
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/players", tags=["Players"])
+
+
+def _get_player_or_404(player_id: int, repo: PlayerRepository):
+    return require_or_404(repo.get_by_id(player_id), f"Player {player_id} not found.")
 
 
 # ------------------------------------------------------------------ #
@@ -36,16 +47,7 @@ def list_players(
     page_size: int = Query(50, ge=1, le=500, alias="pageSize"),
     db: Session = Depends(get_db),
 ) -> PaginatedPlayerResponse:
-    q = db.query(Player).filter(Player.hidden == False)  # noqa: E712
-    if team_id is not None:
-        q = q.filter(Player.team_id == team_id)
-    total = q.count()
-    items = (
-        q.order_by(Player.last_name, Player.first_name)
-        .offset((page - 1) * page_size)
-        .limit(page_size)
-        .all()
-    )
+    items, total = PlayerRepository(db).get_paginated(page, page_size, team_id)
     return PaginatedPlayerResponse.create(
         items=[PlayerResponse.model_validate(p) for p in items],
         total=total,
@@ -70,35 +72,7 @@ def create_player(
     data: PlayerCreate,
     db: Session = Depends(get_db),
 ) -> PlayerResponse:
-    player = Player(
-        sport=data.sport,
-        team_id=data.team_id,
-        first_name=data.first_name,
-        last_name=data.last_name,
-        short_name=data.short_name,
-        display_name=data.display_name,
-        known_name=data.known_name,
-        position=data.position,
-        birthday=data.birthday,
-        birthplace=data.birthplace,
-        weight=data.weight,
-        height=data.height,
-        jersey_number=data.jersey_number,
-        country=data.country,
-        joined_on=data.joined_on,
-        signing_date=data.signing_date,
-        image_url=data.image_url,
-        person_hero_image_url=data.person_hero_image_url,
-        profile=data.profile,
-        hidden=data.hidden,
-        statistics=data.statistics.model_dump(by_alias=False) if data.statistics else None,
-    )
-    if data.id is not None:
-        player.id = data.id
-    db.add(player)
-    db.commit()
-    db.refresh(player)
-    logger.info("Created player id=%d", player.id)
+    player = PlayerRepository(db).create(data)
     return PlayerResponse.model_validate(player)
 
 
@@ -114,10 +88,7 @@ def create_player(
     summary="Get a single player",
 )
 def get_player(playerId: int, db: Session = Depends(get_db)) -> PlayerResponse:
-    player = db.query(Player).filter(Player.id == playerId).first()
-    if not player:
-        raise HTTPException(status_code=404, detail=f"Player {playerId} not found.")
-    return PlayerResponse.model_validate(player)
+    return PlayerResponse.model_validate(_get_player_or_404(playerId, PlayerRepository(db)))
 
 
 # ------------------------------------------------------------------ #
@@ -136,18 +107,9 @@ def update_player(
     data: PlayerUpdate,
     db: Session = Depends(get_db),
 ) -> PlayerResponse:
-    player = db.query(Player).filter(Player.id == playerId).first()
-    if not player:
-        raise HTTPException(status_code=404, detail=f"Player {playerId} not found.")
-
-    for field, value in data.model_dump(exclude_unset=True, by_alias=False).items():
-        if field == "statistics" and value is not None:
-            setattr(player, field, value if isinstance(value, dict) else value)
-        elif field != "id":
-            setattr(player, field, value)
-
-    db.commit()
-    db.refresh(player)
+    repo = PlayerRepository(db)
+    player = _get_player_or_404(playerId, repo)
+    player = repo.update(player, data)
     return PlayerResponse.model_validate(player)
 
 
@@ -162,12 +124,9 @@ def update_player(
     summary="Delete a player",
 )
 def delete_player(playerId: int, db: Session = Depends(get_db)) -> None:
-    player = db.query(Player).filter(Player.id == playerId).first()
-    if not player:
-        raise HTTPException(status_code=404, detail=f"Player {playerId} not found.")
-    db.delete(player)
-    db.commit()
-    logger.info("Deleted player id=%d", playerId)
+    repo = PlayerRepository(db)
+    player = _get_player_or_404(playerId, repo)
+    repo.delete(player)
 
 
 # ------------------------------------------------------------------ #
@@ -186,15 +145,7 @@ def update_player_statistics(
     data: PlayerStatisticsUpdate,
     db: Session = Depends(get_db),
 ) -> PlayerResponse:
-    player = db.query(Player).filter(Player.id == playerId).first()
-    if not player:
-        raise HTTPException(status_code=404, detail=f"Player {playerId} not found.")
-
-    new_stats = data.statistics.model_dump(exclude_none=True, by_alias=False)
-    existing = player.statistics or {}
-    existing.update(new_stats)
-    player.statistics = existing
-
-    db.commit()
-    db.refresh(player)
+    repo = PlayerRepository(db)
+    player = _get_player_or_404(playerId, repo)
+    player = repo.update_statistics(player, data)
     return PlayerResponse.model_validate(player)

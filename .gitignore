@@ -1,0 +1,7 @@
+__pycache__/
+*.pyc
+.coverage
+node_modules/
+.claude/
+frontend/playwright-report/
+frontend/test-results/

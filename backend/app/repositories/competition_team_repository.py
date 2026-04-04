@@ -1,3 +1,9 @@
+"""
+CompetitionTeamRepository
+=========================
+Datenbankzugriff für Verein-Liga-Zuordnungen (competition_teams).
+"""
+
 import logging
 from typing import Optional
 

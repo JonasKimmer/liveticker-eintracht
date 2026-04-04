@@ -1,0 +1,331 @@
+{
+  "name": "Sync 12 | Spieler Herkunft, Geburtstag etc Players",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -480,
+        288
+      ],
+      "id": "e3f83ffc-cbfe-4ee6-884d-f9a81e56008a",
+      "name": "Manual Trigger"
+    },
+    {
+      "parameters": {
+        "url": "https://v3.football.api-sports.io/players",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "team",
+              "value": "169"
+            },
+            {
+              "name": "season",
+              "value": "2025"
+            },
+            {
+              "name": "page",
+              "value": "1"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -240,
+        128
+      ],
+      "id": "61613c98-4af2-4c03-92ad-dc540bed51e4",
+      "name": "HTTP: Players Page 1",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "8TXlLPe7BeXnl0Ut",
+          "name": "Header Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "https://v3.football.api-sports.io/players",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "team",
+              "value": "169"
+            },
+            {
+              "name": "season",
+              "value": "2025"
+            },
+            {
+              "name": "page",
+              "value": "2"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -240,
+        288
+      ],
+      "id": "ca13a246-5d2d-43b5-929f-bae4e40d81a2",
+      "name": "HTTP: Players Page 2",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "8TXlLPe7BeXnl0Ut",
+          "name": "Header Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "https://v3.football.api-sports.io/players",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "team",
+              "value": "169"
+            },
+            {
+              "name": "season",
+              "value": "2025"
+            },
+            {
+              "name": "page",
+              "value": "3"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -240,
+        448
+      ],
+      "id": "89cc0305-d723-4c3b-b49c-3f90bdc5ac92",
+      "name": "HTTP: Players Page 3",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "8TXlLPe7BeXnl0Ut",
+          "name": "Header Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3,
+      "position": [
+        32,
+        288
+      ],
+      "id": "33617f64-686b-4291-8111-da0beea606d7",
+      "name": "Merge Pages"
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\nconst results = [];\n\nconst positionMap = {\n  \"Defender\":   \"Defender\",\n  \"Goalkeeper\": \"Goalkeeper\",\n  \"Midfielder\": \"Midfielder\",\n  \"Attacker\":   \"Forward\",\n};\n\nconst ALLOWED_LEAGUES = new Set([78, 2, 81]);\n\nfor (const item of items) {\n  const response = item.json.response ?? [];\n\n  for (const entry of response) {\n    const p = entry.player;\n\n    let position = null;\n    let jerseyNumber = null;\n\n    for (const stat of entry.statistics) {\n      if (!ALLOWED_LEAGUES.has(stat.league?.id)) continue;\n      if (!position && stat.games?.position) position = stat.games.position;\n      if (!jerseyNumber && stat.games?.number) jerseyNumber = stat.games.number;\n    }\n\n    results.push({\n      json: {\n        id:          p.id,\n        sport:       \"Football\",\n        firstName:   p.firstname,\n        lastName:    p.lastname,\n        shortName:   p.name ?? null,\n        displayName: p.name ?? null,\n        knownName:   null,\n        birthday:    p.birth?.date ?? null,\n        birthplace:  p.birth?.place ?? null,\n        weight:      p.weight ? parseInt(p.weight) : null,\n        height:      p.height ? parseInt(p.height) : null,\n        jerseyNumber: jerseyNumber ?? null,\n        country:     p.nationality ?? null,\n        imageUrl:    p.photo ?? null,\n        personHeroImageUrl: null,\n        profile:     null,\n        hidden:      false,\n        position:    positionMap[position] ?? null,\n        teamId:      entry.statistics[0]?.team?.id ?? null,\n        joinedOn:    null,\n        signingDate: null,\n      }\n    });\n  }\n}\n\nreturn results;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        272,
+        288
+      ],
+      "id": "e8312a46-feab-442e-b514-e6502749e5fb",
+      "name": "Code: Extract & Map Players"
+    },
+    {
+      "parameters": {
+        "method": "PUT",
+        "url": "=https://partner-api.stackwork-01-test.tech/cms/v1/players/{{ $json.id }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer 52091AC14B524E59DEF531D0EA8F57EF0804D4CFADCF4A1A52CE842687D2D209-1"
+            },
+            {
+              "name": "et-partner-id",
+              "value": "4"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"sport\": \"Football\",\n  \"firstName\": \"{{ $json.firstName }}\",\n  \"lastName\": \"{{ $json.lastName }}\",\n  \"shortName\": {{ $json.shortName ? `\"${$json.shortName}\"` : 'null' }},\n  \"displayName\": {{ $json.displayName ? `\"${$json.displayName}\"` : 'null' }},\n  \"knownName\": null,\n  \"position\": {{ $json.position ? `\"${$json.position}\"` : 'null' }},\n  \"teamId\": {{ $json.teamId ?? 'null' }},\n  \"birthday\": {{ $json.birthday ? `\"${$json.birthday}\"` : 'null' }},\n  \"birthplace\": {{ $json.birthplace ? `\"${$json.birthplace}\"` : 'null' }},\n  \"weight\": {{ $json.weight ?? 'null' }},\n  \"height\": {{ $json.height ?? 'null' }},\n  \"jerseyNumber\": {{ $json.jerseyNumber ?? 'null' }},\n  \"country\": {{ $json.country ? `\"${$json.country}\"` : 'null' }},\n  \"imageUrl\": {{ $json.imageUrl ? `\"${$json.imageUrl}\"` : 'null' }},\n  \"personHeroImageUrl\": null,\n  \"joinedOn\": null,\n  \"profile\": null,\n  \"hidden\": false,\n  \"signingDate\": null\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        512,
+        288
+      ],
+      "id": "48362d57-1859-4e68-9a7f-b4b1f77abb51",
+      "name": "HTTP: PUT Player to Partner API",
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": false
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.statusCode }}",
+              "rightValue": 200,
+              "operator": {
+                "type": "number",
+                "operation": "notEquals"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        752,
+        288
+      ],
+      "id": "dd6aa7df-58fe-4caa-8877-4e33d4243b2f",
+      "name": "IF: Request Failed?"
+    },
+    {
+      "parameters": {
+        "jsCode": "const item = $input.first();\nconsole.error(`PUT failed for player ${item.json.id ?? 'unknown'}: Status ${item.json.statusCode} – ${JSON.stringify(item.json.body ?? item.json)}`);\nreturn [item];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        992,
+        176
+      ],
+      "id": "7bdef5a9-3873-4eef-9644-586fd24a5353",
+      "name": "Code: Log Error"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Manual Trigger": {
+      "main": [
+        [
+          {
+            "node": "HTTP: Players Page 1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "HTTP: Players Page 2",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "HTTP: Players Page 3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP: Players Page 1": {
+      "main": [
+        [
+          {
+            "node": "Merge Pages",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP: Players Page 2": {
+      "main": [
+        [
+          {
+            "node": "Merge Pages",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge Pages": {
+      "main": [
+        [
+          {
+            "node": "Code: Extract & Map Players",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code: Extract & Map Players": {
+      "main": [
+        [
+          {
+            "node": "HTTP: PUT Player to Partner API",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP: PUT Player to Partner API": {
+      "main": [
+        [
+          {
+            "node": "IF: Request Failed?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF: Request Failed?": {
+      "main": [
+        [
+          {
+            "node": "Code: Log Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "e741f583-7943-41a9-8dfd-9d5c65ed4ec1",
+  "meta": {
+    "instanceId": "8f356ecf824174491100e48f7fade606f544a76873378b03e211127fbec11c97"
+  },
+  "id": "q2LneTLCLP0Y9dr3",
+  "tags": []
+}

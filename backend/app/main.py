@@ -1,3 +1,10 @@
+"""
+Liveticker AI Backend — FastAPI Application Entry Point
+=======================================================
+Registriert alle Router, Middleware (CORS) und Static Files.
+Die OpenAPI-Dokumentation ist unter /api/docs erreichbar.
+"""
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
@@ -52,15 +59,7 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:3000",
-        "http://localhost:3001",
-        "http://127.0.0.1:3000",
-        "http://127.0.0.1:3001",
-        "https://5c068710.sge.de",
-        "https://liveticker-eintracht-gvh9.vercel.app",
-        "https://liveticker-eintracht-2.onrender.com",
-    ],
+    allow_origins=settings.CORS_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
