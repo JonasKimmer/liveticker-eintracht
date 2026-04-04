@@ -29,7 +29,10 @@ class TickerEntryRepository:
     def get_by_match(
         self, match_id: int, published_only: bool = True
     ) -> list[TickerEntry]:
-        q = self.db.query(TickerEntry).filter(TickerEntry.match_id == match_id)
+        q = self.db.query(TickerEntry).filter(
+            TickerEntry.match_id == match_id,
+            TickerEntry.status != TickerStatus.deleted,
+        )
         if published_only:
             q = q.filter(TickerEntry.status == TickerStatus.published)
         entries = q.order_by(TickerEntry.created_at.desc()).all()
@@ -72,6 +75,7 @@ class TickerEntryRepository:
             .filter(
                 TickerEntry.event_id == event_id,
                 TickerEntry.status != TickerStatus.rejected,
+                TickerEntry.status != TickerStatus.deleted,
             )
             .first()
         )
@@ -80,7 +84,7 @@ class TickerEntryRepository:
         entry = self.get_by_id(entry_id)
         if not entry:
             return False
-        self.db.delete(entry)
+        entry.status = TickerStatus.deleted
         self.db.commit()
         return True
 

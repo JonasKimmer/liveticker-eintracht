@@ -12,6 +12,7 @@ class TickerStatus(str, Enum):
     draft = "draft"
     published = "published"
     rejected = "rejected"
+    deleted = "deleted"
 
 
 class TickerSource(str, Enum):
