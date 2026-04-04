@@ -144,6 +144,11 @@
   color: var(--lt-text-faint);
   align-items: center;
 }
+@media (max-width: 1100px) {
+  .lt-mode-bar__hints {
+    display: none;
+  }
+}
 .lt-mode-kbd {
   background: var(--lt-bg-card-2);
   border: 1px solid var(--lt-border);
