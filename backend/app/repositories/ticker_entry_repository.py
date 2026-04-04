@@ -51,10 +51,15 @@ class TickerEntryRepository:
         return entries
 
     def get_by_phase(self, match_id: int, phase: str) -> Optional[TickerEntry]:
-        """Gibt den ersten Ticker-Eintrag für eine Phase zurück (Duplikat-Check)."""
+        """Gibt den ersten aktiven Ticker-Eintrag für eine Phase zurück (Duplikat-Check).
+        Deleted-Einträge werden ignoriert — Schutz vor Auto-Respawn erfolgt im Frontend."""
         return (
             self.db.query(TickerEntry)
-            .filter(TickerEntry.match_id == match_id, TickerEntry.phase == phase)
+            .filter(
+                TickerEntry.match_id == match_id,
+                TickerEntry.phase == phase,
+                TickerEntry.status != TickerStatus.deleted,
+            )
             .first()
         )
 
