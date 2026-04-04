@@ -1,14 +1,15 @@
 // ============================================================
 // components/LanguagePicker.jsx
-// Inline-Sprachauswahl als flache Buttons: DE | ES | FR | EN
+// Kompaktes Sprachauswahl-Dropdown — zeigt nur aktiven Code
 // ============================================================
-import { memo } from "react";
+import { memo, useState, useRef } from "react";
+import { useClickOutside } from "hooks/useClickOutside";
 
 const LANGUAGES = [
-  { code: "de", label: "DE" },
-  { code: "en", label: "EN" },
-  { code: "es", label: "ES" },
-  { code: "fr", label: "FR" },
+  { code: "de", label: "Deutsch" },
+  { code: "en", label: "English" },
+  { code: "es", label: "Español" },
+  { code: "fr", label: "Français" },
 ];
 
 interface LanguagePickerProps {
@@ -20,17 +21,52 @@ export const LanguagePicker = memo(function LanguagePicker({
   language,
   onLanguageChange,
 }: LanguagePickerProps) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+  useClickOutside(ref, () => setOpen(false));
+
   return (
-    <div className="lt-lang-inline" title="Ausgabesprache für KI-Texte">
-      {LANGUAGES.map(({ code, label }) => (
-        <button
-          key={code}
-          className={`lt-lang-inline__btn${language === code ? " lt-lang-inline__btn--active" : ""}`}
-          onClick={() => onLanguageChange(code)}
+    <div className="lt-lang-picker" ref={ref}>
+      <button
+        className="lt-lang-picker__trigger"
+        onClick={() => setOpen((v) => !v)}
+        title="Ausgabesprache für KI-Texte"
+      >
+        {language.toUpperCase()}
+        <svg
+          width="8"
+          height="8"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2.5"
+          style={{
+            transition: "transform 0.15s",
+            transform: open ? "rotate(180deg)" : "rotate(0deg)",
+            marginLeft: 2,
+            flexShrink: 0,
+          }}
         >
-          {label}
-        </button>
-      ))}
+          <path d="M6 9l6 6 6-6" />
+        </svg>
+      </button>
+      {open && (
+        <div className="lt-lang-picker__menu">
+          {LANGUAGES.map(({ code, label }) => (
+            <button
+              key={code}
+              className={`lt-lang-picker__item${language === code ? " lt-lang-picker__item--active" : ""}`}
+              onClick={() => {
+                onLanguageChange(code);
+                setOpen(false);
+              }}
+            >
+              <span className="lt-lang-picker__code">{code.toUpperCase()}</span>
+              <span className="lt-lang-picker__label">{label}</span>
+            </button>
+          ))}
+        </div>
+      )}
     </div>
   );
 });

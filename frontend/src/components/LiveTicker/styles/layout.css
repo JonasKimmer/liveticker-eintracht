@@ -332,7 +332,7 @@
 /* ── ≤480px: Kleine Phones — ultra-kompakt ─────────────────── */
 @media (max-width: 480px) {
   .lt-header__logo {
-    display: none;
+    font-size: 0.72rem;
   }
 
   .lt-header__hint {
