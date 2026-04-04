@@ -363,7 +363,6 @@ graph TD
     CenterPanel --> AIDraft
     CenterPanel --> SummarySection
     CenterPanel --> MediaPickerPanel
-    CenterPanel --> ClipPickerPanel
     CenterPanel --> YouTubePanel
     CenterPanel --> TwitterPanel
     CenterPanel --> InstagramPanel
