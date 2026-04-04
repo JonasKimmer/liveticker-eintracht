@@ -29,6 +29,8 @@ interface CenterPanelProps {
   instance?: string;
   lineups: LineupEntry[];
   players: Player[];
+  language?: string;
+  tickerMode?: string;
 }
 
 export const CenterPanel = memo<CenterPanelProps>(function CenterPanel({
@@ -36,6 +38,8 @@ export const CenterPanel = memo<CenterPanelProps>(function CenterPanel({
   instance = "ef_whitelabel",
   lineups = [],
   players = [],
+  language = "de",
+  tickerMode = "coop",
 }: CenterPanelProps) {
   const { mode } = useTickerModeContext();
   const { match, tickerTexts, generatingId, reload } = useTickerDataContext();
@@ -107,7 +111,7 @@ export const CenterPanel = memo<CenterPanelProps>(function CenterPanel({
     handleBulkPublishPrematch,
     handleBulkPublishSpielphase,
     handleRegenerateSummaryDraft,
-  } = useBulkActions({ instance, pendingEvents, setSelectedSummaryDraftId });
+  } = useBulkActions({ instance, language, tickerMode, pendingEvents, setSelectedSummaryDraftId });
 
   // Auto-dismiss AUTO-Modus Fehler nach Timeout
   useEffect(() => {

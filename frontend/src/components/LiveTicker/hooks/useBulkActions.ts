@@ -16,11 +16,13 @@ const AUTO_STYLE = "neutral";
  */
 interface UseBulkActionsParams {
   instance: string;
+  language?: string;
+  tickerMode?: string;
   pendingEvents: import("../../../types").MatchEvent[];
   setSelectedSummaryDraftId: (id: number | null) => void;
 }
 
-export function useBulkActions({ instance, pendingEvents, setSelectedSummaryDraftId }: UseBulkActionsParams) {
+export function useBulkActions({ instance, language = "de", tickerMode = "coop", pendingEvents, setSelectedSummaryDraftId }: UseBulkActionsParams) {
   const { match, tickerTexts, reload } = useTickerDataContext();
   const [bulkGenerating, setBulkGenerating] = useState(false);
   const [bulkPublishingSection, setBulkPublishingSection] = useState<string | null>(null);
@@ -121,27 +123,44 @@ export function useBulkActions({ instance, pendingEvents, setSelectedSummaryDraf
         await api.deleteTicker(draftId);
 
         if (oldDraft.synthetic_event_id) {
-          // Gezielt nur diesen einen Eintrag neu generieren — kein Batch
+          // Spielphase mit synthetic_event_id: gezielt diesen einen Eintrag neu generieren
           await api.generateSyntheticEvent(
             oldDraft.synthetic_event_id,
             style,
             instance,
           );
+          await reload.loadTickerTexts();
+          const res = await api.fetchTickerTexts(match.id);
+          const newDraft = (res.data ?? []).find(
+            (t) => t.synthetic_event_id === oldDraft.synthetic_event_id && t.status === "draft",
+          );
+          setSelectedSummaryDraftId(newDraft?.id ?? null);
         } else if (isPrematch) {
-          // Fallback: kein synthetic_event_id → Batch (sollte nicht vorkommen)
+          // Vorberichterstattung ohne synthetic_event_id → Batch-Fallback
           await api.generateSyntheticBatch(match.id, style, instance);
+          await reload.loadTickerTexts();
+          const res = await api.fetchTickerTexts(match.id);
+          const newDraft = (res.data ?? []).find(
+            (t) => t.status === "draft" && !t.event_id && t.phase === phase,
+          );
+          setSelectedSummaryDraftId(newDraft?.id ?? null);
         } else {
-          await api.generateMatchPhases(match.id, style, instance, undefined, false);
+          // Summary-Phase (FirstHalfBreak, After) — kommt von n8n, asynchron
+          // n8n-Call feuern, dann mit Verzögerung neu laden bis Draft erscheint
+          api.generateMatchSummary(match.id, phase, style, instance, language, tickerMode)
+            .catch((err) => logger.error("generateMatchSummary failed", err));
+          setSelectedSummaryDraftId(null);
+          const matchId = match.id;
+          for (const delay of [4000, 9000, 16000]) {
+            await new Promise((r) => setTimeout(r, delay));
+            await reload.loadTickerTexts();
+            const res = await api.fetchTickerTexts(matchId);
+            const newDraft = (res.data ?? []).find(
+              (t) => t.status === "draft" && !t.event_id && t.phase === phase,
+            );
+            if (newDraft) { setSelectedSummaryDraftId(newDraft.id); break; }
+          }
         }
-
-        await reload.loadTickerTexts();
-        const res = await api.fetchTickerTexts(match.id);
-        const newDraft = (res.data ?? []).find((t) =>
-          oldDraft.synthetic_event_id
-            ? t.synthetic_event_id === oldDraft.synthetic_event_id && t.status === "draft"
-            : t.status === "draft" && !t.event_id && t.phase === phase,
-        );
-        setSelectedSummaryDraftId(newDraft?.id ?? null);
       } catch (err) {
         logger.error("regenerateSummaryDraft failed", err);
         setSelectedSummaryDraftId(null);

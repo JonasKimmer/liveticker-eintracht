@@ -348,6 +348,8 @@ export default function LiveTicker() {
                       instance={instance}
                       lineups={lineups}
                       players={players}
+                      language={language}
+                      tickerMode={mode}
                     />
                   </ErrorBoundary>
                 </div>
