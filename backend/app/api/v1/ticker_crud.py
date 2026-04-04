@@ -145,6 +145,13 @@ def create_manual_entry(
     if data.phase and not data.video_url and not data.image_url:
         existing = ticker_repo.get_by_phase(data.match_id, data.phase)
         if existing:
+            update_data: dict = {}
+            if data.text:
+                update_data["text"] = data.text
+            if data.status is not None:
+                update_data["status"] = data.status
+            if update_data:
+                return ticker_repo.update(existing.id, TickerEntryUpdate(**update_data))
             return existing
 
     return ticker_repo.create(
