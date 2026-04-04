@@ -164,11 +164,33 @@ export function useMatchTriggers({
             err?.message,
           ),
         );
+    const callStats = () =>
+      api
+        .importMatchStats(selMatchId)
+        .catch((err) =>
+          logger.warn(
+            "[useMatchTriggers] importMatchStats silenced:",
+            err?.message,
+          ),
+        );
+    const callPlayerStats = () =>
+      api
+        .importPlayerStatistics(selMatchId)
+        .catch((err) =>
+          logger.warn(
+            "[useMatchTriggers] importPlayerStatistics silenced:",
+            err?.message,
+          ),
+        );
     callMinute();
     callEvents();
+    callStats();
+    callPlayerStats();
     const interval = setInterval(() => {
       callMinute();
       callEvents();
+      callStats();
+      callPlayerStats();
     }, 60 * 1000);
     return () => clearInterval(interval);
     // eslint-disable-next-line react-hooks/exhaustive-deps
