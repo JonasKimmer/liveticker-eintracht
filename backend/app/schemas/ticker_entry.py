@@ -36,6 +36,7 @@ class TickerEntryUpdate(BaseModel):
     status: Optional[TickerStatus] = None
     style: Optional[str] = Field(None, max_length=50)
     icon: Optional[str] = Field(None, max_length=50)
+    minute: Optional[int] = None
 
 
 class BaseGenerateRequest(BaseModel):

@@ -143,12 +143,12 @@ export const PublishedEntry = memo(function PublishedEntry({
       : (tickerText?.minute != null ? `${tickerText.minute}'` : "–");
     return (
       <div className="lt-entry lt-entry--manual">
-        {onEdit && (!hasPhaseLabel || phaseLabel === null) && minuteEditing ? minuteInputEl : (
+        {onEdit && minuteEditing ? minuteInputEl : (
           <span
             className="lt-entry__minute"
-            onClick={onEdit && (!hasPhaseLabel || phaseLabel === null) ? () => { setEditMinute(tickerText?.minute ?? 0); setMinuteEditing(true); } : undefined}
-            title={onEdit && (!hasPhaseLabel || phaseLabel === null) ? "Minute bearbeiten" : undefined}
-            style={onEdit && (!hasPhaseLabel || phaseLabel === null) ? { cursor: "text" } : undefined}
+            onClick={onEdit ? () => { setEditMinute(tickerText?.minute ?? 0); setMinuteEditing(true); } : undefined}
+            title={onEdit ? "Minute bearbeiten" : undefined}
+            style={onEdit ? { cursor: "text" } : undefined}
           >
             {minuteDisplay}
           </span>
