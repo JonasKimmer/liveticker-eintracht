@@ -134,7 +134,45 @@ export function useMatchTriggers({
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selMatchId, match?.matchPhase, match?.matchState, tickerTexts, tickerTextsLoaded]);
+  }, [
+    selMatchId,
+    match?.matchPhase,
+    match?.matchState,
+    tickerTexts,
+    tickerTextsLoaded,
+  ]);
+
+  // ── Minuten-Update + Events (jede Minute bei laufendem Spiel) ─────
+  useEffect(() => {
+    if (!selMatchId || !match?.externalId || match.matchState !== "Live")
+      return;
+    const callMinute = () =>
+      api
+        .triggerMinuteUpdate(match.externalId!)
+        .catch((err) =>
+          logger.warn(
+            "[useMatchTriggers] triggerMinuteUpdate silenced:",
+            err?.message,
+          ),
+        );
+    const callEvents = () =>
+      api
+        .importEvents(match.externalId!, tickerMode)
+        .catch((err) =>
+          logger.warn(
+            "[useMatchTriggers] importEvents silenced:",
+            err?.message,
+          ),
+        );
+    callMinute();
+    callEvents();
+    const interval = setInterval(() => {
+      callMinute();
+      callEvents();
+    }, 60 * 1000);
+    return () => clearInterval(interval);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selMatchId, match?.externalId, match?.matchState]);
 
   // ── Live Stats Monitor (alle 5 Min bei laufendem Spiel) ───
   useEffect(() => {
@@ -193,10 +231,10 @@ export function useMatchTriggers({
     // zurück und sind im UI unsichtbar, verhindern aber das Respawnen.
     const phasesForStatus: Record<string, string[]> = {
       "1H": ["FirstHalf"],
-      "HT": ["FirstHalfBreak"],
+      HT: ["FirstHalfBreak"],
       "2H": ["SecondHalf"],
-      "FT": ["FullTime", "After"],
-      "ET": ["ExtraFirstHalf", "ExtraSecondHalf"],
+      FT: ["FullTime", "After"],
+      ET: ["ExtraFirstHalf", "ExtraSecondHalf"],
     };
     const relevantPhases = phasesForStatus[status] ?? [];
     const alreadyHandled = relevantPhases.some((phase) =>
@@ -204,7 +242,9 @@ export function useMatchTriggers({
         (t) =>
           t.match_id === selMatchId &&
           t.phase === phase &&
-          (t.status === "published" || t.status === "draft" || t.status === "deleted"),
+          (t.status === "published" ||
+            t.status === "draft" ||
+            t.status === "deleted"),
       ),
     );
     if (alreadyHandled) return;
@@ -244,7 +284,13 @@ export function useMatchTriggers({
         ),
       );
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selMatchId, match?.matchState, match?.matchPhase, tickerTexts, tickerTextsLoaded]);
+  }, [
+    selMatchId,
+    match?.matchState,
+    match?.matchPhase,
+    tickerTexts,
+    tickerTextsLoaded,
+  ]);
 
   // ── Auto-Import: Events ───────────────────────────────────
   useEffect(() => {
