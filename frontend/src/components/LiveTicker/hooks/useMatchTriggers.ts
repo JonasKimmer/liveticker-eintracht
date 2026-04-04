@@ -110,7 +110,8 @@ export function useMatchTriggers({
         (t) =>
           t.match_id === selMatchId &&
           t.phase === phase &&
-          t.status !== "rejected",
+          t.status !== "rejected" &&
+          t.status !== "deleted",
       );
       if (!exists) {
         api
