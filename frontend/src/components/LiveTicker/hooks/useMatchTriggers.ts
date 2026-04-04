@@ -47,6 +47,7 @@ export function useMatchTriggers({
   lineups,
   matchStats,
   tickerTexts,
+  tickerTextsLoaded,
   instance,
   style = "neutral",
   language = "de",
@@ -59,6 +60,7 @@ export function useMatchTriggers({
   lineups: LineupEntry[];
   matchStats: MatchStat[];
   tickerTexts: TickerEntry[];
+  tickerTextsLoaded: boolean;
   instance: string;
   style?: string;
   language?: string;
@@ -87,7 +89,7 @@ export function useMatchTriggers({
   // ── Match-Summary via n8n (Halbzeit / Abpfiff) ────────────
   const summaryTriggeredRef = useRef(new Set());
   useEffect(() => {
-    if (!selMatchId || !match || !tickerTexts) return;
+    if (!selMatchId || !match || !tickerTextsLoaded) return;
     if (match.id !== selMatchId) return; // stale match aus vorherigem Spiel
 
     const phasesToCheck = [];
@@ -132,7 +134,7 @@ export function useMatchTriggers({
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selMatchId, match?.matchPhase, match?.matchState, tickerTexts]);
+  }, [selMatchId, match?.matchPhase, match?.matchState, tickerTexts, tickerTextsLoaded]);
 
   // ── Live Stats Monitor (alle 5 Min bei laufendem Spiel) ───
   useEffect(() => {
@@ -170,6 +172,7 @@ export function useMatchTriggers({
   const matchStatusTriggeredRef = useRef(new Set());
   useEffect(() => {
     if (!selMatchId || !match?.matchState || !match?.externalId) return;
+    if (!tickerTextsLoaded) return; // warten bis erste Fetch-Runde durch ist
     if (match.id !== selMatchId) return; // stale match aus vorherigem Spiel
 
     let status = null;
@@ -241,7 +244,7 @@ export function useMatchTriggers({
         ),
       );
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selMatchId, match?.matchState, match?.matchPhase, tickerTexts]);
+  }, [selMatchId, match?.matchState, match?.matchPhase, tickerTexts, tickerTextsLoaded]);
 
   // ── Auto-Import: Events ───────────────────────────────────
   useEffect(() => {

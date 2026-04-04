@@ -14,7 +14,7 @@ export function useMatchData(selectedMatchId: number | null) {
     selectedMatchId,
     core.match?.matchState,
   );
-  const { tickerTexts, reload: txReload } = useMatchTicker(
+  const { tickerTexts, tickerTextsLoaded, reload: txReload } = useMatchTicker(
     selectedMatchId,
     core.match?.matchState,
   );
@@ -30,6 +30,7 @@ export function useMatchData(selectedMatchId: number | null) {
     loading: core.loading,
     events,
     tickerTexts,
+    tickerTextsLoaded,
     reload: { ...core.reload, ...evReload, ...txReload },
   };
 }

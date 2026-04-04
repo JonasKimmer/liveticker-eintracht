@@ -16,12 +16,14 @@ export function useMatchTicker(
   matchState: string | null,
 ) {
   const [tickerTexts, setTickerTexts] = useState<TickerEntry[]>([]);
+  const [tickerTextsLoaded, setTickerTextsLoaded] = useState(false);
 
   const loadTickerTexts = useCallback(async () => {
     if (!selectedMatchId) return;
     try {
       const res = await api.fetchTickerTexts(selectedMatchId);
       setTickerTexts(res.data);
+      setTickerTextsLoaded(true);
     } catch (err) {
       logger.error("[useMatchTicker] fetchTickerTexts failed:", err);
     }
@@ -32,6 +34,7 @@ export function useMatchTicker(
   useEffect(() => {
     if (!selectedMatchId) return;
     setTickerTexts([]);
+    setTickerTextsLoaded(false);
     loadTickerTexts();
     const t1 = setTimeout(loadTickerTexts, POLL_EVENTS_MS);
     const t2 = setTimeout(loadTickerTexts, POLL_MATCH_REFRESH_MS);
@@ -49,5 +52,5 @@ export function useMatchTicker(
     return () => clearInterval(id);
   }, [selectedMatchId, matchState, loadTickerTexts]);
 
-  return { tickerTexts, reload: { loadTickerTexts } };
+  return { tickerTexts, tickerTextsLoaded, reload: { loadTickerTexts } };
 }
