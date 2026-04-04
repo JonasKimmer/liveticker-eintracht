@@ -96,6 +96,18 @@ export const publishClipTicker = (
     image_url: thumbnailUrl ?? null,
     video_url: videoUrl ?? null,
   });
+export const generateSyntheticEvent = (
+  syntheticEventId: number,
+  style = "neutral",
+  instance = "ef_whitelabel",
+  language = "de",
+) =>
+  api.post(`/ticker/generate-synthetic`, {
+    synthetic_event_id: syntheticEventId,
+    style,
+    instance,
+    language,
+  });
 export const generateSyntheticBatch = (
   matchId: number,
   style = "neutral",

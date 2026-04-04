@@ -107,8 +107,8 @@ export function useBulkActions({ instance, pendingEvents, setSelectedSummaryDraf
   }, [match, reload]);
 
   // ── Style-Regeneration für einen Summary-Draft ────────────
-  // Vorberichterstattung: generateSyntheticBatch (FastAPI, synchron)
-  // Spielphasen:          generateMatchPhases    (FastAPI, synchron)
+  // Nutzt gezielt /generate-synthetic für den spezifischen synthetic_event_id —
+  // kein Batch-Call, damit andere gelöschte Drafts nicht zurückspawnen.
   const handleRegenerateSummaryDraft = useCallback(
     async (draftId: number, style: string) => {
       setBulkPublishingSection("regenerating");
@@ -117,17 +117,27 @@ export function useBulkActions({ instance, pendingEvents, setSelectedSummaryDraf
       const phase = oldDraft.phase;
       const isPrematch = PREMATCH_PHASES.has(phase);
       try {
-        // Hard-delete so backend's get_by_phase doesn't block regeneration
+        // Hard-delete so backend's duplicate check doesn't block regeneration
         await api.deleteTicker(draftId);
-        if (isPrematch) {
+
+        if (oldDraft.synthetic_event_id) {
+          // Gezielt nur diesen einen Eintrag neu generieren — kein Batch
+          await api.generateSyntheticEvent(
+            oldDraft.synthetic_event_id,
+            style,
+            instance,
+          );
+        } else if (isPrematch) {
+          // Fallback: kein synthetic_event_id → Batch (sollte nicht vorkommen)
           await api.generateSyntheticBatch(match.id, style, instance);
         } else {
           await api.generateMatchPhases(match.id, style, instance, undefined, false);
         }
+
         await reload.loadTickerTexts();
         const res = await api.fetchTickerTexts(match.id);
         const newDraft = (res.data ?? []).find((t) =>
-          isPrematch && oldDraft.synthetic_event_id
+          oldDraft.synthetic_event_id
             ? t.synthetic_event_id === oldDraft.synthetic_event_id && t.status === "draft"
             : t.status === "draft" && !t.event_id && t.phase === phase,
         );
