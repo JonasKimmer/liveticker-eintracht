@@ -51,7 +51,7 @@ export const Breadcrumb = memo(function Breadcrumb({
         </Fragment>
       ))}
       <span className="lt-breadcrumb__seg lt-breadcrumb__seg--match">
-        {match.homeTeam?.name} vs {match.awayTeam?.name}
+        {match.homeTeam?.initials ?? match.homeTeam?.name} vs {match.awayTeam?.initials ?? match.awayTeam?.name}
       </span>
       <span className="lt-breadcrumb__edit">✎</span>
     </button>

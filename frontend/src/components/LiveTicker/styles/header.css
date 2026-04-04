@@ -241,6 +241,12 @@
     min-width: 0;
     text-overflow: ellipsis;
   }
+  /* Header rechts: nur grüner Punkt — alles andere ausblenden */
+  .lt-header__sep,
+  .lt-header__hint,
+  .lt-header__nav-tab {
+    display: none;
+  }
 }
 .lt-breadcrumb:hover {
   border-color: var(--lt-border);
@@ -262,4 +268,38 @@
 }
 .lt-breadcrumb:hover .lt-breadcrumb__edit {
   color: var(--lt-accent);
+}
+
+/* ============================================================
+   LANGUAGE PICKER — Inline Buttons
+   ============================================================ */
+.lt-lang-inline {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+.lt-lang-inline__btn {
+  background: none;
+  border: 1px solid transparent;
+  border-radius: var(--lt-radius);
+  color: var(--lt-text-muted);
+  font-family: var(--lt-font-mono);
+  font-size: 0.68rem;
+  font-weight: 600;
+  padding: 0.2rem 0.4rem;
+  cursor: pointer;
+  transition:
+    color 0.15s,
+    border-color 0.15s;
+  white-space: nowrap;
+  letter-spacing: 0.04em;
+}
+.lt-lang-inline__btn:hover {
+  color: var(--lt-text);
+  border-color: var(--lt-border);
+}
+.lt-lang-inline__btn--active {
+  color: var(--lt-accent);
+  border-color: var(--lt-accent);
+  background: var(--lt-accent-dim);
 }
