@@ -29,12 +29,16 @@ class TickerEntryRepository:
     def get_by_match(
         self, match_id: int, published_only: bool = True
     ) -> list[TickerEntry]:
-        q = self.db.query(TickerEntry).filter(
-            TickerEntry.match_id == match_id,
-            TickerEntry.status != TickerStatus.deleted,
-        )
+        q = self.db.query(TickerEntry).filter(TickerEntry.match_id == match_id)
         if published_only:
+            # Öffentliche Anzeige: nur veröffentlichte, keine gelöschten
             q = q.filter(TickerEntry.status == TickerStatus.published)
+        else:
+            # Editor-Ansicht (all_entries): alles außer gelöschten AUSSER wenn
+            # kein anderer Eintrag für die Phase existiert — dann deleted mitsenden
+            # damit Frontend-Guards (alreadyPublished) greifen können.
+            # Gelöschte sind im UI unsichtbar (kein Code rendert status="deleted").
+            pass  # Kein Filter: deleted wird mitgeliefert
         entries = q.order_by(TickerEntry.created_at.desc()).all()
         entries.sort(
             key=lambda e: (

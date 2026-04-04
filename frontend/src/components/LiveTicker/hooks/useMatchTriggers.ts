@@ -184,7 +184,9 @@ export function useMatchTriggers({
     if (matchStatusTriggeredRef.current.has(key)) return;
     matchStatusTriggeredRef.current.add(key);
 
-    // Nicht triggern wenn für diese Phase bereits veröffentlichte Texte existieren
+    // Nicht triggern wenn für diese Phase bereits ein Eintrag existiert
+    // (published, draft oder deleted) — deleted-Einträge kommen via all_entries=true
+    // zurück und sind im UI unsichtbar, verhindern aber das Respawnen.
     const phasesForStatus: Record<string, string[]> = {
       "1H": ["FirstHalf"],
       "HT": ["FirstHalfBreak"],
@@ -193,12 +195,15 @@ export function useMatchTriggers({
       "ET": ["ExtraFirstHalf", "ExtraSecondHalf"],
     };
     const relevantPhases = phasesForStatus[status] ?? [];
-    const alreadyPublished = relevantPhases.some((phase) =>
+    const alreadyHandled = relevantPhases.some((phase) =>
       tickerTexts.some(
-        (t) => t.match_id === selMatchId && t.phase === phase && t.status === "published",
+        (t) =>
+          t.match_id === selMatchId &&
+          t.phase === phase &&
+          (t.status === "published" || t.status === "draft" || t.status === "deleted"),
       ),
     );
-    if (alreadyPublished) return;
+    if (alreadyHandled) return;
 
     // Anchor-Reloads ab jetzt — unabhängig vom API-Timing (n8n kann busy sein)
     const scheduledFor = selMatchId;
