@@ -218,7 +218,7 @@ POST   /api/v1/ticker/generate-synthetic-batch/{match_id}
 
 # Medien & Clips
 POST   /api/v1/media/incoming           GET    /api/v1/media/queue
-POST   /api/v1/clips/import             POST   /api/v1/clips/{clip_id}/publish
+POST   /api/v1/clips/{clip_id}/publish
 WS     /ws/media
 
 # Spielkontext
@@ -457,7 +457,6 @@ graph TD
     CenterPanel --> AIDraft
     CenterPanel --> SummarySection
     CenterPanel --> MediaPickerPanel
-    CenterPanel --> ClipPickerPanel
     CenterPanel --> YouTubePanel
     CenterPanel --> TwitterPanel
     CenterPanel --> InstagramPanel

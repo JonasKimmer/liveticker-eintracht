@@ -24,7 +24,7 @@ src/
       components/   # 24 flat + 5 Subordner:
         dropdown/   # 4 — CountryDropdown, Dropdown, DropdownList, dropdownStyles
         entry/      # 6 — AIDraft, EntryEditor, EventCard, PublishedEntry + Tests
-        media/      # 7 — ClipPickerPanel, MediaPickerPanel, Publish-Modals, Thumbnails
+        media/      # — MediaPickerPanel, Publish-Modals, Thumbnails
         social/     # 5 — TwitterPanel, InstagramPanel, YouTubePanel, SocialPanelShell, SocialPublishModal
         summary/    # 4 — SummaryDraftCard, SummaryRow, SummarySection, PublishedSummarySection
       hooks/        # 9 — useTicker, useSocialPanel, useMediaPublishForm, useLiveMinuteEditor, …
@@ -48,7 +48,6 @@ src/
 
 Bekannte Verdachtsfälle:
 
-- **MediaPickerPanel (537Z) vs ClipPickerPanel (427Z)**: Parallele Struktur — wie viel Code ist identisch? Kann man eine `PickerPanel`-Base extrahieren?
 - **MediaPublishModal (493Z) vs ClipPublishModal (260Z) vs SocialPublishModal**: Drei Publish-Modals — gemeinsame Basis möglich?
 - **SummarySection vs PublishedSummarySection**: Edit vs Read-Only — shared logic?
 - **Collapsible.tsx vs CollapsibleSection.tsx**: Überlappung oder klar getrennt?
@@ -83,7 +82,6 @@ Bekannte Verdachtsfälle:
   491  RightPanel.tsx
   468  PublishedEntry.tsx
   438  LiveTicker.tsx
-  427  ClipPickerPanel.tsx
   416  parseCommand.ts
   402  EntryEditor.tsx
 ```

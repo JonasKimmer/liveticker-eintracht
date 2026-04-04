@@ -26,7 +26,7 @@ export const NAV_TABS = [{ id: "teams", label: "🏆 Teams" }];
 export const SYNC_MATCH_INTERVAL_MS = 60000; // Live-Minuten-Tick (useLiveMinuteEditor)
 export const TOAST_DURATION_MS = 2200; // Toast-Anzeige (ModeSelector)
 export const AUTO_ERROR_TIMEOUT_MS = 6000; // Auto-Fehler-Anzeige (CenterPanel)
-export const MAX_MATCH_MINUTE = 120; // inkl. Verlängerung (MinuteEditor, ClipPicker, …)
+export const MAX_MATCH_MINUTE = 120; // inkl. Verlängerung
 
 // ── Publish-Phasen (Social-Media Panels) ─────────────────────
 export const PUBLISH_PHASES = [

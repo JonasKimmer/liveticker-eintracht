@@ -232,7 +232,7 @@ Die `type-coverage`-Metrik (Anteil explizit getypter Ausdrücke an allen Ausdrü
 Der Wert von 95,84 % bedeutet: Von 18.813 gemessenen Typausdrücken sind 18.031 explizit getypt. Die verbleibenden ~4,2 % verteilen sich auf wenige, bewusst offen gelassene Stellen:
 
 - **`MatchSelectorModal.tsx`**: Ein großes Modal mit komplexem internen State, in dem die Typisierung stark von einer kommenden API-Stabilisierung abhängt.
-- **`MediaPickerPanel.tsx` / `YouTubePanel.tsx` / `ClipPickerPanel.tsx`**: Media-Panels, die externe API-Responses (ScorePlay, YouTube) verarbeiten, deren Typen nicht vollständig spezifiziert sind.
+- **`MediaPickerPanel.tsx` / `YouTubePanel.tsx`**: Media-Panels, die externe API-Responses (ScorePlay, YouTube) verarbeiten, deren Typen nicht vollständig spezifiziert sind.
 - **Exports in `components/index.ts`**: Barrel-Exports mit `export { X }` ohne explizite Typ-Annotationen — technisch korrekt, aber von `type-coverage` als untypiert gezählt.
 
 ### 6.6.3 Zentrale Typen-Architektur
