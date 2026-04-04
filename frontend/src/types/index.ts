@@ -101,7 +101,7 @@ export interface TickerEntry {
   id: number;
   match_id: number;
   text: string;
-  status: "draft" | "published" | "rejected";
+  status: "draft" | "published" | "rejected" | "deleted";
   source: "ai" | "manual";
   style?: TickerStyle | null;
   icon?: string | null;
