@@ -22,16 +22,6 @@ Die technische Qualitätssicherung umfasst die vollständige Testsuite (Frontend
 
 Die Teststrategie folgt dem klassischen Pyramiden-Modell nach Cohn (2009): Eine breite Basis schneller, isolierter Unit-Tests wird durch eine mittlere Schicht von Integrations-Tests ergänzt, die reale HTTP-Endpunkte gegen eine transaktionale Testdatenbank prüfen. An der Spitze stehen Playwright-basierte End-to-End-Tests, die den vollständigen Redaktionsworkflow im Browser simulieren.
 
-```
-          ┌──────────┐
-          │  E2E (6) │   Playwright — Browser-Workflow
-         ┌┴──────────┴┐
-         │  API-Tests  │  FastAPI TestClient + PostgreSQL
-        ┌┴────────────┴┐
-        │  Unit-Tests   │ Jest/React Testing Library + pytest
-        └──────────────┘
-```
-
 Diese Pyramide stellt sicher, dass die Mehrheit der Testfälle ohne externe Abhängigkeiten läuft und damit in CI-Pipelines schnell und zuverlässig ausgeführt werden kann. Die Integrations-Tests sind so strukturiert, dass sie bei fehlender Datenbankverbindung automatisch übersprungen werden (`pytest.skip`) und keine falschen Fehlermeldungen erzeugen.
 
 ### 6.2.2 Frontend-Unit-Tests (Jest + React Testing Library)
@@ -67,13 +57,6 @@ Der Hook `useLiveMinute` berechnet die aktuelle Spielminute aus dem Anstoßzeitp
 ### 6.2.3 Backend-Unit-Tests (pytest)
 
 Das Backend verfügt über **198 Tests** in 11 Test-Dateien, die mit einer Gesamt-Coverage von **75 %** abgeschlossen werden. Alle 198 Tests laufen grün durch (`198 passed`).
-
-```
-$ pytest tests/ --cov=app -q
-...
-198 passed in 3.9s
-TOTAL  3230  793  75%
-```
 
 | Test-Datei                        | Tests | Kategorie           | Fokus                                                                    |
 | --------------------------------- | ----- | ------------------- | ------------------------------------------------------------------------ |
@@ -161,12 +144,6 @@ Die Evaluation der Textgenerierung gliedert sich in zwei Teile: zunächst die im
 ### 6.3.1 Evaluationsinfrastruktur
 
 Das System stellt über den Endpunkt `POST /api/v1/ticker/generate-bulk/{match_id}` eine Bulk-Generierungsfunktion bereit, die alle Events eines Spiels mit einem wählbaren Provider und Modell generiert. Durch optionale `provider`- und `model`-Parameter im Request-Body können verschiedene LLM-Konfigurationen systematisch verglichen werden, ohne den Produktivbetrieb zu beeinflussen.
-
-```python
-class GenerateEventRequest(BaseModel):
-    provider: Optional[str] = Field(default=None, description="Provider override for Evaluation")
-    model:    Optional[str] = Field(default=None, description="Modell override for Evaluation")
-```
 
 Für jeden Aufruf wird eine temporäre `LLMService`-Instanz erzeugt, falls Provider oder Modell vom konfigurierten Singleton abweichen. Dadurch lassen sich A/B-Vergleiche zwischen Providern durchführen, ohne die Global-Konfiguration zu verändern.
 
@@ -338,11 +315,6 @@ Die häufigste Fehlerklasse ist die **Stil-Inkonsistenz** des neutralen Profils:
 Die **Score-Halluzination** ist qualitativ schwerwiegender: Im ergänzenden Eval-Lauf (N = 9) generierte das Modell für den Abpfiff-Event den Text „Eintracht schlägt die Bayern!" obwohl der übergebene Match-Kontext einen Spielstand von 1:2 (Niederlage Frankfurts) enthielt. Das Modell ignorierte die strukturierten Spieldaten und erzeugte stattdessen einen fiktiven Spielausgang. Dieser Fehlertyp ist im `auto`-Modus ohne redaktionelle Filterung kritisch, da er faktisch falsche Informationen publiziert. Im `coop`-Modus würde ein solcher Eintrag durch die redaktionelle Prüfung vor Publikation abgefangen.
 
 Die Pre-Match-Prompts enthalten eine explizite Schutzregel gegen Halluzinationen:
-
-```
-Dieses ist ein Pre-Match-Eintrag. Beschreibe NUR die gegebenen Fakten.
-Erfinde KEINE Live-Spielszenen, Tore oder Spielverläufe.
-```
 
 In der Stichprobe enthielt 1 von 1 untersuchten Pre-Match-Texten keine unzulässigen Spielszenen, jedoch eine nicht aus dem Datenbankkontext ableitbare Wettempfehlung — eine inhaltliche Halluzination geringerer Schwere. Der evaluierte Stichprobenumfang für Pre-Match-Texte ist zu klein für eine statistische Aussage; die Schutzregel verhindert zuverlässig Spielszenen-Halluzinationen, schützt jedoch nicht gegen alle Formen der Kontextüberschreitung.
 

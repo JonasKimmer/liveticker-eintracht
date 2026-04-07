@@ -40,17 +40,6 @@ Point}\label{projektstruktur-und-application-entry-point}
 Das Backend ist unterhalb von \texttt{backend/app/} in sieben
 funktionale Pakete gegliedert:
 
-\begin{verbatim}
-backend/app/
-├── api/v1/          # HTTP-Router (FastAPI)
-├── models/          # SQLAlchemy ORM-Modelle (17 Dateien)
-├── repositories/    # Datenbankzugriff (je Entität eine Klasse)
-├── schemas/         # Pydantic-Schemas (Request / Response)
-├── services/        # Fachliche Services (llm_service, ticker_service)
-├── utils/           # Hilfsmodule (llm_context_builders, evaluation_metrics)
-└── core/            # Konfiguration, Datenbankverbindung, Enums, Konstanten
-\end{verbatim}
-
 Diese Aufteilung entspricht dem klassischen
 Repository-Service-Router-Muster: Router delegieren an Repositories für
 einfache CRUD-Operationen und an Services für Logik, die mehrere
@@ -162,14 +151,6 @@ kommuniziert werden, während Python-intern snake\_case gilt.
 Ein spezifisches Beispiel illustriert die Alias-Mechanik für
 Match-Scores:
 
-\begin{Shaded}
-\begin{Highlighting}[]
-\KeywordTok{class}\NormalTok{ MatchResponse(BaseModel):}
-\NormalTok{    home\_score: Optional[}\BuiltInTok{int}\NormalTok{] }\OperatorTok{=}\NormalTok{ Field(}\VariableTok{None}\NormalTok{, serialization\_alias}\OperatorTok{=}\StringTok{"teamHomeScore"}\NormalTok{)}
-\NormalTok{    away\_score: Optional[}\BuiltInTok{int}\NormalTok{] }\OperatorTok{=}\NormalTok{ Field(}\VariableTok{None}\NormalTok{, serialization\_alias}\OperatorTok{=}\StringTok{"teamAwayScore"}\NormalTok{)}
-\end{Highlighting}
-\end{Shaded}
-
 Hier wird \texttt{serialization\_alias} (nicht \texttt{alias})
 verwendet, da das Frontend die Partner-API-Feldnamen erwartet
 (\texttt{teamHomeScore}/\texttt{teamAwayScore}), während
@@ -191,12 +172,6 @@ sein.
 Für den Match-Status-Lifecycle definiert \texttt{MatchUpdate} ein
 explizites Alias:
 
-\begin{Shaded}
-\begin{Highlighting}[]
-\NormalTok{match\_state: Optional[MatchState] }\OperatorTok{=}\NormalTok{ Field(}\VariableTok{None}\NormalTok{, alias}\OperatorTok{=}\StringTok{"state"}\NormalTok{)}
-\end{Highlighting}
-\end{Shaded}
-
 Für Ticker-Einträge wird der Status über ein separates PATCH-Schema
 gesteuert, um versehentliche Massenänderungen durch offene
 Update-Schemas zu vermeiden.
@@ -211,21 +186,6 @@ kapselt. Alle Repositories erben von einer gemeinsamen
 \texttt{exists()} bereitstellt; jede Instanz erhält eine
 \texttt{Session} im Konstruktor:
 
-\begin{Shaded}
-\begin{Highlighting}[]
-\KeywordTok{class}\NormalTok{ TickerEntryRepository(BaseRepository[TickerEntry]):}
-\NormalTok{    model }\OperatorTok{=}\NormalTok{ TickerEntry}
-
-    \KeywordTok{def}\NormalTok{ get\_by\_event(}\VariableTok{self}\NormalTok{, event\_id: }\BuiltInTok{int}\NormalTok{) }\OperatorTok{{-}\textgreater{}}\NormalTok{ Optional[TickerEntry]:}
-        \ControlFlowTok{return} \VariableTok{self}\NormalTok{.db.query(TickerEntry).}\BuiltInTok{filter}\NormalTok{(}
-\NormalTok{            TickerEntry.event\_id }\OperatorTok{==}\NormalTok{ event\_id}
-\NormalTok{        ).first()}
-
-    \KeywordTok{def}\NormalTok{ get\_by\_match(}\VariableTok{self}\NormalTok{, match\_id: }\BuiltInTok{int}\NormalTok{, status}\OperatorTok{=}\VariableTok{None}\NormalTok{) }\OperatorTok{{-}\textgreater{}} \BuiltInTok{list}\NormalTok{[TickerEntry]:}
-\NormalTok{        ...}
-\end{Highlighting}
-\end{Shaded}
-
 Diese Kapselung hat zwei Vorteile: Router bleiben frei von ORM-Details,
 und Repository-Methoden können direkt mit echten Datenbanken in
 Integrationstests geprüft werden --- ohne Mock-Schichten, die
@@ -235,24 +195,6 @@ Das \texttt{MatchRepository} definiert eine interne
 \texttt{\_base\_query()}-Methode, die Heimteam, Auswärtsteam, Wettbewerb
 und Saison per \texttt{joinedload} in einer einzigen Datenbankabfrage
 vorlädt. \texttt{get\_by\_id()} nutzt diese Methode konsequent:
-
-\begin{Shaded}
-\begin{Highlighting}[]
-\KeywordTok{class}\NormalTok{ MatchRepository(BaseRepository[Match]):}
-\NormalTok{    model }\OperatorTok{=}\NormalTok{ Match}
-
-    \KeywordTok{def}\NormalTok{ \_base\_query(}\VariableTok{self}\NormalTok{) }\OperatorTok{{-}\textgreater{}}\NormalTok{ Query:}
-        \ControlFlowTok{return} \VariableTok{self}\NormalTok{.db.query(Match).options(}
-\NormalTok{            joinedload(Match.home\_team),}
-\NormalTok{            joinedload(Match.away\_team),}
-\NormalTok{            joinedload(Match.competition),}
-\NormalTok{            joinedload(Match.season),}
-\NormalTok{        )}
-
-    \KeywordTok{def}\NormalTok{ get\_by\_id(}\VariableTok{self}\NormalTok{, match\_id: }\BuiltInTok{int}\NormalTok{) }\OperatorTok{{-}\textgreater{}}\NormalTok{ Optional[Match]:}
-        \ControlFlowTok{return} \VariableTok{self}\NormalTok{.\_base\_query().}\BuiltInTok{filter}\NormalTok{(Match.}\BuiltInTok{id} \OperatorTok{==}\NormalTok{ match\_id).first()}
-\end{Highlighting}
-\end{Shaded}
 
 Diese Methode wird von der KI-Generierungsroute intensiv genutzt, da für
 jeden Aufruf vollständige Kontext-Daten (Teamnamen, Wettbewerb) benötigt
@@ -350,17 +292,6 @@ bis zu drei Stilbeispiele für
 \texttt{event\_type\ +\ instance\ +\ league} als Few-Shot-Kontext und
 delegiert dann an \texttt{generate\_ticker\_text()}:
 
-\begin{Shaded}
-\begin{Highlighting}[]
-\ControlFlowTok{async} \ControlFlowTok{with}\NormalTok{ \_llm\_semaphore:   }\CommentTok{\# asyncio.Semaphore(settings.LLM\_CONCURRENCY)}
-    \ControlFlowTok{return} \ControlFlowTok{await}\NormalTok{ generate\_ticker\_text(}
-\NormalTok{        event\_type}\OperatorTok{=}\NormalTok{event\_type,}
-\NormalTok{        style\_references}\OperatorTok{=}\NormalTok{style\_references,  }\CommentTok{\# aus DB geladen}
-\NormalTok{        ...}
-\NormalTok{    )}
-\end{Highlighting}
-\end{Shaded}
-
 Die Semaphore ist auf Modulebene als Singleton definiert
 (\texttt{\_llm\_semaphore\ =\ asyncio.Semaphore(settings.LLM\_CONCURRENCY)},
 Standard: 8) und begrenzt gleichzeitige LLM-Aufrufe pro Prozessinstanz.
@@ -380,19 +311,6 @@ Der \texttt{LLMService} ist eine single-class-Implementierung, die beim
 Initialisieren den passenden Client instanziiert und über ein
 Dispatch-Dictionary aufruft:
 
-\begin{Shaded}
-\begin{Highlighting}[]
-\NormalTok{dispatch }\OperatorTok{=}\NormalTok{ \{}
-    \StringTok{"mock"}\NormalTok{:       }\VariableTok{self}\NormalTok{.\_generate\_mock\_text,}
-    \StringTok{"gemini"}\NormalTok{:     }\VariableTok{self}\NormalTok{.\_generate\_gemini\_text,}
-    \StringTok{"openrouter"}\NormalTok{: }\VariableTok{self}\NormalTok{.\_generate\_openrouter\_text,}
-    \StringTok{"openai"}\NormalTok{:     }\VariableTok{self}\NormalTok{.\_generate\_openai\_text,}
-    \StringTok{"anthropic"}\NormalTok{:  }\VariableTok{self}\NormalTok{.\_generate\_anthropic\_text,}
-\NormalTok{\}}
-\ControlFlowTok{return}\NormalTok{ dispatch[}\VariableTok{self}\NormalTok{.provider](}\OperatorTok{**}\NormalTok{kwargs)}
-\end{Highlighting}
-\end{Shaded}
-
 Das Dispatch-Pattern macht es trivial, neue Provider hinzuzufügen:
 Implementierung einer Methode \texttt{\_generate\_X\_text()} und ein
 Eintrag im Dictionary.
@@ -407,13 +325,6 @@ aus \texttt{EVENT\_TYPE\_LABEL} in lesbares Deutsch übersetzt (z. B.
 
 \textbf{\texttt{\_build\_few\_shot\_block()}} formatiert die
 Stilreferenzen als nummerierte Beispiele:
-
-\begin{verbatim}
-### STILREFERENZEN
-Schreibe in exakt diesem Stil (Rhythmus, Wortwahl, Emotionalität):
-- "Mustermann trifft mit einem satten Rechtsschuss – 1:0!"
-- "Eintracht schlägt zu – der erste Treffer des Abends!"
-\end{verbatim}
 
 \textbf{\texttt{\_build\_prematch\_parts()}} ergänzt für Pre-Match-Typen
 eine zusätzliche harte Instruktion: Das Modell darf keine Live-Szenen
@@ -451,28 +362,6 @@ Media-Queue}\label{websocket-endpunkt-fuxfcr-media-queue}
 
 Der WebSocket-Endpunkt \texttt{/ws/media} wird durch einen dedizierten
 \texttt{MediaConnectionManager} verwaltet:
-
-\begin{Shaded}
-\begin{Highlighting}[]
-\KeywordTok{class}\NormalTok{ MediaConnectionManager:}
-    \KeywordTok{def} \FunctionTok{\_\_init\_\_}\NormalTok{(}\VariableTok{self}\NormalTok{) }\OperatorTok{{-}\textgreater{}} \VariableTok{None}\NormalTok{:}
-        \VariableTok{self}\NormalTok{.active\_connections: }\BuiltInTok{list}\NormalTok{[WebSocket] }\OperatorTok{=}\NormalTok{ []}
-
-    \ControlFlowTok{async} \KeywordTok{def} \ExtensionTok{connect}\NormalTok{(}\VariableTok{self}\NormalTok{, websocket: WebSocket) }\OperatorTok{{-}\textgreater{}} \VariableTok{None}\NormalTok{:}
-        \ControlFlowTok{await}\NormalTok{ websocket.accept()}
-        \VariableTok{self}\NormalTok{.active\_connections.append(websocket)}
-
-    \ControlFlowTok{async} \KeywordTok{def}\NormalTok{ broadcast(}\VariableTok{self}\NormalTok{, data: }\BuiltInTok{dict}\NormalTok{) }\OperatorTok{{-}\textgreater{}} \VariableTok{None}\NormalTok{:}
-\NormalTok{        dead: }\BuiltInTok{list}\NormalTok{[WebSocket] }\OperatorTok{=}\NormalTok{ []}
-        \ControlFlowTok{for}\NormalTok{ ws }\KeywordTok{in} \VariableTok{self}\NormalTok{.active\_connections:}
-            \ControlFlowTok{try}\NormalTok{:}
-                \ControlFlowTok{await}\NormalTok{ ws.send\_json(data)}
-            \ControlFlowTok{except}\NormalTok{ (WebSocketDisconnect, }\PreprocessorTok{RuntimeError}\NormalTok{):}
-\NormalTok{                dead.append(ws)}
-        \ControlFlowTok{for}\NormalTok{ ws }\KeywordTok{in}\NormalTok{ dead:}
-            \VariableTok{self}\NormalTok{.disconnect(ws)}
-\end{Highlighting}
-\end{Shaded}
 
 Wenn das Backend neue Media-Queue-Einträge über
 \texttt{POST\ /api/v1/media/incoming} erhält, ruft der Router
@@ -516,14 +405,6 @@ Ein zentrales Qualitätsmerkmal der Pipeline ist die Deduplizierung: Der
 Generierungsendpunkt prüft vor jedem LLM-Aufruf, ob bereits ein
 Ticker-Eintrag für die \texttt{event\_id} existiert:
 
-\begin{Shaded}
-\begin{Highlighting}[]
-\NormalTok{existing }\OperatorTok{=}\NormalTok{ ticker\_repo.get\_by\_event(event\_id)}
-\ControlFlowTok{if}\NormalTok{ existing:}
-    \ControlFlowTok{return}\NormalTok{ existing  }\CommentTok{\# Idempotenter Rückgabepfad ohne LLM{-}Aufruf}
-\end{Highlighting}
-\end{Shaded}
-
 Dies macht den Endpunkt idempotent gegenüber Mehrfachaufrufen --- ein
 wichtiges Merkmal, da n8n-Workflows bei Fehlern automatisch wiederholen.
 Ohne diese Prüfung würde jeder Retry einen zusätzlichen Ticker-Eintrag
@@ -538,12 +419,6 @@ Der initiale Status des erzeugten Ticker-Eintrags wird über den
 Aufrufparameter \texttt{auto\_publish} gesteuert, den n8n aus dem
 \texttt{ticker\_mode} des Spiels ableitet (vgl. Kap. 4.3.3 für die
 konzeptionelle Beschreibung der drei Betriebsmodi):
-
-\begin{Shaded}
-\begin{Highlighting}[]
-\NormalTok{status}\OperatorTok{=}\NormalTok{TickerStatus.published }\ControlFlowTok{if}\NormalTok{ data.auto\_publish }\ControlFlowTok{else}\NormalTok{ TickerStatus.draft}
-\end{Highlighting}
-\end{Shaded}
 
 Damit wird die Modus-Logik zu einem reinen Aufrufparameter des Backends
 --- die Entscheidungsinstanz ist n8n auf Basis des in der Datenbank
@@ -645,55 +520,11 @@ definierte Verantwortung:
 \textbf{\texttt{TickerModeContext}} --- Modus-State und
 Tastatur-Aktionen:
 
-\begin{Shaded}
-\begin{Highlighting}[]
-\KeywordTok{interface}\NormalTok{ TickerModeContextValue \{}
-\NormalTok{  mode}\OperatorTok{:}\NormalTok{ TickerMode}\OperatorTok{;} \CommentTok{// "auto" | "coop" | "manual"}
-\NormalTok{  setMode}\OperatorTok{:}\NormalTok{ (mode}\OperatorTok{:}\NormalTok{ TickerMode) }\KeywordTok{=\textgreater{}} \DataTypeTok{void}\OperatorTok{;}
-\NormalTok{  acceptDraft}\OperatorTok{:}\NormalTok{ () }\KeywordTok{=\textgreater{}} \BuiltInTok{Promise}\OperatorTok{\textless{}}\DataTypeTok{void}\OperatorTok{\textgreater{};} \CommentTok{// TAB{-}Shortcut}
-\NormalTok{  rejectDraft}\OperatorTok{:}\NormalTok{ () }\KeywordTok{=\textgreater{}} \BuiltInTok{Promise}\OperatorTok{\textless{}}\DataTypeTok{void}\OperatorTok{\textgreater{};} \CommentTok{// ESC{-}Shortcut}
-\NormalTok{\}}
-\end{Highlighting}
-\end{Shaded}
-
 \textbf{\texttt{TickerDataContext}} --- Match-Daten und
 Reload-Funktionen:
 
-\begin{Shaded}
-\begin{Highlighting}[]
-\KeywordTok{interface}\NormalTok{ TickerDataContextValue \{}
-\NormalTok{  match}\OperatorTok{:}\NormalTok{ Match }\OperatorTok{|} \DataTypeTok{null}\OperatorTok{;}
-\NormalTok{  events}\OperatorTok{:}\NormalTok{ MatchEvent[]}\OperatorTok{;}
-\NormalTok{  tickerTexts}\OperatorTok{:}\NormalTok{ TickerEntry[]}\OperatorTok{;}
-\NormalTok{  prematch}\OperatorTok{:}\NormalTok{ TickerEntry[]}\OperatorTok{;}
-\NormalTok{  lineups}\OperatorTok{:}\NormalTok{ LineupEntry[]}\OperatorTok{;}
-\NormalTok{  matchStats}\OperatorTok{:}\NormalTok{ MatchStat[]}\OperatorTok{;}
-\NormalTok{  players}\OperatorTok{:}\NormalTok{ Player[]}\OperatorTok{;}
-\NormalTok{  playerStats}\OperatorTok{:}\NormalTok{ PlayerStat[]}\OperatorTok{;}
-\NormalTok{  injuries}\OperatorTok{:}\NormalTok{ InjuryGroup[]}\OperatorTok{;}
-\NormalTok{  reload}\OperatorTok{:}\NormalTok{ ReloadFunctions}\OperatorTok{;}
-\NormalTok{  generatingId}\OperatorTok{:} \DataTypeTok{number} \OperatorTok{|} \DataTypeTok{null}\OperatorTok{;}
-\NormalTok{\}}
-\end{Highlighting}
-\end{Shaded}
-
 \textbf{\texttt{TickerActionsContext}} --- Callbacks für redaktionelle
 Aktionen:
-
-\begin{Shaded}
-\begin{Highlighting}[]
-\KeywordTok{interface}\NormalTok{ TickerActionsContextValue \{}
-\NormalTok{  onGenerate}\OperatorTok{:}\NormalTok{ (eventId}\OperatorTok{:} \DataTypeTok{number}\OperatorTok{,}\NormalTok{ style}\OperatorTok{:}\NormalTok{ TickerStyle) }\KeywordTok{=\textgreater{}} \BuiltInTok{Promise}\OperatorTok{\textless{}}\DataTypeTok{void}\OperatorTok{\textgreater{};}
-\NormalTok{  onManualPublish}\OperatorTok{:}\NormalTok{ (text}\OperatorTok{,}\NormalTok{ icon}\OperatorTok{?,}\NormalTok{ minute}\OperatorTok{?,}\NormalTok{ phase}\OperatorTok{?,}\NormalTok{ rawInput}\OperatorTok{?}\NormalTok{) }\KeywordTok{=\textgreater{}} \BuiltInTok{Promise}\OperatorTok{\textless{}}\DataTypeTok{void}\OperatorTok{\textgreater{};}
-\NormalTok{  onDraftActive}\OperatorTok{:}\NormalTok{ (id}\OperatorTok{:} \DataTypeTok{number}\OperatorTok{,}\NormalTok{ text}\OperatorTok{:} \DataTypeTok{string}\NormalTok{) }\KeywordTok{=\textgreater{}} \DataTypeTok{void}\OperatorTok{;}
-\NormalTok{  onPublished}\OperatorTok{:}\NormalTok{ (id}\OperatorTok{:} \DataTypeTok{number}\OperatorTok{,}\NormalTok{ text}\OperatorTok{:} \DataTypeTok{string}\OperatorTok{,}\NormalTok{ isManual}\OperatorTok{?:} \DataTypeTok{boolean}\NormalTok{) }\KeywordTok{=\textgreater{}} \DataTypeTok{void}\OperatorTok{;}
-\NormalTok{  onEditEntry}\OperatorTok{:}\NormalTok{ (id}\OperatorTok{:} \DataTypeTok{number}\OperatorTok{,}\NormalTok{ text}\OperatorTok{:} \DataTypeTok{string}\NormalTok{) }\KeywordTok{=\textgreater{}} \BuiltInTok{Promise}\OperatorTok{\textless{}}\DataTypeTok{void}\OperatorTok{\textgreater{};}
-\NormalTok{  onDeleteEntry}\OperatorTok{:}\NormalTok{ (id}\OperatorTok{:} \DataTypeTok{number}\NormalTok{) }\KeywordTok{=\textgreater{}} \BuiltInTok{Promise}\OperatorTok{\textless{}}\DataTypeTok{void}\OperatorTok{\textgreater{};}
-\NormalTok{  retractedText}\OperatorTok{:} \DataTypeTok{string} \OperatorTok{|} \DataTypeTok{null}\OperatorTok{;}
-\NormalTok{  clearRetractedText}\OperatorTok{:}\NormalTok{ () }\KeywordTok{=\textgreater{}} \DataTypeTok{void}\OperatorTok{;}
-\NormalTok{\}}
-\end{Highlighting}
-\end{Shaded}
 
 Die Trennung von Daten- und Aktions-Context hat einen konkreten
 Performance-Vorteil: Komponenten, die nur Actions konsumieren (z. B.
@@ -774,17 +605,6 @@ die Daten über \texttt{TickerDataContext} bereit.
 \texttt{useMatchData} steuert das Polling-Intervall über die
 Hilfsfunktion \texttt{resolvePollingInterval()}:
 
-\begin{Shaded}
-\begin{Highlighting}[]
-\CommentTok{// src/utils/resolvePollingInterval.ts}
-\ImportTok{export} \KeywordTok{function} \FunctionTok{resolvePollingInterval}\NormalTok{(matchState}\OperatorTok{:} \DataTypeTok{string} \OperatorTok{|} \DataTypeTok{null}\NormalTok{)}\OperatorTok{:} \DataTypeTok{number}\NormalTok{ \{}
-  \ControlFlowTok{if}\NormalTok{ (matchState }\OperatorTok{===} \StringTok{"Live"} \OperatorTok{||}\NormalTok{ matchState }\OperatorTok{===} \StringTok{"FullTime"}\NormalTok{) }\ControlFlowTok{return}\NormalTok{ POLL\_EVENTS\_MS}\OperatorTok{;} \CommentTok{// 5000}
-  \ControlFlowTok{if}\NormalTok{ (matchState }\OperatorTok{==} \KeywordTok{null}\NormalTok{) }\ControlFlowTok{return}\NormalTok{ POLL\_EVENTS\_MS}\OperatorTok{;} \CommentTok{// 5000}
-  \ControlFlowTok{return}\NormalTok{ POLL\_PREMATCH\_MS}\OperatorTok{;} \CommentTok{// 5000}
-\NormalTok{\}}
-\end{Highlighting}
-\end{Shaded}
-
 Aktuell sind beide Konstanten (\texttt{POLL\_EVENTS\_MS},
 \texttt{POLL\_PREMATCH\_MS}) auf 5000 ms gesetzt, sodass alle Zustände
 mit einem einheitlichen 5-Sekunden-Intervall gepollt werden. Die
@@ -803,22 +623,6 @@ Publikation.
 
 Die Funktion \texttt{parseCommand(input,\ currentMinute)} gibt ein
 typisiertes \texttt{ParseResult} zurück:
-
-\begin{Shaded}
-\begin{Highlighting}[]
-\ImportTok{export} \KeywordTok{interface}\NormalTok{ ParseResult \{}
-\NormalTok{  type}\OperatorTok{:} \DataTypeTok{string}\OperatorTok{;}
-\NormalTok{  formatted}\OperatorTok{:} \DataTypeTok{string}\OperatorTok{;}
-\NormalTok{  warnings}\OperatorTok{:} \DataTypeTok{string}\NormalTok{[]}\OperatorTok{;}
-\NormalTok{  isValid}\OperatorTok{:} \DataTypeTok{boolean}\OperatorTok{;}
-\NormalTok{  meta}\OperatorTok{:}\NormalTok{ \{}
-\NormalTok{    icon}\OperatorTok{:} \DataTypeTok{string}\OperatorTok{;}
-\NormalTok{    phase}\OperatorTok{:} \DataTypeTok{string} \OperatorTok{|} \DataTypeTok{null}\OperatorTok{;}
-\NormalTok{    minute}\OperatorTok{:} \DataTypeTok{number} \OperatorTok{|} \DataTypeTok{null}\OperatorTok{;}
-\NormalTok{  \}}\OperatorTok{;}
-\NormalTok{\}}
-\end{Highlighting}
-\end{Shaded}
 
 \textbf{Phasen-Commands} (11 Einträge in \texttt{PHASE\_CMDS}) erzeugen
 vordefinierte Texte mit optionaler Minutenangabe. Die folgende Tabelle
@@ -847,14 +651,6 @@ Command & Ausgabe & Phase & Icon \\
 \textbf{Event-Commands} (12 Einträge in \texttt{CMD\_MAP}, 8 Typen nach
 Expansion) erzeugen strukturierte Texte mit Validierungshinweisen:
 
-\begin{verbatim}
-/g Mustermann EF  → "TOR — Mustermann (EF)"  + icon ⚽
-/gelb Müller EF   → "Gelb — Müller (EF)"     + icon 🟨
-/rot Huber Bayern → "Rote Karte — Huber (Bayern)" + icon 🟥
-/s EinRaus AusRein EF → "Wechsel — EinRaus ↔ AusRein (EF)" + icon 🔄
-/n Freistoß knapp über das Tor → "Freistoß knapp über das Tor"
-\end{verbatim}
-
 Für unvollständige Eingaben gibt \texttt{warnings{[}{]}} gezielte
 Hinweise zurück (\texttt{"Fehlend:\ Spieler"}), die im
 \texttt{EntryEditor} live angezeigt werden. Das Frontend kann damit ohne
@@ -873,15 +669,6 @@ Der \texttt{useMediaWebSocket}-Hook verwaltet die Lebensdauer der
 WebSocket-Verbindung zum Backend. Die Kernentscheidung ist das
 \textbf{exponentielle Reconnect-Backoff}:
 
-\begin{Shaded}
-\begin{Highlighting}[]
-\KeywordTok{const}\NormalTok{ delay }\OperatorTok{=} \BuiltInTok{Math}\OperatorTok{.}\FunctionTok{min}\NormalTok{(}
-\NormalTok{  BASE\_DELAY\_MS }\OperatorTok{*} \DecValTok{2} \OperatorTok{**}\NormalTok{ retryCountRef}\OperatorTok{.}\AttributeTok{current}\OperatorTok{,} \CommentTok{// 1s → 2s → 4s → 8s → …}
-\NormalTok{  MAX\_DELAY\_MS}\OperatorTok{,} \CommentTok{// max 30s}
-\NormalTok{)}\OperatorTok{;}
-\end{Highlighting}
-\end{Shaded}
-
 Der \texttt{retryCountRef} zählt aufeinanderfolgende
 Verbindungsabbrüche. Bei erfolgreicher Reconnection wird er auf 0
 zurückgesetzt. \texttt{BASE\_DELAY\_MS\ =\ 1000},
@@ -890,15 +677,6 @@ zurückgesetzt. \texttt{BASE\_DELAY\_MS\ =\ 1000},
 Ein \texttt{mountedRef} verhindert Zustandsänderungen nach dem Unmounten
 der Komponente --- ein häufiges React-Problem bei asynchronen
 Operationen:
-
-\begin{Shaded}
-\begin{Highlighting}[]
-\NormalTok{ws}\OperatorTok{.}\AttributeTok{onclose} \OperatorTok{=}\NormalTok{ () }\KeywordTok{=\textgreater{}}\NormalTok{ \{}
-  \ControlFlowTok{if}\NormalTok{ (}\OperatorTok{!}\NormalTok{mountedRef}\OperatorTok{.}\AttributeTok{current}\NormalTok{) }\ControlFlowTok{return}\OperatorTok{;} \CommentTok{// Kein setState nach Unmount}
-  \CommentTok{// … retry{-}Logik}
-\NormalTok{\}}\OperatorTok{;}
-\end{Highlighting}
-\end{Shaded}
 
 Der Cleanup im \texttt{useEffect} setzt \texttt{ws.onclose\ =\ null},
 bevor die WebSocket geschlossen wird. Ohne diesen Schritt würde das
@@ -960,30 +738,6 @@ blockierende Fehlereskalation zu ermöglichen.
 
 \textbf{Zentrale Typ-Definitionen} --- \texttt{src/types/index.ts}
 definiert die gemeinsamen Domain-Interfaces:
-
-\begin{Shaded}
-\begin{Highlighting}[]
-\ImportTok{export type}\NormalTok{ TickerMode }\OperatorTok{=} \StringTok{"auto"} \OperatorTok{|} \StringTok{"coop"} \OperatorTok{|} \StringTok{"manual"}\OperatorTok{;}
-\ImportTok{export type}\NormalTok{ TickerStyle }\OperatorTok{=} \StringTok{"neutral"} \OperatorTok{|} \StringTok{"euphorisch"} \OperatorTok{|} \StringTok{"kritisch"}\OperatorTok{;}
-\ImportTok{export type}\NormalTok{ MatchPhase }\OperatorTok{=} \StringTok{"Before"} \OperatorTok{|} \StringTok{"FirstHalf"} \OperatorTok{|} \StringTok{"FirstHalfBreak"} \OperatorTok{|} \StringTok{"SecondHalf"} \OperatorTok{|} \OperatorTok{...;}
-
-\ImportTok{export} \KeywordTok{interface}\NormalTok{ TickerEntry \{}
-\NormalTok{  id}\OperatorTok{:} \DataTypeTok{number}\OperatorTok{;}
-\NormalTok{  match\_id}\OperatorTok{:} \DataTypeTok{number}\OperatorTok{;}
-\NormalTok{  event\_id}\OperatorTok{?:} \DataTypeTok{number} \OperatorTok{|} \DataTypeTok{null}\OperatorTok{;}
-\NormalTok{  text}\OperatorTok{:} \DataTypeTok{string}\OperatorTok{;}
-\NormalTok{  style}\OperatorTok{?:} \DataTypeTok{string} \OperatorTok{|} \DataTypeTok{null}\OperatorTok{;}
-\NormalTok{  status}\OperatorTok{:} \StringTok{"draft"} \OperatorTok{|} \StringTok{"published"} \OperatorTok{|} \StringTok{"rejected"}\OperatorTok{;}
-\NormalTok{  source}\OperatorTok{?:} \StringTok{"ai"} \OperatorTok{|} \StringTok{"manual"}\OperatorTok{;}
-\NormalTok{  minute}\OperatorTok{?:} \DataTypeTok{number} \OperatorTok{|} \DataTypeTok{null}\OperatorTok{;}
-\NormalTok{  phase}\OperatorTok{?:} \DataTypeTok{string} \OperatorTok{|} \DataTypeTok{null}\OperatorTok{;}
-\NormalTok{  icon}\OperatorTok{?:} \DataTypeTok{string} \OperatorTok{|} \DataTypeTok{null}\OperatorTok{;}
-\NormalTok{  image\_url}\OperatorTok{?:} \DataTypeTok{string} \OperatorTok{|} \DataTypeTok{null}\OperatorTok{;}
-\NormalTok{  video\_url}\OperatorTok{?:} \DataTypeTok{string} \OperatorTok{|} \DataTypeTok{null}\OperatorTok{;}
-\NormalTok{  llm\_model}\OperatorTok{?:} \DataTypeTok{string} \OperatorTok{|} \DataTypeTok{null}\OperatorTok{;}
-\NormalTok{\}}
-\end{Highlighting}
-\end{Shaded}
 
 \textbf{Ergebnis} --- Nach der Migration erzielt das Projekt \textbf{0
 TypeScript-Compilerfehler} und eine \textbf{type-coverage von 95,84 \%}
@@ -1179,19 +933,6 @@ Testdateien sind kolokiert mit ihrem Quellcode: Komponentendateien unter
 umfangreich getestet ist der \texttt{parseCommand}-Parser (45
 Testfälle), da er die kritische manuelle Eingabeschicht bildet. Ein
 exemplarischer Testfall illustriert das Prüfmuster:
-
-\begin{Shaded}
-\begin{Highlighting}[]
-\FunctionTok{test}\NormalTok{(}\StringTok{"vollstaendiger Command ist valid"}\OperatorTok{,}\NormalTok{ () }\KeywordTok{=\textgreater{}}\NormalTok{ \{}
-  \KeywordTok{const}\NormalTok{ result }\OperatorTok{=} \FunctionTok{parseCommand}\NormalTok{(}\StringTok{"/g Muller EIN"}\OperatorTok{,} \DecValTok{32}\NormalTok{)}\OperatorTok{;}
-  \FunctionTok{expect}\NormalTok{(result}\OperatorTok{.}\AttributeTok{isValid}\NormalTok{)}\OperatorTok{.}\FunctionTok{toBe}\NormalTok{(}\KeywordTok{true}\NormalTok{)}\OperatorTok{;}
-  \FunctionTok{expect}\NormalTok{(result}\OperatorTok{.}\AttributeTok{type}\NormalTok{)}\OperatorTok{.}\FunctionTok{toBe}\NormalTok{(}\StringTok{"goal"}\NormalTok{)}\OperatorTok{;}
-  \FunctionTok{expect}\NormalTok{(result}\OperatorTok{.}\AttributeTok{formatted}\NormalTok{)}\OperatorTok{.}\FunctionTok{toBe}\NormalTok{(}\StringTok{"TOR {-}{-} Muller (EIN)"}\NormalTok{)}\OperatorTok{;}
-  \FunctionTok{expect}\NormalTok{(result}\OperatorTok{.}\AttributeTok{meta}\OperatorTok{.}\AttributeTok{icon}\NormalTok{)}\OperatorTok{.}\FunctionTok{toBe}\NormalTok{(}\StringTok{"⚽"}\NormalTok{)}\OperatorTok{;}
-  \FunctionTok{expect}\NormalTok{(result}\OperatorTok{.}\AttributeTok{warnings}\NormalTok{)}\OperatorTok{.}\FunctionTok{toHaveLength}\NormalTok{(}\DecValTok{0}\NormalTok{)}\OperatorTok{;}
-\NormalTok{\})}\OperatorTok{;}
-\end{Highlighting}
-\end{Shaded}
 
 \textbf{Backend-Tests} --- Das Backend nutzt pytest mit FastAPI
 \texttt{TestClient} und transaktionalem Rollback für 198 Tests bei 75 \%

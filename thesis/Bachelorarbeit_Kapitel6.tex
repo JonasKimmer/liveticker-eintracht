@@ -50,16 +50,6 @@ HTTP-Endpunkte gegen eine transaktionale Testdatenbank prüfen. An der
 Spitze stehen Playwright-basierte End-to-End-Tests, die den
 vollständigen Redaktionsworkflow im Browser simulieren.
 
-\begin{verbatim}
-          ┌──────────┐
-          │  E2E (6) │   Playwright — Browser-Workflow
-         ┌┴──────────┴┐
-         │  API-Tests  │  FastAPI TestClient + PostgreSQL
-        ┌┴────────────┴┐
-        │  Unit-Tests   │ Jest/React Testing Library + pytest
-        └──────────────┘
-\end{verbatim}
-
 Diese Pyramide stellt sicher, dass die Mehrheit der Testfälle ohne
 externe Abhängigkeiten läuft und damit in CI-Pipelines schnell und
 zuverlässig ausgeführt werden kann. Die Integrations-Tests sind so
@@ -159,13 +149,6 @@ bei fehlendem Kickoff-Timestamp ab (vgl.
 Das Backend verfügt über \textbf{198 Tests} in 11 Test-Dateien, die mit
 einer Gesamt-Coverage von \textbf{75 \%} abgeschlossen werden. Alle 198
 Tests laufen grün durch (\texttt{198\ passed}).
-
-\begin{verbatim}
-$ pytest tests/ --cov=app -q
-...
-198 passed in 3.9s
-TOTAL  3230  793  75%
-\end{verbatim}
 
 {\def\LTcaptype{none} % do not increment counter
 \begin{longtable}[]{@{}
@@ -417,14 +400,6 @@ wählbaren Provider und Modell generiert. Durch optionale
 \texttt{provider}- und \texttt{model}-Parameter im Request-Body können
 verschiedene LLM-Konfigurationen systematisch verglichen werden, ohne
 den Produktivbetrieb zu beeinflussen.
-
-\begin{Shaded}
-\begin{Highlighting}[]
-\KeywordTok{class}\NormalTok{ GenerateEventRequest(BaseModel):}
-\NormalTok{    provider: Optional[}\BuiltInTok{str}\NormalTok{] }\OperatorTok{=}\NormalTok{ Field(default}\OperatorTok{=}\VariableTok{None}\NormalTok{, description}\OperatorTok{=}\StringTok{"Provider override for Evaluation"}\NormalTok{)}
-\NormalTok{    model:    Optional[}\BuiltInTok{str}\NormalTok{] }\OperatorTok{=}\NormalTok{ Field(default}\OperatorTok{=}\VariableTok{None}\NormalTok{, description}\OperatorTok{=}\StringTok{"Modell override for Evaluation"}\NormalTok{)}
-\end{Highlighting}
-\end{Shaded}
 
 Für jeden Aufruf wird eine temporäre \texttt{LLMService}-Instanz
 erzeugt, falls Provider oder Modell vom konfigurierten Singleton
@@ -953,11 +928,6 @@ Prüfung vor Publikation abgefangen.
 
 Die Pre-Match-Prompts enthalten eine explizite Schutzregel gegen
 Halluzinationen:
-
-\begin{verbatim}
-Dieses ist ein Pre-Match-Eintrag. Beschreibe NUR die gegebenen Fakten.
-Erfinde KEINE Live-Spielszenen, Tore oder Spielverläufe.
-\end{verbatim}
 
 In der Stichprobe enthielt 1 von 1 untersuchten Pre-Match-Texten keine
 unzulässigen Spielszenen, jedoch eine nicht aus dem Datenbankkontext

@@ -14,13 +14,11 @@ Die **Präsentationsschicht** ist als White-Label-Frontend in React und TypeScri
 
 Die folgende Abbildung zeigt die drei Schichten mit ihren Technologien und Kommunikationspfaden:
 
-
 ---
 
 ### 4.1.1 Kommunikations- und Triggerarchitektur
 
 Der Kommunikationsfluss folgt dem Prinzip **„read first, trigger if missing"**: Das Frontend liest zunächst den vorhandenen Datenbestand über REST; nur bei fehlenden Daten wird ein passender n8n-Webhook ausgelöst. Dadurch werden externe API-Aufrufe minimiert und redundante Importe vermieden.
-
 
 Die Systemkopplung erfolgt über drei klar getrennte Schnittstellentypen:
 
@@ -113,7 +111,6 @@ Die Persistenzschicht basiert auf PostgreSQL und umfasst in der aktuellen Fassun
 
 Die folgende Abbildung zeigt die zentralen Entitäten und ihre Beziehungen:
 
-
 > **Hinweis:** Die Tabellen `media_queue`, `media_clips`, `style_references` und `settings` sind als eigenständige Entitäten ohne Fremdschlüsselbeziehungen modelliert und daher im ER-Diagramm nicht abgebildet. `style_references` dient als Few-Shot-Datenquelle für die LLM-Promptgenerierung; `media_queue` wird applikationsseitig über die Media-Endpunkte verwaltet.
 
 Das Schema folgt einem hybriden Entwurfsansatz aus strukturierter Normalisierung und gezielter Schemaflexibilität:
@@ -131,7 +128,6 @@ Jeder Ticker-Eintrag in `ticker_entries` folgt einem klaren Statusmodell mit dre
 - **`draft`**: Entwurf, noch nicht freigegeben
 - **`published`**: redaktionell oder automatisch veröffentlicht
 - **`rejected`**: verworfen, bleibt zur Nachvollziehbarkeit erhalten
-
 
 Eine Rückstufung von `published` auf `draft` ist über `PATCH status=draft` möglich und wird insbesondere bei Re-Triggern von Matchphasen-Workflows genutzt (vgl. Kap. 5.5.3). `rejected` ist ein terminaler Zustand — ein verworfener Eintrag kann nicht reaktiviert werden.
 
@@ -244,7 +240,6 @@ Die Generierung verwendet ein template-basiertes Prompting mit modularen Baustei
 4. Dynamischer Kontextblock mit relevanten Matchinformationen
 5. Optionaler Few-Shot-Block mit Stilbeispielen
 6. Regelblock mit formativen und inhaltlichen Einschränkungen
-
 
 Der Few-Shot-Block wird aus der Tabelle `style_references` gespeist, die manuell kuratierte Original-Tickertexte von Eintracht Frankfurt enthält. Pro LLM-Aufruf werden bis zu drei zufällige Referenzen selektiert, gefiltert nach `event_type`, `instance` und optional `league`. Durch die Randomisierung wird eine monotone Reproduktion vermieden, während der stilistische Korridor gewahrt bleibt. Für Pre-Match-Typen enthält der Prompt zusätzliche harte Restriktionen, um Live-Szenen-Halluzinationen zu vermeiden und die Ausgabe auf Vorschau- und Analyseinhalte zu begrenzen.
 
