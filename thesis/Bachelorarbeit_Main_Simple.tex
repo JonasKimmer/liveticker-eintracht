@@ -15,10 +15,19 @@
 \usepackage{array}
 \usepackage{tabularx}
 \usepackage{graphicx}
+\usepackage{listings}
 
 % Pandoc compatibility
 \providecommand{\tightlist}{%
   \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+
+\providecommand{\passthrough}[1]{#1}
+
+\lstset{
+  basicstyle=\ttfamily,
+  breaklines=true,
+  postbreak=\mbox{\textcolor{red}{$\hookrightarrow$}\space},
+}
 
 \geometry{left=2.5cm, right=2cm, top=2.5cm, bottom=2.5cm}
 \onehalfspacing
