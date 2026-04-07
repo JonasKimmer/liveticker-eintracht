@@ -4,7 +4,7 @@ on:
   push:
     branches: [main, deploy/render-v2]
     paths:
-      - "Bachelorarbeit_*.tex"
+      - "thesis/Bachelorarbeit_*.tex"
       - "docs_short/**"
       - ".github/workflows/latex.yml"
   pull_request:
@@ -25,15 +25,15 @@ jobs:
 
       - name: Build LaTeX to PDF
         run: |
-          cd ${{ github.workspace }}
+          cd ${{ github.workspace }}/thesis
           xelatex -interaction=nonstopmode -halt-on-error Bachelorarbeit_Main_Simple.tex
           xelatex -interaction=nonstopmode -halt-on-error Bachelorarbeit_Main_Simple.tex
 
       - name: Check PDF was created
         run: |
-          if [ -f "Bachelorarbeit_Main_Simple.pdf" ]; then
+          if [ -f "thesis/Bachelorarbeit_Main_Simple.pdf" ]; then
             echo "✅ PDF erfolgreich generiert!"
-            ls -lh Bachelorarbeit_Main_Simple.pdf
+            ls -lh thesis/Bachelorarbeit_Main_Simple.pdf
           else
             echo "❌ PDF Generierung fehlgeschlagen"
             exit 1
@@ -44,7 +44,7 @@ jobs:
         if: success()
         with:
           name: Bachelorarbeit_PDF
-          path: Bachelorarbeit_Main_Simple.pdf
+          path: thesis/Bachelorarbeit_Main_Simple.pdf
           retention-days: 90
 
       - name: Create Release
