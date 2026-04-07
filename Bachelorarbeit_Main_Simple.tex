@@ -1,0 +1,85 @@
+\documentclass[12pt,a4paper,ngerman]{report}
+
+\usepackage[utf8]{inputenc}
+\usepackage[ngerman]{babel}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{geometry}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{fancyhdr}
+\usepackage{setspace}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{tabularx}
+\usepackage{graphicx}
+
+\geometry{left=2.5cm, right=2cm, top=2.5cm, bottom=2.5cm}
+\onehalfspacing
+
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\nouppercase{\leftmark}}
+\fancyhead[R]{\thepage}
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    urlcolor=blue,
+    citecolor=blue
+}
+
+\title{KI-gestütztes Liveticker-Redaktionssystem für den Profifußball}
+\author{Jonas Kimmer}
+\date{April 2026}
+
+\begin{document}
+
+% TITLEPAGE
+\begin{titlepage}
+\centering
+\vspace*{3cm}
+{\Large \textbf{Bachelorarbeit}}\\[2cm]
+{\LARGE \textbf{KI-gestütztes Liveticker-Redaktionssystem für den Profifußball}}\\[0.5cm]
+{\large Automatisierte Textgenerierung für Echtzeit-Sportjournalismus mit Human-in-the-Loop-Kontrolle}\\[3cm]
+{\large \textbf{Autor}}\\
+Jonas Kimmer\\[3cm]
+{\large \textbf{Hochschule}}\\
+Technische Hochschule Aschaffenburg\\[0.5cm]
+Fachbereich Informatik\\[3cm]
+{\large \textbf{Betreuung}}\\
+Prof. Dr. [Name]\\[3cm]
+{\large \textbf{Firmenbetreuung}}\\
+Stackwork GmbH, Eintracht Frankfurt\\[3cm]
+{\large April 2026}
+\end{titlepage}
+
+% ABSTRACT
+\chapter*{Abstract}
+
+Die manuelle Erstellung von Liveticker-Einträgen im Profifußball ist ein kognitiv anspruchsvoller, zeitkritischer Prozess. Das entwickelte System kombiniert eine FastAPI-Backend-Architektur mit einer mehrsprachigen LLM-Pipeline und einem React-Frontend. Drei Betriebsmodi ermöglichen einen graduellen Übergang zwischen autonomer KI-Generierung und redaktioneller Kontrolle.
+
+Die Evaluation umfasst 391 automatisierte Tests, eine TypeScript-Typenabdeckung von 95,84\% sowie eine qualitative Bewertung von 16 KI-generierten Ticker-Einträgen aus 9 Bundesliga-Spielen. Die KI-generierten Texte erzielen einen Gesamtdurchschnitt von 4,3/5 Punkten. Die geschätzte Time-to-Publish im Auto-Modus beträgt 3,4--5,9 Sekunden gegenüber 30--120 Sekunden im manuellen Modus.
+
+\noindent\textbf{Schlüsselwörter:} Large Language Models, Liveticker, Natural Language Generation, Human-in-the-Loop, Few-Shot Prompting, Sportjournalismus, FastAPI, React, TypeScript
+
+% TABLE OF CONTENTS
+\tableofcontents
+
+% CHAPTERS
+\input{Bachelorarbeit_Kapitel1}
+\input{Bachelorarbeit_Kapitel2}
+\input{Bachelorarbeit_Kapitel3}
+\input{Bachelorarbeit_Kapitel4}
+\input{Bachelorarbeit_Kapitel5}
+\input{Bachelorarbeit_Kapitel6}
+\input{Bachelorarbeit_Kapitel7}
+\input{Bachelorarbeit_Kapitel8}
+
+% APPENDIX
+\appendix
+\input{Bachelorarbeit_Appendix}
+
+\end{document}
