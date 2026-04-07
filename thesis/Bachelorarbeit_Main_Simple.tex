@@ -16,6 +16,9 @@
 \usepackage{tabularx}
 \usepackage{graphicx}
 \usepackage{listings}
+\usepackage{longtable}
+\usepackage{fancyvrb}
+\usepackage{framed}
 
 % Pandoc compatibility
 \providecommand{\tightlist}{%
@@ -28,6 +31,12 @@
   breaklines=true,
   postbreak=\mbox{\textcolor{red}{$\hookrightarrow$}\space},
 }
+
+% Define Shaded environment for code blocks
+\definecolor{shadecolor}{gray}{0.95}
+\newenvironment{Shaded}
+  {\begin{shaded}}
+  {\end{shaded}}
 
 \geometry{left=2.5cm, right=2cm, top=2.5cm, bottom=2.5cm}
 \onehalfspacing
