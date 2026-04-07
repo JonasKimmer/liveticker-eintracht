@@ -18,6 +18,23 @@
 \usepackage{float}
 \usepackage{subcaption}
 \usepackage{tikz}
+\usepackage{longtable}
+\usepackage{fancyvrb}
+\usepackage{framed}
+
+% Pandoc-generated content requires these definitions
+\let\tightlist\relax
+\providecommand{\tightlist}{\setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+
+% Define Shaded and Highlighting environments for code blocks
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}
+\newenvironment{Shaded}{\begin{snugshade}}{\end{snugshade}}
+
+\newenvironment{Highlighting}[1]{%
+  \begin{minted}[linenos=false,breaklines=true,breaksymbolleft=,bgcolor=shadecolor]{#1}}
+{\end{minted}}
+
+\usepackage{minted}
 
 \geometry{left=2.5cm, right=2cm, top=2.5cm, bottom=2.5cm}
 \onehalfspacing

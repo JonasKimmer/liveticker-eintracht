@@ -50,7 +50,7 @@ HTTP-Endpunkte gegen eine transaktionale Testdatenbank prüfen. An der
 Spitze stehen Playwright-basierte End-to-End-Tests, die den
 vollständigen Redaktionsworkflow im Browser simulieren.
 
-\begin{verbatim}
+\begin{lstlisting}
           ┌──────────┐
           │  E2E (6) │   Playwright — Browser-Workflow
          ┌┴──────────┴┐
@@ -58,22 +58,22 @@ vollständigen Redaktionsworkflow im Browser simulieren.
         ┌┴────────────┴┐
         │  Unit-Tests   │ Jest/React Testing Library + pytest
         └──────────────┘
-\end{verbatim}
+\end{lstlisting}
 
 Diese Pyramide stellt sicher, dass die Mehrheit der Testfälle ohne
 externe Abhängigkeiten läuft und damit in CI-Pipelines schnell und
 zuverlässig ausgeführt werden kann. Die Integrations-Tests sind so
 strukturiert, dass sie bei fehlender Datenbankverbindung automatisch
-übersprungen werden (\texttt{pytest.skip}) und keine falschen
-Fehlermeldungen erzeugen.
+übersprungen werden (\passthrough{\lstinline!pytest.skip!}) und keine
+falschen Fehlermeldungen erzeugen.
 
 \subsubsection{6.2.2 Frontend-Unit-Tests (Jest + React Testing
 Library)}\label{frontend-unit-tests-jest-react-testing-library}
 
 Das Frontend verfügt über \textbf{187 Unit-Tests} in 15 Testdateien, die
-alle mit \texttt{npm\ test\ -\/-\ -\/-watchAll=false} grün durchlaufen.
-Die Tests decken vier Kategorien ab: Utility-Funktionen, React-Hooks,
-UI-Komponenten und TypeScript-Typen.
+alle mit \passthrough{\lstinline!npm test -- --watchAll=false!} grün
+durchlaufen. Die Tests decken vier Kategorien ab: Utility-Funktionen,
+React-Hooks, UI-Komponenten und TypeScript-Typen.
 
 {\def\LTcaptype{none} % do not increment counter
 \begin{longtable}[]{@{}
@@ -95,77 +95,91 @@ Fokus
 \endhead
 \bottomrule\noalign{}
 \endlastfoot
-\texttt{parseCommand} & \texttt{utils/parseCommand.test.ts} & 45 &
+\passthrough{\lstinline!parseCommand!} &
+\passthrough{\lstinline!utils/parseCommand.test.ts!} & 45 &
 Slash-Command-Parser: alle Events, Phasen, Fehlerfälle \\
-\texttt{roundLabel} & \texttt{utils/roundLabel.test.ts} & 16 &
+\passthrough{\lstinline!roundLabel!} &
+\passthrough{\lstinline!utils/roundLabel.test.ts!} & 16 &
 Spieltag-Beschriftungen, Knockout-Mapping \\
-\texttt{RightPanelComponents} &
-\texttt{components/RightPanelComponents.test.tsx} & 18 & Aufstellung,
-Statistiken, Tabs \\
-\texttt{PublishedEntry} & \texttt{components/PublishedEntry.test.tsx} &
-17 & Eintrag-Darstellung, Bearbeitungsmodus \\
-\texttt{EntryEditor} & \texttt{components/EntryEditor.test.tsx} & 19 &
+\passthrough{\lstinline!RightPanelComponents!} &
+\passthrough{\lstinline!components/RightPanelComponents.test.tsx!} & 18
+& Aufstellung, Statistiken, Tabs \\
+\passthrough{\lstinline!PublishedEntry!} &
+\passthrough{\lstinline!components/PublishedEntry.test.tsx!} & 17 &
+Eintrag-Darstellung, Bearbeitungsmodus \\
+\passthrough{\lstinline!EntryEditor!} &
+\passthrough{\lstinline!components/EntryEditor.test.tsx!} & 19 &
 Publish-Flow, Preview-Rendering, Keyboard-Shortcuts \\
-\texttt{useRightPanelData} & \texttt{hooks/useRightPanelData.test.ts} &
-10 & Spieler-Lookup, Linien-Bildung, Torschützen \\
-\texttt{useSearchableDropdown} &
-\texttt{hooks/useSearchableDropdown.test.ts} & 10 & Filter-, Keyboard-,
-Reset-Logik \\
-\texttt{useLiveMinute} & \texttt{hooks/useLiveMinute.test.ts} & 10 &
+\passthrough{\lstinline!useRightPanelData!} &
+\passthrough{\lstinline!hooks/useRightPanelData.test.ts!} & 10 &
+Spieler-Lookup, Linien-Bildung, Torschützen \\
+\passthrough{\lstinline!useSearchableDropdown!} &
+\passthrough{\lstinline!hooks/useSearchableDropdown.test.ts!} & 10 &
+Filter-, Keyboard-, Reset-Logik \\
+\passthrough{\lstinline!useLiveMinute!} &
+\passthrough{\lstinline!hooks/useLiveMinute.test.ts!} & 10 &
 Live-Minuten-Berechnung, Halbzeit-Offset \\
-\texttt{useListKeyboard} & \texttt{hooks/useListKeyboard.test.tsx} & 9 &
+\passthrough{\lstinline!useListKeyboard!} &
+\passthrough{\lstinline!hooks/useListKeyboard.test.tsx!} & 9 &
 Arrow-Navigation, Tab/Enter/Escape \\
-\texttt{CommandPalette} & \texttt{components/CommandPalette.test.ts} & 7
-& Autocomplete-Logik, Keyboard-Navigation \\
-\texttt{useMatchEvents} & \texttt{hooks/useMatchEvents.test.ts} & 6 &
+\passthrough{\lstinline!CommandPalette!} &
+\passthrough{\lstinline!components/CommandPalette.test.ts!} & 7 &
+Autocomplete-Logik, Keyboard-Navigation \\
+\passthrough{\lstinline!useMatchEvents!} &
+\passthrough{\lstinline!hooks/useMatchEvents.test.ts!} & 6 &
 Event-Filterung, Status-Mapping \\
-\texttt{resolvePollingInterval} &
-\texttt{utils/resolvePollingInterval.test.ts} & 6 & Polling-Frequenz je
-Spielstatus \\
-\texttt{useMatchTicker} & \texttt{hooks/useMatchTicker.test.ts} & 5 &
+\passthrough{\lstinline!resolvePollingInterval!} &
+\passthrough{\lstinline!utils/resolvePollingInterval.test.ts!} & 6 &
+Polling-Frequenz je Spielstatus \\
+\passthrough{\lstinline!useMatchTicker!} &
+\passthrough{\lstinline!hooks/useMatchTicker.test.ts!} & 5 &
 Polling-Logik, Fehlerbehandlung \\
-\texttt{useClickOutside} & \texttt{hooks/useClickOutside.test.ts} & 5 &
+\passthrough{\lstinline!useClickOutside!} &
+\passthrough{\lstinline!hooks/useClickOutside.test.ts!} & 5 &
 Event-Listener-Lifecycle \\
-\texttt{ErrorBoundary} & \texttt{components/ErrorBoundary.test.tsx} & 4
-& Fehler-Capture, Fallback-UI \\
+\passthrough{\lstinline!ErrorBoundary!} &
+\passthrough{\lstinline!components/ErrorBoundary.test.tsx!} & 4 &
+Fehler-Capture, Fallback-UI \\
 \end{longtable}
 }
 
-\textbf{Kernmodul: \texttt{parseCommand}}
+\textbf{Kernmodul: \passthrough{\lstinline!parseCommand!}}
 
-Der \texttt{parseCommand}-Utility ist das komplexeste Stück
-Geschäftslogik im Frontend --- er transformiert Slash-Commands (z. B.
-\texttt{/g\ Müller\ SGE}) in strukturierte Ticker-Einträge. Die 45 Tests
-decken alle 11 Command-Typen (Tor, Eigentor, Gelbe/Rote Karte, Wechsel,
-Notiz, verfehlter Elfmeter und alle 11 Phasen-Commands) sowie explizit
-die Fehlerfälle ab: Jeder Test prüft \texttt{isValid}, \texttt{type},
-\texttt{formatted}, \texttt{meta.icon} und \texttt{warnings} ---
-unvollständige Eingaben liefern gezielte Hinweise
-(\texttt{"Fehlend:\ Spieler"}) statt Laufzeitfehler (vgl.
-\texttt{parseCommand.test.ts}).
+Der \passthrough{\lstinline!parseCommand!}-Utility ist das komplexeste
+Stück Geschäftslogik im Frontend --- er transformiert Slash-Commands (z.
+B. \passthrough{\lstinline!/g Müller SGE!}) in strukturierte
+Ticker-Einträge. Die 45 Tests decken alle 11 Command-Typen (Tor,
+Eigentor, Gelbe/Rote Karte, Wechsel, Notiz, verfehlter Elfmeter und alle
+11 Phasen-Commands) sowie explizit die Fehlerfälle ab: Jeder Test prüft
+\passthrough{\lstinline!isValid!}, \passthrough{\lstinline!type!},
+\passthrough{\lstinline!formatted!}, \passthrough{\lstinline!meta.icon!}
+und \passthrough{\lstinline!warnings!} --- unvollständige Eingaben
+liefern gezielte Hinweise (\passthrough{\lstinline!"Fehlend: Spieler"!})
+statt Laufzeitfehler (vgl.
+\passthrough{\lstinline!parseCommand.test.ts!}).
 
-\textbf{Beispiel: \texttt{useLiveMinute}}
+\textbf{Beispiel: \passthrough{\lstinline!useLiveMinute!}}
 
-Der Hook \texttt{useLiveMinute} berechnet die aktuelle Spielminute aus
-dem Anstoßzeitpunkt, sofern keine Minuten-Information direkt im
-Match-Objekt vorhanden ist. Die 10 Tests decken sowohl die
+Der Hook \passthrough{\lstinline!useLiveMinute!} berechnet die aktuelle
+Spielminute aus dem Anstoßzeitpunkt, sofern keine Minuten-Information
+direkt im Match-Objekt vorhanden ist. Die 10 Tests decken sowohl die
 Halbzeit-Korrektur (+46 Minuten ab der 60. Minute) als auch den Puffer
 bei fehlendem Kickoff-Timestamp ab (vgl.
-\texttt{useLiveMinute.test.ts}).
+\passthrough{\lstinline!useLiveMinute.test.ts!}).
 
 \subsubsection{6.2.3 Backend-Unit-Tests
 (pytest)}\label{backend-unit-tests-pytest}
 
 Das Backend verfügt über \textbf{198 Tests} in 11 Test-Dateien, die mit
 einer Gesamt-Coverage von \textbf{75 \%} abgeschlossen werden. Alle 198
-Tests laufen grün durch (\texttt{198\ passed}).
+Tests laufen grün durch (\passthrough{\lstinline!198 passed!}).
 
-\begin{verbatim}
+\begin{lstlisting}
 $ pytest tests/ --cov=app -q
 ...
 198 passed in 3.9s
 TOTAL  3230  793  75%
-\end{verbatim}
+\end{lstlisting}
 
 {\def\LTcaptype{none} % do not increment counter
 \begin{longtable}[]{@{}
@@ -187,45 +201,50 @@ Fokus
 \endhead
 \bottomrule\noalign{}
 \endlastfoot
-\texttt{test\_ticker\_api.py} & 20 & API (Integration) & Ticker CRUD,
-Publish/Reject, Manual-Entry, Phasen-Deduplizierung \\
-\texttt{test\_matches\_api.py} & 27 & API (Integration) & Match CRUD,
-Ticker-Mode, Lineup, Statistiken, Player-Stats, Verletzungen \\
-\texttt{test\_events\_api.py} & 11 & API (Integration) & Events: Upsert,
-Paginierung, Update, Delete \\
-\texttt{test\_competitions\_api.py} & 12 & API (Integration) &
-Wettbewerbe: Listenabfrage, Paginierung \\
-\texttt{test\_players\_api.py} & 11 & API (Integration) & Spieler:
-Abfrage, Sortierung \\
-\texttt{test\_ticker\_entry\_repository.py} & 10 & Repository (Unit) &
-CRUD-Operationen auf Datenbankebene \\
-\texttt{test\_ticker\_service.py} & 10 & Service (Unit) &
-Kontext-Aufbau, Score-Berechnung, KI-Eintrag-Erstellung \\
-\texttt{test\_evaluation\_metrics.py} & 18 & Utility (Unit) & TTP,
-Cliff's Delta, Bootstrap-CI, Cohen's Kappa, Verteilungsanalyse \\
-\texttt{test\_llm\_service.py} & 28 & Service (Unit/Mock) &
-LLM-Provider-Routing, Prompt-Aufbau, Fallback-Logik \\
-\texttt{test\_constants.py} & 14 & Utility (Unit) &
+\passthrough{\lstinline!test\_ticker\_api.py!} & 20 & API (Integration)
+& Ticker CRUD, Publish/Reject, Manual-Entry, Phasen-Deduplizierung \\
+\passthrough{\lstinline!test\_matches\_api.py!} & 27 & API (Integration)
+& Match CRUD, Ticker-Mode, Lineup, Statistiken, Player-Stats,
+Verletzungen \\
+\passthrough{\lstinline!test\_events\_api.py!} & 11 & API (Integration)
+& Events: Upsert, Paginierung, Update, Delete \\
+\passthrough{\lstinline!test\_competitions\_api.py!} & 12 & API
+(Integration) & Wettbewerbe: Listenabfrage, Paginierung \\
+\passthrough{\lstinline!test\_players\_api.py!} & 11 & API (Integration)
+& Spieler: Abfrage, Sortierung \\
+\passthrough{\lstinline!test\_ticker\_entry\_repository.py!} & 10 &
+Repository (Unit) & CRUD-Operationen auf Datenbankebene \\
+\passthrough{\lstinline!test\_ticker\_service.py!} & 10 & Service (Unit)
+& Kontext-Aufbau, Score-Berechnung, KI-Eintrag-Erstellung \\
+\passthrough{\lstinline!test\_evaluation\_metrics.py!} & 18 & Utility
+(Unit) & TTP, Cliff's Delta, Bootstrap-CI, Cohen's Kappa,
+Verteilungsanalyse \\
+\passthrough{\lstinline!test\_llm\_service.py!} & 28 & Service
+(Unit/Mock) & LLM-Provider-Routing, Prompt-Aufbau, Fallback-Logik \\
+\passthrough{\lstinline!test\_constants.py!} & 14 & Utility (Unit) &
 Konstanten-Vollständigkeit, Phasen-Mapping \\
-\texttt{test\_utils.py} & 37 & Utility (Unit) & HTTP-Fehlerbehandlung,
-DB-Utilities, Context-Builder \\
+\passthrough{\lstinline!test\_utils.py!} & 37 & Utility (Unit) &
+HTTP-Fehlerbehandlung, DB-Utilities, Context-Builder \\
 \end{longtable}
 }
 
 \textbf{API-Integrations-Tests}
 
-Die API-Tests nutzen FastAPIs \texttt{TestClient} mit einer
-transaktionalen PostgreSQL-Session, die nach jedem Test per Rollback
-zurückgesetzt wird. Dadurch sind Tests voneinander isoliert und
-hinterlassen keine persistenten Daten. Der \texttt{db}-Fixture erzeugt
-eine Session mit \texttt{autocommit=False} und führt nach dem
-\texttt{yield} ein \texttt{session.rollback()} aus; der
-\texttt{client}-Fixture überschreibt die
-\texttt{get\_db}-Dependency-Injection von FastAPI, sodass alle
-Route-Handler dieselbe transaktionale Session verwenden. Exemplarisch
-wird ein Test für die Ticker-Mode-Route gezeigt, der sowohl den
-Erfolgsfall (\texttt{mode:\ "coop"} → 200) als auch die Validierung
-(\texttt{mode:\ "invalid"} → 422) abdeckt.
+Die API-Tests nutzen FastAPIs \passthrough{\lstinline!TestClient!} mit
+einer transaktionalen PostgreSQL-Session, die nach jedem Test per
+Rollback zurückgesetzt wird. Dadurch sind Tests voneinander isoliert und
+hinterlassen keine persistenten Daten. Der
+\passthrough{\lstinline!db!}-Fixture erzeugt eine Session mit
+\passthrough{\lstinline!autocommit=False!} und führt nach dem
+\passthrough{\lstinline!yield!} ein
+\passthrough{\lstinline!session.rollback()!} aus; der
+\passthrough{\lstinline!client!}-Fixture überschreibt die
+\passthrough{\lstinline!get\_db!}-Dependency-Injection von FastAPI,
+sodass alle Route-Handler dieselbe transaktionale Session verwenden.
+Exemplarisch wird ein Test für die Ticker-Mode-Route gezeigt, der sowohl
+den Erfolgsfall (\passthrough{\lstinline!mode: "coop"!} → 200) als auch
+die Validierung (\passthrough{\lstinline!mode: "invalid"!} → 422)
+abdeckt.
 
 \textbf{Coverage-Verteilung nach Schicht}
 
@@ -252,14 +271,16 @@ Anmerkung
 \endhead
 \bottomrule\noalign{}
 \endlastfoot
-\textbf{Modelle} (\texttt{app/models/}) & 17 & 100 \% & Vollständig
-abgedeckt \\
-\textbf{Schemas} (\texttt{app/schemas/}) & 11 & \textasciitilde95 \% &
-Pydantic-Validierung vollständig getestet \\
-\textbf{Utilities} (\texttt{app/utils/}) & 5 & \textasciitilde80 \% &
-Evaluation-Metriken, HTTP-Fehler, Context-Builder \\
-\textbf{API-Endpunkte} (\texttt{app/api/v1/}) & 14 & \textasciitilde55
-\% & Kern-Routes getestet; Clip/Media/Teams noch offen \\
+\textbf{Modelle} (\passthrough{\lstinline!app/models/!}) & 17 & 100 \% &
+Vollständig abgedeckt \\
+\textbf{Schemas} (\passthrough{\lstinline!app/schemas/!}) & 11 &
+\textasciitilde95 \% & Pydantic-Validierung vollständig getestet \\
+\textbf{Utilities} (\passthrough{\lstinline!app/utils/!}) & 5 &
+\textasciitilde80 \% & Evaluation-Metriken, HTTP-Fehler,
+Context-Builder \\
+\textbf{API-Endpunkte} (\passthrough{\lstinline!app/api/v1/!}) & 14 &
+\textasciitilde55 \% & Kern-Routes getestet; Clip/Media/Teams noch
+offen \\
 \textbf{Repositories} & 12 & \textasciitilde55 \% & Ticker/Event/Match
 gut; Clip/Season/Style offen \\
 \textbf{Services} & 2 & \textasciitilde50 \% & LLM-Service (Mocking),
@@ -294,19 +315,20 @@ Beschreibung
 \endhead
 \bottomrule\noalign{}
 \endlastfoot
-\texttt{App\ lädt\ korrekt\ \textgreater{}\ Startseite\ zeigt\ Navigations-UI}
+\passthrough{\lstinline!App lädt korrekt > Startseite zeigt Navigations-UI!}
 & Prüft, dass die React-App ohne Crash-Screen rendert \\
-\texttt{App\ lädt\ korrekt\ \textgreater{}\ StartScreen\ zeigt\ Länder-Dropdown}
-& Prüft, dass \texttt{.lt}-Root-Element sichtbar wird \\
-\texttt{Navigation\ \textgreater{}\ Länder-Dropdown\ ist\ interaktiv} &
+\passthrough{\lstinline!App lädt korrekt > StartScreen zeigt Länder-Dropdown!}
+& Prüft, dass \passthrough{\lstinline!.lt!}-Root-Element sichtbar
+wird \\
+\passthrough{\lstinline!Navigation > Länder-Dropdown ist interaktiv!} &
 Prüft, dass Label und Select-Element im DOM erreichbar sind \\
-\texttt{Navigation\ \textgreater{}\ Kein\ unbehandelter\ JS-Fehler\ beim\ Laden}
+\passthrough{\lstinline!Navigation > Kein unbehandelter JS-Fehler beim Laden!}
 & Fängt JavaScript-Laufzeitfehler ab (mit Whitelist für bekannte
 Netzwerkfehler) \\
-\texttt{Ticker-Oberfläche\ \textgreater{}\ Keyboard-Shortcuts-Modal\ öffnet\ sich}
-& Simuliert Klick auf \texttt{?}-Button, prüft Modal-Öffnung und
-Overlay-Schließen \\
-\texttt{Ticker-Oberfläche\ \textgreater{}\ Mobile\ Tab\ Bar\ ist\ auf\ kleinen\ Screens\ sichtbar}
+\passthrough{\lstinline!Ticker-Oberfläche > Keyboard-Shortcuts-Modal öffnet sich!}
+& Simuliert Klick auf \passthrough{\lstinline!?!}-Button, prüft
+Modal-Öffnung und Overlay-Schließen \\
+\passthrough{\lstinline!Ticker-Oberfläche > Mobile Tab Bar ist auf kleinen Screens sichtbar!}
 & Prüft Viewport 375×812 (iPhone SE) --- App rendert korrekt \\
 \end{longtable}
 }
@@ -321,14 +343,15 @@ die Tests unmittelbar an.
 TypeScript-Typsicherheit}\label{typescript-typsicherheit}
 
 Die vollständige Migration von JavaScript zu TypeScript und die zentrale
-Typen-Architektur (\texttt{src/types/index.ts} mit Domain-Interfaces,
-Union-Types und \texttt{as\ const}-Konstanten) sind in Abschnitt 5.4.7
+Typen-Architektur (\passthrough{\lstinline!src/types/index.ts!} mit
+Domain-Interfaces, Union-Types und
+\passthrough{\lstinline!as const!}-Konstanten) sind in Abschnitt 5.4.7
 dokumentiert.
 
 \textbf{Ergebnis}
 
-Die \texttt{type-coverage}-Metrik (Anteil explizit getypter Ausdrücke an
-allen Ausdrücken) wurde wie folgt gesteigert:
+Die \passthrough{\lstinline!type-coverage!}-Metrik (Anteil explizit
+getypter Ausdrücke an allen Ausdrücken) wurde wie folgt gesteigert:
 
 {\def\LTcaptype{none} % do not increment counter
 \begin{longtable}[]{@{}
@@ -350,8 +373,9 @@ TypeScript-Fehler
 Migrationsbeginn & 78,33 \% & 885 \\
 Nach Grundmigration & \textasciitilde84 \% & 0 \\
 Nach Interface-Ausbau (Hooks, Panels) & \textasciitilde89 \% & 0 \\
-\textbf{Endstand (nach \texttt{parseCommand}-Typisierung)} &
-\textbf{95,84 \%} & \textbf{0} \\
+\textbf{Endstand (nach
+\passthrough{\lstinline!parseCommand!}-Typisierung)} & \textbf{95,84 \%}
+& \textbf{0} \\
 \end{longtable}
 }
 
@@ -362,18 +386,19 @@ verteilen sich auf wenige, bewusst offen gelassene Stellen:
 \begin{itemize}
 \tightlist
 \item
-  \textbf{\texttt{MatchSelectorModal.tsx}}: Ein großes Modal mit
-  komplexem internen State, in dem die Typisierung stark von einer
-  kommenden API-Stabilisierung abhängt.
+  \textbf{\passthrough{\lstinline!MatchSelectorModal.tsx!}}: Ein großes
+  Modal mit komplexem internen State, in dem die Typisierung stark von
+  einer kommenden API-Stabilisierung abhängt.
 \item
-  \textbf{\texttt{MediaPickerPanel.tsx} / \texttt{YouTubePanel.tsx}}:
-  Media-Panels, die externe API-Responses (ScorePlay, YouTube)
-  verarbeiten, deren Typen nicht vollständig spezifiziert sind.
+  \textbf{\passthrough{\lstinline!MediaPickerPanel.tsx!} /
+  \passthrough{\lstinline!YouTubePanel.tsx!}}: Media-Panels, die externe
+  API-Responses (ScorePlay, YouTube) verarbeiten, deren Typen nicht
+  vollständig spezifiziert sind.
 \item
-  \textbf{Exports in \texttt{components/index.ts}}: Barrel-Exports mit
-  \texttt{export\ \{\ X\ \}} ohne explizite Typ-Annotationen ---
-  technisch korrekt, aber von \texttt{type-coverage} als untypiert
-  gezählt.
+  \textbf{Exports in \passthrough{\lstinline!components/index.ts!}}:
+  Barrel-Exports mit \passthrough{\lstinline!export \{ X \}!} ohne
+  explizite Typ-Annotationen --- technisch korrekt, aber von
+  \passthrough{\lstinline!type-coverage!} als untypiert gezählt.
 \end{itemize}
 
 \textbf{Nutzen im Entwicklungsprozess}
@@ -385,16 +410,17 @@ wären:
 \begin{itemize}
 \tightlist
 \item
-  \texttt{Country} war als Objekt-Interface typisiert, die API liefert
-  jedoch \texttt{string{[}{]}} --- TypeScript erzwang die Korrektur
+  \passthrough{\lstinline!Country!} war als Objekt-Interface typisiert,
+  die API liefert jedoch \passthrough{\lstinline!string[]!} ---
+  TypeScript erzwang die Korrektur
 \item
-  \texttt{parseInt(v)} erhielt ein
-  \texttt{string\ \textbar{}\ number}-Argument --- ohne Typ wäre dies
-  still übergangen worden
+  \passthrough{\lstinline!parseInt(v)!} erhielt ein
+  \passthrough{\lstinline!string | number!}-Argument --- ohne Typ wäre
+  dies still übergangen worden
 \item
-  \texttt{e.target.closest(...)} erforderte
-  \texttt{as\ Element\ \textbar{}\ null} --- TypeScript verhinderte den
-  Null-Zugriff
+  \passthrough{\lstinline!e.target.closest(...)!} erforderte
+  \passthrough{\lstinline!as Element | null!} --- TypeScript verhinderte
+  den Null-Zugriff
 \end{itemize}
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
@@ -411,29 +437,30 @@ konkreter Textbeispiele einschließlich Expertenvalidierung.
 Evaluationsinfrastruktur}\label{evaluationsinfrastruktur}
 
 Das System stellt über den Endpunkt
-\texttt{POST\ /api/v1/ticker/generate-bulk/\{match\_id\}} eine
-Bulk-Generierungsfunktion bereit, die alle Events eines Spiels mit einem
-wählbaren Provider und Modell generiert. Durch optionale
-\texttt{provider}- und \texttt{model}-Parameter im Request-Body können
+\passthrough{\lstinline!POST /api/v1/ticker/generate-bulk/\{match\_id\}!}
+eine Bulk-Generierungsfunktion bereit, die alle Events eines Spiels mit
+einem wählbaren Provider und Modell generiert. Durch optionale
+\passthrough{\lstinline!provider!}- und
+\passthrough{\lstinline!model!}-Parameter im Request-Body können
 verschiedene LLM-Konfigurationen systematisch verglichen werden, ohne
 den Produktivbetrieb zu beeinflussen.
 
-\begin{Shaded}
-\begin{Highlighting}[]
-\KeywordTok{class}\NormalTok{ GenerateEventRequest(BaseModel):}
-\NormalTok{    provider: Optional[}\BuiltInTok{str}\NormalTok{] }\OperatorTok{=}\NormalTok{ Field(default}\OperatorTok{=}\VariableTok{None}\NormalTok{, description}\OperatorTok{=}\StringTok{"Provider override for Evaluation"}\NormalTok{)}
-\NormalTok{    model:    Optional[}\BuiltInTok{str}\NormalTok{] }\OperatorTok{=}\NormalTok{ Field(default}\OperatorTok{=}\VariableTok{None}\NormalTok{, description}\OperatorTok{=}\StringTok{"Modell override for Evaluation"}\NormalTok{)}
-\end{Highlighting}
-\end{Shaded}
+\begin{lstlisting}[language=Python]
+class GenerateEventRequest(BaseModel):
+    provider: Optional[str] = Field(default=None, description="Provider override for Evaluation")
+    model:    Optional[str] = Field(default=None, description="Modell override for Evaluation")
+\end{lstlisting}
 
-Für jeden Aufruf wird eine temporäre \texttt{LLMService}-Instanz
-erzeugt, falls Provider oder Modell vom konfigurierten Singleton
-abweichen. Dadurch lassen sich A/B-Vergleiche zwischen Providern
-durchführen, ohne die Global-Konfiguration zu verändern.
+Für jeden Aufruf wird eine temporäre
+\passthrough{\lstinline!LLMService!}-Instanz erzeugt, falls Provider
+oder Modell vom konfigurierten Singleton abweichen. Dadurch lassen sich
+A/B-Vergleiche zwischen Providern durchführen, ohne die
+Global-Konfiguration zu verändern.
 
 \subsubsection{6.3.2 Quantitative Metriken}\label{quantitative-metriken}
 
-Das Evaluationsmodul (\texttt{app/utils/evaluation\_metrics.py}) stellt
+Das Evaluationsmodul
+(\passthrough{\lstinline!app/utils/evaluation\_metrics.py!}) stellt
 sechs Metriken bereit, die sich in zwei Kategorien gliedern:
 
 \textbf{Zeitliche Metriken:}
@@ -462,20 +489,20 @@ sechs Metriken bereit, die sich in zwei Kategorien gliedern:
   \textbf{Bootstrap-Konfidenzintervall}: Resampling-basierte Schätzung
   des Mittelwertunterschieds zwischen zwei Gruppen (5.000 Iterationen,
   Konfidenz 95 \%, deterministisch via Seed). Liefert
-  \texttt{(observed\_diff,\ lower\_ci,\ upper\_ci)}.
+  \passthrough{\lstinline!(observed\_diff, lower\_ci, upper\_ci)!}.
 \item
   \textbf{Cohen's Kappa} (Cohen 1960): Interrater-Reliabilität für
   kategoriale Bewertungen. Korrigiert die beobachtete Übereinstimmung um
   den Zufall. κ \textgreater{} 0,61 gilt als substantielle
   Übereinstimmung.
 \item
-  \textbf{Verteilungsanalyse} (\texttt{summarize\_distribution}):
-  Berechnet Median, Standardabweichung, Quartile (Q1, Q3), IQR und 95.
-  Perzentil --- robuste Lagemaße, die gegen Ausreißer unempfindlich
-  sind.
+  \textbf{Verteilungsanalyse}
+  (\passthrough{\lstinline!summarize\_distribution!}): Berechnet Median,
+  Standardabweichung, Quartile (Q1, Q3), IQR und 95. Perzentil ---
+  robuste Lagemaße, die gegen Ausreißer unempfindlich sind.
 \item
   \textbf{Qualitätsaggregation}
-  (\texttt{aggregate\_quality\_by\_group}): Gruppiert
+  (\passthrough{\lstinline!aggregate\_quality\_by\_group!}): Gruppiert
   Bewertungsergebnisse nach einem Schlüssel (z. B. Modus oder Modell)
   und berechnet je Dimension (Korrektheit, Tonalität, Verständlichkeit)
   den Mittelwert sowie einen Gesamtscore.
@@ -511,10 +538,13 @@ Temperatur
 \endhead
 \bottomrule\noalign{}
 \endlastfoot
-1 & OpenRouter & \texttt{google/gemini-2.0-flash-lite-001} & 0,3 \\
-2 & Gemini & \texttt{gemini-2.0-flash-lite-001} & 0,3 \\
-3 & OpenAI & \texttt{gpt-4o-mini} & 0,3 \\
-4 & Anthropic & \texttt{claude-haiku-4-5-20251001} & 0,3 \\
+1 & OpenRouter &
+\passthrough{\lstinline!google/gemini-2.0-flash-lite-001!} & 0,3 \\
+2 & Gemini & \passthrough{\lstinline!gemini-2.0-flash-lite-001!} &
+0,3 \\
+3 & OpenAI & \passthrough{\lstinline!gpt-4o-mini!} & 0,3 \\
+4 & Anthropic & \passthrough{\lstinline!claude-haiku-4-5-20251001!} &
+0,3 \\
 5 & Mock & --- (regelbasierte Templates) & --- \\
 \end{longtable}
 }
@@ -550,14 +580,16 @@ Gesamt
 \endhead
 \bottomrule\noalign{}
 \endlastfoot
-OpenRouter & \texttt{google/gemini-2.0-flash-lite-001} & 4,6 / 5 & 4,1 /
-5 & 4,3 / 5 & 4,3 / 5 \\
+OpenRouter & \passthrough{\lstinline!google/gemini-2.0-flash-lite-001!}
+& 4,6 / 5 & 4,1 / 5 & 4,3 / 5 & 4,3 / 5 \\
 Mock & regelbasiert (Templates) & 4,0 / 5 & 3,0 / 5 & 3,0 / 5 & 3,3 /
 5 \\
-Gemini & \texttt{gemini-2.0-flash-lite-001} & --- & --- & --- & --- \\
-OpenAI & \texttt{gpt-4o-mini} & --- & --- & --- & --- \\
-Anthropic & \texttt{claude-haiku-4-5-20251001} & --- & --- & --- &
+Gemini & \passthrough{\lstinline!gemini-2.0-flash-lite-001!} & --- & ---
+& --- & --- \\
+OpenAI & \passthrough{\lstinline!gpt-4o-mini!} & --- & --- & --- &
 --- \\
+Anthropic & \passthrough{\lstinline!claude-haiku-4-5-20251001!} & --- &
+--- & --- & --- \\
 \end{longtable}
 }
 
@@ -589,10 +621,10 @@ gesteuert werden:
 \end{itemize}
 
 Da der Backend-Deduplizierungsmechanismus für identische
-\texttt{event\_id} denselben Eintrag zurückgibt, wurde der Stilvergleich
-anhand typischer Treffer-Einträge (Event-Typ: Tor) aus unterschiedlichen
-Spielen durchgeführt --- die jeweils zugehörige Stilanweisung war
-identisch konfiguriert.
+\passthrough{\lstinline!event\_id!} denselben Eintrag zurückgibt, wurde
+der Stilvergleich anhand typischer Treffer-Einträge (Event-Typ: Tor) aus
+unterschiedlichen Spielen durchgeführt --- die jeweils zugehörige
+Stilanweisung war identisch konfiguriert.
 
 \textbf{Event-Typ:} Tor (Bundesliga-Saison 2024/25, Eintracht Frankfurt)
 
@@ -653,44 +685,48 @@ eiskalt.'' \\
 
 \textbf{Beobachtung:} Die drei Stilprofile unterscheiden sich deutlich
 in Ausrufezeichen-Dichte, Wortwahl und Perspektive. Während
-\texttt{neutral} Fakten kompakt zusammenfasst, erzeugt
-\texttt{euphorisch} narrative Intensität durch Wiederholungen und
-Ausrufe. \texttt{kritisch} nähert sich dem neutralen Register, enthält
-aber keine explizite analytische Einordnung --- ein Hinweis darauf, dass
-das Prompt-Design für dieses Profil noch Optimierungspotenzial bietet
-(vgl. Abschnitt 6.3.6). Der kontrollierte Direktvergleich zeigt außerdem
-eine Inkonsistenz in der Spielstands-Interpretation: \texttt{euphorisch}
-beschreibt den Treffer als „Führung'', \texttt{kritisch} als
-„Ausgleich'' --- obwohl der übergebene Spielstand (1:2 für Bayern) den
-Treffer als Anschlusstreffer (1:2 → 2:2) ausweisen würde. Diese
-Divergenz ist ein weiterer Beleg für die Unzuverlässigkeit der
-Spielstand-Verarbeitung im neutralen und euphorischen Profil.
+\passthrough{\lstinline!neutral!} Fakten kompakt zusammenfasst, erzeugt
+\passthrough{\lstinline!euphorisch!} narrative Intensität durch
+Wiederholungen und Ausrufe. \passthrough{\lstinline!kritisch!} nähert
+sich dem neutralen Register, enthält aber keine explizite analytische
+Einordnung --- ein Hinweis darauf, dass das Prompt-Design für dieses
+Profil noch Optimierungspotenzial bietet (vgl. Abschnitt 6.3.6). Der
+kontrollierte Direktvergleich zeigt außerdem eine Inkonsistenz in der
+Spielstands-Interpretation: \passthrough{\lstinline!euphorisch!}
+beschreibt den Treffer als „Führung'',
+\passthrough{\lstinline!kritisch!} als „Ausgleich'' --- obwohl der
+übergebene Spielstand (1:2 für Bayern) den Treffer als Anschlusstreffer
+(1:2 → 2:2) ausweisen würde. Diese Divergenz ist ein weiterer Beleg für
+die Unzuverlässigkeit der Spielstand-Verarbeitung im neutralen und
+euphorischen Profil.
 
 \subsubsection{6.3.5 Einfluss von
 Few-Shot-Referenzen}\label{einfluss-von-few-shot-referenzen}
 
 Die Prompt-Architektur unterstützt bis zu drei Stilreferenzen aus der
-\texttt{style\_references}-Datenbanktabelle, gefiltert nach Event-Typ
-und Instanz. Die Referenzen werden als Few-Shot-Beispiele in den Prompt
-eingefügt.
+\passthrough{\lstinline!style\_references!}-Datenbanktabelle, gefiltert
+nach Event-Typ und Instanz. Die Referenzen werden als Few-Shot-Beispiele
+in den Prompt eingefügt.
 
 Ein kontrollierter A/B-Test mit 0, 1 und 3 Few-Shot-Referenzen für
 denselben Event konnte im Rahmen dieser Arbeit nicht durchgeführt
 werden, da das Backend keinen direkten Parameter zur Steuerung der
 Referenzanzahl pro Request exponiert. Qualitativ zeigt die Evaluation
-(Abschnitt 6.3.6), dass die \texttt{style\_references}-Tabelle der
-\texttt{ef\_whitelabel}-Instanz konsistente Formatierungsmuster
-(Minutenformat, TOOOOR-Konvention) in den generierten Texten etabliert
---- ein indirekter Hinweis auf die Wirksamkeit der
-Few-Shot-Kontextualisierung.
+(Abschnitt 6.3.6), dass die
+\passthrough{\lstinline!style\_references!}-Tabelle der
+\passthrough{\lstinline!ef\_whitelabel!}-Instanz konsistente
+Formatierungsmuster (Minutenformat, TOOOOR-Konvention) in den
+generierten Texten etabliert --- ein indirekter Hinweis auf die
+Wirksamkeit der Few-Shot-Kontextualisierung.
 
 \subsubsection{6.3.6 Qualitative Analyse der generierten
 Texte}\label{qualitative-analyse-der-generierten-texte}
 
 Für die qualitative Analyse wurden \textbf{16 KI-generierte
-Ticker-Einträge} (Modell: \texttt{google/gemini-2.0-flash-lite-001},
-Sprache: Deutsch) aus \textbf{9 Bundesliga-Spielen} der Saison 2024/25
-manuell auf drei Dimensionen bewertet:
+Ticker-Einträge} (Modell:
+\passthrough{\lstinline!google/gemini-2.0-flash-lite-001!}, Sprache:
+Deutsch) aus \textbf{9 Bundesliga-Spielen} der Saison 2024/25 manuell
+auf drei Dimensionen bewertet:
 
 \begin{enumerate}
 \def\labelenumi{\arabic{enumi}.}
@@ -766,7 +802,7 @@ Pre-Match (Kontext) & 1 & 3,0 & 5,0 & 4,0 & 4,0 \\
 vor. Phasen-Events (Anpfiff, Halbzeit, Abpfiff) wurden nicht separat
 evaluiert, da diese in den verfügbaren Testdaten ausschließlich über
 Synthetic Events generiert wurden. Pre-Match-Kategorie enthält eine
-Stichprobe aus der \texttt{ef\_whitelabel}-Instanz.}
+Stichprobe aus der \passthrough{\lstinline!ef\_whitelabel!}-Instanz.}
 
 \textbf{Ergänzende Evaluation (N = 9, synthetischer Kontext):} Zur
 Abdeckung der in der Hauptevaluation fehlenden Event-Typen (Rote Karte,
@@ -882,8 +918,9 @@ Bewertung: Die Übersetzung überträgt alle Fakten korrekt und erhält die
 emotionale Intensität des euphorischen Stils. Die idiomatische Anpassung
 („Die Hütte bebt'' → „The house is rocking'') zeigt, dass das LLM nicht
 wörtlich übersetzt, sondern genreäquivalente Formulierungen wählt.
-Mehrsprachige Ausgabe ist über den \texttt{language}-Parameter und die
-Batch-Übersetzung (\texttt{translate\_ticker\_text}) für alle vier
+Mehrsprachige Ausgabe ist über den
+\passthrough{\lstinline!language!}-Parameter und die Batch-Übersetzung
+(\passthrough{\lstinline!translate\_ticker\_text!}) für alle vier
 unterstützten Sprachen (DE/EN/ES/FR) verfügbar.
 
 \textbf{Typische Schwächen und Fehlerklassen}
@@ -936,9 +973,9 @@ Liveticker-Kürze & Nicht aufgetreten \\
 Die häufigste Fehlerklasse ist die \textbf{Stil-Inkonsistenz} des
 neutralen Profils: Das LLM übernimmt offensichtlich idiomatische Muster
 aus den euphorischen Few-Shot-Referenzen der
-\texttt{ef\_whitelabel}-Instanz auch dann, wenn \texttt{neutral} als
-Stilparameter übergeben wird. Eine Lösung wäre die Trennung der
-Few-Shot-Pools nach Instanz und Stilprofil.
+\passthrough{\lstinline!ef\_whitelabel!}-Instanz auch dann, wenn
+\passthrough{\lstinline!neutral!} als Stilparameter übergeben wird. Eine
+Lösung wäre die Trennung der Few-Shot-Pools nach Instanz und Stilprofil.
 
 Die \textbf{Score-Halluzination} ist qualitativ schwerwiegender: Im
 ergänzenden Eval-Lauf (N = 9) generierte das Modell für den
@@ -946,18 +983,18 @@ Abpfiff-Event den Text „Eintracht schlägt die Bayern!'' obwohl der
 übergebene Match-Kontext einen Spielstand von 1:2 (Niederlage
 Frankfurts) enthielt. Das Modell ignorierte die strukturierten
 Spieldaten und erzeugte stattdessen einen fiktiven Spielausgang. Dieser
-Fehlertyp ist im \texttt{auto}-Modus ohne redaktionelle Filterung
-kritisch, da er faktisch falsche Informationen publiziert. Im
-\texttt{coop}-Modus würde ein solcher Eintrag durch die redaktionelle
-Prüfung vor Publikation abgefangen.
+Fehlertyp ist im \passthrough{\lstinline!auto!}-Modus ohne redaktionelle
+Filterung kritisch, da er faktisch falsche Informationen publiziert. Im
+\passthrough{\lstinline!coop!}-Modus würde ein solcher Eintrag durch die
+redaktionelle Prüfung vor Publikation abgefangen.
 
 Die Pre-Match-Prompts enthalten eine explizite Schutzregel gegen
 Halluzinationen:
 
-\begin{verbatim}
+\begin{lstlisting}
 Dieses ist ein Pre-Match-Eintrag. Beschreibe NUR die gegebenen Fakten.
 Erfinde KEINE Live-Spielszenen, Tore oder Spielverläufe.
-\end{verbatim}
+\end{lstlisting}
 
 In der Stichprobe enthielt 1 von 1 untersuchten Pre-Match-Texten keine
 unzulässigen Spielszenen, jedoch eine nicht aus dem Datenbankkontext
@@ -973,12 +1010,13 @@ Ein direkter Paarvergleich KI vs.~Redakteur für identische Events war im
 Evaluationszeitraum nicht vollständig durchführbar: Die vorliegenden
 Testspiele enthielten manuell erstellte Einträge entweder ohne Text
 (reine Medien-Einträge mit Video-URL) oder wurden ausschließlich im
-\texttt{auto}-Modus betrieben. Für Match 1 (FV Engers 07 vs.~Eintracht
-Frankfurt, 0:5) lag für Tor in der 44. Minute ein manueller Eintrag ohne
-Fließtext vor (Icon: 🎬, Video-URL, kein Textkörper); der KI-generierte
-Text lautete: \emph{„44. Minute: TOOOOR! J. Bahoya bringt Frankfurt auf
-1:0! Traumpass von X. Das Stadion bebt!{\kern0pt}``} --- eine
-vollständige Faktendarstellung, die der manuelle Eintrag nicht enthielt.
+\passthrough{\lstinline!auto!}-Modus betrieben. Für Match 1 (FV Engers
+07 vs.~Eintracht Frankfurt, 0:5) lag für Tor in der 44. Minute ein
+manueller Eintrag ohne Fließtext vor (Icon: 🎬, Video-URL, kein
+Textkörper); der KI-generierte Text lautete: \emph{„44. Minute: TOOOOR!
+J. Bahoya bringt Frankfurt auf 1:0! Traumpass von X. Das Stadion
+bebt!{\kern0pt}``} --- eine vollständige Faktendarstellung, die der
+manuelle Eintrag nicht enthielt.
 
 Ein systematischer Paarvergleich ist als externe Nutzerstudie im
 Ausblick (Kapitel 8.3.2) vorgesehen.
@@ -1071,8 +1109,9 @@ Betriebsmodi}\label{evaluation-der-betriebsmodi}
 \subsubsection{6.4.1 Drei Betriebsmodi}\label{drei-betriebsmodi}
 
 Das System unterstützt drei zur Laufzeit umschaltbare Betriebsmodi
-(\texttt{auto}, \texttt{coop}, \texttt{manual}), die in Abschnitt 4.3.3
-konzeptionell beschrieben sind. Die folgende Evaluation vergleicht ihre
+(\passthrough{\lstinline!auto!}, \passthrough{\lstinline!coop!},
+\passthrough{\lstinline!manual!}), die in Abschnitt 4.3.3 konzeptionell
+beschrieben sind. Die folgende Evaluation vergleicht ihre
 Leistungsfähigkeit anhand messbarer Metriken.
 
 \subsubsection{6.4.2 Vergleich der Modi}\label{vergleich-der-modi}
@@ -1121,8 +1160,9 @@ Polling-Intervall); da das Polling-Intervall gleichverteilt von 0--5 s
 ist, beträgt die erwartete Median-TTP ≈ 3,4 s (859 ms + 2.500 ms
 Erwartungswert). Im Vergleich zur manuellen TTP von 30--120 s ergibt
 sich ein geschätzter \textbf{Reduktionsfaktor von 5× bis 35×}
-(\texttt{auto}-Modus). Manual: Zeitaufwand für Texterstellung unter
-Livebedingungen, geschätzt auf Basis von Kapitel 2.1.}
+(\passthrough{\lstinline!auto!}-Modus). Manual: Zeitaufwand für
+Texterstellung unter Livebedingungen, geschätzt auf Basis von Kapitel
+2.1.}
 
 Der Coop-Modus repräsentiert den beabsichtigten Produktivbetrieb: Die KI
 liefert Entwürfe, die der Redakteur mit einem Klick freigeben,
@@ -1140,7 +1180,7 @@ Laufzeitverhalten}\label{performance-und-laufzeitverhalten}
 Die Concurrency- und Retry-Konfiguration der LLM-Aufrufe ist in
 Abschnitt 5.2.6 beschrieben. Die Messung erfolgte durch 25 sequenzielle
 HTTP-Aufrufe an das Render-Deployment
-(\texttt{/api/v1/ticker/generate/\{event\_id\}}) über 9
+(\passthrough{\lstinline!/api/v1/ticker/generate/\{event\_id\}!}) über 9
 Bundesliga-Spiele. Gemessen wurde die \textbf{End-to-End-Latenz} (Client
 → Backend → OpenRouter → Gemini → Backend → Client), die für die
 TTP-Analyse relevant ist.
@@ -1177,24 +1217,28 @@ Fehlerrate
 \endhead
 \bottomrule\noalign{}
 \endlastfoot
-Render-Deploy. & OpenRouter & \texttt{google/gemini-2.0-flash-lite-001}
-& 25 & 836 & 859 & 2.047 & 0 \% \\
-Direkt (lokal) & OpenRouter & \texttt{google/gemini-2.0-flash-lite-001}
-& 9 & 942 & 955 & 1.348 & 0 \% \\
+Render-Deploy. & OpenRouter &
+\passthrough{\lstinline!google/gemini-2.0-flash-lite-001!} & 25 & 836 &
+859 & 2.047 & 0 \% \\
+Direkt (lokal) & OpenRouter &
+\passthrough{\lstinline!google/gemini-2.0-flash-lite-001!} & 9 & 942 &
+955 & 1.348 & 0 \% \\
 Mock & --- & regelbasiert (Templates) & 7 & \textless{} 10 & \textless{}
 10 & \textless{} 10 & 0 \% \\
-Gemini & --- & \texttt{gemini-2.0-flash-lite-001} & --- & --- & --- &
+Gemini & --- & \passthrough{\lstinline!gemini-2.0-flash-lite-001!} & ---
+& --- & --- & --- & --- \\
+OpenAI & --- & \passthrough{\lstinline!gpt-4o-mini!} & --- & --- & --- &
 --- & --- \\
-OpenAI & --- & \texttt{gpt-4o-mini} & --- & --- & --- & --- & --- \\
-Anthropic & --- & \texttt{claude-haiku-4-5-20251001} & --- & --- & --- &
---- & --- \\
+Anthropic & --- & \passthrough{\lstinline!claude-haiku-4-5-20251001!} &
+--- & --- & --- & --- & --- \\
 \end{longtable}
 }
 
 \emph{Messserie „Render-Deployment'': 25 sequenzielle HTTP-Aufrufe an
-\texttt{/api/v1/ticker/generate/\{event\_id\}}, End-to-End (Client →
-Render → OpenRouter → Gemini → Render → Client). Messserie „Direkt'': 9
-direkte API-Aufrufe über \texttt{generate\_ticker\_text()} (lokal), ohne
+\passthrough{\lstinline!/api/v1/ticker/generate/\{event\_id\}!},
+End-to-End (Client → Render → OpenRouter → Gemini → Render → Client).
+Messserie „Direkt'': 9 direkte API-Aufrufe über
+\passthrough{\lstinline!generate\_ticker\_text()!} (lokal), ohne
 Render-Netzwerk-Overhead. Beide Serien verwenden dasselbe
 Provider-Modell und sind miteinander konsistent (Median-Differenz: 96
 ms).}
@@ -1205,13 +1249,14 @@ der Messungen unter 310 ms (mutmaßlich Gemini-seitige Cache-Treffer) und
 56 \% zwischen 859 ms und 2.128 ms (Kaltgenerierung), Standardabweichung
 695 ms. Die direkte Messserie (N = 9) liegt enger zusammen (695--1.348
 ms), was auf fehlende Cache-Treffer ohne Render-Warm-up hindeutet. Ab
-Version \texttt{0005} der Datenbank-Migration wird jeder produktive
-KI-Aufruf mit dem Feld \texttt{generation\_ms} persistiert, das die
+Version \passthrough{\lstinline!0005!} der Datenbank-Migration wird
+jeder produktive KI-Aufruf mit dem Feld
+\passthrough{\lstinline!generation\_ms!} persistiert, das die
 Backend-interne Verarbeitungszeit (Request-Eingang bis DB-Write)
 automatisch erfasst --- damit ist eine kontinuierliche Latenzmessung im
 Produktivbetrieb ohne externen Monitoring-Aufwand möglich. Im Kontext
-des \texttt{coop}-Modus ist die gemessene P95-Latenz von 2,1 s (2.047
-ms) unproblematisch.
+des \passthrough{\lstinline!coop!}-Modus ist die gemessene P95-Latenz
+von 2,1 s (2.047 ms) unproblematisch.
 
 \subsubsection{6.5.2 API-Antwortzeiten}\label{api-antwortzeiten}
 
@@ -1238,16 +1283,18 @@ Beschreibung
 \endhead
 \bottomrule\noalign{}
 \endlastfoot
-\texttt{/api/v1/ticker/match/\{id\}} & GET & 250 & Ticker-Einträge
-laden \\
-\texttt{/api/v1/matches/\{id\}/events} & GET & 242 & Match-Events
-laden \\
-\texttt{/api/v1/matches/\{id\}} & GET & 348 & Spieldaten laden \\
-\texttt{/api/v1/matches} (Liste) & GET & 428 & Spiele auflisten \\
-\texttt{/api/v1/ticker/\{id\}/publish} & PATCH & 227 & Eintrag
-freigeben \\
-\texttt{/api/v1/ticker/generate/\{id\}} & POST & 836 (Ø LLM) &
-Einzelgenerierung (inkl. LLM-Zeit) \\
+\passthrough{\lstinline!/api/v1/ticker/match/\{id\}!} & GET & 250 &
+Ticker-Einträge laden \\
+\passthrough{\lstinline!/api/v1/matches/\{id\}/events!} & GET & 242 &
+Match-Events laden \\
+\passthrough{\lstinline!/api/v1/matches/\{id\}!} & GET & 348 &
+Spieldaten laden \\
+\passthrough{\lstinline!/api/v1/matches!} (Liste) & GET & 428 & Spiele
+auflisten \\
+\passthrough{\lstinline!/api/v1/ticker/\{id\}/publish!} & PATCH & 227 &
+Eintrag freigeben \\
+\passthrough{\lstinline!/api/v1/ticker/generate/\{id\}!} & POST & 836 (Ø
+LLM) & Einzelgenerierung (inkl. LLM-Zeit) \\
 \end{longtable}
 }
 
@@ -1256,11 +1303,12 @@ Render-Deployment. Im Browser-Kontext (Client auf gleicher CDN-Region)
 sind Werte ca. 100--150 ms niedriger zu erwarten.}
 
 Die PostgreSQL-Verbindung ist mit einem Connection-Pool konfiguriert
-(\texttt{pool\_size=20}, \texttt{max\_overflow=30},
-\texttt{pool\_pre\_ping=True}). Die \texttt{pool\_pre\_ping}-Option
-prüft die Verbindung vor jeder Nutzung und verhindert Fehler durch
-abgelaufene Verbindungen, was insbesondere auf Managed-Database-Diensten
-wie Render relevant ist.
+(\passthrough{\lstinline!pool\_size=20!},
+\passthrough{\lstinline!max\_overflow=30!},
+\passthrough{\lstinline!pool\_pre\_ping=True!}). Die
+\passthrough{\lstinline!pool\_pre\_ping!}-Option prüft die Verbindung
+vor jeder Nutzung und verhindert Fehler durch abgelaufene Verbindungen,
+was insbesondere auf Managed-Database-Diensten wie Render relevant ist.
 
 \subsubsection{6.5.3 Frontend-Polling}\label{frontend-polling}
 
@@ -1280,13 +1328,13 @@ Match-Sync & 60.000 ms & Immer \\
 \end{longtable}
 }
 
-Die \texttt{resolvePollingInterval}-Utility ist als Extension Point
-implementiert: Die Infrastruktur für differenzierte Intervalle je
-Spielstatus (Live vs.~PreMatch) ist vorhanden, aktuell sind beide Werte
-auf 5.000 ms vereinheitlicht. Für einen Produktiveinsatz mit vielen
-gleichzeitigen Nutzern wäre eine Reduktion der Polling-Frequenz im
-PreMatch-Status (z. B. auf 30.000 ms) sinnvoll, um die Serverlast zu
-senken.
+Die \passthrough{\lstinline!resolvePollingInterval!}-Utility ist als
+Extension Point implementiert: Die Infrastruktur für differenzierte
+Intervalle je Spielstatus (Live vs.~PreMatch) ist vorhanden, aktuell
+sind beide Werte auf 5.000 ms vereinheitlicht. Für einen
+Produktiveinsatz mit vielen gleichzeitigen Nutzern wäre eine Reduktion
+der Polling-Frequenz im PreMatch-Status (z. B. auf 30.000 ms) sinnvoll,
+um die Serverlast zu senken.
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
@@ -1320,32 +1368,39 @@ Nachweis / Anmerkung
 \bottomrule\noalign{}
 \endlastfoot
 F1 & Drei Betriebsmodi (auto, coop, manual) & ✅ & Zur Laufzeit
-umschaltbar per \texttt{PATCH\ /matches/\{id\}/ticker-mode}; 2
+umschaltbar per
+\passthrough{\lstinline!PATCH /matches/\{id\}/ticker-mode!}; 2
 API-Tests \\
 F2 & KI-Textgenerierung für alle Event-Typen & ✅ & 24 Event-Typen in
-\texttt{EVENT\_TYPE\_LABEL} gemappt; Bulk-Endpoint für alle Events \\
+\passthrough{\lstinline!EVENT\_TYPE\_LABEL!} gemappt; Bulk-Endpoint für
+alle Events \\
 F3 & Drei Stilprofile (neutral, euphorisch, kritisch) & ✅ & Über
-\texttt{STYLE\_DESC} im Prompt parametrisiert; per Match
-konfigurierbar \\
+\passthrough{\lstinline!STYLE\_DESC!} im Prompt parametrisiert; per
+Match konfigurierbar \\
 F4 & Few-Shot-Prompting mit Stilreferenzen & ✅ & Bis zu 3 Referenzen
-aus \texttt{style\_references}-Tabelle; gefiltert nach Event-Typ \\
+aus \passthrough{\lstinline!style\_references!}-Tabelle; gefiltert nach
+Event-Typ \\
 F5 & Ticker-Lifecycle (draft → published / rejected) & ✅ &
-State-Machine mit \texttt{publish}, \texttt{reject}, \texttt{retract};
-20 Ticker-API-Tests \\
+State-Machine mit \passthrough{\lstinline!publish!},
+\passthrough{\lstinline!reject!}, \passthrough{\lstinline!retract!}; 20
+Ticker-API-Tests \\
 F6 & Slash-Command-Parser für manuellen Modus & ✅ & 11 Phasen- und 12
 Event-Commands; 45 Unit-Tests \\
-F7 & Mehrsprachige Textgenerierung & ✅ & \texttt{translate\_text()} mit
-separater Temperatur (0,1); Batch-Übersetzungsendpunkt \\
+F7 & Mehrsprachige Textgenerierung & ✅ &
+\passthrough{\lstinline!translate\_text()!} mit separater Temperatur
+(0,1); Batch-Übersetzungsendpunkt \\
 F8 & Idempotenter Datenimport via n8n & ✅ & Upsert-Strategien für
 Events, Spieler, Teams \\
 F9 & Provider-Fallback-Kette & ✅ & 5 Provider (openrouter → gemini →
 openai → anthropic → mock); 28 LLM-Tests \\
 F10 & Deduplizierung von Ticker-Einträgen & ✅ & Prüfung auf bestehenden
-Eintrag per \texttt{event\_id} vor LLM-Aufruf \\
+Eintrag per \passthrough{\lstinline!event\_id!} vor LLM-Aufruf \\
 F11 & Pre-Match-Kontextgenerierung (Verletzungen, H2H, etc.) & ✅ & 7
-spezialisierte Context-Builder in \texttt{llm\_context\_builders.py} \\
-F12 & Live-Statistik-Updates & ✅ & \texttt{ctx\_live\_stats()} mit
-Trigger-Gründen für automatische Zwischenstand-Texte \\
+spezialisierte Context-Builder in
+\passthrough{\lstinline!llm\_context\_builders.py!} \\
+F12 & Live-Statistik-Updates & ✅ &
+\passthrough{\lstinline!ctx\_live\_stats()!} mit Trigger-Gründen für
+automatische Zwischenstand-Texte \\
 \end{longtable}
 }
 
@@ -1373,18 +1428,21 @@ Nachweis / Anmerkung
 \bottomrule\noalign{}
 \endlastfoot
 N1 & Concurrency-Begrenzung für LLM-Aufrufe & ✅ &
-\texttt{asyncio.Semaphore(8)} in \texttt{ticker\_service.py} \\
+\passthrough{\lstinline!asyncio.Semaphore(8)!} in
+\passthrough{\lstinline!ticker\_service.py!} \\
 N2 & Retry-Logik mit Rate-Limit-Erkennung & ✅ & 3 Versuche; 30s/60s/90s
-bei Rate-Limit (\texttt{LLM\_RATE\_LIMIT\_WAIT\_BASE\_S\ ×\ attempt});
-1s/2s/4s bei sonstigen Fehlern (\texttt{2\^{}attempt}) \\
+bei Rate-Limit
+(\passthrough{\lstinline!LLM\_RATE\_LIMIT\_WAIT\_BASE\_S × attempt!});
+1s/2s/4s bei sonstigen Fehlern (\passthrough{\lstinline!2\^attempt!}) \\
 N3 & Transaktionale Testisolierung & ✅ & Rollback-basierte DB-Fixtures;
 keine persistenten Testdaten \\
 N4 & TypeScript-Typsicherheit & ✅ & 95,84 \% type-coverage; 0
 Compiler-Fehler \\
 N5 & Responsive UI (Mobile-tauglich) & ✅ & Playwright-Test mit 375×812
 Viewport; Mobile Tab Bar \\
-N6 & Fehlerresistenz im Frontend & ✅ & \texttt{ErrorBoundary} mit
-Fallback-UI; 4 dedizierte Tests \\
+N6 & Fehlerresistenz im Frontend & ✅ &
+\passthrough{\lstinline!ErrorBoundary!} mit Fallback-UI; 4 dedizierte
+Tests \\
 \end{longtable}
 }
 
@@ -1415,8 +1473,8 @@ A1 & Drei-Schichten-Architektur & ✅ & Data-Ingestion (n8n), Application
 (FastAPI+PostgreSQL), Presentation (React) \\
 A2 & Repository-Pattern & ✅ & 13 Repository-Klassen ohne
 Vererbungshierarchie \\
-A3 & 70+ API-Endpunkte unter \texttt{/api/v1} & ✅ & 14 Router-Dateien;
-81 API-Tests \\
+A3 & 70+ API-Endpunkte unter \passthrough{\lstinline!/api/v1!} & ✅ & 14
+Router-Dateien; 81 API-Tests \\
 A4 & 17 ORM-Modelle / 18 Datenbanktabellen & ✅ & 100 \% Model-Coverage
 in Tests \\
 A5 & White-Label-Fähigkeit (ef\_whitelabel / generic) & ✅ &
@@ -1471,20 +1529,21 @@ Generierung über den Backend-LLM-Service. Die n8n-Workflows für
 Halbzeit- und Abpfiff-Zusammenfassungen rufen OpenRouter direkt auf und
 erhalten daher keine stilistischen Stilreferenzen. Zudem fällt der
 Liga-Filter bei zu wenigen liga-spezifischen Einträgen in der
-\texttt{style\_references}-Tabelle auf eine liga-agnostische Suche
-zurück (der Filter selbst ist case-insensitiv über \texttt{func.lower()}
-implementiert). Das Few-Shot-System funktioniert damit grundsätzlich,
-liefert aber noch keine konsequent liga-spezifische Stilkonditionierung.
+\passthrough{\lstinline!style\_references!}-Tabelle auf eine
+liga-agnostische Suche zurück (der Filter selbst ist case-insensitiv
+über \passthrough{\lstinline!func.lower()!} implementiert). Das
+Few-Shot-System funktioniert damit grundsätzlich, liefert aber noch
+keine konsequent liga-spezifische Stilkonditionierung.
 
 \textbf{Batch-Übersetzung schließt manuelle Einträge ein.} Der Endpunkt
-\texttt{POST\ /api/v1/ticker/translate-batch/\{match\_id\}} übersetzt
-alle publizierten Einträge eines Spiels --- unabhängig vom
-\texttt{source}-Feld. Das bedeutet, dass auch manuell verfasste Einträge
-übersetzt werden, obwohl diese bereits in der Zielsprache vorliegen
-könnten. Die Einschränkung liegt in einer fehlenden Filterung nach
-\texttt{source="ai"} im Batch-Endpunkt. Für eine präzise
-Mehrsprachigkeitsstrategie wäre eine separate Behandlung manueller
-Einträge sinnvoll.
+\passthrough{\lstinline!POST /api/v1/ticker/translate-batch/\{match\_id\}!}
+übersetzt alle publizierten Einträge eines Spiels --- unabhängig vom
+\passthrough{\lstinline!source!}-Feld. Das bedeutet, dass auch manuell
+verfasste Einträge übersetzt werden, obwohl diese bereits in der
+Zielsprache vorliegen könnten. Die Einschränkung liegt in einer
+fehlenden Filterung nach \passthrough{\lstinline!source="ai"!} im
+Batch-Endpunkt. Für eine präzise Mehrsprachigkeitsstrategie wäre eine
+separate Behandlung manueller Einträge sinnvoll.
 
 \textbf{Keine Tests für n8n-Workflows.} Die 15 n8n-Workflows (vgl.
 Kapitel 5.5) verfügen über keine automatisierten Tests. Ihre Korrektheit
@@ -1503,11 +1562,12 @@ Python-Backend-Coverage, 95,84 \% TypeScript-Typsicherheit, 0
 Compiler-Fehler) mit vollständiger Erfüllung aller 23 definierten
 Anforderungen. Die KI-generierten Texte erreichen einen
 Gesamtdurchschnitt von 4,3/5 bei einer LLM-Latenz von Median 859 ms, was
-im \texttt{auto}-Modus eine geschätzte TTP von 3,4--5,9 s ermöglicht.
-Stärken liegen in der Faktentreue und Genrekonformität; die häufigste
-Fehlerklasse ist die Stil-Inkonsistenz des neutralen Profils (19 \%).
-Die strukturellen Grenzen des aktuellen Systems --- insbesondere die
-Selbstevaluation ohne zweiten Rater und die eingeschränkte
-Stichprobengröße --- sind in Kapitel 6.7 dokumentiert. Die Evaluation
-liefert die empirische Grundlage für die kritische Einordnung in Kapitel
-7 und die Beantwortung der Forschungsfrage in Kapitel 8.2.
+im \passthrough{\lstinline!auto!}-Modus eine geschätzte TTP von 3,4--5,9
+s ermöglicht. Stärken liegen in der Faktentreue und Genrekonformität;
+die häufigste Fehlerklasse ist die Stil-Inkonsistenz des neutralen
+Profils (19 \%). Die strukturellen Grenzen des aktuellen Systems ---
+insbesondere die Selbstevaluation ohne zweiten Rater und die
+eingeschränkte Stichprobengröße --- sind in Kapitel 6.7 dokumentiert.
+Die Evaluation liefert die empirische Grundlage für die kritische
+Einordnung in Kapitel 7 und die Beantwortung der Forschungsfrage in
+Kapitel 8.2.

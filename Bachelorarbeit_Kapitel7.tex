@@ -23,10 +23,10 @@ natürlicher, dafür nicht-deterministisch.
 Arbeit bewusst den hybriden Ansatz mit Human-in-the-Loop-Kontrolle. Dies
 begründet sich durch die in Kapitel 3.1 beschriebene
 Halluzinationsproblematik, die im journalistischen Kontext besonders
-kritisch ist (Bluhm \& Schäfer 2023, S. 33). Der \texttt{coop}-Modus
-repräsentiert damit einen Mittelweg, der die Effizienzgewinne der
-Automatisierung nutzt, ohne die publizistische Verantwortung an die KI
-zu delegieren.
+kritisch ist (Bluhm \& Schäfer 2023, S. 33). Der
+\passthrough{\lstinline!coop!}-Modus repräsentiert damit einen
+Mittelweg, der die Effizienzgewinne der Automatisierung nutzt, ohne die
+publizistische Verantwortung an die KI zu delegieren.
 
 \textbf{Gegenüber reinen Übersetzungslösungen} für Mehrsprachigkeit
 bietet das System eine nativ multilinguale Generierung, bei der die
@@ -111,11 +111,12 @@ Laufzeit-Strategie. Für einen Produktivbetrieb mit mehreren
 gleichzeitigen Spielen wäre ein expliziter Konfigurationsmechanismus pro
 Spiel (z. B. ein Datenbankfeld) robuster.
 
-Der \texttt{useAutoPublisher}-Hook im Frontend enthält eine semantische
-Doppelung: Im Auto-Modus setzt n8n über \texttt{auto\_publish=True} den
-Status bereits beim Generieren; der Hook fängt Residualfälle auf. Diese
-Zweispurigkeit entstand durch inkrementelle Entwicklung und könnte auf
-eine definitive Strategie konsolidiert werden.
+Der \passthrough{\lstinline!useAutoPublisher!}-Hook im Frontend enthält
+eine semantische Doppelung: Im Auto-Modus setzt n8n über
+\passthrough{\lstinline!auto\_publish=True!} den Status bereits beim
+Generieren; der Hook fängt Residualfälle auf. Diese Zweispurigkeit
+entstand durch inkrementelle Entwicklung und könnte auf eine definitive
+Strategie konsolidiert werden.
 
 Die WebSocket-Verbindung existiert als In-Memory-Singleton pro Prozess.
 Bei einem Multi-Prozess-Deployment (mehrere Uvicorn-Worker hinter einem
@@ -123,11 +124,12 @@ Load-Balancer) würden Medien-Updates nur Clients des jeweiligen Workers
 erreichen; eine Redis-Pub/Sub-Erweiterung wäre die natürliche
 Skalierungsstufe.
 
-Der \texttt{strict}-Modus in \texttt{tsconfig.json} ist derzeit
-deaktiviert, um die inkrementelle TypeScript-Migration nicht zu
-blockieren. Eine schrittweise Aktivierung von \texttt{strictNullChecks}
-und \texttt{noImplicitAny} ist der naheliegende Folgeschritt zur
-weiteren Härtung der Codebasis.
+Der \passthrough{\lstinline!strict!}-Modus in
+\passthrough{\lstinline!tsconfig.json!} ist derzeit deaktiviert, um die
+inkrementelle TypeScript-Migration nicht zu blockieren. Eine
+schrittweise Aktivierung von \passthrough{\lstinline!strictNullChecks!}
+und \passthrough{\lstinline!noImplicitAny!} ist der naheliegende
+Folgeschritt zur weiteren Härtung der Codebasis.
 
 \subsubsection{7.2.3 Inhaltliche Reflexion}\label{inhaltliche-reflexion}
 
@@ -136,8 +138,9 @@ Liveticker --- Ellipsen, konzeptionelle Mündlichkeit, Graphostilistik
 (z. B. „TOOOOR!{\kern0pt}``) --- stellen besondere Anforderungen an die
 Prompt-Gestaltung. Die Erfahrung zeigt, dass LLMs dazu neigen, in einem
 formelleren Register zu schreiben als es das Genre Liveticker erfordert.
-Die Few-Shot-Referenzen aus der \texttt{style\_references}-Tabelle sind
-das primäre Mittel, um diese stilistische Lücke zu schließen.
+Die Few-Shot-Referenzen aus der
+\passthrough{\lstinline!style\_references!}-Tabelle sind das primäre
+Mittel, um diese stilistische Lücke zu schließen.
 
 Die Evaluationsergebnisse (Abschnitt 6.3.6) zeigen, dass die
 Few-Shot-Referenzen das Format zuverlässig konditionieren ---
@@ -155,30 +158,32 @@ Livetickern besonders kritisch, da fehlerhafte Fakten (falscher
 Torschütze, falsches Ergebnis) unmittelbar die Glaubwürdigkeit
 zerstören. Die explizite Schutzregel für Pre-Match-Prompts und die
 niedrige Temperatur (vgl. Abschnitt 7.4.2) sind Gegenmaßnahmen, deren
-Wirksamkeit jedoch nur im \texttt{coop}-Modus durch die redaktionelle
-Kontrolle vollständig abgesichert ist. Im \texttt{auto}-Modus verbleibt
-ein Restrisiko fehlerhafter Veröffentlichungen.
+Wirksamkeit jedoch nur im \passthrough{\lstinline!coop!}-Modus durch die
+redaktionelle Kontrolle vollständig abgesichert ist. Im
+\passthrough{\lstinline!auto!}-Modus verbleibt ein Restrisiko
+fehlerhafter Veröffentlichungen.
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
 \subsection{7.3 Diskussion der
 Betriebsmodi}\label{diskussion-der-betriebsmodi}
 
-Die drei Betriebsmodi (\texttt{auto}, \texttt{coop}, \texttt{manual})
-wurden in Kapitel 4.3.3 konzipiert und in Kapitel 6.4 evaluiert. Im
-Folgenden werden die Implikationen der Evaluationsergebnisse für den
-praktischen Einsatz diskutiert.
+Die drei Betriebsmodi (\passthrough{\lstinline!auto!},
+\passthrough{\lstinline!coop!}, \passthrough{\lstinline!manual!}) wurden
+in Kapitel 4.3.3 konzipiert und in Kapitel 6.4 evaluiert. Im Folgenden
+werden die Implikationen der Evaluationsergebnisse für den praktischen
+Einsatz diskutiert.
 
 \subsubsection{7.3.1 Auto-Modus: Geschwindigkeit auf Kosten der
 Kontrolle}\label{auto-modus-geschwindigkeit-auf-kosten-der-kontrolle}
 
-Die Stärke des \texttt{auto}-Modus liegt in der Geschwindigkeit (vgl.
-TTP-Messung in Abschnitt 6.4.2). Das Risiko besteht in unkontrollierten
-Halluzinationen, die ohne redaktionelle Prüfung veröffentlicht werden.
-Im journalistischen Kontext, in dem Glaubwürdigkeit eine zentrale
-Ressource darstellt (Beils 2023, S. 57), ist dieser Modus daher nur für
-unkritische Event-Typen (z. B. Phasenwechsel wie „Anpfiff'' oder
-„Halbzeit'') vertretbar.
+Die Stärke des \passthrough{\lstinline!auto!}-Modus liegt in der
+Geschwindigkeit (vgl. TTP-Messung in Abschnitt 6.4.2). Das Risiko
+besteht in unkontrollierten Halluzinationen, die ohne redaktionelle
+Prüfung veröffentlicht werden. Im journalistischen Kontext, in dem
+Glaubwürdigkeit eine zentrale Ressource darstellt (Beils 2023, S. 57),
+ist dieser Modus daher nur für unkritische Event-Typen (z. B.
+Phasenwechsel wie „Anpfiff'' oder „Halbzeit'') vertretbar.
 
 \subsubsection{7.3.2 Coop-Modus: Der intendierte
 Produktivbetrieb}\label{coop-modus-der-intendierte-produktivbetrieb}
@@ -195,9 +200,9 @@ Entscheidungsdurchsatz zu sichern, ohne den Redakteur visuell zu
 \subsubsection{7.3.3 Manual-Modus: Status quo als
 Vergleichsbasis}\label{manual-modus-status-quo-als-vergleichsbasis}
 
-Der \texttt{manual}-Modus dient als Vergleichsbasis und Rückfalloption
---- etwa bei hochkritischen Ereignissen oder bei Redakteuren, die
-zunächst Vertrauen in das System aufbauen möchten. Die
+Der \passthrough{\lstinline!manual!}-Modus dient als Vergleichsbasis und
+Rückfalloption --- etwa bei hochkritischen Ereignissen oder bei
+Redakteuren, die zunächst Vertrauen in das System aufbauen möchten. Die
 Laufzeit-Umschaltbarkeit per API-Call stellt sicher, dass der Wechsel
 ohne Systemunterbrechung möglich ist.
 
@@ -206,12 +211,13 @@ Praxis}\label{implikationen-fuxfcr-die-praxis}
 
 Die Koexistenz aller drei Modi in einem System --- umschaltbar zur
 Laufzeit per API-Call --- ermöglicht eine schrittweise Einführung in
-Redaktionen: Neue Nutzer können im \texttt{manual}-Modus beginnen, über
-den \texttt{coop}-Modus Vertrauen in die KI-Qualität aufbauen und für
-unkritische Standardereignisse schließlich den \texttt{auto}-Modus
-aktivieren. Diese Graduierung adressiert den in Kapitel 2.1
-beschriebenen Akzeptanzbedarf bei der Einführung KI-gestützter Werkzeuge
-in redaktionelle Workflows.
+Redaktionen: Neue Nutzer können im
+\passthrough{\lstinline!manual!}-Modus beginnen, über den
+\passthrough{\lstinline!coop!}-Modus Vertrauen in die KI-Qualität
+aufbauen und für unkritische Standardereignisse schließlich den
+\passthrough{\lstinline!auto!}-Modus aktivieren. Diese Graduierung
+adressiert den in Kapitel 2.1 beschriebenen Akzeptanzbedarf bei der
+Einführung KI-gestützter Werkzeuge in redaktionelle Workflows.
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
@@ -222,9 +228,9 @@ Prompt-Architektur}\label{diskussion-der-prompt-architektur}
 Stilsteuerung}\label{few-shot-prompting-als-stilsteuerung}
 
 Die dynamische Einbindung von bis zu drei Stilreferenzen aus der
-\texttt{style\_references}-Datenbanktabelle stellt einen zentralen
-Designentscheid dar. Im Vergleich zu einem statischen System-Prompt
-bietet dieser Ansatz zwei Vorteile:
+\passthrough{\lstinline!style\_references!}-Datenbanktabelle stellt
+einen zentralen Designentscheid dar. Im Vergleich zu einem statischen
+System-Prompt bietet dieser Ansatz zwei Vorteile:
 
 \begin{enumerate}
 \def\labelenumi{\arabic{enumi}.}
@@ -235,15 +241,17 @@ bietet dieser Ansatz zwei Vorteile:
   modifizieren.
 \item
   \textbf{Instanzspezifik}: Die Filterung nach Event-Typ und Instanz
-  (\texttt{ef\_whitelabel} vs.~\texttt{generic}) ermöglicht
-  unterschiedliche Stilprofile für verschiedene Einsatzkontexte.
+  (\passthrough{\lstinline!ef\_whitelabel!}
+  vs.~\passthrough{\lstinline!generic!}) ermöglicht unterschiedliche
+  Stilprofile für verschiedene Einsatzkontexte.
 \end{enumerate}
 
 Ein kontrollierter A/B-Test (mit vs.~ohne Referenzen) war nicht
 durchführbar (vgl. Abschnitt 6.3.5). Qualitativ zeigt die Evaluation
-konsistente Formatierungsmuster in der \texttt{ef\_whitelabel}-Instanz
---- insbesondere bei TOOOOR-Konvention und Minutenformat. Der Effekt ist
-sichtbar, aber statistisch nicht isoliert messbar.
+konsistente Formatierungsmuster in der
+\passthrough{\lstinline!ef\_whitelabel!}-Instanz --- insbesondere bei
+TOOOOR-Konvention und Minutenformat. Der Effekt ist sichtbar, aber
+statistisch nicht isoliert messbar.
 
 \subsubsection{7.4.2 Temperatur und
 Determinismus}\label{temperatur-und-determinismus}
@@ -299,21 +307,21 @@ Menschen.
 \subsubsection{7.5.2 Skalierbarkeit und
 White-Label}\label{skalierbarkeit-und-white-label}
 
-Die White-Label-Architektur (\texttt{ef\_whitelabel}
-vs.~\texttt{generic}) adressiert den in Kapitel 2.3 beschriebenen
-strukturellen Wandel der Vereine zu eigenständigen Medienproduzenten.
-Ein einzelnes System kann --- durch Instanzkonfiguration, Stilprofile
-und Few-Shot-Referenzen --- verschiedene redaktionelle Stimmen bedienen,
-ohne separate Codebases zu erfordern. Für Vereine mit begrenzten
-Redaktionsressourcen senkt dies die Einstiegshürde in eine
-professionelle Liveticker-Berichterstattung.
+Die White-Label-Architektur (\passthrough{\lstinline!ef\_whitelabel!}
+vs.~\passthrough{\lstinline!generic!}) adressiert den in Kapitel 2.3
+beschriebenen strukturellen Wandel der Vereine zu eigenständigen
+Medienproduzenten. Ein einzelnes System kann --- durch
+Instanzkonfiguration, Stilprofile und Few-Shot-Referenzen ---
+verschiedene redaktionelle Stimmen bedienen, ohne separate Codebases zu
+erfordern. Für Vereine mit begrenzten Redaktionsressourcen senkt dies
+die Einstiegshürde in eine professionelle Liveticker-Berichterstattung.
 
 Die Zukunftsperspektive wird im Experteninterview (vgl.
 Interviewleitfaden, Block 4, Fragen IF16--IF18) adressiert. Die
 Skalierbarkeits- und White-Label-Bewertung stützt sich auf die in
 Kapitel 5 dokumentierte Systemarchitektur und die Deployment-Erfahrung
-mit der bestehenden \texttt{ef\_whitelabel}-Instanz; eine externe
-Nutzerstudie ist in Abschnitt 8.3.2 vorgesehen.
+mit der bestehenden \passthrough{\lstinline!ef\_whitelabel!}-Instanz;
+eine externe Nutzerstudie ist in Abschnitt 8.3.2 vorgesehen.
 
 \subsubsection{7.5.3 Ethische
 Überlegungen}\label{ethische-uxfcberlegungen}
@@ -321,14 +329,14 @@ Nutzerstudie ist in Abschnitt 8.3.2 vorgesehen.
 Die automatisierte Generierung journalistischer Texte wirft die Frage
 der Transparenz auf: Sollten Leser wissen, ob ein Ticker-Eintrag von
 einem Menschen oder einer KI verfasst wurde? Das System speichert die
-Herkunft jedes Eintrags im Feld \texttt{source} (\texttt{"ai"},
-\texttt{"manual"}), legt die Kennzeichnung gegenüber dem Endnutzer aber
-nicht offen. Für einen produktiven Einsatz wäre eine
-Kennzeichnungspflicht --- etwa durch ein dezentes Label wie
-„KI-unterstützt'' --- zu diskutieren, insbesondere im Kontext der
-EU-KI-Verordnung (AI Act, EU 2024/1689), deren Transparenzpflichten für
-KI-generierte Texte (Art. 50 Abs. 4) gemäß Art. 113 ab August 2026
-gelten.
+Herkunft jedes Eintrags im Feld \passthrough{\lstinline!source!}
+(\passthrough{\lstinline!"ai"!}, \passthrough{\lstinline!"manual"!}),
+legt die Kennzeichnung gegenüber dem Endnutzer aber nicht offen. Für
+einen produktiven Einsatz wäre eine Kennzeichnungspflicht --- etwa durch
+ein dezentes Label wie „KI-unterstützt'' --- zu diskutieren,
+insbesondere im Kontext der EU-KI-Verordnung (AI Act, EU 2024/1689),
+deren Transparenzpflichten für KI-generierte Texte (Art. 50 Abs. 4)
+gemäß Art. 113 ab August 2026 gelten.
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
@@ -349,15 +357,15 @@ Qualität der Kontextübergabe: Few-Shot-Referenzen konditionieren Format
 und Tonalität zuverlässig, während Score-Halluzinationen durch präzisere
 Kontextstrukturierung weiter reduziert werden können.
 
-Die zentrale Designentscheidung --- der \texttt{coop}-Modus als primärer
-Betriebsmodus --- erweist sich aus dieser Diskussion heraus als
-strukturell richtig: Er balanciert die Effizienzgewinne der KI mit der
-publizistischen Verantwortung des Redakteurs und adressiert damit den in
-Kapitel 1.2 formulierten Zielkonflikt zwischen Geschwindigkeit und
-Qualität. Die Verschiebung der Redakteursrolle von der Textproduktion
-zur Textkuration ist keine Umgehung journalistischer Sorgfalt, sondern
-ihre Neukalibrierung unter den Bedingungen der
-Echtzeit-Berichterstattung.
+Die zentrale Designentscheidung --- der
+\passthrough{\lstinline!coop!}-Modus als primärer Betriebsmodus ---
+erweist sich aus dieser Diskussion heraus als strukturell richtig: Er
+balanciert die Effizienzgewinne der KI mit der publizistischen
+Verantwortung des Redakteurs und adressiert damit den in Kapitel 1.2
+formulierten Zielkonflikt zwischen Geschwindigkeit und Qualität. Die
+Verschiebung der Redakteursrolle von der Textproduktion zur Textkuration
+ist keine Umgehung journalistischer Sorgfalt, sondern ihre
+Neukalibrierung unter den Bedingungen der Echtzeit-Berichterstattung.
 
 Die offenen Punkte --- externe Nutzerstudie, Authentifizierungsschicht,
 A/B-Vergleich Few-Shot vs.~ohne --- definieren den nächsten

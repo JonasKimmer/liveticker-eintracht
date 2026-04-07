@@ -297,10 +297,11 @@ Overflow Developer Survey 2024) und akademischen Studien zum
 KI-Ökosystem widerspiegelt. Die Sprache verbindet dynamische Typisierung
 mit einem umfangreichen Ökosystem an Bibliotheken für
 HTTP-Kommunikation, Datenbankzugriff und maschinelles Lernen. Darüber
-hinaus ermöglicht Pythons \texttt{asyncio}-Eventloop --- auf dem
-ASGI-Frameworks wie FastAPI aufsetzen --- die nicht-blockierende
-Verarbeitung paralleler I/O-Operationen, was für Echtzeitsysteme mit
-hoher externer API-Latenz entscheidend ist (vgl. Kap. 3.6.2).
+hinaus ermöglicht Pythons \passthrough{\lstinline!asyncio!}-Eventloop
+--- auf dem ASGI-Frameworks wie FastAPI aufsetzen --- die
+nicht-blockierende Verarbeitung paralleler I/O-Operationen, was für
+Echtzeitsysteme mit hoher externer API-Latenz entscheidend ist (vgl.
+Kap. 3.6.2).
 
 \subsubsection{3.6.2 ASGI und asynchrone
 Web-Frameworks}\label{asgi-und-asynchrone-web-frameworks}
@@ -308,12 +309,12 @@ Web-Frameworks}\label{asgi-und-asynchrone-web-frameworks}
 Das \textbf{ASGI-Protokoll} (Asynchronous Server Gateway Interface)
 ermöglicht im Gegensatz zum klassischen synchronen WSGI eine
 nicht-blockierende Verarbeitung auf Basis von Pythons
-\texttt{asyncio}-Eventloop (Grigorev 2019). ASGI-Frameworks wie
-\textbf{FastAPI} können während wartender I/O-Operationen
-(Datenbankabfragen, LLM-API-Aufrufe) andere Anfragen bearbeiten, was
-insbesondere für Anwendungen mit vielen externen Abhängigkeiten eine
-signifikant höhere Durchsatzrate ermöglicht. Das vorliegende System
-verwendet FastAPI als primäres ASGI-Framework; die
+\passthrough{\lstinline!asyncio!}-Eventloop (Grigorev 2019).
+ASGI-Frameworks wie \textbf{FastAPI} können während wartender
+I/O-Operationen (Datenbankabfragen, LLM-API-Aufrufe) andere Anfragen
+bearbeiten, was insbesondere für Anwendungen mit vielen externen
+Abhängigkeiten eine signifikant höhere Durchsatzrate ermöglicht. Das
+vorliegende System verwendet FastAPI als primäres ASGI-Framework; die
 Entscheidungsbegründung erfolgt in Kapitel 4.2.
 
 \subsubsection{3.6.3 ORM und Repository
