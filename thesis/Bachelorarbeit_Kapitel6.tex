@@ -1,9 +1,8 @@
-\section{Evaluation}\label{evaluation}
+\chapter{Evaluation}\label{evaluation}
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
-\subsection{Zielsetzung der
-Evaluation}\label{zielsetzung-der-evaluation}
+\section{Zielsetzung der Evaluation}\label{zielsetzung-der-evaluation}
 
 Das Ziel der Evaluation ist es, das implementierte System auf mehreren
 Ebenen nachweisbar zu bewerten. Die Evaluation gliedert sich in drei
@@ -33,14 +32,14 @@ und identifizieren gleichzeitig die Grenzen des aktuellen Systems.
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
-\subsection{Technische
+\section{Technische
 Qualitätssicherung}\label{technische-qualituxe4tssicherung}
 
 Die technische Qualitätssicherung umfasst die vollständige Testsuite
 (Frontend, Backend, End-to-End) sowie die statische
 Typsicherheitsanalyse.
 
-\subsubsection{6.2.1 Teststrategie und
+\subsection{6.2.1 Teststrategie und
 Testpyramide}\label{teststrategie-und-testpyramide}
 
 Die Teststrategie folgt dem klassischen Pyramiden-Modell nach Cohn
@@ -57,7 +56,7 @@ strukturiert, dass sie bei fehlender Datenbankverbindung automatisch
 übersprungen werden (\texttt{pytest.skip}) und keine falschen
 Fehlermeldungen erzeugen.
 
-\subsubsection{6.2.2 Frontend-Unit-Tests (Jest + React Testing
+\subsection{6.2.2 Frontend-Unit-Tests (Jest + React Testing
 Library)}\label{frontend-unit-tests-jest-react-testing-library}
 
 Das Frontend verfügt über \textbf{187 Unit-Tests} in 15 Testdateien, die
@@ -143,7 +142,7 @@ Halbzeit-Korrektur (+46 Minuten ab der 60. Minute) als auch den Puffer
 bei fehlendem Kickoff-Timestamp ab (vgl.
 \texttt{useLiveMinute.test.ts}).
 
-\subsubsection{6.2.3 Backend-Unit-Tests
+\subsection{6.2.3 Backend-Unit-Tests
 (pytest)}\label{backend-unit-tests-pytest}
 
 Das Backend verfügt über \textbf{198 Tests} in 11 Test-Dateien, die mit
@@ -254,7 +253,7 @@ Die unbelegten Bereiche konzentrieren sich auf Nebenroutes (Clip-Import,
 Medienverwaltung, Saisonverwaltung), die außerhalb des kritischen
 Redaktionspfads liegen.
 
-\subsubsection{6.2.4 End-to-End-Tests
+\subsection{6.2.4 End-to-End-Tests
 (Playwright)}\label{end-to-end-tests-playwright}
 
 Die 6 Playwright-Tests validieren den Browser-seitigen Workflow der
@@ -300,7 +299,7 @@ Interaktionspunkte. Sie dienen primär als Regression-Schutz: Bricht eine
 zentrale Komponente (z. B. durch einen fehlerhaften Import), schlagen
 die Tests unmittelbar an.
 
-\subsubsection{6.2.5
+\subsection{6.2.5
 TypeScript-Typsicherheit}\label{typescript-typsicherheit}
 
 Die vollständige Migration von JavaScript zu TypeScript und die zentrale
@@ -382,7 +381,7 @@ wären:
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
-\subsection{Evaluation der
+\section{Evaluation der
 KI-Textgenerierung}\label{evaluation-der-ki-textgenerierung}
 
 Die Evaluation der Textgenerierung gliedert sich in zwei Teile: zunächst
@@ -390,7 +389,7 @@ die implementierte Evaluationsinfrastruktur mit ihren quantitativen
 Metriken und dem Provider-Vergleich, dann die qualitative Analyse
 konkreter Textbeispiele einschließlich Expertenvalidierung.
 
-\subsubsection{6.3.1
+\subsection{6.3.1
 Evaluationsinfrastruktur}\label{evaluationsinfrastruktur}
 
 Das System stellt über den Endpunkt
@@ -406,7 +405,7 @@ erzeugt, falls Provider oder Modell vom konfigurierten Singleton
 abweichen. Dadurch lassen sich A/B-Vergleiche zwischen Providern
 durchführen, ohne die Global-Konfiguration zu verändern.
 
-\subsubsection{6.3.2 Quantitative Metriken}\label{quantitative-metriken}
+\subsection{6.3.2 Quantitative Metriken}\label{quantitative-metriken}
 
 Das Evaluationsmodul (\texttt{app/utils/evaluation\_metrics.py}) stellt
 sechs Metriken bereit, die sich in zwei Kategorien gliedern:
@@ -459,7 +458,7 @@ sechs Metriken bereit, die sich in zwei Kategorien gliedern:
 Alle sechs Funktionen sind durch 18 Unit-Tests abgesichert
 (\textasciitilde96 \% Coverage).
 
-\subsubsection{6.3.3 Modell- und
+\subsection{6.3.3 Modell- und
 Provider-Evaluation}\label{modell--und-provider-evaluation}
 
 Das System unterstützt fünf LLM-Provider in einer festen
@@ -546,7 +545,7 @@ Antwortzeit-Verteilung findet sich in Abschnitt 6.5.1. Die deskriptiven
 Mittelwerte belegen einen klaren Qualitätsvorsprung des LLM-Providers
 gegenüber dem Mock in der Tonalitätstreue (Δ = 1,1 Skalenpunkte).
 
-\subsubsection{6.3.4 Einfluss der
+\subsection{6.3.4 Einfluss der
 Stilprofile}\label{einfluss-der-stilprofile}
 
 Das System generiert Texte in drei Stilprofilen, die über den Prompt
@@ -641,7 +640,7 @@ Treffer als Anschlusstreffer (1:2 → 2:2) ausweisen würde. Diese
 Divergenz ist ein weiterer Beleg für die Unzuverlässigkeit der
 Spielstand-Verarbeitung im neutralen und euphorischen Profil.
 
-\subsubsection{6.3.5 Einfluss von
+\subsection{6.3.5 Einfluss von
 Few-Shot-Referenzen}\label{einfluss-von-few-shot-referenzen}
 
 Die Prompt-Architektur unterstützt bis zu drei Stilreferenzen aus der
@@ -659,7 +658,7 @@ Referenzanzahl pro Request exponiert. Qualitativ zeigt die Evaluation
 --- ein indirekter Hinweis auf die Wirksamkeit der
 Few-Shot-Kontextualisierung.
 
-\subsubsection{6.3.6 Qualitative Analyse der generierten
+\subsection{6.3.6 Qualitative Analyse der generierten
 Texte}\label{qualitative-analyse-der-generierten-texte}
 
 Für die qualitative Analyse wurden \textbf{16 KI-generierte
@@ -1035,17 +1034,16 @@ Die Interviewergebnisse fließen in die Gesamtbewertung des Systems
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
-\subsection{Evaluation der
-Betriebsmodi}\label{evaluation-der-betriebsmodi}
+\section{Evaluation der Betriebsmodi}\label{evaluation-der-betriebsmodi}
 
-\subsubsection{6.4.1 Drei Betriebsmodi}\label{drei-betriebsmodi}
+\subsection{6.4.1 Drei Betriebsmodi}\label{drei-betriebsmodi}
 
 Das System unterstützt drei zur Laufzeit umschaltbare Betriebsmodi
 (\texttt{auto}, \texttt{coop}, \texttt{manual}), die in Abschnitt 4.3.3
 konzeptionell beschrieben sind. Die folgende Evaluation vergleicht ihre
 Leistungsfähigkeit anhand messbarer Metriken.
 
-\subsubsection{6.4.2 Vergleich der Modi}\label{vergleich-der-modi}
+\subsection{6.4.2 Vergleich der Modi}\label{vergleich-der-modi}
 
 Ein kontrollierter Vergleich derselben Spiels in allen drei Modi war im
 Evaluationszeitraum nicht durchführbar, da kein parallel in mehreren
@@ -1102,10 +1100,10 @@ balanciert Geschwindigkeit (KI-Generierung) mit Qualitätssicherung
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
-\subsection{Performance und
+\section{Performance und
 Laufzeitverhalten}\label{performance-und-laufzeitverhalten}
 
-\subsubsection{6.5.1 LLM-Latenz}\label{llm-latenz}
+\subsection{6.5.1 LLM-Latenz}\label{llm-latenz}
 
 Die Concurrency- und Retry-Konfiguration der LLM-Aufrufe ist in
 Abschnitt 5.2.6 beschrieben. Die Messung erfolgte durch 25 sequenzielle
@@ -1183,7 +1181,7 @@ Produktivbetrieb ohne externen Monitoring-Aufwand möglich. Im Kontext
 des \texttt{coop}-Modus ist die gemessene P95-Latenz von 2,1 s (2.047
 ms) unproblematisch.
 
-\subsubsection{6.5.2 API-Antwortzeiten}\label{api-antwortzeiten}
+\subsection{6.5.2 API-Antwortzeiten}\label{api-antwortzeiten}
 
 Gemessen wurden die wichtigsten Read/Write-Endpunkte im
 Render-Deployment (je 3 Aufrufe, externer Client):
@@ -1232,7 +1230,7 @@ prüft die Verbindung vor jeder Nutzung und verhindert Fehler durch
 abgelaufene Verbindungen, was insbesondere auf Managed-Database-Diensten
 wie Render relevant ist.
 
-\subsubsection{6.5.3 Frontend-Polling}\label{frontend-polling}
+\subsection{6.5.3 Frontend-Polling}\label{frontend-polling}
 
 Das Frontend fragt den Backend-Status über drei Polling-Intervalle ab:
 
@@ -1260,13 +1258,13 @@ senken.
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
-\subsection{Anforderungsabgleich
+\section{Anforderungsabgleich
 (Soll-Ist-Vergleich)}\label{anforderungsabgleich-soll-ist-vergleich}
 
 Die in Kapitel 2.6 hergeleiteten Anforderungen werden im Folgenden gegen
 den implementierten Stand evaluiert.
 
-\subsubsection{6.6.1 Funktionale
+\subsection{6.6.1 Funktionale
 Anforderungen}\label{funktionale-anforderungen}
 
 {\def\LTcaptype{none} % do not increment counter
@@ -1319,7 +1317,7 @@ Trigger-Gründen für automatische Zwischenstand-Texte \\
 \end{longtable}
 }
 
-\subsubsection{6.6.2 Nicht-funktionale
+\subsection{6.6.2 Nicht-funktionale
 Anforderungen}\label{nicht-funktionale-anforderungen}
 
 {\def\LTcaptype{none} % do not increment counter
@@ -1358,7 +1356,7 @@ Fallback-UI; 4 dedizierte Tests \\
 \end{longtable}
 }
 
-\subsubsection{6.6.3
+\subsection{6.6.3
 Architektur-Anforderungen}\label{architektur-anforderungen}
 
 {\def\LTcaptype{none} % do not increment counter
@@ -1396,7 +1394,7 @@ Instanz-spezifische Kontextaufbereitung und Few-Shot-Filterung \\
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
-\subsection{Limitationen}\label{limitationen}
+\section{Limitationen}\label{limitationen}
 
 \textbf{Keine externe Nutzerstudie.} Die Evaluation der Textqualität in
 Abschnitt 6.3.6 basiert auf einer Selbstbewertung durch den Entwickler.
@@ -1466,7 +1464,7 @@ n8n-Entwicklungsumgebung nicht umgesetzt.
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
-\subsection{Zusammenfassung}\label{zusammenfassung}
+\section{Zusammenfassung}\label{zusammenfassung}
 
 Die Evaluation belegt eine technisch reife Codebasis (391 Tests, 75 \%
 Python-Backend-Coverage, 95,84 \% TypeScript-Typsicherheit, 0

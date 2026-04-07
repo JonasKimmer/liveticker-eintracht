@@ -1,11 +1,11 @@
-\section{Diskussion}\label{diskussion}
+\chapter{Diskussion}\label{diskussion}
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
-\subsection{Einordnung in den Stand der
+\section{Einordnung in den Stand der
 Technik}\label{einordnung-in-den-stand-der-technik}
 
-\subsubsection{7.1.1 Abgrenzung zu bestehenden
+\subsection{7.1.1 Abgrenzung zu bestehenden
 Systemen}\label{abgrenzung-zu-bestehenden-systemen}
 
 Das in dieser Arbeit entwickelte System unterscheidet sich von
@@ -34,7 +34,7 @@ Zielsprache als Prompt-Parameter übergeben wird. Die zusätzliche
 Batch-Übersetzungsfunktion mit reduzierter Temperatur (0,1) ergänzt dies
 für nachträgliche Lokalisierung bestehender Einträge.
 
-\subsubsection{7.1.2 Beitrag zur Forschung}\label{beitrag-zur-forschung}
+\subsection{7.1.2 Beitrag zur Forschung}\label{beitrag-zur-forschung}
 
 Die Arbeit leistet drei Beiträge zum aktuellen Forschungsstand:
 
@@ -59,13 +59,12 @@ Die Arbeit leistet drei Beiträge zum aktuellen Forschungsstand:
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
-\subsection{Kritische Reflexion}\label{kritische-reflexion}
+\section{Kritische Reflexion}\label{kritische-reflexion}
 
 Die in Kapitel 6.7 dokumentierten Limitationen werden im Folgenden
 hinsichtlich ihrer Implikationen eingeordnet.
 
-\subsubsection{7.2.1 Methodische
-Einordnung}\label{methodische-einordnung}
+\subsection{7.2.1 Methodische Einordnung}\label{methodische-einordnung}
 
 Die zentrale methodische Einschränkung betrifft die Selbstbewertung der
 Textqualität (vgl. Kapitel 6.7, „Keine externe Nutzerstudie''). Im
@@ -83,7 +82,7 @@ Datenbasis vermutlich unterrepräsentiert. Die
 Bulk-Evaluationsinfrastruktur ermöglicht jedoch eine systematische
 Erweiterung der Datenbasis ohne Codeänderung.
 
-\subsubsection{7.2.2 Technische Einordnung}\label{technische-einordnung}
+\subsection{7.2.2 Technische Einordnung}\label{technische-einordnung}
 
 Das Polling-Modell (vgl. Kapitel 6.7, „Polling statt Push'') stellt für
 den Einzelbetrieb keine Einschränkung dar, würde aber bei steigender
@@ -129,7 +128,7 @@ blockieren. Eine schrittweise Aktivierung von \texttt{strictNullChecks}
 und \texttt{noImplicitAny} ist der naheliegende Folgeschritt zur
 weiteren Härtung der Codebasis.
 
-\subsubsection{7.2.3 Inhaltliche Reflexion}\label{inhaltliche-reflexion}
+\subsection{7.2.3 Inhaltliche Reflexion}\label{inhaltliche-reflexion}
 
 Die in Kapitel 2.5 hergeleiteten linguistischen Anforderungen an
 Liveticker --- Ellipsen, konzeptionelle Mündlichkeit, Graphostilistik
@@ -161,15 +160,14 @@ ein Restrisiko fehlerhafter Veröffentlichungen.
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
-\subsection{Diskussion der
-Betriebsmodi}\label{diskussion-der-betriebsmodi}
+\section{Diskussion der Betriebsmodi}\label{diskussion-der-betriebsmodi}
 
 Die drei Betriebsmodi (\texttt{auto}, \texttt{coop}, \texttt{manual})
 wurden in Kapitel 4.3.3 konzipiert und in Kapitel 6.4 evaluiert. Im
 Folgenden werden die Implikationen der Evaluationsergebnisse für den
 praktischen Einsatz diskutiert.
 
-\subsubsection{7.3.1 Auto-Modus: Geschwindigkeit auf Kosten der
+\subsection{7.3.1 Auto-Modus: Geschwindigkeit auf Kosten der
 Kontrolle}\label{auto-modus-geschwindigkeit-auf-kosten-der-kontrolle}
 
 Die Stärke des \texttt{auto}-Modus liegt in der Geschwindigkeit (vgl.
@@ -180,7 +178,7 @@ Ressource darstellt (Beils 2023, S. 57), ist dieser Modus daher nur für
 unkritische Event-Typen (z. B. Phasenwechsel wie „Anpfiff'' oder
 „Halbzeit'') vertretbar.
 
-\subsubsection{7.3.2 Coop-Modus: Der intendierte
+\subsection{7.3.2 Coop-Modus: Der intendierte
 Produktivbetrieb}\label{coop-modus-der-intendierte-produktivbetrieb}
 
 Im Evaluationszeitraum wurden im Coop-Modus keine Einträge nach Freigabe
@@ -192,7 +190,7 @@ TAB/ESC-Tastatursteuerung erweist sich als zentrales Mittel, um den
 Entscheidungsdurchsatz zu sichern, ohne den Redakteur visuell zu
 überlasten.
 
-\subsubsection{7.3.3 Manual-Modus: Status quo als
+\subsection{7.3.3 Manual-Modus: Status quo als
 Vergleichsbasis}\label{manual-modus-status-quo-als-vergleichsbasis}
 
 Der \texttt{manual}-Modus dient als Vergleichsbasis und Rückfalloption
@@ -201,7 +199,7 @@ zunächst Vertrauen in das System aufbauen möchten. Die
 Laufzeit-Umschaltbarkeit per API-Call stellt sicher, dass der Wechsel
 ohne Systemunterbrechung möglich ist.
 
-\subsubsection{7.3.4 Implikationen für die
+\subsection{7.3.4 Implikationen für die
 Praxis}\label{implikationen-fuxfcr-die-praxis}
 
 Die Koexistenz aller drei Modi in einem System --- umschaltbar zur
@@ -215,10 +213,10 @@ in redaktionelle Workflows.
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
-\subsection{Diskussion der
+\section{Diskussion der
 Prompt-Architektur}\label{diskussion-der-prompt-architektur}
 
-\subsubsection{7.4.1 Few-Shot-Prompting als
+\subsection{7.4.1 Few-Shot-Prompting als
 Stilsteuerung}\label{few-shot-prompting-als-stilsteuerung}
 
 Die dynamische Einbindung von bis zu drei Stilreferenzen aus der
@@ -245,7 +243,7 @@ konsistente Formatierungsmuster in der \texttt{ef\_whitelabel}-Instanz
 --- insbesondere bei TOOOOR-Konvention und Minutenformat. Der Effekt ist
 sichtbar, aber statistisch nicht isoliert messbar.
 
-\subsubsection{7.4.2 Temperatur und
+\subsection{7.4.2 Temperatur und
 Determinismus}\label{temperatur-und-determinismus}
 
 Die gewählte Temperatur von 0,3 für die Textgenerierung und 0,1 für
@@ -255,7 +253,7 @@ Halluzinationsrate weiter senken, aber die Texte formelhafter machen ---
 ein Zielkonflikt, der im Genre Liveticker (das von Überraschung und
 sprachlicher Kreativität lebt) besonders relevant ist.
 
-\subsubsection{7.4.3 Kontext-Aufbereitung}\label{kontext-aufbereitung}
+\subsection{7.4.3 Kontext-Aufbereitung}\label{kontext-aufbereitung}
 
 Die sieben spezialisierten Context-Builder (vgl. Abschnitt 5.2.6)
 strukturieren die Fakten vor der Übergabe an das LLM. Diese
@@ -268,10 +266,10 @@ abgegrenzt ist.
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
-\subsection{Implikationen für den
+\section{Implikationen für den
 Sportjournalismus}\label{implikationen-fuxfcr-den-sportjournalismus}
 
-\subsubsection{7.5.1 Veränderung der
+\subsection{7.5.1 Veränderung der
 Redakteursrolle}\label{veruxe4nderung-der-redakteursrolle}
 
 Das hybride System verschiebt die Rolle des Liveticker-Redakteurs von
@@ -296,7 +294,7 @@ der KI-Entwürfe nicht möglich ist. Die publizistische Verantwortung ---
 welcher Eintrag veröffentlicht wird --- verbleibt vollständig beim
 Menschen.
 
-\subsubsection{7.5.2 Skalierbarkeit und
+\subsection{7.5.2 Skalierbarkeit und
 White-Label}\label{skalierbarkeit-und-white-label}
 
 Die White-Label-Architektur (\texttt{ef\_whitelabel}
@@ -315,8 +313,7 @@ Kapitel 5 dokumentierte Systemarchitektur und die Deployment-Erfahrung
 mit der bestehenden \texttt{ef\_whitelabel}-Instanz; eine externe
 Nutzerstudie ist in Abschnitt 8.3.2 vorgesehen.
 
-\subsubsection{7.5.3 Ethische
-Überlegungen}\label{ethische-uxfcberlegungen}
+\subsection{7.5.3 Ethische Überlegungen}\label{ethische-uxfcberlegungen}
 
 Die automatisierte Generierung journalistischer Texte wirft die Frage
 der Transparenz auf: Sollten Leser wissen, ob ein Ticker-Eintrag von
@@ -332,7 +329,7 @@ gelten.
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
-\subsection{Synthese}\label{synthese}
+\section{Synthese}\label{synthese}
 
 Die Diskussion der Evaluationsergebnisse entlang der vier Dimensionen
 --- Abgrenzung zum Stand der Technik, methodische und technische
