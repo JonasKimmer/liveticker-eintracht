@@ -1,0 +1,120 @@
+\documentclass[12pt,a4paper,notitlepage,ngerman]{report}
+
+\usepackage[utf8]{inputenc}
+\usepackage[ngerman]{babel}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{geometry}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage{fancyhdr}
+\usepackage{setspace}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{float}
+\usepackage{subcaption}
+\usepackage{tikz}
+
+\geometry{left=2.5cm, right=2cm, top=2.5cm, bottom=2.5cm}
+\onehalfspacing
+
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\nouppercase{\leftmark}}
+\fancyhead[R]{\thepage}
+\lfoot{Bachelorarbeit}
+\rfoot{Jonas Kimmer}
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    urlcolor=blue,
+    citecolor=blue
+}
+
+\title{KI-gestütztes Liveticker-Redaktionssystem für den Profifußball}
+\author{Jonas Kimmer}
+\date{April 2026}
+
+\lstset{
+    basicstyle=\ttfamily\small,
+    breaklines=true,
+    breakatwhitespace=true,
+    postbreak=\mbox{\textcolor{red}{$\hookrightarrow$}\space},
+    language=Python,
+    showstringspaces=false,
+    extendedchars=true
+}
+
+\begin{document}
+
+% TITLEPAGE
+\begin{titlepage}
+\centering
+\vspace*{2cm}
+{\Large \textbf{Bachelorarbeit}}\\[2cm]
+{\LARGE \textbf{KI-gestütztes Liveticker-Redaktionssystem für den Profifußball}}\\[0.5cm]
+{\large Automatisierte Textgenerierung für Echtzeit-Sportjournalismus mit Human-in-the-Loop-Kontrolle}\\[3cm]
+{\large \textbf{Autor}}\\
+Jonas Kimmer\\[3cm]
+{\large \textbf{Hochschule}}\\
+Technische Hochschule Aschaffenburg\\[0.5cm]
+Fachbereich Informatik\\[2cm]
+{\large \textbf{Betreuung}}\\
+Prof. Dr. [Betreuer]\\[3cm]
+{\large \textbf{Firmenbetreuung}}\\
+Stackwork GmbH\\
+IT-Bereich, Eintracht Frankfurt\\[3cm]
+{\large \textbf{Datum}}\\
+April 2026
+\end{titlepage}
+
+% ABSTRACT
+\chapter*{Abstract}
+
+Die manuelle Erstellung von Liveticker-Einträgen im Profifußball ist ein kognitiv anspruchsvoller, zeitkritischer Prozess: Redakteure müssen Spielereignisse in Echtzeit beobachten, einordnen und in kurze, stilistisch kohärente Texte überführen — typischerweise innerhalb von 30 bis 120 Sekunden pro Eintrag. Diese Arbeit untersucht, inwiefern ein hybrides KI-gestütztes Redaktionssystem die Time-to-Publish (TTP) bei der Liveticker-Erstellung im Profifußball reduziert, ohne die journalistische Qualität hinsichtlich Korrektheit, Tonalität und Verständlichkeit zu beeinträchtigen.
+
+Das entwickelte System kombiniert eine FastAPI/PostgreSQL-Backend-Architektur mit einer mehrsprachigen LLM-Pipeline (Gemini 2.0 Flash Lite via OpenRouter) und einem React/TypeScript-Frontend. Drei Betriebsmodi — \textit{auto} (vollautomatisch), \textit{coop} (Human-in-the-Loop) und \textit{manual} (klassisch) — ermöglichen einen graduellen Übergang zwischen autonomer KI-Generierung und redaktioneller Kontrolle. n8n-Workflows übernehmen die automatisierte Datenversorgung aus externen Sportdaten-APIs. Das System wurde als generische und als White-Label-Instanz (Eintracht Frankfurt) realisiert.
+
+Die Evaluation umfasst 391 automatisierte Tests (187 Frontend, 198 Backend, 6 End-to-End), eine TypeScript-Typenabdeckung von 95,84 \% sowie eine qualitative Bewertung von 16 KI-generierten Ticker-Einträgen aus 9 Bundesliga-Spielen. Die KI-generierten Texte erzielen einen Gesamtdurchschnitt von 4,3 / 5 Punkten (Korrektheit 4,6, Tonalität 4,1, Verständlichkeit 4,3). Die geschätzte TTP im \textit{auto}-Modus beträgt 3,4–5,9 Sekunden gegenüber 30–120 Sekunden im manuellen Modus — ein geschätzter Reduktionsfaktor von 5× bis 35×. Alle 23 definierten funktionalen, nicht-funktionalen und architektonischen Anforderungen werden erfüllt.
+
+Die Arbeit zeigt, dass eine produktionstaugliche KI-Assistenz bei der Liveticker-Erstellung mit einem kleinen Kompakt-Modell und Few-Shot-Prompting realisierbar ist. Der \textit{coop}-Modus erweist sich als optimaler Kompromiss zwischen Publikationsgeschwindigkeit und journalistischer Qualitätssicherung.
+
+\noindent\textbf{Schlüsselwörter:} Large Language Models, Liveticker, Natural Language Generation, Human-in-the-Loop, Few-Shot Prompting, Sportjournalismus, FastAPI, React, TypeScript
+
+% TABLE OF CONTENTS
+\tableofcontents
+
+% CHAPTER 1: EINLEITUNG
+\input{Bachelorarbeit_Kapitel1}
+
+% CHAPTER 2: MOTIVATION UND ANFORDERUNGEN
+\input{Bachelorarbeit_Kapitel2}
+
+% CHAPTER 3: STAND DER TECHNIK
+\input{Bachelorarbeit_Kapitel3}
+
+% CHAPTER 4: SYSTEMKONZEPTION
+\input{Bachelorarbeit_Kapitel4}
+
+% CHAPTER 5: IMPLEMENTIERUNG
+\input{Bachelorarbeit_Kapitel5}
+
+% CHAPTER 6: EVALUATION
+\input{Bachelorarbeit_Kapitel6}
+
+% CHAPTER 7: DISKUSSION
+\input{Bachelorarbeit_Kapitel7}
+
+% CHAPTER 8: FAZIT UND AUSBLICK
+\input{Bachelorarbeit_Kapitel8}
+
+% APPENDIX: INTERVIEWLEITFADEN
+\appendix
+\input{Bachelorarbeit_Appendix}
+
+\end{document}

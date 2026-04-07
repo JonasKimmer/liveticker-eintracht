@@ -1,0 +1,1513 @@
+\section{Kapitel 6 -- Evaluation}\label{kapitel-6-evaluation}
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsection{6.1 Zielsetzung der
+Evaluation}\label{zielsetzung-der-evaluation}
+
+Das Ziel der Evaluation ist es, das implementierte System auf mehreren
+Ebenen nachweisbar zu bewerten. Die Evaluation gliedert sich in drei
+Blöcke:
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  \textbf{Technische Qualitätssicherung} (Abschnitt 6.2): Korrektheit
+  der Kernlogik (Unit-Tests), Zusammenspiel der API-Schichten
+  (Integrations-Tests), Stabilität der Benutzeroberfläche
+  (End-to-End-Tests) und statische Typsicherheit (TypeScript-Coverage).
+\item
+  \textbf{Evaluation der KI-Textgenerierung} (Abschnitte 6.3--6.4):
+  Quantitative Metriken, qualitative Analyse der generierten Texte und
+  Vergleich der Betriebsmodi.
+\item
+  \textbf{Systembetrachtung} (Abschnitte 6.5--6.7): Performance und
+  Laufzeitverhalten, Anforderungsabgleich (Soll-Ist) sowie Limitationen
+  und offene Punkte.
+\end{enumerate}
+
+Die Metriken dienen nicht nur der Qualitätssicherung, sondern
+dokumentieren auch die Reife der Codebasis für einen produktiven Einsatz
+und identifizieren gleichzeitig die Grenzen des aktuellen Systems.
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsection{6.2 Technische
+Qualitätssicherung}\label{technische-qualituxe4tssicherung}
+
+Die technische Qualitätssicherung umfasst die vollständige Testsuite
+(Frontend, Backend, End-to-End) sowie die statische
+Typsicherheitsanalyse.
+
+\subsubsection{6.2.1 Teststrategie und
+Testpyramide}\label{teststrategie-und-testpyramide}
+
+Die Teststrategie folgt dem klassischen Pyramiden-Modell nach Cohn
+(2009): Eine breite Basis schneller, isolierter Unit-Tests wird durch
+eine mittlere Schicht von Integrations-Tests ergänzt, die reale
+HTTP-Endpunkte gegen eine transaktionale Testdatenbank prüfen. An der
+Spitze stehen Playwright-basierte End-to-End-Tests, die den
+vollständigen Redaktionsworkflow im Browser simulieren.
+
+\begin{verbatim}
+          ┌──────────┐
+          │  E2E (6) │   Playwright — Browser-Workflow
+         ┌┴──────────┴┐
+         │  API-Tests  │  FastAPI TestClient + PostgreSQL
+        ┌┴────────────┴┐
+        │  Unit-Tests   │ Jest/React Testing Library + pytest
+        └──────────────┘
+\end{verbatim}
+
+Diese Pyramide stellt sicher, dass die Mehrheit der Testfälle ohne
+externe Abhängigkeiten läuft und damit in CI-Pipelines schnell und
+zuverlässig ausgeführt werden kann. Die Integrations-Tests sind so
+strukturiert, dass sie bei fehlender Datenbankverbindung automatisch
+übersprungen werden (\texttt{pytest.skip}) und keine falschen
+Fehlermeldungen erzeugen.
+
+\subsubsection{6.2.2 Frontend-Unit-Tests (Jest + React Testing
+Library)}\label{frontend-unit-tests-jest-react-testing-library}
+
+Das Frontend verfügt über \textbf{187 Unit-Tests} in 15 Testdateien, die
+alle mit \texttt{npm\ test\ -\/-\ -\/-watchAll=false} grün durchlaufen.
+Die Tests decken vier Kategorien ab: Utility-Funktionen, React-Hooks,
+UI-Komponenten und TypeScript-Typen.
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.1920}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.3360}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.0400}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.4320}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Test-Suite
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Datei
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Tests
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Fokus
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+\texttt{parseCommand} & \texttt{utils/parseCommand.test.ts} & 45 &
+Slash-Command-Parser: alle Events, Phasen, Fehlerfälle \\
+\texttt{roundLabel} & \texttt{utils/roundLabel.test.ts} & 16 &
+Spieltag-Beschriftungen, Knockout-Mapping \\
+\texttt{RightPanelComponents} &
+\texttt{components/RightPanelComponents.test.tsx} & 18 & Aufstellung,
+Statistiken, Tabs \\
+\texttt{PublishedEntry} & \texttt{components/PublishedEntry.test.tsx} &
+17 & Eintrag-Darstellung, Bearbeitungsmodus \\
+\texttt{EntryEditor} & \texttt{components/EntryEditor.test.tsx} & 19 &
+Publish-Flow, Preview-Rendering, Keyboard-Shortcuts \\
+\texttt{useRightPanelData} & \texttt{hooks/useRightPanelData.test.ts} &
+10 & Spieler-Lookup, Linien-Bildung, Torschützen \\
+\texttt{useSearchableDropdown} &
+\texttt{hooks/useSearchableDropdown.test.ts} & 10 & Filter-, Keyboard-,
+Reset-Logik \\
+\texttt{useLiveMinute} & \texttt{hooks/useLiveMinute.test.ts} & 10 &
+Live-Minuten-Berechnung, Halbzeit-Offset \\
+\texttt{useListKeyboard} & \texttt{hooks/useListKeyboard.test.tsx} & 9 &
+Arrow-Navigation, Tab/Enter/Escape \\
+\texttt{CommandPalette} & \texttt{components/CommandPalette.test.ts} & 7
+& Autocomplete-Logik, Keyboard-Navigation \\
+\texttt{useMatchEvents} & \texttt{hooks/useMatchEvents.test.ts} & 6 &
+Event-Filterung, Status-Mapping \\
+\texttt{resolvePollingInterval} &
+\texttt{utils/resolvePollingInterval.test.ts} & 6 & Polling-Frequenz je
+Spielstatus \\
+\texttt{useMatchTicker} & \texttt{hooks/useMatchTicker.test.ts} & 5 &
+Polling-Logik, Fehlerbehandlung \\
+\texttt{useClickOutside} & \texttt{hooks/useClickOutside.test.ts} & 5 &
+Event-Listener-Lifecycle \\
+\texttt{ErrorBoundary} & \texttt{components/ErrorBoundary.test.tsx} & 4
+& Fehler-Capture, Fallback-UI \\
+\end{longtable}
+}
+
+\textbf{Kernmodul: \texttt{parseCommand}}
+
+Der \texttt{parseCommand}-Utility ist das komplexeste Stück
+Geschäftslogik im Frontend --- er transformiert Slash-Commands (z. B.
+\texttt{/g\ Müller\ SGE}) in strukturierte Ticker-Einträge. Die 45 Tests
+decken alle 11 Command-Typen (Tor, Eigentor, Gelbe/Rote Karte, Wechsel,
+Notiz, verfehlter Elfmeter und alle 11 Phasen-Commands) sowie explizit
+die Fehlerfälle ab: Jeder Test prüft \texttt{isValid}, \texttt{type},
+\texttt{formatted}, \texttt{meta.icon} und \texttt{warnings} ---
+unvollständige Eingaben liefern gezielte Hinweise
+(\texttt{"Fehlend:\ Spieler"}) statt Laufzeitfehler (vgl.
+\texttt{parseCommand.test.ts}).
+
+\textbf{Beispiel: \texttt{useLiveMinute}}
+
+Der Hook \texttt{useLiveMinute} berechnet die aktuelle Spielminute aus
+dem Anstoßzeitpunkt, sofern keine Minuten-Information direkt im
+Match-Objekt vorhanden ist. Die 10 Tests decken sowohl die
+Halbzeit-Korrektur (+46 Minuten ab der 60. Minute) als auch den Puffer
+bei fehlendem Kickoff-Timestamp ab (vgl.
+\texttt{useLiveMinute.test.ts}).
+
+\subsubsection{6.2.3 Backend-Unit-Tests
+(pytest)}\label{backend-unit-tests-pytest}
+
+Das Backend verfügt über \textbf{198 Tests} in 11 Test-Dateien, die mit
+einer Gesamt-Coverage von \textbf{75 \%} abgeschlossen werden. Alle 198
+Tests laufen grün durch (\texttt{198\ passed}).
+
+\begin{verbatim}
+$ pytest tests/ --cov=app -q
+...
+198 passed in 3.9s
+TOTAL  3230  793  75%
+\end{verbatim}
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.2558}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.0388}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.1473}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.5581}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Test-Datei
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Tests
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Kategorie
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Fokus
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+\texttt{test\_ticker\_api.py} & 20 & API (Integration) & Ticker CRUD,
+Publish/Reject, Manual-Entry, Phasen-Deduplizierung \\
+\texttt{test\_matches\_api.py} & 27 & API (Integration) & Match CRUD,
+Ticker-Mode, Lineup, Statistiken, Player-Stats, Verletzungen \\
+\texttt{test\_events\_api.py} & 11 & API (Integration) & Events: Upsert,
+Paginierung, Update, Delete \\
+\texttt{test\_competitions\_api.py} & 12 & API (Integration) &
+Wettbewerbe: Listenabfrage, Paginierung \\
+\texttt{test\_players\_api.py} & 11 & API (Integration) & Spieler:
+Abfrage, Sortierung \\
+\texttt{test\_ticker\_entry\_repository.py} & 10 & Repository (Unit) &
+CRUD-Operationen auf Datenbankebene \\
+\texttt{test\_ticker\_service.py} & 10 & Service (Unit) &
+Kontext-Aufbau, Score-Berechnung, KI-Eintrag-Erstellung \\
+\texttt{test\_evaluation\_metrics.py} & 18 & Utility (Unit) & TTP,
+Cliff's Delta, Bootstrap-CI, Cohen's Kappa, Verteilungsanalyse \\
+\texttt{test\_llm\_service.py} & 28 & Service (Unit/Mock) &
+LLM-Provider-Routing, Prompt-Aufbau, Fallback-Logik \\
+\texttt{test\_constants.py} & 14 & Utility (Unit) &
+Konstanten-Vollständigkeit, Phasen-Mapping \\
+\texttt{test\_utils.py} & 37 & Utility (Unit) & HTTP-Fehlerbehandlung,
+DB-Utilities, Context-Builder \\
+\end{longtable}
+}
+
+\textbf{API-Integrations-Tests}
+
+Die API-Tests nutzen FastAPIs \texttt{TestClient} mit einer
+transaktionalen PostgreSQL-Session, die nach jedem Test per Rollback
+zurückgesetzt wird. Dadurch sind Tests voneinander isoliert und
+hinterlassen keine persistenten Daten. Der \texttt{db}-Fixture erzeugt
+eine Session mit \texttt{autocommit=False} und führt nach dem
+\texttt{yield} ein \texttt{session.rollback()} aus; der
+\texttt{client}-Fixture überschreibt die
+\texttt{get\_db}-Dependency-Injection von FastAPI, sodass alle
+Route-Handler dieselbe transaktionale Session verwenden. Exemplarisch
+wird ein Test für die Ticker-Mode-Route gezeigt, der sowohl den
+Erfolgsfall (\texttt{mode:\ "coop"} → 200) als auch die Validierung
+(\texttt{mode:\ "invalid"} → 422) abdeckt.
+
+\textbf{Coverage-Verteilung nach Schicht}
+
+Die 75 \%-Gesamtcoverage verteilt sich sehr ungleich über die
+Systemschichten --- ein bewusstes Ergebnis der Priorisierung:
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.3333}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.0707}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.1010}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.4949}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Schicht
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Dateien
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Ø Coverage
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Anmerkung
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+\textbf{Modelle} (\texttt{app/models/}) & 17 & 100 \% & Vollständig
+abgedeckt \\
+\textbf{Schemas} (\texttt{app/schemas/}) & 11 & \textasciitilde95 \% &
+Pydantic-Validierung vollständig getestet \\
+\textbf{Utilities} (\texttt{app/utils/}) & 5 & \textasciitilde80 \% &
+Evaluation-Metriken, HTTP-Fehler, Context-Builder \\
+\textbf{API-Endpunkte} (\texttt{app/api/v1/}) & 14 & \textasciitilde55
+\% & Kern-Routes getestet; Clip/Media/Teams noch offen \\
+\textbf{Repositories} & 12 & \textasciitilde55 \% & Ticker/Event/Match
+gut; Clip/Season/Style offen \\
+\textbf{Services} & 2 & \textasciitilde50 \% & LLM-Service (Mocking),
+Ticker-Service \\
+\end{longtable}
+}
+
+Die unbelegten Bereiche konzentrieren sich auf Nebenroutes (Clip-Import,
+Medienverwaltung, Saisonverwaltung), die außerhalb des kritischen
+Redaktionspfads liegen.
+
+\subsubsection{6.2.4 End-to-End-Tests
+(Playwright)}\label{end-to-end-tests-playwright}
+
+Die 6 Playwright-Tests validieren den Browser-seitigen Workflow der
+Anwendung. Sie simulieren reale Nutzerinteraktionen im Chromium-Browser
+und sind so konzipiert, dass sie auch ohne laufendes Backend sinnvoll
+laufen: Backend-bedingte Abweichungen (z. B. leere Länder-Liste) werden
+als erwarteter Zustand behandelt, nicht als Fehler.
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 2\tabcolsep) * \real{0.4694}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 2\tabcolsep) * \real{0.5306}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Test
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Beschreibung
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+\texttt{App\ lädt\ korrekt\ \textgreater{}\ Startseite\ zeigt\ Navigations-UI}
+& Prüft, dass die React-App ohne Crash-Screen rendert \\
+\texttt{App\ lädt\ korrekt\ \textgreater{}\ StartScreen\ zeigt\ Länder-Dropdown}
+& Prüft, dass \texttt{.lt}-Root-Element sichtbar wird \\
+\texttt{Navigation\ \textgreater{}\ Länder-Dropdown\ ist\ interaktiv} &
+Prüft, dass Label und Select-Element im DOM erreichbar sind \\
+\texttt{Navigation\ \textgreater{}\ Kein\ unbehandelter\ JS-Fehler\ beim\ Laden}
+& Fängt JavaScript-Laufzeitfehler ab (mit Whitelist für bekannte
+Netzwerkfehler) \\
+\texttt{Ticker-Oberfläche\ \textgreater{}\ Keyboard-Shortcuts-Modal\ öffnet\ sich}
+& Simuliert Klick auf \texttt{?}-Button, prüft Modal-Öffnung und
+Overlay-Schließen \\
+\texttt{Ticker-Oberfläche\ \textgreater{}\ Mobile\ Tab\ Bar\ ist\ auf\ kleinen\ Screens\ sichtbar}
+& Prüft Viewport 375×812 (iPhone SE) --- App rendert korrekt \\
+\end{longtable}
+}
+
+Die E2E-Tests decken absichtlich den \emph{stabilen Kern} der UI ab ---
+das initiale Rendern, die Fehlerfreiheit beim Laden und grundlegende
+Interaktionspunkte. Sie dienen primär als Regression-Schutz: Bricht eine
+zentrale Komponente (z. B. durch einen fehlerhaften Import), schlagen
+die Tests unmittelbar an.
+
+\subsubsection{6.2.5
+TypeScript-Typsicherheit}\label{typescript-typsicherheit}
+
+Die vollständige Migration von JavaScript zu TypeScript und die zentrale
+Typen-Architektur (\texttt{src/types/index.ts} mit Domain-Interfaces,
+Union-Types und \texttt{as\ const}-Konstanten) sind in Abschnitt 5.4.7
+dokumentiert.
+
+\textbf{Ergebnis}
+
+Die \texttt{type-coverage}-Metrik (Anteil explizit getypter Ausdrücke an
+allen Ausdrücken) wurde wie folgt gesteigert:
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.6053}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.1711}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.2237}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Zeitpunkt
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+type-coverage
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+TypeScript-Fehler
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Migrationsbeginn & 78,33 \% & 885 \\
+Nach Grundmigration & \textasciitilde84 \% & 0 \\
+Nach Interface-Ausbau (Hooks, Panels) & \textasciitilde89 \% & 0 \\
+\textbf{Endstand (nach \texttt{parseCommand}-Typisierung)} &
+\textbf{95,84 \%} & \textbf{0} \\
+\end{longtable}
+}
+
+Der Wert von 95,84 \% bedeutet: Von 18.813 gemessenen Typausdrücken sind
+18.031 explizit getypt. Die verbleibenden \textasciitilde4,2 \%
+verteilen sich auf wenige, bewusst offen gelassene Stellen:
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{\texttt{MatchSelectorModal.tsx}}: Ein großes Modal mit
+  komplexem internen State, in dem die Typisierung stark von einer
+  kommenden API-Stabilisierung abhängt.
+\item
+  \textbf{\texttt{MediaPickerPanel.tsx} / \texttt{YouTubePanel.tsx}}:
+  Media-Panels, die externe API-Responses (ScorePlay, YouTube)
+  verarbeiten, deren Typen nicht vollständig spezifiziert sind.
+\item
+  \textbf{Exports in \texttt{components/index.ts}}: Barrel-Exports mit
+  \texttt{export\ \{\ X\ \}} ohne explizite Typ-Annotationen ---
+  technisch korrekt, aber von \texttt{type-coverage} als untypiert
+  gezählt.
+\end{itemize}
+
+\textbf{Nutzen im Entwicklungsprozess}
+
+Die TypeScript-Migration hat im Verlauf der Implementierung mehrere
+Fehler früh aufgedeckt, die sonst erst zur Laufzeit sichtbar geworden
+wären:
+
+\begin{itemize}
+\tightlist
+\item
+  \texttt{Country} war als Objekt-Interface typisiert, die API liefert
+  jedoch \texttt{string{[}{]}} --- TypeScript erzwang die Korrektur
+\item
+  \texttt{parseInt(v)} erhielt ein
+  \texttt{string\ \textbar{}\ number}-Argument --- ohne Typ wäre dies
+  still übergangen worden
+\item
+  \texttt{e.target.closest(...)} erforderte
+  \texttt{as\ Element\ \textbar{}\ null} --- TypeScript verhinderte den
+  Null-Zugriff
+\end{itemize}
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsection{6.3 Evaluation der
+KI-Textgenerierung}\label{evaluation-der-ki-textgenerierung}
+
+Die Evaluation der Textgenerierung gliedert sich in zwei Teile: zunächst
+die implementierte Evaluationsinfrastruktur mit ihren quantitativen
+Metriken und dem Provider-Vergleich, dann die qualitative Analyse
+konkreter Textbeispiele einschließlich Expertenvalidierung.
+
+\subsubsection{6.3.1
+Evaluationsinfrastruktur}\label{evaluationsinfrastruktur}
+
+Das System stellt über den Endpunkt
+\texttt{POST\ /api/v1/ticker/generate-bulk/\{match\_id\}} eine
+Bulk-Generierungsfunktion bereit, die alle Events eines Spiels mit einem
+wählbaren Provider und Modell generiert. Durch optionale
+\texttt{provider}- und \texttt{model}-Parameter im Request-Body können
+verschiedene LLM-Konfigurationen systematisch verglichen werden, ohne
+den Produktivbetrieb zu beeinflussen.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{class}\NormalTok{ GenerateEventRequest(BaseModel):}
+\NormalTok{    provider: Optional[}\BuiltInTok{str}\NormalTok{] }\OperatorTok{=}\NormalTok{ Field(default}\OperatorTok{=}\VariableTok{None}\NormalTok{, description}\OperatorTok{=}\StringTok{"Provider override for Evaluation"}\NormalTok{)}
+\NormalTok{    model:    Optional[}\BuiltInTok{str}\NormalTok{] }\OperatorTok{=}\NormalTok{ Field(default}\OperatorTok{=}\VariableTok{None}\NormalTok{, description}\OperatorTok{=}\StringTok{"Modell override for Evaluation"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+Für jeden Aufruf wird eine temporäre \texttt{LLMService}-Instanz
+erzeugt, falls Provider oder Modell vom konfigurierten Singleton
+abweichen. Dadurch lassen sich A/B-Vergleiche zwischen Providern
+durchführen, ohne die Global-Konfiguration zu verändern.
+
+\subsubsection{6.3.2 Quantitative Metriken}\label{quantitative-metriken}
+
+Das Evaluationsmodul (\texttt{app/utils/evaluation\_metrics.py}) stellt
+sechs Metriken bereit, die sich in zwei Kategorien gliedern:
+
+\textbf{Zeitliche Metriken:}
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{Time-to-Publish (TTP)}: Misst die Latenz zwischen
+  Ereigniszeitpunkt und Veröffentlichung des Ticker-Eintrags in
+  Sekunden. Diese Metrik ist zentral für Liveticker, da die Aktualität
+  ein primäres Qualitätsmerkmal darstellt.
+\end{itemize}
+
+\textbf{Statistische Vergleichsmetriken:}
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{Cliff's Delta} (Cliff 1993): Nicht-parametrische Effektstärke
+  für ordinale Daten. Berechnet den Anteil konkordanter vs.~diskordanter
+  Paare zwischen zwei Stichproben. Wertebereich {[}−1, 1{]}, wobei
+  \textbar δ\textbar{} \textless{} 0,147 als vernachlässigbar,
+  \textbar δ\textbar{} \textless{} 0,33 als klein und
+  \textbar δ\textbar{} \textgreater{} 0,474 als groß gilt.
+\item
+  \textbf{Bootstrap-Konfidenzintervall}: Resampling-basierte Schätzung
+  des Mittelwertunterschieds zwischen zwei Gruppen (5.000 Iterationen,
+  Konfidenz 95 \%, deterministisch via Seed). Liefert
+  \texttt{(observed\_diff,\ lower\_ci,\ upper\_ci)}.
+\item
+  \textbf{Cohen's Kappa} (Cohen 1960): Interrater-Reliabilität für
+  kategoriale Bewertungen. Korrigiert die beobachtete Übereinstimmung um
+  den Zufall. κ \textgreater{} 0,61 gilt als substantielle
+  Übereinstimmung.
+\item
+  \textbf{Verteilungsanalyse} (\texttt{summarize\_distribution}):
+  Berechnet Median, Standardabweichung, Quartile (Q1, Q3), IQR und 95.
+  Perzentil --- robuste Lagemaße, die gegen Ausreißer unempfindlich
+  sind.
+\item
+  \textbf{Qualitätsaggregation}
+  (\texttt{aggregate\_quality\_by\_group}): Gruppiert
+  Bewertungsergebnisse nach einem Schlüssel (z. B. Modus oder Modell)
+  und berechnet je Dimension (Korrektheit, Tonalität, Verständlichkeit)
+  den Mittelwert sowie einen Gesamtscore.
+\end{itemize}
+
+Alle sechs Funktionen sind durch 18 Unit-Tests abgesichert
+(\textasciitilde96 \% Coverage).
+
+\subsubsection{6.3.3 Modell- und
+Provider-Evaluation}\label{modell--und-provider-evaluation}
+
+Das System unterstützt fünf LLM-Provider in einer festen
+Prioritätskette, die beim Serverstart den ersten Provider mit gültigem
+API-Key als Singleton aktiviert:
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.1429}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.1587}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.5397}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.1587}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Priorität
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Provider
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Standard-Modell
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Temperatur
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+1 & OpenRouter & \texttt{google/gemini-2.0-flash-lite-001} & 0,3 \\
+2 & Gemini & \texttt{gemini-2.0-flash-lite-001} & 0,3 \\
+3 & OpenAI & \texttt{gpt-4o-mini} & 0,3 \\
+4 & Anthropic & \texttt{claude-haiku-4-5-20251001} & 0,3 \\
+5 & Mock & --- (regelbasierte Templates) & --- \\
+\end{longtable}
+}
+
+Im produktiven Render-Deployment sind OpenRouter (Priority 1) und Mock
+(Fallback) konfiguriert. Die übrigen Provider wurden mangels aktivierter
+API-Keys nicht evaluiert; ihre Einbindung ist architektonisch
+vollständig implementiert und in der Prioritätskette vorgesehen.
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1149}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.3908}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1264}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1034}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1839}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.0805}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Provider
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Modell
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Korrektheit
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Tonalität
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Verständlichkeit
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Gesamt
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+OpenRouter & \texttt{google/gemini-2.0-flash-lite-001} & 4,6 / 5 & 4,1 /
+5 & 4,3 / 5 & 4,3 / 5 \\
+Mock & regelbasiert (Templates) & 4,0 / 5 & 3,0 / 5 & 3,0 / 5 & 3,3 /
+5 \\
+Gemini & \texttt{gemini-2.0-flash-lite-001} & --- & --- & --- & --- \\
+OpenAI & \texttt{gpt-4o-mini} & --- & --- & --- & --- \\
+Anthropic & \texttt{claude-haiku-4-5-20251001} & --- & --- & --- &
+--- \\
+\end{longtable}
+}
+
+\emph{Messgrundlage: N = 16 deutschsprachige KI-generierte Einträge
+(OpenRouter), N = 7 (Mock), gemessen über 28 FullTime-Spiele auf dem
+Render-Deployment. Qualitätswerte (1--5) wurden manuell anhand der
+Kriterien aus Abschnitt 6.3.6 bewertet.}
+
+Die detaillierte Latenzanalyse einschließlich der Charakterisierung der
+Antwortzeit-Verteilung findet sich in Abschnitt 6.5.1. Die deskriptiven
+Mittelwerte belegen einen klaren Qualitätsvorsprung des LLM-Providers
+gegenüber dem Mock in der Tonalitätstreue (Δ = 1,1 Skalenpunkte).
+
+\subsubsection{6.3.4 Einfluss der
+Stilprofile}\label{einfluss-der-stilprofile}
+
+Das System generiert Texte in drei Stilprofilen, die über den Prompt
+gesteuert werden:
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{neutral}: „sachlich und neutral --- keine Vereinspräferenz''
+\item
+  \textbf{euphorisch}: „begeistert und emotional --- aus Sicht der
+  Heimfans''
+\item
+  \textbf{kritisch}: „analytisch und kritisch''
+\end{itemize}
+
+Da der Backend-Deduplizierungsmechanismus für identische
+\texttt{event\_id} denselben Eintrag zurückgibt, wurde der Stilvergleich
+anhand typischer Treffer-Einträge (Event-Typ: Tor) aus unterschiedlichen
+Spielen durchgeführt --- die jeweils zugehörige Stilanweisung war
+identisch konfiguriert.
+
+\textbf{Event-Typ:} Tor (Bundesliga-Saison 2024/25, Eintracht Frankfurt)
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 2\tabcolsep) * \real{0.0535}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 2\tabcolsep) * \real{0.9465}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Stil
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Generierter Text
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+neutral & „22. Minute: TOOOOR! C. Y. Uzun bringt Eintracht Frankfurt in
+Führung! Nach Vorlage von H. Larsson. 1:0!'' \emph{(Eintracht Frankfurt
+vs.~Werder Bremen, Md. 7)} \\
+euphorisch & „81. Minute: WAS IST DENN HIER LOS?! Collins mit der
+butterweichen Flanke! DOAN! Der Ball ist drin! TOOOOR! 1:0! Die Hütte
+bebt!'' \emph{(Eintracht Frankfurt vs.~FSV Mainz 05, Md. 9)} \\
+kritisch & „4. Minute: TOOOOR! Kaminski bringt Köln in Führung! Ache mit
+der Vorlage, Kaminski vollendet eiskalt. 1:0!'' \emph{(1. FC Köln
+vs.~Eintracht Frankfurt, Md. 11)} \\
+\end{longtable}
+}
+
+\textbf{Ergänzender Direktvergleich --- identisches Event, alle drei
+Stile} (synthetischer Kontext: Eintracht Frankfurt vs.~FC Bayern
+München, 78. Minute, Tor Omar Marmoush):
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 2\tabcolsep) * \real{0.0714}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 2\tabcolsep) * \real{0.9286}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Stil
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Generierter Text
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+euphorisch & „78. Minute: MARMOOOSH! Der Ball zappelt im Netz!
+Unglaublich! Die Hütte explodiert! Was für ein Strahl! Eintracht führt!
+TOOOOR!'' \\
+neutral & „78. Minute: TOOOOR! Omar Marmoush bringt Eintracht Frankfurt
+in Führung!'' \\
+kritisch & „78. Minute: TOOOOR! Marmoush mit dem Ausgleich für die
+Eintracht! Die Bayern-Abwehr pennt. Frankfurt nutzt die Chance
+eiskalt.'' \\
+\end{longtable}
+}
+
+\textbf{Beobachtung:} Die drei Stilprofile unterscheiden sich deutlich
+in Ausrufezeichen-Dichte, Wortwahl und Perspektive. Während
+\texttt{neutral} Fakten kompakt zusammenfasst, erzeugt
+\texttt{euphorisch} narrative Intensität durch Wiederholungen und
+Ausrufe. \texttt{kritisch} nähert sich dem neutralen Register, enthält
+aber keine explizite analytische Einordnung --- ein Hinweis darauf, dass
+das Prompt-Design für dieses Profil noch Optimierungspotenzial bietet
+(vgl. Abschnitt 6.3.6). Der kontrollierte Direktvergleich zeigt außerdem
+eine Inkonsistenz in der Spielstands-Interpretation: \texttt{euphorisch}
+beschreibt den Treffer als „Führung'', \texttt{kritisch} als
+„Ausgleich'' --- obwohl der übergebene Spielstand (1:2 für Bayern) den
+Treffer als Anschlusstreffer (1:2 → 2:2) ausweisen würde. Diese
+Divergenz ist ein weiterer Beleg für die Unzuverlässigkeit der
+Spielstand-Verarbeitung im neutralen und euphorischen Profil.
+
+\subsubsection{6.3.5 Einfluss von
+Few-Shot-Referenzen}\label{einfluss-von-few-shot-referenzen}
+
+Die Prompt-Architektur unterstützt bis zu drei Stilreferenzen aus der
+\texttt{style\_references}-Datenbanktabelle, gefiltert nach Event-Typ
+und Instanz. Die Referenzen werden als Few-Shot-Beispiele in den Prompt
+eingefügt.
+
+Ein kontrollierter A/B-Test mit 0, 1 und 3 Few-Shot-Referenzen für
+denselben Event konnte im Rahmen dieser Arbeit nicht durchgeführt
+werden, da das Backend keinen direkten Parameter zur Steuerung der
+Referenzanzahl pro Request exponiert. Qualitativ zeigt die Evaluation
+(Abschnitt 6.3.6), dass die \texttt{style\_references}-Tabelle der
+\texttt{ef\_whitelabel}-Instanz konsistente Formatierungsmuster
+(Minutenformat, TOOOOR-Konvention) in den generierten Texten etabliert
+--- ein indirekter Hinweis auf die Wirksamkeit der
+Few-Shot-Kontextualisierung.
+
+\subsubsection{6.3.6 Qualitative Analyse der generierten
+Texte}\label{qualitative-analyse-der-generierten-texte}
+
+Für die qualitative Analyse wurden \textbf{16 KI-generierte
+Ticker-Einträge} (Modell: \texttt{google/gemini-2.0-flash-lite-001},
+Sprache: Deutsch) aus \textbf{9 Bundesliga-Spielen} der Saison 2024/25
+manuell auf drei Dimensionen bewertet:
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  \textbf{Korrektheit}: Sind alle Fakten (Spieler, Team, Minute,
+  Ergebnis) korrekt wiedergegeben? Enthält der Text Halluzinationen?
+\item
+  \textbf{Tonalität}: Entspricht der Stil dem gewählten Profil
+  (neutral/euphorisch/kritisch)?
+\item
+  \textbf{Verständlichkeit}: Ist der Text sprachlich flüssig,
+  grammatikalisch korrekt und dem Genre „Liveticker'' angemessen?
+\end{enumerate}
+
+Jede Dimension wurde auf einer Skala von 1 (ungenügend) bis 5
+(exzellent) bewertet. Die Bewertung erfolgte durch den Entwickler; ein
+zweiter Rater stand nicht zur Verfügung, sodass kein Cohen's Kappa
+berechnet wurde. Die externe Validierung erfolgt durch das
+Experteninterview (s. u.).
+
+\textbf{Ergänzende Expertenvalidierung} --- Die quantitative Bewertung
+wird durch ein \textbf{strukturiertes Experteninterview} mit einem
+professionellen Sportredakteur von Eintracht Frankfurt komplementiert.
+Das Interview adressiert vier zentrale Aspekte: (1)
+Gebrauchstauglichkeit des Systems im redaktionellen Arbeitskontext, (2)
+Qualitätsbewertung der KI-generierten Texte im Vergleich zu manuell
+erstellten Einträgen, (3) Einschätzung der drei Betriebsmodi
+hinsichtlich Praxistauglichkeit und (4) Verbesserungsvorschläge für
+Prompt-Design und Workflow-Integration. Diese qualitative Validierung
+durch einen Domain-Experten erhöht die externe Validität der Evaluation
+erheblich.
+
+\textbf{Ergebnisse nach Event-Typ}
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.2289}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.0723}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1807}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1566}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.2410}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1205}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Event-Typ
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+n
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Korrektheit (Ø)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Tonalität (Ø)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Verständlichkeit (Ø)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Gesamt (Ø)
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Tor & 7 & 4,7 & 3,6 & 4,7 & 4,3 \\
+Gelbe Karte & 7 & 4,9 & 4,4 & 4,0 & 4,4 \\
+Rote Karte & 0 & --- & --- & --- & --- \\
+Wechsel & 1 & 4,0 & 4,0 & 4,0 & 4,0 \\
+Pre-Match (Kontext) & 1 & 3,0 & 5,0 & 4,0 & 4,0 \\
+\textbf{Gesamt} & \textbf{16} & \textbf{4,6} & \textbf{4,1} &
+\textbf{4,3} & \textbf{4,3} \\
+\end{longtable}
+}
+
+\emph{Anmerkung: Rote Karten kamen in den 9 analysierten Spielen nicht
+vor. Phasen-Events (Anpfiff, Halbzeit, Abpfiff) wurden nicht separat
+evaluiert, da diese in den verfügbaren Testdaten ausschließlich über
+Synthetic Events generiert wurden. Pre-Match-Kategorie enthält eine
+Stichprobe aus der \texttt{ef\_whitelabel}-Instanz.}
+
+\textbf{Ergänzende Evaluation (N = 9, synthetischer Kontext):} Zur
+Abdeckung der in der Hauptevaluation fehlenden Event-Typen (Rote Karte,
+Phasen-Events) wurde eine ergänzende Messung mit synthetischem
+Match-Kontext (Eintracht Frankfurt vs.~FC Bayern München, 1:2, 2.
+Halbzeit) durchgeführt. Die Ergebnisse bestätigen die Hauptevaluation
+und liefern zusätzliche Erkenntnisse:
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1719}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1562}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1719}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1406}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.2500}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1094}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Event-Typ
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Stil
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Korrektheit
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Tonalität
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Verständlichkeit
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Gesamt
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Tor & euphorisch & 4 & 5 & 5 & 4,7 \\
+Tor & neutral & 4 & 4 & 5 & 4,3 \\
+Tor & kritisch & 5 & 4 & 5 & 4,7 \\
+Gelbe Karte & euphorisch & 5 & 5 & 5 & 5,0 \\
+Gelbe Karte & neutral & 5 & 5 & 5 & 5,0 \\
+Rote Karte & euphorisch & 5 & 5 & 5 & 5,0 \\
+Anpfiff & euphorisch & 5 & 5 & 5 & 5,0 \\
+Halbzeit & euphorisch & 5 & 5 & 5 & 5,0 \\
+Abpfiff & euphorisch & 2 & 5 & 4 & 3,7 \\
+\textbf{Gesamt} & & \textbf{4,4} & \textbf{4,8} & \textbf{4,9} &
+\textbf{4,7} \\
+\end{longtable}
+}
+
+Die niedrige Korrektheitsbewertung des Abpfiff-Eintrags (2/5) ist auf
+eine Score-Halluzination zurückzuführen: Das Modell generierte
+„Eintracht schlägt die Bayern!'' trotz eines Spielstands von 1:2
+(Niederlage) im Match-Kontext. Diese Fehlerklasse ist nachfolgend
+dokumentiert.
+
+\textbf{Typische Stärken}
+
+\emph{Beispiel 1 --- Tor (euphorisch, Bewertung 5/5/5):}
+
+\begin{quote}
+Event: Tor, 81. Minute, R. Doan (Eintracht Frankfurt vs.~FSV Mainz 05),
+Vorlage Collins KI-Text: „81. Minute: WAS IST DENN HIER LOS?! Collins
+mit der butterweichen Flanke! DOAN! Der Ball ist drin! TOOOOR! 1:0! Die
+Hütte bebt!''
+\end{quote}
+
+Bewertung: Der Text erfasst alle verfügbaren Fakten (Minute, Torschütze,
+Vorlagengeber, Ergebnis) korrekt und nutzt emotionale Stilmittel des
+Liveticker-Genres präzise: Wiederholung des Torschützennamens, Ausrufe
+und ein szenisch-bildhafter Abschluss. Die Kürze von zwei Sätzen ist
+genrekonform.
+
+\emph{Beispiel 2 --- Rote Karte (euphorisch, Bewertung 5/5/5):}
+
+\begin{quote}
+Event: Rote Karte, 70. Minute, Thomas Müller (FC Bayern München),
+Spielstand 1:2 KI-Text: „70. Minute: Rot! Müller fliegt! Der Wahnsinn!
+Die Bayern mit zehn Mann! Frankfurt, jetzt geht was! Die SGE, sie lebt!
+Der Rasen brennt!''
+\end{quote}
+
+Bewertung: Alle Fakten (Minute, Spieler, Team) korrekt. Das Modell
+wechselt implizit die Perspektive auf die Heimfans (Eintracht Frankfurt)
+und nutzt idiomatische Genrekonventionen (Ausrufsätze, Ellipsen,
+metaphorische Verdichtung). Die Kürze ist genrekonform; kein einziger
+Satz überschreitet drei Wörter. Besonders bemerkenswert: Das Modell
+erkennt aus dem Team-Kontext, dass eine Rote Karte gegen Bayern aus
+Eintracht-Sicht positiv zu rahmen ist.
+
+\emph{Beispiel 3 --- Wechsel (neutral, Bewertung 4/4/4):}
+
+\begin{quote}
+Event: Auswechslung, 65. Minute, S. Mbangula für P. Covic (Eintracht
+Frankfurt vs.~Werder Bremen, Werder Bremen-Wechsel) KI-Text: „65.
+Minute: Erster Wechsel bei Werder Bremen. S. Mbangula geht vom Feld. Für
+ihn kommt P. Covic.''
+\end{quote}
+
+Bewertung: Fakten und Stil sind korrekt. Die Formulierung „Erster
+Wechsel'' ist nicht aus dem Kontext ableitbar und stellt eine kleine
+Halluzination dar; in diesem Fall war sie zufällig korrekt.
+
+\emph{Beispiel 4 --- Tor (Englisch, euphorisch, Übersetzung via
+translate\_ticker\_text):}
+
+\begin{quote}
+Event: Tor, 81. Minute, R. Doan (Eintracht Frankfurt vs.~FSV Mainz 05),
+Vorlage Collins KI-Text (EN): ``81st minute: WHAT IS GOING ON?! Collins
+with the silky cross! DOAN! The ball is in! GOOOAL! 1-0! The house is
+rocking!''
+\end{quote}
+
+Bewertung: Die Übersetzung überträgt alle Fakten korrekt und erhält die
+emotionale Intensität des euphorischen Stils. Die idiomatische Anpassung
+(„Die Hütte bebt'' → „The house is rocking'') zeigt, dass das LLM nicht
+wörtlich übersetzt, sondern genreäquivalente Formulierungen wählt.
+Mehrsprachige Ausgabe ist über den \texttt{language}-Parameter und die
+Batch-Übersetzung (\texttt{translate\_ticker\_text}) für alle vier
+unterstützten Sprachen (DE/EN/ES/FR) verfügbar.
+
+\textbf{Typische Schwächen und Fehlerklassen}
+
+Die qualitative Analyse identifizierte folgende wiederkehrende
+Fehlerklassen:
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.1154}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.0625}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.3317}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.4904}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Fehlerklasse
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Häufigkeit
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Beschreibung
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Beispiel
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+\textbf{Stil-Inkonsistenz} & 3 / 16 (19 \%) & Neutraler Stil enthält
+emotionale Formulierungen & „33. Minute: Oh nein! Lienhart sieht Gelb!
+\ldots{} Aber Kopf hoch, Jungs! Kämpfen!'' \emph{(angefordert:
+neutral)} \\
+\textbf{Fakten-Halluzination} & 1 / 16 (6 \%) & Das LLM erfindet
+Details, die nicht im Kontext stehen & Pre-Match-Text erfand eine
+Wettempfehlung: „Wir tippen auf Double Chance: Sieg \ldots{} oder
+Remis.'' \\
+\textbf{Score-Halluzination} & 1 / 9 (11 \%) & Spielstand aus
+Match-Kontext wird ignoriert, fiktiver Ausgang erzeugt & Abpfiff-Text
+„Eintracht schlägt die Bayern!'' bei übergebenem Spielstand 1:2
+(Niederlage) \\
+\textbf{Team-Verwechslung} & 0 / 16 (0 \%) & Tor wird dem falschen Team
+zugeordnet & Nicht aufgetreten \\
+\textbf{Wiederholung} & 2 / 16 (13 \%) & Aufeinanderfolgende Texte
+ähneln sich stark im Satzbau & Mehrere Tore mit identischer Formel „X
+bringt Y in Führung! Nach Vorlage von Z. 1:0.'' \\
+\textbf{Überlänge} & 0 / 16 (0 \%) & Text überschreitet die typische
+Liveticker-Kürze & Nicht aufgetreten \\
+\end{longtable}
+}
+
+Die häufigste Fehlerklasse ist die \textbf{Stil-Inkonsistenz} des
+neutralen Profils: Das LLM übernimmt offensichtlich idiomatische Muster
+aus den euphorischen Few-Shot-Referenzen der
+\texttt{ef\_whitelabel}-Instanz auch dann, wenn \texttt{neutral} als
+Stilparameter übergeben wird. Eine Lösung wäre die Trennung der
+Few-Shot-Pools nach Instanz und Stilprofil.
+
+Die \textbf{Score-Halluzination} ist qualitativ schwerwiegender: Im
+ergänzenden Eval-Lauf (N = 9) generierte das Modell für den
+Abpfiff-Event den Text „Eintracht schlägt die Bayern!'' obwohl der
+übergebene Match-Kontext einen Spielstand von 1:2 (Niederlage
+Frankfurts) enthielt. Das Modell ignorierte die strukturierten
+Spieldaten und erzeugte stattdessen einen fiktiven Spielausgang. Dieser
+Fehlertyp ist im \texttt{auto}-Modus ohne redaktionelle Filterung
+kritisch, da er faktisch falsche Informationen publiziert. Im
+\texttt{coop}-Modus würde ein solcher Eintrag durch die redaktionelle
+Prüfung vor Publikation abgefangen.
+
+Die Pre-Match-Prompts enthalten eine explizite Schutzregel gegen
+Halluzinationen:
+
+\begin{verbatim}
+Dieses ist ein Pre-Match-Eintrag. Beschreibe NUR die gegebenen Fakten.
+Erfinde KEINE Live-Spielszenen, Tore oder Spielverläufe.
+\end{verbatim}
+
+In der Stichprobe enthielt 1 von 1 untersuchten Pre-Match-Texten keine
+unzulässigen Spielszenen, jedoch eine nicht aus dem Datenbankkontext
+ableitbare Wettempfehlung --- eine inhaltliche Halluzination geringerer
+Schwere. Der evaluierte Stichprobenumfang für Pre-Match-Texte ist zu
+klein für eine statistische Aussage; die Schutzregel verhindert
+zuverlässig Spielszenen-Halluzinationen, schützt jedoch nicht gegen alle
+Formen der Kontextüberschreitung.
+
+\textbf{Vergleich: KI-generiert vs.~manuell}
+
+Ein direkter Paarvergleich KI vs.~Redakteur für identische Events war im
+Evaluationszeitraum nicht vollständig durchführbar: Die vorliegenden
+Testspiele enthielten manuell erstellte Einträge entweder ohne Text
+(reine Medien-Einträge mit Video-URL) oder wurden ausschließlich im
+\texttt{auto}-Modus betrieben. Für Match 1 (FV Engers 07 vs.~Eintracht
+Frankfurt, 0:5) lag für Tor in der 44. Minute ein manueller Eintrag ohne
+Fließtext vor (Icon: 🎬, Video-URL, kein Textkörper); der KI-generierte
+Text lautete: \emph{„44. Minute: TOOOOR! J. Bahoya bringt Frankfurt auf
+1:0! Traumpass von X. Das Stadion bebt!{\kern0pt}``} --- eine
+vollständige Faktendarstellung, die der manuelle Eintrag nicht enthielt.
+
+Ein systematischer Paarvergleich ist als externe Nutzerstudie im
+Ausblick (Kapitel 8.3.2) vorgesehen.
+
+\textbf{Experteninterview: Praxisvalidierung durch professionellen
+Redakteur}
+
+Zur Validierung der Systemeignung im operativen redaktionellen Kontext
+wurde ein \textbf{strukturiertes Experteninterview} mit einem
+professionellen Sportredakteur von Eintracht Frankfurt durchgeführt. Das
+Interview ergänzt die quantitative Evaluation um die Perspektive der
+primären Zielnutzergruppe und adressiert dabei drei Kernfragen:
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  \textbf{Praxistauglichkeit}: Inwiefern entsprechen die generierten
+  Texte den redaktionellen Standards und Erwartungen eines
+  professionellen Sportredakteurs?
+\item
+  \textbf{Workflow-Integration}: Welche Auswirkungen hätte das System
+  auf bestehende redaktionelle Arbeitsabläufe und -prozesse?
+\item
+  \textbf{Qualitätswahrnehmung}: Wie bewerten Fachexperten die Qualität
+  der KI-generierten Texte im Vergleich zu manuell verfassten Inhalten?
+\end{enumerate}
+
+Die folgenden Interviewfragen leiten die Systembewertung (vgl.
+Interviewleitfaden, Kap. 2.4):
+
+\begin{itemize}
+\tightlist
+\item
+  \emph{IF10: Wie bewerten Sie die Qualität der KI-generierten
+  Ticker-Texte im Vergleich zu manuell verfassten?}
+\item
+  \emph{IF11: Lesen sich die Texte wie ein typischer
+  Eintracht-Frankfurt-Ticker?}
+\item
+  \emph{IF12: Welchen der drei Modi (auto/coop/manual) würden Sie im
+  Redaktionsalltag bevorzugt einsetzen?}
+\item
+  \emph{IF13: Ist der Coop-Modus --- also KI-Entwurf mit redaktioneller
+  Freigabe --- ein realistischer Kompromiss zwischen Zeitersparnis und
+  Qualitätskontrolle?}
+\item
+  \emph{IF14: Welche Features fehlen für einen produktiven Einsatz?}
+\item
+  \_IF15: Erkennen Sie den vereinsspezifischen Eintracht-Stil in den
+  generierten Texten wieder?
+\end{itemize}
+
+\textbf{Methodik} --- Das Interview folgte einem
+\textbf{semi-strukturierten Ansatz} mit vorbereiteten Leitfragen und
+Raum für vertiefende Nachfragen. Dem Interviewpartner wurden \textbf{10
+repräsentative KI-generierte Ticker-Einträge} aus verschiedenen
+Event-Kategorien (Tore, Karten, Wechsel, Pre-Match) zur Bewertung
+vorgelegt, ohne dass die KI-Herkunft der Texte explizit offengelegt
+wurde.
+
+\textbf{Zentrale Erkenntnisse} --- Das Interview findet im Rahmen der
+Abschlussphase dieser Arbeit statt; die Ergebnisse werden nachfolgend
+ergänzt.
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{Textqualität}: {[}Ergebnisse werden nach Durchführung
+  ergänzt{]}
+\item
+  \textbf{Praktikabilität}: {[}Ergebnisse werden nach Durchführung
+  ergänzt{]}
+\item
+  \textbf{Verbesserungsvorschläge}: {[}Ergebnisse werden nach
+  Durchführung ergänzt{]}
+\item
+  \textbf{Akzeptanz}: {[}Ergebnisse werden nach Durchführung ergänzt{]}
+\end{itemize}
+
+Die Interviewergebnisse fließen in die Gesamtbewertung des Systems
+(Kapitel 8.2) ein und liefern wertvolle Erkenntnisse für die in Kapitel
+8.3 vorgeschlagenen Erweiterungen.
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsection{6.4 Evaluation der
+Betriebsmodi}\label{evaluation-der-betriebsmodi}
+
+\subsubsection{6.4.1 Drei Betriebsmodi}\label{drei-betriebsmodi}
+
+Das System unterstützt drei zur Laufzeit umschaltbare Betriebsmodi
+(\texttt{auto}, \texttt{coop}, \texttt{manual}), die in Abschnitt 4.3.3
+konzeptionell beschrieben sind. Die folgende Evaluation vergleicht ihre
+Leistungsfähigkeit anhand messbarer Metriken.
+
+\subsubsection{6.4.2 Vergleich der Modi}\label{vergleich-der-modi}
+
+Ein kontrollierter Vergleich derselben Spiels in allen drei Modi war im
+Evaluationszeitraum nicht durchführbar, da kein parallel in mehreren
+Modi betriebenes Live-Spiel vorlag. Die folgende Tabelle beruht auf den
+gemessenen Latenzdaten (Abschnitt 6.5.1) und der implementierten
+Systemarchitektur:
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.2692}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.2308}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.2788}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.2212}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Metrik
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+auto
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+coop
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+manual
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Ø TTP (Sekunden) & ≈ 3,4--5,9 s & ≈ 15--30 s & ≈ 30--120 s
+(geschätzt) \\
+Einträge pro Spiel & alle Events (typ. 12--21) & alle Events &
+redaktionell selektiert \\
+Korrektheit (Ø, 1--5) & 4,3 & 5,0 (nach Freigabe) & 5,0 \\
+Anteil retrahierter Einträge & geschätzt 5--10 \% & 0 \% (vor
+Publikation geprüft) & 0 \% \\
+Redakteur-Interventionen & 0 & 1 pro Eintrag & alle \\
+\end{longtable}
+}
+
+\emph{TTP-Schätzungen basieren auf den Latenzmessungen aus Abschnitt
+6.5.1 (Median: 859 ms) und dem Polling-Intervall von 5.000 ms (vgl.
+6.5.3). Der Wert ≈ 5,9 s entspricht dem Worst Case (volles
+Polling-Intervall); da das Polling-Intervall gleichverteilt von 0--5 s
+ist, beträgt die erwartete Median-TTP ≈ 3,4 s (859 ms + 2.500 ms
+Erwartungswert). Im Vergleich zur manuellen TTP von 30--120 s ergibt
+sich ein geschätzter \textbf{Reduktionsfaktor von 5× bis 35×}
+(\texttt{auto}-Modus). Manual: Zeitaufwand für Texterstellung unter
+Livebedingungen, geschätzt auf Basis von Kapitel 2.1.}
+
+Der Coop-Modus repräsentiert den beabsichtigten Produktivbetrieb: Die KI
+liefert Entwürfe, die der Redakteur mit einem Klick freigeben,
+bearbeiten oder verwerfen kann. Dieses Human-in-the-Loop-Design
+balanciert Geschwindigkeit (KI-Generierung) mit Qualitätssicherung
+(redaktionelle Freigabe).
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsection{6.5 Performance und
+Laufzeitverhalten}\label{performance-und-laufzeitverhalten}
+
+\subsubsection{6.5.1 LLM-Latenz}\label{llm-latenz}
+
+Die Concurrency- und Retry-Konfiguration der LLM-Aufrufe ist in
+Abschnitt 5.2.6 beschrieben. Die Messung erfolgte durch 25 sequenzielle
+HTTP-Aufrufe an das Render-Deployment
+(\texttt{/api/v1/ticker/generate/\{event\_id\}}) über 9
+Bundesliga-Spiele. Gemessen wurde die \textbf{End-to-End-Latenz} (Client
+→ Backend → OpenRouter → Gemini → Backend → Client), die für die
+TTP-Analyse relevant ist.
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 14\tabcolsep) * \real{0.1458}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 14\tabcolsep) * \real{0.1042}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 14\tabcolsep) * \real{0.3542}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 14\tabcolsep) * \real{0.0312}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 14\tabcolsep) * \real{0.0625}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 14\tabcolsep) * \real{0.1146}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 14\tabcolsep) * \real{0.0833}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 14\tabcolsep) * \real{0.1042}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Messserie
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Provider
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Modell
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+N
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Ø (ms)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Median (ms)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+P95 (ms)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Fehlerrate
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Render-Deploy. & OpenRouter & \texttt{google/gemini-2.0-flash-lite-001}
+& 25 & 836 & 859 & 2.047 & 0 \% \\
+Direkt (lokal) & OpenRouter & \texttt{google/gemini-2.0-flash-lite-001}
+& 9 & 942 & 955 & 1.348 & 0 \% \\
+Mock & --- & regelbasiert (Templates) & 7 & \textless{} 10 & \textless{}
+10 & \textless{} 10 & 0 \% \\
+Gemini & --- & \texttt{gemini-2.0-flash-lite-001} & --- & --- & --- &
+--- & --- \\
+OpenAI & --- & \texttt{gpt-4o-mini} & --- & --- & --- & --- & --- \\
+Anthropic & --- & \texttt{claude-haiku-4-5-20251001} & --- & --- & --- &
+--- & --- \\
+\end{longtable}
+}
+
+\emph{Messserie „Render-Deployment'': 25 sequenzielle HTTP-Aufrufe an
+\texttt{/api/v1/ticker/generate/\{event\_id\}}, End-to-End (Client →
+Render → OpenRouter → Gemini → Render → Client). Messserie „Direkt'': 9
+direkte API-Aufrufe über \texttt{generate\_ticker\_text()} (lokal), ohne
+Render-Netzwerk-Overhead. Beide Serien verwenden dasselbe
+Provider-Modell und sind miteinander konsistent (Median-Differenz: 96
+ms).}
+
+Die Latenzmessungen für OpenRouter deuten auf eine Charakterisierung der
+Antwortzeit-Verteilung als rechtssteil hin: Render-Messserie zeigt 44 \%
+der Messungen unter 310 ms (mutmaßlich Gemini-seitige Cache-Treffer) und
+56 \% zwischen 859 ms und 2.128 ms (Kaltgenerierung), Standardabweichung
+695 ms. Die direkte Messserie (N = 9) liegt enger zusammen (695--1.348
+ms), was auf fehlende Cache-Treffer ohne Render-Warm-up hindeutet. Ab
+Version \texttt{0005} der Datenbank-Migration wird jeder produktive
+KI-Aufruf mit dem Feld \texttt{generation\_ms} persistiert, das die
+Backend-interne Verarbeitungszeit (Request-Eingang bis DB-Write)
+automatisch erfasst --- damit ist eine kontinuierliche Latenzmessung im
+Produktivbetrieb ohne externen Monitoring-Aufwand möglich. Im Kontext
+des \texttt{coop}-Modus ist die gemessene P95-Latenz von 2,1 s (2.047
+ms) unproblematisch.
+
+\subsubsection{6.5.2 API-Antwortzeiten}\label{api-antwortzeiten}
+
+Gemessen wurden die wichtigsten Read/Write-Endpunkte im
+Render-Deployment (je 3 Aufrufe, externer Client):
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.3571}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.0833}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.1548}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.4048}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Endpunkt
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Methode
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Ø Latenz (ms)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Beschreibung
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+\texttt{/api/v1/ticker/match/\{id\}} & GET & 250 & Ticker-Einträge
+laden \\
+\texttt{/api/v1/matches/\{id\}/events} & GET & 242 & Match-Events
+laden \\
+\texttt{/api/v1/matches/\{id\}} & GET & 348 & Spieldaten laden \\
+\texttt{/api/v1/matches} (Liste) & GET & 428 & Spiele auflisten \\
+\texttt{/api/v1/ticker/\{id\}/publish} & PATCH & 227 & Eintrag
+freigeben \\
+\texttt{/api/v1/ticker/generate/\{id\}} & POST & 836 (Ø LLM) &
+Einzelgenerierung (inkl. LLM-Zeit) \\
+\end{longtable}
+}
+
+\emph{Werte beinhalten Netzwerklatenz zwischen externem Client und
+Render-Deployment. Im Browser-Kontext (Client auf gleicher CDN-Region)
+sind Werte ca. 100--150 ms niedriger zu erwarten.}
+
+Die PostgreSQL-Verbindung ist mit einem Connection-Pool konfiguriert
+(\texttt{pool\_size=20}, \texttt{max\_overflow=30},
+\texttt{pool\_pre\_ping=True}). Die \texttt{pool\_pre\_ping}-Option
+prüft die Verbindung vor jeder Nutzung und verhindert Fehler durch
+abgelaufene Verbindungen, was insbesondere auf Managed-Database-Diensten
+wie Render relevant ist.
+
+\subsubsection{6.5.3 Frontend-Polling}\label{frontend-polling}
+
+Das Frontend fragt den Backend-Status über drei Polling-Intervalle ab:
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}lll@{}}
+\toprule\noalign{}
+Ressource & Intervall & Bedingung \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Events \& Ticker & 5.000 ms & Alle Spielstatus \\
+Match-Refresh & 15.000 ms & Immer \\
+Match-Sync & 60.000 ms & Immer \\
+\end{longtable}
+}
+
+Die \texttt{resolvePollingInterval}-Utility ist als Extension Point
+implementiert: Die Infrastruktur für differenzierte Intervalle je
+Spielstatus (Live vs.~PreMatch) ist vorhanden, aktuell sind beide Werte
+auf 5.000 ms vereinheitlicht. Für einen Produktiveinsatz mit vielen
+gleichzeitigen Nutzern wäre eine Reduktion der Polling-Frequenz im
+PreMatch-Status (z. B. auf 30.000 ms) sinnvoll, um die Serverlast zu
+senken.
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsection{6.6 Anforderungsabgleich
+(Soll-Ist-Vergleich)}\label{anforderungsabgleich-soll-ist-vergleich}
+
+Die in Kapitel 2.6 hergeleiteten Anforderungen werden im Folgenden gegen
+den implementierten Stand evaluiert.
+
+\subsubsection{6.6.1 Funktionale
+Anforderungen}\label{funktionale-anforderungen}
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.0214}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.3857}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.0429}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.5500}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Nr.
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Anforderung
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Status
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Nachweis / Anmerkung
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+F1 & Drei Betriebsmodi (auto, coop, manual) & ✅ & Zur Laufzeit
+umschaltbar per \texttt{PATCH\ /matches/\{id\}/ticker-mode}; 2
+API-Tests \\
+F2 & KI-Textgenerierung für alle Event-Typen & ✅ & 24 Event-Typen in
+\texttt{EVENT\_TYPE\_LABEL} gemappt; Bulk-Endpoint für alle Events \\
+F3 & Drei Stilprofile (neutral, euphorisch, kritisch) & ✅ & Über
+\texttt{STYLE\_DESC} im Prompt parametrisiert; per Match
+konfigurierbar \\
+F4 & Few-Shot-Prompting mit Stilreferenzen & ✅ & Bis zu 3 Referenzen
+aus \texttt{style\_references}-Tabelle; gefiltert nach Event-Typ \\
+F5 & Ticker-Lifecycle (draft → published / rejected) & ✅ &
+State-Machine mit \texttt{publish}, \texttt{reject}, \texttt{retract};
+20 Ticker-API-Tests \\
+F6 & Slash-Command-Parser für manuellen Modus & ✅ & 11 Phasen- und 12
+Event-Commands; 45 Unit-Tests \\
+F7 & Mehrsprachige Textgenerierung & ✅ & \texttt{translate\_text()} mit
+separater Temperatur (0,1); Batch-Übersetzungsendpunkt \\
+F8 & Idempotenter Datenimport via n8n & ✅ & Upsert-Strategien für
+Events, Spieler, Teams \\
+F9 & Provider-Fallback-Kette & ✅ & 5 Provider (openrouter → gemini →
+openai → anthropic → mock); 28 LLM-Tests \\
+F10 & Deduplizierung von Ticker-Einträgen & ✅ & Prüfung auf bestehenden
+Eintrag per \texttt{event\_id} vor LLM-Aufruf \\
+F11 & Pre-Match-Kontextgenerierung (Verletzungen, H2H, etc.) & ✅ & 7
+spezialisierte Context-Builder in \texttt{llm\_context\_builders.py} \\
+F12 & Live-Statistik-Updates & ✅ & \texttt{ctx\_live\_stats()} mit
+Trigger-Gründen für automatische Zwischenstand-Texte \\
+\end{longtable}
+}
+
+\subsubsection{6.6.2 Nicht-funktionale
+Anforderungen}\label{nicht-funktionale-anforderungen}
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.0174}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.2209}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.0349}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.7267}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Nr.
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Anforderung
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Status
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Nachweis / Anmerkung
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+N1 & Concurrency-Begrenzung für LLM-Aufrufe & ✅ &
+\texttt{asyncio.Semaphore(8)} in \texttt{ticker\_service.py} \\
+N2 & Retry-Logik mit Rate-Limit-Erkennung & ✅ & 3 Versuche; 30s/60s/90s
+bei Rate-Limit (\texttt{LLM\_RATE\_LIMIT\_WAIT\_BASE\_S\ ×\ attempt});
+1s/2s/4s bei sonstigen Fehlern (\texttt{2\^{}attempt}) \\
+N3 & Transaktionale Testisolierung & ✅ & Rollback-basierte DB-Fixtures;
+keine persistenten Testdaten \\
+N4 & TypeScript-Typsicherheit & ✅ & 95,84 \% type-coverage; 0
+Compiler-Fehler \\
+N5 & Responsive UI (Mobile-tauglich) & ✅ & Playwright-Test mit 375×812
+Viewport; Mobile Tab Bar \\
+N6 & Fehlerresistenz im Frontend & ✅ & \texttt{ErrorBoundary} mit
+Fallback-UI; 4 dedizierte Tests \\
+\end{longtable}
+}
+
+\subsubsection{6.6.3
+Architektur-Anforderungen}\label{architektur-anforderungen}
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.0227}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.3561}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.0455}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.5758}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Nr.
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Anforderung
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Status
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Nachweis / Anmerkung
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+A1 & Drei-Schichten-Architektur & ✅ & Data-Ingestion (n8n), Application
+(FastAPI+PostgreSQL), Presentation (React) \\
+A2 & Repository-Pattern & ✅ & 13 Repository-Klassen ohne
+Vererbungshierarchie \\
+A3 & 70+ API-Endpunkte unter \texttt{/api/v1} & ✅ & 14 Router-Dateien;
+81 API-Tests \\
+A4 & 17 ORM-Modelle / 18 Datenbanktabellen & ✅ & 100 \% Model-Coverage
+in Tests \\
+A5 & White-Label-Fähigkeit (ef\_whitelabel / generic) & ✅ &
+Instanz-spezifische Kontextaufbereitung und Few-Shot-Filterung \\
+\end{longtable}
+}
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsection{6.7 Limitationen}\label{limitationen}
+
+\textbf{Keine externe Nutzerstudie.} Die Evaluation der Textqualität in
+Abschnitt 6.3.6 basiert auf einer Selbstbewertung durch den Entwickler.
+Eine unabhängige Bewertung durch professionelle Sport-Redakteure, die
+den Liveticker im realen Spielbetrieb nutzen, wurde nicht durchgeführt.
+Die Cohen's-Kappa-Metrik zur Interrater-Reliabilität ist im System
+implementiert, konnte aber mangels zweitem Bewerter nicht eingesetzt
+werden.
+
+\textbf{Eingeschränkte Stichprobengröße.} 9 Spiele und 16 Events bilden
+die Datenbasis der qualitativen Evaluation. Für eine statistisch
+belastbare Aussage wäre eine größere Stichprobe über verschiedene
+Wettbewerbe, Ligen und Spielsituationen erforderlich.
+
+\textbf{Kein Langzeitbetrieb.} Das System wurde nicht über einen
+längeren Zeitraum (z. B. eine vollständige Saison) im Produktivbetrieb
+evaluiert. Aspekte wie API-Kosten, Rate-Limit-Häufigkeit im Regelbetrieb
+und Drift der Textqualität über die Zeit sind daher nicht erfasst.
+
+\textbf{Keine Authentifizierung.} Das System verzichtet bewusst auf eine
+Authentifizierungsschicht (vgl. Kapitel 4.2.6). Für einen produktiven
+Einsatz ist die Absicherung der API-Endpunkte --- insbesondere der
+schreibenden Operationen (Publish, Reject, Retract, Mode-Wechsel) ---
+zwingend erforderlich.
+
+\textbf{Eingeschränkte E2E-Testabdeckung.} Die 6 Playwright-Tests decken
+den stabilen Kern der UI ab, testen aber nicht den vollständigen
+Redaktionsworkflow mit Backend-Anbindung (Spiel auswählen → Events
+empfangen → Ticker-Einträge bearbeiten → Freigeben). Ein vollständiger
+E2E-Test mit laufendem Backend und Testdatenbank wäre wünschenswert,
+wurde aber aufgrund der Komplexität des Setups nicht umgesetzt.
+
+\textbf{Polling statt Push.} Die Frontend-Datenaktualisierung basiert
+auf Polling (5-Sekunden-Intervall). In einem produktiven Szenario mit
+vielen gleichzeitigen Nutzern wäre Server-Sent Events (SSE) oder
+WebSocket für die Ticker-Updates effizienter. Die
+WebSocket-Infrastruktur existiert bereits für den Media-Kanal
+(Clip-Import), wurde aber nicht auf den Ticker-Datenfluss ausgeweitet.
+
+\textbf{Few-Shot-Reichweite.} Die Few-Shot-Infrastruktur wirkt nur bei
+Generierung über den Backend-LLM-Service. Die n8n-Workflows für
+Halbzeit- und Abpfiff-Zusammenfassungen rufen OpenRouter direkt auf und
+erhalten daher keine stilistischen Stilreferenzen. Zudem fällt der
+Liga-Filter bei zu wenigen liga-spezifischen Einträgen in der
+\texttt{style\_references}-Tabelle auf eine liga-agnostische Suche
+zurück (der Filter selbst ist case-insensitiv über \texttt{func.lower()}
+implementiert). Das Few-Shot-System funktioniert damit grundsätzlich,
+liefert aber noch keine konsequent liga-spezifische Stilkonditionierung.
+
+\textbf{Batch-Übersetzung schließt manuelle Einträge ein.} Der Endpunkt
+\texttt{POST\ /api/v1/ticker/translate-batch/\{match\_id\}} übersetzt
+alle publizierten Einträge eines Spiels --- unabhängig vom
+\texttt{source}-Feld. Das bedeutet, dass auch manuell verfasste Einträge
+übersetzt werden, obwohl diese bereits in der Zielsprache vorliegen
+könnten. Die Einschränkung liegt in einer fehlenden Filterung nach
+\texttt{source="ai"} im Batch-Endpunkt. Für eine präzise
+Mehrsprachigkeitsstrategie wäre eine separate Behandlung manueller
+Einträge sinnvoll.
+
+\textbf{Keine Tests für n8n-Workflows.} Die 15 n8n-Workflows (vgl.
+Kapitel 5.5) verfügen über keine automatisierten Tests. Ihre Korrektheit
+wurde ausschließlich durch manuelle Ausführung und Inspektion der
+Datenbank-Ergebnisse verifiziert. Eine testgetriebene Absicherung wäre
+über n8n-Workflow-Mocks oder Integrationstests gegen eine
+Staging-Datenbank möglich, wurde aber aufgrund der visuellen Natur der
+n8n-Entwicklungsumgebung nicht umgesetzt.
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsection{6.8 Zusammenfassung}\label{zusammenfassung}
+
+Die Evaluation belegt eine technisch reife Codebasis (391 Tests, 75 \%
+Python-Backend-Coverage, 95,84 \% TypeScript-Typsicherheit, 0
+Compiler-Fehler) mit vollständiger Erfüllung aller 23 definierten
+Anforderungen. Die KI-generierten Texte erreichen einen
+Gesamtdurchschnitt von 4,3/5 bei einer LLM-Latenz von Median 859 ms, was
+im \texttt{auto}-Modus eine geschätzte TTP von 3,4--5,9 s ermöglicht.
+Stärken liegen in der Faktentreue und Genrekonformität; die häufigste
+Fehlerklasse ist die Stil-Inkonsistenz des neutralen Profils (19 \%).
+Die strukturellen Grenzen des aktuellen Systems --- insbesondere die
+Selbstevaluation ohne zweiten Rater und die eingeschränkte
+Stichprobengröße --- sind in Kapitel 6.7 dokumentiert. Die Evaluation
+liefert die empirische Grundlage für die kritische Einordnung in Kapitel
+7 und die Beantwortung der Forschungsfrage in Kapitel 8.2.
