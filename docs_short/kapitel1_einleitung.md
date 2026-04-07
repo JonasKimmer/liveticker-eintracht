@@ -6,9 +6,9 @@
 
 Die vorliegende Arbeit identifiziert drei Problemdimensionen, die den Einsatz neuer technologischer Lösungen notwendig machen:
 
-- Der **operative Zeitdruck** bei der manuellen Texterstellung.
-- Die Herausforderungen der **Internationalisierung** durch Mehrsprachigkeit.
-- Der **strukturelle Wandel** der Vereine zu eigenständigen Medienproduzenten mit White-Label-Anforderungen.
+- Der **operative Zeitdruck** bei der manuellen Texterstellung: Redakteure müssen Spielereignisse in Echtzeit beobachten, einordnen und in stilistisch kohärente Kurztexte überführen — typischerweise innerhalb von 30 bis 120 Sekunden pro Eintrag.
+- Die Herausforderungen der **Internationalisierung** durch Mehrsprachigkeit: Profifußballvereine bedienen zunehmend internationale Fanbases; deutschsprachige Redaktionen stehen vor der Anforderung, Inhalte parallel auf Englisch oder weiteren Sprachen bereitzustellen, ohne ausreichend mehrsprachiges Redaktionspersonal vorzuhalten.
+- Der **strukturelle Wandel** der Vereine zu eigenständigen Medienproduzenten mit White-Label-Anforderungen: Vereine betreiben eigene digitale Kanäle und Medienmarken, die Redaktionswerkzeuge mit konfigurierbarem vereinsspezifischem Ton und CI-konformer Gestaltung erfordern.
 
 Diese Dimensionen werden in Kapitel 2 wissenschaftlich fundiert und in konkrete Systemanforderungen überführt.
 
@@ -28,7 +28,7 @@ Aus der in Kapitel 1.1 entwickelten Zielsetzung ergibt sich folgende Forschungsf
 
 > Inwiefern reduziert ein hybrides KI-gestütztes Redaktionssystem die Time-to-Publish bei der Liveticker-Erstellung im Profifußball im Vergleich zur rein manuellen Erstellung, ohne die journalistische Qualität hinsichtlich Korrektheit, Tonalität und Verständlichkeit zu beeinträchtigen?
 
-Die Frage ist bewusst zweiteilig formuliert: Sie erfasst einerseits eine **zeitliche Dimension** — die Reduktion der Publikationslatenz — und andererseits eine **qualitative Dimension**, die sicherstellt, dass Geschwindigkeit nicht auf Kosten journalistischer Standards erzielt wird. Beide Dimensionen sind für die Praxis gleichermaßen relevant, da Schnelligkeit zwar als oberstes Qualitätskriterium gilt (Beils 2023, S. 57), sprachliche und inhaltliche Korrektheit jedoch selbst unter hohem Zeitdruck nicht verhandelbar sind (Bluhm & Schäfer 2023, S. 35). Die Operationalisierung beider Dimensionen wird in Kapitel 1.3 und 6 beschrieben.
+Die Frage ist bewusst zweiteilig formuliert: Sie erfasst einerseits eine **zeitliche Dimension** — die Reduktion der Publikationslatenz — und andererseits eine **qualitative Dimension**, die sicherstellt, dass Geschwindigkeit nicht auf Kosten journalistischer Standards erzielt wird. Beide Dimensionen sind für die Praxis gleichermaßen relevant, da Schnelligkeit zwar als oberstes Qualitätskriterium gilt (Beils 2023, S. 57), sprachliche und inhaltliche Korrektheit jedoch selbst unter hohem Zeitdruck nicht verhandelbar sind (Bluhm & Schäfer 2023, S. 35). Die Operationalisierung beider Dimensionen wird in Kapitel 1.3 methodisch vorbereitet und in Kapitel 6 vollständig durchgeführt.
 
 ---
 
@@ -44,19 +44,13 @@ Das methodische Vorgehen gliedert sich in fünf Phasen:
 4. **Implementierung:** Umsetzung als produktionsfähige Webanwendung mit vollständiger API, browserbasiertem Frontend, automatisiertem ETL-System und Cloud-Deployment.
 5. **Evaluation:** Technische Qualitätssicherung, Evaluation der KI-Textgenerierung sowie systematischer Anforderungsabgleich.
 
-Die Evaluationsmethodik operationalisiert die Forschungsfrage entlang zweier Dimensionen: Die **zeitliche Dimension** wird über die Time-to-Publish-Metrik (TTP) gemessen, die den Zeitraum zwischen Spielereignis und Veröffentlichung des Ticker-Eintrags erfasst. Die **qualitative Dimension** wird über eine manuelle Bewertung auf den Skalen Korrektheit, Tonalität und Verständlichkeit operationalisiert, ergänzt durch ein **strukturiertes Experteninterview** mit einem professionellen Sportredakteur zur Validierung der Systemeignung im redaktionellen Arbeitskontext. Für den statistischen Vergleich stehen nicht-parametrische Verfahren (Cliff's Delta, Bootstrap-Konfidenzintervalle) bereit.
+Die Evaluationsmethodik operationalisiert die Forschungsfrage entlang zweier Dimensionen: Die **zeitliche Dimension** wird über die Time-to-Publish-Metrik (TTP) gemessen, die den Zeitraum zwischen Spielereignis und Veröffentlichung des Ticker-Eintrags erfasst. Die **qualitative Dimension** wird über eine manuelle Bewertung auf den Skalen Korrektheit, Tonalität und Verständlichkeit operationalisiert, ergänzt durch ein **strukturiertes Experteninterview** mit einem professionellen Sportredakteur zur Validierung der Systemeignung im redaktionellen Arbeitskontext. Für den statistischen Vergleich stehen nicht-parametrische Verfahren (Cliff's Delta, Bootstrap-Konfidenzintervalle) bereit; aufgrund der Stichprobengröße (n = 16) kommen diese im vorliegenden Evaluationsdesign nicht zur Anwendung, stehen jedoch für eine Folgestudie mit größerer Datenbasis zur Verfügung.
 
 ### 1.3.1 Abgrenzung
 
 Das System geht bewusst über den Umfang eines typischen akademischen Projekts hinaus und zielt auf Produktionsfähigkeit: Eine umfassende automatisierte Testsuite, ein Cloud-Deployment und die Integration realer Datenquellen dokumentieren diesen Anspruch. Diese Praxisorientierung ist durch den beruflichen Kontext des Autors motiviert: Als Mitarbeiter der **Stackwork GmbH** im IT-Bereich von Eintracht Frankfurt entstand das System in direkter Kooperation mit den fachlichen Anforderungen einer professionellen Redaktion. Das Ergebnis ist ein vollständiges, eigenständig lauffähiges Redaktionssystem, das als Cloud-Service alle Spiele der konfigurierten Wettbewerbe verarbeitet. Zusätzlich werden publizierte Inhalte über Export-Workflows an die bestehende **Stackwork Demo App** übertragen, wodurch das Projekt zwei unabhängige Zielsysteme über nahezu identische Workflows bedient. Die technischen Details der Architektur und Implementierung werden in Kapitel 4 und 5 beschrieben.
 
-Dennoch bestehen Einschränkungen, die in Kapitel 7 kritisch reflektiert werden:
-
-- Das System verzichtet im aktuellen Stand auf eine Authentifizierungsschicht.
-- Die qualitative Evaluation erfolgt durch den Entwickler selbst; ergänzt wird sie durch ein **Experteninterview mit einem professionellen Sportredakteur** von Eintracht Frankfurt.
-- Der Fokus liegt auf Fußball; eine Generalisierung auf andere Sportarten ist architektonisch vorbereitet, aber nicht evaluiert.
-- Vereinsspezifische Funktionen wie Few-Shot-Stilreferenzen, die automatische Videoeinbindung bei Toren sowie die Einbettung von Medieninhalten sind derzeit ausschließlich für die Eintracht-Frankfurt-Instanz verfügbar. Die generische Instanz generiert Texte ohne diese Erweiterungen.
-- Die System-Prompts für die KI-Textgenerierung sind im Code definiert und nicht über die Benutzeroberfläche konfigurierbar. Eine redaktionelle Anpassung erfordert derzeit einen Eingriff im Backend.
+Dennoch bestehen Einschränkungen hinsichtlich Authentifizierung, Evaluationsunabhängigkeit und thematischer Reichweite, die in Kapitel 7 kritisch reflektiert werden.
 
 ---
 
@@ -64,10 +58,11 @@ Dennoch bestehen Einschränkungen, die in Kapitel 7 kritisch reflektiert werden:
 
 Die vorliegende Arbeit gliedert sich in acht Kapitel:
 
+- **Kapitel 1 – Einleitung** *(vorliegendes Kapitel)*: Problemstellung, Forschungsfrage, methodisches Vorgehen und Aufbau der Arbeit.
 - **Kapitel 2 – Motivation und Anforderungen:** Vertiefung der drei Problemdimensionen (redaktioneller Aufwand, Mehrsprachigkeit, White-Label-Bedarf), Ableitung der Systemanforderungen am Beispiel Eintracht Frankfurt, Experteninterview-Leitfaden und formale Anforderungsdefinition.
 - **Kapitel 3 – Stand der Technik:** Large Language Models, Prompt Engineering, Natural Language Generation im Sport sowie Echtzeit-Technologien und ETL-Prozesse.
 - **Kapitel 4 – Systemkonzeption:** Dreischichtige Architektur, Datenmodell, LLM-Pipeline und Prompt-Design.
-- **Kapitel 5 – Implementierung:** Umsetzung als produktionsfähige Webanwendung mit über 70 API-Endpunkten, TypeScript-Frontend und n8n-ETL-System; ergänzt durch TypeScript-Migration, automatisierte Testsuite und kritische Würdigung.
+- **Kapitel 5 – Implementierung:** Umsetzung als produktionsfähige Webanwendung mit über 70 API-Endpunkten, TypeScript-Frontend und n8n-ETL-System; ergänzt durch vollständige TypeScript-Typisierung, automatisierte Testsuite und Cloud-Deployment.
 - **Kapitel 6 – Evaluation:** Technische Qualitätssicherung (Tests, Coverage, Typsicherheit), Evaluation der KI-Textgenerierung und systematischer Anforderungsabgleich.
 - **Kapitel 7 – Diskussion:** Einordnung in den Stand der Technik, kritische Reflexion der Limitationen und Implikationen für den Sportjournalismus.
 - **Kapitel 8 – Fazit und Ausblick:** Zusammenfassung der Erkenntnisse, Beantwortung der Forschungsfrage und Ausblick.

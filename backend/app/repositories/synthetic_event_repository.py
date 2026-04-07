@@ -45,13 +45,23 @@ class SyntheticEventRepository:
         )
 
     def get_injuries(self, match_id: int) -> list[SyntheticEvent]:
-        """Alle Pre-Match-Verletzungseinträge für ein Spiel."""
-        return (
-            self.db.query(SyntheticEvent)
+        """Neueste Pre-Match-Verletzungseinträge pro type (dedupliziert)."""
+        from sqlalchemy import func
+        subq = (
+            self.db.query(
+                SyntheticEvent.type,
+                func.max(SyntheticEvent.id).label("max_id"),
+            )
             .filter(
                 SyntheticEvent.match_id == match_id,
                 SyntheticEvent.type.like("pre_match_injuries%"),
             )
+            .group_by(SyntheticEvent.type)
+            .subquery()
+        )
+        return (
+            self.db.query(SyntheticEvent)
+            .join(subq, SyntheticEvent.id == subq.c.max_id)
             .all()
         )
 

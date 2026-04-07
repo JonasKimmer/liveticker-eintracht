@@ -28,27 +28,35 @@ Die Arbeit leistet drei Beiträge zum aktuellen Forschungsstand:
 
 ## 7.2 Kritische Reflexion
 
-Die in Kapitel 6.12 dokumentierten Limitationen werden im Folgenden hinsichtlich ihrer Implikationen eingeordnet.
+Die in Kapitel 6.7 dokumentierten Limitationen werden im Folgenden hinsichtlich ihrer Implikationen eingeordnet.
 
 ### 7.2.1 Methodische Einordnung
 
-Die zentrale methodische Einschränkung betrifft die Selbstbewertung der Textqualität (vgl. Kapitel 6.12.1). Im Design Science Research ist die Evaluation durch den Entwickler ein verbreitetes Vorgehen bei initialen Artefaktiterationen (Hevner et al. 2004), begrenzt jedoch die externe Validität der qualitativen Ergebnisse. Die implementierte Cohen's-Kappa-Metrik ist bewusst als Infrastruktur für eine Folgestudie mit externen Ratern angelegt.
+Die zentrale methodische Einschränkung betrifft die Selbstbewertung der Textqualität (vgl. Kapitel 6.7, „Keine externe Nutzerstudie"). Im Design Science Research ist die Evaluation durch den Entwickler ein verbreitetes Vorgehen bei initialen Artefaktiterationen (Hevner et al. 2004), begrenzt jedoch die externe Validität der qualitativen Ergebnisse. Die implementierte Cohen's-Kappa-Metrik ist bewusst als Infrastruktur für eine Folgestudie mit externen Ratern angelegt.
 
-Die eingeschränkte Stichprobengröße (vgl. Kapitel 6.12.2) relativiert die Generalisierbarkeit der quantitativen Ergebnisse. Insbesondere Randsituationen — torloses Unentschieden, Elfmeterschießen, Spielabbrüche — sind in der Datenbasis vermutlich unterrepräsentiert. Die Bulk-Evaluationsinfrastruktur ermöglicht jedoch eine systematische Erweiterung der Datenbasis ohne Codeänderung.
+Die eingeschränkte Stichprobengröße (vgl. Kapitel 6.7, „Eingeschränkte Stichprobengröße") relativiert die Generalisierbarkeit der quantitativen Ergebnisse. Insbesondere Randsituationen — torloses Unentschieden, Elfmeterschießen, Spielabbrüche — sind in der Datenbasis vermutlich unterrepräsentiert. Die Bulk-Evaluationsinfrastruktur ermöglicht jedoch eine systematische Erweiterung der Datenbasis ohne Codeänderung.
 
 ### 7.2.2 Technische Einordnung
 
-Das Polling-Modell (vgl. Kapitel 6.12.6) stellt für den Einzelbetrieb keine Einschränkung dar, würde aber bei steigender Nutzerzahl (>50 gleichzeitige Clients) zu einer relevanten Serverlast führen. Die bestehende WebSocket-Infrastruktur für den Media-Kanal zeigt, dass eine Umstellung auf Server-Sent Events für den Ticker-Datenfluss technisch machbar ist.
+Das Polling-Modell (vgl. Kapitel 6.7, „Polling statt Push") stellt für den Einzelbetrieb keine Einschränkung dar, würde aber bei steigender Nutzerzahl (>50 gleichzeitige Clients) zu einer relevanten Serverlast führen. Die bestehende WebSocket-Infrastruktur für den Media-Kanal zeigt, dass eine Umstellung auf Server-Sent Events für den Ticker-Datenfluss technisch machbar ist.
 
-Die fehlende Authentifizierung (vgl. Kapitel 6.12.4) ist im Kontext eines internen Redaktionswerkzeugs vertretbar, schließt aber einen offenen Mehrbenutzerbetrieb ohne Netzwerkabsicherung aus. Die Architektur ist durch die saubere Middleware-Schichtung (FastAPI Dependencies) für eine nachträgliche JWT-Integration vorbereitet.
+Die fehlende Authentifizierung (vgl. Kapitel 6.7, „Keine Authentifizierung") ist im Kontext eines internen Redaktionswerkzeugs vertretbar, schließt aber einen offenen Mehrbenutzerbetrieb ohne Netzwerkabsicherung aus. Die Architektur ist durch die saubere Middleware-Schichtung (FastAPI Dependencies) für eine nachträgliche JWT-Integration vorbereitet.
 
-Die 15 n8n-Workflows (vgl. Kapitel 6.12.8) stellen den größten nicht automatisiert getesteten Systemteil dar. Da sie die gesamte Datenversorgung des Systems verantworten, wäre eine Absicherung durch Integrationstests gegen eine Staging-Datenbank für den Produktivbetrieb prioritär.
+Die 15 n8n-Workflows (vgl. Kapitel 6.7, „Keine Tests für n8n-Workflows") stellen den größten nicht automatisiert getesteten Systemteil dar. Da sie die gesamte Datenversorgung des Systems verantworten, wäre eine Absicherung durch Integrationstests gegen eine Staging-Datenbank für den Produktivbetrieb prioritär.
+
+Die Provider-Auswahl im LLM-Service ist als schlüsselbasierte Priorisierung implementiert, nicht als konfigurierbare Laufzeit-Strategie. Für einen Produktivbetrieb mit mehreren gleichzeitigen Spielen wäre ein expliziter Konfigurationsmechanismus pro Spiel (z. B. ein Datenbankfeld) robuster.
+
+Der `useAutoPublisher`-Hook im Frontend enthält eine semantische Doppelung: Im Auto-Modus setzt n8n über `auto_publish=True` den Status bereits beim Generieren; der Hook fängt Residualfälle auf. Diese Zweispurigkeit entstand durch inkrementelle Entwicklung und könnte auf eine definitive Strategie konsolidiert werden.
+
+Die WebSocket-Verbindung existiert als In-Memory-Singleton pro Prozess. Bei einem Multi-Prozess-Deployment (mehrere Uvicorn-Worker hinter einem Load-Balancer) würden Medien-Updates nur Clients des jeweiligen Workers erreichen; eine Redis-Pub/Sub-Erweiterung wäre die natürliche Skalierungsstufe.
+
+Der `strict`-Modus in `tsconfig.json` ist derzeit deaktiviert, um die inkrementelle TypeScript-Migration nicht zu blockieren. Eine schrittweise Aktivierung von `strictNullChecks` und `noImplicitAny` ist der naheliegende Folgeschritt zur weiteren Härtung der Codebasis.
 
 ### 7.2.3 Inhaltliche Reflexion
 
 Die in Kapitel 2.5 hergeleiteten linguistischen Anforderungen an Liveticker — Ellipsen, konzeptionelle Mündlichkeit, Graphostilistik (z. B. „TOOOOR!") — stellen besondere Anforderungen an die Prompt-Gestaltung. Die Erfahrung zeigt, dass LLMs dazu neigen, in einem formelleren Register zu schreiben als es das Genre Liveticker erfordert. Die Few-Shot-Referenzen aus der `style_references`-Tabelle sind das primäre Mittel, um diese stilistische Lücke zu schließen.
 
-Die Evaluationsergebnisse (Kapitel 6.8) zeigen, dass die Few-Shot-Referenzen das Format zuverlässig konditionieren — Minutenangaben, TOOOOR-Konvention und Textkürze werden konsistent übernommen. Die stilistische Lücke ist damit teilweise geschlossen: Faktentreue und Verständlichkeit profitieren von der strukturierten Kontextübergabe, während Tonalität als schwächste Dimension verbleibt. Die häufigste Fehlerklasse — Stil-Inkonsistenz (vgl. Tabelle 6.8.4) — tritt gerade dort auf, wo euphorische Few-Shot-Muster in den neutralen Stil bluten. Eine Trennung der Referenz-Pools nach Stilprofil wäre die naheliegende Korrektur.
+Die Evaluationsergebnisse (Abschnitt 6.3.6) zeigen, dass die Few-Shot-Referenzen das Format zuverlässig konditionieren — Minutenangaben, TOOOOR-Konvention und Textkürze werden konsistent übernommen. Die stilistische Lücke ist damit teilweise geschlossen: Faktentreue und Verständlichkeit profitieren von der strukturierten Kontextübergabe, während Tonalität als schwächste Dimension verbleibt. Die häufigste Fehlerklasse — Stil-Inkonsistenz (vgl. Fehlerklassen-Tabelle in Abschnitt 6.3.6) — tritt gerade dort auf, wo euphorische Few-Shot-Muster in den neutralen Stil bluten. Eine Trennung der Referenz-Pools nach Stilprofil wäre die naheliegende Korrektur.
 
 Der in Kapitel 3.1 beschriebene Halluzinationseffekt ist im Kontext von Livetickern besonders kritisch, da fehlerhafte Fakten (falscher Torschütze, falsches Ergebnis) unmittelbar die Glaubwürdigkeit zerstören. Die explizite Schutzregel für Pre-Match-Prompts und die niedrige Temperatur (vgl. Abschnitt 7.4.2) sind Gegenmaßnahmen, deren Wirksamkeit jedoch nur im `coop`-Modus durch die redaktionelle Kontrolle vollständig abgesichert ist. Im `auto`-Modus verbleibt ein Restrisiko fehlerhafter Veröffentlichungen.
 
@@ -56,21 +64,19 @@ Der in Kapitel 3.1 beschriebene Halluzinationseffekt ist im Kontext von Livetick
 
 ## 7.3 Diskussion der Betriebsmodi
 
-Die drei Betriebsmodi (`auto`, `coop`, `manual`) wurden in Kapitel 4.3.3 konzipiert und in Kapitel 6.9 evaluiert. Im Folgenden werden die Implikationen der Evaluationsergebnisse für den praktischen Einsatz diskutiert.
+Die drei Betriebsmodi (`auto`, `coop`, `manual`) wurden in Kapitel 4.3.3 konzipiert und in Kapitel 6.4 evaluiert. Im Folgenden werden die Implikationen der Evaluationsergebnisse für den praktischen Einsatz diskutiert.
 
 ### 7.3.1 Auto-Modus: Geschwindigkeit auf Kosten der Kontrolle
 
-Der `auto`-Modus eliminiert die menschliche Latenz vollständig — Einträge werden direkt mit Status `published` erstellt. Die Stärke dieses Modus liegt in der Geschwindigkeit (vgl. TTP-Messung in Abschnitt 6.9.2). Das Risiko besteht in unkontrollierten Halluzinationen, die ohne redaktionelle Prüfung veröffentlicht werden. Im journalistischen Kontext, in dem Glaubwürdigkeit eine zentrale Ressource darstellt (Beils 2023, S. 57), ist dieser Modus daher nur für unkritische Event-Typen (z. B. Phasenwechsel wie „Anpfiff" oder „Halbzeit") vertretbar.
+Die Stärke des `auto`-Modus liegt in der Geschwindigkeit (vgl. TTP-Messung in Abschnitt 6.4.2). Das Risiko besteht in unkontrollierten Halluzinationen, die ohne redaktionelle Prüfung veröffentlicht werden. Im journalistischen Kontext, in dem Glaubwürdigkeit eine zentrale Ressource darstellt (Beils 2023, S. 57), ist dieser Modus daher nur für unkritische Event-Typen (z. B. Phasenwechsel wie „Anpfiff" oder „Halbzeit") vertretbar.
 
 ### 7.3.2 Coop-Modus: Der intendierte Produktivbetrieb
 
-Der `coop`-Modus (vgl. 4.3.3) bildet den Kern der Arbeit ab: Das Human-in-the-Loop-Design balanciert zwei gegenläufige Anforderungen: Die kognitive Last des Textverfassens entfällt, während jeder Eintrag vor der Veröffentlichung eine redaktionelle Kontrolle durchläuft. Im Optimalfall reduziert sich die Redakteursarbeit auf einen Tastendruck (TAB zur Freigabe).
-
-Im Evaluationszeitraum wurden im Coop-Modus keine Einträge nach Freigabe retrahiert — ein Hinweis darauf, dass die redaktionelle Prüfung als Qualitätsstufe wirksam ist. Ob einzelne Entwürfe vor der Freigabe inhaltlich editiert wurden, wurde nicht systematisch erfasst; Bearbeitungen sind über das Frontend jedoch jederzeit möglich.
+Im Evaluationszeitraum wurden im Coop-Modus keine Einträge nach Freigabe zurückgezogen — ein Hinweis darauf, dass die redaktionelle Prüfung als Qualitätsstufe wirksam ist. Ob einzelne Entwürfe vor der Freigabe inhaltlich editiert wurden, wurde nicht systematisch erfasst; Bearbeitungen sind über das Frontend jedoch jederzeit möglich. Die TAB/ESC-Tastatursteuerung erweist sich als zentrales Mittel, um den Entscheidungsdurchsatz zu sichern, ohne den Redakteur visuell zu überlasten.
 
 ### 7.3.3 Manual-Modus: Status quo als Vergleichsbasis
 
-Der `manual`-Modus repräsentiert den redaktionellen Status quo und dient primär als Vergleichsbasis für die Effizienzgewinne der KI-gestützten Modi. Hier erstellt der Redakteur alle Ticker-Einträge selbst über den Slash-Command-Parser — ohne KI-Unterstützung, aber mit allen strukturellen Hilfen (Autocomplete, Formatierungsvorschau, Keyboard-Shortcuts). Die Laufzeit-Umschaltbarkeit zwischen den Modi stellt sicher, dass der `manual`-Modus jederzeit als Rückfalloption verfügbar ist — etwa bei hochkritischen Ereignissen oder bei Redakteuren, die zunächst Vertrauen in das System aufbauen möchten.
+Der `manual`-Modus dient als Vergleichsbasis und Rückfalloption — etwa bei hochkritischen Ereignissen oder bei Redakteuren, die zunächst Vertrauen in das System aufbauen möchten. Die Laufzeit-Umschaltbarkeit per API-Call stellt sicher, dass der Wechsel ohne Systemunterbrechung möglich ist.
 
 ### 7.3.4 Implikationen für die Praxis
 
@@ -87,7 +93,7 @@ Die dynamische Einbindung von bis zu drei Stilreferenzen aus der `style_referenc
 1. **Anpassbarkeit ohne Codeänderung**: Neue Stilbeispiele können über die Datenbank hinzugefügt werden, ohne den Prompt-Code zu modifizieren.
 2. **Instanzspezifik**: Die Filterung nach Event-Typ und Instanz (`ef_whitelabel` vs. `generic`) ermöglicht unterschiedliche Stilprofile für verschiedene Einsatzkontexte.
 
-Ein kontrollierter A/B-Test (mit vs. ohne Referenzen) war nicht durchführbar (vgl. Kapitel 6.7.5). Qualitativ zeigt die Evaluation konsistente Formatierungsmuster in der `ef_whitelabel`-Instanz — insbesondere bei TOOOOR-Konvention und Minutenformat. Der Effekt ist sichtbar, aber statistisch nicht isoliert messbar.
+Ein kontrollierter A/B-Test (mit vs. ohne Referenzen) war nicht durchführbar (vgl. Abschnitt 6.3.5). Qualitativ zeigt die Evaluation konsistente Formatierungsmuster in der `ef_whitelabel`-Instanz — insbesondere bei TOOOOR-Konvention und Minutenformat. Der Effekt ist sichtbar, aber statistisch nicht isoliert messbar.
 
 ### 7.4.2 Temperatur und Determinismus
 
@@ -95,7 +101,7 @@ Die gewählte Temperatur von 0,3 für die Textgenerierung und 0,1 für Übersetz
 
 ### 7.4.3 Kontext-Aufbereitung
 
-Die sieben spezialisierten Context-Builder (vgl. Abschnitt 5.2.8) strukturieren die Fakten vor der Übergabe an das LLM. Diese Vorverarbeitung reduziert die Wahrscheinlichkeit von Halluzinationen, da das Modell nicht aus unstrukturierten Rohdaten extrahieren muss, sondern bereits aufbereitete Faktenblöcke erhält. Die Wirksamkeit dieses Ansatzes zeigt sich insbesondere bei Pre-Match-Einträgen, wo die Faktengrundlage (z. B. Verletzungslisten, H2H-Statistiken) klar abgegrenzt ist.
+Die sieben spezialisierten Context-Builder (vgl. Abschnitt 5.2.6) strukturieren die Fakten vor der Übergabe an das LLM. Diese Vorverarbeitung reduziert die Wahrscheinlichkeit von Halluzinationen, da das Modell nicht aus unstrukturierten Rohdaten extrahieren muss, sondern bereits aufbereitete Faktenblöcke erhält. Die Wirksamkeit dieses Ansatzes zeigt sich insbesondere bei Pre-Match-Einträgen, wo die Faktengrundlage (z. B. Verletzungslisten, H2H-Statistiken) klar abgegrenzt ist.
 
 ---
 
@@ -111,17 +117,19 @@ Praktisch bedeutet dies, dass der kognitive Engpass der Liveticker-Produktion �
 
 Die White-Label-Architektur (`ef_whitelabel` vs. `generic`) adressiert den in Kapitel 2.3 beschriebenen strukturellen Wandel der Vereine zu eigenständigen Medienproduzenten. Ein einzelnes System kann — durch Instanzkonfiguration, Stilprofile und Few-Shot-Referenzen — verschiedene redaktionelle Stimmen bedienen, ohne separate Codebases zu erfordern. Für Vereine mit begrenzten Redaktionsressourcen senkt dies die Einstiegshürde in eine professionelle Liveticker-Berichterstattung.
 
-Die Zukunftsperspektive wird im Experteninterview (vgl. Interviewleitfaden, Kap. 2.4, Fragen F13–F14) adressiert. Die Skalierbarkeits- und White-Label-Bewertung stützt sich auf die in Kapitel 5 dokumentierte Systemarchitektur und die Deployment-Erfahrung mit der bestehenden `ef_whitelabel`-Instanz; eine externe Nutzerstudie ist in Abschnitt 8.3.2 vorgesehen.
+Die Zukunftsperspektive wird im Experteninterview (vgl. Interviewleitfaden, Block 4, Fragen IF16–IF18) adressiert. Die Skalierbarkeits- und White-Label-Bewertung stützt sich auf die in Kapitel 5 dokumentierte Systemarchitektur und die Deployment-Erfahrung mit der bestehenden `ef_whitelabel`-Instanz; eine externe Nutzerstudie ist in Abschnitt 8.3.2 vorgesehen.
 
 ### 7.5.3 Ethische Überlegungen
 
-Die automatisierte Generierung journalistischer Texte wirft die Frage der Transparenz auf: Sollten Leser wissen, ob ein Ticker-Eintrag von einem Menschen oder einer KI verfasst wurde? Das System speichert die Herkunft jedes Eintrags im Feld `source` (`"ai"`, `"manual"`), legt die Kennzeichnung gegenüber dem Endnutzer aber nicht offen. Für einen produktiven Einsatz wäre eine Kennzeichnungspflicht — etwa durch ein dezentes Label wie „KI-unterstützt" — zu diskutieren, insbesondere im Kontext der EU-KI-Verordnung (AI Act, EU 2024/1689), deren Transparenzpflichten für bestimmte KI-generierte Inhalte (Art. 50) ab August 2026 gelten.
+Die automatisierte Generierung journalistischer Texte wirft die Frage der Transparenz auf: Sollten Leser wissen, ob ein Ticker-Eintrag von einem Menschen oder einer KI verfasst wurde? Das System speichert die Herkunft jedes Eintrags im Feld `source` (`"ai"`, `"manual"`), legt die Kennzeichnung gegenüber dem Endnutzer aber nicht offen. Für einen produktiven Einsatz wäre eine Kennzeichnungspflicht — etwa durch ein dezentes Label wie „KI-unterstützt" — zu diskutieren, insbesondere im Kontext der EU-KI-Verordnung (AI Act, EU 2024/1689), deren Transparenzpflichten für KI-generierte Texte (Art. 50 Abs. 4) gemäß Art. 113 ab August 2026 gelten.
 
 ---
 
 ## 7.6 Synthese
 
 Die Diskussion der Evaluationsergebnisse entlang der vier Dimensionen — Abgrenzung zum Stand der Technik, methodische und technische Limitationen, Betriebsmodi und Prompt-Architektur — ergibt ein konsistentes Gesamtbild: Das System löst die in Kapitel 1.1 identifizierten drei Problemdimensionen (Zeitdruck, Mehrsprachigkeit, White-Label-Bedarf) durch technisch nachweisbare Mechanismen; die verbleibenden Schwächen (Stil-Inkonsistenz, fehlende Authentifizierung, eingeschränkte Stichprobengröße) sind klar lokalisiert und lösbar.
+
+Die Dimension der Prompt-Architektur (Kapitel 7.4) verdeutlicht dabei, dass die Textqualität nicht primär vom Modell abhängt, sondern von der Qualität der Kontextübergabe: Few-Shot-Referenzen konditionieren Format und Tonalität zuverlässig, während Score-Halluzinationen durch präzisere Kontextstrukturierung weiter reduziert werden können.
 
 Die zentrale Designentscheidung — der `coop`-Modus als primärer Betriebsmodus — erweist sich aus dieser Diskussion heraus als strukturell richtig: Er balanciert die Effizienzgewinne der KI mit der publizistischen Verantwortung des Redakteurs und adressiert damit den in Kapitel 1.2 formulierten Zielkonflikt zwischen Geschwindigkeit und Qualität. Die Verschiebung der Redakteursrolle von der Textproduktion zur Textkuration ist keine Umgehung journalistischer Sorgfalt, sondern ihre Neukalibrierung unter den Bedingungen der Echtzeit-Berichterstattung.
 

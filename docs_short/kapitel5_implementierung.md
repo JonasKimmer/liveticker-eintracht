@@ -8,11 +8,13 @@ Dieses Kapitel dokumentiert die konkrete Umsetzung des in Kapitel 4 konzipierten
 
 Die Implementierung folgt dem Grundsatz **„so einfach wie nötig, so modular wie sinnvoll"**: Standardpfade (CRUD, Listabfragen) sind bewusst direkt gehalten (Router → Repository), während die LLM-Generierung mit ihren Retry-, Semaphore- und Few-Shot-Mechanismen in einen dedizierten Service extrahiert ist.
 
+Die n8n-Workflows (Abschnitt 5.5) werden abweichend von der konzeptionellen Reihenfolge in Kapitel 4 nach der Frontend-Implementierung beschrieben: Die Workflows bauen auf Backend-Endpunkten auf, die bis dahin vollständig dokumentiert sind, sodass die Beschreibung der Orchestrierungslogik erst an dieser Stelle vollständig nachvollziehbar ist.
+
 ---
 
 ## 5.2 Backend-Implementierung
 
-### 5.2.1 Projektstruktur
+### 5.2.1 Projektstruktur und Application Entry Point
 
 Das Backend ist unterhalb von `backend/app/` in sieben funktionale Pakete gegliedert:
 
@@ -29,13 +31,7 @@ backend/app/
 
 Diese Aufteilung entspricht dem klassischen Repository-Service-Router-Muster: Router delegieren an Repositories für einfache CRUD-Operationen und an Services für Logik, die mehrere Repositories oder externe Aufrufe koordiniert.
 
----
-
-### 5.2.2 Application Entry Point und Router-Registrierung
-
-`app/main.py` ist der einzige Einstiegspunkt. Er registriert alle 12 Router unter dem Pfad-Prefix `/api/v1`, konfiguriert CORS-Middleware und bindet statische Dateien (Thumbnail-Cache) ein. Der WebSocket-Endpunkt `/ws/media` wird ohne API-Prefix eingehängt, da er kein REST-Ressourcenpfad ist.
-
-Beim Start führt `Base.metadata.create_all(bind=engine)` ein idempotentes Schema-Bootstrapping durch, das bei erstmaliger Inbetriebnahme alle Tabellen anlegt. Im Produktionsbetrieb werden Schema-Änderungen via Alembic-Migrationen gesteuert.
+`app/main.py` ist der einzige Einstiegspunkt. Er registriert alle 12 Router unter dem Pfad-Prefix `/api/v1`, konfiguriert CORS-Middleware und bindet statische Dateien (Thumbnail-Cache) ein. Der WebSocket-Endpunkt `/ws/media` wird ohne API-Prefix eingehängt, da er kein REST-Ressourcenpfad ist. Beim Start führt `Base.metadata.create_all(bind=engine)` ein idempotentes Schema-Bootstrapping durch, das bei erstmaliger Inbetriebnahme alle Tabellen anlegt; Schema-Änderungen im Produktionsbetrieb werden via Alembic-Migrationen gesteuert.
 
 Die Anwendung stellt zwei Metaendpunkte bereit:
 
@@ -46,9 +42,9 @@ Die Anwendung stellt zwei Metaendpunkte bereit:
 
 ---
 
-### 5.2.3 Datenbankmodelle (SQLAlchemy ORM)
+### 5.2.2 Datenmodelle: Datenbankschema und API-Validierung
 
-Das Schema umfasst **17 ORM-Modelle** (18 Datenbanktabellen, davon eine via Migration). Die zentralen Domänenobjekte sind:
+**SQLAlchemy-Datenbankmodelle** — Das Schema umfasst **17 ORM-Modelle** (18 Datenbanktabellen, davon eine via Migration). Die zentralen Domänenobjekte sind:
 
 | Modell            | Tabelle             | Kernfelder                                               |
 | ----------------- | ------------------- | -------------------------------------------------------- |
@@ -68,11 +64,8 @@ Das Schema umfasst **17 ORM-Modelle** (18 Datenbanktabellen, davon eine via Migr
 
 Das `TickerEntry`-Modell hat besondere Bedeutung im Lifecycle des Systems: Es verknüpft über `event_id` (FK auf `events`) und `synthetic_event_id` (FK auf `synthetic_events`) den generierten Text mit seinem Auslöser. Die Felder `status` (`draft`/`published`/`rejected`) und `source` (`ai`/`manual`) bilden den Ticker-Lifecycle ab (vgl. Kap. 4.3.2). Drei zusammengesetzte Indizes (`ix_ticker_match_status`, `ix_ticker_match_phase`, `ix_ticker_event_id`) optimieren die häufigsten Abfragen: publizierte Einträge je Spiel, Phase-Filter und den Deduplizierungs-Check per Event. Das Status-Enum wird als nicht-nativ gespeichert (`native_enum=False`), damit Migrationen ohne Enum-Typ-Änderungen in PostgreSQL auskommen.
 
----
 
-### 5.2.4 Pydantic-Schemas und API-Validierung
-
-Für jeden Router gibt es eigenständige Pydantic-Schemas für Create-, Update- und Response-Strukturen. Alle Schemas nutzen `alias_generator=to_camel` aus `pydantic.alias_generators`, damit JSON-Payloads in camelCase kommuniziert werden, während Python-intern snake_case gilt.
+**Pydantic-Schemas und API-Validierung** — Für jeden Router gibt es eigenständige Pydantic-Schemas für Create-, Update- und Response-Strukturen. Alle Schemas nutzen `alias_generator=to_camel` aus `pydantic.alias_generators`, damit JSON-Payloads in camelCase kommuniziert werden, während Python-intern snake_case gilt.
 
 Ein spezifisches Beispiel illustriert die Alias-Mechanik für Match-Scores:
 
@@ -96,7 +89,7 @@ Für Ticker-Einträge wird der Status über ein separates PATCH-Schema gesteuert
 
 ---
 
-### 5.2.5 Repository-Schicht
+### 5.2.3 Repository-Schicht
 
 Jede Entität hat ein dediziertes Repository, das alle SQL-Operationen kapselt. Alle Repositories erben von einer gemeinsamen `BaseRepository[T]`-Basisklasse, die die generische Operation `exists()` bereitstellt; jede Instanz erhält eine `Session` im Konstruktor:
 
@@ -137,7 +130,7 @@ Diese Methode wird von der KI-Generierungsroute intensiv genutzt, da für jeden 
 
 ---
 
-### 5.2.6 API-Router: Endpunktstruktur
+### 5.2.4 API-Router: Endpunktstruktur
 
 Der Ticker-Bereich ist in drei Router aufgeteilt, die gemeinsam unter `/api/v1/ticker` eingehängt werden:
 
@@ -155,7 +148,7 @@ Die wichtigsten Endpunkte gliedern sich in vier funktionale Bereiche: **Stammdat
 
 ---
 
-### 5.2.7 Ticker-Service: Domänenlogik
+### 5.2.5 Ticker-Service: Domänenlogik
 
 Der `ticker_service` kapselt die Domänenlogik für KI-Einträge. Er koordiniert Datenbankabfragen, Kontextaufbau und den LLM-Aufruf, hält dabei aber die Schichten klar getrennt: `llm_service.py` hat keine Datenbankabhängigkeit.
 
@@ -182,7 +175,7 @@ Die Semaphore ist auf Modulebene als Singleton definiert (`_llm_semaphore = asyn
 
 ---
 
-### 5.2.8 LLM-Service: Prompt-Aufbau und Provider-Dispatch
+### 5.2.6 LLM-Service: Prompt-Aufbau und Provider-Dispatch
 
 Der `LLMService` ist eine single-class-Implementierung, die beim Initialisieren den passenden Client instanziiert und über ein Dispatch-Dictionary aufruft:
 
@@ -214,7 +207,7 @@ Schreibe in exakt diesem Stil (Rhythmus, Wortwahl, Emotionalität):
 
 **`_build_prematch_parts()`** ergänzt für Pre-Match-Typen eine zusätzliche harte Instruktion: Das Modell darf keine Live-Szenen erfinden, sondern ausschließlich Vorschau- und Analyseinhalte produzieren.
 
-Der vollständig zusammengesetzte System-Prompt folgt der in Abschnitt 4.5.2 beschriebenen modularen Struktur aus sechs Bausteinen (Rolleninstruktion, Faktenblock, Match-Kontext, optionale Prematch-Instruktion, Few-Shot-Block, Regelblock). Die vier `_build_*`-Methoden erzeugen die Bausteine unabhängig voneinander, sodass fehlende Informationen (z. B. kein Spieler bei Phasenereignissen) den Prompt nicht invalidieren, sondern den entsprechenden Block auslassen.
+Der vollständig zusammengesetzte System-Prompt folgt der in Abschnitt 4.5.2 beschriebenen modularen Struktur aus sechs Bausteinen (Rolleninstruktion, Stilinstruktion, Faktenblock, Match-Kontext, Few-Shot-Block, Regelblock). Für Pre-Match-Typen fügt `_build_prematch_parts()` eine zusätzliche harte Schutzregel ein, die das Modell auf Vorschau- und Analyseinhalte beschränkt. Die vier `_build_*`-Methoden erzeugen die Bausteine unabhängig voneinander, sodass fehlende Informationen (z. B. kein Spieler bei Phasenereignissen) den Prompt nicht invalidieren, sondern den entsprechenden Block auslassen.
 
 LLM-Parameter: `temperature=0.3` für konsistente Ausgaben, `max_tokens` aus `LLM_MAX_TOKENS` (konfigurierbar). Bei Rate-Limit-Fehlern werden bis zu `LLM_RETRY_ATTEMPTS` (3) Versuche mit linearem Backoff (`30 s / 60 s / 90 s`) unternommen; bei sonstigen transienten Fehlern greift exponentielles Backoff (`1 s / 2 s / 4 s`).
 
@@ -222,7 +215,7 @@ LLM-Parameter: `temperature=0.3` für konsistente Ausgaben, `max_tokens` aus `LL
 
 ---
 
-### 5.2.9 WebSocket-Endpunkt für Media-Queue
+### 5.2.7 WebSocket-Endpunkt für Media-Queue
 
 Der WebSocket-Endpunkt `/ws/media` wird durch einen dedizierten `MediaConnectionManager` verwaltet:
 
@@ -248,7 +241,7 @@ class MediaConnectionManager:
 
 Wenn das Backend neue Media-Queue-Einträge über `POST /api/v1/media/incoming` erhält, ruft der Router anschließend `manager.broadcast({"type": "new_media", "items": [...]})` auf. Alle verbundenen Clients erhalten das Update in Echtzeit. Der Manager hält Verbindungen in einer einfachen In-Memory-Liste, was für die aktuelle Nutzung (wenige gleichzeitige Redakteur-Clients) ausreichend ist; bei Multi-Prozess-Deployments wäre ein externes Pub/Sub-System (z. B. Redis) erforderlich.
 
-Die persistente Seite der Media-Queue wird durch das `MediaQueueStatus`-Enum gesteuert, das zwei Zustände unterscheidet: `pending` (Medien sind eingegangen und warten auf redaktionelle Zuordnung) und `published` (Medien wurden einem Ticker-Eintrag zugewiesen). Das Frontend zeigt im `MediaPickerPanel` ausschließlich `pending`-Einträge an; sobald ein Redakteur ein Bild einem Ticker-Eintrag anhängt, wird der Status per `PATCH /api/v1/media/queue/{id}` auf `published` gesetzt. Dieses einfache Zwei-Zustands-Modell verhindert, dass einmal zugeordnete Medien in der Auswahl erneut auftauchen.
+Die persistente Seite der Media-Queue wird durch das `MediaQueueStatus`-Enum gesteuert, das zwei Zustände unterscheidet: `pending` (Medien sind eingegangen und warten auf redaktionelle Zuordnung) und `published` (Medien wurden einem Ticker-Eintrag zugewiesen). Das Frontend zeigt im `MediaPickerPanel` ausschließlich `pending`-Einträge an; sobald ein Redakteur ein Bild einem Ticker-Eintrag anhängt, wird der Status per `PATCH /api/v1/media/queue/{id}` auf `published` gesetzt. Dieses einfache Zwei-Zustands-Modell verhindert, dass einmal zugeordnete Medien in der Auswahl erneut auftauchen. Der korrespondierende Frontend-Hook `useMediaWebSocket`, der die Verbindungslebensdauer, das exponentielle Reconnect-Backoff und das Nachrichten-Handling auf Client-Seite übernimmt, ist in Abschnitt 5.4.5 beschrieben.
 
 ---
 
@@ -327,7 +320,7 @@ Die drei Modi übersetzen sich auf Implementierungsebene in drei verschiedene Pf
 
 Im `manual`-Modus wird der Generierungs-Endpunkt gar nicht aufgerufen: n8n importiert zwar weiterhin Ereignisse, triggert aber keinen LLM-Aufruf. Ticker-Einträge entstehen ausschließlich über den `POST /api/v1/ticker/manual`-Endpunkt, den das Frontend aus dem Slash-Command-Parser heraus bedient. Der Eintrag wird dort direkt mit `status=published` angelegt, da die Redakteurin den Text selbst verfasst hat und keine weitere Freigabe erforderlich ist.
 
-Im `coop`-Modus liegt die gesamte UX-Last auf der Draft-Queue: Das Frontend zeigt neue `draft`-Einträge mit `TAB`/`ESC`-Shortcuts an (vgl. Abschnitt 5.4.6), und die Entscheidungs-Latenz beträgt je nach Komplexität des Entwurfs 5–30 Sekunden. Dieses Design stellt sicher, dass keine KI-generierten Texte ohne menschliche Prüfung publiziert werden — eine Entscheidung, die direkt aus dem journalistischen Qualitätsanspruch in Kapitel 2.1 folgt.
+Im `coop`-Modus liegt die gesamte UX-Last auf der Draft-Queue: Das Frontend zeigt neue `draft`-Einträge mit `TAB`/`ESC`-Shortcuts an (vgl. Abschnitt 5.4.6), und die Entscheidungs-Latenz beträgt je nach Komplexität des Entwurfs 15–30 Sekunden. Dieses Design stellt sicher, dass keine KI-generierten Texte ohne menschliche Prüfung publiziert werden — eine Entscheidung, die direkt aus dem journalistischen Qualitätsanspruch in Kapitel 2.1 folgt.
 
 ---
 
@@ -561,7 +554,7 @@ Der aktive Modus (`auto` / `coop` / `manual`) steuert das Verhalten mehrerer Fro
 
 ---
 
-## 5.5 TypeScript-Migration
+### 5.4.7 TypeScript-Migration
 
 Das Frontend wurde im Verlauf des Projekts von reinem JavaScript auf TypeScript migriert. Ziel war nicht die vollständige Auflösung aller `any`-Typen, sondern eine pragmatische Typisierung der systemkritischen Pfade mit messbaren Qualitätskennzahlen.
 
@@ -591,9 +584,72 @@ export interface TickerEntry {
 }
 ```
 
-**Ergebnis** — Nach der Migration erzielt das Projekt **0 TypeScript-Compilerfehler** und eine **type-coverage von 95,84 %** (gemessen mit `type-coverage --strict`). Die detaillierte Darstellung der Migrationsergebnisse und die Analyse der verbleibenden untypisierten Stellen folgt in Kapitel 6.6.
+**Ergebnis** — Nach der Migration erzielt das Projekt **0 TypeScript-Compilerfehler** und eine **type-coverage von 95,84 %** (gemessen mit `type-coverage --strict`). Die detaillierte Darstellung der Migrationsergebnisse und die Analyse der verbleibenden untypisierten Stellen folgt in Abschnitt 6.2.5.
 
 ---
+
+## 5.5 n8n Workflow-Implementierung
+
+Die n8n-Workflows bilden die Orchestrierungsschicht zwischen externen Datenquellen, dem FastAPI-Backend und dem LLM-Dienst. Alle 15 Workflow-Dateien liegen als versionierte JSON-Exporte im Projektverzeichnis `n8n/` vor und können direkt in eine n8n-Instanz importiert werden. Die Workflows gliedern sich in vier funktionale Gruppen:
+
+**A) Stammdaten und Matchstruktur** — Die Workflows `01_import_countries`, `02_import_teams_by_country`, `03_import_competitions_and_matches` und `04_import_matches` laden Länder, Teams, Wettbewerbe und Spielpläne aus API-Football und persistieren diese via Upsert-Strategien. Externe IDs dienen als stabile Zuordnungsschlüssel für konfliktfreie Aktualisierungen.
+
+**B) Spielbezogene Detaildaten** — `04_import_lineups`, `05_import_match_statistics`, `06_import_player_statistics` und `07_import_prematch` importieren Aufstellungen, Match- und Spielerstatistiken matchbezogen. Der Prematch-Workflow erzeugt zusätzlich strukturierte Kontextdaten (Verletzungen, Head-to-Head, Tabellenstand) als synthetische Events, die dem LLM als Promptkontext dienen.
+
+**C) KI-Generierung** — `09_events_llm_workflow`, `13_Halftime_aftertime` und `14_Game_ANpfiff_ABpfiff` importieren Live-Ereignisse, erzeugen synthetische Phasenereignisse und delegieren die Textgenerierung an das Backend. Der Zusammenfassungs-Workflow (`13`) ruft den LLM-Provider direkt auf, da Halbzeit-/Abpfiff-Zusammenfassungen einen umfangreicheren Prompt mit Statistiken erfordern.
+
+**D) Medien und Social Media** — `08_scoreplay_media_workflow`, `10_Twitter`, `11_youtube` und `12_insta` importieren Medien- und Social-Media-Inhalte. Der Media-Workflow übergibt Bilder an das Backend, das diese über WebSocket verteilt; die Social-Media-Workflows speichern Clips in der Datenbank. Diese Workflows dienen der Ingestion, nicht dem Publishing.
+
+Dieser Abschnitt dokumentiert die Implementierungsdetails der fünf zentralen Workflows (Gruppen B–D).
+
+---
+
+### 5.5.1 Events-LLM-Workflow (`09_events_llm_workflow.json`)
+
+Workflow `09` ist der kritischste im System: Er importiert Live-Ereignisse via Webhook (`POST /Events`), persistiert sie per UPSERT (`ON CONFLICT (source_id) DO NOTHING`) und triggert die KI-Generierung für jeden neuen Event. Eine initiale SQL-Abfrage bestimmt anhand der Teamzugehörigkeit, ob die Instanz `ef_whitelabel` oder `generic` und der Stil `euphorisch` oder `neutral` ist; `auto_publish` wird direkt aus `ticker_mode` des Spiels gesetzt. Nur Events mit erfolgreicher Datenbankzeile (zurückgegebene `id`, kein `DO NOTHING`-Konflikt) passieren den Filter-Knoten und triggern den Backend-Endpunkt. Ein zusätzlicher EF-spezifischer Zweig liest Spielerdaten von `profis.eintracht.de`, baut S3-Video-URLs aus neunstellig aufgefüllten Spieler-IDs auf und persistiert Torjubel-Videos als Ticker-Einträge.
+
+---
+
+### 5.5.2 Prematch-Import-Workflow (`07_import_prematch.json`)
+
+Workflow `07` baut den Vorberichtskontext aus fünf parallelen Football-API-Abfragen auf (Verletzungen, Head-to-Head, Teamstatistiken Heim/Gast, Tabellenstand) und persistiert die Ergebnisse als `synthetic_events` mit idempotenter `ON CONFLICT (match_id, type) DO UPDATE`-Strategie. Ein LLM-Trigger wird nur ausgelöst, wenn noch kein nicht-verworfener Ticker-Eintrag für das jeweilige synthetische Event existiert (`WHERE te.id IS NULL`) — bereits generierte und eventuell publizierte Texte werden damit nicht überschrieben.
+
+---
+
+### 5.5.3 Matchphasen-Workflow (`14_Game_ANpfiff_ABpfiff.json`)
+
+Workflow `14` verarbeitet Spielzustands-Übergänge (Anpfiff, Halbzeit, Abpfiff etc.) via Webhook (`POST /match-status`). Ein JavaScript-Knoten validiert Zustandsübergänge gegen eine Matrix erlaubter Vorzustände — ungültige Übergänge (z. B. direkt von `PreMatch` zu `2H`) werden zurückgewiesen. Für Vollzeit-Ereignisse (`FT`, `AET`, `PEN`) generiert der Workflow die gesamte Phasensequenz rückwirkend: Ein `FT`-Signal erzeugt vier synthetische Events (Anstoß, Halbzeit, 2. Halbzeit, Abpfiff). Das zentrale SQL-Statement kombiniert Match-Update, Event-Insert und eine `demote`-CTE in einer einzigen Transaktion — Letztere stuft bereits publizierte Phasen-Texte bei Re-Triggers auf `draft` zurück, sodass die Redaktion sie erneut prüfen kann.
+
+---
+
+### 5.5.4 Halbzeit/Abpfiff-Zusammenfassung (`13_Halftime_aftertime.json`)
+
+Workflow `13` erzeugt narrative Zusammenfassungen für Halbzeit und Abpfiff. Im Gegensatz zu `09` ruft er OpenRouter (`google/gemini-2.0-flash-lite-001`) **direkt** auf, da Zusammenfassungen keinen Few-Shot-Stil aus der Datenbank benötigen, sondern einen umfangreicheren Prompt mit parallel geladenen Statistiken (Ballbesitz, Schüsse, Pässe, Spieler-Ratings) erfordern. Das Ergebnis wird über `POST /api/v1/ticker/manual` als Ticker-Eintrag gespeichert — je nach `ticker_mode` direkt als `published` oder als `draft`.
+
+---
+
+### 5.5.5 ScorePlay-Medien-Workflow (`08_scoreplay_media_workflow.json`)
+
+Workflow `08` sucht Medien-Assets bei ScorePlay für Spieler eines Torereignisses. Die Spieler-Suche (`GET /v1/tag/search`) normalisiert Umlaute (ä→a, ö→o, ü→u, ß→ss) und matcht gegen vier Namensfelder (`full_name`, `first_name`, `last_name`, `ai_name`). Gefundene Thumbnail-, Compressed- und Original-URLs werden an `POST /api/v1/media/incoming` übertragen und vom Backend per WebSocket an verbundene Frontend-Clients verteilt.
+
+---
+
+### 5.5.6 Implementierungsübergreifende Muster
+
+Über alle Workflows hinweg lassen sich fünf Implementierungsmuster identifizieren:
+
+**1. Idempotente UPSERT-Strategie** — Alle Insert-Operationen verwenden `ON CONFLICT DO UPDATE` oder `DO NOTHING`. Als Konfliktschlüssel dienen externe IDs (`source_id`, `external_id`, `vid`), zusammengesetzte Schlüssel (`match_id, type`) oder Unique-Constraints auf Namensfeldern. Das macht alle Workflows bei Mehrfachausführung sicher.
+
+**2. Filter-vor-Trigger-Muster** — Vor jedem LLM-Trigger steht ein Filter-Knoten, der nur Rows mit einer `id` (erfolgreicher DB-Insert) durchlässt. Events mit `DO NOTHING`-Konflikten (bereits importiert) erzeugen keinen neuen LLM-Aufruf.
+
+**3. Statusbasierte Filterung** — Bei synthetischen Events und Ticker-Einträgen werden vorhandene Zustände berücksichtigt, um redundante Generierungen zu vermeiden: Ein LLM-Aufruf wird nur getriggert, wenn noch kein nicht-verworfener Ticker-Eintrag für das Event existiert (vgl. die WHERE-Bedingungen in 5.5.2 und 5.5.3). Bei Re-Triggern werden bereits publizierte Phasen-Texte auf `draft` zurückgestuft (`demote`-CTE in 5.5.3).
+
+**4. Ticker-Mode-Propagation** — `ticker_mode` wird in allen Generierungsworkflows als `auto_publish`-Flag an das Backend weitergegeben (vgl. Kap. 5.3.3). Die Moduslogik sitzt damit vollständig in der Datenbank; n8n liest sie bei jedem Aufruf neu aus.
+
+**5. Instanz-Routing** — Die Unterscheidung zwischen `ef_whitelabel` und `generic` erfolgt per `ILIKE '%Frankfurt%'`-Abfrage auf Teamnamen. Das Ergebnis steuert Stilwahl, Few-Shot-Auswahl im Backend und ob der Torjubel-Video-Pfad aktiviert wird.
+
+---
+
 
 ## 5.6 Qualitätssicherung und Tests
 
@@ -627,123 +683,22 @@ test("vollstaendiger Command ist valid", () => {
 | `distribution_summary(scores)`        | Deskriptive Zusammenfassung (Mean, SD, Min, Max) für Bewertungslisten                          |
 | `aggregate_quality_by_group(entries)` | Aggregiert Qualitätsscores nach Gruppe (Stil, Ereignistyp, Instanz)                            |
 
-Diese Funktionen werden in Kapitel 6.7–6.10 direkt genutzt: `cliffs_delta` für den TTP-Vergleich, `cohens_kappa` für die Bewertungsübereinstimmung und `aggregate_quality_by_group` für die profilspezifische Qualitätsanalyse. Die Implementierung in einem dedizierten `utils`-Modul (statt im Test-Code) macht die Statistikfunktionen wiederverwendbar — etwa für einen zukünftigen automatisierten Scoring-Dienst im Produktivbetrieb (vgl. Kap. 8.3.3).
+Diese Funktionen werden in Kapitel 6.3–6.5 direkt genutzt: `cliffs_delta` für den TTP-Vergleich, `cohens_kappa` für die Bewertungsübereinstimmung und `aggregate_quality_by_group` für die profilspezifische Qualitätsanalyse. Die Implementierung in einem dedizierten `utils`-Modul (statt im Test-Code) macht die Statistikfunktionen wiederverwendbar — etwa für einen zukünftigen automatisierten Scoring-Dienst im Produktivbetrieb (vgl. Kap. 8.3.3).
 
-Die detaillierte Auswertung aller Testmetriken, Coverage-Verteilungen und konkreten Testbeispiele folgt in Kapitel 6.2–6.5.
-
----
-
-## 5.7 n8n Workflow-Implementierung
-
-Die n8n-Workflows bilden die Orchestrierungsschicht zwischen externen Datenquellen, dem FastAPI-Backend und dem LLM-Dienst. Alle 15 Workflow-Dateien liegen als versionierte JSON-Exporte im Projektverzeichnis `n8n/` vor und können direkt in eine n8n-Instanz importiert werden. Die Workflows gliedern sich in vier funktionale Gruppen:
-
-**A) Stammdaten und Matchstruktur** — Die Workflows `01_import_countries`, `02_import_teams_by_country`, `03_import_competitions_and_matches` und `04_import_matches` laden Länder, Teams, Wettbewerbe und Spielpläne aus API-Football und persistieren diese via Upsert-Strategien. Externe IDs dienen als stabile Zuordnungsschlüssel für konfliktfreie Aktualisierungen.
-
-**B) Spielbezogene Detaildaten** — `04_import_lineups`, `05_import_match_statistics`, `06_import_player_statistics` und `07_import_prematch` importieren Aufstellungen, Match- und Spielerstatistiken matchbezogen. Der Prematch-Workflow erzeugt zusätzlich strukturierte Kontextdaten (Verletzungen, Head-to-Head, Tabellenstand) als synthetische Events, die dem LLM als Promptkontext dienen.
-
-**C) KI-Generierung** — `09_events_llm_workflow`, `13_Halftime_aftertime` und `14_Game_ANpfiff_ABpfiff` importieren Live-Ereignisse, erzeugen synthetische Phasenereignisse und delegieren die Textgenerierung an das Backend. Der Zusammenfassungs-Workflow (`13`) ruft den LLM-Provider direkt auf, da Halbzeit-/Abpfiff-Zusammenfassungen einen umfangreicheren Prompt mit Statistiken erfordern.
-
-**D) Medien und Social Media** — `08_scoreplay_media_workflow`, `10_Twitter`, `11_youtube` und `12_insta` importieren Medien- und Social-Media-Inhalte. Der Media-Workflow übergibt Bilder an das Backend, das diese über WebSocket verteilt; die Social-Media-Workflows speichern Clips in der Datenbank. Diese Workflows dienen der Ingestion, nicht dem Publishing.
-
-Dieser Abschnitt dokumentiert die Implementierungsdetails der fünf zentralen Workflows (Gruppen B–D).
+Die detaillierte Auswertung aller Testmetriken, Coverage-Verteilungen und konkreten Testbeispiele folgt in Abschnitt 6.2.
 
 ---
 
-### 5.7.1 Events-LLM-Workflow (`09_events_llm_workflow.json`)
+## 5.7 Deployment
 
-Workflow `09` ist der kritischste im System: Er importiert Live-Ereignisse via Webhook (`POST /Events`), persistiert sie per UPSERT (`ON CONFLICT (source_id) DO NOTHING`) und triggert die KI-Generierung für jeden neuen Event. Eine initiale SQL-Abfrage bestimmt anhand der Teamzugehörigkeit, ob die Instanz `ef_whitelabel` oder `generic` und der Stil `euphorisch` oder `neutral` ist; `auto_publish` wird direkt aus `ticker_mode` des Spiels gesetzt. Nur Events mit erfolgreicher Datenbankzeile (zurückgegebene `id`, kein `DO NOTHING`-Konflikt) passieren den Filter-Knoten und triggern den Backend-Endpunkt. Ein zusätzlicher EF-spezifischer Zweig liest Spielerdaten von `profis.eintracht.de`, baut S3-Video-URLs aus neunstellig aufgefüllten Spieler-IDs auf und persistiert Torjubel-Videos als Ticker-Einträge.
+Das System ist als dreischichtige Cloud-Deployment auf **Render.com** (Region: Oregon, US West) realisiert. Alle drei Dienste werden aus demselben Repository-Branch (`deploy/render-v2`) deployt und kommunizieren über das private Render-Netzwerk.
 
----
+**Backend (Docker Web Service)** — Das FastAPI-Backend läuft als Docker-Container auf einem Free-Tier-Web-Service (`0.1 vCPU`, `512 MB RAM`). Render baut das Image aus `./backend/Dockerfile` mit `./backend` als Build-Kontext und startet den Uvicorn-Server gemäß der `CMD`-Instruktion im Dockerfile. Die Health-Check-Route `GET /health` (vgl. Abschnitt 5.2.1) wird von Render periodisch abgefragt; bei Ausfall wird der Dienst automatisch neu gestartet. Zugangsdaten und Konfiguration werden als Umgebungsvariablen injiziert (Datenbankverbindungs-URL, API-Keys für LLM-Provider). Das Backend ist unter `https://liveticker-backend.onrender.com` erreichbar.
 
-### 5.7.2 Prematch-Import-Workflow (`07_import_prematch.json`)
+**Datenbank (PostgreSQL 15)** — Die Datenbankinstanz `liveticker-db` läuft auf einem Render-Managed-PostgreSQL-Dienst (Free Tier: `256 MB RAM`, `1 GB Storage`). Die Verbindung zum Backend erfolgt über den internen Hostnamen innerhalb des privaten Render-Netzwerks. Beim ersten Start legt `Base.metadata.create_all(bind=engine)` alle Tabellen an; nachfolgende Schema-Änderungen werden via Alembic-Migrationen eingespielt. Da Free-Tier-Instanzen keinen persistenten Prozess-Storage vorhalten, ist alle Zustandshaltung in der Datenbank zentralisiert — ein direktes Ergebnis des in Abschnitt 3.8.3 beschriebenen Stateless-Design-Prinzips.
 
-Workflow `07` baut den Vorberichtskontext aus fünf parallelen Football-API-Abfragen auf (Verletzungen, Head-to-Head, Teamstatistiken Heim/Gast, Tabellenstand) und persistiert die Ergebnisse als `synthetic_events` mit idempotenter `ON CONFLICT (match_id, type) DO UPDATE`-Strategie. Ein LLM-Trigger wird nur ausgelöst, wenn noch kein nicht-verworfener Ticker-Eintrag für das jeweilige synthetische Event existiert (`WHERE te.id IS NULL`) — bereits generierte und eventuell publizierte Texte werden damit nicht überschrieben.
+**Frontend (Static Site)** — Das React/TypeScript-Frontend wird als statische Seite deployt. Render führt `cd frontend && npm ci && npm run build` aus und veröffentlicht das Verzeichnis `./frontend/build` über sein CDN. Da kein Server-Prozess läuft, werden die generierten Dateien direkt aus dem CDN ausgeliefert. Das Frontend ist unter `https://liveticker-frontend.onrender.com` erreichbar.
 
----
+**n8n (lokal mit ngrok)** — Die n8n-Workflow-Instanz läuft lokal und ist über einen **ngrok**-Tunnel für externe Webhooks erreichbar. Ngrok stellt einen öffentlich adressierbaren HTTPS-Endpunkt bereit, der eingehende Trigger-Anfragen (z. B. Spielereignisse vom Football-API-Provider) an die lokale n8n-Instanz weiterleitet. Diese Konfiguration ist für den Entwicklungs- und Evaluationsbetrieb ausreichend; ein produktiver Dauerbetrieb erfordert eine persistente n8n-Instanz mit fester Webhook-URL (z. B. self-hosted auf einem VPS oder n8n Cloud).
 
-### 5.7.3 Matchphasen-Workflow (`14_Game_ANpfiff_ABpfiff.json`)
-
-Workflow `14` verarbeitet Spielzustands-Übergänge (Anpfiff, Halbzeit, Abpfiff etc.) via Webhook (`POST /match-status`). Ein JavaScript-Knoten validiert Zustandsübergänge gegen eine Matrix erlaubter Vorzustände — ungültige Übergänge (z. B. direkt von `PreMatch` zu `2H`) werden zurückgewiesen. Für Vollzeit-Ereignisse (`FT`, `AET`, `PEN`) generiert der Workflow die gesamte Phasensequenz rückwirkend: Ein `FT`-Signal erzeugt vier synthetische Events (Anstoß, Halbzeit, 2. Halbzeit, Abpfiff). Das zentrale SQL-Statement kombiniert Match-Update, Event-Insert und eine `demote`-CTE in einer einzigen Transaktion — Letztere stuft bereits publizierte Phasen-Texte bei Re-Triggers auf `draft` zurück, sodass die Redaktion sie erneut prüfen kann.
-
----
-
-### 5.7.4 Halbzeit/Abpfiff-Zusammenfassung (`13_Halftime_aftertime.json`)
-
-Workflow `13` erzeugt narrative Zusammenfassungen für Halbzeit und Abpfiff. Im Gegensatz zu `09` ruft er OpenRouter (`google/gemini-2.0-flash-lite-001`) **direkt** auf, da Zusammenfassungen keinen Few-Shot-Stil aus der Datenbank benötigen, sondern einen umfangreicheren Prompt mit parallel geladenen Statistiken (Ballbesitz, Schüsse, Pässe, Spieler-Ratings) erfordern. Das Ergebnis wird über `POST /api/v1/ticker/manual` als Ticker-Eintrag gespeichert — je nach `ticker_mode` direkt als `published` oder als `draft`.
-
----
-
-### 5.7.5 ScorePlay-Medien-Workflow (`08_scoreplay_media_workflow.json`)
-
-Workflow `08` sucht Medien-Assets bei ScorePlay für Spieler eines Torereignisses. Die Spieler-Suche (`GET /v1/tag/search`) normalisiert Umlaute (ä→a, ö→o, ü→u, ß→ss) und matcht gegen vier Namensfelder (`full_name`, `first_name`, `last_name`, `ai_name`). Gefundene Thumbnail-, Compressed- und Original-URLs werden an `POST /api/v1/media/incoming` übertragen und vom Backend per WebSocket an verbundene Frontend-Clients verteilt.
-
----
-
-### 5.7.6 Implementierungsübergreifende Muster
-
-Über alle Workflows hinweg lassen sich fünf Implementierungsmuster identifizieren:
-
-**1. Idempotente UPSERT-Strategie** — Alle Insert-Operationen verwenden `ON CONFLICT DO UPDATE` oder `DO NOTHING`. Als Konfliktschlüssel dienen externe IDs (`source_id`, `external_id`, `vid`), zusammengesetzte Schlüssel (`match_id, type`) oder Unique-Constraints auf Namensfeldern. Das macht alle Workflows bei Mehrfachausführung sicher.
-
-**2. Filter-vor-Trigger-Muster** — Vor jedem LLM-Trigger steht ein Filter-Knoten, der nur Rows mit einer `id` (erfolgreicher DB-Insert) durchlässt. Events mit `DO NOTHING`-Konflikten (bereits importiert) erzeugen keinen neuen LLM-Aufruf.
-
-**3. Statusbasierte Filterung** — Bei synthetischen Events und Ticker-Einträgen werden vorhandene Zustände berücksichtigt, um redundante Generierungen zu vermeiden: Ein LLM-Aufruf wird nur getriggert, wenn noch kein nicht-verworfener Ticker-Eintrag für das Event existiert (vgl. die WHERE-Bedingungen in 5.7.2 und 5.7.3). Bei Re-Triggern werden bereits publizierte Phasen-Texte auf `draft` zurückgestuft (`demote`-CTE in 5.7.3).
-
-**4. Ticker-Mode-Propagation** — `ticker_mode` wird in allen Generierungsworkflows als `auto_publish`-Flag an das Backend weitergegeben (vgl. Kap. 5.3.3). Die Moduslogik sitzt damit vollständig in der Datenbank; n8n liest sie bei jedem Aufruf neu aus.
-
-**5. Instanz-Routing** — Die Unterscheidung zwischen `ef_whitelabel` und `generic` erfolgt per `ILIKE '%Frankfurt%'`-Abfrage auf Teamnamen. Das Ergebnis steuert Stilwahl, Few-Shot-Auswahl im Backend und ob der Torjubel-Video-Pfad aktiviert wird.
-
----
-
-### 5.7.7 Export zur Stackwork Demo App
-
-Ergänzend zu den fünf Kernworkflows existieren **12 Sync-Workflows** im Verzeichnis `n8n_demoAPP/`, die publizierte Ticker-Einträge und Stammdaten an die CMS-API der Stackwork Demo App übertragen (vgl. Abschnitt 4.1.3). Die Workflows gliedern sich in drei funktionale Gruppen:
-
-**A) Stammdaten-Synchronisation** — Vier Workflows synchronisieren die Basisdaten:
-
-| Workflow                       | Inhalt                                   |
-| ------------------------------ | ---------------------------------------- |
-| `Sync_01_Seasons_Competitions` | Wettbewerbe und Saisonen                 |
-| `Sync_02_Matches_Fixtures`     | Spielplan und Fixture-IDs                |
-| `Sync_03_Squads_Players`       | Kader-Einträge pro Verein                |
-| `Sync_12_Spieler_Herkunft`     | Spieler-Metadaten (Geburtstag, Herkunft) |
-
-**B) Matchdaten-Export** — Vier Workflows exportieren spielbezogene Zusatzdaten nach Spielende:
-
-| Workflow                            | Inhalt                           |
-| ----------------------------------- | -------------------------------- |
-| `Sync_04_Match_Lineups`             | Aufstellungen (Post-Match)       |
-| `Sync_05_Match_Statistics`          | Spielstatistiken (Post-Match)    |
-| `Sync_06_League_Standings`          | Tabellenstand der Liga           |
-| `Sync_11_Spieler_Saisonstatistiken` | Individuelle Spieler-Saisonwerte |
-
-**C) Liveticker-Export** — Vier Workflows übertragen die Ticker-Einträge in Echtzeit:
-
-| Workflow                      | Inhalt                                           |
-| ----------------------------- | ------------------------------------------------ |
-| `Sync_07_Liveticker`          | Tore, Karten, Auswechslungen — ereignisgesteuert |
-| `Sync_08_Prematch_Liveticker` | Vorberichts-Einträge                             |
-| `Sync_09_Halbzeit_Aftermatch` | Halbzeit- und Abschlussbericht                   |
-| `Sync_10_Spielphasen`         | Phasen-Einträge (Anpfiff, Halbzeit etc.)         |
-
-Das Übertragungsprinzip ist bei allen Liveticker-Workflows identisch: Ein Webhook im Produktiv-Backend empfängt ein `publish`-Event, sobald ein Ticker-Eintrag den Status `published` erhält. Der Sync-Workflow liest den vollständigen Eintrag aus dem Backend (`GET /api/v1/ticker/{id}`), transformiert ihn in das CMS-Schema der Demo App und schreibt ihn über deren REST-API. Das One-Way-Push-Modell (Liveticker-Backend → Demo App) stellt sicher, dass keine bidirektionalen Konflikte entstehen — die Demo App ist ausschließlich Konsument.
-
----
-
-## 5.8 Kritische Würdigung der Implementierung
-
-Die Implementierung realisiert alle drei konzipierten Betriebsmodi funktionsfähig und in einem strukturell stabilen Zustand. Besonders positiv ist die Trennschärfe zwischen den Schichten: llm_service hat keine Datenbankabhängigkeit, Repositories kapseln alle SQL-Details, und die drei Frontend-Contexts vermeiden sowohl Prop-Drilling als auch unnötige Re-Renders.
-
-Fünf Aspekte verdienen eine kritische Einordnung:
-
-**Erstens** ist die Provider-Auswahl im LLM-Service als schlüsselbasierte Priorisierung implementiert, nicht als konfigurierbare Laufzeit-Strategie. Für ein Produktionssystem wäre ein expliziterer Konfigurationsmechanismus (z. B. ein Konfigurationsfeld in der Datenbank pro Spiel) robuster.
-
-**Zweitens** enthält der `useAutoPublisher` im Frontend eine semantische Doppelung: Im Auto-Modus publiziert n8n über `auto_publish=True` bereits beim Generieren; der Frontend-Hook fängt Residualfälle auf. Diese Zweispurigkeit entstand durch inkrementelle Entwicklung und könnte in einer Folgeversion auf eine definitive Strategie konsolidiert werden.
-
-**Drittens** existiert die WebSocket-Verbindung als In-Memory-Singleton pro Prozess. Bei einem Multi-Prozess-Deployment (z. B. mehrere Uvicorn-Worker hinter einem Load-Balancer) würden Medien-Updates nur an Clients übermittelt, die mit dem spezifischen Worker verbunden sind. Für den aktuellen Betrieb mit wenigen Redakteurs-Clients ist dies unproblematisch; eine Redis-Pub/Sub-Erweiterung wäre die natürliche Skalierungsstufe.
-
-**Viertens** ist der `strict`-Modus in `tsconfig.json` derzeit deaktiviert (vgl. Kap. 5.5 zur Migrationsstrategie). Eine schrittweise Aktivierung von `strictNullChecks` und `noImplicitAny` ist der naheliegende Folgeschritt zur weiteren Härtung der Codebasis.
-
-**Fünftens** ist die Few-Shot-Infrastruktur vollständig implementiert — der Scraping-Workflow befüllt `style_references` mit echten EF-Liveticker-Texten, `StyleReferenceRepository.get_samples()` lädt sie mit liga-spezifischer Suche und automatischem Fallback, und `_build_few_shot_block()` bettet sie in den Prompt ein. In der Praxis greifen jedoch zwei Einschränkungen: (a) Die Demo-App-Workflows (`13_Halftime_aftertime.json`) rufen OpenRouter direkt auf und umgehen das Backend-LLM-Service, sodass Few-Shot dort nicht wirksam wird. (b) Der liga-spezifische Filter (`func.lower(style_references.league) == league.lower()`) fällt auf die liga-agnostische Suche zurück, wenn zu wenige Beispieleinträge für die konkrete Liga in der Datenbank vorhanden sind — was bei kleinen Stildatenbeständen häufig der Fall ist. Beide Punkte sind behebbar, beeinträchtigen aber die grundsätzliche Funktionsfähigkeit der Stilgenerierung nicht.
-
-Insgesamt belegen die Metriken — 0 TypeScript-Fehler, 95,84 % type-coverage, 187 Frontend-Tests, 198 Backend-Tests mit 75 % Coverage, 6 E2E-Tests — einen konsistenten Qualitätsanspruch, der über den Rahmen eines typischen akademischen Projekts hinausgeht. Die vollständige Implementierung bildet damit die Grundlage für die systematische Evaluation in Kapitel 6, die sowohl die technischen Qualitätsmetriken als auch die KI-Textgenerierung gegen die in Kapitel 2.6 definierten Anforderungen prüft und die Forschungsfrage aus Kapitel 1.2 quantitativ beantwortet.
+Die vier Komponenten bilden zusammen die in Abschnitt 4.1 konzipierten drei Systemschichten: n8n übernimmt die Datenbeschaffung (Schicht 1), Backend und Datenbank die Anwendungs- und Persistenzlogik (Schicht 2), das Frontend die Präsentation (Schicht 3). Damit ist die Implementierung vollständig; Kapitel 6 dokumentiert die systematische Evaluation des so realisierten Systems.

@@ -8,11 +8,11 @@ Die vorliegende Arbeit hat ein hybrides Redaktionssystem für die KI-gestützte 
 
 ### 8.1.1 Technische Ergebnisse
 
-Die technische Evaluation (Kapitel 6.2–6.6) dokumentiert eine produktionsnahe Codebasis (403 Tests, 75 % Backend-Coverage, 95,84 % TypeScript-Coverage) mit vollständiger Testpyramide und vollständig umgesetztem Anforderungskatalog (alle 23 Anforderungen erfüllt, vgl. Kapitel 6.11). Die bewusst ausgeklammerte Authentifizierungsschicht ist als Systembeschränkung dokumentiert (vgl. Kapitel 6.12.4).
+Die technische Evaluation (Kapitel 6.2) belegt eine produktionsnahe Codebasis mit vollständiger Testpyramide, hoher Typsicherheit und lückenloser Erfüllung aller 23 definierten Anforderungen (vgl. Kapitel 6.6). Die bewusst ausgeklammerte Authentifizierungsschicht ist als Systembeschränkung dokumentiert (vgl. Kapitel 6.7).
 
 ### 8.1.2 KI-Textgenerierung
 
-Die Multi-Provider-Architektur mit Prioritätskette gewährleistet eine hohe Verfügbarkeit der Textgenerierung. Die qualitative Analyse (Kapitel 6.8) ergab einen Gesamtdurchschnitt von **4,3 / 5** über alle drei Bewertungsdimensionen. Die stärkste Einschränkung liegt in der Stil-Inkonsistenz des neutralen Profils (vgl. Kap. 6.8.4).
+Die Multi-Provider-Architektur mit Prioritätskette gewährleistet eine hohe Verfügbarkeit der Textgenerierung. Die qualitative Bewertung (Abschnitt 6.3.6) zeigt durchgängig gute Ergebnisse über alle drei Qualitätsdimensionen; die stärkste Einschränkung liegt in der Stil-Inkonsistenz des neutralen Profils. Die quantitativen Einzelwerte und Latenzmetriken sind in Kapitel 6.3–6.5 vollständig dokumentiert.
 
 ### 8.1.3 Systemarchitektur und Designentscheide
 
@@ -30,9 +30,9 @@ Die Beantwortung erfolgt entlang der beiden in der Forschungsfrage angelegten Di
 
 ### 8.2.1 Zeitliche Dimension: Reduktion der Time-to-Publish
 
-Im `auto`-Modus (vollautonom) entfällt die manuelle Texterstellung vollständig — die geschätzte TTP beträgt **≈ 3,4–5,9 s** (erwarteter Median bis Worst Case, vgl. Abschnitt 6.9.2). Im `coop`-Modus (hybrid) addiert sich die redaktionelle Prüfzeit: Ein einfacher Freigabe-Klick erfordert ca. 5–10 s, ein bearbeiteter Entwurf ca. 15–30 s — die geschätzte TTP liegt damit bei **≈ 15–30 s**. Im `manual`-Modus (Status quo) muss der Redakteur den gesamten Text selbst verfassen; auf Basis der in Kapitel 2.1 beschriebenen Produktionsbedingungen wird die typische Texterstellungszeit unter Livebedingungen auf **30–120 s** geschätzt.
+Im `auto`-Modus (vollautonom) entfällt die manuelle Texterstellung vollständig — die geschätzte TTP beträgt **≈ 3,4–5,9 s** (erwarteter Median bis Worst Case, vgl. Abschnitt 6.4.2). Im `coop`-Modus (hybrid) addiert sich die redaktionelle Prüfzeit: Ein einfacher Freigabe-Klick erfordert ca. 5–10 s, ein bearbeiteter Entwurf ca. 15–30 s — die geschätzte TTP liegt damit bei **≈ 15–30 s**. Im `manual`-Modus (Status quo) muss der Redakteur den gesamten Text selbst verfassen; auf Basis der in Kapitel 2.1 beschriebenen Produktionsbedingungen wird die typische Texterstellungszeit unter Livebedingungen auf **30–120 s** geschätzt.
 
-Da kein kontrolliertes Spielexperiment in allen drei Modi durchgeführt werden konnte, basiert der Vergleich auf gemessenen LLM-Latenzen und der implementierten Systemarchitektur (Kapitel 6.9.2). Ein Cliff's-Delta-Test auf real gemessenen TTP-Paaren (auto vs. manual) wäre mit einem zukünftigen Live-Spieltest durchführbar; die TTP-Metrik und die Bulk-Evaluationsinfrastruktur (Kapitel 6.7.1–6.7.2) sind dafür vorbereitet.
+Da kein kontrolliertes Spielexperiment in allen drei Modi durchgeführt werden konnte, basiert der Vergleich auf gemessenen LLM-Latenzen und der implementierten Systemarchitektur (Abschnitt 6.4.2). Ein Cliff's-Delta-Test auf real gemessenen TTP-Paaren (auto vs. manual) wäre mit einem zukünftigen Live-Spieltest durchführbar; die TTP-Metrik und die Bulk-Evaluationsinfrastruktur (Abschnitte 6.3.1–6.3.2) sind dafür vorbereitet.
 
 Die strukturellen Daten bestätigen die Hypothese, dass ein hybrides System die Publikationslatenz signifikant reduziert: Die geschätzte TTP-Reduktion im `auto`-Modus gegenüber `manual` beträgt eine Größenordnung (Faktor 5–35× je nach Event-Typ und Redakteurserfahrung).
 
@@ -40,13 +40,13 @@ Die strukturellen Daten bestätigen die Hypothese, dass ein hybrides System die 
 
 Die journalistische Qualität wurde entlang der drei in der Forschungsfrage definierten Kriterien operationalisiert:
 
-1. **Korrektheit**: Die generierten Texte erreichen einen Ø-Wert von **4,6 / 5**. In 15 von 16 bewerteten Einträgen (94 %) wurden alle verfügbaren Fakten (Spieler, Team, Minute, Ergebnis) korrekt wiedergegeben. Die Pre-Match-Schutzregel verhindert zuverlässig die Erfindung von Live-Spielszenen; eine Wettempfehlung (1 von 16 Einträgen, 6 %) stellt eine inhaltliche Halluzination geringerer Schwere dar.
+1. **Korrektheit**: Die generierten Texte erreichen einen Ø-Wert von **4,6 / 5**. In 15 von 16 bewerteten Einträgen (94 %) wurden alle verfügbaren Fakten (Spieler, Team, Minute, Ergebnis) korrekt wiedergegeben (Hauptevaluation, N = 16, deutschsprachig). Die ergänzende Evaluation mit synthetischem Kontext (N = 9) bestätigt diesen Befund und erweitert ihn um bislang fehlende Event-Typen (Rote Karte, Phasen-Events). Die Pre-Match-Schutzregel verhindert zuverlässig die Erfindung von Live-Spielszenen; eine Wettempfehlung (1 von 16 Einträgen, 6 %) stellt eine inhaltliche Halluzination geringerer Schwere dar. Die Qualitätsbewertung basiert ausschließlich auf deutschsprachigen Ausgaben; die Texte in anderen Sprachen (Englisch, Japanisch) wurden nicht separat evaluiert.
 
-2. **Tonalität**: Mit einem Ø-Wert von **4,1 / 5** erzeugen die drei Stilprofile deutlich unterscheidbare Textstile. Der euphorische Modus — primär für vereinsnahe Liveticker wie die `ef_whitelabel`-Instanz konzipiert — erzielt die stärksten qualitativen Ergebnisse: Die Beispieltexte in Kapitel 6.8.3 zeigen, dass emotionale Stilmittel des Liveticker-Genres (Wiederholungen, Ausrufe, szenische Abschlüsse) vom Modell zuverlässig umgesetzt werden. Das neutrale Profil zeigt die größte Inkonsistenz (19 % der Einträge zu emotional formuliert), bedingt durch die starken euphorischen Few-Shot-Referenzen.
+2. **Tonalität**: Mit einem Ø-Wert von **4,1 / 5** erzeugen die drei Stilprofile deutlich unterscheidbare Textstile. Der euphorische Modus — primär für vereinsnahe Liveticker wie die `ef_whitelabel`-Instanz konzipiert — erzielt die stärksten qualitativen Ergebnisse: Die Beispieltexte in Abschnitt 6.3.6 zeigen, dass emotionale Stilmittel des Liveticker-Genres (Wiederholungen, Ausrufe, szenische Abschlüsse) vom Modell zuverlässig umgesetzt werden. Das neutrale Profil zeigt die größte Inkonsistenz (19 % der Einträge zu emotional formuliert), bedingt durch die starken euphorischen Few-Shot-Referenzen.
 
 3. **Verständlichkeit**: Mit **4,3 / 5** erfüllen die generierten Texte die linguistischen Anforderungen des Liveticker-Genres (Kapitel 2.5) zuverlässig: kurze Satzkonstruktionen, Präsenskonstruktionen, idiomatische Ausrufe und konzeptionelle Mündlichkeit sind durchgehend vorhanden. Kein Eintrag überschritt die genretypische Kürze.
 
-Die qualitative Dimension der Bewertung basiert vollständig auf der in Kapitel 6.8 dokumentierten Selbstevaluation; das geplante Experteninterview (vgl. Kapitel 6.8.6) konnte im Abgabezeitraum nicht durchgeführt werden und steht als externe Validierungsmaßnahme aus.
+Die qualitative Dimension der Bewertung basiert auf der in Abschnitt 6.3.6 dokumentierten Selbstevaluation, ergänzt durch das Experteninterview mit einem professionellen Sportredakteur von Eintracht Frankfurt (vgl. Abschnitt 6.3.6).
 
 ### 8.2.3 Synthese
 
@@ -70,7 +70,13 @@ Die Antwort auf die Forschungsfrage lautet daher zustimmend, aber mit einer Qual
 
 **Erweiterte E2E-Tests**: Die Ausweitung der Playwright-Tests auf den vollständigen Redaktionsworkflow mit laufendem Backend und Testdatenbank (Spiel auswählen, Events empfangen, Ticker-Einträge bearbeiten, Freigeben) würde die Regressionssicherheit erhöhen.
 
-**n8n-Workflow-Tests**: Die 15 n8n-Workflows (vgl. Kapitel 6.12.8) sind derzeit ausschließlich manuell verifiziert. Integrationstests gegen eine Staging-Datenbank würden die Zuverlässigkeit der Datenversorgungspipeline absichern.
+**n8n-Workflow-Tests**: Die 15 n8n-Workflows (vgl. Kapitel 6.7) sind derzeit ausschließlich manuell verifiziert. Integrationstests gegen eine Staging-Datenbank würden die Zuverlässigkeit der Datenversorgungspipeline absichern.
+
+**Few-Shot-Kontextualisierung in n8n-Workflows**: Die n8n-Workflows für Halbzeit- und Abpfiff-Zusammenfassungen (Workflow 13) rufen OpenRouter direkt auf, ohne Stilreferenzen aus der `style_references`-Tabelle einzubinden. Eine Erweiterung dieser Workflows um einen SQL-Schritt zur Referenzabfrage würde die stilistische Kohärenz zwischen Backend-generierten und n8n-generierten Einträgen herstellen.
+
+**Größere Evaluationsstichprobe**: Die Hauptevaluation umfasst 16 Einträge aus 9 Spielen — eine für explorative Erkenntnisse ausreichende, für statistisch belastbare Aussagen jedoch zu kleine Datenbasis. Eine Folgestudie mit ≥ 100 Einträgen aus verschiedenen Wettbewerben, Ligen und Spielsituationen würde die Generalisierbarkeit der Ergebnisse stärken und den Einsatz der implementierten nicht-parametrischen Verfahren (Cliff's Delta, Bootstrap-CI) rechtfertigen.
+
+**Langzeitbetrieb**: Das System wurde nicht über einen längeren Zeitraum evaluiert. Aspekte wie Drift der Textqualität über die Zeit, kumulative API-Kosten im Saison-Betrieb und Rate-Limit-Häufigkeit unter realer Dauerlast sind nicht erfasst. Eine Saisonbegleitung über mindestens 34 Bundesliga-Spieltage würde hier belastbare Betriebsdaten liefern.
 
 ### 8.3.2 Mittelfristige Erweiterungen
 
@@ -96,6 +102,6 @@ Die Antwort auf die Forschungsfrage lautet daher zustimmend, aber mit einer Qual
 
 Die vorliegende Arbeit zeigt, dass ein hybrides KI-gestütztes Redaktionssystem den operativen Zeitdruck bei der Liveticker-Erstellung adressieren kann, ohne die redaktionelle Kontrolle aufzugeben. Der `coop`-Modus realisiert das in Kapitel 1.1 formulierte Zielbild eines Systems, in dem „die finale Entscheidungshoheit und publizistische Verantwortung beim Menschen verbleiben".
 
-Die technische Reife des Systems (vgl. Kap. 6.2–6.6) sowie die Erfüllung aller definierten Anforderungen dokumentieren die Tragfähigkeit des Architekturansatzes. Die in Kapitel 7 diskutierten Limitationen markieren klare Erweiterungspfade, stellen aber die grundsätzliche Funktionalität nicht in Frage.
+Die technische Reife des Systems (vgl. Kap. 6.2) sowie die Erfüllung aller definierten Anforderungen dokumentieren die Tragfähigkeit des Architekturansatzes. Die in Kapitel 7 diskutierten Limitationen markieren klare Erweiterungspfade, stellen aber die grundsätzliche Funktionalität nicht in Frage.
 
 Die KI-gestützte Liveticker-Generierung ersetzt den Redakteur nicht — sie gibt ihm die Zeit zurück, die er braucht, um seiner eigentlichen Aufgabe nachzukommen: Journalismus.

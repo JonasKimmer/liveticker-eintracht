@@ -108,30 +108,21 @@ export function useMatchTriggers({
       const key = `${selMatchId}-${phase}`;
       if (summaryTriggeredRef.current.has(key)) continue;
       summaryTriggeredRef.current.add(key);
-      const exists = tickerTexts.some(
-        (t) =>
-          t.match_id === selMatchId &&
-          t.phase === phase &&
-          t.status !== "rejected" &&
-          t.status !== "deleted",
-      );
-      if (!exists) {
-        api
-          .generateMatchSummary(
-            selMatchId,
-            phase,
-            style,
-            instance,
-            language,
-            tickerMode,
-          )
-          .catch((err) =>
-            logger.warn(
-              "[useMatchTriggers] generateMatchSummary silenced:",
-              err?.message,
-            ),
-          );
-      }
+      api
+        .generateMatchSummary(
+          selMatchId,
+          phase,
+          style,
+          instance,
+          language,
+          tickerMode,
+        )
+        .catch((err) =>
+          logger.warn(
+            "[useMatchTriggers] generateMatchSummary silenced:",
+            err?.message,
+          ),
+        );
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
