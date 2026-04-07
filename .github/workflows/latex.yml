@@ -1,0 +1,56 @@
+name: Build LaTeX to PDF
+
+on:
+  push:
+    branches: [main, deploy/render-v2]
+    paths:
+      - "Bachelorarbeit_*.tex"
+      - "docs_short/**"
+      - ".github/workflows/latex.yml"
+  pull_request:
+    branches: [main, deploy/render-v2]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Install LaTeX
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y texlive-latex-base texlive-latex-extra texlive-fonts-recommended
+
+      - name: Build LaTeX to PDF
+        run: |
+          cd ${{ github.workspace }}
+          xelatex -interaction=nonstopmode -halt-on-error Bachelorarbeit_Main_Simple.tex
+          xelatex -interaction=nonstopmode -halt-on-error Bachelorarbeit_Main_Simple.tex
+
+      - name: Check PDF was created
+        run: |
+          if [ -f "Bachelorarbeit_Main_Simple.pdf" ]; then
+            echo "✅ PDF erfolgreich generiert!"
+            ls -lh Bachelorarbeit_Main_Simple.pdf
+          else
+            echo "❌ PDF Generierung fehlgeschlagen"
+            exit 1
+          fi
+
+      - name: Upload PDF as artifact
+        uses: actions/upload-artifact@v3
+        if: success()
+        with:
+          name: Bachelorarbeit_PDF
+          path: Bachelorarbeit_Main_Simple.pdf
+          retention-days: 90
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: Bachelorarbeit_Main_Simple.pdf
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
