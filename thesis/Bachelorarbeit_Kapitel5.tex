@@ -41,7 +41,7 @@ vollständig nachvollziehbar ist.
 
 \section{Backend-Implementierung}\label{backend-implementierung}
 
-\subsection{5.2.1 Projektstruktur und Application Entry
+\subsection{Projektstruktur und Application Entry
 Point}\label{projektstruktur-und-application-entry-point}
 
 Das Backend ist unterhalb von \texttt{backend/app/} in sieben
@@ -80,7 +80,7 @@ Endpunkt & Funktion \\
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
-\subsection{5.2.2 Datenmodelle: Datenbankschema und
+\subsection{Datenmodelle: Datenbankschema und
 API-Validierung}\label{datenmodelle-datenbankschema-und-api-validierung}
 
 \textbf{SQLAlchemy-Datenbankmodelle} --- Das Schema umfasst \textbf{17
@@ -185,7 +185,7 @@ Update-Schemas zu vermeiden.
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
-\subsection{5.2.3 Repository-Schicht}\label{repository-schicht}
+\subsection{Repository-Schicht}\label{repository-schicht}
 
 Jede Entität hat ein dediziertes Repository, das alle SQL-Operationen
 kapselt. Alle Repositories erben von einer gemeinsamen
@@ -209,7 +209,7 @@ werden.
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
-\subsection{5.2.4 API-Router:
+\subsection{API-Router:
 Endpunktstruktur}\label{api-router-endpunktstruktur}
 
 Der Ticker-Bereich ist in drei Router aufgeteilt, die gemeinsam unter
@@ -271,7 +271,7 @@ einsehbar.
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
-\subsection{5.2.5 Ticker-Service:
+\subsection{Ticker-Service:
 Domänenlogik}\label{ticker-service-domuxe4nenlogik}
 
 Der \texttt{ticker\_service} kapselt die Domänenlogik für KI-Einträge.
@@ -311,7 +311,7 @@ Auto-Modus).
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
-\subsection{5.2.6 LLM-Service: Prompt-Aufbau und
+\subsection{LLM-Service: Prompt-Aufbau und
 Provider-Dispatch}\label{llm-service-prompt-aufbau-und-provider-dispatch}
 
 Der \texttt{LLMService} ist eine single-class-Implementierung, die beim
@@ -364,7 +364,7 @@ Nicht erkannte Typen fallen auf \texttt{"comment"} zurück.
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
-\subsection{5.2.7 WebSocket-Endpunkt für
+\subsection{WebSocket-Endpunkt für
 Media-Queue}\label{websocket-endpunkt-fuxfcr-media-queue}
 
 Der WebSocket-Endpunkt \texttt{/ws/media} wird durch einen dedizierten
@@ -399,14 +399,21 @@ Client-Seite übernimmt, ist in Abschnitt 5.4.5 beschrieben.
 
 \section{KI-Generierungspipeline}\label{ki-generierungspipeline}
 
-\subsection{5.3.1 Ablaufdiagramm}\label{ablaufdiagramm}
+\subsection{Ablaufdiagramm}\label{ablaufdiagramm}
 
 Die folgende Darstellung zeigt den vollständigen Ablauf von einem neuen
 Live-Ereignis bis zum publizierten Ticker-Eintrag:
 
+\begin{figure}[h]
+\centering
+\DiagramEventProcessing
+\caption{KI-Generierungspipeline: Event-Import → Deduplizierung → Datenbereichung → LLM-Generierung → Speicherung im Ticker-Eintrag mit anschließender Broadcast an Frontend.}
+\label{fig:event-generation-pipeline}
+\end{figure}
+
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
-\subsection{5.3.2 Deduplizierung}\label{deduplizierung}
+\subsection{Deduplizierung}\label{deduplizierung}
 
 Ein zentrales Qualitätsmerkmal der Pipeline ist die Deduplizierung: Der
 Generierungsendpunkt prüft vor jedem LLM-Aufruf, ob bereits ein
@@ -419,7 +426,7 @@ mit unterschiedlichem (nicht-deterministischem) Text erzeugen.
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
-\subsection{5.3.3 Statusentscheidung und
+\subsection{Statusentscheidung und
 Modus-Steuerung}\label{statusentscheidung-und-modus-steuerung}
 
 Der initiale Status des erzeugten Ticker-Eintrags wird über den
@@ -481,7 +488,7 @@ direkt aus dem journalistischen Qualitätsanspruch in Kapitel 2.1 folgt.
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
-\subsection{5.3.4 Zustandsautomat der
+\subsection{Zustandsautomat der
 Ticker-Einträge}\label{zustandsautomat-der-ticker-eintruxe4ge}
 
 Das konzeptionelle Statusmodell (\texttt{draft} → \texttt{published} /
@@ -504,7 +511,7 @@ verworfene --- sind für spätere Qualitätsanalysen auswertbar.
 
 \section{Frontend-Implementierung}\label{frontend-implementierung}
 
-\subsection{5.4.1 Komponentenhierarchie}\label{komponentenhierarchie}
+\subsection{Komponentenhierarchie}\label{komponentenhierarchie}
 
 Das Frontend ist als React-Anwendung mit TypeScript organisiert. Die
 Hauptansicht (\texttt{LiveTicker}) gliedert sich in drei
@@ -517,7 +524,7 @@ Komponentengrenzen hinweg.
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
-\subsection{5.4.2 React
+\subsection{React
 Context-Architektur}\label{react-context-architektur}
 
 Das Frontend verwendet drei spezialisierte Contexts, die in
@@ -546,7 +553,7 @@ Providers einen klaren Fehler wirft --- ein Entwicklungssicherheitsnetz.
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
-\subsection{5.4.3 Hook-Architektur}\label{hook-architektur}
+\subsection{Hook-Architektur}\label{hook-architektur}
 
 Die Zustandslogik ist in zwei Ebenen von Hooks organisiert: gemeinsame
 Hooks unter \texttt{src/hooks/} und feature-spezifische Hooks unter
@@ -692,7 +699,7 @@ unbeabsichtigten Reconnect-Versuch auslösen.
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
-\subsection{5.4.6 Modusimplementierung im
+\subsection{Modusimplementierung im
 Frontend}\label{modusimplementierung-im-frontend}
 
 Der aktive Modus (\texttt{auto} / \texttt{coop} / \texttt{manual})
@@ -724,7 +731,7 @@ ist.
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
-\subsection{5.4.7 TypeScript-Migration}\label{typescript-migration}
+\subsection{TypeScript-Migration}\label{typescript-migration}
 
 Das Frontend wurde im Verlauf des Projekts von reinem JavaScript auf
 TypeScript migriert. Ziel war nicht die vollständige Auflösung aller
@@ -885,7 +892,7 @@ WebSocket an verbundene Frontend-Clients verteilt.
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
-\subsection{5.5.6 Implementierungsübergreifende
+\subsection{Implementierungsübergreifende
 Muster}\label{implementierungsuxfcbergreifende-muster}
 
 Über alle Workflows hinweg lassen sich fünf Implementierungsmuster

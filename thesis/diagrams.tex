@@ -116,3 +116,71 @@
   \draw[arrow] (ticker) -- node[right] {1:N} (media);
 \end{tikzpicture}%
 }
+
+%% DIAGRAM 6: Communication Flow (Sequence-like but in TikZ)
+\newcommand{\DiagramCommunicationFlow}{%
+\begin{tikzpicture}[node distance=2.5cm, auto]
+  \tikzset{actor/.style={rectangle, draw, fill=orange!15, text width=2cm, text centered, minimum height=0.8cm}}
+  
+  \node[actor] (fe) {React\\Frontend};
+  \node[actor, right of=fe] (be) {FastAPI\\Backend};
+  \node[actor, right of=be] (n8n) {n8n\\Workflow};
+  \node[actor, right of=n8n] (api) {Football\\API};
+  
+  % Flows
+  \draw[arrow] (fe) -- node[above, font=\tiny] {GET /teams} (be);
+  \draw[arrow] (be) -- node[above, font=\tiny] {Webhook trigger} (n8n);
+  \draw[arrow] (n8n) -- node[above, font=\tiny] {HTTP request} (api);
+  \draw[arrow, bend right=30] (api) -- node[below, font=\tiny] {JSON response} (n8n);
+  \draw[arrow] (n8n) -- node[below, font=\tiny] {POST /api/v1} (be);
+  \draw[arrow, bend right=30] (be) -- node[below, font=\tiny] {Data update} (fe);
+\end{tikzpicture}%
+}
+
+%% DIAGRAM 7: LLM Prompt Engineering Pipeline
+\newcommand{\DiagramPromptPipeline}{%
+\begin{tikzpicture}[node distance=2cm, auto]
+  \tikzset{input/.style={rectangle, draw, fill=orange!15, text width=1.5cm, text centered, minimum height=0.8cm, font=\small}}
+  \tikzset{process/.style={rectangle, draw, fill=blue!15, text width=1.5cm, text centered, minimum height=0.8cm, font=\small}}
+  
+  % Inputs
+  \node[input] (event) {Event\\Type};
+  \node[input, below of=event] (facts) {Facts\\(Player, Time)};
+  \node[input, below of=facts] (context) {Match\\Context};
+  \node[input, below of=context] (style) {Few-Shot\\Examples};
+  
+  % Process
+  \node[process, right of=facts, xshift=2cm] (prompt) {Build\\Prompt};
+  
+  % Output
+  \node[process, right of=prompt, xshift=2cm] (llm) {LLM\\Call};
+  \node[process, right of=llm] (output) {Ticker\\Text};
+  
+  % Connections
+  \draw[arrow] (event) -- (prompt);
+  \draw[arrow] (facts) -- (prompt);
+  \draw[arrow] (context) -- (prompt);
+  \draw[arrow] (style) -- (prompt);
+  \draw[arrow] (prompt) -- (llm);
+  \draw[arrow] (llm) -- (output);
+\end{tikzpicture}%
+}
+
+%% DIAGRAM 8: Match Event Processing (Simplified Sequence)
+\newcommand{\DiagramEventProcessing}{%
+\begin{tikzpicture}[node distance=2.5cm, auto]
+  \tikzset{step/.style={rectangle, draw, fill=purple!15, text width=2.2cm, text centered, minimum height=0.9cm, font=\footnotesize}}
+  
+  \node[step] (import) {1. Event\\Import};
+  \node[step, right of=import] (check) {2. Dedup\\Check};
+  \node[step, right of=check] (enrich) {3. Enrich\\Data};
+  \node[step, right of=enrich] (gen) {4. LLM\\Generate};
+  \node[step, below of=gen] (store) {5. Store\\Ticker};
+  
+  \draw[arrow] (import) -- (check);
+  \draw[arrow] (check) -- (enrich);
+  \draw[arrow] (enrich) -- (gen);
+  \draw[arrow] (gen) -- (store);
+  \draw[arrow, bend right=45] (store) -- node[right, font=\tiny] {broadcast} (import);
+\end{tikzpicture}%
+}
