@@ -68,14 +68,14 @@ hinsichtlich ihrer Implikationen eingeordnet.
 Einordnung}\label{methodische-einordnung}
 
 Die zentrale methodische Einschränkung betrifft die Selbstbewertung der
-Textqualität (vgl. Kapitel 6.7, „Keine externe Nutzerstudie''). Im
+Textqualität (vgl. Kapitel 6.7, ``Keine externe Nutzerstudie''). Im
 Design Science Research ist die Evaluation durch den Entwickler ein
 verbreitetes Vorgehen bei initialen Artefaktiterationen (Hevner et
 al.~2004), begrenzt jedoch die externe Validität der qualitativen
 Ergebnisse. Die implementierte Cohen's-Kappa-Metrik ist bewusst als
 Infrastruktur für eine Folgestudie mit externen Ratern angelegt.
 
-Die eingeschränkte Stichprobengröße (vgl. Kapitel 6.7, „Eingeschränkte
+Die eingeschränkte Stichprobengröße (vgl. Kapitel 6.7, ``Eingeschränkte
 Stichprobengröße'') relativiert die Generalisierbarkeit der
 quantitativen Ergebnisse. Insbesondere Randsituationen --- torloses
 Unentschieden, Elfmeterschießen, Spielabbrüche --- sind in der
@@ -85,21 +85,21 @@ Erweiterung der Datenbasis ohne Codeänderung.
 
 \subsubsection{7.2.2 Technische Einordnung}\label{technische-einordnung}
 
-Das Polling-Modell (vgl. Kapitel 6.7, „Polling statt Push'') stellt für
+Das Polling-Modell (vgl. Kapitel 6.7, ``Polling statt Push'') stellt für
 den Einzelbetrieb keine Einschränkung dar, würde aber bei steigender
 Nutzerzahl (\textgreater50 gleichzeitige Clients) zu einer relevanten
 Serverlast führen. Die bestehende WebSocket-Infrastruktur für den
 Media-Kanal zeigt, dass eine Umstellung auf Server-Sent Events für den
 Ticker-Datenfluss technisch machbar ist.
 
-Die fehlende Authentifizierung (vgl. Kapitel 6.7, „Keine
+Die fehlende Authentifizierung (vgl. Kapitel 6.7, ``Keine
 Authentifizierung'') ist im Kontext eines internen Redaktionswerkzeugs
 vertretbar, schließt aber einen offenen Mehrbenutzerbetrieb ohne
 Netzwerkabsicherung aus. Die Architektur ist durch die saubere
 Middleware-Schichtung (FastAPI Dependencies) für eine nachträgliche
 JWT-Integration vorbereitet.
 
-Die 15 n8n-Workflows (vgl. Kapitel 6.7, „Keine Tests für
+Die 15 n8n-Workflows (vgl. Kapitel 6.7, ``Keine Tests für
 n8n-Workflows'') stellen den größten nicht automatisiert getesteten
 Systemteil dar. Da sie die gesamte Datenversorgung des Systems
 verantworten, wäre eine Absicherung durch Integrationstests gegen eine
@@ -135,7 +135,7 @@ Folgeschritt zur weiteren Härtung der Codebasis.
 
 Die in Kapitel 2.5 hergeleiteten linguistischen Anforderungen an
 Liveticker --- Ellipsen, konzeptionelle Mündlichkeit, Graphostilistik
-(z. B. „TOOOOR!{\kern0pt}``) --- stellen besondere Anforderungen an die
+(z. B. ``TOOOOR!{\kern0pt}``) --- stellen besondere Anforderungen an die
 Prompt-Gestaltung. Die Erfahrung zeigt, dass LLMs dazu neigen, in einem
 formelleren Register zu schreiben als es das Genre Liveticker erfordert.
 Die Few-Shot-Referenzen aus der
@@ -183,7 +183,7 @@ besteht in unkontrollierten Halluzinationen, die ohne redaktionelle
 Prüfung veröffentlicht werden. Im journalistischen Kontext, in dem
 Glaubwürdigkeit eine zentrale Ressource darstellt (Beils 2023, S. 57),
 ist dieser Modus daher nur für unkritische Event-Typen (z. B.
-Phasenwechsel wie „Anpfiff'' oder „Halbzeit'') vertretbar.
+Phasenwechsel wie ``Anpfiff'' oder ``Halbzeit'') vertretbar.
 
 \subsubsection{7.3.2 Coop-Modus: Der intendierte
 Produktivbetrieb}\label{coop-modus-der-intendierte-produktivbetrieb}
@@ -286,7 +286,7 @@ Das hybride System verschiebt die Rolle des Liveticker-Redakteurs von
 der \textbf{Textproduktion} zur \textbf{Textredaktion}: Statt unter
 Zeitdruck zu formulieren, prüft, editiert und kuratiert der Redakteur
 KI-generierte Vorschläge. Diese Verschiebung entspricht dem von Bluhm
-und Schäfer (2023, S. 35) beschriebenen Wandel hin zu einer „augmented
+und Schäfer (2023, S. 35) beschriebenen Wandel hin zu einer ``augmented
 authorship'', bei der menschliche Expertise und maschinelle Effizienz
 komplementär zusammenwirken.
 
@@ -330,10 +330,10 @@ Die automatisierte Generierung journalistischer Texte wirft die Frage
 der Transparenz auf: Sollten Leser wissen, ob ein Ticker-Eintrag von
 einem Menschen oder einer KI verfasst wurde? Das System speichert die
 Herkunft jedes Eintrags im Feld \passthrough{\lstinline!source!}
-(\passthrough{\lstinline!"ai"!}, \passthrough{\lstinline!"manual"!}),
+(\passthrough{\lstinline!'ai'!}, \passthrough{\lstinline!'manual'!}),
 legt die Kennzeichnung gegenüber dem Endnutzer aber nicht offen. Für
 einen produktiven Einsatz wäre eine Kennzeichnungspflicht --- etwa durch
-ein dezentes Label wie „KI-unterstützt'' --- zu diskutieren,
+ein dezentes Label wie ``KI-unterstützt'' --- zu diskutieren,
 insbesondere im Kontext der EU-KI-Verordnung (AI Act, EU 2024/1689),
 deren Transparenzpflichten für KI-generierte Texte (Art. 50 Abs. 4)
 gemäß Art. 113 ab August 2026 gelten.

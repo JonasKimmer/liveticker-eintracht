@@ -154,7 +154,7 @@ Eigentor, Gelbe/Rote Karte, Wechsel, Notiz, verfehlter Elfmeter und alle
 \passthrough{\lstinline!isValid!}, \passthrough{\lstinline!type!},
 \passthrough{\lstinline!formatted!}, \passthrough{\lstinline!meta.icon!}
 und \passthrough{\lstinline!warnings!} --- unvollständige Eingaben
-liefern gezielte Hinweise (\passthrough{\lstinline!"Fehlend: Spieler"!})
+liefern gezielte Hinweise (\passthrough{\lstinline!'Fehlend: Spieler'!})
 statt Laufzeitfehler (vgl.
 \passthrough{\lstinline!parseCommand.test.ts!}).
 
@@ -242,8 +242,8 @@ hinterlassen keine persistenten Daten. Der
 \passthrough{\lstinline!get\_db!}-Dependency-Injection von FastAPI,
 sodass alle Route-Handler dieselbe transaktionale Session verwenden.
 Exemplarisch wird ein Test für die Ticker-Mode-Route gezeigt, der sowohl
-den Erfolgsfall (\passthrough{\lstinline!mode: "coop"!} → 200) als auch
-die Validierung (\passthrough{\lstinline!mode: "invalid"!} → 422)
+den Erfolgsfall (\passthrough{\lstinline!mode: 'coop'!} → 200) als auch
+die Validierung (\passthrough{\lstinline!mode: 'invalid'!} → 422)
 abdeckt.
 
 \textbf{Coverage-Verteilung nach Schicht}
@@ -447,8 +447,8 @@ den Produktivbetrieb zu beeinflussen.
 
 \begin{lstlisting}[language=Python]
 class GenerateEventRequest(BaseModel):
-    provider: Optional[str] = Field(default=None, description="Provider override for Evaluation")
-    model:    Optional[str] = Field(default=None, description="Modell override for Evaluation")
+    provider: Optional[str] = Field(default=None, description='Provider override for Evaluation')
+    model:    Optional[str] = Field(default=None, description='Modell override for Evaluation')
 \end{lstlisting}
 
 Für jeden Aufruf wird eine temporäre
@@ -612,12 +612,12 @@ gesteuert werden:
 \begin{itemize}
 
 \item
-  \textbf{neutral}: „sachlich und neutral --- keine Vereinspräferenz''
+  \textbf{neutral}: ``sachlich und neutral --- keine Vereinspräferenz''
 \item
-  \textbf{euphorisch}: „begeistert und emotional --- aus Sicht der
+  \textbf{euphorisch}: ``begeistert und emotional --- aus Sicht der
   Heimfans''
 \item
-  \textbf{kritisch}: „analytisch und kritisch''
+  \textbf{kritisch}: ``analytisch und kritisch''
 \end{itemize}
 
 Da der Backend-Deduplizierungsmechanismus für identische
@@ -642,13 +642,13 @@ Generierter Text
 \endhead
 \bottomrule\noalign{}
 \endlastfoot
-neutral & „22. Minute: TOOOOR! C. Y. Uzun bringt Eintracht Frankfurt in
+neutral & ``22. Minute: TOOOOR! C. Y. Uzun bringt Eintracht Frankfurt in
 Führung! Nach Vorlage von H. Larsson. 1:0!'' \emph{(Eintracht Frankfurt
 vs.~Werder Bremen, Md. 7)} \\
-euphorisch & „81. Minute: WAS IST DENN HIER LOS?! Collins mit der
+euphorisch & ``81. Minute: WAS IST DENN HIER LOS?! Collins mit der
 butterweichen Flanke! DOAN! Der Ball ist drin! TOOOOR! 1:0! Die Hütte
 bebt!'' \emph{(Eintracht Frankfurt vs.~FSV Mainz 05, Md. 9)} \\
-kritisch & „4. Minute: TOOOOR! Kaminski bringt Köln in Führung! Ache mit
+kritisch & ``4. Minute: TOOOOR! Kaminski bringt Köln in Führung! Ache mit
 der Vorlage, Kaminski vollendet eiskalt. 1:0!'' \emph{(1. FC Köln
 vs.~Eintracht Frankfurt, Md. 11)} \\
 \end{longtable}
@@ -672,12 +672,12 @@ Generierter Text
 \endhead
 \bottomrule\noalign{}
 \endlastfoot
-euphorisch & „78. Minute: MARMOOOSH! Der Ball zappelt im Netz!
+euphorisch & ``78. Minute: MARMOOOSH! Der Ball zappelt im Netz!
 Unglaublich! Die Hütte explodiert! Was für ein Strahl! Eintracht führt!
 TOOOOR!'' \\
-neutral & „78. Minute: TOOOOR! Omar Marmoush bringt Eintracht Frankfurt
+neutral & ``78. Minute: TOOOOR! Omar Marmoush bringt Eintracht Frankfurt
 in Führung!'' \\
-kritisch & „78. Minute: TOOOOR! Marmoush mit dem Ausgleich für die
+kritisch & ``78. Minute: TOOOOR! Marmoush mit dem Ausgleich für die
 Eintracht! Die Bayern-Abwehr pennt. Frankfurt nutzt die Chance
 eiskalt.'' \\
 \end{longtable}
@@ -693,8 +693,8 @@ Einordnung --- ein Hinweis darauf, dass das Prompt-Design für dieses
 Profil noch Optimierungspotenzial bietet (vgl. Abschnitt 6.3.6). Der
 kontrollierte Direktvergleich zeigt außerdem eine Inkonsistenz in der
 Spielstands-Interpretation: \passthrough{\lstinline!euphorisch!}
-beschreibt den Treffer als „Führung'',
-\passthrough{\lstinline!kritisch!} als „Ausgleich'' --- obwohl der
+beschreibt den Treffer als ``Führung'',
+\passthrough{\lstinline!kritisch!} als ``Ausgleich'' --- obwohl der
 übergebene Spielstand (1:2 für Bayern) den Treffer als Anschlusstreffer
 (1:2 → 2:2) ausweisen würde. Diese Divergenz ist ein weiterer Beleg für
 die Unzuverlässigkeit der Spielstand-Verarbeitung im neutralen und
@@ -739,7 +739,7 @@ auf drei Dimensionen bewertet:
   (neutral/euphorisch/kritisch)?
 \item
   \textbf{Verständlichkeit}: Ist der Text sprachlich flüssig,
-  grammatikalisch korrekt und dem Genre „Liveticker'' angemessen?
+  grammatikalisch korrekt und dem Genre ``Liveticker'' angemessen?
 \end{enumerate}
 
 Jede Dimension wurde auf einer Skala von 1 (ungenügend) bis 5
@@ -853,7 +853,7 @@ Abpfiff & euphorisch & 2 & 5 & 4 & 3,7 \\
 
 Die niedrige Korrektheitsbewertung des Abpfiff-Eintrags (2/5) ist auf
 eine Score-Halluzination zurückzuführen: Das Modell generierte
-„Eintracht schlägt die Bayern!'' trotz eines Spielstands von 1:2
+``Eintracht schlägt die Bayern!'' trotz eines Spielstands von 1:2
 (Niederlage) im Match-Kontext. Diese Fehlerklasse ist nachfolgend
 dokumentiert.
 
@@ -863,7 +863,7 @@ dokumentiert.
 
 \begin{quote}
 Event: Tor, 81. Minute, R. Doan (Eintracht Frankfurt vs.~FSV Mainz 05),
-Vorlage Collins KI-Text: „81. Minute: WAS IST DENN HIER LOS?! Collins
+Vorlage Collins KI-Text: ``81. Minute: WAS IST DENN HIER LOS?! Collins
 mit der butterweichen Flanke! DOAN! Der Ball ist drin! TOOOOR! 1:0! Die
 Hütte bebt!''
 \end{quote}
@@ -878,7 +878,7 @@ genrekonform.
 
 \begin{quote}
 Event: Rote Karte, 70. Minute, Thomas Müller (FC Bayern München),
-Spielstand 1:2 KI-Text: „70. Minute: Rot! Müller fliegt! Der Wahnsinn!
+Spielstand 1:2 KI-Text: ``70. Minute: Rot! Müller fliegt! Der Wahnsinn!
 Die Bayern mit zehn Mann! Frankfurt, jetzt geht was! Die SGE, sie lebt!
 Der Rasen brennt!''
 \end{quote}
@@ -895,12 +895,12 @@ Eintracht-Sicht positiv zu rahmen ist.
 
 \begin{quote}
 Event: Auswechslung, 65. Minute, S. Mbangula für P. Covic (Eintracht
-Frankfurt vs.~Werder Bremen, Werder Bremen-Wechsel) KI-Text: „65.
+Frankfurt vs.~Werder Bremen, Werder Bremen-Wechsel) KI-Text: ``65.
 Minute: Erster Wechsel bei Werder Bremen. S. Mbangula geht vom Feld. Für
 ihn kommt P. Covic.''
 \end{quote}
 
-Bewertung: Fakten und Stil sind korrekt. Die Formulierung „Erster
+Bewertung: Fakten und Stil sind korrekt. Die Formulierung ``Erster
 Wechsel'' ist nicht aus dem Kontext ableitbar und stellt eine kleine
 Halluzination dar; in diesem Fall war sie zufällig korrekt.
 
@@ -916,7 +916,7 @@ rocking!''
 
 Bewertung: Die Übersetzung überträgt alle Fakten korrekt und erhält die
 emotionale Intensität des euphorischen Stils. Die idiomatische Anpassung
-(„Die Hütte bebt'' → „The house is rocking'') zeigt, dass das LLM nicht
+(``Die Hütte bebt'' → ``The house is rocking'') zeigt, dass das LLM nicht
 wörtlich übersetzt, sondern genreäquivalente Formulierungen wählt.
 Mehrsprachige Ausgabe ist über den
 \passthrough{\lstinline!language!}-Parameter und die Batch-Übersetzung
@@ -949,21 +949,21 @@ Beispiel
 \bottomrule\noalign{}
 \endlastfoot
 \textbf{Stil-Inkonsistenz} & 3 / 16 (19 \%) & Neutraler Stil enthält
-emotionale Formulierungen & „33. Minute: Oh nein! Lienhart sieht Gelb!
+emotionale Formulierungen & ``33. Minute: Oh nein! Lienhart sieht Gelb!
 \ldots{} Aber Kopf hoch, Jungs! Kämpfen!'' \emph{(angefordert:
 neutral)} \\
 \textbf{Fakten-Halluzination} & 1 / 16 (6 \%) & Das LLM erfindet
 Details, die nicht im Kontext stehen & Pre-Match-Text erfand eine
-Wettempfehlung: „Wir tippen auf Double Chance: Sieg \ldots{} oder
+Wettempfehlung: ``Wir tippen auf Double Chance: Sieg \ldots{} oder
 Remis.'' \\
 \textbf{Score-Halluzination} & 1 / 9 (11 \%) & Spielstand aus
 Match-Kontext wird ignoriert, fiktiver Ausgang erzeugt & Abpfiff-Text
-„Eintracht schlägt die Bayern!'' bei übergebenem Spielstand 1:2
+``Eintracht schlägt die Bayern!'' bei übergebenem Spielstand 1:2
 (Niederlage) \\
 \textbf{Team-Verwechslung} & 0 / 16 (0 \%) & Tor wird dem falschen Team
 zugeordnet & Nicht aufgetreten \\
 \textbf{Wiederholung} & 2 / 16 (13 \%) & Aufeinanderfolgende Texte
-ähneln sich stark im Satzbau & Mehrere Tore mit identischer Formel „X
+ähneln sich stark im Satzbau & Mehrere Tore mit identischer Formel ``X
 bringt Y in Führung! Nach Vorlage von Z. 1:0.'' \\
 \textbf{Überlänge} & 0 / 16 (0 \%) & Text überschreitet die typische
 Liveticker-Kürze & Nicht aufgetreten \\
@@ -979,7 +979,7 @@ Lösung wäre die Trennung der Few-Shot-Pools nach Instanz und Stilprofil.
 
 Die \textbf{Score-Halluzination} ist qualitativ schwerwiegender: Im
 ergänzenden Eval-Lauf (N = 9) generierte das Modell für den
-Abpfiff-Event den Text „Eintracht schlägt die Bayern!'' obwohl der
+Abpfiff-Event den Text ``Eintracht schlägt die Bayern!'' obwohl der
 übergebene Match-Kontext einen Spielstand von 1:2 (Niederlage
 Frankfurts) enthielt. Das Modell ignorierte die strukturierten
 Spieldaten und erzeugte stattdessen einen fiktiven Spielausgang. Dieser
@@ -1013,7 +1013,7 @@ Testspiele enthielten manuell erstellte Einträge entweder ohne Text
 \passthrough{\lstinline!auto!}-Modus betrieben. Für Match 1 (FV Engers
 07 vs.~Eintracht Frankfurt, 0:5) lag für Tor in der 44. Minute ein
 manueller Eintrag ohne Fließtext vor (Icon: 🎬, Video-URL, kein
-Textkörper); der KI-generierte Text lautete: \emph{„44. Minute: TOOOOR!
+Textkörper); der KI-generierte Text lautete: \emph{``44. Minute: TOOOOR!
 J. Bahoya bringt Frankfurt auf 1:0! Traumpass von X. Das Stadion
 bebt!{\kern0pt}``} --- eine vollständige Faktendarstellung, die der
 manuelle Eintrag nicht enthielt.
@@ -1234,10 +1234,10 @@ Anthropic & --- & \passthrough{\lstinline!claude-haiku-4-5-20251001!} &
 \end{longtable}
 }
 
-\emph{Messserie „Render-Deployment'': 25 sequenzielle HTTP-Aufrufe an
+\emph{Messserie ``Render-Deployment'': 25 sequenzielle HTTP-Aufrufe an
 \passthrough{\lstinline!/api/v1/ticker/generate/\{event\_id\}!},
 End-to-End (Client → Render → OpenRouter → Gemini → Render → Client).
-Messserie „Direkt'': 9 direkte API-Aufrufe über
+Messserie ``Direkt'': 9 direkte API-Aufrufe über
 \passthrough{\lstinline!generate\_ticker\_text()!} (lokal), ohne
 Render-Netzwerk-Overhead. Beide Serien verwenden dasselbe
 Provider-Modell und sind miteinander konsistent (Median-Differenz: 96
@@ -1541,7 +1541,7 @@ keine konsequent liga-spezifische Stilkonditionierung.
 \passthrough{\lstinline!source!}-Feld. Das bedeutet, dass auch manuell
 verfasste Einträge übersetzt werden, obwohl diese bereits in der
 Zielsprache vorliegen könnten. Die Einschränkung liegt in einer
-fehlenden Filterung nach \passthrough{\lstinline!source="ai"!} im
+fehlenden Filterung nach \passthrough{\lstinline!source='ai'!} im
 Batch-Endpunkt. Für eine präzise Mehrsprachigkeitsstrategie wäre eine
 separate Behandlung manueller Einträge sinnvoll.
 

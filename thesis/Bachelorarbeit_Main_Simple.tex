@@ -16,11 +16,16 @@
 \usepackage{tabularx}
 \usepackage{graphicx}
 
+% Pandoc compatibility
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+
 \geometry{left=2.5cm, right=2cm, top=2.5cm, bottom=2.5cm}
 \onehalfspacing
 
 \pagestyle{fancy}
 \fancyhf{}
+\setlength{\headheight}{14.49998pt}
 \fancyhead[L]{\nouppercase{\leftmark}}
 \fancyhead[R]{\thepage}
 

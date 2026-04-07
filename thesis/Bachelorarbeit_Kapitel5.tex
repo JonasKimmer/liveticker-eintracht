@@ -17,7 +17,7 @@ Automatisierungsworkflows. Ergänzend werden die TypeScript-Migration und
 die Testabdeckung als Qualitätsmerkmale des Entwicklungsprozesses
 dokumentiert.
 
-Die Implementierung folgt dem Grundsatz \textbf{„so einfach wie nötig,
+Die Implementierung folgt dem Grundsatz \textbf{``so einfach wie nötig,
 so modular wie sinnvoll''}: Standardpfade (CRUD, Listabfragen) sind
 bewusst direkt gehalten (Router → Repository), während die
 LLM-Generierung mit ihren Retry-, Semaphore- und Few-Shot-Mechanismen in
@@ -198,8 +198,8 @@ Match-Scores:
 
 \begin{lstlisting}[language=Python]
 class MatchResponse(BaseModel):
-    home_score: Optional[int] = Field(None, serialization_alias="teamHomeScore")
-    away_score: Optional[int] = Field(None, serialization_alias="teamAwayScore")
+    home_score: Optional[int] = Field(None, serialization_alias='teamHomeScore')
+    away_score: Optional[int] = Field(None, serialization_alias='teamAwayScore')
 \end{lstlisting}
 
 Hier wird \passthrough{\lstinline!serialization\_alias!} (nicht
@@ -227,7 +227,7 @@ Für den Match-Status-Lifecycle definiert
 \passthrough{\lstinline!MatchUpdate!} ein explizites Alias:
 
 \begin{lstlisting}[language=Python]
-match_state: Optional[MatchState] = Field(None, alias="state")
+match_state: Optional[MatchState] = Field(None, alias='state')
 \end{lstlisting}
 
 Für Ticker-Einträge wird der Status über ein separates PATCH-Schema
@@ -406,7 +406,7 @@ Standard: 8) und begrenzt gleichzeitige LLM-Aufrufe pro Prozessinstanz.
 \textbf{\passthrough{\lstinline!make\_ai\_entry()!}} ist ein schlanker
 Builder, der aus den LLM-Ergebnissen ein
 \passthrough{\lstinline!TickerEntryCreate!}-Schema erzeugt. Er setzt
-\passthrough{\lstinline!source="ai"!} und legt den initialen Status
+\passthrough{\lstinline!source='ai'!} und legt den initialen Status
 abhängig vom Aufrufkontext fest (\passthrough{\lstinline!draft!} im
 Co-op-Modus, \passthrough{\lstinline!published!} im Auto-Modus).
 
@@ -421,11 +421,11 @@ Client instanziiert und über ein Dispatch-Dictionary aufruft:
 
 \begin{lstlisting}[language=Python]
 dispatch = {
-    "mock":       self._generate_mock_text,
-    "gemini":     self._generate_gemini_text,
-    "openrouter": self._generate_openrouter_text,
-    "openai":     self._generate_openai_text,
-    "anthropic":  self._generate_anthropic_text,
+    'mock':       self._generate_mock_text,
+    'gemini':     self._generate_gemini_text,
+    'openrouter': self._generate_openrouter_text,
+    'openai':     self._generate_openai_text,
+    'anthropic':  self._generate_anthropic_text,
 }
 return dispatch[self.provider](**kwargs)
 \end{lstlisting}
@@ -442,8 +442,8 @@ Fakten-Sektion. Jeder Parameter (Ereignistyp, Detail, Minute, Spieler,
 Team) wird nur dann eingebunden, wenn er vorhanden ist. Die
 Ereignisbezeichnung wird aus
 \passthrough{\lstinline!EVENT\_TYPE\_LABEL!} in lesbares Deutsch
-übersetzt (z. B. \passthrough{\lstinline!"goal"!} →
-\passthrough{\lstinline!"Tor"!}).
+übersetzt (z. B. \passthrough{\lstinline!'goal'!} →
+\passthrough{\lstinline!'Tor'!}).
 
 \textbf{\passthrough{\lstinline!\_build\_few\_shot\_block()!}}
 formatiert die Stilreferenzen als nummerierte Beispiele:
@@ -451,8 +451,8 @@ formatiert die Stilreferenzen als nummerierte Beispiele:
 \begin{lstlisting}
 ### STILREFERENZEN
 Schreibe in exakt diesem Stil (Rhythmus, Wortwahl, Emotionalität):
-- "Mustermann trifft mit einem satten Rechtsschuss – 1:0!"
-- "Eintracht schlägt zu – der erste Treffer des Abends!"
+- 'Mustermann trifft mit einem satten Rechtsschuss – 1:0!'
+- 'Eintracht schlägt zu – der erste Treffer des Abends!'
 \end{lstlisting}
 
 \textbf{\passthrough{\lstinline!\_build\_prematch\_parts()!}} ergänzt
@@ -486,7 +486,7 @@ sonstigen transienten Fehlern greift exponentielles Backoff
 (Partner-API: \passthrough{\lstinline!PartnerGoal!}, Football-API:
 \passthrough{\lstinline!Goal!}) auf interne Bezeichner
 (\passthrough{\lstinline!goal!}). Nicht erkannte Typen fallen auf
-\passthrough{\lstinline!"comment"!} zurück.
+\passthrough{\lstinline!'comment'!} zurück.
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
@@ -520,7 +520,7 @@ class MediaConnectionManager:
 Wenn das Backend neue Media-Queue-Einträge über
 \passthrough{\lstinline!POST /api/v1/media/incoming!} erhält, ruft der
 Router anschließend
-\passthrough{\lstinline!manager.broadcast(\{"type": "new\_media", "items": [...]\})!}
+\passthrough{\lstinline!manager.broadcast(\{'type': 'new\_media', 'items': [...]\})!}
 auf. Alle verbundenen Clients erhalten das Update in Echtzeit. Der
 Manager hält Verbindungen in einer einfachen In-Memory-Liste, was für
 die aktuelle Nutzung (wenige gleichzeitige Redakteur-Clients)
@@ -581,7 +581,7 @@ sequenceDiagram
     alt Modus=coop
         FE-->>FE: Entwurf in Draft-Queue anzeigen
         note over FE: Redakteur: TAB (accept) / ESC (reject)
-        FE->>API: PATCH /api/v1/ticker/{id} {status:"published"}
+        FE->>API: PATCH /api/v1/ticker/{id} {status:'published'}
     else Modus=auto
         note over DB: status=published gesetzt bei Generierung
     end
@@ -694,7 +694,7 @@ Der Übergang \passthrough{\lstinline!published → draft!} (Undo) ist im
 Frontend als \textbf{Toast-Aktion} realisiert: Nach jeder Publikation
 erscheint für 5 Sekunden ein Widerruf-Button. Über
 \passthrough{\lstinline!PATCH /api/v1/ticker/\{id\}!} mit
-\passthrough{\lstinline!\{ "status": "draft" \}!} wird der Eintrag
+\passthrough{\lstinline!\{ 'status': 'draft' \}!} wird der Eintrag
 zurückgesetzt und steht erneut zur Bearbeitung bereit.
 
 \passthrough{\lstinline!rejected!}-Einträge werden nicht aus der
@@ -736,7 +736,7 @@ graph TD
     CenterPanel --> InstagramPanel
 
     LeftPanel --> PublishedEntry
-    RightPanel --> Collapsible["Collapsible (Statistiken, Aufstellung, Spieler)"]
+    RightPanel --> Collapsible['Collapsible (Statistiken, Aufstellung, Spieler)']
     RightPanel --> FormationColumn
     RightPanel --> StatRow
 
@@ -763,7 +763,7 @@ Tastatur-Aktionen:
 
 \begin{lstlisting}
 interface TickerModeContextValue {
-  mode: TickerMode; // "auto" | "coop" | "manual"
+  mode: TickerMode; // 'auto' | 'coop' | 'manual'
   setMode: (mode: TickerMode) => void;
   acceptDraft: () => Promise<void>; // TAB-Shortcut
   rejectDraft: () => Promise<void>; // ESC-Shortcut
@@ -893,7 +893,7 @@ aggregiert die drei Hooks und stellt die Daten über
 \begin{lstlisting}
 // src/utils/resolvePollingInterval.ts
 export function resolvePollingInterval(matchState: string | null): number {
-  if (matchState === "Live" || matchState === "FullTime") return POLL_EVENTS_MS; // 5000
+  if (matchState === 'Live' || matchState === 'FullTime') return POLL_EVENTS_MS; // 5000
   if (matchState == null) return POLL_EVENTS_MS; // 5000
   return POLL_PREMATCH_MS; // 5000
 }
@@ -948,19 +948,19 @@ Command & Ausgabe & Phase & Icon \\
 \endhead
 \bottomrule\noalign{}
 \endlastfoot
-\passthrough{\lstinline!/prematch!} & „Vorbericht'' &
+\passthrough{\lstinline!/prematch!} & ``Vorbericht'' &
 \passthrough{\lstinline!Before!} & 📣 \\
-\passthrough{\lstinline!/anpfiff!} & „Anpfiff!'' &
+\passthrough{\lstinline!/anpfiff!} & ``Anpfiff!'' &
 \passthrough{\lstinline!FirstHalf!} & 📣 \\
-\passthrough{\lstinline!/hz!} & „Halbzeit!'' &
+\passthrough{\lstinline!/hz!} & ``Halbzeit!'' &
 \passthrough{\lstinline!FirstHalfBreak!} & 🔔 \\
-\passthrough{\lstinline!/2hz!} & „Anstoß zur 2. Halbzeit'' &
+\passthrough{\lstinline!/2hz!} & ``Anstoß zur 2. Halbzeit'' &
 \passthrough{\lstinline!SecondHalf!} & 📣 \\
-\passthrough{\lstinline!/vz1!} & „Beginn der Verlängerung'' &
+\passthrough{\lstinline!/vz1!} & ``Beginn der Verlängerung'' &
 \passthrough{\lstinline!ExtraFirstHalf!} & 📣 \\
-\passthrough{\lstinline!/elfmeter!} & „Elfmeterschießen beginnt'' &
+\passthrough{\lstinline!/elfmeter!} & ``Elfmeterschießen beginnt'' &
 \passthrough{\lstinline!PenaltyShootout!} & 🥅 \\
-\passthrough{\lstinline!/abpfiff!} & „Abpfiff!'' &
+\passthrough{\lstinline!/abpfiff!} & ``Abpfiff!'' &
 \passthrough{\lstinline!After!} & 📣 \\
 \end{longtable}
 }
@@ -970,21 +970,21 @@ Command & Ausgabe & Phase & Icon \\
 strukturierte Texte mit Validierungshinweisen:
 
 \begin{lstlisting}
-/g Mustermann EF  → "TOR — Mustermann (EF)"  + icon ⚽
-/gelb Müller EF   → "Gelb — Müller (EF)"     + icon 🟨
-/rot Huber Bayern → "Rote Karte — Huber (Bayern)" + icon 🟥
-/s EinRaus AusRein EF → "Wechsel — EinRaus ↔ AusRein (EF)" + icon 🔄
-/n Freistoß knapp über das Tor → "Freistoß knapp über das Tor"
+/g Mustermann EF  → 'TOR — Mustermann (EF)'  + icon ⚽
+/gelb Müller EF   → 'Gelb — Müller (EF)'     + icon 🟨
+/rot Huber Bayern → 'Rote Karte — Huber (Bayern)' + icon 🟥
+/s EinRaus AusRein EF → 'Wechsel — EinRaus ↔ AusRein (EF)' + icon 🔄
+/n Freistoß knapp über das Tor → 'Freistoß knapp über das Tor'
 \end{lstlisting}
 
 Für unvollständige Eingaben gibt \passthrough{\lstinline!warnings[]!}
-gezielte Hinweise zurück (\passthrough{\lstinline!"Fehlend: Spieler"!}),
+gezielte Hinweise zurück (\passthrough{\lstinline!'Fehlend: Spieler'!}),
 die im \passthrough{\lstinline!EntryEditor!} live angezeigt werden. Das
 Frontend kann damit ohne Backend-Aufruf Validierungsfeedback geben.
 
 Nicht erkannte Commands werden mit
 \passthrough{\lstinline!isValid: false!} und einer Fehlermeldung
-zurückgegeben (\passthrough{\lstinline!"Unbekannter Command: /xyz"!}),
+zurückgegeben (\passthrough{\lstinline!'Unbekannter Command: /xyz'!}),
 statt einen Laufzeitfehler zu werfen.
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
@@ -1055,7 +1055,7 @@ aktualisiert.
 
 \textbf{\passthrough{\lstinline!useAutoPublisher!}} --- Im Auto-Modus
 überwacht dieser Hook die \passthrough{\lstinline!tickerTexts!} auf neue
-Draft-Einträge (\passthrough{\lstinline!status="draft"!}) und publiziert
+Draft-Einträge (\passthrough{\lstinline!status='draft'!}) und publiziert
 sie automatisch. Dies ist als Frontend-Fallback gedacht: Primär setzt
 n8n mit \passthrough{\lstinline!auto\_publish=True!} den Status direkt
 beim Generieren; \passthrough{\lstinline!useAutoPublisher!} fängt Fälle
@@ -1083,7 +1083,7 @@ umbenannt, dann \passthrough{\lstinline!tsconfig.json!} konfiguriert
 TypeScript-Fehler von innen nach außen behoben --- beginnend mit dem
 Typ-System (\passthrough{\lstinline!src/types/index.ts!}) über Contexts
 bis zu den Komponenten. Der \passthrough{\lstinline!strict!}-Modus ist
-derzeit deaktiviert (\passthrough{\lstinline!"strict": false!}), um die
+derzeit deaktiviert (\passthrough{\lstinline!'strict': false!}), um die
 inkrementelle Migration ohne blockierende Fehlereskalation zu
 ermöglichen.
 
@@ -1092,9 +1092,9 @@ ermöglichen.
 Domain-Interfaces:
 
 \begin{lstlisting}
-export type TickerMode = "auto" | "coop" | "manual";
-export type TickerStyle = "neutral" | "euphorisch" | "kritisch";
-export type MatchPhase = "Before" | "FirstHalf" | "FirstHalfBreak" | "SecondHalf" | ...;
+export type TickerMode = 'auto' | 'coop' | 'manual';
+export type TickerStyle = 'neutral' | 'euphorisch' | 'kritisch';
+export type MatchPhase = 'Before' | 'FirstHalf' | 'FirstHalfBreak' | 'SecondHalf' | ...;
 
 export interface TickerEntry {
   id: number;
@@ -1102,8 +1102,8 @@ export interface TickerEntry {
   event_id?: number | null;
   text: string;
   style?: string | null;
-  status: "draft" | "published" | "rejected";
-  source?: "ai" | "manual";
+  status: 'draft' | 'published' | 'rejected';
+  source?: 'ai' | 'manual';
   minute?: number | null;
   phase?: string | null;
   icon?: string | null;
@@ -1339,12 +1339,12 @@ kritische manuelle Eingabeschicht bildet. Ein exemplarischer Testfall
 illustriert das Prüfmuster:
 
 \begin{lstlisting}
-test("vollstaendiger Command ist valid", () => {
-  const result = parseCommand("/g Muller EIN", 32);
+test('vollstaendiger Command ist valid', () => {
+  const result = parseCommand('/g Muller EIN', 32);
   expect(result.isValid).toBe(true);
-  expect(result.type).toBe("goal");
-  expect(result.formatted).toBe("TOR -- Muller (EIN)");
-  expect(result.meta.icon).toBe("⚽");
+  expect(result.type).toBe('goal');
+  expect(result.formatted).toBe('TOR -- Muller (EIN)');
+  expect(result.meta.icon).toBe('⚽');
   expect(result.warnings).toHaveLength(0);
 });
 \end{lstlisting}
