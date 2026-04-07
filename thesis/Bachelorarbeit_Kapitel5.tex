@@ -508,41 +508,6 @@ Client-Seite übernimmt, ist in Abschnitt 5.4.5 beschrieben.
 Die folgende Darstellung zeigt den vollständigen Ablauf von einem neuen
 Live-Ereignis bis zum publizierten Ticker-Eintrag:
 
-\begin{Shaded}
-\begin{Highlighting}[]
-\NormalTok{sequenceDiagram}
-\NormalTok{    participant n8n as n8n Workflow}
-\NormalTok{    participant API as FastAPI Backend}
-\NormalTok{    participant DB as PostgreSQL}
-\NormalTok{    participant LLM as LLM Provider}
-\NormalTok{    participant FE as React Frontend}
-
-\NormalTok{    n8n{-}\textgreater{}\textgreater{}API: POST /api/v1/events (Ereignis{-}Import)}
-\NormalTok{    API{-}\textgreater{}\textgreater{}DB: INSERT INTO events}
-\NormalTok{    n8n{-}\textgreater{}\textgreater{}API: POST /api/v1/ticker/generate/\{event\_id\}}
-\NormalTok{    API{-}\textgreater{}\textgreater{}DB: SELECT ticker\_entry WHERE event\_id (Dedup)}
-\NormalTok{    alt Eintrag existiert bereits}
-\NormalTok{        API{-}{-}\textgreater{}\textgreater{}n8n: 200 OK (existierender Eintrag)}
-\NormalTok{    else Neues Ereignis}
-\NormalTok{        API{-}\textgreater{}\textgreater{}DB: SELECT match + teams (joinedload)}
-\NormalTok{        API{-}\textgreater{}\textgreater{}DB: SELECT style\_references (Few{-}Shot)}
-\NormalTok{        API{-}\textgreater{}\textgreater{}LLM: Prompt (Fakten + Kontext + Stilreferenzen)}
-\NormalTok{        LLM{-}{-}\textgreater{}\textgreater{}API: Generierter Text + Modellname}
-\NormalTok{        API{-}\textgreater{}\textgreater{}DB: INSERT ticker\_entry (status=draft|published)}
-\NormalTok{        API{-}{-}\textgreater{}\textgreater{}n8n: 201 Created}
-\NormalTok{    end}
-\NormalTok{    FE{-}\textgreater{}\textgreater{}API: GET /api/v1/ticker/\{match\_id\} (Polling 5s)}
-\NormalTok{    API{-}{-}\textgreater{}\textgreater{}FE: TickerEntry[] (inkl. neuer Entwurf)}
-\NormalTok{    alt Modus=coop}
-\NormalTok{        FE{-}{-}\textgreater{}\textgreater{}FE: Entwurf in Draft{-}Queue anzeigen}
-\NormalTok{        note over FE: Redakteur: TAB (accept) / ESC (reject)}
-\NormalTok{        FE{-}\textgreater{}\textgreater{}API: PATCH /api/v1/ticker/\{id\} \{status:"published"\}}
-\NormalTok{    else Modus=auto}
-\NormalTok{        note over DB: status=published gesetzt bei Generierung}
-\NormalTok{    end}
-\end{Highlighting}
-\end{Shaded}
-
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
 \subsubsection{5.3.2 Deduplizierung}\label{deduplizierung}
@@ -663,38 +628,6 @@ Das Frontend ist als React-Anwendung mit TypeScript organisiert. Die
 Hauptansicht (\texttt{LiveTicker}) gliedert sich in drei
 Panel-Komponenten, die von gemeinsam genutzten Hooks und Contexts
 gespeist werden:
-
-\begin{Shaded}
-\begin{Highlighting}[]
-\NormalTok{graph TD}
-\NormalTok{    App {-}{-}\textgreater{} LiveTicker}
-\NormalTok{    LiveTicker {-}{-}\textgreater{} |TickerModeContext| LeftPanel}
-\NormalTok{    LiveTicker {-}{-}\textgreater{} |TickerModeContext| CenterPanel}
-\NormalTok{    LiveTicker {-}{-}\textgreater{} |TickerModeContext| RightPanel}
-\NormalTok{    LiveTicker {-}{-}\textgreater{} |TickerDataContext| LeftPanel}
-\NormalTok{    LiveTicker {-}{-}\textgreater{} |TickerDataContext| CenterPanel}
-\NormalTok{    LiveTicker {-}{-}\textgreater{} |TickerDataContext| RightPanel}
-\NormalTok{    LiveTicker {-}{-}\textgreater{} |TickerActionsContext| CenterPanel}
-
-\NormalTok{    CenterPanel {-}{-}\textgreater{} EventCard}
-\NormalTok{    CenterPanel {-}{-}\textgreater{} EntryEditor}
-\NormalTok{    CenterPanel {-}{-}\textgreater{} AIDraft}
-\NormalTok{    CenterPanel {-}{-}\textgreater{} SummarySection}
-\NormalTok{    CenterPanel {-}{-}\textgreater{} MediaPickerPanel}
-\NormalTok{    CenterPanel {-}{-}\textgreater{} YouTubePanel}
-\NormalTok{    CenterPanel {-}{-}\textgreater{} TwitterPanel}
-\NormalTok{    CenterPanel {-}{-}\textgreater{} InstagramPanel}
-
-\NormalTok{    LeftPanel {-}{-}\textgreater{} PublishedEntry}
-\NormalTok{    RightPanel {-}{-}\textgreater{} Collapsible["Collapsible (Statistiken, Aufstellung, Spieler)"]}
-\NormalTok{    RightPanel {-}{-}\textgreater{} FormationColumn}
-\NormalTok{    RightPanel {-}{-}\textgreater{} StatRow}
-
-\NormalTok{    EventCard {-}{-}\textgreater{} |onGenerate| TickerActionsContext}
-\NormalTok{    AIDraft {-}{-}\textgreater{} |onPublished/onDraftActive| TickerActionsContext}
-\NormalTok{    EntryEditor {-}{-}\textgreater{} |onManualPublish| TickerActionsContext}
-\end{Highlighting}
-\end{Shaded}
 
 Die drei Panels sind physisch getrennte React-Komponenten, kommunizieren
 aber ausschließlich über Context-Provider --- kein Prop-Drilling über

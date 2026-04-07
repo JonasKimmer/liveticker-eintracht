@@ -251,38 +251,6 @@ Die persistente Seite der Media-Queue wird durch das `MediaQueueStatus`-Enum ges
 
 Die folgende Darstellung zeigt den vollständigen Ablauf von einem neuen Live-Ereignis bis zum publizierten Ticker-Eintrag:
 
-```mermaid
-sequenceDiagram
-    participant n8n as n8n Workflow
-    participant API as FastAPI Backend
-    participant DB as PostgreSQL
-    participant LLM as LLM Provider
-    participant FE as React Frontend
-
-    n8n->>API: POST /api/v1/events (Ereignis-Import)
-    API->>DB: INSERT INTO events
-    n8n->>API: POST /api/v1/ticker/generate/{event_id}
-    API->>DB: SELECT ticker_entry WHERE event_id (Dedup)
-    alt Eintrag existiert bereits
-        API-->>n8n: 200 OK (existierender Eintrag)
-    else Neues Ereignis
-        API->>DB: SELECT match + teams (joinedload)
-        API->>DB: SELECT style_references (Few-Shot)
-        API->>LLM: Prompt (Fakten + Kontext + Stilreferenzen)
-        LLM-->>API: Generierter Text + Modellname
-        API->>DB: INSERT ticker_entry (status=draft|published)
-        API-->>n8n: 201 Created
-    end
-    FE->>API: GET /api/v1/ticker/{match_id} (Polling 5s)
-    API-->>FE: TickerEntry[] (inkl. neuer Entwurf)
-    alt Modus=coop
-        FE-->>FE: Entwurf in Draft-Queue anzeigen
-        note over FE: Redakteur: TAB (accept) / ESC (reject)
-        FE->>API: PATCH /api/v1/ticker/{id} {status:"published"}
-    else Modus=auto
-        note over DB: status=published gesetzt bei Generierung
-    end
-```
 
 ---
 
@@ -340,35 +308,6 @@ Der Übergang `published → draft` (Undo) ist im Frontend als **Toast-Aktion** 
 
 Das Frontend ist als React-Anwendung mit TypeScript organisiert. Die Hauptansicht (`LiveTicker`) gliedert sich in drei Panel-Komponenten, die von gemeinsam genutzten Hooks und Contexts gespeist werden:
 
-```mermaid
-graph TD
-    App --> LiveTicker
-    LiveTicker --> |TickerModeContext| LeftPanel
-    LiveTicker --> |TickerModeContext| CenterPanel
-    LiveTicker --> |TickerModeContext| RightPanel
-    LiveTicker --> |TickerDataContext| LeftPanel
-    LiveTicker --> |TickerDataContext| CenterPanel
-    LiveTicker --> |TickerDataContext| RightPanel
-    LiveTicker --> |TickerActionsContext| CenterPanel
-
-    CenterPanel --> EventCard
-    CenterPanel --> EntryEditor
-    CenterPanel --> AIDraft
-    CenterPanel --> SummarySection
-    CenterPanel --> MediaPickerPanel
-    CenterPanel --> YouTubePanel
-    CenterPanel --> TwitterPanel
-    CenterPanel --> InstagramPanel
-
-    LeftPanel --> PublishedEntry
-    RightPanel --> Collapsible["Collapsible (Statistiken, Aufstellung, Spieler)"]
-    RightPanel --> FormationColumn
-    RightPanel --> StatRow
-
-    EventCard --> |onGenerate| TickerActionsContext
-    AIDraft --> |onPublished/onDraftActive| TickerActionsContext
-    EntryEditor --> |onManualPublish| TickerActionsContext
-```
 
 Die drei Panels sind physisch getrennte React-Komponenten, kommunizieren aber ausschließlich über Context-Provider — kein Prop-Drilling über Komponentengrenzen hinweg.
 

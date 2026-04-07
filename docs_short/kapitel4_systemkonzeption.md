@@ -14,51 +14,6 @@ Die **Präsentationsschicht** ist als White-Label-Frontend in React und TypeScri
 
 Die folgende Abbildung zeigt die drei Schichten mit ihren Technologien und Kommunikationspfaden:
 
-```mermaid
-graph LR
-    classDef schicht fill:#EFF6FF,stroke:#3B82F6,stroke-width:1.5px,color:#1E3A8A
-    classDef extern fill:#F9FAFB,stroke:#9CA3AF,stroke-width:1px,color:#374151
-    classDef db fill:#F0FDF4,stroke:#22C55E,stroke-width:1.5px,color:#14532D
-
-    subgraph EXT["  Externe Dienste  "]
-        FAPI["Football-API\napi-sports.io"]
-        LLM["LLM Provider\nOpenRouter"]
-        SP["ScorePlay\nMedia"]
-        EF["EF Spielerdaten\nprofis.eintracht.de"]
-    end
-
-    subgraph AUTO["  Automatisierungsschicht  "]
-        N8N["n8n\n15 Workflows"]
-    end
-
-    subgraph APP["  Anwendungs- & Persistenzschicht  "]
-        BE["FastAPI\nPython · Uvicorn"]
-        DB[("PostgreSQL\n18 Tabellen")]
-        BE <-->|"ORM"| DB
-    end
-
-    subgraph UI["  Präsentationsschicht  "]
-        FE["React Frontend\nTypeScript"]
-    end
-
-    N8N -->|"HTTP GET"| FAPI
-    N8N -->|"HTTP GET/POST"| SP
-    N8N -->|"HTTP GET"| EF
-    N8N -->|"Zusammenfassungen"| LLM
-    N8N -->|"REST POST /api/v1"| BE
-
-    BE -->|"LLM-Aufrufe"| LLM
-
-    FE -->|"REST Polling · 5s"| BE
-    FE -.->|"WebSocket /ws/media"| BE
-    FE -->|"Webhook-Trigger"| N8N
-
-    class FE schicht
-    class BE schicht
-    class N8N schicht
-    class DB db
-    class FAPI,LLM,SP,EF extern
-```
 
 ---
 
@@ -66,33 +21,6 @@ graph LR
 
 Der Kommunikationsfluss folgt dem Prinzip **„read first, trigger if missing"**: Das Frontend liest zunächst den vorhandenen Datenbestand über REST; nur bei fehlenden Daten wird ein passender n8n-Webhook ausgelöst. Dadurch werden externe API-Aufrufe minimiert und redundante Importe vermieden.
 
-```mermaid
-sequenceDiagram
-    participant FE as React Frontend
-    participant BE as FastAPI Backend
-    participant N8N as n8n
-    participant FAPI as Football-API
-
-    FE->>BE: GET /teams/countries
-    alt Keine Daten vorhanden
-        FE->>N8N: Webhook import-countries
-        N8N->>FAPI: GET /countries
-        N8N->>BE: POST /api/v1/countries (Upsert)
-        FE->>BE: GET /teams/countries (erneut)
-    end
-
-    FE->>BE: GET /matches (nach Teamauswahl)
-    FE->>N8N: Webhook import-prematch, import-lineups, ...
-    N8N->>BE: POST /api/v1/events, /api/v1/ticker/generate/...
-
-    loop Polling alle 5s (Events, Ticker, Match)
-        FE->>BE: GET /api/v1/ticker/{match_id}
-        BE-->>FE: TickerEntry[] (inkl. neuer Entwürfe)
-    end
-
-    N8N->>BE: POST /api/v1/media/incoming
-    BE-->>FE: WebSocket /ws/media → neue Medien
-```
 
 Die Systemkopplung erfolgt über drei klar getrennte Schnittstellentypen:
 
@@ -185,32 +113,6 @@ Die Persistenzschicht basiert auf PostgreSQL und umfasst in der aktuellen Fassun
 
 Die folgende Abbildung zeigt die zentralen Entitäten und ihre Beziehungen:
 
-```mermaid
-erDiagram
-    countries ||--o{ teams : "hat Teams"
-    teams ||--o{ competition_teams : "spielt in"
-    competitions ||--o{ competition_teams : "hat Teams"
-    competitions ||--o{ matches : "umfasst"
-    seasons ||--o{ matches : "enthält"
-    teams ||--o{ matches : "home_team"
-    teams ||--o{ matches : "away_team"
-
-    matches ||--o{ events : "hat Events"
-    matches ||--o{ synthetic_events : "hat synth. Events"
-    matches ||--o{ ticker_entries : "hat Ticker"
-    matches ||--o{ lineups : "hat Lineup"
-    matches ||--o{ match_statistics : "hat Statistiken"
-
-    events ||--o{ ticker_entries : "event_id (nullable)"
-    synthetic_events |o--o{ ticker_entries : "synthetic_event_id (nullable)"
-
-    players ||--o{ lineups : "spielt"
-    players ||--o{ player_statistics : "hat Statistiken"
-
-    seasons ||--o{ standings : "hat Standings"
-    competitions ||--o{ standings : "hat Standings"
-    teams ||--o{ standings : "Rang"
-```
 
 > **Hinweis:** Die Tabellen `media_queue`, `media_clips`, `style_references` und `settings` sind als eigenständige Entitäten ohne Fremdschlüsselbeziehungen modelliert und daher im ER-Diagramm nicht abgebildet. `style_references` dient als Few-Shot-Datenquelle für die LLM-Promptgenerierung; `media_queue` wird applikationsseitig über die Media-Endpunkte verwaltet.
 
@@ -230,18 +132,6 @@ Jeder Ticker-Eintrag in `ticker_entries` folgt einem klaren Statusmodell mit dre
 - **`published`**: redaktionell oder automatisch veröffentlicht
 - **`rejected`**: verworfen, bleibt zur Nachvollziehbarkeit erhalten
 
-```mermaid
-stateDiagram-v2
-    [*] --> draft : KI generiert (coop)\nauto_publish=false
-    [*] --> published : KI generiert (auto)\nauto_publish=true
-    [*] --> published : Manuell\nPOST /ticker/manual
-
-    draft --> published : Redakteur bestätigt\nPATCH status=published
-    draft --> rejected  : Redakteur verwirft\nPATCH status=rejected
-    published --> draft : PATCH status=draft
-
-    note right of rejected : Bleibt erhalten\n(Auswertbarkeit)
-```
 
 Eine Rückstufung von `published` auf `draft` ist über `PATCH status=draft` möglich und wird insbesondere bei Re-Triggern von Matchphasen-Workflows genutzt (vgl. Kap. 5.5.3). `rejected` ist ein terminaler Zustand — ein verworfener Eintrag kann nicht reaktiviert werden.
 
@@ -355,18 +245,6 @@ Die Generierung verwendet ein template-basiertes Prompting mit modularen Baustei
 5. Optionaler Few-Shot-Block mit Stilbeispielen
 6. Regelblock mit formativen und inhaltlichen Einschränkungen
 
-```mermaid
-flowchart TD
-    A["Ereignis-Typ\n(z.B. goal)"] --> P
-    B["Fakten\n(Spieler, Minute, Team)"] --> P
-    C["Match-Kontext\n(Spielstand, Teams, Liga)"] --> P
-    D["Few-Shot-Beispiele\naus style_references\n(0–3 Texte)"] --> P
-    E["Regelblock\n(Länge, Sprache, kein Markdown)"] --> P
-    F["Stilinstruktion\nneutral / euphorisch / kritisch"] --> P
-
-    P["Vollständiger\nSystem-Prompt"] --> LLM["LLM\n(temp=0.3)"]
-    LLM --> T["Generierter\nTicker-Text"]
-```
 
 Der Few-Shot-Block wird aus der Tabelle `style_references` gespeist, die manuell kuratierte Original-Tickertexte von Eintracht Frankfurt enthält. Pro LLM-Aufruf werden bis zu drei zufällige Referenzen selektiert, gefiltert nach `event_type`, `instance` und optional `league`. Durch die Randomisierung wird eine monotone Reproduktion vermieden, während der stilistische Korridor gewahrt bleibt. Für Pre-Match-Typen enthält der Prompt zusätzliche harte Restriktionen, um Live-Szenen-Halluzinationen zu vermeiden und die Ausgabe auf Vorschau- und Analyseinhalte zu begrenzen.
 
