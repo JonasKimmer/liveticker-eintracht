@@ -1,8 +1,8 @@
-# Kapitel 6 – Evaluation
+# Evaluation
 
 ---
 
-## 6.1 Zielsetzung der Evaluation
+## Zielsetzung der Evaluation
 
 Das Ziel der Evaluation ist es, das implementierte System auf mehreren Ebenen nachweisbar zu bewerten. Die Evaluation gliedert sich in drei Blöcke:
 
@@ -14,7 +14,7 @@ Die Metriken dienen nicht nur der Qualitätssicherung, sondern dokumentieren auc
 
 ---
 
-## 6.2 Technische Qualitätssicherung
+## Technische Qualitätssicherung
 
 Die technische Qualitätssicherung umfasst die vollständige Testsuite (Frontend, Backend, End-to-End) sowie die statische Typsicherheitsanalyse.
 
@@ -154,7 +154,7 @@ Die TypeScript-Migration hat im Verlauf der Implementierung mehrere Fehler früh
 
 ---
 
-## 6.3 Evaluation der KI-Textgenerierung
+## Evaluation der KI-Textgenerierung
 
 Die Evaluation der Textgenerierung gliedert sich in zwei Teile: zunächst die implementierte Evaluationsinfrastruktur mit ihren quantitativen Metriken und dem Provider-Vergleich, dann die qualitative Analyse konkreter Textbeispiele einschließlich Expertenvalidierung.
 
@@ -382,7 +382,7 @@ Die Interviewergebnisse fließen in die Gesamtbewertung des Systems (Kapitel 8.2
 
 ---
 
-## 6.4 Evaluation der Betriebsmodi
+## Evaluation der Betriebsmodi
 
 ### 6.4.1 Drei Betriebsmodi
 
@@ -406,7 +406,7 @@ Der Coop-Modus repräsentiert den beabsichtigten Produktivbetrieb: Die KI liefer
 
 ---
 
-## 6.5 Performance und Laufzeitverhalten
+## Performance und Laufzeitverhalten
 
 ### 6.5.1 LLM-Latenz
 
@@ -456,7 +456,7 @@ Die `resolvePollingInterval`-Utility ist als Extension Point implementiert: Die 
 
 ---
 
-## 6.6 Anforderungsabgleich (Soll-Ist-Vergleich)
+## Anforderungsabgleich (Soll-Ist-Vergleich)
 
 Die in Kapitel 2.6 hergeleiteten Anforderungen werden im Folgenden gegen den implementierten Stand evaluiert.
 
@@ -500,7 +500,7 @@ Die in Kapitel 2.6 hergeleiteten Anforderungen werden im Folgenden gegen den imp
 
 ---
 
-## 6.7 Limitationen
+## Limitationen
 
 **Keine externe Nutzerstudie.** Die Evaluation der Textqualität in Abschnitt 6.3.6 basiert auf einer Selbstbewertung durch den Entwickler. Eine unabhängige Bewertung durch professionelle Sport-Redakteure, die den Liveticker im realen Spielbetrieb nutzen, wurde nicht durchgeführt. Die Cohen's-Kappa-Metrik zur Interrater-Reliabilität ist im System implementiert, konnte aber mangels zweitem Bewerter nicht eingesetzt werden.
 
@@ -522,6 +522,6 @@ Die in Kapitel 2.6 hergeleiteten Anforderungen werden im Folgenden gegen den imp
 
 ---
 
-## 6.8 Zusammenfassung
+## Zusammenfassung
 
 Die Evaluation belegt eine technisch reife Codebasis (391 Tests, 75 % Python-Backend-Coverage, 95,84 % TypeScript-Typsicherheit, 0 Compiler-Fehler) mit vollständiger Erfüllung aller 23 definierten Anforderungen. Die KI-generierten Texte erreichen einen Gesamtdurchschnitt von 4,3/5 bei einer LLM-Latenz von Median 859 ms, was im `auto`-Modus eine geschätzte TTP von 3,4–5,9 s ermöglicht. Stärken liegen in der Faktentreue und Genrekonformität; die häufigste Fehlerklasse ist die Stil-Inkonsistenz des neutralen Profils (19 %). Die strukturellen Grenzen des aktuellen Systems — insbesondere die Selbstevaluation ohne zweiten Rater und die eingeschränkte Stichprobengröße — sind in Kapitel 6.7 dokumentiert. Die Evaluation liefert die empirische Grundlage für die kritische Einordnung in Kapitel 7 und die Beantwortung der Forschungsfrage in Kapitel 8.2.

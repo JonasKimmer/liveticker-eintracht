@@ -1,6 +1,6 @@
-# Kapitel 1 – Einleitung
+# Einleitung
 
-## 1.1 Problemstellung und Zielsetzung
+## Problemstellung und Zielsetzung
 
 „Ein vernünftiger Live-Ticker ist fast unmöglich zu schreiben. Denn sein Konzept ist die komplette Überforderung. Des Autors. Des Schreibens. Und der Wirklichkeit." Mit diesen Worten beschreibt der Journalist Constantin Seibt das Grundproblem der Liveticker-Berichterstattung — eine Einschätzung, die im modernen digitalen Sportjournalismus bis heute nichts an Aktualität verloren hat (zitiert nach Beils 2023, S. 56). Der Liveticker hat sich zur dominanten Darstellungsform der Echtzeit-Berichterstattung im Profifußball entwickelt und steht dabei exemplarisch für einen Zielkonflikt zwischen **Geschwindigkeit und Qualität**, der mit rein manuellen Mitteln nicht auflösbar ist.
 
@@ -22,7 +22,7 @@ Um dieses Ziel zu operationalisieren, definiert und evaluiert die Arbeit drei Be
 
 ---
 
-## 1.2 Forschungsfrage
+## Forschungsfrage
 
 Aus der in Kapitel 1.1 entwickelten Zielsetzung ergibt sich folgende Forschungsfrage, die der vorliegenden Arbeit zugrunde liegt:
 
@@ -32,7 +32,7 @@ Die Frage ist bewusst zweiteilig formuliert: Sie erfasst einerseits eine **zeitl
 
 ---
 
-## 1.3 Methodisches Vorgehen
+## Methodisches Vorgehen
 
 Die Arbeit folgt einem konstruktiven Forschungsansatz im Sinne des **Design Science Research** (Hevner et al. 2004): Ein softwarebasiertes Artefakt wird als Antwort auf ein identifiziertes Praxisproblem entworfen, implementiert und evaluiert. Der Erkenntnisgewinn entsteht dabei nicht nur aus der Evaluation, sondern auch aus dem Entwurfs- und Implementierungsprozess selbst.
 
@@ -54,7 +54,7 @@ Dennoch bestehen Einschränkungen hinsichtlich Authentifizierung, Evaluationsuna
 
 ---
 
-## 1.4 Aufbau der Arbeit
+## Aufbau der Arbeit
 
 Die vorliegende Arbeit gliedert sich in acht Kapitel:
 

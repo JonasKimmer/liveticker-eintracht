@@ -1,6 +1,6 @@
-# Kapitel 3 – Stand der Technik
+# Stand der Technik
 
-## 3.1 Large Language Models
+## Large Language Models
 
 Die Entwicklung großer Sprachmodelle (Large Language Models, LLMs) hat die Verarbeitung natürlicher Sprache in den vergangenen Jahren grundlegend verändert. Den technischen Ausgangspunkt bildet die **Transformer-Architektur**, die Vaswani et al. (2017, S. 1) als ein neuartiges Netzwerkdesign einführten, das ausschließlich auf Aufmerksamkeitsmechanismen basiert. Das Modell verarbeitet Text autoregressiv — bei jedem Schritt werden die zuvor generierten Tokens als zusätzliche Eingabe für die Erzeugung des nächsten verwendet (Vaswani et al. 2017, S. 2). Diese Eigenschaft macht Transformer-basierte Modelle besonders geeignet für sequenzielle Textgenerierungsaufgaben wie die Liveticker-Produktion.
 
@@ -14,7 +14,7 @@ Trotz ihrer Leistungsfähigkeit weisen LLMs strukturelle Schwächen auf, insbeso
 
 ---
 
-## 3.2 Prompt Engineering
+## Prompt Engineering
 
 Die Qualität der Ausgaben eines LLM hängt maßgeblich vom **Prompt** ab. Prompt Engineering bezeichnet die systematische Gestaltung dieser Eingaben, um das Modell ohne Änderung seiner Gewichte zu einem gewünschten Verhalten zu lenken (Brown et al. 2020). Das Prinzip des **In-Context Learning** sieht vor, dass das Modell auf eine Instruktion und ggf. Beispiele konditioniert wird.
 
@@ -31,7 +31,7 @@ Die in Kapitel 2.5 hergeleiteten linguistischen Anforderungen — Ellipsen, Temp
 
 ---
 
-## 3.3 Natural Language Generation im Sportjournalismus
+## Natural Language Generation im Sportjournalismus
 
 Die automatisierte Erzeugung natürlichsprachlicher Texte aus strukturierten Daten (Data-to-Text Generation) bildet die technische Grundlage für KI-gestützte Berichterstattungssysteme. Im Sportkontext bedeutet dies die Überführung von Spielereignissen und Statistiken in journalistisch verwertbare Texte (Puduppully & Lapata 2021, S. 510).
 
@@ -45,7 +45,7 @@ Die Kombination beider Ansätze in einem **hybriden System** verbindet die Stär
 
 ---
 
-## 3.4 Echtzeit-Kommunikation im Web
+## Echtzeit-Kommunikation im Web
 
 Die Übertragung von Daten zwischen Frontend und Backend erfordert eine ausgewogene Balance zwischen Latenz, Ressourcenverbrauch und Implementierungskomplexität. Für Echtzeitanwendungen wie Liveticker stehen mehrere etablierte Kommunikationsmuster zur Verfügung, die sich hinsichtlich dieser Dimensionen unterscheiden.
 
@@ -61,7 +61,7 @@ Die konkrete Umsetzung im vorliegenden System wird in Kapitel 4.6.5 beschrieben.
 
 ---
 
-## 3.5 ETL-Prozesse und Workflow-Automatisierung
+## ETL-Prozesse und Workflow-Automatisierung
 
 Die Datenbeschaffung in datengetriebenen Anwendungen folgt überwiegend dem **Extract-Transform-Load-Prinzip (ETL)**. Daten werden aus heterogenen Quellen extrahiert, in ein einheitliches Zielformat transformiert und in den Datenspeicher geladen (Freitas et al. 2025, S. 807). Für Sport-Liveticker bedeutet dies die Integration von Live-Spielereignissen, Statistiken, Aufstellungen und Mediendaten aus unterschiedlichen APIs oder Datenfeeds. Die Herausforderung besteht darin, diese Daten zeitnah, konsistent und in einer für die Anwendungslogik verwertbaren Struktur bereitzustellen.
 
@@ -77,7 +77,7 @@ Die konkrete Umsetzung der ETL-Architektur im vorliegenden System — einschlie�
 
 ---
 
-## 3.6 Backend-Technologien
+## Backend-Technologien
 
 ### 3.6.1 Python
 
@@ -101,7 +101,7 @@ Die konkrete Backend-Architektur des vorliegenden Systems wird in Kapitel 4.2 be
 
 ---
 
-## 3.7 Frontend-Technologien
+## Frontend-Technologien
 
 ### 3.7.1 TypeScript
 
@@ -119,7 +119,7 @@ Die konkrete Frontend-Architektur des vorliegenden Systems wird in Kapitel 4.6 b
 
 ---
 
-## 3.8 Deployment und Containerisierung
+## Deployment und Containerisierung
 
 ### 3.8.1 Containerisierung
 
@@ -137,6 +137,6 @@ Die konkrete Deployment-Architektur des vorliegenden Systems wird in Kapitel 4.7
 
 ---
 
-## 3.9 Synthese: Technologische Konsequenzen für das Systemdesign
+## Synthese: Technologische Konsequenzen für das Systemdesign
 
 Der Stand der Technik zeigt, dass für das vorliegende System kein einzelnes Werkzeug ausreicht, sondern ein abgestimmtes Zusammenspiel mehrerer Technologieschichten notwendig ist. Kompakte Sprachmodelle mit Few-Shot-Prompting (Kap. 3.1–3.2) liefern die erforderliche Textqualität bei vertretbarer Latenz und ohne ressourcenintensives Fine-tuning; der hybride NLG-Ansatz mit menschlicher Kontrollinstanz (Kap. 3.3) adressiert das systemimmanente Halluzinationsproblem von LLMs im journalistischen Kontext. Die in Kapitel 3.4 beschriebenen Kommunikationsmuster — Polling, SSE und WebSocket — zeigen unterschiedliche Trade-offs zwischen Implementierungseinfachheit und Latenz; welches Hybridmuster für den konkreten Anwendungsfall geeignet ist, wird auf Basis der Infrastrukturanforderungen in Kapitel 4.6.5 begründet. n8n als Low-Code-Orchestrierungsplattform (Kap. 3.5) entkoppelt die ETL-Komplexität vom Anwendungskern und ermöglicht eine schnelle Anpassung von Datenquellen unabhängig von Backend-Deployment-Zyklen. FastAPI auf ASGI-Basis (Kap. 3.6), React mit TypeScript (Kap. 3.7) und Docker-basiertes PaaS-Deployment (Kap. 3.8) vervollständigen einen Stack, der Produktionsfähigkeit, Wartbarkeit und Skalierbarkeit im ressourcenbeschränkten Vereinsumfeld vereint. Konkret begründen die Anforderungen aus Kapitel 2 folgende Technologieentscheidungen: Die in Kap. 2.3 formulierte Anforderung nach Datenschutz- und Betriebskonformität begründet die Wahl von n8n gegenüber cloud-basierten iPaaS-Diensten (vgl. Kap. 3.5); die Kostenrestriktion und Latenzanforderung aus Kap. 2.1 motiviert den Einsatz kompakter Sprachmodelle statt größerer Generationssysteme (vgl. Kap. 3.1); die stark verknüpften Spielentitäten (Spiele, Teams, Ereignisse, Statistiken) begründen eine relationale Datenbankstruktur (Kap. 3.6.4) gegenüber dokumentbasierten Alternativen. Diese technologischen Grundlagen münden in die Systemkonzeption (Kapitel 4) und deren Implementierung (Kapitel 5).

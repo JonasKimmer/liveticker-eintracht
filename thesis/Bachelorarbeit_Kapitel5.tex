@@ -1,8 +1,8 @@
-\section{Kapitel 5 -- Implementierung}\label{kapitel-5-implementierung}
+\section{Implementierung}\label{implementierung}
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
-\subsection{5.1 Überblick und
+\subsection{Überblick und
 Implementierungsstrategie}\label{uxfcberblick-und-implementierungsstrategie}
 
 Dieses Kapitel dokumentiert die konkrete Umsetzung des in Kapitel 4
@@ -17,7 +17,7 @@ Automatisierungsworkflows. Ergänzend werden die TypeScript-Migration und
 die Testabdeckung als Qualitätsmerkmale des Entwicklungsprozesses
 dokumentiert.
 
-Die Implementierung folgt dem Grundsatz \textbf{``so einfach wie nötig,
+Die Implementierung folgt dem Grundsatz \textbf{„so einfach wie nötig,
 so modular wie sinnvoll''}: Standardpfade (CRUD, Listabfragen) sind
 bewusst direkt gehalten (Router → Repository), während die
 LLM-Generierung mit ihren Retry-, Semaphore- und Few-Shot-Mechanismen in
@@ -32,15 +32,15 @@ vollständig nachvollziehbar ist.
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
-\subsection{5.2 Backend-Implementierung}\label{backend-implementierung}
+\subsection{Backend-Implementierung}\label{backend-implementierung}
 
 \subsubsection{5.2.1 Projektstruktur und Application Entry
 Point}\label{projektstruktur-und-application-entry-point}
 
-Das Backend ist unterhalb von \passthrough{\lstinline!backend/app/!} in
-sieben funktionale Pakete gegliedert:
+Das Backend ist unterhalb von \texttt{backend/app/} in sieben
+funktionale Pakete gegliedert:
 
-\begin{lstlisting}
+\begin{verbatim}
 backend/app/
 ├── api/v1/          # HTTP-Router (FastAPI)
 ├── models/          # SQLAlchemy ORM-Modelle (17 Dateien)
@@ -49,23 +49,22 @@ backend/app/
 ├── services/        # Fachliche Services (llm_service, ticker_service)
 ├── utils/           # Hilfsmodule (llm_context_builders, evaluation_metrics)
 └── core/            # Konfiguration, Datenbankverbindung, Enums, Konstanten
-\end{lstlisting}
+\end{verbatim}
 
 Diese Aufteilung entspricht dem klassischen
 Repository-Service-Router-Muster: Router delegieren an Repositories für
 einfache CRUD-Operationen und an Services für Logik, die mehrere
 Repositories oder externe Aufrufe koordiniert.
 
-\passthrough{\lstinline!app/main.py!} ist der einzige Einstiegspunkt. Er
-registriert alle 12 Router unter dem Pfad-Prefix
-\passthrough{\lstinline!/api/v1!}, konfiguriert CORS-Middleware und
-bindet statische Dateien (Thumbnail-Cache) ein. Der WebSocket-Endpunkt
-\passthrough{\lstinline!/ws/media!} wird ohne API-Prefix eingehängt, da
-er kein REST-Ressourcenpfad ist. Beim Start führt
-\passthrough{\lstinline!Base.metadata.create\_all(bind=engine)!} ein
-idempotentes Schema-Bootstrapping durch, das bei erstmaliger
-Inbetriebnahme alle Tabellen anlegt; Schema-Änderungen im
-Produktionsbetrieb werden via Alembic-Migrationen gesteuert.
+\texttt{app/main.py} ist der einzige Einstiegspunkt. Er registriert alle
+12 Router unter dem Pfad-Prefix \texttt{/api/v1}, konfiguriert
+CORS-Middleware und bindet statische Dateien (Thumbnail-Cache) ein. Der
+WebSocket-Endpunkt \texttt{/ws/media} wird ohne API-Prefix eingehängt,
+da er kein REST-Ressourcenpfad ist. Beim Start führt
+\texttt{Base.metadata.create\_all(bind=engine)} ein idempotentes
+Schema-Bootstrapping durch, das bei erstmaliger Inbetriebnahme alle
+Tabellen anlegt; Schema-Änderungen im Produktionsbetrieb werden via
+Alembic-Migrationen gesteuert.
 
 Die Anwendung stellt zwei Metaendpunkte bereit:
 
@@ -77,10 +76,9 @@ Endpunkt & Funktion \\
 \endhead
 \bottomrule\noalign{}
 \endlastfoot
-\passthrough{\lstinline!GET /!} & Statusantwort mit Version
-(\passthrough{\lstinline!0.3.0!}) \\
-\passthrough{\lstinline!GET /health!} & Datenbankverbindungscheck
-(\passthrough{\lstinline!healthy!}/\passthrough{\lstinline!degraded!}) \\
+\texttt{GET\ /} & Statusantwort mit Version (\texttt{0.3.0}) \\
+\texttt{GET\ /health} & Datenbankverbindungscheck
+(\texttt{healthy}/\texttt{degraded}) \\
 \end{longtable}
 }
 
@@ -110,125 +108,94 @@ Kernfelder
 \endhead
 \bottomrule\noalign{}
 \endlastfoot
-\passthrough{\lstinline!Country!} & \passthrough{\lstinline!countries!}
-& \passthrough{\lstinline!id!}, \passthrough{\lstinline!name!},
-\passthrough{\lstinline!uid!} \\
-\passthrough{\lstinline!Team!} & \passthrough{\lstinline!teams!} &
-\passthrough{\lstinline!id!}, \passthrough{\lstinline!uid!},
-\passthrough{\lstinline!name!}, \passthrough{\lstinline!external\_id!},
-\passthrough{\lstinline!is\_partner\_team!} \\
-\passthrough{\lstinline!Competition!} &
-\passthrough{\lstinline!competitions!} & \passthrough{\lstinline!id!},
-\passthrough{\lstinline!title!}, \passthrough{\lstinline!season\_id!} \\
-\passthrough{\lstinline!Match!} & \passthrough{\lstinline!matches!} &
-\passthrough{\lstinline!id!}, \passthrough{\lstinline!uid!},
-\passthrough{\lstinline!match\_state!},
-\passthrough{\lstinline!match\_phase!},
-\passthrough{\lstinline!ticker\_mode!} \\
-\passthrough{\lstinline!Event!} & \passthrough{\lstinline!events!} &
-\passthrough{\lstinline!id!}, \passthrough{\lstinline!match\_id!},
-\passthrough{\lstinline!event\_type!}, \passthrough{\lstinline!time!},
-\passthrough{\lstinline!description!} \\
-\passthrough{\lstinline!SyntheticEvent!} &
-\passthrough{\lstinline!synthetic\_events!} &
-\passthrough{\lstinline!id!}, \passthrough{\lstinline!match\_id!},
-\passthrough{\lstinline!type!}, \passthrough{\lstinline!data!}
-(JSONB) \\
-\passthrough{\lstinline!TickerEntry!} &
-\passthrough{\lstinline!ticker\_entries!} & → siehe unten \\
-\passthrough{\lstinline!Lineup!} & \passthrough{\lstinline!lineups!} &
-\passthrough{\lstinline!player\_id!}, \passthrough{\lstinline!status!},
-\passthrough{\lstinline!formation\_place!},
-\passthrough{\lstinline!position!} \\
-\passthrough{\lstinline!MatchStatistic!} &
-\passthrough{\lstinline!match\_statistics!} & 19 typisierte Spalten
-(Pässe, Zweikämpfe, Schüsse\ldots) \\
-\passthrough{\lstinline!PlayerStatistic!} &
-\passthrough{\lstinline!player\_statistics!} &
-\passthrough{\lstinline!player\_id!}, \passthrough{\lstinline!rating!},
-\passthrough{\lstinline!goals!}, \passthrough{\lstinline!assists!},
+\texttt{Country} & \texttt{countries} & \texttt{id}, \texttt{name},
+\texttt{uid} \\
+\texttt{Team} & \texttt{teams} & \texttt{id}, \texttt{uid},
+\texttt{name}, \texttt{external\_id}, \texttt{is\_partner\_team} \\
+\texttt{Competition} & \texttt{competitions} & \texttt{id},
+\texttt{title}, \texttt{season\_id} \\
+\texttt{Match} & \texttt{matches} & \texttt{id}, \texttt{uid},
+\texttt{match\_state}, \texttt{match\_phase}, \texttt{ticker\_mode} \\
+\texttt{Event} & \texttt{events} & \texttt{id}, \texttt{match\_id},
+\texttt{event\_type}, \texttt{time}, \texttt{description} \\
+\texttt{SyntheticEvent} & \texttt{synthetic\_events} & \texttt{id},
+\texttt{match\_id}, \texttt{type}, \texttt{data} (JSONB) \\
+\texttt{TickerEntry} & \texttt{ticker\_entries} & → siehe unten \\
+\texttt{Lineup} & \texttt{lineups} & \texttt{player\_id},
+\texttt{status}, \texttt{formation\_place}, \texttt{position} \\
+\texttt{MatchStatistic} & \texttt{match\_statistics} & 19 typisierte
+Spalten (Pässe, Zweikämpfe, Schüsse\ldots) \\
+\texttt{PlayerStatistic} & \texttt{player\_statistics} &
+\texttt{player\_id}, \texttt{rating}, \texttt{goals}, \texttt{assists},
 \ldots{} \\
-\passthrough{\lstinline!StyleReference!} &
-\passthrough{\lstinline!style\_references!} &
-\passthrough{\lstinline!event\_type!},
-\passthrough{\lstinline!instance!}, \passthrough{\lstinline!league!},
-\passthrough{\lstinline!text!} (Few-Shot) \\
-\passthrough{\lstinline!MediaQueue!} &
-\passthrough{\lstinline!media\_queue!} &
-\passthrough{\lstinline!media\_id!},
-\passthrough{\lstinline!thumbnail\_url!},
-\passthrough{\lstinline!event\_id!}, \passthrough{\lstinline!status!} \\
-\passthrough{\lstinline!MediaClip!} &
-\passthrough{\lstinline!media\_clips!} &
-\passthrough{\lstinline!source!}, \passthrough{\lstinline!vid!},
-\passthrough{\lstinline!thumbnail\_url!},
-\passthrough{\lstinline!match\_id!} \\
+\texttt{StyleReference} & \texttt{style\_references} &
+\texttt{event\_type}, \texttt{instance}, \texttt{league}, \texttt{text}
+(Few-Shot) \\
+\texttt{MediaQueue} & \texttt{media\_queue} & \texttt{media\_id},
+\texttt{thumbnail\_url}, \texttt{event\_id}, \texttt{status} \\
+\texttt{MediaClip} & \texttt{media\_clips} & \texttt{source},
+\texttt{vid}, \texttt{thumbnail\_url}, \texttt{match\_id} \\
 \end{longtable}
 }
 
-Das \passthrough{\lstinline!TickerEntry!}-Modell hat besondere Bedeutung
-im Lifecycle des Systems: Es verknüpft über
-\passthrough{\lstinline!event\_id!} (FK auf
-\passthrough{\lstinline!events!}) und
-\passthrough{\lstinline!synthetic\_event\_id!} (FK auf
-\passthrough{\lstinline!synthetic\_events!}) den generierten Text mit
-seinem Auslöser. Die Felder \passthrough{\lstinline!status!}
-(\passthrough{\lstinline!draft!}/\passthrough{\lstinline!published!}/\passthrough{\lstinline!rejected!})
-und \passthrough{\lstinline!source!}
-(\passthrough{\lstinline!ai!}/\passthrough{\lstinline!manual!}) bilden
-den Ticker-Lifecycle ab (vgl. Kap. 4.3.2). Drei zusammengesetzte Indizes
-(\passthrough{\lstinline!ix\_ticker\_match\_status!},
-\passthrough{\lstinline!ix\_ticker\_match\_phase!},
-\passthrough{\lstinline!ix\_ticker\_event\_id!}) optimieren die
-häufigsten Abfragen: publizierte Einträge je Spiel, Phase-Filter und den
+Das \texttt{TickerEntry}-Modell hat besondere Bedeutung im Lifecycle des
+Systems: Es verknüpft über \texttt{event\_id} (FK auf \texttt{events})
+und \texttt{synthetic\_event\_id} (FK auf \texttt{synthetic\_events})
+den generierten Text mit seinem Auslöser. Die Felder \texttt{status}
+(\texttt{draft}/\texttt{published}/\texttt{rejected}) und
+\texttt{source} (\texttt{ai}/\texttt{manual}) bilden den
+Ticker-Lifecycle ab (vgl. Kap. 4.3.2). Drei zusammengesetzte Indizes
+(\texttt{ix\_ticker\_match\_status}, \texttt{ix\_ticker\_match\_phase},
+\texttt{ix\_ticker\_event\_id}) optimieren die häufigsten Abfragen:
+publizierte Einträge je Spiel, Phase-Filter und den
 Deduplizierungs-Check per Event. Das Status-Enum wird als nicht-nativ
-gespeichert (\passthrough{\lstinline!native\_enum=False!}), damit
-Migrationen ohne Enum-Typ-Änderungen in PostgreSQL auskommen.
+gespeichert (\texttt{native\_enum=False}), damit Migrationen ohne
+Enum-Typ-Änderungen in PostgreSQL auskommen.
 
 \textbf{Pydantic-Schemas und API-Validierung} --- Für jeden Router gibt
 es eigenständige Pydantic-Schemas für Create-, Update- und
 Response-Strukturen. Alle Schemas nutzen
-\passthrough{\lstinline!alias\_generator=to\_camel!} aus
-\passthrough{\lstinline!pydantic.alias\_generators!}, damit
-JSON-Payloads in camelCase kommuniziert werden, während Python-intern
-snake\_case gilt.
+\texttt{alias\_generator=to\_camel} aus
+\texttt{pydantic.alias\_generators}, damit JSON-Payloads in camelCase
+kommuniziert werden, während Python-intern snake\_case gilt.
 
 Ein spezifisches Beispiel illustriert die Alias-Mechanik für
 Match-Scores:
 
-\begin{lstlisting}[language=Python]
-class MatchResponse(BaseModel):
-    home_score: Optional[int] = Field(None, serialization_alias='teamHomeScore')
-    away_score: Optional[int] = Field(None, serialization_alias='teamAwayScore')
-\end{lstlisting}
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{class}\NormalTok{ MatchResponse(BaseModel):}
+\NormalTok{    home\_score: Optional[}\BuiltInTok{int}\NormalTok{] }\OperatorTok{=}\NormalTok{ Field(}\VariableTok{None}\NormalTok{, serialization\_alias}\OperatorTok{=}\StringTok{"teamHomeScore"}\NormalTok{)}
+\NormalTok{    away\_score: Optional[}\BuiltInTok{int}\NormalTok{] }\OperatorTok{=}\NormalTok{ Field(}\VariableTok{None}\NormalTok{, serialization\_alias}\OperatorTok{=}\StringTok{"teamAwayScore"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
 
-Hier wird \passthrough{\lstinline!serialization\_alias!} (nicht
-\passthrough{\lstinline!alias!}) verwendet, da das Frontend die
-Partner-API-Feldnamen erwartet
-(\passthrough{\lstinline!teamHomeScore!}/\passthrough{\lstinline!teamAwayScore!}),
-während Schreiboperationen über
-\passthrough{\lstinline!populate\_by\_name=True!} auch den Python-Namen
-akzeptieren.
+Hier wird \texttt{serialization\_alias} (nicht \texttt{alias})
+verwendet, da das Frontend die Partner-API-Feldnamen erwartet
+(\texttt{teamHomeScore}/\texttt{teamAwayScore}), während
+Schreiboperationen über \texttt{populate\_by\_name=True} auch den
+Python-Namen akzeptieren.
 
 Diese duale Alias-Konvention zieht sich durch alle Schemas: Felder, die
 Spielstandwerte aus der Partner-API widerspiegeln, erhalten explizite
-\passthrough{\lstinline!serialization\_alias!}-Werte mit
-Partner-Konvention (\passthrough{\lstinline!teamHomeScore!}).
-Standard-Beziehungsfelder hingegen erhalten durch den globalen
-\passthrough{\lstinline!alias\_generator=to\_camel!} automatisch
-kanonisches camelCase (\passthrough{\lstinline!homeTeamId!},
-\passthrough{\lstinline!awayTeamId!}). Die Koexistenz beider
-Konventionen in derselben Schema-Klasse ist eine bewusste
-Designentscheidung: Das Frontend konsumiert sowohl Partner-API-Daten als
-auch eigenständig modellierte Beziehungen, und beide müssen ohne
-Feldumbenennungen im Frontend konsistent adressierbar sein.
+\texttt{serialization\_alias}-Werte mit Partner-Konvention
+(\texttt{teamHomeScore}). Standard-Beziehungsfelder hingegen erhalten
+durch den globalen \texttt{alias\_generator=to\_camel} automatisch
+kanonisches camelCase (\texttt{homeTeamId}, \texttt{awayTeamId}). Die
+Koexistenz beider Konventionen in derselben Schema-Klasse ist eine
+bewusste Designentscheidung: Das Frontend konsumiert sowohl
+Partner-API-Daten als auch eigenständig modellierte Beziehungen, und
+beide müssen ohne Feldumbenennungen im Frontend konsistent adressierbar
+sein.
 
-Für den Match-Status-Lifecycle definiert
-\passthrough{\lstinline!MatchUpdate!} ein explizites Alias:
+Für den Match-Status-Lifecycle definiert \texttt{MatchUpdate} ein
+explizites Alias:
 
-\begin{lstlisting}[language=Python]
-match_state: Optional[MatchState] = Field(None, alias='state')
-\end{lstlisting}
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{match\_state: Optional[MatchState] }\OperatorTok{=}\NormalTok{ Field(}\VariableTok{None}\NormalTok{, alias}\OperatorTok{=}\StringTok{"state"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
 
 Für Ticker-Einträge wird der Status über ein separates PATCH-Schema
 gesteuert, um versehentliche Massenänderungen durch offene
@@ -240,51 +207,52 @@ Update-Schemas zu vermeiden.
 
 Jede Entität hat ein dediziertes Repository, das alle SQL-Operationen
 kapselt. Alle Repositories erben von einer gemeinsamen
-\passthrough{\lstinline!BaseRepository[T]!}-Basisklasse, die die
-generische Operation \passthrough{\lstinline!exists()!} bereitstellt;
-jede Instanz erhält eine \passthrough{\lstinline!Session!} im
-Konstruktor:
+\texttt{BaseRepository{[}T{]}}-Basisklasse, die die generische Operation
+\texttt{exists()} bereitstellt; jede Instanz erhält eine
+\texttt{Session} im Konstruktor:
 
-\begin{lstlisting}[language=Python]
-class TickerEntryRepository(BaseRepository[TickerEntry]):
-    model = TickerEntry
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{class}\NormalTok{ TickerEntryRepository(BaseRepository[TickerEntry]):}
+\NormalTok{    model }\OperatorTok{=}\NormalTok{ TickerEntry}
 
-    def get_by_event(self, event_id: int) -> Optional[TickerEntry]:
-        return self.db.query(TickerEntry).filter(
-            TickerEntry.event_id == event_id
-        ).first()
+    \KeywordTok{def}\NormalTok{ get\_by\_event(}\VariableTok{self}\NormalTok{, event\_id: }\BuiltInTok{int}\NormalTok{) }\OperatorTok{{-}\textgreater{}}\NormalTok{ Optional[TickerEntry]:}
+        \ControlFlowTok{return} \VariableTok{self}\NormalTok{.db.query(TickerEntry).}\BuiltInTok{filter}\NormalTok{(}
+\NormalTok{            TickerEntry.event\_id }\OperatorTok{==}\NormalTok{ event\_id}
+\NormalTok{        ).first()}
 
-    def get_by_match(self, match_id: int, status=None) -> list[TickerEntry]:
-        ...
-\end{lstlisting}
+    \KeywordTok{def}\NormalTok{ get\_by\_match(}\VariableTok{self}\NormalTok{, match\_id: }\BuiltInTok{int}\NormalTok{, status}\OperatorTok{=}\VariableTok{None}\NormalTok{) }\OperatorTok{{-}\textgreater{}} \BuiltInTok{list}\NormalTok{[TickerEntry]:}
+\NormalTok{        ...}
+\end{Highlighting}
+\end{Shaded}
 
 Diese Kapselung hat zwei Vorteile: Router bleiben frei von ORM-Details,
 und Repository-Methoden können direkt mit echten Datenbanken in
 Integrationstests geprüft werden --- ohne Mock-Schichten, die
 Implementierungsabweichungen verbergen.
 
-Das \passthrough{\lstinline!MatchRepository!} definiert eine interne
-\passthrough{\lstinline!\_base\_query()!}-Methode, die Heimteam,
-Auswärtsteam, Wettbewerb und Saison per
-\passthrough{\lstinline!joinedload!} in einer einzigen Datenbankabfrage
-vorlädt. \passthrough{\lstinline!get\_by\_id()!} nutzt diese Methode
-konsequent:
+Das \texttt{MatchRepository} definiert eine interne
+\texttt{\_base\_query()}-Methode, die Heimteam, Auswärtsteam, Wettbewerb
+und Saison per \texttt{joinedload} in einer einzigen Datenbankabfrage
+vorlädt. \texttt{get\_by\_id()} nutzt diese Methode konsequent:
 
-\begin{lstlisting}[language=Python]
-class MatchRepository(BaseRepository[Match]):
-    model = Match
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{class}\NormalTok{ MatchRepository(BaseRepository[Match]):}
+\NormalTok{    model }\OperatorTok{=}\NormalTok{ Match}
 
-    def _base_query(self) -> Query:
-        return self.db.query(Match).options(
-            joinedload(Match.home_team),
-            joinedload(Match.away_team),
-            joinedload(Match.competition),
-            joinedload(Match.season),
-        )
+    \KeywordTok{def}\NormalTok{ \_base\_query(}\VariableTok{self}\NormalTok{) }\OperatorTok{{-}\textgreater{}}\NormalTok{ Query:}
+        \ControlFlowTok{return} \VariableTok{self}\NormalTok{.db.query(Match).options(}
+\NormalTok{            joinedload(Match.home\_team),}
+\NormalTok{            joinedload(Match.away\_team),}
+\NormalTok{            joinedload(Match.competition),}
+\NormalTok{            joinedload(Match.season),}
+\NormalTok{        )}
 
-    def get_by_id(self, match_id: int) -> Optional[Match]:
-        return self._base_query().filter(Match.id == match_id).first()
-\end{lstlisting}
+    \KeywordTok{def}\NormalTok{ get\_by\_id(}\VariableTok{self}\NormalTok{, match\_id: }\BuiltInTok{int}\NormalTok{) }\OperatorTok{{-}\textgreater{}}\NormalTok{ Optional[Match]:}
+        \ControlFlowTok{return} \VariableTok{self}\NormalTok{.\_base\_query().}\BuiltInTok{filter}\NormalTok{(Match.}\BuiltInTok{id} \OperatorTok{==}\NormalTok{ match\_id).first()}
+\end{Highlighting}
+\end{Shaded}
 
 Diese Methode wird von der KI-Generierungsroute intensiv genutzt, da für
 jeden Aufruf vollständige Kontext-Daten (Teamnamen, Wettbewerb) benötigt
@@ -296,7 +264,7 @@ werden.
 Endpunktstruktur}\label{api-router-endpunktstruktur}
 
 Der Ticker-Bereich ist in drei Router aufgeteilt, die gemeinsam unter
-\passthrough{\lstinline!/api/v1/ticker!} eingehängt werden:
+\texttt{/api/v1/ticker} eingehängt werden:
 
 {\def\LTcaptype{none} % do not increment counter
 \begin{longtable}[]{@{}
@@ -315,15 +283,12 @@ Kernoperationen
 \endhead
 \bottomrule\noalign{}
 \endlastfoot
-\passthrough{\lstinline!ticker\_crud!} &
-\passthrough{\lstinline!ticker\_crud.py!} & GET list, GET single, PATCH
-status, DELETE, POST manual \\
-\passthrough{\lstinline!ticker\_generate!} &
-\passthrough{\lstinline!ticker\_generate.py!} & POST
+\texttt{ticker\_crud} & \texttt{ticker\_crud.py} & GET list, GET single,
+PATCH status, DELETE, POST manual \\
+\texttt{ticker\_generate} & \texttt{ticker\_generate.py} & POST
 generate/\{event\_id\}, generate-synthetic, generate-batch \\
-\passthrough{\lstinline!ticker\_batch!} &
-\passthrough{\lstinline!ticker\_batch.py!} & POST translate-batch,
-generate-match-phases \\
+\texttt{ticker\_batch} & \texttt{ticker\_batch.py} & POST
+translate-batch, generate-match-phases \\
 \end{longtable}
 }
 
@@ -332,20 +297,18 @@ Kombination aus CRUD-, Generierungs- und Batch-Endpunkten
 unübersichtlich wird.
 
 Ein kapselndes Hilfsmuster zieht sich durch alle Router:
-\passthrough{\lstinline!require\_or\_404(value, message)!} --- eine
-schmale Utility-Funktion in
-\passthrough{\lstinline!utils/http\_errors.py!}, die
-\passthrough{\lstinline!None!}-Rückgaben aus Repository-Aufrufen direkt
-in eine \passthrough{\lstinline!HTTPException(404)!} überführt. Das
-eliminiert das repetitive
-\passthrough{\lstinline!if obj is None: raise HTTPException(404, ...)!}
-in Routern und stellt sicher, dass alle 404-Antworten einheitlich
-formuliert sind. Der Batch-Endpunkt
-\passthrough{\lstinline!POST /api/v1/ticker/translate-batch/\{match\_id\}!}
-ruft für alle publizierten KI-Einträge eines Spiels den LLM-Service mit
-reduzierter Temperatur (\passthrough{\lstinline!0.1!}) auf, um
-sprachlich deterministische Übersetzungen zu erzeugen --- eine gegenüber
-der Originalgenerierung bewusst andere Parametrisierung.
+\texttt{require\_or\_404(value,\ message)} --- eine schmale
+Utility-Funktion in \texttt{utils/http\_errors.py}, die
+\texttt{None}-Rückgaben aus Repository-Aufrufen direkt in eine
+\texttt{HTTPException(404)} überführt. Das eliminiert das repetitive
+\texttt{if\ obj\ is\ None:\ raise\ HTTPException(404,\ ...)} in Routern
+und stellt sicher, dass alle 404-Antworten einheitlich formuliert sind.
+Der Batch-Endpunkt
+\texttt{POST\ /api/v1/ticker/translate-batch/\{match\_id\}} ruft für
+alle publizierten KI-Einträge eines Spiels den LLM-Service mit
+reduzierter Temperatur (\texttt{0.1}) auf, um sprachlich
+deterministische Übersetzungen zu erzeugen --- eine gegenüber der
+Originalgenerierung bewusst andere Parametrisierung.
 
 Die wichtigsten Endpunkte gliedern sich in vier funktionale Bereiche:
 \textbf{Stammdaten} (Countries, Teams, Matches, Seasons, Competitions),
@@ -354,173 +317,167 @@ Batch-Generierung für Synthetic Events, Übersetzung), \textbf{Medien \&
 Clips} (ScorePlay-Import, Media-Queue, WebSocket) und
 \textbf{Spielkontext} (Lineups, Statistiken, Events). Insgesamt umfasst
 die API über 70 Routen; die vollständige Endpunktliste ist über die
-automatisch generierte OpenAPI-Dokumentation unter
-\passthrough{\lstinline!/api/docs!} einsehbar.
+automatisch generierte OpenAPI-Dokumentation unter \texttt{/api/docs}
+einsehbar.
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
 \subsubsection{5.2.5 Ticker-Service:
 Domänenlogik}\label{ticker-service-domuxe4nenlogik}
 
-Der \passthrough{\lstinline!ticker\_service!} kapselt die Domänenlogik
-für KI-Einträge. Er koordiniert Datenbankabfragen, Kontextaufbau und den
-LLM-Aufruf, hält dabei aber die Schichten klar getrennt:
-\passthrough{\lstinline!llm\_service.py!} hat keine
-Datenbankabhängigkeit.
+Der \texttt{ticker\_service} kapselt die Domänenlogik für KI-Einträge.
+Er koordiniert Datenbankabfragen, Kontextaufbau und den LLM-Aufruf, hält
+dabei aber die Schichten klar getrennt: \texttt{llm\_service.py} hat
+keine Datenbankabhängigkeit.
 
 Die vier zentralen Funktionen:
 
-\textbf{\passthrough{\lstinline!score\_at\_event()!}} berechnet den
-Spielstand zum Zeitpunkt eines Torereignisses. Da die Football-API den
-kumulativen Stand liefert, muss der Stand \emph{vor} dem aktuellen Event
+\textbf{\texttt{score\_at\_event()}} berechnet den Spielstand zum
+Zeitpunkt eines Torereignisses. Da die Football-API den kumulativen
+Stand liefert, muss der Stand \emph{vor} dem aktuellen Event
 rekonstruiert werden. Die Funktion lädt alle Tore bis zur
-\passthrough{\lstinline!position!} des Events, unterscheidet zwischen
-regulären Toren und Eigentoren (letztere zählen für den Gegner) und
-akkumuliert die Scores für Heim- und Auswärtsteam.
+\texttt{position} des Events, unterscheidet zwischen regulären Toren und
+Eigentoren (letztere zählen für den Gegner) und akkumuliert die Scores
+für Heim- und Auswärtsteam.
 
-\textbf{\passthrough{\lstinline!build\_match\_context()!}} erstellt das
+\textbf{\texttt{build\_match\_context()}} erstellt das
 Kontext-Dictionary für den LLM-Prompt: Teamnamen, aktueller Stand,
 Matchzustand, Spielminute und Liga.
 
-\textbf{\passthrough{\lstinline!call\_llm()!}} ist der zentrale,
-Semaphore-gesicherte LLM-Aufruf. Er lädt zunächst aus dem
-\passthrough{\lstinline!StyleReferenceRepository!} bis zu drei
-Stilbeispiele für
-\passthrough{\lstinline!event\_type + instance + league!} als
-Few-Shot-Kontext und delegiert dann an
-\passthrough{\lstinline!generate\_ticker\_text()!}:
+\textbf{\texttt{call\_llm()}} ist der zentrale, Semaphore-gesicherte
+LLM-Aufruf. Er lädt zunächst aus dem \texttt{StyleReferenceRepository}
+bis zu drei Stilbeispiele für
+\texttt{event\_type\ +\ instance\ +\ league} als Few-Shot-Kontext und
+delegiert dann an \texttt{generate\_ticker\_text()}:
 
-\begin{lstlisting}[language=Python]
-async with _llm_semaphore:   # asyncio.Semaphore(settings.LLM_CONCURRENCY)
-    return await generate_ticker_text(
-        event_type=event_type,
-        style_references=style_references,  # aus DB geladen
-        ...
-    )
-\end{lstlisting}
+\begin{Shaded}
+\begin{Highlighting}[]
+\ControlFlowTok{async} \ControlFlowTok{with}\NormalTok{ \_llm\_semaphore:   }\CommentTok{\# asyncio.Semaphore(settings.LLM\_CONCURRENCY)}
+    \ControlFlowTok{return} \ControlFlowTok{await}\NormalTok{ generate\_ticker\_text(}
+\NormalTok{        event\_type}\OperatorTok{=}\NormalTok{event\_type,}
+\NormalTok{        style\_references}\OperatorTok{=}\NormalTok{style\_references,  }\CommentTok{\# aus DB geladen}
+\NormalTok{        ...}
+\NormalTok{    )}
+\end{Highlighting}
+\end{Shaded}
 
 Die Semaphore ist auf Modulebene als Singleton definiert
-(\passthrough{\lstinline!\_llm\_semaphore = asyncio.Semaphore(settings.LLM\_CONCURRENCY)!},
+(\texttt{\_llm\_semaphore\ =\ asyncio.Semaphore(settings.LLM\_CONCURRENCY)},
 Standard: 8) und begrenzt gleichzeitige LLM-Aufrufe pro Prozessinstanz.
 
-\textbf{\passthrough{\lstinline!make\_ai\_entry()!}} ist ein schlanker
-Builder, der aus den LLM-Ergebnissen ein
-\passthrough{\lstinline!TickerEntryCreate!}-Schema erzeugt. Er setzt
-\passthrough{\lstinline!source='ai'!} und legt den initialen Status
-abhängig vom Aufrufkontext fest (\passthrough{\lstinline!draft!} im
-Co-op-Modus, \passthrough{\lstinline!published!} im Auto-Modus).
+\textbf{\texttt{make\_ai\_entry()}} ist ein schlanker Builder, der aus
+den LLM-Ergebnissen ein \texttt{TickerEntryCreate}-Schema erzeugt. Er
+setzt \texttt{source="ai"} und legt den initialen Status abhängig vom
+Aufrufkontext fest (\texttt{draft} im Co-op-Modus, \texttt{published} im
+Auto-Modus).
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
 \subsubsection{5.2.6 LLM-Service: Prompt-Aufbau und
 Provider-Dispatch}\label{llm-service-prompt-aufbau-und-provider-dispatch}
 
-Der \passthrough{\lstinline!LLMService!} ist eine
-single-class-Implementierung, die beim Initialisieren den passenden
-Client instanziiert und über ein Dispatch-Dictionary aufruft:
+Der \texttt{LLMService} ist eine single-class-Implementierung, die beim
+Initialisieren den passenden Client instanziiert und über ein
+Dispatch-Dictionary aufruft:
 
-\begin{lstlisting}[language=Python]
-dispatch = {
-    'mock':       self._generate_mock_text,
-    'gemini':     self._generate_gemini_text,
-    'openrouter': self._generate_openrouter_text,
-    'openai':     self._generate_openai_text,
-    'anthropic':  self._generate_anthropic_text,
-}
-return dispatch[self.provider](**kwargs)
-\end{lstlisting}
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{dispatch }\OperatorTok{=}\NormalTok{ \{}
+    \StringTok{"mock"}\NormalTok{:       }\VariableTok{self}\NormalTok{.\_generate\_mock\_text,}
+    \StringTok{"gemini"}\NormalTok{:     }\VariableTok{self}\NormalTok{.\_generate\_gemini\_text,}
+    \StringTok{"openrouter"}\NormalTok{: }\VariableTok{self}\NormalTok{.\_generate\_openrouter\_text,}
+    \StringTok{"openai"}\NormalTok{:     }\VariableTok{self}\NormalTok{.\_generate\_openai\_text,}
+    \StringTok{"anthropic"}\NormalTok{:  }\VariableTok{self}\NormalTok{.\_generate\_anthropic\_text,}
+\NormalTok{\}}
+\ControlFlowTok{return}\NormalTok{ dispatch[}\VariableTok{self}\NormalTok{.provider](}\OperatorTok{**}\NormalTok{kwargs)}
+\end{Highlighting}
+\end{Shaded}
 
 Das Dispatch-Pattern macht es trivial, neue Provider hinzuzufügen:
-Implementierung einer Methode
-\passthrough{\lstinline!\_generate\_X\_text()!} und ein Eintrag im
-Dictionary.
+Implementierung einer Methode \texttt{\_generate\_X\_text()} und ein
+Eintrag im Dictionary.
 
 Der Prompt wird in vier modularen Methoden aufgebaut:
 
-\textbf{\passthrough{\lstinline!\_build\_event\_lines()!}} erzeugt die
-Fakten-Sektion. Jeder Parameter (Ereignistyp, Detail, Minute, Spieler,
-Team) wird nur dann eingebunden, wenn er vorhanden ist. Die
-Ereignisbezeichnung wird aus
-\passthrough{\lstinline!EVENT\_TYPE\_LABEL!} in lesbares Deutsch
-übersetzt (z. B. \passthrough{\lstinline!'goal'!} →
-\passthrough{\lstinline!'Tor'!}).
+\textbf{\texttt{\_build\_event\_lines()}} erzeugt die Fakten-Sektion.
+Jeder Parameter (Ereignistyp, Detail, Minute, Spieler, Team) wird nur
+dann eingebunden, wenn er vorhanden ist. Die Ereignisbezeichnung wird
+aus \texttt{EVENT\_TYPE\_LABEL} in lesbares Deutsch übersetzt (z. B.
+\texttt{"goal"} → \texttt{"Tor"}).
 
-\textbf{\passthrough{\lstinline!\_build\_few\_shot\_block()!}}
-formatiert die Stilreferenzen als nummerierte Beispiele:
+\textbf{\texttt{\_build\_few\_shot\_block()}} formatiert die
+Stilreferenzen als nummerierte Beispiele:
 
-\begin{lstlisting}
+\begin{verbatim}
 ### STILREFERENZEN
 Schreibe in exakt diesem Stil (Rhythmus, Wortwahl, Emotionalität):
-- 'Mustermann trifft mit einem satten Rechtsschuss – 1:0!'
-- 'Eintracht schlägt zu – der erste Treffer des Abends!'
-\end{lstlisting}
+- "Mustermann trifft mit einem satten Rechtsschuss – 1:0!"
+- "Eintracht schlägt zu – der erste Treffer des Abends!"
+\end{verbatim}
 
-\textbf{\passthrough{\lstinline!\_build\_prematch\_parts()!}} ergänzt
-für Pre-Match-Typen eine zusätzliche harte Instruktion: Das Modell darf
-keine Live-Szenen erfinden, sondern ausschließlich Vorschau- und
-Analyseinhalte produzieren.
+\textbf{\texttt{\_build\_prematch\_parts()}} ergänzt für Pre-Match-Typen
+eine zusätzliche harte Instruktion: Das Modell darf keine Live-Szenen
+erfinden, sondern ausschließlich Vorschau- und Analyseinhalte
+produzieren.
 
 Der vollständig zusammengesetzte System-Prompt folgt der in Abschnitt
 4.5.2 beschriebenen modularen Struktur aus sechs Bausteinen
 (Rolleninstruktion, Stilinstruktion, Faktenblock, Match-Kontext,
 Few-Shot-Block, Regelblock). Für Pre-Match-Typen fügt
-\passthrough{\lstinline!\_build\_prematch\_parts()!} eine zusätzliche
-harte Schutzregel ein, die das Modell auf Vorschau- und Analyseinhalte
-beschränkt. Die vier \passthrough{\lstinline!\_build\_*!}-Methoden
-erzeugen die Bausteine unabhängig voneinander, sodass fehlende
-Informationen (z. B. kein Spieler bei Phasenereignissen) den Prompt
-nicht invalidieren, sondern den entsprechenden Block auslassen.
+\texttt{\_build\_prematch\_parts()} eine zusätzliche harte Schutzregel
+ein, die das Modell auf Vorschau- und Analyseinhalte beschränkt. Die
+vier \texttt{\_build\_*}-Methoden erzeugen die Bausteine unabhängig
+voneinander, sodass fehlende Informationen (z. B. kein Spieler bei
+Phasenereignissen) den Prompt nicht invalidieren, sondern den
+entsprechenden Block auslassen.
 
-LLM-Parameter: \passthrough{\lstinline!temperature=0.3!} für konsistente
-Ausgaben, \passthrough{\lstinline!max\_tokens!} aus
-\passthrough{\lstinline!LLM\_MAX\_TOKENS!} (konfigurierbar). Bei
-Rate-Limit-Fehlern werden bis zu
-\passthrough{\lstinline!LLM\_RETRY\_ATTEMPTS!} (3) Versuche mit linearem
-Backoff (\passthrough{\lstinline!30 s / 60 s / 90 s!}) unternommen; bei
-sonstigen transienten Fehlern greift exponentielles Backoff
-(\passthrough{\lstinline!1 s / 2 s / 4 s!}).
+LLM-Parameter: \texttt{temperature=0.3} für konsistente Ausgaben,
+\texttt{max\_tokens} aus \texttt{LLM\_MAX\_TOKENS} (konfigurierbar). Bei
+Rate-Limit-Fehlern werden bis zu \texttt{LLM\_RETRY\_ATTEMPTS} (3)
+Versuche mit linearem Backoff (\texttt{30\ s\ /\ 60\ s\ /\ 90\ s})
+unternommen; bei sonstigen transienten Fehlern greift exponentielles
+Backoff (\texttt{1\ s\ /\ 2\ s\ /\ 4\ s}).
 
 \textbf{Normalisierung des Event-Typs} erfolgt vorab in
-\passthrough{\lstinline!\_normalize\_event\_type()!}. Die
-\passthrough{\lstinline!EVENT\_TYPE\_MAP!} übersetzt externe Strings
-(Partner-API: \passthrough{\lstinline!PartnerGoal!}, Football-API:
-\passthrough{\lstinline!Goal!}) auf interne Bezeichner
-(\passthrough{\lstinline!goal!}). Nicht erkannte Typen fallen auf
-\passthrough{\lstinline!'comment'!} zurück.
+\texttt{\_normalize\_event\_type()}. Die \texttt{EVENT\_TYPE\_MAP}
+übersetzt externe Strings (Partner-API: \texttt{PartnerGoal},
+Football-API: \texttt{Goal}) auf interne Bezeichner (\texttt{goal}).
+Nicht erkannte Typen fallen auf \texttt{"comment"} zurück.
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
 \subsubsection{5.2.7 WebSocket-Endpunkt für
 Media-Queue}\label{websocket-endpunkt-fuxfcr-media-queue}
 
-Der WebSocket-Endpunkt \passthrough{\lstinline!/ws/media!} wird durch
-einen dedizierten \passthrough{\lstinline!MediaConnectionManager!}
-verwaltet:
+Der WebSocket-Endpunkt \texttt{/ws/media} wird durch einen dedizierten
+\texttt{MediaConnectionManager} verwaltet:
 
-\begin{lstlisting}[language=Python]
-class MediaConnectionManager:
-    def __init__(self) -> None:
-        self.active_connections: list[WebSocket] = []
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{class}\NormalTok{ MediaConnectionManager:}
+    \KeywordTok{def} \FunctionTok{\_\_init\_\_}\NormalTok{(}\VariableTok{self}\NormalTok{) }\OperatorTok{{-}\textgreater{}} \VariableTok{None}\NormalTok{:}
+        \VariableTok{self}\NormalTok{.active\_connections: }\BuiltInTok{list}\NormalTok{[WebSocket] }\OperatorTok{=}\NormalTok{ []}
 
-    async def connect(self, websocket: WebSocket) -> None:
-        await websocket.accept()
-        self.active_connections.append(websocket)
+    \ControlFlowTok{async} \KeywordTok{def} \ExtensionTok{connect}\NormalTok{(}\VariableTok{self}\NormalTok{, websocket: WebSocket) }\OperatorTok{{-}\textgreater{}} \VariableTok{None}\NormalTok{:}
+        \ControlFlowTok{await}\NormalTok{ websocket.accept()}
+        \VariableTok{self}\NormalTok{.active\_connections.append(websocket)}
 
-    async def broadcast(self, data: dict) -> None:
-        dead: list[WebSocket] = []
-        for ws in self.active_connections:
-            try:
-                await ws.send_json(data)
-            except (WebSocketDisconnect, RuntimeError):
-                dead.append(ws)
-        for ws in dead:
-            self.disconnect(ws)
-\end{lstlisting}
+    \ControlFlowTok{async} \KeywordTok{def}\NormalTok{ broadcast(}\VariableTok{self}\NormalTok{, data: }\BuiltInTok{dict}\NormalTok{) }\OperatorTok{{-}\textgreater{}} \VariableTok{None}\NormalTok{:}
+\NormalTok{        dead: }\BuiltInTok{list}\NormalTok{[WebSocket] }\OperatorTok{=}\NormalTok{ []}
+        \ControlFlowTok{for}\NormalTok{ ws }\KeywordTok{in} \VariableTok{self}\NormalTok{.active\_connections:}
+            \ControlFlowTok{try}\NormalTok{:}
+                \ControlFlowTok{await}\NormalTok{ ws.send\_json(data)}
+            \ControlFlowTok{except}\NormalTok{ (WebSocketDisconnect, }\PreprocessorTok{RuntimeError}\NormalTok{):}
+\NormalTok{                dead.append(ws)}
+        \ControlFlowTok{for}\NormalTok{ ws }\KeywordTok{in}\NormalTok{ dead:}
+            \VariableTok{self}\NormalTok{.disconnect(ws)}
+\end{Highlighting}
+\end{Shaded}
 
 Wenn das Backend neue Media-Queue-Einträge über
-\passthrough{\lstinline!POST /api/v1/media/incoming!} erhält, ruft der
-Router anschließend
-\passthrough{\lstinline!manager.broadcast(\{'type': 'new\_media', 'items': [...]\})!}
+\texttt{POST\ /api/v1/media/incoming} erhält, ruft der Router
+anschließend
+\texttt{manager.broadcast(\{"type":\ "new\_media",\ "items":\ {[}...{]}\})}
 auf. Alle verbundenen Clients erhalten das Update in Echtzeit. Der
 Manager hält Verbindungen in einer einfachen In-Memory-Liste, was für
 die aktuelle Nutzung (wenige gleichzeitige Redakteur-Clients)
@@ -528,64 +485,63 @@ ausreichend ist; bei Multi-Prozess-Deployments wäre ein externes
 Pub/Sub-System (z. B. Redis) erforderlich.
 
 Die persistente Seite der Media-Queue wird durch das
-\passthrough{\lstinline!MediaQueueStatus!}-Enum gesteuert, das zwei
-Zustände unterscheidet: \passthrough{\lstinline!pending!} (Medien sind
-eingegangen und warten auf redaktionelle Zuordnung) und
-\passthrough{\lstinline!published!} (Medien wurden einem Ticker-Eintrag
-zugewiesen). Das Frontend zeigt im
-\passthrough{\lstinline!MediaPickerPanel!} ausschließlich
-\passthrough{\lstinline!pending!}-Einträge an; sobald ein Redakteur ein
-Bild einem Ticker-Eintrag anhängt, wird der Status per
-\passthrough{\lstinline!PATCH /api/v1/media/queue/\{id\}!} auf
-\passthrough{\lstinline!published!} gesetzt. Dieses einfache
-Zwei-Zustands-Modell verhindert, dass einmal zugeordnete Medien in der
-Auswahl erneut auftauchen. Der korrespondierende Frontend-Hook
-\passthrough{\lstinline!useMediaWebSocket!}, der die
-Verbindungslebensdauer, das exponentielle Reconnect-Backoff und das
-Nachrichten-Handling auf Client-Seite übernimmt, ist in Abschnitt 5.4.5
-beschrieben.
+\texttt{MediaQueueStatus}-Enum gesteuert, das zwei Zustände
+unterscheidet: \texttt{pending} (Medien sind eingegangen und warten auf
+redaktionelle Zuordnung) und \texttt{published} (Medien wurden einem
+Ticker-Eintrag zugewiesen). Das Frontend zeigt im
+\texttt{MediaPickerPanel} ausschließlich \texttt{pending}-Einträge an;
+sobald ein Redakteur ein Bild einem Ticker-Eintrag anhängt, wird der
+Status per \texttt{PATCH\ /api/v1/media/queue/\{id\}} auf
+\texttt{published} gesetzt. Dieses einfache Zwei-Zustands-Modell
+verhindert, dass einmal zugeordnete Medien in der Auswahl erneut
+auftauchen. Der korrespondierende Frontend-Hook
+\texttt{useMediaWebSocket}, der die Verbindungslebensdauer, das
+exponentielle Reconnect-Backoff und das Nachrichten-Handling auf
+Client-Seite übernimmt, ist in Abschnitt 5.4.5 beschrieben.
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
-\subsection{5.3 KI-Generierungspipeline}\label{ki-generierungspipeline}
+\subsection{KI-Generierungspipeline}\label{ki-generierungspipeline}
 
 \subsubsection{5.3.1 Ablaufdiagramm}\label{ablaufdiagramm}
 
 Die folgende Darstellung zeigt den vollständigen Ablauf von einem neuen
 Live-Ereignis bis zum publizierten Ticker-Eintrag:
 
-\begin{lstlisting}
-sequenceDiagram
-    participant n8n as n8n Workflow
-    participant API as FastAPI Backend
-    participant DB as PostgreSQL
-    participant LLM as LLM Provider
-    participant FE as React Frontend
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{sequenceDiagram}
+\NormalTok{    participant n8n as n8n Workflow}
+\NormalTok{    participant API as FastAPI Backend}
+\NormalTok{    participant DB as PostgreSQL}
+\NormalTok{    participant LLM as LLM Provider}
+\NormalTok{    participant FE as React Frontend}
 
-    n8n->>API: POST /api/v1/events (Ereignis-Import)
-    API->>DB: INSERT INTO events
-    n8n->>API: POST /api/v1/ticker/generate/{event_id}
-    API->>DB: SELECT ticker_entry WHERE event_id (Dedup)
-    alt Eintrag existiert bereits
-        API-->>n8n: 200 OK (existierender Eintrag)
-    else Neues Ereignis
-        API->>DB: SELECT match + teams (joinedload)
-        API->>DB: SELECT style_references (Few-Shot)
-        API->>LLM: Prompt (Fakten + Kontext + Stilreferenzen)
-        LLM-->>API: Generierter Text + Modellname
-        API->>DB: INSERT ticker_entry (status=draft|published)
-        API-->>n8n: 201 Created
-    end
-    FE->>API: GET /api/v1/ticker/{match_id} (Polling 5s)
-    API-->>FE: TickerEntry[] (inkl. neuer Entwurf)
-    alt Modus=coop
-        FE-->>FE: Entwurf in Draft-Queue anzeigen
-        note over FE: Redakteur: TAB (accept) / ESC (reject)
-        FE->>API: PATCH /api/v1/ticker/{id} {status:'published'}
-    else Modus=auto
-        note over DB: status=published gesetzt bei Generierung
-    end
-\end{lstlisting}
+\NormalTok{    n8n{-}\textgreater{}\textgreater{}API: POST /api/v1/events (Ereignis{-}Import)}
+\NormalTok{    API{-}\textgreater{}\textgreater{}DB: INSERT INTO events}
+\NormalTok{    n8n{-}\textgreater{}\textgreater{}API: POST /api/v1/ticker/generate/\{event\_id\}}
+\NormalTok{    API{-}\textgreater{}\textgreater{}DB: SELECT ticker\_entry WHERE event\_id (Dedup)}
+\NormalTok{    alt Eintrag existiert bereits}
+\NormalTok{        API{-}{-}\textgreater{}\textgreater{}n8n: 200 OK (existierender Eintrag)}
+\NormalTok{    else Neues Ereignis}
+\NormalTok{        API{-}\textgreater{}\textgreater{}DB: SELECT match + teams (joinedload)}
+\NormalTok{        API{-}\textgreater{}\textgreater{}DB: SELECT style\_references (Few{-}Shot)}
+\NormalTok{        API{-}\textgreater{}\textgreater{}LLM: Prompt (Fakten + Kontext + Stilreferenzen)}
+\NormalTok{        LLM{-}{-}\textgreater{}\textgreater{}API: Generierter Text + Modellname}
+\NormalTok{        API{-}\textgreater{}\textgreater{}DB: INSERT ticker\_entry (status=draft|published)}
+\NormalTok{        API{-}{-}\textgreater{}\textgreater{}n8n: 201 Created}
+\NormalTok{    end}
+\NormalTok{    FE{-}\textgreater{}\textgreater{}API: GET /api/v1/ticker/\{match\_id\} (Polling 5s)}
+\NormalTok{    API{-}{-}\textgreater{}\textgreater{}FE: TickerEntry[] (inkl. neuer Entwurf)}
+\NormalTok{    alt Modus=coop}
+\NormalTok{        FE{-}{-}\textgreater{}\textgreater{}FE: Entwurf in Draft{-}Queue anzeigen}
+\NormalTok{        note over FE: Redakteur: TAB (accept) / ESC (reject)}
+\NormalTok{        FE{-}\textgreater{}\textgreater{}API: PATCH /api/v1/ticker/\{id\} \{status:"published"\}}
+\NormalTok{    else Modus=auto}
+\NormalTok{        note over DB: status=published gesetzt bei Generierung}
+\NormalTok{    end}
+\end{Highlighting}
+\end{Shaded}
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
@@ -593,13 +549,15 @@ sequenceDiagram
 
 Ein zentrales Qualitätsmerkmal der Pipeline ist die Deduplizierung: Der
 Generierungsendpunkt prüft vor jedem LLM-Aufruf, ob bereits ein
-Ticker-Eintrag für die \passthrough{\lstinline!event\_id!} existiert:
+Ticker-Eintrag für die \texttt{event\_id} existiert:
 
-\begin{lstlisting}[language=Python]
-existing = ticker_repo.get_by_event(event_id)
-if existing:
-    return existing  # Idempotenter Rückgabepfad ohne LLM-Aufruf
-\end{lstlisting}
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{existing }\OperatorTok{=}\NormalTok{ ticker\_repo.get\_by\_event(event\_id)}
+\ControlFlowTok{if}\NormalTok{ existing:}
+    \ControlFlowTok{return}\NormalTok{ existing  }\CommentTok{\# Idempotenter Rückgabepfad ohne LLM{-}Aufruf}
+\end{Highlighting}
+\end{Shaded}
 
 Dies macht den Endpunkt idempotent gegenüber Mehrfachaufrufen --- ein
 wichtiges Merkmal, da n8n-Workflows bei Fehlern automatisch wiederholen.
@@ -612,20 +570,21 @@ mit unterschiedlichem (nicht-deterministischem) Text erzeugen.
 Modus-Steuerung}\label{statusentscheidung-und-modus-steuerung}
 
 Der initiale Status des erzeugten Ticker-Eintrags wird über den
-Aufrufparameter \passthrough{\lstinline!auto\_publish!} gesteuert, den
-n8n aus dem \passthrough{\lstinline!ticker\_mode!} des Spiels ableitet
-(vgl. Kap. 4.3.3 für die konzeptionelle Beschreibung der drei
-Betriebsmodi):
+Aufrufparameter \texttt{auto\_publish} gesteuert, den n8n aus dem
+\texttt{ticker\_mode} des Spiels ableitet (vgl. Kap. 4.3.3 für die
+konzeptionelle Beschreibung der drei Betriebsmodi):
 
-\begin{lstlisting}[language=Python]
-status=TickerStatus.published if data.auto_publish else TickerStatus.draft
-\end{lstlisting}
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{status}\OperatorTok{=}\NormalTok{TickerStatus.published }\ControlFlowTok{if}\NormalTok{ data.auto\_publish }\ControlFlowTok{else}\NormalTok{ TickerStatus.draft}
+\end{Highlighting}
+\end{Shaded}
 
 Damit wird die Modus-Logik zu einem reinen Aufrufparameter des Backends
 --- die Entscheidungsinstanz ist n8n auf Basis des in der Datenbank
-gespeicherten \passthrough{\lstinline!ticker\_mode!}. Das Backend selbst
-ist modus-agnostisch: Es erhält einen Booleschen Wert und setzt den
-Status entsprechend.
+gespeicherten \texttt{ticker\_mode}. Das Backend selbst ist
+modus-agnostisch: Es erhält einen Booleschen Wert und setzt den Status
+entsprechend.
 
 Die drei Modi übersetzen sich auf Implementierungsebene in drei
 verschiedene Pfade:
@@ -640,7 +599,7 @@ verschiedene Pfade:
 \begin{minipage}[b]{\linewidth}\raggedright
 Modus
 \end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
-\passthrough{\lstinline!auto\_publish!}
+\texttt{auto\_publish}
 \end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
 Ergebnis
 \end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
@@ -650,100 +609,92 @@ Redakteurs-Eingriff
 \endhead
 \bottomrule\noalign{}
 \endlastfoot
-\passthrough{\lstinline!auto!} & \passthrough{\lstinline!True!} &
-\passthrough{\lstinline!published!} & --- \\
-\passthrough{\lstinline!coop!} & \passthrough{\lstinline!False!} &
-\passthrough{\lstinline!draft!} & TAB (accept) / ESC (reject) \\
-\passthrough{\lstinline!manual!} & --- & --- & Slash-Command →
-\passthrough{\lstinline!POST /manual!} \\
+\texttt{auto} & \texttt{True} & \texttt{published} & --- \\
+\texttt{coop} & \texttt{False} & \texttt{draft} & TAB (accept) / ESC
+(reject) \\
+\texttt{manual} & --- & --- & Slash-Command → \texttt{POST\ /manual} \\
 \end{longtable}
 }
 
-Im \passthrough{\lstinline!manual!}-Modus wird der Generierungs-Endpunkt
-gar nicht aufgerufen: n8n importiert zwar weiterhin Ereignisse, triggert
-aber keinen LLM-Aufruf. Ticker-Einträge entstehen ausschließlich über
-den \passthrough{\lstinline!POST /api/v1/ticker/manual!}-Endpunkt, den
-das Frontend aus dem Slash-Command-Parser heraus bedient. Der Eintrag
-wird dort direkt mit \passthrough{\lstinline!status=published!}
-angelegt, da die Redakteurin den Text selbst verfasst hat und keine
-weitere Freigabe erforderlich ist.
+Im \texttt{manual}-Modus wird der Generierungs-Endpunkt gar nicht
+aufgerufen: n8n importiert zwar weiterhin Ereignisse, triggert aber
+keinen LLM-Aufruf. Ticker-Einträge entstehen ausschließlich über den
+\texttt{POST\ /api/v1/ticker/manual}-Endpunkt, den das Frontend aus dem
+Slash-Command-Parser heraus bedient. Der Eintrag wird dort direkt mit
+\texttt{status=published} angelegt, da die Redakteurin den Text selbst
+verfasst hat und keine weitere Freigabe erforderlich ist.
 
-Im \passthrough{\lstinline!coop!}-Modus liegt die gesamte UX-Last auf
-der Draft-Queue: Das Frontend zeigt neue
-\passthrough{\lstinline!draft!}-Einträge mit
-\passthrough{\lstinline!TAB!}/\passthrough{\lstinline!ESC!}-Shortcuts an
-(vgl. Abschnitt 5.4.6), und die Entscheidungs-Latenz beträgt je nach
-Komplexität des Entwurfs 15--30 Sekunden. Dieses Design stellt sicher,
-dass keine KI-generierten Texte ohne menschliche Prüfung publiziert
-werden --- eine Entscheidung, die direkt aus dem journalistischen
-Qualitätsanspruch in Kapitel 2.1 folgt.
+Im \texttt{coop}-Modus liegt die gesamte UX-Last auf der Draft-Queue:
+Das Frontend zeigt neue \texttt{draft}-Einträge mit
+\texttt{TAB}/\texttt{ESC}-Shortcuts an (vgl. Abschnitt 5.4.6), und die
+Entscheidungs-Latenz beträgt je nach Komplexität des Entwurfs 15--30
+Sekunden. Dieses Design stellt sicher, dass keine KI-generierten Texte
+ohne menschliche Prüfung publiziert werden --- eine Entscheidung, die
+direkt aus dem journalistischen Qualitätsanspruch in Kapitel 2.1 folgt.
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
 \subsubsection{5.3.4 Zustandsautomat der
 Ticker-Einträge}\label{zustandsautomat-der-ticker-eintruxe4ge}
 
-Das konzeptionelle Statusmodell (\passthrough{\lstinline!draft!} →
-\passthrough{\lstinline!published!} /
-\passthrough{\lstinline!rejected!}, Undo-Übergang
-\passthrough{\lstinline!published → draft!}) ist vollständig in
-Abschnitt 4.3.2 beschrieben. Implementierungsseitig sind zwei Details
-hervorzuheben:
+Das konzeptionelle Statusmodell (\texttt{draft} → \texttt{published} /
+\texttt{rejected}, Undo-Übergang \texttt{published\ →\ draft}) ist
+vollständig in Abschnitt 4.3.2 beschrieben. Implementierungsseitig sind
+zwei Details hervorzuheben:
 
-Der Übergang \passthrough{\lstinline!published → draft!} (Undo) ist im
-Frontend als \textbf{Toast-Aktion} realisiert: Nach jeder Publikation
-erscheint für 5 Sekunden ein Widerruf-Button. Über
-\passthrough{\lstinline!PATCH /api/v1/ticker/\{id\}!} mit
-\passthrough{\lstinline!\{ 'status': 'draft' \}!} wird der Eintrag
-zurückgesetzt und steht erneut zur Bearbeitung bereit.
+Der Übergang \texttt{published\ →\ draft} (Undo) ist im Frontend als
+\textbf{Toast-Aktion} realisiert: Nach jeder Publikation erscheint für 5
+Sekunden ein Widerruf-Button. Über \texttt{PATCH\ /api/v1/ticker/\{id\}}
+mit \texttt{\{\ "status":\ "draft"\ \}} wird der Eintrag zurückgesetzt
+und steht erneut zur Bearbeitung bereit.
 
-\passthrough{\lstinline!rejected!}-Einträge werden nicht aus der
-Datenbank gelöscht, sondern behalten ihren Status. Diese Entscheidung
-sichert die Reproduzierbarkeit der Evaluation: Alle je generierten
-Einträge --- auch verworfene --- sind für spätere Qualitätsanalysen
-auswertbar.
+\texttt{rejected}-Einträge werden nicht aus der Datenbank gelöscht,
+sondern behalten ihren Status. Diese Entscheidung sichert die
+Reproduzierbarkeit der Evaluation: Alle je generierten Einträge --- auch
+verworfene --- sind für spätere Qualitätsanalysen auswertbar.
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
-\subsection{5.4
-Frontend-Implementierung}\label{frontend-implementierung}
+\subsection{Frontend-Implementierung}\label{frontend-implementierung}
 
 \subsubsection{5.4.1 Komponentenhierarchie}\label{komponentenhierarchie}
 
 Das Frontend ist als React-Anwendung mit TypeScript organisiert. Die
-Hauptansicht (\passthrough{\lstinline!LiveTicker!}) gliedert sich in
-drei Panel-Komponenten, die von gemeinsam genutzten Hooks und Contexts
+Hauptansicht (\texttt{LiveTicker}) gliedert sich in drei
+Panel-Komponenten, die von gemeinsam genutzten Hooks und Contexts
 gespeist werden:
 
-\begin{lstlisting}
-graph TD
-    App --> LiveTicker
-    LiveTicker --> |TickerModeContext| LeftPanel
-    LiveTicker --> |TickerModeContext| CenterPanel
-    LiveTicker --> |TickerModeContext| RightPanel
-    LiveTicker --> |TickerDataContext| LeftPanel
-    LiveTicker --> |TickerDataContext| CenterPanel
-    LiveTicker --> |TickerDataContext| RightPanel
-    LiveTicker --> |TickerActionsContext| CenterPanel
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{graph TD}
+\NormalTok{    App {-}{-}\textgreater{} LiveTicker}
+\NormalTok{    LiveTicker {-}{-}\textgreater{} |TickerModeContext| LeftPanel}
+\NormalTok{    LiveTicker {-}{-}\textgreater{} |TickerModeContext| CenterPanel}
+\NormalTok{    LiveTicker {-}{-}\textgreater{} |TickerModeContext| RightPanel}
+\NormalTok{    LiveTicker {-}{-}\textgreater{} |TickerDataContext| LeftPanel}
+\NormalTok{    LiveTicker {-}{-}\textgreater{} |TickerDataContext| CenterPanel}
+\NormalTok{    LiveTicker {-}{-}\textgreater{} |TickerDataContext| RightPanel}
+\NormalTok{    LiveTicker {-}{-}\textgreater{} |TickerActionsContext| CenterPanel}
 
-    CenterPanel --> EventCard
-    CenterPanel --> EntryEditor
-    CenterPanel --> AIDraft
-    CenterPanel --> SummarySection
-    CenterPanel --> MediaPickerPanel
-    CenterPanel --> YouTubePanel
-    CenterPanel --> TwitterPanel
-    CenterPanel --> InstagramPanel
+\NormalTok{    CenterPanel {-}{-}\textgreater{} EventCard}
+\NormalTok{    CenterPanel {-}{-}\textgreater{} EntryEditor}
+\NormalTok{    CenterPanel {-}{-}\textgreater{} AIDraft}
+\NormalTok{    CenterPanel {-}{-}\textgreater{} SummarySection}
+\NormalTok{    CenterPanel {-}{-}\textgreater{} MediaPickerPanel}
+\NormalTok{    CenterPanel {-}{-}\textgreater{} YouTubePanel}
+\NormalTok{    CenterPanel {-}{-}\textgreater{} TwitterPanel}
+\NormalTok{    CenterPanel {-}{-}\textgreater{} InstagramPanel}
 
-    LeftPanel --> PublishedEntry
-    RightPanel --> Collapsible['Collapsible (Statistiken, Aufstellung, Spieler)']
-    RightPanel --> FormationColumn
-    RightPanel --> StatRow
+\NormalTok{    LeftPanel {-}{-}\textgreater{} PublishedEntry}
+\NormalTok{    RightPanel {-}{-}\textgreater{} Collapsible["Collapsible (Statistiken, Aufstellung, Spieler)"]}
+\NormalTok{    RightPanel {-}{-}\textgreater{} FormationColumn}
+\NormalTok{    RightPanel {-}{-}\textgreater{} StatRow}
 
-    EventCard --> |onGenerate| TickerActionsContext
-    AIDraft --> |onPublished/onDraftActive| TickerActionsContext
-    EntryEditor --> |onManualPublish| TickerActionsContext
-\end{lstlisting}
+\NormalTok{    EventCard {-}{-}\textgreater{} |onGenerate| TickerActionsContext}
+\NormalTok{    AIDraft {-}{-}\textgreater{} |onPublished/onDraftActive| TickerActionsContext}
+\NormalTok{    EntryEditor {-}{-}\textgreater{} |onManualPublish| TickerActionsContext}
+\end{Highlighting}
+\end{Shaded}
 
 Die drei Panels sind physisch getrennte React-Komponenten, kommunizieren
 aber ausschließlich über Context-Provider --- kein Prop-Drilling über
@@ -755,76 +706,80 @@ Komponentengrenzen hinweg.
 Context-Architektur}\label{react-context-architektur}
 
 Das Frontend verwendet drei spezialisierte Contexts, die in
-\passthrough{\lstinline!LiveTicker!} zusammengeführt werden. Jeder
-Context hat eine klar definierte Verantwortung:
+\texttt{LiveTicker} zusammengeführt werden. Jeder Context hat eine klar
+definierte Verantwortung:
 
-\textbf{\passthrough{\lstinline!TickerModeContext!}} --- Modus-State und
+\textbf{\texttt{TickerModeContext}} --- Modus-State und
 Tastatur-Aktionen:
 
-\begin{lstlisting}
-interface TickerModeContextValue {
-  mode: TickerMode; // 'auto' | 'coop' | 'manual'
-  setMode: (mode: TickerMode) => void;
-  acceptDraft: () => Promise<void>; // TAB-Shortcut
-  rejectDraft: () => Promise<void>; // ESC-Shortcut
-}
-\end{lstlisting}
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{interface}\NormalTok{ TickerModeContextValue \{}
+\NormalTok{  mode}\OperatorTok{:}\NormalTok{ TickerMode}\OperatorTok{;} \CommentTok{// "auto" | "coop" | "manual"}
+\NormalTok{  setMode}\OperatorTok{:}\NormalTok{ (mode}\OperatorTok{:}\NormalTok{ TickerMode) }\KeywordTok{=\textgreater{}} \DataTypeTok{void}\OperatorTok{;}
+\NormalTok{  acceptDraft}\OperatorTok{:}\NormalTok{ () }\KeywordTok{=\textgreater{}} \BuiltInTok{Promise}\OperatorTok{\textless{}}\DataTypeTok{void}\OperatorTok{\textgreater{};} \CommentTok{// TAB{-}Shortcut}
+\NormalTok{  rejectDraft}\OperatorTok{:}\NormalTok{ () }\KeywordTok{=\textgreater{}} \BuiltInTok{Promise}\OperatorTok{\textless{}}\DataTypeTok{void}\OperatorTok{\textgreater{};} \CommentTok{// ESC{-}Shortcut}
+\NormalTok{\}}
+\end{Highlighting}
+\end{Shaded}
 
-\textbf{\passthrough{\lstinline!TickerDataContext!}} --- Match-Daten und
+\textbf{\texttt{TickerDataContext}} --- Match-Daten und
 Reload-Funktionen:
 
-\begin{lstlisting}
-interface TickerDataContextValue {
-  match: Match | null;
-  events: MatchEvent[];
-  tickerTexts: TickerEntry[];
-  prematch: TickerEntry[];
-  lineups: LineupEntry[];
-  matchStats: MatchStat[];
-  players: Player[];
-  playerStats: PlayerStat[];
-  injuries: InjuryGroup[];
-  reload: ReloadFunctions;
-  generatingId: number | null;
-}
-\end{lstlisting}
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{interface}\NormalTok{ TickerDataContextValue \{}
+\NormalTok{  match}\OperatorTok{:}\NormalTok{ Match }\OperatorTok{|} \DataTypeTok{null}\OperatorTok{;}
+\NormalTok{  events}\OperatorTok{:}\NormalTok{ MatchEvent[]}\OperatorTok{;}
+\NormalTok{  tickerTexts}\OperatorTok{:}\NormalTok{ TickerEntry[]}\OperatorTok{;}
+\NormalTok{  prematch}\OperatorTok{:}\NormalTok{ TickerEntry[]}\OperatorTok{;}
+\NormalTok{  lineups}\OperatorTok{:}\NormalTok{ LineupEntry[]}\OperatorTok{;}
+\NormalTok{  matchStats}\OperatorTok{:}\NormalTok{ MatchStat[]}\OperatorTok{;}
+\NormalTok{  players}\OperatorTok{:}\NormalTok{ Player[]}\OperatorTok{;}
+\NormalTok{  playerStats}\OperatorTok{:}\NormalTok{ PlayerStat[]}\OperatorTok{;}
+\NormalTok{  injuries}\OperatorTok{:}\NormalTok{ InjuryGroup[]}\OperatorTok{;}
+\NormalTok{  reload}\OperatorTok{:}\NormalTok{ ReloadFunctions}\OperatorTok{;}
+\NormalTok{  generatingId}\OperatorTok{:} \DataTypeTok{number} \OperatorTok{|} \DataTypeTok{null}\OperatorTok{;}
+\NormalTok{\}}
+\end{Highlighting}
+\end{Shaded}
 
-\textbf{\passthrough{\lstinline!TickerActionsContext!}} --- Callbacks
-für redaktionelle Aktionen:
+\textbf{\texttt{TickerActionsContext}} --- Callbacks für redaktionelle
+Aktionen:
 
-\begin{lstlisting}
-interface TickerActionsContextValue {
-  onGenerate: (eventId: number, style: TickerStyle) => Promise<void>;
-  onManualPublish: (text, icon?, minute?, phase?, rawInput?) => Promise<void>;
-  onDraftActive: (id: number, text: string) => void;
-  onPublished: (id: number, text: string, isManual?: boolean) => void;
-  onEditEntry: (id: number, text: string) => Promise<void>;
-  onDeleteEntry: (id: number) => Promise<void>;
-  retractedText: string | null;
-  clearRetractedText: () => void;
-}
-\end{lstlisting}
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{interface}\NormalTok{ TickerActionsContextValue \{}
+\NormalTok{  onGenerate}\OperatorTok{:}\NormalTok{ (eventId}\OperatorTok{:} \DataTypeTok{number}\OperatorTok{,}\NormalTok{ style}\OperatorTok{:}\NormalTok{ TickerStyle) }\KeywordTok{=\textgreater{}} \BuiltInTok{Promise}\OperatorTok{\textless{}}\DataTypeTok{void}\OperatorTok{\textgreater{};}
+\NormalTok{  onManualPublish}\OperatorTok{:}\NormalTok{ (text}\OperatorTok{,}\NormalTok{ icon}\OperatorTok{?,}\NormalTok{ minute}\OperatorTok{?,}\NormalTok{ phase}\OperatorTok{?,}\NormalTok{ rawInput}\OperatorTok{?}\NormalTok{) }\KeywordTok{=\textgreater{}} \BuiltInTok{Promise}\OperatorTok{\textless{}}\DataTypeTok{void}\OperatorTok{\textgreater{};}
+\NormalTok{  onDraftActive}\OperatorTok{:}\NormalTok{ (id}\OperatorTok{:} \DataTypeTok{number}\OperatorTok{,}\NormalTok{ text}\OperatorTok{:} \DataTypeTok{string}\NormalTok{) }\KeywordTok{=\textgreater{}} \DataTypeTok{void}\OperatorTok{;}
+\NormalTok{  onPublished}\OperatorTok{:}\NormalTok{ (id}\OperatorTok{:} \DataTypeTok{number}\OperatorTok{,}\NormalTok{ text}\OperatorTok{:} \DataTypeTok{string}\OperatorTok{,}\NormalTok{ isManual}\OperatorTok{?:} \DataTypeTok{boolean}\NormalTok{) }\KeywordTok{=\textgreater{}} \DataTypeTok{void}\OperatorTok{;}
+\NormalTok{  onEditEntry}\OperatorTok{:}\NormalTok{ (id}\OperatorTok{:} \DataTypeTok{number}\OperatorTok{,}\NormalTok{ text}\OperatorTok{:} \DataTypeTok{string}\NormalTok{) }\KeywordTok{=\textgreater{}} \BuiltInTok{Promise}\OperatorTok{\textless{}}\DataTypeTok{void}\OperatorTok{\textgreater{};}
+\NormalTok{  onDeleteEntry}\OperatorTok{:}\NormalTok{ (id}\OperatorTok{:} \DataTypeTok{number}\NormalTok{) }\KeywordTok{=\textgreater{}} \BuiltInTok{Promise}\OperatorTok{\textless{}}\DataTypeTok{void}\OperatorTok{\textgreater{};}
+\NormalTok{  retractedText}\OperatorTok{:} \DataTypeTok{string} \OperatorTok{|} \DataTypeTok{null}\OperatorTok{;}
+\NormalTok{  clearRetractedText}\OperatorTok{:}\NormalTok{ () }\KeywordTok{=\textgreater{}} \DataTypeTok{void}\OperatorTok{;}
+\NormalTok{\}}
+\end{Highlighting}
+\end{Shaded}
 
 Die Trennung von Daten- und Aktions-Context hat einen konkreten
 Performance-Vorteil: Komponenten, die nur Actions konsumieren (z. B.
-\passthrough{\lstinline!EntryEditor!}), re-rendern nicht bei Änderungen
-an \passthrough{\lstinline!tickerTexts!}. Dies ist bei einem Live-Ticker
-mit 5-Sekunden-Polling relevant.
+\texttt{EntryEditor}), re-rendern nicht bei Änderungen an
+\texttt{tickerTexts}. Dies ist bei einem Live-Ticker mit
+5-Sekunden-Polling relevant.
 
 Alle Contexts exportieren zusätzlich einen Hook
-(\passthrough{\lstinline!useTickerModeContext!},
-\passthrough{\lstinline!useTickerDataContext!},
-\passthrough{\lstinline!useTickerActionsContext!}), der bei Verwendung
-außerhalb des Providers einen klaren Fehler wirft --- ein
-Entwicklungssicherheitsnetz.
+(\texttt{useTickerModeContext}, \texttt{useTickerDataContext},
+\texttt{useTickerActionsContext}), der bei Verwendung außerhalb des
+Providers einen klaren Fehler wirft --- ein Entwicklungssicherheitsnetz.
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
 \subsubsection{5.4.3 Hook-Architektur}\label{hook-architektur}
 
 Die Zustandslogik ist in zwei Ebenen von Hooks organisiert: gemeinsame
-Hooks unter \passthrough{\lstinline!src/hooks/!} und feature-spezifische
-Hooks unter \passthrough{\lstinline!components/LiveTicker/hooks/!}.
+Hooks unter \texttt{src/hooks/} und feature-spezifische Hooks unter
+\texttt{components/LiveTicker/hooks/}.
 
 Die wichtigsten Hooks und ihre Verantwortlichkeiten:
 
@@ -845,67 +800,63 @@ Verantwortlichkeit
 \endhead
 \bottomrule\noalign{}
 \endlastfoot
-\passthrough{\lstinline!useNavigation!} & hooks/ &
-Land→Team→Wettbewerb→Spieltag→Spiel Navigationskette \\
-\passthrough{\lstinline!useMatchData!} & hooks/ & Aggregiert die drei
-Polling-Hooks und koordiniert Reload-Zyklen \\
-\passthrough{\lstinline!useMatchCore!} & hooks/ & Polling der
-Match-Metadaten (Teams, Status, Spielstand, Minute) \\
-\passthrough{\lstinline!useMatchEvents!} & hooks/ & Polling der
-Spielereignisse (Tore, Karten, Auswechslungen) \\
-\passthrough{\lstinline!useMatchTicker!} & hooks/ & Polling der
-Ticker-Einträge (Entwürfe, publizierte Texte) \\
-\passthrough{\lstinline!useMatchTriggers!} & hooks/ & n8n-Webhooks nach
-Matchauswahl und Statuswechseln \\
-\passthrough{\lstinline!useTickerMode!} & hooks/ &
-\passthrough{\lstinline!mode!}-State, PATCH zum Backend,
-Keyboard-Shortcuts \\
-\passthrough{\lstinline!useMediaWebSocket!} & hooks/ &
-WebSocket-Verbindung mit exponentiellem Reconnect-Backoff \\
-\passthrough{\lstinline!usePanelResize!} & hooks/ & Drag-Resize zwischen
-Center- und Right-Panel \\
-\passthrough{\lstinline!useApiStatus!} & hooks/ & Health-Check gegen
-Backend (alle 30 s) \\
-\passthrough{\lstinline!useTicker!} & LT/hooks/ & Ticker-Actions,
-Draft-Queue, Publish-Toast (Undo) \\
-\passthrough{\lstinline!useEventDraft!} & LT/hooks/ & Entwurfsansicht,
+\texttt{useNavigation} & hooks/ & Land→Team→Wettbewerb→Spieltag→Spiel
+Navigationskette \\
+\texttt{useMatchData} & hooks/ & Aggregiert die drei Polling-Hooks und
+koordiniert Reload-Zyklen \\
+\texttt{useMatchCore} & hooks/ & Polling der Match-Metadaten (Teams,
+Status, Spielstand, Minute) \\
+\texttt{useMatchEvents} & hooks/ & Polling der Spielereignisse (Tore,
+Karten, Auswechslungen) \\
+\texttt{useMatchTicker} & hooks/ & Polling der Ticker-Einträge
+(Entwürfe, publizierte Texte) \\
+\texttt{useMatchTriggers} & hooks/ & n8n-Webhooks nach Matchauswahl und
+Statuswechseln \\
+\texttt{useTickerMode} & hooks/ & \texttt{mode}-State, PATCH zum
+Backend, Keyboard-Shortcuts \\
+\texttt{useMediaWebSocket} & hooks/ & WebSocket-Verbindung mit
+exponentiellem Reconnect-Backoff \\
+\texttt{usePanelResize} & hooks/ & Drag-Resize zwischen Center- und
+Right-Panel \\
+\texttt{useApiStatus} & hooks/ & Health-Check gegen Backend (alle 30
+s) \\
+\texttt{useTicker} & LT/hooks/ & Ticker-Actions, Draft-Queue,
+Publish-Toast (Undo) \\
+\texttt{useEventDraft} & LT/hooks/ & Entwurfsansicht,
 Accept/Reject-Logik \\
-\passthrough{\lstinline!useAutoPublisher!} & LT/hooks/ & Automatisches
-Publizieren im Auto-Modus \\
-\passthrough{\lstinline!useRightPanelData!} & LT/hooks/ & Aufbereitung
-von Lineups, Stats, Spielerinfo für das rechte Panel \\
+\texttt{useAutoPublisher} & LT/hooks/ & Automatisches Publizieren im
+Auto-Modus \\
+\texttt{useRightPanelData} & LT/hooks/ & Aufbereitung von Lineups,
+Stats, Spielerinfo für das rechte Panel \\
 \end{longtable}
 }
 
-\passthrough{\lstinline!useMatchCore!},
-\passthrough{\lstinline!useMatchEvents!} und
-\passthrough{\lstinline!useMatchTicker!} betreiben jeweils einen eigenen
-\passthrough{\lstinline!setInterval!}-Zyklus, der bei Mount startet und
-bei Unmount gestoppt wird. Die HTTP-Kommunikation erfolgt über
-\textbf{Axios} als HTTP-Client. \passthrough{\lstinline!useMatchData!}
-aggregiert die drei Hooks und stellt die Daten über
-\passthrough{\lstinline!TickerDataContext!} bereit.
+\texttt{useMatchCore}, \texttt{useMatchEvents} und
+\texttt{useMatchTicker} betreiben jeweils einen eigenen
+\texttt{setInterval}-Zyklus, der bei Mount startet und bei Unmount
+gestoppt wird. Die HTTP-Kommunikation erfolgt über \textbf{Axios} als
+HTTP-Client. \texttt{useMatchData} aggregiert die drei Hooks und stellt
+die Daten über \texttt{TickerDataContext} bereit.
 
-\passthrough{\lstinline!useMatchData!} steuert das Polling-Intervall
-über die Hilfsfunktion
-\passthrough{\lstinline!resolvePollingInterval()!}:
+\texttt{useMatchData} steuert das Polling-Intervall über die
+Hilfsfunktion \texttt{resolvePollingInterval()}:
 
-\begin{lstlisting}
-// src/utils/resolvePollingInterval.ts
-export function resolvePollingInterval(matchState: string | null): number {
-  if (matchState === 'Live' || matchState === 'FullTime') return POLL_EVENTS_MS; // 5000
-  if (matchState == null) return POLL_EVENTS_MS; // 5000
-  return POLL_PREMATCH_MS; // 5000
-}
-\end{lstlisting}
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{// src/utils/resolvePollingInterval.ts}
+\ImportTok{export} \KeywordTok{function} \FunctionTok{resolvePollingInterval}\NormalTok{(matchState}\OperatorTok{:} \DataTypeTok{string} \OperatorTok{|} \DataTypeTok{null}\NormalTok{)}\OperatorTok{:} \DataTypeTok{number}\NormalTok{ \{}
+  \ControlFlowTok{if}\NormalTok{ (matchState }\OperatorTok{===} \StringTok{"Live"} \OperatorTok{||}\NormalTok{ matchState }\OperatorTok{===} \StringTok{"FullTime"}\NormalTok{) }\ControlFlowTok{return}\NormalTok{ POLL\_EVENTS\_MS}\OperatorTok{;} \CommentTok{// 5000}
+  \ControlFlowTok{if}\NormalTok{ (matchState }\OperatorTok{==} \KeywordTok{null}\NormalTok{) }\ControlFlowTok{return}\NormalTok{ POLL\_EVENTS\_MS}\OperatorTok{;} \CommentTok{// 5000}
+  \ControlFlowTok{return}\NormalTok{ POLL\_PREMATCH\_MS}\OperatorTok{;} \CommentTok{// 5000}
+\NormalTok{\}}
+\end{Highlighting}
+\end{Shaded}
 
-Aktuell sind beide Konstanten
-(\passthrough{\lstinline!POLL\_EVENTS\_MS!},
-\passthrough{\lstinline!POLL\_PREMATCH\_MS!}) auf 5000 ms gesetzt,
-sodass alle Zustände mit einem einheitlichen 5-Sekunden-Intervall
-gepollt werden. Die Unterscheidung ist als Erweiterungspunkt vorgesehen,
-um bei Bedarf ruhigere Polling-Intervalle für inaktive Spiele
-einzuführen.
+Aktuell sind beide Konstanten (\texttt{POLL\_EVENTS\_MS},
+\texttt{POLL\_PREMATCH\_MS}) auf 5000 ms gesetzt, sodass alle Zustände
+mit einem einheitlichen 5-Sekunden-Intervall gepollt werden. Die
+Unterscheidung ist als Erweiterungspunkt vorgesehen, um bei Bedarf
+ruhigere Polling-Intervalle für inaktive Spiele einzuführen.
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
@@ -917,28 +868,28 @@ Maus-Interaktion. Er übersetzt kurze Kommandos in formatierte
 Ticker-Texte und liefert Metadaten (Icon, Phase, Minute) für die
 Publikation.
 
-Die Funktion
-\passthrough{\lstinline!parseCommand(input, currentMinute)!} gibt ein
-typisiertes \passthrough{\lstinline!ParseResult!} zurück:
+Die Funktion \texttt{parseCommand(input,\ currentMinute)} gibt ein
+typisiertes \texttt{ParseResult} zurück:
 
-\begin{lstlisting}
-export interface ParseResult {
-  type: string;
-  formatted: string;
-  warnings: string[];
-  isValid: boolean;
-  meta: {
-    icon: string;
-    phase: string | null;
-    minute: number | null;
-  };
-}
-\end{lstlisting}
+\begin{Shaded}
+\begin{Highlighting}[]
+\ImportTok{export} \KeywordTok{interface}\NormalTok{ ParseResult \{}
+\NormalTok{  type}\OperatorTok{:} \DataTypeTok{string}\OperatorTok{;}
+\NormalTok{  formatted}\OperatorTok{:} \DataTypeTok{string}\OperatorTok{;}
+\NormalTok{  warnings}\OperatorTok{:} \DataTypeTok{string}\NormalTok{[]}\OperatorTok{;}
+\NormalTok{  isValid}\OperatorTok{:} \DataTypeTok{boolean}\OperatorTok{;}
+\NormalTok{  meta}\OperatorTok{:}\NormalTok{ \{}
+\NormalTok{    icon}\OperatorTok{:} \DataTypeTok{string}\OperatorTok{;}
+\NormalTok{    phase}\OperatorTok{:} \DataTypeTok{string} \OperatorTok{|} \DataTypeTok{null}\OperatorTok{;}
+\NormalTok{    minute}\OperatorTok{:} \DataTypeTok{number} \OperatorTok{|} \DataTypeTok{null}\OperatorTok{;}
+\NormalTok{  \}}\OperatorTok{;}
+\NormalTok{\}}
+\end{Highlighting}
+\end{Shaded}
 
-\textbf{Phasen-Commands} (11 Einträge in
-\passthrough{\lstinline!PHASE\_CMDS!}) erzeugen vordefinierte Texte mit
-optionaler Minutenangabe. Die folgende Tabelle zeigt eine Auswahl der
-häufigsten Einträge (7 von 11):
+\textbf{Phasen-Commands} (11 Einträge in \texttt{PHASE\_CMDS}) erzeugen
+vordefinierte Texte mit optionaler Minutenangabe. Die folgende Tabelle
+zeigt eine Auswahl der häufigsten Einträge (7 von 11):
 
 {\def\LTcaptype{none} % do not increment counter
 \begin{longtable}[]{@{}llll@{}}
@@ -948,43 +899,36 @@ Command & Ausgabe & Phase & Icon \\
 \endhead
 \bottomrule\noalign{}
 \endlastfoot
-\passthrough{\lstinline!/prematch!} & ``Vorbericht'' &
-\passthrough{\lstinline!Before!} & 📣 \\
-\passthrough{\lstinline!/anpfiff!} & ``Anpfiff!'' &
-\passthrough{\lstinline!FirstHalf!} & 📣 \\
-\passthrough{\lstinline!/hz!} & ``Halbzeit!'' &
-\passthrough{\lstinline!FirstHalfBreak!} & 🔔 \\
-\passthrough{\lstinline!/2hz!} & ``Anstoß zur 2. Halbzeit'' &
-\passthrough{\lstinline!SecondHalf!} & 📣 \\
-\passthrough{\lstinline!/vz1!} & ``Beginn der Verlängerung'' &
-\passthrough{\lstinline!ExtraFirstHalf!} & 📣 \\
-\passthrough{\lstinline!/elfmeter!} & ``Elfmeterschießen beginnt'' &
-\passthrough{\lstinline!PenaltyShootout!} & 🥅 \\
-\passthrough{\lstinline!/abpfiff!} & ``Abpfiff!'' &
-\passthrough{\lstinline!After!} & 📣 \\
+\texttt{/prematch} & „Vorbericht'' & \texttt{Before} & 📣 \\
+\texttt{/anpfiff} & „Anpfiff!'' & \texttt{FirstHalf} & 📣 \\
+\texttt{/hz} & „Halbzeit!'' & \texttt{FirstHalfBreak} & 🔔 \\
+\texttt{/2hz} & „Anstoß zur 2. Halbzeit'' & \texttt{SecondHalf} & 📣 \\
+\texttt{/vz1} & „Beginn der Verlängerung'' & \texttt{ExtraFirstHalf} &
+📣 \\
+\texttt{/elfmeter} & „Elfmeterschießen beginnt'' &
+\texttt{PenaltyShootout} & 🥅 \\
+\texttt{/abpfiff} & „Abpfiff!'' & \texttt{After} & 📣 \\
 \end{longtable}
 }
 
-\textbf{Event-Commands} (12 Einträge in
-\passthrough{\lstinline!CMD\_MAP!}, 8 Typen nach Expansion) erzeugen
-strukturierte Texte mit Validierungshinweisen:
+\textbf{Event-Commands} (12 Einträge in \texttt{CMD\_MAP}, 8 Typen nach
+Expansion) erzeugen strukturierte Texte mit Validierungshinweisen:
 
-\begin{lstlisting}
-/g Mustermann EF  → 'TOR — Mustermann (EF)'  + icon ⚽
-/gelb Müller EF   → 'Gelb — Müller (EF)'     + icon 🟨
-/rot Huber Bayern → 'Rote Karte — Huber (Bayern)' + icon 🟥
-/s EinRaus AusRein EF → 'Wechsel — EinRaus ↔ AusRein (EF)' + icon 🔄
-/n Freistoß knapp über das Tor → 'Freistoß knapp über das Tor'
-\end{lstlisting}
+\begin{verbatim}
+/g Mustermann EF  → "TOR — Mustermann (EF)"  + icon ⚽
+/gelb Müller EF   → "Gelb — Müller (EF)"     + icon 🟨
+/rot Huber Bayern → "Rote Karte — Huber (Bayern)" + icon 🟥
+/s EinRaus AusRein EF → "Wechsel — EinRaus ↔ AusRein (EF)" + icon 🔄
+/n Freistoß knapp über das Tor → "Freistoß knapp über das Tor"
+\end{verbatim}
 
-Für unvollständige Eingaben gibt \passthrough{\lstinline!warnings[]!}
-gezielte Hinweise zurück (\passthrough{\lstinline!'Fehlend: Spieler'!}),
-die im \passthrough{\lstinline!EntryEditor!} live angezeigt werden. Das
-Frontend kann damit ohne Backend-Aufruf Validierungsfeedback geben.
+Für unvollständige Eingaben gibt \texttt{warnings{[}{]}} gezielte
+Hinweise zurück (\texttt{"Fehlend:\ Spieler"}), die im
+\texttt{EntryEditor} live angezeigt werden. Das Frontend kann damit ohne
+Backend-Aufruf Validierungsfeedback geben.
 
-Nicht erkannte Commands werden mit
-\passthrough{\lstinline!isValid: false!} und einer Fehlermeldung
-zurückgegeben (\passthrough{\lstinline!'Unbekannter Command: /xyz'!}),
+Nicht erkannte Commands werden mit \texttt{isValid:\ false} und einer
+Fehlermeldung zurückgegeben (\texttt{"Unbekannter\ Command:\ /xyz"}),
 statt einen Laufzeitfehler zu werfen.
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
@@ -992,74 +936,73 @@ statt einen Laufzeitfehler zu werfen.
 \subsubsection{\texorpdfstring{5.4.5 WebSocket-Hook
 (\texttt{useMediaWebSocket})}{5.4.5 WebSocket-Hook (useMediaWebSocket)}}\label{websocket-hook-usemediawebsocket}
 
-Der \passthrough{\lstinline!useMediaWebSocket!}-Hook verwaltet die
-Lebensdauer der WebSocket-Verbindung zum Backend. Die Kernentscheidung
-ist das \textbf{exponentielle Reconnect-Backoff}:
+Der \texttt{useMediaWebSocket}-Hook verwaltet die Lebensdauer der
+WebSocket-Verbindung zum Backend. Die Kernentscheidung ist das
+\textbf{exponentielle Reconnect-Backoff}:
 
-\begin{lstlisting}
-const delay = Math.min(
-  BASE_DELAY_MS * 2 ** retryCountRef.current, // 1s → 2s → 4s → 8s → …
-  MAX_DELAY_MS, // max 30s
-);
-\end{lstlisting}
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{const}\NormalTok{ delay }\OperatorTok{=} \BuiltInTok{Math}\OperatorTok{.}\FunctionTok{min}\NormalTok{(}
+\NormalTok{  BASE\_DELAY\_MS }\OperatorTok{*} \DecValTok{2} \OperatorTok{**}\NormalTok{ retryCountRef}\OperatorTok{.}\AttributeTok{current}\OperatorTok{,} \CommentTok{// 1s → 2s → 4s → 8s → …}
+\NormalTok{  MAX\_DELAY\_MS}\OperatorTok{,} \CommentTok{// max 30s}
+\NormalTok{)}\OperatorTok{;}
+\end{Highlighting}
+\end{Shaded}
 
-Der \passthrough{\lstinline!retryCountRef!} zählt aufeinanderfolgende
+Der \texttt{retryCountRef} zählt aufeinanderfolgende
 Verbindungsabbrüche. Bei erfolgreicher Reconnection wird er auf 0
-zurückgesetzt. \passthrough{\lstinline!BASE\_DELAY\_MS = 1000!},
-\passthrough{\lstinline!MAX\_DELAY\_MS = 30\_000!}.
+zurückgesetzt. \texttt{BASE\_DELAY\_MS\ =\ 1000},
+\texttt{MAX\_DELAY\_MS\ =\ 30\_000}.
 
-Ein \passthrough{\lstinline!mountedRef!} verhindert Zustandsänderungen
-nach dem Unmounten der Komponente --- ein häufiges React-Problem bei
-asynchronen Operationen:
+Ein \texttt{mountedRef} verhindert Zustandsänderungen nach dem Unmounten
+der Komponente --- ein häufiges React-Problem bei asynchronen
+Operationen:
 
-\begin{lstlisting}
-ws.onclose = () => {
-  if (!mountedRef.current) return; // Kein setState nach Unmount
-  // … retry-Logik
-};
-\end{lstlisting}
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{ws}\OperatorTok{.}\AttributeTok{onclose} \OperatorTok{=}\NormalTok{ () }\KeywordTok{=\textgreater{}}\NormalTok{ \{}
+  \ControlFlowTok{if}\NormalTok{ (}\OperatorTok{!}\NormalTok{mountedRef}\OperatorTok{.}\AttributeTok{current}\NormalTok{) }\ControlFlowTok{return}\OperatorTok{;} \CommentTok{// Kein setState nach Unmount}
+  \CommentTok{// … retry{-}Logik}
+\NormalTok{\}}\OperatorTok{;}
+\end{Highlighting}
+\end{Shaded}
 
-Der Cleanup im \passthrough{\lstinline!useEffect!} setzt
-\passthrough{\lstinline!ws.onclose = null!}, bevor die WebSocket
-geschlossen wird. Ohne diesen Schritt würde das
-\passthrough{\lstinline!close!}-Event des kontrollierten Schließens
-einen unbeabsichtigten Reconnect-Versuch auslösen.
+Der Cleanup im \texttt{useEffect} setzt \texttt{ws.onclose\ =\ null},
+bevor die WebSocket geschlossen wird. Ohne diesen Schritt würde das
+\texttt{close}-Event des kontrollierten Schließens einen
+unbeabsichtigten Reconnect-Versuch auslösen.
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
 \subsubsection{5.4.6 Modusimplementierung im
 Frontend}\label{modusimplementierung-im-frontend}
 
-Der aktive Modus (\passthrough{\lstinline!auto!} /
-\passthrough{\lstinline!coop!} / \passthrough{\lstinline!manual!})
+Der aktive Modus (\texttt{auto} / \texttt{coop} / \texttt{manual})
 steuert das Verhalten mehrerer Frontend-Komponenten (vgl. Kap. 4.6.4 für
 die konzeptionelle Einordnung der Moduslogik und Interaktionsdesign).
 Die Implementierung verteilt sich auf drei Ebenen:
 
-\textbf{Persistenz und Synchronisation} ---
-\passthrough{\lstinline!useTickerMode!} initialisiert den Modus lokal
-mit \passthrough{\lstinline!coop!} als Standardwert und überschreibt
-diesen beim Laden eines Spiels mit dem in der Datenbank gespeicherten
-\passthrough{\lstinline!ticker\_mode!}. Änderungen werden über
-\passthrough{\lstinline!PATCH /matches/\{id\}/ticker-mode!} ans Backend
+\textbf{Persistenz und Synchronisation} --- \texttt{useTickerMode}
+initialisiert den Modus lokal mit \texttt{coop} als Standardwert und
+überschreibt diesen beim Laden eines Spiels mit dem in der Datenbank
+gespeicherten \texttt{ticker\_mode}. Änderungen werden über
+\texttt{PATCH\ /matches/\{id\}/ticker-mode} ans Backend
 zurückgeschrieben. Lokale Optimistic-Updates vermeiden wahrnehmbare
 Latenz beim Umschalten.
 
 \textbf{Keyboard-Shortcuts} --- Im Co-op-Modus registriert
-\passthrough{\lstinline!useTickerMode!} die Shortcuts
-\passthrough{\lstinline!TAB!} (acceptDraft) und
-\passthrough{\lstinline!ESC!} (rejectDraft) direkt als
-Keyboard-Event-Listener. Die Shortcut-Registrierung ist an den
-Modus-Zustand gebunden und wird bei Moduswechsel automatisch
-aktualisiert.
+\texttt{useTickerMode} die Shortcuts \texttt{TAB} (acceptDraft) und
+\texttt{ESC} (rejectDraft) direkt als Keyboard-Event-Listener. Die
+Shortcut-Registrierung ist an den Modus-Zustand gebunden und wird bei
+Moduswechsel automatisch aktualisiert.
 
-\textbf{\passthrough{\lstinline!useAutoPublisher!}} --- Im Auto-Modus
-überwacht dieser Hook die \passthrough{\lstinline!tickerTexts!} auf neue
-Draft-Einträge (\passthrough{\lstinline!status='draft'!}) und publiziert
-sie automatisch. Dies ist als Frontend-Fallback gedacht: Primär setzt
-n8n mit \passthrough{\lstinline!auto\_publish=True!} den Status direkt
-beim Generieren; \passthrough{\lstinline!useAutoPublisher!} fängt Fälle
-auf, in denen das nicht geschehen ist.
+\textbf{\texttt{useAutoPublisher}} --- Im Auto-Modus überwacht dieser
+Hook die \texttt{tickerTexts} auf neue Draft-Einträge
+(\texttt{status="draft"}) und publiziert sie automatisch. Dies ist als
+Frontend-Fallback gedacht: Primär setzt n8n mit
+\texttt{auto\_publish=True} den Status direkt beim Generieren;
+\texttt{useAutoPublisher} fängt Fälle auf, in denen das nicht geschehen
+ist.
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
@@ -1067,104 +1010,94 @@ auf, in denen das nicht geschehen ist.
 
 Das Frontend wurde im Verlauf des Projekts von reinem JavaScript auf
 TypeScript migriert. Ziel war nicht die vollständige Auflösung aller
-\passthrough{\lstinline!any!}-Typen, sondern eine pragmatische
-Typisierung der systemkritischen Pfade mit messbaren
-Qualitätskennzahlen.
+\texttt{any}-Typen, sondern eine pragmatische Typisierung der
+systemkritischen Pfade mit messbaren Qualitätskennzahlen.
 
 \textbf{Migrationsstrategie} --- Die Migration folgte einem
-schrittweisen Ansatz: Zuerst wurden alle \passthrough{\lstinline!.js!}-
-und \passthrough{\lstinline!.jsx!}-Dateien in
-\passthrough{\lstinline!.ts!} und \passthrough{\lstinline!.tsx!}
-umbenannt, dann \passthrough{\lstinline!tsconfig.json!} konfiguriert
-(\passthrough{\lstinline!target: es2015!},
-\passthrough{\lstinline!module: esnext!},
-\passthrough{\lstinline!jsx: react-jsx!},
-\passthrough{\lstinline!moduleResolution: node!}). Anschließend wurden
-TypeScript-Fehler von innen nach außen behoben --- beginnend mit dem
-Typ-System (\passthrough{\lstinline!src/types/index.ts!}) über Contexts
-bis zu den Komponenten. Der \passthrough{\lstinline!strict!}-Modus ist
-derzeit deaktiviert (\passthrough{\lstinline!'strict': false!}), um die
-inkrementelle Migration ohne blockierende Fehlereskalation zu
-ermöglichen.
+schrittweisen Ansatz: Zuerst wurden alle \texttt{.js}- und
+\texttt{.jsx}-Dateien in \texttt{.ts} und \texttt{.tsx} umbenannt, dann
+\texttt{tsconfig.json} konfiguriert (\texttt{target:\ es2015},
+\texttt{module:\ esnext}, \texttt{jsx:\ react-jsx},
+\texttt{moduleResolution:\ node}). Anschließend wurden TypeScript-Fehler
+von innen nach außen behoben --- beginnend mit dem Typ-System
+(\texttt{src/types/index.ts}) über Contexts bis zu den Komponenten. Der
+\texttt{strict}-Modus ist derzeit deaktiviert
+(\texttt{"strict":\ false}), um die inkrementelle Migration ohne
+blockierende Fehlereskalation zu ermöglichen.
 
-\textbf{Zentrale Typ-Definitionen} ---
-\passthrough{\lstinline!src/types/index.ts!} definiert die gemeinsamen
-Domain-Interfaces:
+\textbf{Zentrale Typ-Definitionen} --- \texttt{src/types/index.ts}
+definiert die gemeinsamen Domain-Interfaces:
 
-\begin{lstlisting}
-export type TickerMode = 'auto' | 'coop' | 'manual';
-export type TickerStyle = 'neutral' | 'euphorisch' | 'kritisch';
-export type MatchPhase = 'Before' | 'FirstHalf' | 'FirstHalfBreak' | 'SecondHalf' | ...;
+\begin{Shaded}
+\begin{Highlighting}[]
+\ImportTok{export type}\NormalTok{ TickerMode }\OperatorTok{=} \StringTok{"auto"} \OperatorTok{|} \StringTok{"coop"} \OperatorTok{|} \StringTok{"manual"}\OperatorTok{;}
+\ImportTok{export type}\NormalTok{ TickerStyle }\OperatorTok{=} \StringTok{"neutral"} \OperatorTok{|} \StringTok{"euphorisch"} \OperatorTok{|} \StringTok{"kritisch"}\OperatorTok{;}
+\ImportTok{export type}\NormalTok{ MatchPhase }\OperatorTok{=} \StringTok{"Before"} \OperatorTok{|} \StringTok{"FirstHalf"} \OperatorTok{|} \StringTok{"FirstHalfBreak"} \OperatorTok{|} \StringTok{"SecondHalf"} \OperatorTok{|} \OperatorTok{...;}
 
-export interface TickerEntry {
-  id: number;
-  match_id: number;
-  event_id?: number | null;
-  text: string;
-  style?: string | null;
-  status: 'draft' | 'published' | 'rejected';
-  source?: 'ai' | 'manual';
-  minute?: number | null;
-  phase?: string | null;
-  icon?: string | null;
-  image_url?: string | null;
-  video_url?: string | null;
-  llm_model?: string | null;
-}
-\end{lstlisting}
+\ImportTok{export} \KeywordTok{interface}\NormalTok{ TickerEntry \{}
+\NormalTok{  id}\OperatorTok{:} \DataTypeTok{number}\OperatorTok{;}
+\NormalTok{  match\_id}\OperatorTok{:} \DataTypeTok{number}\OperatorTok{;}
+\NormalTok{  event\_id}\OperatorTok{?:} \DataTypeTok{number} \OperatorTok{|} \DataTypeTok{null}\OperatorTok{;}
+\NormalTok{  text}\OperatorTok{:} \DataTypeTok{string}\OperatorTok{;}
+\NormalTok{  style}\OperatorTok{?:} \DataTypeTok{string} \OperatorTok{|} \DataTypeTok{null}\OperatorTok{;}
+\NormalTok{  status}\OperatorTok{:} \StringTok{"draft"} \OperatorTok{|} \StringTok{"published"} \OperatorTok{|} \StringTok{"rejected"}\OperatorTok{;}
+\NormalTok{  source}\OperatorTok{?:} \StringTok{"ai"} \OperatorTok{|} \StringTok{"manual"}\OperatorTok{;}
+\NormalTok{  minute}\OperatorTok{?:} \DataTypeTok{number} \OperatorTok{|} \DataTypeTok{null}\OperatorTok{;}
+\NormalTok{  phase}\OperatorTok{?:} \DataTypeTok{string} \OperatorTok{|} \DataTypeTok{null}\OperatorTok{;}
+\NormalTok{  icon}\OperatorTok{?:} \DataTypeTok{string} \OperatorTok{|} \DataTypeTok{null}\OperatorTok{;}
+\NormalTok{  image\_url}\OperatorTok{?:} \DataTypeTok{string} \OperatorTok{|} \DataTypeTok{null}\OperatorTok{;}
+\NormalTok{  video\_url}\OperatorTok{?:} \DataTypeTok{string} \OperatorTok{|} \DataTypeTok{null}\OperatorTok{;}
+\NormalTok{  llm\_model}\OperatorTok{?:} \DataTypeTok{string} \OperatorTok{|} \DataTypeTok{null}\OperatorTok{;}
+\NormalTok{\}}
+\end{Highlighting}
+\end{Shaded}
 
 \textbf{Ergebnis} --- Nach der Migration erzielt das Projekt \textbf{0
 TypeScript-Compilerfehler} und eine \textbf{type-coverage von 95,84 \%}
-(gemessen mit \passthrough{\lstinline!type-coverage --strict!}). Die
-detaillierte Darstellung der Migrationsergebnisse und die Analyse der
-verbleibenden untypisierten Stellen folgt in Abschnitt 6.2.5.
+(gemessen mit \texttt{type-coverage\ -\/-strict}). Die detaillierte
+Darstellung der Migrationsergebnisse und die Analyse der verbleibenden
+untypisierten Stellen folgt in Abschnitt 6.2.5.
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
-\subsection{5.5 n8n
+\subsection{n8n
 Workflow-Implementierung}\label{n8n-workflow-implementierung}
 
 Die n8n-Workflows bilden die Orchestrierungsschicht zwischen externen
 Datenquellen, dem FastAPI-Backend und dem LLM-Dienst. Alle 15
 Workflow-Dateien liegen als versionierte JSON-Exporte im
-Projektverzeichnis \passthrough{\lstinline!n8n/!} vor und können direkt
-in eine n8n-Instanz importiert werden. Die Workflows gliedern sich in
-vier funktionale Gruppen:
+Projektverzeichnis \texttt{n8n/} vor und können direkt in eine
+n8n-Instanz importiert werden. Die Workflows gliedern sich in vier
+funktionale Gruppen:
 
 \textbf{A) Stammdaten und Matchstruktur} --- Die Workflows
-\passthrough{\lstinline!01\_import\_countries!},
-\passthrough{\lstinline!02\_import\_teams\_by\_country!},
-\passthrough{\lstinline!03\_import\_competitions\_and\_matches!} und
-\passthrough{\lstinline!04\_import\_matches!} laden Länder, Teams,
-Wettbewerbe und Spielpläne aus API-Football und persistieren diese via
+\texttt{01\_import\_countries}, \texttt{02\_import\_teams\_by\_country},
+\texttt{03\_import\_competitions\_and\_matches} und
+\texttt{04\_import\_matches} laden Länder, Teams, Wettbewerbe und
+Spielpläne aus API-Football und persistieren diese via
 Upsert-Strategien. Externe IDs dienen als stabile Zuordnungsschlüssel
 für konfliktfreie Aktualisierungen.
 
-\textbf{B) Spielbezogene Detaildaten} ---
-\passthrough{\lstinline!04\_import\_lineups!},
-\passthrough{\lstinline!05\_import\_match\_statistics!},
-\passthrough{\lstinline!06\_import\_player\_statistics!} und
-\passthrough{\lstinline!07\_import\_prematch!} importieren
-Aufstellungen, Match- und Spielerstatistiken matchbezogen. Der
-Prematch-Workflow erzeugt zusätzlich strukturierte Kontextdaten
-(Verletzungen, Head-to-Head, Tabellenstand) als synthetische Events, die
-dem LLM als Promptkontext dienen.
+\textbf{B) Spielbezogene Detaildaten} --- \texttt{04\_import\_lineups},
+\texttt{05\_import\_match\_statistics},
+\texttt{06\_import\_player\_statistics} und
+\texttt{07\_import\_prematch} importieren Aufstellungen, Match- und
+Spielerstatistiken matchbezogen. Der Prematch-Workflow erzeugt
+zusätzlich strukturierte Kontextdaten (Verletzungen, Head-to-Head,
+Tabellenstand) als synthetische Events, die dem LLM als Promptkontext
+dienen.
 
-\textbf{C) KI-Generierung} ---
-\passthrough{\lstinline!09\_events\_llm\_workflow!},
-\passthrough{\lstinline!13\_Halftime\_aftertime!} und
-\passthrough{\lstinline!14\_Game\_ANpfiff\_ABpfiff!} importieren
-Live-Ereignisse, erzeugen synthetische Phasenereignisse und delegieren
-die Textgenerierung an das Backend. Der Zusammenfassungs-Workflow
-(\passthrough{\lstinline!13!}) ruft den LLM-Provider direkt auf, da
-Halbzeit-/Abpfiff-Zusammenfassungen einen umfangreicheren Prompt mit
-Statistiken erfordern.
+\textbf{C) KI-Generierung} --- \texttt{09\_events\_llm\_workflow},
+\texttt{13\_Halftime\_aftertime} und \texttt{14\_Game\_ANpfiff\_ABpfiff}
+importieren Live-Ereignisse, erzeugen synthetische Phasenereignisse und
+delegieren die Textgenerierung an das Backend. Der
+Zusammenfassungs-Workflow (\texttt{13}) ruft den LLM-Provider direkt
+auf, da Halbzeit-/Abpfiff-Zusammenfassungen einen umfangreicheren Prompt
+mit Statistiken erfordern.
 
 \textbf{D) Medien und Social Media} ---
-\passthrough{\lstinline!08\_scoreplay\_media\_workflow!},
-\passthrough{\lstinline!10\_Twitter!},
-\passthrough{\lstinline!11\_youtube!} und
-\passthrough{\lstinline!12\_insta!} importieren Medien- und
+\texttt{08\_scoreplay\_media\_workflow}, \texttt{10\_Twitter},
+\texttt{11\_youtube} und \texttt{12\_insta} importieren Medien- und
 Social-Media-Inhalte. Der Media-Workflow übergibt Bilder an das Backend,
 das diese über WebSocket verteilt; die Social-Media-Workflows speichern
 Clips in der Datenbank. Diese Workflows dienen der Ingestion, nicht dem
@@ -1178,24 +1111,18 @@ zentralen Workflows (Gruppen B--D).
 \subsubsection{\texorpdfstring{5.5.1 Events-LLM-Workflow
 (\texttt{09\_events\_llm\_workflow.json})}{5.5.1 Events-LLM-Workflow (09\_events\_llm\_workflow.json)}}\label{events-llm-workflow-09_events_llm_workflow.json}
 
-Workflow \passthrough{\lstinline!09!} ist der kritischste im System: Er
-importiert Live-Ereignisse via Webhook
-(\passthrough{\lstinline!POST /Events!}), persistiert sie per UPSERT
-(\passthrough{\lstinline!ON CONFLICT (source\_id) DO NOTHING!}) und
+Workflow \texttt{09} ist der kritischste im System: Er importiert
+Live-Ereignisse via Webhook (\texttt{POST\ /Events}), persistiert sie
+per UPSERT (\texttt{ON\ CONFLICT\ (source\_id)\ DO\ NOTHING}) und
 triggert die KI-Generierung für jeden neuen Event. Eine initiale
 SQL-Abfrage bestimmt anhand der Teamzugehörigkeit, ob die Instanz
-\passthrough{\lstinline!ef\_whitelabel!} oder
-\passthrough{\lstinline!generic!} und der Stil
-\passthrough{\lstinline!euphorisch!} oder
-\passthrough{\lstinline!neutral!} ist;
-\passthrough{\lstinline!auto\_publish!} wird direkt aus
-\passthrough{\lstinline!ticker\_mode!} des Spiels gesetzt. Nur Events
-mit erfolgreicher Datenbankzeile (zurückgegebene
-\passthrough{\lstinline!id!}, kein
-\passthrough{\lstinline!DO NOTHING!}-Konflikt) passieren den
-Filter-Knoten und triggern den Backend-Endpunkt. Ein zusätzlicher
-EF-spezifischer Zweig liest Spielerdaten von
-\passthrough{\lstinline!profis.eintracht.de!}, baut S3-Video-URLs aus
+\texttt{ef\_whitelabel} oder \texttt{generic} und der Stil
+\texttt{euphorisch} oder \texttt{neutral} ist; \texttt{auto\_publish}
+wird direkt aus \texttt{ticker\_mode} des Spiels gesetzt. Nur Events mit
+erfolgreicher Datenbankzeile (zurückgegebene \texttt{id}, kein
+\texttt{DO\ NOTHING}-Konflikt) passieren den Filter-Knoten und triggern
+den Backend-Endpunkt. Ein zusätzlicher EF-spezifischer Zweig liest
+Spielerdaten von \texttt{profis.eintracht.de}, baut S3-Video-URLs aus
 neunstellig aufgefüllten Spieler-IDs auf und persistiert Torjubel-Videos
 als Ticker-Einträge.
 
@@ -1204,72 +1131,63 @@ als Ticker-Einträge.
 \subsubsection{\texorpdfstring{5.5.2 Prematch-Import-Workflow
 (\texttt{07\_import\_prematch.json})}{5.5.2 Prematch-Import-Workflow (07\_import\_prematch.json)}}\label{prematch-import-workflow-07_import_prematch.json}
 
-Workflow \passthrough{\lstinline!07!} baut den Vorberichtskontext aus
-fünf parallelen Football-API-Abfragen auf (Verletzungen, Head-to-Head,
-Teamstatistiken Heim/Gast, Tabellenstand) und persistiert die Ergebnisse
-als \passthrough{\lstinline!synthetic\_events!} mit idempotenter
-\passthrough{\lstinline!ON CONFLICT (match\_id, type) DO UPDATE!}-Strategie.
-Ein LLM-Trigger wird nur ausgelöst, wenn noch kein nicht-verworfener
+Workflow \texttt{07} baut den Vorberichtskontext aus fünf parallelen
+Football-API-Abfragen auf (Verletzungen, Head-to-Head, Teamstatistiken
+Heim/Gast, Tabellenstand) und persistiert die Ergebnisse als
+\texttt{synthetic\_events} mit idempotenter
+\texttt{ON\ CONFLICT\ (match\_id,\ type)\ DO\ UPDATE}-Strategie. Ein
+LLM-Trigger wird nur ausgelöst, wenn noch kein nicht-verworfener
 Ticker-Eintrag für das jeweilige synthetische Event existiert
-(\passthrough{\lstinline!WHERE te.id IS NULL!}) --- bereits generierte
-und eventuell publizierte Texte werden damit nicht überschrieben.
+(\texttt{WHERE\ te.id\ IS\ NULL}) --- bereits generierte und eventuell
+publizierte Texte werden damit nicht überschrieben.
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
 \subsubsection{\texorpdfstring{5.5.3 Matchphasen-Workflow
 (\texttt{14\_Game\_ANpfiff\_ABpfiff.json})}{5.5.3 Matchphasen-Workflow (14\_Game\_ANpfiff\_ABpfiff.json)}}\label{matchphasen-workflow-14_game_anpfiff_abpfiff.json}
 
-Workflow \passthrough{\lstinline!14!} verarbeitet
-Spielzustands-Übergänge (Anpfiff, Halbzeit, Abpfiff etc.) via Webhook
-(\passthrough{\lstinline!POST /match-status!}). Ein JavaScript-Knoten
-validiert Zustandsübergänge gegen eine Matrix erlaubter Vorzustände ---
-ungültige Übergänge (z. B. direkt von \passthrough{\lstinline!PreMatch!}
-zu \passthrough{\lstinline!2H!}) werden zurückgewiesen. Für
-Vollzeit-Ereignisse (\passthrough{\lstinline!FT!},
-\passthrough{\lstinline!AET!}, \passthrough{\lstinline!PEN!}) generiert
+Workflow \texttt{14} verarbeitet Spielzustands-Übergänge (Anpfiff,
+Halbzeit, Abpfiff etc.) via Webhook (\texttt{POST\ /match-status}). Ein
+JavaScript-Knoten validiert Zustandsübergänge gegen eine Matrix
+erlaubter Vorzustände --- ungültige Übergänge (z. B. direkt von
+\texttt{PreMatch} zu \texttt{2H}) werden zurückgewiesen. Für
+Vollzeit-Ereignisse (\texttt{FT}, \texttt{AET}, \texttt{PEN}) generiert
 der Workflow die gesamte Phasensequenz rückwirkend: Ein
-\passthrough{\lstinline!FT!}-Signal erzeugt vier synthetische Events
-(Anstoß, Halbzeit, 2. Halbzeit, Abpfiff). Das zentrale SQL-Statement
-kombiniert Match-Update, Event-Insert und eine
-\passthrough{\lstinline!demote!}-CTE in einer einzigen Transaktion ---
-Letztere stuft bereits publizierte Phasen-Texte bei Re-Triggers auf
-\passthrough{\lstinline!draft!} zurück, sodass die Redaktion sie erneut
-prüfen kann.
+\texttt{FT}-Signal erzeugt vier synthetische Events (Anstoß, Halbzeit,
+2. Halbzeit, Abpfiff). Das zentrale SQL-Statement kombiniert
+Match-Update, Event-Insert und eine \texttt{demote}-CTE in einer
+einzigen Transaktion --- Letztere stuft bereits publizierte Phasen-Texte
+bei Re-Triggers auf \texttt{draft} zurück, sodass die Redaktion sie
+erneut prüfen kann.
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
 \subsubsection{\texorpdfstring{5.5.4 Halbzeit/Abpfiff-Zusammenfassung
 (\texttt{13\_Halftime\_aftertime.json})}{5.5.4 Halbzeit/Abpfiff-Zusammenfassung (13\_Halftime\_aftertime.json)}}\label{halbzeitabpfiff-zusammenfassung-13_halftime_aftertime.json}
 
-Workflow \passthrough{\lstinline!13!} erzeugt narrative
-Zusammenfassungen für Halbzeit und Abpfiff. Im Gegensatz zu
-\passthrough{\lstinline!09!} ruft er OpenRouter
-(\passthrough{\lstinline!google/gemini-2.0-flash-lite-001!})
-\textbf{direkt} auf, da Zusammenfassungen keinen Few-Shot-Stil aus der
-Datenbank benötigen, sondern einen umfangreicheren Prompt mit parallel
-geladenen Statistiken (Ballbesitz, Schüsse, Pässe, Spieler-Ratings)
-erfordern. Das Ergebnis wird über
-\passthrough{\lstinline!POST /api/v1/ticker/manual!} als Ticker-Eintrag
-gespeichert --- je nach \passthrough{\lstinline!ticker\_mode!} direkt
-als \passthrough{\lstinline!published!} oder als
-\passthrough{\lstinline!draft!}.
+Workflow \texttt{13} erzeugt narrative Zusammenfassungen für Halbzeit
+und Abpfiff. Im Gegensatz zu \texttt{09} ruft er OpenRouter
+(\texttt{google/gemini-2.0-flash-lite-001}) \textbf{direkt} auf, da
+Zusammenfassungen keinen Few-Shot-Stil aus der Datenbank benötigen,
+sondern einen umfangreicheren Prompt mit parallel geladenen Statistiken
+(Ballbesitz, Schüsse, Pässe, Spieler-Ratings) erfordern. Das Ergebnis
+wird über \texttt{POST\ /api/v1/ticker/manual} als Ticker-Eintrag
+gespeichert --- je nach \texttt{ticker\_mode} direkt als
+\texttt{published} oder als \texttt{draft}.
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
 \subsubsection{\texorpdfstring{5.5.5 ScorePlay-Medien-Workflow
 (\texttt{08\_scoreplay\_media\_workflow.json})}{5.5.5 ScorePlay-Medien-Workflow (08\_scoreplay\_media\_workflow.json)}}\label{scoreplay-medien-workflow-08_scoreplay_media_workflow.json}
 
-Workflow \passthrough{\lstinline!08!} sucht Medien-Assets bei ScorePlay
-für Spieler eines Torereignisses. Die Spieler-Suche
-(\passthrough{\lstinline!GET /v1/tag/search!}) normalisiert Umlaute
-(ä→a, ö→o, ü→u, ß→ss) und matcht gegen vier Namensfelder
-(\passthrough{\lstinline!full\_name!},
-\passthrough{\lstinline!first\_name!},
-\passthrough{\lstinline!last\_name!},
-\passthrough{\lstinline!ai\_name!}). Gefundene Thumbnail-, Compressed-
-und Original-URLs werden an
-\passthrough{\lstinline!POST /api/v1/media/incoming!} übertragen und vom
-Backend per WebSocket an verbundene Frontend-Clients verteilt.
+Workflow \texttt{08} sucht Medien-Assets bei ScorePlay für Spieler eines
+Torereignisses. Die Spieler-Suche (\texttt{GET\ /v1/tag/search})
+normalisiert Umlaute (ä→a, ö→o, ü→u, ß→ss) und matcht gegen vier
+Namensfelder (\texttt{full\_name}, \texttt{first\_name},
+\texttt{last\_name}, \texttt{ai\_name}). Gefundene Thumbnail-,
+Compressed- und Original-URLs werden an
+\texttt{POST\ /api/v1/media/incoming} übertragen und vom Backend per
+WebSocket an verbundene Frontend-Clients verteilt.
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
@@ -1280,46 +1198,39 @@ Muster}\label{implementierungsuxfcbergreifende-muster}
 identifizieren:
 
 \textbf{1. Idempotente UPSERT-Strategie} --- Alle Insert-Operationen
-verwenden \passthrough{\lstinline!ON CONFLICT DO UPDATE!} oder
-\passthrough{\lstinline!DO NOTHING!}. Als Konfliktschlüssel dienen
-externe IDs (\passthrough{\lstinline!source\_id!},
-\passthrough{\lstinline!external\_id!}, \passthrough{\lstinline!vid!}),
-zusammengesetzte Schlüssel (\passthrough{\lstinline!match\_id, type!})
-oder Unique-Constraints auf Namensfeldern. Das macht alle Workflows bei
-Mehrfachausführung sicher.
+verwenden \texttt{ON\ CONFLICT\ DO\ UPDATE} oder \texttt{DO\ NOTHING}.
+Als Konfliktschlüssel dienen externe IDs (\texttt{source\_id},
+\texttt{external\_id}, \texttt{vid}), zusammengesetzte Schlüssel
+(\texttt{match\_id,\ type}) oder Unique-Constraints auf Namensfeldern.
+Das macht alle Workflows bei Mehrfachausführung sicher.
 
 \textbf{2. Filter-vor-Trigger-Muster} --- Vor jedem LLM-Trigger steht
-ein Filter-Knoten, der nur Rows mit einer \passthrough{\lstinline!id!}
-(erfolgreicher DB-Insert) durchlässt. Events mit
-\passthrough{\lstinline!DO NOTHING!}-Konflikten (bereits importiert)
-erzeugen keinen neuen LLM-Aufruf.
+ein Filter-Knoten, der nur Rows mit einer \texttt{id} (erfolgreicher
+DB-Insert) durchlässt. Events mit \texttt{DO\ NOTHING}-Konflikten
+(bereits importiert) erzeugen keinen neuen LLM-Aufruf.
 
 \textbf{3. Statusbasierte Filterung} --- Bei synthetischen Events und
 Ticker-Einträgen werden vorhandene Zustände berücksichtigt, um
 redundante Generierungen zu vermeiden: Ein LLM-Aufruf wird nur
 getriggert, wenn noch kein nicht-verworfener Ticker-Eintrag für das
 Event existiert (vgl. die WHERE-Bedingungen in 5.5.2 und 5.5.3). Bei
-Re-Triggern werden bereits publizierte Phasen-Texte auf
-\passthrough{\lstinline!draft!} zurückgestuft
-(\passthrough{\lstinline!demote!}-CTE in 5.5.3).
+Re-Triggern werden bereits publizierte Phasen-Texte auf \texttt{draft}
+zurückgestuft (\texttt{demote}-CTE in 5.5.3).
 
-\textbf{4. Ticker-Mode-Propagation} ---
-\passthrough{\lstinline!ticker\_mode!} wird in allen
-Generierungsworkflows als \passthrough{\lstinline!auto\_publish!}-Flag
-an das Backend weitergegeben (vgl. Kap. 5.3.3). Die Moduslogik sitzt
-damit vollständig in der Datenbank; n8n liest sie bei jedem Aufruf neu
-aus.
+\textbf{4. Ticker-Mode-Propagation} --- \texttt{ticker\_mode} wird in
+allen Generierungsworkflows als \texttt{auto\_publish}-Flag an das
+Backend weitergegeben (vgl. Kap. 5.3.3). Die Moduslogik sitzt damit
+vollständig in der Datenbank; n8n liest sie bei jedem Aufruf neu aus.
 
 \textbf{5. Instanz-Routing} --- Die Unterscheidung zwischen
-\passthrough{\lstinline!ef\_whitelabel!} und
-\passthrough{\lstinline!generic!} erfolgt per
-\passthrough{\lstinline!ILIKE '\%Frankfurt\%'!}-Abfrage auf Teamnamen.
-Das Ergebnis steuert Stilwahl, Few-Shot-Auswahl im Backend und ob der
-Torjubel-Video-Pfad aktiviert wird.
+\texttt{ef\_whitelabel} und \texttt{generic} erfolgt per
+\texttt{ILIKE\ \textquotesingle{}\%Frankfurt\%\textquotesingle{}}-Abfrage
+auf Teamnamen. Das Ergebnis steuert Stilwahl, Few-Shot-Auswahl im
+Backend und ob der Torjubel-Video-Pfad aktiviert wird.
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
-\subsection{5.6 Qualitätssicherung und
+\subsection{Qualitätssicherung und
 Tests}\label{qualituxe4tssicherung-und-tests}
 
 Die Qualitätssicherung folgt dem Testpyramiden-Modell nach Cohn (2009)
@@ -1328,48 +1239,46 @@ Insgesamt umfasst die Testsuite \textbf{391 Tests} (187 Frontend, 198
 Backend, 6 E2E), die alle grün durchlaufen.
 
 \textbf{Frontend-Tests} --- Das Frontend verwendet Jest mit
-\passthrough{\lstinline!@testing-library/react!} für 187 Tests in 15
-Dateien. Die Testdateien sind kolokiert mit ihrem Quellcode:
-Komponentendateien unter
-\passthrough{\lstinline!components/LiveTicker/components/!}, Hook-Tests
-unter \passthrough{\lstinline!hooks/!} und Utility-Tests unter
-\passthrough{\lstinline!utils/!}. Besonders umfangreich getestet ist der
-\passthrough{\lstinline!parseCommand!}-Parser (45 Testfälle), da er die
-kritische manuelle Eingabeschicht bildet. Ein exemplarischer Testfall
-illustriert das Prüfmuster:
+\texttt{@testing-library/react} für 187 Tests in 15 Dateien. Die
+Testdateien sind kolokiert mit ihrem Quellcode: Komponentendateien unter
+\texttt{components/LiveTicker/components/}, Hook-Tests unter
+\texttt{hooks/} und Utility-Tests unter \texttt{utils/}. Besonders
+umfangreich getestet ist der \texttt{parseCommand}-Parser (45
+Testfälle), da er die kritische manuelle Eingabeschicht bildet. Ein
+exemplarischer Testfall illustriert das Prüfmuster:
 
-\begin{lstlisting}
-test('vollstaendiger Command ist valid', () => {
-  const result = parseCommand('/g Muller EIN', 32);
-  expect(result.isValid).toBe(true);
-  expect(result.type).toBe('goal');
-  expect(result.formatted).toBe('TOR -- Muller (EIN)');
-  expect(result.meta.icon).toBe('⚽');
-  expect(result.warnings).toHaveLength(0);
-});
-\end{lstlisting}
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{test}\NormalTok{(}\StringTok{"vollstaendiger Command ist valid"}\OperatorTok{,}\NormalTok{ () }\KeywordTok{=\textgreater{}}\NormalTok{ \{}
+  \KeywordTok{const}\NormalTok{ result }\OperatorTok{=} \FunctionTok{parseCommand}\NormalTok{(}\StringTok{"/g Muller EIN"}\OperatorTok{,} \DecValTok{32}\NormalTok{)}\OperatorTok{;}
+  \FunctionTok{expect}\NormalTok{(result}\OperatorTok{.}\AttributeTok{isValid}\NormalTok{)}\OperatorTok{.}\FunctionTok{toBe}\NormalTok{(}\KeywordTok{true}\NormalTok{)}\OperatorTok{;}
+  \FunctionTok{expect}\NormalTok{(result}\OperatorTok{.}\AttributeTok{type}\NormalTok{)}\OperatorTok{.}\FunctionTok{toBe}\NormalTok{(}\StringTok{"goal"}\NormalTok{)}\OperatorTok{;}
+  \FunctionTok{expect}\NormalTok{(result}\OperatorTok{.}\AttributeTok{formatted}\NormalTok{)}\OperatorTok{.}\FunctionTok{toBe}\NormalTok{(}\StringTok{"TOR {-}{-} Muller (EIN)"}\NormalTok{)}\OperatorTok{;}
+  \FunctionTok{expect}\NormalTok{(result}\OperatorTok{.}\AttributeTok{meta}\OperatorTok{.}\AttributeTok{icon}\NormalTok{)}\OperatorTok{.}\FunctionTok{toBe}\NormalTok{(}\StringTok{"⚽"}\NormalTok{)}\OperatorTok{;}
+  \FunctionTok{expect}\NormalTok{(result}\OperatorTok{.}\AttributeTok{warnings}\NormalTok{)}\OperatorTok{.}\FunctionTok{toHaveLength}\NormalTok{(}\DecValTok{0}\NormalTok{)}\OperatorTok{;}
+\NormalTok{\})}\OperatorTok{;}
+\end{Highlighting}
+\end{Shaded}
 
 \textbf{Backend-Tests} --- Das Backend nutzt pytest mit FastAPI
-\passthrough{\lstinline!TestClient!} und transaktionalem Rollback für
-198 Tests bei 75 \% Statement-Coverage. Die Tests gliedern sich in
-API-Integrations-Tests (\passthrough{\lstinline!test\_ticker\_api.py!},
-\passthrough{\lstinline!test\_matches\_api.py!},
-\passthrough{\lstinline!test\_events\_api.py!} u. a.), die Endpunkte
-gegen eine PostgreSQL-Testdatenbank prüfen, sowie Unit-Tests für
-Services (\passthrough{\lstinline!test\_llm\_service.py!},
-\passthrough{\lstinline!test\_ticker\_service.py!}) und Repositories
-(\passthrough{\lstinline!test\_ticker\_entry\_repository.py!}).
-Gemeinsame Fixtures (Datenbankverbindung, Test-Match, Test-Events) sind
-in \passthrough{\lstinline!conftest.py!} zentralisiert.
+\texttt{TestClient} und transaktionalem Rollback für 198 Tests bei 75 \%
+Statement-Coverage. Die Tests gliedern sich in API-Integrations-Tests
+(\texttt{test\_ticker\_api.py}, \texttt{test\_matches\_api.py},
+\texttt{test\_events\_api.py} u. a.), die Endpunkte gegen eine
+PostgreSQL-Testdatenbank prüfen, sowie Unit-Tests für Services
+(\texttt{test\_llm\_service.py}, \texttt{test\_ticker\_service.py}) und
+Repositories (\texttt{test\_ticker\_entry\_repository.py}). Gemeinsame
+Fixtures (Datenbankverbindung, Test-Match, Test-Events) sind in
+\texttt{conftest.py} zentralisiert.
 
 \textbf{End-to-End-Tests} --- Sechs Playwright-Tests validieren den
 stabilen Kern der Browser-Anwendung: korrektes Rendern, Fehlerfreiheit
 beim Laden und grundlegende Interaktionspunkte.
 
 \textbf{Evaluations-Infrastruktur} --- Ergänzend zur Testsuite enthält
-\passthrough{\lstinline!backend/app/utils/evaluation\_metrics.py!} sechs
-statistische Hilfsfunktionen, die speziell für die Qualitätsevaluation
-der KI-Textgenerierung implementiert wurden:
+\texttt{backend/app/utils/evaluation\_metrics.py} sechs statistische
+Hilfsfunktionen, die speziell für die Qualitätsevaluation der
+KI-Textgenerierung implementiert wurden:
 
 {\def\LTcaptype{none} % do not increment counter
 \begin{longtable}[]{@{}
@@ -1385,86 +1294,75 @@ Aufgabe
 \endhead
 \bottomrule\noalign{}
 \endlastfoot
-\passthrough{\lstinline!compute\_ttp\_stats(entries)!} & Berechnet
-TTP-Statistiken (Mean, Median, Perzentile) aus gemessenen Latenzen \\
-\passthrough{\lstinline!cliffs\_delta(group\_a, group\_b)!} &
-Effektstärkemaß nach Cliff (1993) für ordinal-skalierte Vergleiche (z.
-B. auto vs.~manual TTP) \\
-\passthrough{\lstinline!bootstrap\_ci(data, n\_resamples)!} &
+\texttt{compute\_ttp\_stats(entries)} & Berechnet TTP-Statistiken (Mean,
+Median, Perzentile) aus gemessenen Latenzen \\
+\texttt{cliffs\_delta(group\_a,\ group\_b)} & Effektstärkemaß nach Cliff
+(1993) für ordinal-skalierte Vergleiche (z. B. auto vs.~manual TTP) \\
+\texttt{bootstrap\_ci(data,\ n\_resamples)} &
 Bootstrap-Konfidenzintervall (95 \%) über nichtparametrisches
 Resampling \\
-\passthrough{\lstinline!cohens\_kappa(rater\_a, rater\_b)!} &
+\texttt{cohens\_kappa(rater\_a,\ rater\_b)} &
 Inter-Rater-Übereinstimmungsmaß nach Cohen (1960) für die
 Qualitätsbewertung \\
-\passthrough{\lstinline!distribution\_summary(scores)!} & Deskriptive
-Zusammenfassung (Mean, SD, Min, Max) für Bewertungslisten \\
-\passthrough{\lstinline!aggregate\_quality\_by\_group(entries)!} &
-Aggregiert Qualitätsscores nach Gruppe (Stil, Ereignistyp, Instanz) \\
+\texttt{distribution\_summary(scores)} & Deskriptive Zusammenfassung
+(Mean, SD, Min, Max) für Bewertungslisten \\
+\texttt{aggregate\_quality\_by\_group(entries)} & Aggregiert
+Qualitätsscores nach Gruppe (Stil, Ereignistyp, Instanz) \\
 \end{longtable}
 }
 
 Diese Funktionen werden in Kapitel 6.3--6.5 direkt genutzt:
-\passthrough{\lstinline!cliffs\_delta!} für den TTP-Vergleich,
-\passthrough{\lstinline!cohens\_kappa!} für die
-Bewertungsübereinstimmung und
-\passthrough{\lstinline!aggregate\_quality\_by\_group!} für die
-profilspezifische Qualitätsanalyse. Die Implementierung in einem
-dedizierten \passthrough{\lstinline!utils!}-Modul (statt im Test-Code)
-macht die Statistikfunktionen wiederverwendbar --- etwa für einen
-zukünftigen automatisierten Scoring-Dienst im Produktivbetrieb (vgl.
-Kap. 8.3.3).
+\texttt{cliffs\_delta} für den TTP-Vergleich, \texttt{cohens\_kappa} für
+die Bewertungsübereinstimmung und \texttt{aggregate\_quality\_by\_group}
+für die profilspezifische Qualitätsanalyse. Die Implementierung in einem
+dedizierten \texttt{utils}-Modul (statt im Test-Code) macht die
+Statistikfunktionen wiederverwendbar --- etwa für einen zukünftigen
+automatisierten Scoring-Dienst im Produktivbetrieb (vgl. Kap. 8.3.3).
 
 Die detaillierte Auswertung aller Testmetriken, Coverage-Verteilungen
 und konkreten Testbeispiele folgt in Abschnitt 6.2.
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
-\subsection{5.7 Deployment}\label{deployment}
+\subsection{Deployment}\label{deployment}
 
 Das System ist als dreischichtige Cloud-Deployment auf
 \textbf{Render.com} (Region: Oregon, US West) realisiert. Alle drei
 Dienste werden aus demselben Repository-Branch
-(\passthrough{\lstinline!deploy/render-v2!}) deployt und kommunizieren
-über das private Render-Netzwerk.
+(\texttt{deploy/render-v2}) deployt und kommunizieren über das private
+Render-Netzwerk.
 
 \textbf{Backend (Docker Web Service)} --- Das FastAPI-Backend läuft als
-Docker-Container auf einem Free-Tier-Web-Service
-(\passthrough{\lstinline!0.1 vCPU!},
-\passthrough{\lstinline!512 MB RAM!}). Render baut das Image aus
-\passthrough{\lstinline!./backend/Dockerfile!} mit
-\passthrough{\lstinline!./backend!} als Build-Kontext und startet den
-Uvicorn-Server gemäß der \passthrough{\lstinline!CMD!}-Instruktion im
-Dockerfile. Die Health-Check-Route \passthrough{\lstinline!GET /health!}
-(vgl. Abschnitt 5.2.1) wird von Render periodisch abgefragt; bei Ausfall
-wird der Dienst automatisch neu gestartet. Zugangsdaten und
-Konfiguration werden als Umgebungsvariablen injiziert
-(Datenbankverbindungs-URL, API-Keys für LLM-Provider). Das Backend ist
-unter \passthrough{\lstinline!https://liveticker-backend.onrender.com!}
-erreichbar.
+Docker-Container auf einem Free-Tier-Web-Service (\texttt{0.1\ vCPU},
+\texttt{512\ MB\ RAM}). Render baut das Image aus
+\texttt{./backend/Dockerfile} mit \texttt{./backend} als Build-Kontext
+und startet den Uvicorn-Server gemäß der \texttt{CMD}-Instruktion im
+Dockerfile. Die Health-Check-Route \texttt{GET\ /health} (vgl. Abschnitt
+5.2.1) wird von Render periodisch abgefragt; bei Ausfall wird der Dienst
+automatisch neu gestartet. Zugangsdaten und Konfiguration werden als
+Umgebungsvariablen injiziert (Datenbankverbindungs-URL, API-Keys für
+LLM-Provider). Das Backend ist unter
+\texttt{https://liveticker-backend.onrender.com} erreichbar.
 
 \textbf{Datenbank (PostgreSQL 15)} --- Die Datenbankinstanz
-\passthrough{\lstinline!liveticker-db!} läuft auf einem
-Render-Managed-PostgreSQL-Dienst (Free Tier:
-\passthrough{\lstinline!256 MB RAM!},
-\passthrough{\lstinline!1 GB Storage!}). Die Verbindung zum Backend
-erfolgt über den internen Hostnamen innerhalb des privaten
-Render-Netzwerks. Beim ersten Start legt
-\passthrough{\lstinline!Base.metadata.create\_all(bind=engine)!} alle
-Tabellen an; nachfolgende Schema-Änderungen werden via
-Alembic-Migrationen eingespielt. Da Free-Tier-Instanzen keinen
-persistenten Prozess-Storage vorhalten, ist alle Zustandshaltung in der
-Datenbank zentralisiert --- ein direktes Ergebnis des in Abschnitt 3.8.3
-beschriebenen Stateless-Design-Prinzips.
+\texttt{liveticker-db} läuft auf einem Render-Managed-PostgreSQL-Dienst
+(Free Tier: \texttt{256\ MB\ RAM}, \texttt{1\ GB\ Storage}). Die
+Verbindung zum Backend erfolgt über den internen Hostnamen innerhalb des
+privaten Render-Netzwerks. Beim ersten Start legt
+\texttt{Base.metadata.create\_all(bind=engine)} alle Tabellen an;
+nachfolgende Schema-Änderungen werden via Alembic-Migrationen
+eingespielt. Da Free-Tier-Instanzen keinen persistenten Prozess-Storage
+vorhalten, ist alle Zustandshaltung in der Datenbank zentralisiert ---
+ein direktes Ergebnis des in Abschnitt 3.8.3 beschriebenen
+Stateless-Design-Prinzips.
 
 \textbf{Frontend (Static Site)} --- Das React/TypeScript-Frontend wird
 als statische Seite deployt. Render führt
-\passthrough{\lstinline!cd frontend \&\& npm ci \&\& npm run build!} aus
-und veröffentlicht das Verzeichnis
-\passthrough{\lstinline!./frontend/build!} über sein CDN. Da kein
-Server-Prozess läuft, werden die generierten Dateien direkt aus dem CDN
-ausgeliefert. Das Frontend ist unter
-\passthrough{\lstinline!https://liveticker-frontend.onrender.com!}
-erreichbar.
+\texttt{cd\ frontend\ \&\&\ npm\ ci\ \&\&\ npm\ run\ build} aus und
+veröffentlicht das Verzeichnis \texttt{./frontend/build} über sein CDN.
+Da kein Server-Prozess läuft, werden die generierten Dateien direkt aus
+dem CDN ausgeliefert. Das Frontend ist unter
+\texttt{https://liveticker-frontend.onrender.com} erreichbar.
 
 \textbf{n8n (lokal mit ngrok)} --- Die n8n-Workflow-Instanz läuft lokal
 und ist über einen \textbf{ngrok}-Tunnel für externe Webhooks

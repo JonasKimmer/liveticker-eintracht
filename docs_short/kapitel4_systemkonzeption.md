@@ -1,8 +1,8 @@
-# Kapitel 4 – Systemkonzeption
+# Systemkonzeption
 
 ---
 
-## 4.1 Überblick und Schichtenmodell
+## Überblick und Schichtenmodell
 
 Das System ist als **eigenständiger Cloud-Service** konzipiert, der alle Spiele der konfigurierten Wettbewerbe automatisch verarbeitet — von der Datenimportierung über die KI-Textgenerierung bis zur Publikation. Es ist eine serviceorientierte, dreischichtige Architektur, die Datenbeschaffung, Anwendungslogik und Präsentation klar voneinander trennt. Diese Schichtentrennung folgt dem etablierten Prinzip der _Separation of Concerns_ (Parnas 1972), das die unabhängige Weiterentwicklung einzelner Systemteile ermöglicht.
 
@@ -121,7 +121,7 @@ Das Datenbankschema enthält ergänzend ein `is_partner_team`-Flag, das für zuk
 
 ---
 
-## 4.2 Backend-Konzeption
+## Backend-Konzeption
 
 ### 4.2.1 Framework-Wahl: FastAPI
 
@@ -177,7 +177,7 @@ Das System adressiert Sicherheit auf drei Ebenen, wobei der Projektrahmen einer 
 
 ---
 
-## 4.3 Datenbankkonzeption
+## Datenbankkonzeption
 
 Die Persistenzschicht basiert auf PostgreSQL und umfasst in der aktuellen Fassung **18 Tabellen** (17 ORM-Modelle sowie eine schlüsselwertbasierte `settings`-Tabelle, die ausschließlich über eine Alembic-Migration verwaltet wird). Die Wahl eines relationalen Systems gegenüber dokumentenorientierten Ansätzen (z. B. MongoDB) begründet sich durch die stark strukturierten Domänendaten: FK-Beziehungen zwischen Teams, Wettbewerben, Spielen, Events und Ticker-Einträgen sind klar definiert und referenziell integer zu halten. JSONB-Felder werden selektiv für semistrukturierte Daten (z. B. Statistik-Rohdaten) eingesetzt, sodass die ACID-Garantien relationaler Datenbanken erhalten bleiben. Das Schema ist auf einen stabilen Live-Betrieb mit wiederholbaren Importen, klaren Zustandsübergängen und nachvollziehbaren Redaktionsentscheidungen ausgelegt.
 
@@ -274,7 +274,7 @@ Für den Zusammenschluss aus n8n-Workflows, externen APIs und Backend-Routen ist
 
 ---
 
-## 4.4 Workflow-Konzeption (n8n)
+## Workflow-Konzeption (n8n)
 
 Die Workflow-Schicht ist als entkoppelte Orchestrierungsebene zwischen externen Datenquellen und Backend ausgelegt. n8n wurde gegenüber Alternativen wie einem Custom-Scheduler (z. B. Celery, APScheduler) oder cron-basierten Skripten gewählt, weil es Workflow-Logik ohne Codeänderungen am Backend anpassbar macht, eine visuelle Debugging-Oberfläche bietet und HTTP-Trigger sowie Webhook-Empfang ohne zusätzliche Infrastruktur unterstützt. n8n übernimmt dabei API-Aufrufe, Transformation, Persistenzvorbereitung und Triggersteuerung, während das FastAPI-Backend als transaktionaler Kern und Integrationspunkt für Frontend und KI-Generierung fungiert.
 
@@ -307,7 +307,7 @@ In Summe bildet n8n eine tragfähige Orchestrierungsschicht, die externe Datenqu
 
 ---
 
-## 4.5 KI-Komponente
+## KI-Komponente
 
 ### 4.5.1 Multi-Provider-Architektur
 
@@ -396,7 +396,7 @@ Eine verbleibende Limitation betrifft die Few-Shot-Referenzen: Die `style_refere
 
 ---
 
-## 4.6 Frontend-Konzeption
+## Frontend-Konzeption
 
 ### 4.6.1 Architekturprinzipien
 
@@ -440,7 +440,7 @@ Das Frontend setzt die in Kapitel 4.1.1 definierte hybride Triggerarchitektur mi
 
 ---
 
-## 4.7 Skalierbarkeit, Erweiterbarkeit und Systemgrenzen
+## Skalierbarkeit, Erweiterbarkeit und Systemgrenzen
 
 ### 4.7.1 Horizontale Skalierung des Backends
 
@@ -472,7 +472,7 @@ n8n wird als separater Self-Hosting-Dienst betrieben und kommuniziert ausschlie�
 
 ---
 
-## 4.8 Fazit der Systemkonzeption
+## Fazit der Systemkonzeption
 
 Die Systemkonzeption legt fünf interdependente Designpfeiler fest, die gemeinsam die Produktionsfähigkeit des Systems begründen. Die dreischichtige Architektur (Kap. 4.1) schafft die strukturelle Basis für eine unabhängige Weiterentwicklung der Automatisierungs-, Anwendungs- und Präsentationsschicht. Das relationale Datenbankschema mit seinem definierten Ticker-Lifecycle (Kap. 4.3) sichert referenzielle Integrität und Nachvollziehbarkeit aller redaktionellen Entscheidungen — auch für spätere Qualitätsanalysen. Die n8n-Workflow-Schicht (Kap. 4.4) entkoppelt die externe Datenbeschaffung und Orchestrierungslogik vom Anwendungskern und erlaubt eine schnelle Anpassung von Importprozessen ohne Eingriff in das Backend. Die Multi-Provider-LLM-Architektur mit Few-Shot-Prompting und instanzspezifischen Stilprofilen (Kap. 4.5) maximiert Textqualität und Anbieterunabhängigkeit bei minimaler Infrastrukturkomplexität. Das Context-basierte Frontend-Design in Kombination mit dem `ticker_mode`-Feld (Kap. 4.3.3) ermöglicht redaktionelle Kontrolle ohne Latenzeinbußen und ohne Prop-Drilling über Komponentengrenzen.
 

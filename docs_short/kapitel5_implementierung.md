@@ -1,8 +1,8 @@
-# Kapitel 5 – Implementierung
+# Implementierung
 
 ---
 
-## 5.1 Überblick und Implementierungsstrategie
+## Überblick und Implementierungsstrategie
 
 Dieses Kapitel dokumentiert die konkrete Umsetzung des in Kapitel 4 konzipierten Systems. Im Fokus stehen die technischen Entscheidungen auf Code-Ebene: die interne Struktur des FastAPI-Backends mit seinen Schichten aus Modellen, Repositories, Services und Routern; die KI-Generierungspipeline von der Ereigniserkennung bis zum Ticker-Eintrag; die Frontend-Implementierung mit React, Context-basiertem Zustandsmanagement und dem slash-command-getriebenen Eingabesystem; sowie die n8n-Workflow-Implementierung der fünf zentralen Automatisierungsworkflows. Ergänzend werden die TypeScript-Migration und die Testabdeckung als Qualitätsmerkmale des Entwicklungsprozesses dokumentiert.
 
@@ -12,7 +12,7 @@ Die n8n-Workflows (Abschnitt 5.5) werden abweichend von der konzeptionellen Reih
 
 ---
 
-## 5.2 Backend-Implementierung
+## Backend-Implementierung
 
 ### 5.2.1 Projektstruktur und Application Entry Point
 
@@ -245,7 +245,7 @@ Die persistente Seite der Media-Queue wird durch das `MediaQueueStatus`-Enum ges
 
 ---
 
-## 5.3 KI-Generierungspipeline
+## KI-Generierungspipeline
 
 ### 5.3.1 Ablaufdiagramm
 
@@ -334,7 +334,7 @@ Der Übergang `published → draft` (Undo) ist im Frontend als **Toast-Aktion** 
 
 ---
 
-## 5.4 Frontend-Implementierung
+## Frontend-Implementierung
 
 ### 5.4.1 Komponentenhierarchie
 
@@ -588,7 +588,7 @@ export interface TickerEntry {
 
 ---
 
-## 5.5 n8n Workflow-Implementierung
+## n8n Workflow-Implementierung
 
 Die n8n-Workflows bilden die Orchestrierungsschicht zwischen externen Datenquellen, dem FastAPI-Backend und dem LLM-Dienst. Alle 15 Workflow-Dateien liegen als versionierte JSON-Exporte im Projektverzeichnis `n8n/` vor und können direkt in eine n8n-Instanz importiert werden. Die Workflows gliedern sich in vier funktionale Gruppen:
 
@@ -651,7 +651,7 @@ Workflow `08` sucht Medien-Assets bei ScorePlay für Spieler eines Torereignisse
 ---
 
 
-## 5.6 Qualitätssicherung und Tests
+## Qualitätssicherung und Tests
 
 Die Qualitätssicherung folgt dem Testpyramiden-Modell nach Cohn (2009) mit drei Ebenen: Unit-Tests, Integrations-Tests und End-to-End-Tests. Insgesamt umfasst die Testsuite **391 Tests** (187 Frontend, 198 Backend, 6 E2E), die alle grün durchlaufen.
 
@@ -689,7 +689,7 @@ Die detaillierte Auswertung aller Testmetriken, Coverage-Verteilungen und konkre
 
 ---
 
-## 5.7 Deployment
+## Deployment
 
 Das System ist als dreischichtige Cloud-Deployment auf **Render.com** (Region: Oregon, US West) realisiert. Alle drei Dienste werden aus demselben Repository-Branch (`deploy/render-v2`) deployt und kommunizieren über das private Render-Netzwerk.
 

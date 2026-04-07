@@ -1,8 +1,8 @@
-# Kapitel 8 – Fazit und Ausblick
+# Fazit und Ausblick
 
 ---
 
-## 8.1 Zusammenfassung der Ergebnisse
+## Zusammenfassung der Ergebnisse
 
 Die vorliegende Arbeit hat ein hybrides Redaktionssystem für die KI-gestützte Liveticker-Erstellung im Profifußball konzipiert, implementiert und evaluiert. Das System entstand in direkter Kooperation mit der **Stackwork GmbH** im IT-Bereich von Eintracht Frankfurt und exportiert produzierte Inhalte über API-Schnittstellen in die bestehende **Stackwork Demo App**. Es adressiert die drei in Kapitel 1.1 identifizierten Problemdimensionen — operativer Zeitdruck, Mehrsprachigkeit und White-Label-Bedarf — durch eine dreischichtige Architektur aus Datenbeschaffung (n8n), Anwendungslogik (FastAPI, PostgreSQL) und Präsentation (React, TypeScript).
 
@@ -20,7 +20,7 @@ Das System realisiert die in Kapitel 4 konzipierte dreischichtige Architektur vo
 
 ---
 
-## 8.2 Beantwortung der Forschungsfrage
+## Beantwortung der Forschungsfrage
 
 Die in Kapitel 1.2 formulierte Forschungsfrage lautet:
 
@@ -60,7 +60,7 @@ Die Antwort auf die Forschungsfrage lautet daher zustimmend, aber mit einer Qual
 
 ---
 
-## 8.3 Ausblick
+## Ausblick
 
 ### 8.3.1 Kurzfristige Erweiterungen
 
@@ -98,7 +98,7 @@ Die Antwort auf die Forschungsfrage lautet daher zustimmend, aber mit einer Qual
 
 ---
 
-## 8.4 Schlusswort
+## Schlusswort
 
 Die vorliegende Arbeit zeigt, dass ein hybrides KI-gestütztes Redaktionssystem den operativen Zeitdruck bei der Liveticker-Erstellung adressieren kann, ohne die redaktionelle Kontrolle aufzugeben. Der `coop`-Modus realisiert das in Kapitel 1.1 formulierte Zielbild eines Systems, in dem „die finale Entscheidungshoheit und publizistische Verantwortung beim Menschen verbleiben".
 

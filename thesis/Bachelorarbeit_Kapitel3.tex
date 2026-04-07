@@ -1,7 +1,6 @@
-\section{Kapitel 3 -- Stand der
-Technik}\label{kapitel-3-stand-der-technik}
+\section{Stand der Technik}\label{stand-der-technik}
 
-\subsection{3.1 Large Language Models}\label{large-language-models}
+\subsection{Large Language Models}\label{large-language-models}
 
 Die Entwicklung großer Sprachmodelle (Large Language Models, LLMs) hat
 die Verarbeitung natürlicher Sprache in den vergangenen Jahren
@@ -54,7 +53,7 @@ Freigabeentscheidung verbleibt jedoch beim Redakteur.
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
-\subsection{3.2 Prompt Engineering}\label{prompt-engineering}
+\subsection{Prompt Engineering}\label{prompt-engineering}
 
 Die Qualität der Ausgaben eines LLM hängt maßgeblich vom \textbf{Prompt}
 ab. Prompt Engineering bezeichnet die systematische Gestaltung dieser
@@ -81,7 +80,7 @@ Techniken unterscheiden:
 
 \begin{enumerate}
 \def\labelenumi{\arabic{enumi}.}
-
+\tightlist
 \item
   \textbf{Zero-Shot Prompting:} Das Modell erhält ausschließlich eine
   Aufgabenbeschreibung ohne Demonstrationsbeispiele (Brown et al.~2020,
@@ -113,7 +112,7 @@ beschrieben.
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
-\subsection{3.3 Natural Language Generation im
+\subsection{Natural Language Generation im
 Sportjournalismus}\label{natural-language-generation-im-sportjournalismus}
 
 Die automatisierte Erzeugung natürlichsprachlicher Texte aus
@@ -136,7 +135,7 @@ wirtschaftlich darstellbar wäre.
 Historische NLG-Systeme basierten überwiegend auf \textbf{regelbasierten
 Template-Architekturen} (vgl. Puduppully \& Lapata 2021, S. 520). Diese
 Systeme nutzen vordefinierte Satzmuster, in die Ereignisdaten eingesetzt
-werden (z. B. ``{[}Spieler{]} erzielt in der {[}Minute{]} Minute das
+werden (z. B. „{[}Spieler{]} erzielt in der {[}Minute{]} Minute das
 {[}Tor-Nr.{]} für {[}Team{]}``). Der Vorteil liegt in vorhersagbarer
 Qualität und vollständiger Kontrolle über die Ausgabe; der Nachteil ist
 stilistische Monotonie und begrenzte sprachliche Variabilität.
@@ -149,7 +148,7 @@ Moderne \textbf{neuronale End-to-End-Ansätze} überwinden diese Grenzen
 durch datengetriebenes Lernen sprachlicher Muster. Statt starrer Regeln
 trainieren diese Modelle auf großen Textkorpora und erzeugen flüssigere,
 natürlichere Formulierungen. Im professionellen Roboterjournalismus
-erzeugt beispielsweise ``Die Welt'' bereits automatisierte Spielberichte
+erzeugt beispielsweise „Die Welt'' bereits automatisierte Spielberichte
 via Retresco (Beils 2023, S. 207). Solche Systeme stoßen jedoch bei
 unvorhergesehenen Ereignissen, unsauberer Datenlage oder der
 Notwendigkeit emotionaler Tonalität an Grenzen --- insbesondere die
@@ -169,7 +168,7 @@ Redaktionen Rechnung trägt.
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
-\subsection{3.4 Echtzeit-Kommunikation im
+\subsection{Echtzeit-Kommunikation im
 Web}\label{echtzeit-kommunikation-im-web}
 
 Die Übertragung von Daten zwischen Frontend und Backend erfordert eine
@@ -222,7 +221,7 @@ beschrieben.
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
-\subsection{3.5 ETL-Prozesse und
+\subsection{ETL-Prozesse und
 Workflow-Automatisierung}\label{etl-prozesse-und-workflow-automatisierung}
 
 Die Datenbeschaffung in datengetriebenen Anwendungen folgt überwiegend
@@ -286,7 +285,7 @@ beschrieben.
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
-\subsection{3.6 Backend-Technologien}\label{backend-technologien}
+\subsection{Backend-Technologien}\label{backend-technologien}
 
 \subsubsection{3.6.1 Python}\label{python}
 
@@ -297,11 +296,10 @@ Overflow Developer Survey 2024) und akademischen Studien zum
 KI-Ökosystem widerspiegelt. Die Sprache verbindet dynamische Typisierung
 mit einem umfangreichen Ökosystem an Bibliotheken für
 HTTP-Kommunikation, Datenbankzugriff und maschinelles Lernen. Darüber
-hinaus ermöglicht Pythons \passthrough{\lstinline!asyncio!}-Eventloop
---- auf dem ASGI-Frameworks wie FastAPI aufsetzen --- die
-nicht-blockierende Verarbeitung paralleler I/O-Operationen, was für
-Echtzeitsysteme mit hoher externer API-Latenz entscheidend ist (vgl.
-Kap. 3.6.2).
+hinaus ermöglicht Pythons \texttt{asyncio}-Eventloop --- auf dem
+ASGI-Frameworks wie FastAPI aufsetzen --- die nicht-blockierende
+Verarbeitung paralleler I/O-Operationen, was für Echtzeitsysteme mit
+hoher externer API-Latenz entscheidend ist (vgl. Kap. 3.6.2).
 
 \subsubsection{3.6.2 ASGI und asynchrone
 Web-Frameworks}\label{asgi-und-asynchrone-web-frameworks}
@@ -309,12 +307,12 @@ Web-Frameworks}\label{asgi-und-asynchrone-web-frameworks}
 Das \textbf{ASGI-Protokoll} (Asynchronous Server Gateway Interface)
 ermöglicht im Gegensatz zum klassischen synchronen WSGI eine
 nicht-blockierende Verarbeitung auf Basis von Pythons
-\passthrough{\lstinline!asyncio!}-Eventloop (Grigorev 2019).
-ASGI-Frameworks wie \textbf{FastAPI} können während wartender
-I/O-Operationen (Datenbankabfragen, LLM-API-Aufrufe) andere Anfragen
-bearbeiten, was insbesondere für Anwendungen mit vielen externen
-Abhängigkeiten eine signifikant höhere Durchsatzrate ermöglicht. Das
-vorliegende System verwendet FastAPI als primäres ASGI-Framework; die
+\texttt{asyncio}-Eventloop (Grigorev 2019). ASGI-Frameworks wie
+\textbf{FastAPI} können während wartender I/O-Operationen
+(Datenbankabfragen, LLM-API-Aufrufe) andere Anfragen bearbeiten, was
+insbesondere für Anwendungen mit vielen externen Abhängigkeiten eine
+signifikant höhere Durchsatzrate ermöglicht. Das vorliegende System
+verwendet FastAPI als primäres ASGI-Framework; die
 Entscheidungsbegründung erfolgt in Kapitel 4.2.
 
 \subsubsection{3.6.3 ORM und Repository
@@ -359,7 +357,7 @@ Kapitel 4.2 beschrieben.
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
-\subsection{3.7 Frontend-Technologien}\label{frontend-technologien}
+\subsection{Frontend-Technologien}\label{frontend-technologien}
 
 \subsubsection{3.7.1 TypeScript}\label{typescript}
 
@@ -403,7 +401,7 @@ Kapitel 4.6 beschrieben.
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
-\subsection{3.8 Deployment und
+\subsection{Deployment und
 Containerisierung}\label{deployment-und-containerisierung}
 
 \subsubsection{3.8.1 Containerisierung}\label{containerisierung}
@@ -434,7 +432,7 @@ Kapitel 4.7.4 beschrieben.
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
-\subsection{3.9 Synthese: Technologische Konsequenzen für das
+\subsection{Synthese: Technologische Konsequenzen für das
 Systemdesign}\label{synthese-technologische-konsequenzen-fuxfcr-das-systemdesign}
 
 Der Stand der Technik zeigt, dass für das vorliegende System kein

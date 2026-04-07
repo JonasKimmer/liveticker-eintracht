@@ -1,8 +1,8 @@
-# Kapitel 7 – Diskussion
+# Diskussion
 
 ---
 
-## 7.1 Einordnung in den Stand der Technik
+## Einordnung in den Stand der Technik
 
 ### 7.1.1 Abgrenzung zu bestehenden Systemen
 
@@ -26,7 +26,7 @@ Die Arbeit leistet drei Beiträge zum aktuellen Forschungsstand:
 
 ---
 
-## 7.2 Kritische Reflexion
+## Kritische Reflexion
 
 Die in Kapitel 6.7 dokumentierten Limitationen werden im Folgenden hinsichtlich ihrer Implikationen eingeordnet.
 
@@ -62,7 +62,7 @@ Der in Kapitel 3.1 beschriebene Halluzinationseffekt ist im Kontext von Livetick
 
 ---
 
-## 7.3 Diskussion der Betriebsmodi
+## Diskussion der Betriebsmodi
 
 Die drei Betriebsmodi (`auto`, `coop`, `manual`) wurden in Kapitel 4.3.3 konzipiert und in Kapitel 6.4 evaluiert. Im Folgenden werden die Implikationen der Evaluationsergebnisse für den praktischen Einsatz diskutiert.
 
@@ -84,7 +84,7 @@ Die Koexistenz aller drei Modi in einem System — umschaltbar zur Laufzeit per 
 
 ---
 
-## 7.4 Diskussion der Prompt-Architektur
+## Diskussion der Prompt-Architektur
 
 ### 7.4.1 Few-Shot-Prompting als Stilsteuerung
 
@@ -105,7 +105,7 @@ Die sieben spezialisierten Context-Builder (vgl. Abschnitt 5.2.6) strukturieren 
 
 ---
 
-## 7.5 Implikationen für den Sportjournalismus
+## Implikationen für den Sportjournalismus
 
 ### 7.5.1 Veränderung der Redakteursrolle
 
@@ -125,7 +125,7 @@ Die automatisierte Generierung journalistischer Texte wirft die Frage der Transp
 
 ---
 
-## 7.6 Synthese
+## Synthese
 
 Die Diskussion der Evaluationsergebnisse entlang der vier Dimensionen — Abgrenzung zum Stand der Technik, methodische und technische Limitationen, Betriebsmodi und Prompt-Architektur — ergibt ein konsistentes Gesamtbild: Das System löst die in Kapitel 1.1 identifizierten drei Problemdimensionen (Zeitdruck, Mehrsprachigkeit, White-Label-Bedarf) durch technisch nachweisbare Mechanismen; die verbleibenden Schwächen (Stil-Inkonsistenz, fehlende Authentifizierung, eingeschränkte Stichprobengröße) sind klar lokalisiert und lösbar.
 

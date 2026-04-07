@@ -1,6 +1,6 @@
-# Kapitel 2 – Motivation und Anforderungen
+# Motivation und Anforderungen
 
-## 2.1 Redaktioneller Aufwand bei Livetickern
+## Redaktioneller Aufwand bei Livetickern
 
 Die manuelle Erstellung von Livetickern zählt zu den kognitiv anspruchsvollsten Tätigkeiten im Journalismus (Beils 2023, S. 10). Was von außen wie eine schlichte Abfolge kurzer Texteinheiten wirkt, erweist sich bei näherer Betrachtung als hochkomplexer Produktionsprozess, der mehrere journalistische Kompetenzen simultan abverlangt. Bluhm und Schäfer (2023, S. 27) beschreiben unter Rückgriff auf Ojomo und Olomojobi (2021) die strukturelle Komposition von Liveticker-Einträgen als einen Vierschritt aus:
 
@@ -31,7 +31,7 @@ _(IF6 ist thematisch in Kap. 2.2 eingebettet. IF7–IF9 sind thematisch in Kap. 
 
 ---
 
-## 2.2 Mehrsprachigkeit als Herausforderung
+## Mehrsprachigkeit als Herausforderung
 
 Die Globalisierung des Profifußballs hat die Anforderungen an die Reichweite digitaler Inhalte grundlegend verändert. Internationale Fangemeinschaften erwarten heute eine mediale Begleitung in ihrer Landessprache. Am Beispiel der Premier League lässt sich dieser Wandel besonders deutlich illustrieren: Der internationale Markt ist für die Liga längst bedeutender als der heimische englische (Beils 2023, S. 221). Dies betrifft zunehmend auch Bundesliga-Vereine mit zweistelligen Millionen-Reichweiten auf globalen Plattformen (vgl. Beils 2023, S. 200). Am Beispiel von Eintracht Frankfurt zeigt sich dies konkret: Durch Spieler wie Makoto Hasebe und Daichi Kamada verfügte der Verein in zurückliegenden Spielzeiten über eine beachtliche internationale Anhängerschaft, insbesondere in Japan, wie sich an den fremdsprachigen Interaktionen auf den offiziellen Social-Media-Kanälen des Vereins beobachten lässt (eigene Beobachtung). Eine rein deutschsprachige Berichterstattung wird dieser Reichweite nicht mehr gerecht.
 
@@ -45,7 +45,7 @@ Die empirische Validierung dieser Problemdimension erfolgt über das Expertenint
 
 ---
 
-## 2.3 White-Label-Bedarf im Profisport
+## White-Label-Bedarf im Profisport
 
 Vereine und Verbände kommunizieren heute zunehmend direkt mit ihrer Anhängerschaft und haben eigene Redaktionen aufgebaut (Beils 2023, S. 155). Die Konsequenz für die Liveticker-Produktion ist erheblich: Vereinseigene Inhalte folgen einer anderen Logik als neutrale Berichterstattung.
 
@@ -63,7 +63,7 @@ Wie sich diese Anforderungen am konkreten Beispiel eines Bundesliga-Vereins ausp
 
 ---
 
-## 2.4 Anforderungsanalyse am Beispiel Eintracht Frankfurt
+## Anforderungsanalyse am Beispiel Eintracht Frankfurt
 
 Eintracht Frankfurt dient in dieser Arbeit als konkreter Anwendungsfall für die vereinsspezifische White-Label-Instanz. Die Anforderungsanalyse stützt sich auf die in den vorangegangenen Abschnitten hergeleiteten Problemdimensionen, eine Analyse der öffentlich zugänglichen digitalen Kanäle des Vereins sowie ein **strukturiertes Experteninterview** mit einem professionellen Sportredakteur von Eintracht Frankfurt. Die theoretisch hergeleiteten Anforderungen werden dabei durch das Interview empirisch validiert — insbesondere hinsichtlich des redaktionellen Workflows (Kap. 2.1), des Bedarfs an mehrsprachiger Berichterstattung (Kap. 2.2) und der stilistischen Konsistenzanforderungen (Kap. 2.3). Das strukturierte Leitfadeninterview nach Kuckartz (2018) wurde gewählt, weil es bei kleiner Fallzahl eine systematische Vergleichbarkeit der Antworten mit den hergeleiteten Anforderungen ermöglicht. Der Interviewpartner ist als Experte im Sinne von Meuser und Nagel (1991) einzustufen, da er über mehrjährige Redaktionserfahrung im Vereinsmedienbereich verfügt. Die Auswahl eines Einzelfalls ist durch die explorative Zielsetzung der Arbeit gerechtfertigt. Die vollständige Auswertung des Interviews erfolgt in Abschnitt 6.3.6 mittels thematischer Inhaltsanalyse nach Kuckartz (2018).
 
@@ -77,7 +77,7 @@ Aus den drei Problemdimensionen ergeben sich folgende vereinsspezifische Anforde
 
 ---
 
-## 2.5 Linguistische Anforderungen an die Textgenerierung
+## Linguistische Anforderungen an die Textgenerierung
 
 Neben den organisatorischen und stilistischen Anforderungen stellt die automatisierte Liveticker-Produktion auch spezifische **linguistische** Anforderungen. Liveticker stellen eine linguistisch eigenständige Textgattung dar (Hauser 2008, S. 1). Hauser charakterisiert sie als **schriftlich-grafische Simultanerzählung**. Im Gegensatz zum Spielbericht fehlt der _benefit of hindsight_; es handelt sich um eine quasi-synchrone Berichterstattung (Hauser 2008, S. 2).
 
@@ -92,7 +92,7 @@ Diese Merkmale definieren das Zielformat, auf das das LLM durch gezieltes Prompt
 
 ---
 
-## 2.6 Zusammenfassung der Systemanforderungen
+## Zusammenfassung der Systemanforderungen
 
 Aus den vorangegangenen Problemdimensionen und der Anforderungsanalyse werden im Folgenden die formalen Anforderungen an das System abgeleitet. Diese gliedern sich in funktionale Anforderungen (F), nicht-funktionale Anforderungen (N) und architektonische Anforderungen (A). Die Evaluation in Kapitel 6.6 überprüft jeden einzelnen Punkt gegen den implementierten Stand.
 
