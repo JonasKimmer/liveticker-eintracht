@@ -96,7 +96,7 @@ Diese Merkmale definieren das Zielformat, auf das das LLM durch gezieltes Prompt
 
 Aus den vorangegangenen Problemdimensionen und der Anforderungsanalyse werden im Folgenden die formalen Anforderungen an das System abgeleitet. Diese gliedern sich in funktionale Anforderungen (F), nicht-funktionale Anforderungen (N) und architektonische Anforderungen (A). Die Evaluation in Kapitel 6.6 überprüft jeden einzelnen Punkt gegen den implementierten Stand.
 
-### 2.6.1 Funktionale Anforderungen
+### Funktionale Anforderungen
 
 | Nr. | Anforderung                                            | Herleitung               |
 | --- | ------------------------------------------------------ | ------------------------ |
@@ -113,7 +113,7 @@ Aus den vorangegangenen Problemdimensionen und der Anforderungsanalyse werden im
 | F11 | Pre-Match-Kontextgenerierung (Verletzungen, H2H, etc.) | Kap. 2.5 (Elaboration)   |
 | F12 | Live-Statistik-Updates                                 | Kap. 2.1 (Echtzeit)      |
 
-### 2.6.2 Nicht-funktionale Anforderungen
+### Nicht-funktionale Anforderungen
 
 | Nr. | Anforderung                            | Herleitung              |
 | --- | -------------------------------------- | ----------------------- |
@@ -124,7 +124,7 @@ Aus den vorangegangenen Problemdimensionen und der Anforderungsanalyse werden im
 | N5  | Responsive UI (Mobile-tauglich)        | Kap. 2.1 (Einsatzszenarien: Stadion und Home-Office erfordern mobile Bedienbarkeit) |
 | N6  | Fehlerresistenz im Frontend            | Kap. 2.1 (Robustheit)   |
 
-### 2.6.3 Architektur-Anforderungen
+### Architektur-Anforderungen
 
 | Nr. | Anforderung                                     | Herleitung                  |
 | --- | ----------------------------------------------- | --------------------------- |

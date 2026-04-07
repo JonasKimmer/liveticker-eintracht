@@ -6,15 +6,15 @@
 
 Die vorliegende Arbeit hat ein hybrides Redaktionssystem für die KI-gestützte Liveticker-Erstellung im Profifußball konzipiert, implementiert und evaluiert. Das System entstand in direkter Kooperation mit der **Stackwork GmbH** im IT-Bereich von Eintracht Frankfurt und exportiert produzierte Inhalte über API-Schnittstellen in die bestehende **Stackwork Demo App**. Es adressiert die drei in Kapitel 1.1 identifizierten Problemdimensionen — operativer Zeitdruck, Mehrsprachigkeit und White-Label-Bedarf — durch eine dreischichtige Architektur aus Datenbeschaffung (n8n), Anwendungslogik (FastAPI, PostgreSQL) und Präsentation (React, TypeScript).
 
-### 8.1.1 Technische Ergebnisse
+### Technische Ergebnisse
 
 Die technische Evaluation (Kapitel 6.2) belegt eine produktionsnahe Codebasis mit vollständiger Testpyramide, hoher Typsicherheit und lückenloser Erfüllung aller 23 definierten Anforderungen (vgl. Kapitel 6.6). Die bewusst ausgeklammerte Authentifizierungsschicht ist als Systembeschränkung dokumentiert (vgl. Kapitel 6.7).
 
-### 8.1.2 KI-Textgenerierung
+### KI-Textgenerierung
 
 Die Multi-Provider-Architektur mit Prioritätskette gewährleistet eine hohe Verfügbarkeit der Textgenerierung. Die qualitative Bewertung (Abschnitt 6.3.6) zeigt durchgängig gute Ergebnisse über alle drei Qualitätsdimensionen; die stärkste Einschränkung liegt in der Stil-Inkonsistenz des neutralen Profils. Die quantitativen Einzelwerte und Latenzmetriken sind in Kapitel 6.3–6.5 vollständig dokumentiert.
 
-### 8.1.3 Systemarchitektur und Designentscheide
+### Systemarchitektur und Designentscheide
 
 Das System realisiert die in Kapitel 4 konzipierte dreischichtige Architektur vollständig (Datenschicht via n8n-ETL, Anwendungsschicht via FastAPI/PostgreSQL, Präsentationsschicht via React/TypeScript). Die **White-Label-Architektur** und die **drei Betriebsmodi** bilden die Kernbeiträge des Systemdesigns (vgl. Kap. 4.3.3, 5.3.3).
 
@@ -28,7 +28,7 @@ Die in Kapitel 1.2 formulierte Forschungsfrage lautet:
 
 Die Beantwortung erfolgt entlang der beiden in der Forschungsfrage angelegten Dimensionen.
 
-### 8.2.1 Zeitliche Dimension: Reduktion der Time-to-Publish
+### Zeitliche Dimension: Reduktion der Time-to-Publish
 
 Im `auto`-Modus (vollautonom) entfällt die manuelle Texterstellung vollständig — die geschätzte TTP beträgt **≈ 3,4–5,9 s** (erwarteter Median bis Worst Case, vgl. Abschnitt 6.4.2). Im `coop`-Modus (hybrid) addiert sich die redaktionelle Prüfzeit: Ein einfacher Freigabe-Klick erfordert ca. 5–10 s, ein bearbeiteter Entwurf ca. 15–30 s — die geschätzte TTP liegt damit bei **≈ 15–30 s**. Im `manual`-Modus (Status quo) muss der Redakteur den gesamten Text selbst verfassen; auf Basis der in Kapitel 2.1 beschriebenen Produktionsbedingungen wird die typische Texterstellungszeit unter Livebedingungen auf **30–120 s** geschätzt.
 
@@ -36,7 +36,7 @@ Da kein kontrolliertes Spielexperiment in allen drei Modi durchgeführt werden k
 
 Die strukturellen Daten bestätigen die Hypothese, dass ein hybrides System die Publikationslatenz signifikant reduziert: Die geschätzte TTP-Reduktion im `auto`-Modus gegenüber `manual` beträgt eine Größenordnung (Faktor 5–35× je nach Event-Typ und Redakteurserfahrung).
 
-### 8.2.2 Qualitative Dimension: Journalistische Qualität
+### Qualitative Dimension: Journalistische Qualität
 
 Die journalistische Qualität wurde entlang der drei in der Forschungsfrage definierten Kriterien operationalisiert:
 
@@ -48,7 +48,7 @@ Die journalistische Qualität wurde entlang der drei in der Forschungsfrage defi
 
 Die qualitative Dimension der Bewertung basiert auf der in Abschnitt 6.3.6 dokumentierten Selbstevaluation, ergänzt durch das Experteninterview mit einem professionellen Sportredakteur von Eintracht Frankfurt (vgl. Abschnitt 6.3.6).
 
-### 8.2.3 Synthese
+### Synthese
 
 Die Forschungsfrage verknüpft zwei Dimensionen durch ein „ohne": eine TTP-Reduktion soll erreicht werden, _ohne_ die journalistische Qualität zu beeinträchtigen. Aus der Zusammenschau der Ergebnisse lässt sich eine modus-spezifische Antwort ableiten.
 
@@ -62,7 +62,7 @@ Die Antwort auf die Forschungsfrage lautet daher zustimmend, aber mit einer Qual
 
 ## Ausblick
 
-### 8.3.1 Kurzfristige Erweiterungen
+### Kurzfristige Erweiterungen
 
 **Authentifizierung und Rollensystem**: Die Integration eines JWT- oder OAuth-2.0-basierten Authentifizierungsframeworks ist die wichtigste Voraussetzung für einen Mehrbenutzerbetrieb. Ein rollenbasiertes Zugriffskonzept (Redakteur, Chefredakteur, Administrator) würde die Freigabe-Workflows im `coop`-Modus um eine Vier-Augen-Prüfung erweitern.
 
@@ -78,7 +78,7 @@ Die Antwort auf die Forschungsfrage lautet daher zustimmend, aber mit einer Qual
 
 **Langzeitbetrieb**: Das System wurde nicht über einen längeren Zeitraum evaluiert. Aspekte wie Drift der Textqualität über die Zeit, kumulative API-Kosten im Saison-Betrieb und Rate-Limit-Häufigkeit unter realer Dauerlast sind nicht erfasst. Eine Saisonbegleitung über mindestens 34 Bundesliga-Spieltage würde hier belastbare Betriebsdaten liefern.
 
-### 8.3.2 Mittelfristige Erweiterungen
+### Mittelfristige Erweiterungen
 
 **Externe Nutzerstudie**: Eine systematische Evaluation mit professionellen Sportredakteuren, die das System im realen Spielbetrieb nutzen, würde die externe Validität der Qualitätsbewertung stärken. Das implementierte Evaluationsframework (TTP, Cliff's Delta, Cohen's Kappa) ist dafür vorbereitet.
 
@@ -88,7 +88,7 @@ Die Antwort auf die Forschungsfrage lautet daher zustimmend, aber mit einer Qual
 
 **Evaluation der Mehrsprachigkeit**: Eine separate Qualitätsevaluation der mehrsprachigen Textgenerierung — insbesondere für die im Kontext von Eintracht Frankfurt relevanten Sprachen Englisch und Japanisch — würde die in Kapitel 2.2 motivierte Internationalisierungsanforderung empirisch absichern.
 
-### 8.3.3 Langfristige Perspektiven
+### Langfristige Perspektiven
 
 **Multimodale Ticker**: Die bestehende Integration von Medieninhalten (ScorePlay, YouTube, Instagram) könnte zu einem multimodalen Ticker weiterentwickelt werden, in dem Bild, Video und Text automatisch zu einem kohärenten Narrativ verwoben werden. Vision-Language-Modelle könnten dabei Spielszenen aus Bildern beschreiben und in den Tickertext integrieren.
 

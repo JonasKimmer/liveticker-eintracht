@@ -79,21 +79,21 @@ Die konkrete Umsetzung der ETL-Architektur im vorliegenden System — einschlie�
 
 ## Backend-Technologien
 
-### 3.6.1 Python
+### Python
 
 **Python** hat sich als dominierende Programmiersprache für datenintensive Webanwendungen und KI-Systeme etabliert — ein Konsens, der sich in konsistenten Rankings von Entwickler-Umfragen (Stack Overflow Developer Survey 2024) und akademischen Studien zum KI-Ökosystem widerspiegelt. Die Sprache verbindet dynamische Typisierung mit einem umfangreichen Ökosystem an Bibliotheken für HTTP-Kommunikation, Datenbankzugriff und maschinelles Lernen. Darüber hinaus ermöglicht Pythons `asyncio`-Eventloop — auf dem ASGI-Frameworks wie FastAPI aufsetzen — die nicht-blockierende Verarbeitung paralleler I/O-Operationen, was für Echtzeitsysteme mit hoher externer API-Latenz entscheidend ist (vgl. Kap. 3.6.2).
 
-### 3.6.2 ASGI und asynchrone Web-Frameworks
+### ASGI und asynchrone Web-Frameworks
 
 Das **ASGI-Protokoll** (Asynchronous Server Gateway Interface) ermöglicht im Gegensatz zum klassischen synchronen WSGI eine nicht-blockierende Verarbeitung auf Basis von Pythons `asyncio`-Eventloop (Grigorev 2019). ASGI-Frameworks wie **FastAPI** können während wartender I/O-Operationen (Datenbankabfragen, LLM-API-Aufrufe) andere Anfragen bearbeiten, was insbesondere für Anwendungen mit vielen externen Abhängigkeiten eine signifikant höhere Durchsatzrate ermöglicht. Das vorliegende System verwendet FastAPI als primäres ASGI-Framework; die Entscheidungsbegründung erfolgt in Kapitel 4.2.
 
-### 3.6.3 ORM und Repository Pattern
+### ORM und Repository Pattern
 
 Das **Object-Relational Mapping (ORM)** bildet Programmiersprachenklassen auf relationale Datenbanktabellen ab und abstrahiert den direkten SQL-Zugriff. **SQLAlchemy** implementiert dieses Muster für Python: Modellklassen werden über deklarative Klassendefinitionen auf Datenbanktabellen abgebildet, SQL-Abfragen über eine typsichere Fluent-API konstruiert. Das ergänzende **Repository Pattern** (Fowler 2002, S. 322) kapselt den Datenzugriff in dedizierte Klassen und bietet eine abstrahierte Schnittstelle zur Service-Schicht — das erleichtert Testbarkeit und ermöglicht den Austausch der Persistenzschicht ohne Änderungen an der Geschäftslogik.
 
 Für die API-Schicht übernimmt **Pydantic** die typisierte Schema-Validierung: Eingabe- und Ausgabestrukturen werden als Python-Datenklassen mit Type-Annotations definiert, die Pydantic zur Laufzeit gegen eingehende Payloads prüft. FastAPI integriert Pydantic direkt in die Request/Response-Pipeline, sodass API-Vertrag und Validierungslogik in einer einzigen Klassendefinition ausgedrückt werden — ein entscheidender Vorteil für Systeme, in denen mehrere externe Datenquellen (n8n-Workflows, Frontend, Partner-API) unterschiedliche Feldformate liefern.
 
-### 3.6.4 Relationale Datenbanken
+### Relationale Datenbanken
 
 **Relationale Datenbankmanagementsysteme (RDBMS)** organisieren Daten in Tabellen mit definierten Schemata und erzwingen referenzielle Integrität über Fremdschlüssel-Constraints (Codd 1970). RDBMS wie PostgreSQL garantieren **ACID-Eigenschaften** (Atomicity, Consistency, Isolation, Durability) und bieten für Anwendungen mit stark strukturierten, relational verknüpften Entitäten (Spiele, Teams, Ereignisse, Texte) Vorteile hinsichtlich Datenkonsistenz und Abfragekomplexität gegenüber dokumentbasierten Alternativen.
 
@@ -103,15 +103,15 @@ Die konkrete Backend-Architektur des vorliegenden Systems wird in Kapitel 4.2 be
 
 ## Frontend-Technologien
 
-### 3.7.1 TypeScript
+### TypeScript
 
 **TypeScript** erweitert JavaScript um ein statisches Typsystem, das Typfehler bereits zur Entwicklungszeit erkennt (Microsoft 2012). Der Compiler transpiliert den typisierten Quellcode in Standard-JavaScript. Für größere Codebasen reduziert statische Typisierung die Fehlerquote und verbessert die Wartbarkeit durch IDE-Autocompletion und automatisierte Refactoring-Unterstützung.
 
-### 3.7.2 Komponentenbasierte UI-Architekturen
+### Komponentenbasierte UI-Architekturen
 
 **React** (Facebook, heute Meta, 2013) implementiert ein komponentenbasiertes Architekturmuster — die Benutzeroberfläche wird in wiederverwendbare, isolierte Bausteine zerlegt, die Markup, Logik und Styling kapseln. React nutzt eine deklarative, zustandsgesteuerte Rendering-Logik: Die Oberfläche wird als Funktion des Anwendungszustands beschrieben, und React übernimmt die effiziente DOM-Aktualisierung (Virtual DOM / Reconciliation). **React Hooks** (ab 16.8) ermöglichen die Verwaltung von Zustand und Seiteneffekten in funktionalen Komponenten; **Custom Hooks** erlauben die Extraktion wiederverwendbarer zustandsbehafteter Logik. Gegenüber vergleichbaren Frameworks wie Vue oder Angular zeichnet sich React durch ein schlankes Kernmodell aus, das Zustandsverwaltung, Polling-Logik und WebSocket-Integration konsequent in Custom Hooks kapseln lässt — ein Vorteil für datenintensive Echtzeit-Oberflächen mit vielen unabhängigen Datensträngen.
 
-### 3.7.3 Single-Page Applications
+### Single-Page Applications
 
 **Single-Page Applications (SPAs)** laden die Anwendungslogik beim initialen Seitenaufruf und aktualisieren die Darstellung dynamisch über JavaScript, ohne vollständige Seitenneuladen. Dieses Modell eignet sich für interaktive Werkzeuge mit häufigen Zustandsänderungen — wie Redaktionsoberflächen oder Echtzeit-Dashboards.
 
@@ -121,15 +121,15 @@ Die konkrete Frontend-Architektur des vorliegenden Systems wird in Kapitel 4.6 b
 
 ## Deployment und Containerisierung
 
-### 3.8.1 Containerisierung
+### Containerisierung
 
 **Docker** (Merkel 2014) ermöglicht die Paketierung einer Anwendung mitsamt Laufzeitumgebung und Abhängigkeiten in portable, isolierte Container. Die zentrale Eigenschaft ist **Reproduzierbarkeit**: Dieselbe Anwendung verhält sich lokal identisch zur Produktionsumgebung.
 
-### 3.8.2 Platform-as-a-Service (PaaS)
+### Platform-as-a-Service (PaaS)
 
 **PaaS**-Anbieter wie Render oder Heroku abstrahieren die Infrastrukturverwaltung und ermöglichen Deployments direkt aus Quellcode oder Container-Images. Für kleine Teams ohne dedizierte DevOps-Kapazitäten reduziert PaaS den operativen Aufwand erheblich.
 
-### 3.8.3 Stateless Design und Skalierung
+### Stateless Design und Skalierung
 
 PaaS-Plattformen setzen typischerweise ein **Stateless-Design** voraus: Persistente Daten werden in externe Dienste ausgelagert, sodass bei erhöhter Last zusätzliche Instanzen ohne Zustandskonsistenz gestartet werden können (**horizontale Skalierung**).
 

@@ -1,0 +1,118 @@
+\usepackage{tikz}
+\usetikzlibrary{shapes,arrows,positioning,calc,fit,backgrounds}
+\tikzset{
+  block/.style={rectangle, draw, fill=blue!20, text width=2.5cm, text centered, rounded corners, minimum height=1cm},
+  db/.style={cylinder, draw, fill=green!20, text width=1.5cm, text centered, minimum height=1cm},
+  externa/.style={rectangle, draw, fill=gray!20, text width=2.5cm, text centered, rounded corners, minimum height=0.8cm},
+  arrow/.style={->, thick, >=stealth},
+}
+
+%% DIAGRAM 1: System Architecture (3-Schichten + Externe)
+\newcommand{\DiagramSystemArchitektur}{%
+\begin{tikzpicture}[node distance=2.5cm, auto]
+  % External Services
+  \node[externa] (fapi) {Football-API\\api-sports.io};
+  \node[externa, below of=fapi] (llm) {LLM Provider\\OpenRouter};
+  \node[externa, below of=llm] (sp) {ScorePlay\\Media};
+  
+  % Automation Layer
+  \node[block, right of=llm] (n8n) {n8n\\Automation};
+  
+  % Application Layer
+  \node[block, right of=n8n, xshift=1.5cm] (api) {FastAPI\\Backend};
+  \node[db, below of=api, yshift=-1cm] (db) {PostgreSQL};
+  
+  % Frontend
+  \node[block, right of=api, xshift=1.5cm] (fe) {React\\Frontend};
+  
+  % Connections
+  \draw[arrow] (fapi) -- (n8n);
+  \draw[arrow] (llm) -- (n8n);
+  \draw[arrow] (sp) -- (n8n);
+  \draw[arrow] (n8n) -- (api);
+  \draw[arrow] (api) -- (db);
+  \draw[arrow] (api) -- (fe);
+  \draw[arrow] (fe) -- (api);
+  
+  % Labels at bottom
+  \node[below of=fapi, yshift=-3.5cm] {\small\textit{Externe Dienste}};
+  \node[below of=n8n, yshift=-3.5cm] {\small\textit{Automatisierung}};
+  \node[below of=api, yshift=-3.5cm] {\small\textit{Anwendungslogik}};
+  \node[below of=fe, yshift=-3.5cm] {\small\textit{Präsentation}};
+\end{tikzpicture}%
+}
+
+%% DIAGRAM 2: Player Statistics Pipeline
+\newcommand{\DiagramPlayerStatsPipeline}{%
+\begin{tikzpicture}[node distance=2cm, auto]
+  \node[block] (input) {Player Stats\\Input (JSON)};
+  \node[block, right of=input] (parse) {Parse \&\\Normalize};
+  \node[block, right of=parse] (rank) {Rank Stats\\(Percentile)};
+  \node[block, right of=rank] (template) {Load Template\\(Sprache)};
+  \node[block, right of=template] (fill) {Fill Variables};
+  \node[block, right of=fill] (output) {Output\\(Text)};
+  
+  \draw[arrow] (input) -- (parse);
+  \draw[arrow] (parse) -- (rank);
+  \draw[arrow] (rank) -- (template);
+  \draw[arrow] (template) -- (fill);
+  \draw[arrow] (fill) -- (output);
+\end{tikzpicture}%
+}
+
+%% DIAGRAM 3: Ticker State Transitions
+\newcommand{\DiagramTickerStates}{%
+\begin{tikzpicture}[node distance=2.5cm, auto]
+  \tikzset{state/.style={circle, draw, fill=blue!15, text width=1.2cm, text centered, minimum size=1.5cm}}
+  
+  \node[state] (draft) {draft};
+  \node[state, right of=draft] (published) {published};
+  \node[state, right of=published] (rejected) {rejected};
+  \node[state, below of=draft] (archived) {archived};
+  
+  \draw[arrow] (draft) -- node[above] {publish} (published);
+  \draw[arrow] (draft) -- node[left] {reject} (rejected);
+  \draw[arrow] (published) -- node[right] {archive} (archived);
+  \draw[arrow] (rejected) -- node[below] {retry} (draft);
+  \draw[arrow] (published) -- node[pos=0.5, right] {edit} (draft);
+\end{tikzpicture}%
+}
+
+%% DIAGRAM 4: Event Processing Workflow
+\newcommand{\DiagramEventWorkflow}{%
+\begin{tikzpicture}[node distance=1.8cm, auto]
+  \node[block, text width=2cm] (event) {Event\\Input};
+  \node[block, right of=event, text width=2cm] (dispatch) {Dispatch\\to\\Handlers};
+  \node[block, right of=dispatch, text width=2cm] (enrich) {Enrich Data};
+  \node[block, right of=enrich, text width=2cm] (llm) {LLM Call};
+  \node[block, right of=llm, text width=2cm] (store) {Store\\Ticker};
+  
+  \draw[arrow] (event) -- (dispatch);
+  \draw[arrow] (dispatch) -- (enrich);
+  \draw[arrow] (enrich) -- (llm);
+  \draw[arrow] (llm) -- (store);
+  
+  % Feedback loop
+  \draw[arrow, bend right=45] (store) -- node[below, pos=0.5] {broadcast} (event);
+\end{tikzpicture}%
+}
+
+%% DIAGRAM 5: Logical Data Model (simplified ER)
+\newcommand{\DiagramDataModel}{%
+\begin{tikzpicture}[node distance=3cm, auto]
+  \tikzset{entity/.style={rectangle, draw, fill=green!15, text width=1.5cm, text centered, minimum height=1cm}}
+  
+  \node[entity] (match) {Match};
+  \node[entity, right of=match] (event) {Event};
+  \node[entity, right of=event] (ticker) {Ticker};
+  \node[entity, below of=match] (team) {Team};
+  \node[entity, below of=event] (player) {Player};
+  \node[entity, below of=ticker] (media) {Media};
+  
+  \draw[arrow] (match) -- node[above] {1:N} (event);
+  \draw[arrow] (event) -- node[above] {1:N} (ticker);
+  \draw[arrow] (match) -- node[left] {2:1} (team);
+  \draw[arrow] (event) -- node[right] {M:1} (player);
+  \draw[arrow] (ticker) -- node[right] {1:N} (media);
+\end{tikzpicture}%
+}

@@ -18,13 +18,23 @@ Die Metriken dienen nicht nur der Qualitätssicherung, sondern dokumentieren auc
 
 Die technische Qualitätssicherung umfasst die vollständige Testsuite (Frontend, Backend, End-to-End) sowie die statische Typsicherheitsanalyse.
 
-### 6.2.1 Teststrategie und Testpyramide
+### Teststrategie und Testpyramide
 
 Die Teststrategie folgt dem klassischen Pyramiden-Modell nach Cohn (2009): Eine breite Basis schneller, isolierter Unit-Tests wird durch eine mittlere Schicht von Integrations-Tests ergänzt, die reale HTTP-Endpunkte gegen eine transaktionale Testdatenbank prüfen. An der Spitze stehen Playwright-basierte End-to-End-Tests, die den vollständigen Redaktionsworkflow im Browser simulieren.
 
+```
+          ┌──────────┐
+          │  E2E (6) │   Playwright — Browser-Workflow
+         ┌┴──────────┴┐
+         │  API-Tests  │  FastAPI TestClient + PostgreSQL
+        ┌┴────────────┴┐
+        │  Unit-Tests   │ Jest/React Testing Library + pytest
+        └──────────────┘
+```
+
 Diese Pyramide stellt sicher, dass die Mehrheit der Testfälle ohne externe Abhängigkeiten läuft und damit in CI-Pipelines schnell und zuverlässig ausgeführt werden kann. Die Integrations-Tests sind so strukturiert, dass sie bei fehlender Datenbankverbindung automatisch übersprungen werden (`pytest.skip`) und keine falschen Fehlermeldungen erzeugen.
 
-### 6.2.2 Frontend-Unit-Tests (Jest + React Testing Library)
+### Frontend-Unit-Tests (Jest + React Testing Library)
 
 Das Frontend verfügt über **187 Unit-Tests** in 15 Testdateien, die alle mit `npm test -- --watchAll=false` grün durchlaufen. Die Tests decken vier Kategorien ab: Utility-Funktionen, React-Hooks, UI-Komponenten und TypeScript-Typen.
 
@@ -54,9 +64,16 @@ Der `parseCommand`-Utility ist das komplexeste Stück Geschäftslogik im Fronten
 
 Der Hook `useLiveMinute` berechnet die aktuelle Spielminute aus dem Anstoßzeitpunkt, sofern keine Minuten-Information direkt im Match-Objekt vorhanden ist. Die 10 Tests decken sowohl die Halbzeit-Korrektur (+46 Minuten ab der 60. Minute) als auch den Puffer bei fehlendem Kickoff-Timestamp ab (vgl. `useLiveMinute.test.ts`).
 
-### 6.2.3 Backend-Unit-Tests (pytest)
+### Backend-Unit-Tests (pytest)
 
 Das Backend verfügt über **198 Tests** in 11 Test-Dateien, die mit einer Gesamt-Coverage von **75 %** abgeschlossen werden. Alle 198 Tests laufen grün durch (`198 passed`).
+
+```
+$ pytest tests/ --cov=app -q
+...
+198 passed in 3.9s
+TOTAL  3230  793  75%
+```
 
 | Test-Datei                        | Tests | Kategorie           | Fokus                                                                    |
 | --------------------------------- | ----- | ------------------- | ------------------------------------------------------------------------ |
@@ -91,7 +108,7 @@ Die 75 %-Gesamtcoverage verteilt sich sehr ungleich über die Systemschichten �
 
 Die unbelegten Bereiche konzentrieren sich auf Nebenroutes (Clip-Import, Medienverwaltung, Saisonverwaltung), die außerhalb des kritischen Redaktionspfads liegen.
 
-### 6.2.4 End-to-End-Tests (Playwright)
+### End-to-End-Tests (Playwright)
 
 Die 6 Playwright-Tests validieren den Browser-seitigen Workflow der Anwendung. Sie simulieren reale Nutzerinteraktionen im Chromium-Browser und sind so konzipiert, dass sie auch ohne laufendes Backend sinnvoll laufen: Backend-bedingte Abweichungen (z. B. leere Länder-Liste) werden als erwarteter Zustand behandelt, nicht als Fehler.
 
@@ -106,7 +123,7 @@ Die 6 Playwright-Tests validieren den Browser-seitigen Workflow der Anwendung. S
 
 Die E2E-Tests decken absichtlich den _stabilen Kern_ der UI ab — das initiale Rendern, die Fehlerfreiheit beim Laden und grundlegende Interaktionspunkte. Sie dienen primär als Regression-Schutz: Bricht eine zentrale Komponente (z. B. durch einen fehlerhaften Import), schlagen die Tests unmittelbar an.
 
-### 6.2.5 TypeScript-Typsicherheit
+### TypeScript-Typsicherheit
 
 Die vollständige Migration von JavaScript zu TypeScript und die zentrale Typen-Architektur (`src/types/index.ts` mit Domain-Interfaces, Union-Types und `as const`-Konstanten) sind in Abschnitt 5.4.7 dokumentiert.
 
@@ -141,13 +158,19 @@ Die TypeScript-Migration hat im Verlauf der Implementierung mehrere Fehler früh
 
 Die Evaluation der Textgenerierung gliedert sich in zwei Teile: zunächst die implementierte Evaluationsinfrastruktur mit ihren quantitativen Metriken und dem Provider-Vergleich, dann die qualitative Analyse konkreter Textbeispiele einschließlich Expertenvalidierung.
 
-### 6.3.1 Evaluationsinfrastruktur
+### Evaluationsinfrastruktur
 
 Das System stellt über den Endpunkt `POST /api/v1/ticker/generate-bulk/{match_id}` eine Bulk-Generierungsfunktion bereit, die alle Events eines Spiels mit einem wählbaren Provider und Modell generiert. Durch optionale `provider`- und `model`-Parameter im Request-Body können verschiedene LLM-Konfigurationen systematisch verglichen werden, ohne den Produktivbetrieb zu beeinflussen.
 
+```python
+class GenerateEventRequest(BaseModel):
+    provider: Optional[str] = Field(default=None, description="Provider override for Evaluation")
+    model:    Optional[str] = Field(default=None, description="Modell override for Evaluation")
+```
+
 Für jeden Aufruf wird eine temporäre `LLMService`-Instanz erzeugt, falls Provider oder Modell vom konfigurierten Singleton abweichen. Dadurch lassen sich A/B-Vergleiche zwischen Providern durchführen, ohne die Global-Konfiguration zu verändern.
 
-### 6.3.2 Quantitative Metriken
+### Quantitative Metriken
 
 Das Evaluationsmodul (`app/utils/evaluation_metrics.py`) stellt sechs Metriken bereit, die sich in zwei Kategorien gliedern:
 
@@ -165,7 +188,7 @@ Das Evaluationsmodul (`app/utils/evaluation_metrics.py`) stellt sechs Metriken b
 
 Alle sechs Funktionen sind durch 18 Unit-Tests abgesichert (~96 % Coverage).
 
-### 6.3.3 Modell- und Provider-Evaluation
+### Modell- und Provider-Evaluation
 
 Das System unterstützt fünf LLM-Provider in einer festen Prioritätskette, die beim Serverstart den ersten Provider mit gültigem API-Key als Singleton aktiviert:
 
@@ -191,7 +214,7 @@ _Messgrundlage: N = 16 deutschsprachige KI-generierte Einträge (OpenRouter), N 
 
 Die detaillierte Latenzanalyse einschließlich der Charakterisierung der Antwortzeit-Verteilung findet sich in Abschnitt 6.5.1. Die deskriptiven Mittelwerte belegen einen klaren Qualitätsvorsprung des LLM-Providers gegenüber dem Mock in der Tonalitätstreue (Δ = 1,1 Skalenpunkte).
 
-### 6.3.4 Einfluss der Stilprofile
+### Einfluss der Stilprofile
 
 Das System generiert Texte in drei Stilprofilen, die über den Prompt gesteuert werden:
 
@@ -219,13 +242,13 @@ Da der Backend-Deduplizierungsmechanismus für identische `event_id` denselben E
 
 **Beobachtung:** Die drei Stilprofile unterscheiden sich deutlich in Ausrufezeichen-Dichte, Wortwahl und Perspektive. Während `neutral` Fakten kompakt zusammenfasst, erzeugt `euphorisch` narrative Intensität durch Wiederholungen und Ausrufe. `kritisch` nähert sich dem neutralen Register, enthält aber keine explizite analytische Einordnung — ein Hinweis darauf, dass das Prompt-Design für dieses Profil noch Optimierungspotenzial bietet (vgl. Abschnitt 6.3.6). Der kontrollierte Direktvergleich zeigt außerdem eine Inkonsistenz in der Spielstands-Interpretation: `euphorisch` beschreibt den Treffer als „Führung", `kritisch` als „Ausgleich" — obwohl der übergebene Spielstand (1:2 für Bayern) den Treffer als Anschlusstreffer (1:2 → 2:2) ausweisen würde. Diese Divergenz ist ein weiterer Beleg für die Unzuverlässigkeit der Spielstand-Verarbeitung im neutralen und euphorischen Profil.
 
-### 6.3.5 Einfluss von Few-Shot-Referenzen
+### Einfluss von Few-Shot-Referenzen
 
 Die Prompt-Architektur unterstützt bis zu drei Stilreferenzen aus der `style_references`-Datenbanktabelle, gefiltert nach Event-Typ und Instanz. Die Referenzen werden als Few-Shot-Beispiele in den Prompt eingefügt.
 
 Ein kontrollierter A/B-Test mit 0, 1 und 3 Few-Shot-Referenzen für denselben Event konnte im Rahmen dieser Arbeit nicht durchgeführt werden, da das Backend keinen direkten Parameter zur Steuerung der Referenzanzahl pro Request exponiert. Qualitativ zeigt die Evaluation (Abschnitt 6.3.6), dass die `style_references`-Tabelle der `ef_whitelabel`-Instanz konsistente Formatierungsmuster (Minutenformat, TOOOOR-Konvention) in den generierten Texten etabliert — ein indirekter Hinweis auf die Wirksamkeit der Few-Shot-Kontextualisierung.
 
-### 6.3.6 Qualitative Analyse der generierten Texte
+### Qualitative Analyse der generierten Texte
 
 Für die qualitative Analyse wurden **16 KI-generierte Ticker-Einträge** (Modell: `google/gemini-2.0-flash-lite-001`, Sprache: Deutsch) aus **9 Bundesliga-Spielen** der Saison 2024/25 manuell auf drei Dimensionen bewertet:
 
@@ -316,6 +339,11 @@ Die **Score-Halluzination** ist qualitativ schwerwiegender: Im ergänzenden Eval
 
 Die Pre-Match-Prompts enthalten eine explizite Schutzregel gegen Halluzinationen:
 
+```
+Dieses ist ein Pre-Match-Eintrag. Beschreibe NUR die gegebenen Fakten.
+Erfinde KEINE Live-Spielszenen, Tore oder Spielverläufe.
+```
+
 In der Stichprobe enthielt 1 von 1 untersuchten Pre-Match-Texten keine unzulässigen Spielszenen, jedoch eine nicht aus dem Datenbankkontext ableitbare Wettempfehlung — eine inhaltliche Halluzination geringerer Schwere. Der evaluierte Stichprobenumfang für Pre-Match-Texte ist zu klein für eine statistische Aussage; die Schutzregel verhindert zuverlässig Spielszenen-Halluzinationen, schützt jedoch nicht gegen alle Formen der Kontextüberschreitung.
 
 **Vergleich: KI-generiert vs. manuell**
@@ -356,11 +384,11 @@ Die Interviewergebnisse fließen in die Gesamtbewertung des Systems (Kapitel 8.2
 
 ## Evaluation der Betriebsmodi
 
-### 6.4.1 Drei Betriebsmodi
+### Drei Betriebsmodi
 
 Das System unterstützt drei zur Laufzeit umschaltbare Betriebsmodi (`auto`, `coop`, `manual`), die in Abschnitt 4.3.3 konzeptionell beschrieben sind. Die folgende Evaluation vergleicht ihre Leistungsfähigkeit anhand messbarer Metriken.
 
-### 6.4.2 Vergleich der Modi
+### Vergleich der Modi
 
 Ein kontrollierter Vergleich derselben Spiels in allen drei Modi war im Evaluationszeitraum nicht durchführbar, da kein parallel in mehreren Modi betriebenes Live-Spiel vorlag. Die folgende Tabelle beruht auf den gemessenen Latenzdaten (Abschnitt 6.5.1) und der implementierten Systemarchitektur:
 
@@ -380,7 +408,7 @@ Der Coop-Modus repräsentiert den beabsichtigten Produktivbetrieb: Die KI liefer
 
 ## Performance und Laufzeitverhalten
 
-### 6.5.1 LLM-Latenz
+### LLM-Latenz
 
 Die Concurrency- und Retry-Konfiguration der LLM-Aufrufe ist in Abschnitt 5.2.6 beschrieben. Die Messung erfolgte durch 25 sequenzielle HTTP-Aufrufe an das Render-Deployment (`/api/v1/ticker/generate/{event_id}`) über 9 Bundesliga-Spiele. Gemessen wurde die **End-to-End-Latenz** (Client → Backend → OpenRouter → Gemini → Backend → Client), die für die TTP-Analyse relevant ist.
 
@@ -397,7 +425,7 @@ _Messserie „Render-Deployment": 25 sequenzielle HTTP-Aufrufe an `/api/v1/ticke
 
 Die Latenzmessungen für OpenRouter deuten auf eine Charakterisierung der Antwortzeit-Verteilung als rechtssteil hin: Render-Messserie zeigt 44 % der Messungen unter 310 ms (mutmaßlich Gemini-seitige Cache-Treffer) und 56 % zwischen 859 ms und 2.128 ms (Kaltgenerierung), Standardabweichung 695 ms. Die direkte Messserie (N = 9) liegt enger zusammen (695–1.348 ms), was auf fehlende Cache-Treffer ohne Render-Warm-up hindeutet. Ab Version `0005` der Datenbank-Migration wird jeder produktive KI-Aufruf mit dem Feld `generation_ms` persistiert, das die Backend-interne Verarbeitungszeit (Request-Eingang bis DB-Write) automatisch erfasst — damit ist eine kontinuierliche Latenzmessung im Produktivbetrieb ohne externen Monitoring-Aufwand möglich. Im Kontext des `coop`-Modus ist die gemessene P95-Latenz von 2,1 s (2.047 ms) unproblematisch.
 
-### 6.5.2 API-Antwortzeiten
+### API-Antwortzeiten
 
 Gemessen wurden die wichtigsten Read/Write-Endpunkte im Render-Deployment (je 3 Aufrufe, externer Client):
 
@@ -414,7 +442,7 @@ _Werte beinhalten Netzwerklatenz zwischen externem Client und Render-Deployment.
 
 Die PostgreSQL-Verbindung ist mit einem Connection-Pool konfiguriert (`pool_size=20`, `max_overflow=30`, `pool_pre_ping=True`). Die `pool_pre_ping`-Option prüft die Verbindung vor jeder Nutzung und verhindert Fehler durch abgelaufene Verbindungen, was insbesondere auf Managed-Database-Diensten wie Render relevant ist.
 
-### 6.5.3 Frontend-Polling
+### Frontend-Polling
 
 Das Frontend fragt den Backend-Status über drei Polling-Intervalle ab:
 
@@ -432,7 +460,7 @@ Die `resolvePollingInterval`-Utility ist als Extension Point implementiert: Die 
 
 Die in Kapitel 2.6 hergeleiteten Anforderungen werden im Folgenden gegen den implementierten Stand evaluiert.
 
-### 6.6.1 Funktionale Anforderungen
+### Funktionale Anforderungen
 
 | Nr. | Anforderung                                            | Status | Nachweis / Anmerkung                                                          |
 | --- | ------------------------------------------------------ | ------ | ----------------------------------------------------------------------------- |
@@ -449,7 +477,7 @@ Die in Kapitel 2.6 hergeleiteten Anforderungen werden im Folgenden gegen den imp
 | F11 | Pre-Match-Kontextgenerierung (Verletzungen, H2H, etc.) | ✅     | 7 spezialisierte Context-Builder in `llm_context_builders.py`                 |
 | F12 | Live-Statistik-Updates                                 | ✅     | `ctx_live_stats()` mit Trigger-Gründen für automatische Zwischenstand-Texte   |
 
-### 6.6.2 Nicht-funktionale Anforderungen
+### Nicht-funktionale Anforderungen
 
 | Nr. | Anforderung                            | Status | Nachweis / Anmerkung                                                                                                          |
 | --- | -------------------------------------- | ------ | ----------------------------------------------------------------------------------------------------------------------------- |
@@ -460,7 +488,7 @@ Die in Kapitel 2.6 hergeleiteten Anforderungen werden im Folgenden gegen den imp
 | N5  | Responsive UI (Mobile-tauglich)        | ✅     | Playwright-Test mit 375×812 Viewport; Mobile Tab Bar                                                                          |
 | N6  | Fehlerresistenz im Frontend            | ✅     | `ErrorBoundary` mit Fallback-UI; 4 dedizierte Tests                                                                           |
 
-### 6.6.3 Architektur-Anforderungen
+### Architektur-Anforderungen
 
 | Nr. | Anforderung                                     | Status | Nachweis / Anmerkung                                                         |
 | --- | ----------------------------------------------- | ------ | ---------------------------------------------------------------------------- |

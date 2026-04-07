@@ -14,9 +14,20 @@ Die n8n-Workflows (Abschnitt 5.5) werden abweichend von der konzeptionellen Reih
 
 ## Backend-Implementierung
 
-### 5.2.1 Projektstruktur und Application Entry Point
+### Projektstruktur und Application Entry Point
 
 Das Backend ist unterhalb von `backend/app/` in sieben funktionale Pakete gegliedert:
+
+```
+backend/app/
+├── api/v1/          # HTTP-Router (FastAPI)
+├── models/          # SQLAlchemy ORM-Modelle (17 Dateien)
+├── repositories/    # Datenbankzugriff (je Entität eine Klasse)
+├── schemas/         # Pydantic-Schemas (Request / Response)
+├── services/        # Fachliche Services (llm_service, ticker_service)
+├── utils/           # Hilfsmodule (llm_context_builders, evaluation_metrics)
+└── core/            # Konfiguration, Datenbankverbindung, Enums, Konstanten
+```
 
 Diese Aufteilung entspricht dem klassischen Repository-Service-Router-Muster: Router delegieren an Repositories für einfache CRUD-Operationen und an Services für Logik, die mehrere Repositories oder externe Aufrufe koordiniert.
 
@@ -31,7 +42,7 @@ Die Anwendung stellt zwei Metaendpunkte bereit:
 
 ---
 
-### 5.2.2 Datenmodelle: Datenbankschema und API-Validierung
+### Datenmodelle: Datenbankschema und API-Validierung
 
 **SQLAlchemy-Datenbankmodelle** — Das Schema umfasst **17 ORM-Modelle** (18 Datenbanktabellen, davon eine via Migration). Die zentralen Domänenobjekte sind:
 
@@ -53,9 +64,16 @@ Die Anwendung stellt zwei Metaendpunkte bereit:
 
 Das `TickerEntry`-Modell hat besondere Bedeutung im Lifecycle des Systems: Es verknüpft über `event_id` (FK auf `events`) und `synthetic_event_id` (FK auf `synthetic_events`) den generierten Text mit seinem Auslöser. Die Felder `status` (`draft`/`published`/`rejected`) und `source` (`ai`/`manual`) bilden den Ticker-Lifecycle ab (vgl. Kap. 4.3.2). Drei zusammengesetzte Indizes (`ix_ticker_match_status`, `ix_ticker_match_phase`, `ix_ticker_event_id`) optimieren die häufigsten Abfragen: publizierte Einträge je Spiel, Phase-Filter und den Deduplizierungs-Check per Event. Das Status-Enum wird als nicht-nativ gespeichert (`native_enum=False`), damit Migrationen ohne Enum-Typ-Änderungen in PostgreSQL auskommen.
 
+
 **Pydantic-Schemas und API-Validierung** — Für jeden Router gibt es eigenständige Pydantic-Schemas für Create-, Update- und Response-Strukturen. Alle Schemas nutzen `alias_generator=to_camel` aus `pydantic.alias_generators`, damit JSON-Payloads in camelCase kommuniziert werden, während Python-intern snake_case gilt.
 
 Ein spezifisches Beispiel illustriert die Alias-Mechanik für Match-Scores:
+
+```python
+class MatchResponse(BaseModel):
+    home_score: Optional[int] = Field(None, serialization_alias="teamHomeScore")
+    away_score: Optional[int] = Field(None, serialization_alias="teamAwayScore")
+```
 
 Hier wird `serialization_alias` (nicht `alias`) verwendet, da das Frontend die Partner-API-Feldnamen erwartet (`teamHomeScore`/`teamAwayScore`), während Schreiboperationen über `populate_by_name=True` auch den Python-Namen akzeptieren.
 
@@ -63,23 +81,56 @@ Diese duale Alias-Konvention zieht sich durch alle Schemas: Felder, die Spielsta
 
 Für den Match-Status-Lifecycle definiert `MatchUpdate` ein explizites Alias:
 
+```python
+match_state: Optional[MatchState] = Field(None, alias="state")
+```
+
 Für Ticker-Einträge wird der Status über ein separates PATCH-Schema gesteuert, um versehentliche Massenänderungen durch offene Update-Schemas zu vermeiden.
 
 ---
 
-### 5.2.3 Repository-Schicht
+### Repository-Schicht
 
 Jede Entität hat ein dediziertes Repository, das alle SQL-Operationen kapselt. Alle Repositories erben von einer gemeinsamen `BaseRepository[T]`-Basisklasse, die die generische Operation `exists()` bereitstellt; jede Instanz erhält eine `Session` im Konstruktor:
+
+```python
+class TickerEntryRepository(BaseRepository[TickerEntry]):
+    model = TickerEntry
+
+    def get_by_event(self, event_id: int) -> Optional[TickerEntry]:
+        return self.db.query(TickerEntry).filter(
+            TickerEntry.event_id == event_id
+        ).first()
+
+    def get_by_match(self, match_id: int, status=None) -> list[TickerEntry]:
+        ...
+```
 
 Diese Kapselung hat zwei Vorteile: Router bleiben frei von ORM-Details, und Repository-Methoden können direkt mit echten Datenbanken in Integrationstests geprüft werden — ohne Mock-Schichten, die Implementierungsabweichungen verbergen.
 
 Das `MatchRepository` definiert eine interne `_base_query()`-Methode, die Heimteam, Auswärtsteam, Wettbewerb und Saison per `joinedload` in einer einzigen Datenbankabfrage vorlädt. `get_by_id()` nutzt diese Methode konsequent:
 
+```python
+class MatchRepository(BaseRepository[Match]):
+    model = Match
+
+    def _base_query(self) -> Query:
+        return self.db.query(Match).options(
+            joinedload(Match.home_team),
+            joinedload(Match.away_team),
+            joinedload(Match.competition),
+            joinedload(Match.season),
+        )
+
+    def get_by_id(self, match_id: int) -> Optional[Match]:
+        return self._base_query().filter(Match.id == match_id).first()
+```
+
 Diese Methode wird von der KI-Generierungsroute intensiv genutzt, da für jeden Aufruf vollständige Kontext-Daten (Teamnamen, Wettbewerb) benötigt werden.
 
 ---
 
-### 5.2.4 API-Router: Endpunktstruktur
+### API-Router: Endpunktstruktur
 
 Der Ticker-Bereich ist in drei Router aufgeteilt, die gemeinsam unter `/api/v1/ticker` eingehängt werden:
 
@@ -97,7 +148,7 @@ Die wichtigsten Endpunkte gliedern sich in vier funktionale Bereiche: **Stammdat
 
 ---
 
-### 5.2.5 Ticker-Service: Domänenlogik
+### Ticker-Service: Domänenlogik
 
 Der `ticker_service` kapselt die Domänenlogik für KI-Einträge. Er koordiniert Datenbankabfragen, Kontextaufbau und den LLM-Aufruf, hält dabei aber die Schichten klar getrennt: `llm_service.py` hat keine Datenbankabhängigkeit.
 
@@ -109,15 +160,35 @@ Die vier zentralen Funktionen:
 
 **`call_llm()`** ist der zentrale, Semaphore-gesicherte LLM-Aufruf. Er lädt zunächst aus dem `StyleReferenceRepository` bis zu drei Stilbeispiele für `event_type + instance + league` als Few-Shot-Kontext und delegiert dann an `generate_ticker_text()`:
 
+```python
+async with _llm_semaphore:   # asyncio.Semaphore(settings.LLM_CONCURRENCY)
+    return await generate_ticker_text(
+        event_type=event_type,
+        style_references=style_references,  # aus DB geladen
+        ...
+    )
+```
+
 Die Semaphore ist auf Modulebene als Singleton definiert (`_llm_semaphore = asyncio.Semaphore(settings.LLM_CONCURRENCY)`, Standard: 8) und begrenzt gleichzeitige LLM-Aufrufe pro Prozessinstanz.
 
 **`make_ai_entry()`** ist ein schlanker Builder, der aus den LLM-Ergebnissen ein `TickerEntryCreate`-Schema erzeugt. Er setzt `source="ai"` und legt den initialen Status abhängig vom Aufrufkontext fest (`draft` im Co-op-Modus, `published` im Auto-Modus).
 
 ---
 
-### 5.2.6 LLM-Service: Prompt-Aufbau und Provider-Dispatch
+### LLM-Service: Prompt-Aufbau und Provider-Dispatch
 
 Der `LLMService` ist eine single-class-Implementierung, die beim Initialisieren den passenden Client instanziiert und über ein Dispatch-Dictionary aufruft:
+
+```python
+dispatch = {
+    "mock":       self._generate_mock_text,
+    "gemini":     self._generate_gemini_text,
+    "openrouter": self._generate_openrouter_text,
+    "openai":     self._generate_openai_text,
+    "anthropic":  self._generate_anthropic_text,
+}
+return dispatch[self.provider](**kwargs)
+```
 
 Das Dispatch-Pattern macht es trivial, neue Provider hinzuzufügen: Implementierung einer Methode `_generate_X_text()` und ein Eintrag im Dictionary.
 
@@ -126,6 +197,13 @@ Der Prompt wird in vier modularen Methoden aufgebaut:
 **`_build_event_lines()`** erzeugt die Fakten-Sektion. Jeder Parameter (Ereignistyp, Detail, Minute, Spieler, Team) wird nur dann eingebunden, wenn er vorhanden ist. Die Ereignisbezeichnung wird aus `EVENT_TYPE_LABEL` in lesbares Deutsch übersetzt (z. B. `"goal"` → `"Tor"`).
 
 **`_build_few_shot_block()`** formatiert die Stilreferenzen als nummerierte Beispiele:
+
+```
+### STILREFERENZEN
+Schreibe in exakt diesem Stil (Rhythmus, Wortwahl, Emotionalität):
+- "Mustermann trifft mit einem satten Rechtsschuss – 1:0!"
+- "Eintracht schlägt zu – der erste Treffer des Abends!"
+```
 
 **`_build_prematch_parts()`** ergänzt für Pre-Match-Typen eine zusätzliche harte Instruktion: Das Modell darf keine Live-Szenen erfinden, sondern ausschließlich Vorschau- und Analyseinhalte produzieren.
 
@@ -137,9 +215,29 @@ LLM-Parameter: `temperature=0.3` für konsistente Ausgaben, `max_tokens` aus `LL
 
 ---
 
-### 5.2.7 WebSocket-Endpunkt für Media-Queue
+### WebSocket-Endpunkt für Media-Queue
 
 Der WebSocket-Endpunkt `/ws/media` wird durch einen dedizierten `MediaConnectionManager` verwaltet:
+
+```python
+class MediaConnectionManager:
+    def __init__(self) -> None:
+        self.active_connections: list[WebSocket] = []
+
+    async def connect(self, websocket: WebSocket) -> None:
+        await websocket.accept()
+        self.active_connections.append(websocket)
+
+    async def broadcast(self, data: dict) -> None:
+        dead: list[WebSocket] = []
+        for ws in self.active_connections:
+            try:
+                await ws.send_json(data)
+            except (WebSocketDisconnect, RuntimeError):
+                dead.append(ws)
+        for ws in dead:
+            self.disconnect(ws)
+```
 
 Wenn das Backend neue Media-Queue-Einträge über `POST /api/v1/media/incoming` erhält, ruft der Router anschließend `manager.broadcast({"type": "new_media", "items": [...]})` auf. Alle verbundenen Clients erhalten das Update in Echtzeit. Der Manager hält Verbindungen in einer einfachen In-Memory-Liste, was für die aktuelle Nutzung (wenige gleichzeitige Redakteur-Clients) ausreichend ist; bei Multi-Prozess-Deployments wäre ein externes Pub/Sub-System (z. B. Redis) erforderlich.
 
@@ -149,23 +247,66 @@ Die persistente Seite der Media-Queue wird durch das `MediaQueueStatus`-Enum ges
 
 ## KI-Generierungspipeline
 
-### 5.3.1 Ablaufdiagramm
+### Ablaufdiagramm
 
 Die folgende Darstellung zeigt den vollständigen Ablauf von einem neuen Live-Ereignis bis zum publizierten Ticker-Eintrag:
 
+```mermaid
+sequenceDiagram
+    participant n8n as n8n Workflow
+    participant API as FastAPI Backend
+    participant DB as PostgreSQL
+    participant LLM as LLM Provider
+    participant FE as React Frontend
+
+    n8n->>API: POST /api/v1/events (Ereignis-Import)
+    API->>DB: INSERT INTO events
+    n8n->>API: POST /api/v1/ticker/generate/{event_id}
+    API->>DB: SELECT ticker_entry WHERE event_id (Dedup)
+    alt Eintrag existiert bereits
+        API-->>n8n: 200 OK (existierender Eintrag)
+    else Neues Ereignis
+        API->>DB: SELECT match + teams (joinedload)
+        API->>DB: SELECT style_references (Few-Shot)
+        API->>LLM: Prompt (Fakten + Kontext + Stilreferenzen)
+        LLM-->>API: Generierter Text + Modellname
+        API->>DB: INSERT ticker_entry (status=draft|published)
+        API-->>n8n: 201 Created
+    end
+    FE->>API: GET /api/v1/ticker/{match_id} (Polling 5s)
+    API-->>FE: TickerEntry[] (inkl. neuer Entwurf)
+    alt Modus=coop
+        FE-->>FE: Entwurf in Draft-Queue anzeigen
+        note over FE: Redakteur: TAB (accept) / ESC (reject)
+        FE->>API: PATCH /api/v1/ticker/{id} {status:"published"}
+    else Modus=auto
+        note over DB: status=published gesetzt bei Generierung
+    end
+```
+
 ---
 
-### 5.3.2 Deduplizierung
+### Deduplizierung
 
 Ein zentrales Qualitätsmerkmal der Pipeline ist die Deduplizierung: Der Generierungsendpunkt prüft vor jedem LLM-Aufruf, ob bereits ein Ticker-Eintrag für die `event_id` existiert:
+
+```python
+existing = ticker_repo.get_by_event(event_id)
+if existing:
+    return existing  # Idempotenter Rückgabepfad ohne LLM-Aufruf
+```
 
 Dies macht den Endpunkt idempotent gegenüber Mehrfachaufrufen — ein wichtiges Merkmal, da n8n-Workflows bei Fehlern automatisch wiederholen. Ohne diese Prüfung würde jeder Retry einen zusätzlichen Ticker-Eintrag mit unterschiedlichem (nicht-deterministischem) Text erzeugen.
 
 ---
 
-### 5.3.3 Statusentscheidung und Modus-Steuerung
+### Statusentscheidung und Modus-Steuerung
 
 Der initiale Status des erzeugten Ticker-Eintrags wird über den Aufrufparameter `auto_publish` gesteuert, den n8n aus dem `ticker_mode` des Spiels ableitet (vgl. Kap. 4.3.3 für die konzeptionelle Beschreibung der drei Betriebsmodi):
+
+```python
+status=TickerStatus.published if data.auto_publish else TickerStatus.draft
+```
 
 Damit wird die Modus-Logik zu einem reinen Aufrufparameter des Backends — die Entscheidungsinstanz ist n8n auf Basis des in der Datenbank gespeicherten `ticker_mode`. Das Backend selbst ist modus-agnostisch: Es erhält einen Booleschen Wert und setzt den Status entsprechend.
 
@@ -183,7 +324,7 @@ Im `coop`-Modus liegt die gesamte UX-Last auf der Draft-Queue: Das Frontend zeig
 
 ---
 
-### 5.3.4 Zustandsautomat der Ticker-Einträge
+### Zustandsautomat der Ticker-Einträge
 
 Das konzeptionelle Statusmodell (`draft` → `published` / `rejected`, Undo-Übergang `published → draft`) ist vollständig in Abschnitt 4.3.2 beschrieben. Implementierungsseitig sind zwei Details hervorzuheben:
 
@@ -195,23 +336,91 @@ Der Übergang `published → draft` (Undo) ist im Frontend als **Toast-Aktion** 
 
 ## Frontend-Implementierung
 
-### 5.4.1 Komponentenhierarchie
+### Komponentenhierarchie
 
 Das Frontend ist als React-Anwendung mit TypeScript organisiert. Die Hauptansicht (`LiveTicker`) gliedert sich in drei Panel-Komponenten, die von gemeinsam genutzten Hooks und Contexts gespeist werden:
+
+```mermaid
+graph TD
+    App --> LiveTicker
+    LiveTicker --> |TickerModeContext| LeftPanel
+    LiveTicker --> |TickerModeContext| CenterPanel
+    LiveTicker --> |TickerModeContext| RightPanel
+    LiveTicker --> |TickerDataContext| LeftPanel
+    LiveTicker --> |TickerDataContext| CenterPanel
+    LiveTicker --> |TickerDataContext| RightPanel
+    LiveTicker --> |TickerActionsContext| CenterPanel
+
+    CenterPanel --> EventCard
+    CenterPanel --> EntryEditor
+    CenterPanel --> AIDraft
+    CenterPanel --> SummarySection
+    CenterPanel --> MediaPickerPanel
+    CenterPanel --> YouTubePanel
+    CenterPanel --> TwitterPanel
+    CenterPanel --> InstagramPanel
+
+    LeftPanel --> PublishedEntry
+    RightPanel --> Collapsible["Collapsible (Statistiken, Aufstellung, Spieler)"]
+    RightPanel --> FormationColumn
+    RightPanel --> StatRow
+
+    EventCard --> |onGenerate| TickerActionsContext
+    AIDraft --> |onPublished/onDraftActive| TickerActionsContext
+    EntryEditor --> |onManualPublish| TickerActionsContext
+```
 
 Die drei Panels sind physisch getrennte React-Komponenten, kommunizieren aber ausschließlich über Context-Provider — kein Prop-Drilling über Komponentengrenzen hinweg.
 
 ---
 
-### 5.4.2 React Context-Architektur
+### React Context-Architektur
 
 Das Frontend verwendet drei spezialisierte Contexts, die in `LiveTicker` zusammengeführt werden. Jeder Context hat eine klar definierte Verantwortung:
 
 **`TickerModeContext`** — Modus-State und Tastatur-Aktionen:
 
+```typescript
+interface TickerModeContextValue {
+  mode: TickerMode; // "auto" | "coop" | "manual"
+  setMode: (mode: TickerMode) => void;
+  acceptDraft: () => Promise<void>; // TAB-Shortcut
+  rejectDraft: () => Promise<void>; // ESC-Shortcut
+}
+```
+
 **`TickerDataContext`** — Match-Daten und Reload-Funktionen:
 
+```typescript
+interface TickerDataContextValue {
+  match: Match | null;
+  events: MatchEvent[];
+  tickerTexts: TickerEntry[];
+  prematch: TickerEntry[];
+  lineups: LineupEntry[];
+  matchStats: MatchStat[];
+  players: Player[];
+  playerStats: PlayerStat[];
+  injuries: InjuryGroup[];
+  reload: ReloadFunctions;
+  generatingId: number | null;
+}
+```
+
 **`TickerActionsContext`** — Callbacks für redaktionelle Aktionen:
+
+```typescript
+interface TickerActionsContextValue {
+  onGenerate: (eventId: number, style: TickerStyle) => Promise<void>;
+  onManualPublish: (text, icon?, minute?, phase?, rawInput?) => Promise<void>;
+  onDraftActive: (id: number, text: string) => void;
+  onPublished: (id: number, text: string, isManual?: boolean) => void;
+  onEditEntry: (id: number, text: string) => Promise<void>;
+  onDeleteEntry: (id: number) => Promise<void>;
+  retractedText: string | null;
+  clearRetractedText: () => void;
+}
+```
 
 Die Trennung von Daten- und Aktions-Context hat einen konkreten Performance-Vorteil: Komponenten, die nur Actions konsumieren (z. B. `EntryEditor`), re-rendern nicht bei Änderungen an `tickerTexts`. Dies ist bei einem Live-Ticker mit 5-Sekunden-Polling relevant.
 
@@ -219,7 +428,7 @@ Alle Contexts exportieren zusätzlich einen Hook (`useTickerModeContext`, `useTi
 
 ---
 
-### 5.4.3 Hook-Architektur
+### Hook-Architektur
 
 Die Zustandslogik ist in zwei Ebenen von Hooks organisiert: gemeinsame Hooks unter `src/hooks/` und feature-spezifische Hooks unter `components/LiveTicker/hooks/`.
 
@@ -246,15 +455,38 @@ Die wichtigsten Hooks und ihre Verantwortlichkeiten:
 
 `useMatchData` steuert das Polling-Intervall über die Hilfsfunktion `resolvePollingInterval()`:
 
+```typescript
+// src/utils/resolvePollingInterval.ts
+export function resolvePollingInterval(matchState: string | null): number {
+  if (matchState === "Live" || matchState === "FullTime") return POLL_EVENTS_MS; // 5000
+  if (matchState == null) return POLL_EVENTS_MS; // 5000
+  return POLL_PREMATCH_MS; // 5000
+}
+```
+
 Aktuell sind beide Konstanten (`POLL_EVENTS_MS`, `POLL_PREMATCH_MS`) auf 5000 ms gesetzt, sodass alle Zustände mit einem einheitlichen 5-Sekunden-Intervall gepollt werden. Die Unterscheidung ist als Erweiterungspunkt vorgesehen, um bei Bedarf ruhigere Polling-Intervalle für inaktive Spiele einzuführen.
 
 ---
 
-### 5.4.4 Slash-Command-Parser (`parseCommand.ts`)
+### Slash-Command-Parser (`parseCommand.ts`)
 
 Der Slash-Command-Parser ermöglicht schnelle manuelle Texteingabe ohne Maus-Interaktion. Er übersetzt kurze Kommandos in formatierte Ticker-Texte und liefert Metadaten (Icon, Phase, Minute) für die Publikation.
 
 Die Funktion `parseCommand(input, currentMinute)` gibt ein typisiertes `ParseResult` zurück:
+
+```typescript
+export interface ParseResult {
+  type: string;
+  formatted: string;
+  warnings: string[];
+  isValid: boolean;
+  meta: {
+    icon: string;
+    phase: string | null;
+    minute: number | null;
+  };
+}
+```
 
 **Phasen-Commands** (11 Einträge in `PHASE_CMDS`) erzeugen vordefinierte Texte mit optionaler Minutenangabe. Die folgende Tabelle zeigt eine Auswahl der häufigsten Einträge (7 von 11):
 
@@ -270,25 +502,47 @@ Die Funktion `parseCommand(input, currentMinute)` gibt ein typisiertes `ParseRes
 
 **Event-Commands** (12 Einträge in `CMD_MAP`, 8 Typen nach Expansion) erzeugen strukturierte Texte mit Validierungshinweisen:
 
+```
+/g Mustermann EF  → "TOR — Mustermann (EF)"  + icon ⚽
+/gelb Müller EF   → "Gelb — Müller (EF)"     + icon 🟨
+/rot Huber Bayern → "Rote Karte — Huber (Bayern)" + icon 🟥
+/s EinRaus AusRein EF → "Wechsel — EinRaus ↔ AusRein (EF)" + icon 🔄
+/n Freistoß knapp über das Tor → "Freistoß knapp über das Tor"
+```
+
 Für unvollständige Eingaben gibt `warnings[]` gezielte Hinweise zurück (`"Fehlend: Spieler"`), die im `EntryEditor` live angezeigt werden. Das Frontend kann damit ohne Backend-Aufruf Validierungsfeedback geben.
 
 Nicht erkannte Commands werden mit `isValid: false` und einer Fehlermeldung zurückgegeben (`"Unbekannter Command: /xyz"`), statt einen Laufzeitfehler zu werfen.
 
 ---
 
-### 5.4.5 WebSocket-Hook (`useMediaWebSocket`)
+### WebSocket-Hook (`useMediaWebSocket`)
 
 Der `useMediaWebSocket`-Hook verwaltet die Lebensdauer der WebSocket-Verbindung zum Backend. Die Kernentscheidung ist das **exponentielle Reconnect-Backoff**:
+
+```typescript
+const delay = Math.min(
+  BASE_DELAY_MS * 2 ** retryCountRef.current, // 1s → 2s → 4s → 8s → …
+  MAX_DELAY_MS, // max 30s
+);
+```
 
 Der `retryCountRef` zählt aufeinanderfolgende Verbindungsabbrüche. Bei erfolgreicher Reconnection wird er auf 0 zurückgesetzt. `BASE_DELAY_MS = 1000`, `MAX_DELAY_MS = 30_000`.
 
 Ein `mountedRef` verhindert Zustandsänderungen nach dem Unmounten der Komponente — ein häufiges React-Problem bei asynchronen Operationen:
 
+```typescript
+ws.onclose = () => {
+  if (!mountedRef.current) return; // Kein setState nach Unmount
+  // … retry-Logik
+};
+```
+
 Der Cleanup im `useEffect` setzt `ws.onclose = null`, bevor die WebSocket geschlossen wird. Ohne diesen Schritt würde das `close`-Event des kontrollierten Schließens einen unbeabsichtigten Reconnect-Versuch auslösen.
 
 ---
 
-### 5.4.6 Modusimplementierung im Frontend
+### Modusimplementierung im Frontend
 
 Der aktive Modus (`auto` / `coop` / `manual`) steuert das Verhalten mehrerer Frontend-Komponenten (vgl. Kap. 4.6.4 für die konzeptionelle Einordnung der Moduslogik und Interaktionsdesign). Die Implementierung verteilt sich auf drei Ebenen:
 
@@ -300,13 +554,35 @@ Der aktive Modus (`auto` / `coop` / `manual`) steuert das Verhalten mehrerer Fro
 
 ---
 
-### 5.4.7 TypeScript-Migration
+### TypeScript-Migration
 
 Das Frontend wurde im Verlauf des Projekts von reinem JavaScript auf TypeScript migriert. Ziel war nicht die vollständige Auflösung aller `any`-Typen, sondern eine pragmatische Typisierung der systemkritischen Pfade mit messbaren Qualitätskennzahlen.
 
 **Migrationsstrategie** — Die Migration folgte einem schrittweisen Ansatz: Zuerst wurden alle `.js`- und `.jsx`-Dateien in `.ts` und `.tsx` umbenannt, dann `tsconfig.json` konfiguriert (`target: es2015`, `module: esnext`, `jsx: react-jsx`, `moduleResolution: node`). Anschließend wurden TypeScript-Fehler von innen nach außen behoben — beginnend mit dem Typ-System (`src/types/index.ts`) über Contexts bis zu den Komponenten. Der `strict`-Modus ist derzeit deaktiviert (`"strict": false`), um die inkrementelle Migration ohne blockierende Fehlereskalation zu ermöglichen.
 
 **Zentrale Typ-Definitionen** — `src/types/index.ts` definiert die gemeinsamen Domain-Interfaces:
+
+```typescript
+export type TickerMode = "auto" | "coop" | "manual";
+export type TickerStyle = "neutral" | "euphorisch" | "kritisch";
+export type MatchPhase = "Before" | "FirstHalf" | "FirstHalfBreak" | "SecondHalf" | ...;
+
+export interface TickerEntry {
+  id: number;
+  match_id: number;
+  event_id?: number | null;
+  text: string;
+  style?: string | null;
+  status: "draft" | "published" | "rejected";
+  source?: "ai" | "manual";
+  minute?: number | null;
+  phase?: string | null;
+  icon?: string | null;
+  image_url?: string | null;
+  video_url?: string | null;
+  llm_model?: string | null;
+}
+```
 
 **Ergebnis** — Nach der Migration erzielt das Projekt **0 TypeScript-Compilerfehler** und eine **type-coverage von 95,84 %** (gemessen mit `type-coverage --strict`). Die detaillierte Darstellung der Migrationsergebnisse und die Analyse der verbleibenden untypisierten Stellen folgt in Abschnitt 6.2.5.
 
@@ -328,37 +604,37 @@ Dieser Abschnitt dokumentiert die Implementierungsdetails der fünf zentralen Wo
 
 ---
 
-### 5.5.1 Events-LLM-Workflow (`09_events_llm_workflow.json`)
+### Events-LLM-Workflow (`09_events_llm_workflow.json`)
 
 Workflow `09` ist der kritischste im System: Er importiert Live-Ereignisse via Webhook (`POST /Events`), persistiert sie per UPSERT (`ON CONFLICT (source_id) DO NOTHING`) und triggert die KI-Generierung für jeden neuen Event. Eine initiale SQL-Abfrage bestimmt anhand der Teamzugehörigkeit, ob die Instanz `ef_whitelabel` oder `generic` und der Stil `euphorisch` oder `neutral` ist; `auto_publish` wird direkt aus `ticker_mode` des Spiels gesetzt. Nur Events mit erfolgreicher Datenbankzeile (zurückgegebene `id`, kein `DO NOTHING`-Konflikt) passieren den Filter-Knoten und triggern den Backend-Endpunkt. Ein zusätzlicher EF-spezifischer Zweig liest Spielerdaten von `profis.eintracht.de`, baut S3-Video-URLs aus neunstellig aufgefüllten Spieler-IDs auf und persistiert Torjubel-Videos als Ticker-Einträge.
 
 ---
 
-### 5.5.2 Prematch-Import-Workflow (`07_import_prematch.json`)
+### Prematch-Import-Workflow (`07_import_prematch.json`)
 
 Workflow `07` baut den Vorberichtskontext aus fünf parallelen Football-API-Abfragen auf (Verletzungen, Head-to-Head, Teamstatistiken Heim/Gast, Tabellenstand) und persistiert die Ergebnisse als `synthetic_events` mit idempotenter `ON CONFLICT (match_id, type) DO UPDATE`-Strategie. Ein LLM-Trigger wird nur ausgelöst, wenn noch kein nicht-verworfener Ticker-Eintrag für das jeweilige synthetische Event existiert (`WHERE te.id IS NULL`) — bereits generierte und eventuell publizierte Texte werden damit nicht überschrieben.
 
 ---
 
-### 5.5.3 Matchphasen-Workflow (`14_Game_ANpfiff_ABpfiff.json`)
+### Matchphasen-Workflow (`14_Game_ANpfiff_ABpfiff.json`)
 
 Workflow `14` verarbeitet Spielzustands-Übergänge (Anpfiff, Halbzeit, Abpfiff etc.) via Webhook (`POST /match-status`). Ein JavaScript-Knoten validiert Zustandsübergänge gegen eine Matrix erlaubter Vorzustände — ungültige Übergänge (z. B. direkt von `PreMatch` zu `2H`) werden zurückgewiesen. Für Vollzeit-Ereignisse (`FT`, `AET`, `PEN`) generiert der Workflow die gesamte Phasensequenz rückwirkend: Ein `FT`-Signal erzeugt vier synthetische Events (Anstoß, Halbzeit, 2. Halbzeit, Abpfiff). Das zentrale SQL-Statement kombiniert Match-Update, Event-Insert und eine `demote`-CTE in einer einzigen Transaktion — Letztere stuft bereits publizierte Phasen-Texte bei Re-Triggers auf `draft` zurück, sodass die Redaktion sie erneut prüfen kann.
 
 ---
 
-### 5.5.4 Halbzeit/Abpfiff-Zusammenfassung (`13_Halftime_aftertime.json`)
+### Halbzeit/Abpfiff-Zusammenfassung (`13_Halftime_aftertime.json`)
 
 Workflow `13` erzeugt narrative Zusammenfassungen für Halbzeit und Abpfiff. Im Gegensatz zu `09` ruft er OpenRouter (`google/gemini-2.0-flash-lite-001`) **direkt** auf, da Zusammenfassungen keinen Few-Shot-Stil aus der Datenbank benötigen, sondern einen umfangreicheren Prompt mit parallel geladenen Statistiken (Ballbesitz, Schüsse, Pässe, Spieler-Ratings) erfordern. Das Ergebnis wird über `POST /api/v1/ticker/manual` als Ticker-Eintrag gespeichert — je nach `ticker_mode` direkt als `published` oder als `draft`.
 
 ---
 
-### 5.5.5 ScorePlay-Medien-Workflow (`08_scoreplay_media_workflow.json`)
+### ScorePlay-Medien-Workflow (`08_scoreplay_media_workflow.json`)
 
 Workflow `08` sucht Medien-Assets bei ScorePlay für Spieler eines Torereignisses. Die Spieler-Suche (`GET /v1/tag/search`) normalisiert Umlaute (ä→a, ö→o, ü→u, ß→ss) und matcht gegen vier Namensfelder (`full_name`, `first_name`, `last_name`, `ai_name`). Gefundene Thumbnail-, Compressed- und Original-URLs werden an `POST /api/v1/media/incoming` übertragen und vom Backend per WebSocket an verbundene Frontend-Clients verteilt.
 
 ---
 
-### 5.5.6 Implementierungsübergreifende Muster
+### Implementierungsübergreifende Muster
 
 Über alle Workflows hinweg lassen sich fünf Implementierungsmuster identifizieren:
 
@@ -374,11 +650,23 @@ Workflow `08` sucht Medien-Assets bei ScorePlay für Spieler eines Torereignisse
 
 ---
 
+
 ## Qualitätssicherung und Tests
 
 Die Qualitätssicherung folgt dem Testpyramiden-Modell nach Cohn (2009) mit drei Ebenen: Unit-Tests, Integrations-Tests und End-to-End-Tests. Insgesamt umfasst die Testsuite **391 Tests** (187 Frontend, 198 Backend, 6 E2E), die alle grün durchlaufen.
 
 **Frontend-Tests** — Das Frontend verwendet Jest mit `@testing-library/react` für 187 Tests in 15 Dateien. Die Testdateien sind kolokiert mit ihrem Quellcode: Komponentendateien unter `components/LiveTicker/components/`, Hook-Tests unter `hooks/` und Utility-Tests unter `utils/`. Besonders umfangreich getestet ist der `parseCommand`-Parser (45 Testfälle), da er die kritische manuelle Eingabeschicht bildet. Ein exemplarischer Testfall illustriert das Prüfmuster:
+
+```typescript
+test("vollstaendiger Command ist valid", () => {
+  const result = parseCommand("/g Muller EIN", 32);
+  expect(result.isValid).toBe(true);
+  expect(result.type).toBe("goal");
+  expect(result.formatted).toBe("TOR -- Muller (EIN)");
+  expect(result.meta.icon).toBe("⚽");
+  expect(result.warnings).toHaveLength(0);
+});
+```
 
 **Backend-Tests** — Das Backend nutzt pytest mit FastAPI `TestClient` und transaktionalem Rollback für 198 Tests bei 75 % Statement-Coverage. Die Tests gliedern sich in API-Integrations-Tests (`test_ticker_api.py`, `test_matches_api.py`, `test_events_api.py` u. a.), die Endpunkte gegen eine PostgreSQL-Testdatenbank prüfen, sowie Unit-Tests für Services (`test_llm_service.py`, `test_ticker_service.py`) und Repositories (`test_ticker_entry_repository.py`). Gemeinsame Fixtures (Datenbankverbindung, Test-Match, Test-Events) sind in `conftest.py` zentralisiert.
 
