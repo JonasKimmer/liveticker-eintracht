@@ -14,36 +14,17 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    container:
+      image: texlive/texlive:latest
 
     steps:
-      - uses: actions/checkout@v3
-
-      - name: Cache APT packages
-        uses: actions/cache@v3
-        with:
-          path: /var/cache/apt/archives
-          key: ${{ runner.os }}-apt-texlive-${{ hashFiles('.github/workflows/latex.yml') }}
-          restore-keys: |
-            ${{ runner.os }}-apt-texlive-
-
-      - name: Install LaTeX (cached)
-        run: |
-          sudo apt-get update -qq
-          sudo apt-get install -y \
-            texlive-xetex \
-            texlive-latex-base \
-            texlive-latex-extra \
-            texlive-fonts-recommended \
-            texlive-lang-german \
-            texlive-pictures \
-            fonts-lmodern
+      - uses: actions/checkout@v4
 
       - name: Build LaTeX to PDF (with TikZ diagrams)
         run: |
-          cd ${{ github.workspace }}/thesis
+          cd thesis
           xelatex -interaction=nonstopmode -shell-escape Bachelorarbeit_Main_Simple.tex
-          echo "✅ First pass complete"
-          # Only re-run if needed for references
+          echo "First pass complete"
           xelatex -interaction=nonstopmode -shell-escape Bachelorarbeit_Main_Simple.tex || true
 
       - name: Check PDF was created
