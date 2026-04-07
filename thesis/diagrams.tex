@@ -167,13 +167,13 @@
 %% DIAGRAM 8: Match Event Processing (Simplified Sequence)
 \newcommand{\DiagramEventProcessing}{%
 \begin{tikzpicture}[node distance=2.5cm, auto]
-  \tikzset{step/.style={rectangle, draw, fill=purple!15, text width=2.2cm, text centered, minimum height=0.9cm, font=\footnotesize}}
+  \tikzset{stepbox/.style={rectangle, draw, fill=purple!15, text width=2.2cm, text centered, minimum height=0.9cm, font=\footnotesize}}
   
-  \node[step] (import) {1. Event\\Import};
-  \node[step, right of=import] (check) {2. Dedup\\Check};
-  \node[step, right of=check] (enrich) {3. Enrich\\Data};
-  \node[step, right of=enrich] (gen) {4. LLM\\Generate};
-  \node[step, below of=gen] (store) {5. Store\\Ticker};
+  \node[stepbox] (import) {1. Event\\Import};
+  \node[stepbox, right of=import] (check) {2. Dedup\\Check};
+  \node[stepbox, right of=check] (enrich) {3. Enrich\\Data};
+  \node[stepbox, right of=enrich] (gen) {4. LLM\\Generate};
+  \node[stepbox, below of=gen] (store) {5. Store\\Ticker};
   
   \draw[arrow] (import) -- (check);
   \draw[arrow] (check) -- (enrich);

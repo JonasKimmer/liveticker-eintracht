@@ -1,9 +1,10 @@
 \documentclass[12pt,a4paper,ngerman]{report}
 
-\usepackage[utf8]{inputenc}
 \usepackage[ngerman]{babel}
-\usepackage[T1]{fontenc}
-\usepackage{lmodern}
+\usepackage{fontspec}
+\setmainfont{Latin Modern Roman}
+\setsansfont{Latin Modern Sans}
+\setmonofont{Latin Modern Mono}
 \usepackage{geometry}
 \usepackage{hyperref}
 \usepackage{xcolor}
@@ -47,6 +48,28 @@
 
 % Define \real for Pandoc table calculations
 \providecommand{\real}[1]{#1}
+
+% Counter needed by Pandoc longtable output
+\newcounter{none}
+
+% Unicode character fallbacks
+\usepackage{newunicodechar}
+\newunicodechar{→}{$\rightarrow$}
+\newunicodechar{≈}{$\approx$}
+\newunicodechar{≥}{$\geq$}
+\newunicodechar{≤}{$\leq$}
+\newunicodechar{−}{$-$}
+\newunicodechar{δ}{$\delta$}
+\newunicodechar{κ}{$\kappa$}
+\newunicodechar{Δ}{$\Delta$}
+\newunicodechar{„}{\glqq}
+\newunicodechar{ł}{l}
+\newunicodechar{ń}{n}
+\newunicodechar{✅}{\checkmark}
+\newunicodechar{📣}{*}
+\newunicodechar{🔔}{*}
+\newunicodechar{🥅}{*}
+\newunicodechar{🎬}{*}
 
 \geometry{left=2.5cm, right=2cm, top=2.5cm, bottom=2.5cm}
 \onehalfspacing
