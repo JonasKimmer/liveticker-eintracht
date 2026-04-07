@@ -26,14 +26,15 @@ jobs:
       - name: Build LaTeX to PDF
         run: |
           cd ${{ github.workspace }}/thesis
-          xelatex -interaction=nonstopmode -halt-on-error Bachelorarbeit_Main_Simple.tex
-          xelatex -interaction=nonstopmode -halt-on-error Bachelorarbeit_Main_Simple.tex
+          xelatex -interaction=nonstopmode Bachelorarbeit_Main_Simple.tex
+          xelatex -interaction=nonstopmode Bachelorarbeit_Main_Simple.tex
 
       - name: Check PDF was created
         run: |
           if [ -f "thesis/Bachelorarbeit_Main_Simple.pdf" ]; then
             echo "✅ PDF erfolgreich generiert!"
             ls -lh thesis/Bachelorarbeit_Main_Simple.pdf
+            exit 0
           else
             echo "❌ PDF Generierung fehlgeschlagen"
             exit 1
@@ -41,7 +42,7 @@ jobs:
 
       - name: Upload PDF as artifact
         uses: actions/upload-artifact@v4
-        if: success()
+        if: always()
         with:
           name: Bachelorarbeit_PDF
           path: thesis/Bachelorarbeit_Main_Simple.pdf
