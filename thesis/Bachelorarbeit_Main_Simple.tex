@@ -19,6 +19,7 @@
 \usepackage{longtable}
 \usepackage{fancyvrb}
 \usepackage{framed}
+\usepackage{xfp}
 
 % Pandoc compatibility
 \providecommand{\tightlist}{%
@@ -37,6 +38,9 @@
 \newenvironment{Shaded}
   {\begin{shaded}}
   {\end{shaded}}
+
+% Define \real for Pandoc table calculations
+\providecommand{\real}[1]{#1}
 
 \geometry{left=2.5cm, right=2cm, top=2.5cm, bottom=2.5cm}
 \onehalfspacing
