@@ -284,12 +284,12 @@ Alle Generierungs-Workflows folgen einem konsistenten Vier-Phasen-Muster: **(1) 
 
 Die n8n-Landschaft gliedert sich in vier funktionale Klassen. Die folgende Übersicht zeigt alle 15 Workflows und ihren Auslöser:
 
-| Gruppe | Workflows | Trigger |
-| ------ | --------- | ------- |
-| **A) Stammdaten** | 01–04: Countries, Teams, Competitions, Matches | Bei leeren Daten |
-| **B) Matchdaten** | 05–07: Lineups, Match-/Player-Statistics, Prematch | Nach Matchauswahl |
-| **C) KI-Generierung** | 09 Events-LLM, 13 Halftime/Aftertime, 14 Anpfiff/Abpfiff | Modus- und Event-gesteuert |
-| **D) Medien & Social** | 08 ScorePlay, 10 Twitter/X, 11 YouTube, 12 Instagram | Medien-Suche |
+| Gruppe                 | Workflows                                                | Trigger                    |
+| ---------------------- | -------------------------------------------------------- | -------------------------- |
+| **A) Stammdaten**      | 01–04: Countries, Teams, Competitions, Matches           | Bei leeren Daten           |
+| **B) Matchdaten**      | 05–07: Lineups, Match-/Player-Statistics, Prematch       | Nach Matchauswahl          |
+| **C) KI-Generierung**  | 09 Events-LLM, 13 Halftime/Aftertime, 14 Anpfiff/Abpfiff | Modus- und Event-gesteuert |
+| **D) Medien & Social** | 08 ScorePlay, 10 Twitter/X, 11 YouTube, 12 Instagram     | Medien-Suche               |
 
 Diese Trennung reduziert Kopplung, erleichtert Fehlersuche und erlaubt es, einzelne Teilprozesse unabhängig anzupassen. Die konkreten Workflow-Dateinamen und Implementierungsdetails sind in Kapitel 5.5 dokumentiert.
 
@@ -379,10 +379,10 @@ Der Inferenzparameter **Temperature** wird für die Textgenerierung auf `0.3` fe
 Das System unterstützt drei zentrale Stilprofile:
 
 - **`neutral`**: sachlich, ausgewogen, ohne Vereinspräferenz
-- **`euphorisch`**: emotional und fan-nah
+- **`euphorisch`**: situationsadaptiver Fan-Stil aus Eintracht-Perspektive — euphorisch bei eigenen Toren, frustriert bei Gegentoren, kritisch bei hohem Rückstand, stolz bei Führung. Die Emotion passt sich also der Spielsituation an, statt durchgängig positiv zu sein.
 - **`kritisch`**: analytisch und bewertend
 
-Ergänzend steuert die Instanzkonfiguration (`generic` vs. `ef_whitelabel`) die Tonalität. Für `ef_whitelabel` werden vereinsspezifische Stilbeispiele aus `style_references` als Few-Shot-Kontext eingebunden; die generische Instanz kann ohne vereinsgebundene Stilprägung betrieben werden.
+Ergänzend steuert die Instanzkonfiguration (`generic` vs. `ef_whitelabel`) die Tonalität. Für `ef_whitelabel` werden vereinsspezifische Stilbeispiele aus `style_references` als Few-Shot-Kontext eingebunden; die generische Instanz kann ohne vereinsgebundene Stilprägung betrieben werden. Das Backend setzt für `ef_whitelabel`-Instanzen automatisch den Stil von `neutral` auf `euphorisch` hoch, sodass Eintracht-Spiele konsistent den Fan-Stil erhalten — unabhängig davon, welchen Stil der aufrufende Workflow übergibt.
 
 ---
 

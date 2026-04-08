@@ -64,7 +64,6 @@ Die Anwendung stellt zwei Metaendpunkte bereit:
 
 Das `TickerEntry`-Modell hat besondere Bedeutung im Lifecycle des Systems: Es verknüpft über `event_id` (FK auf `events`) und `synthetic_event_id` (FK auf `synthetic_events`) den generierten Text mit seinem Auslöser. Die Felder `status` (`draft`/`published`/`rejected`) und `source` (`ai`/`manual`) bilden den Ticker-Lifecycle ab (vgl. Kap. 4.3.2). Drei zusammengesetzte Indizes (`ix_ticker_match_status`, `ix_ticker_match_phase`, `ix_ticker_event_id`) optimieren die häufigsten Abfragen: publizierte Einträge je Spiel, Phase-Filter und den Deduplizierungs-Check per Event. Das Status-Enum wird als nicht-nativ gespeichert (`native_enum=False`), damit Migrationen ohne Enum-Typ-Änderungen in PostgreSQL auskommen.
 
-
 **Pydantic-Schemas und API-Validierung** — Für jeden Router gibt es eigenständige Pydantic-Schemas für Create-, Update- und Response-Strukturen. Alle Schemas nutzen `alias_generator=to_camel` aus `pydantic.alias_generators`, damit JSON-Payloads in camelCase kommuniziert werden, während Python-intern snake_case gilt.
 
 Ein spezifisches Beispiel illustriert die Alias-Mechanik für Match-Scores:
@@ -158,7 +157,7 @@ Die vier zentralen Funktionen:
 
 **`build_match_context()`** erstellt das Kontext-Dictionary für den LLM-Prompt: Teamnamen, aktueller Stand, Matchzustand, Spielminute und Liga.
 
-**`call_llm()`** ist der zentrale, Semaphore-gesicherte LLM-Aufruf. Er lädt zunächst aus dem `StyleReferenceRepository` bis zu drei Stilbeispiele für `event_type + instance + league` als Few-Shot-Kontext und delegiert dann an `generate_ticker_text()`:
+**`call_llm()`** ist der zentrale, Semaphore-gesicherte LLM-Aufruf. Für `ef_whitelabel`-Instanzen wird der Stil automatisch von `neutral` auf `euphorisch` hochgestuft, sodass Eintracht-Spiele konsistent den Fan-Stil erhalten — unabhängig vom übergebenen Wert. Anschließend lädt er aus dem `StyleReferenceRepository` bis zu drei Stilbeispiele für `event_type + instance + league` als Few-Shot-Kontext. Falls für einen Event-Typ keine Referenzen existieren (z. B. `kick_off`), greift ein Fallback-Mapping auf verwandte Typen zurück (`kick_off → comment`, `halftime → halftime_comment`, `fulltime → post_match`). Schließlich delegiert er an `generate_ticker_text()`:
 
 ```python
 async with _llm_semaphore:   # asyncio.Semaphore(settings.LLM_CONCURRENCY)
@@ -606,7 +605,7 @@ Dieser Abschnitt dokumentiert die Implementierungsdetails der fünf zentralen Wo
 
 ### Events-LLM-Workflow (`09_events_llm_workflow.json`)
 
-Workflow `09` ist der kritischste im System: Er importiert Live-Ereignisse via Webhook (`POST /Events`), persistiert sie per UPSERT (`ON CONFLICT (source_id) DO NOTHING`) und triggert die KI-Generierung für jeden neuen Event. Eine initiale SQL-Abfrage bestimmt anhand der Teamzugehörigkeit, ob die Instanz `ef_whitelabel` oder `generic` und der Stil `euphorisch` oder `neutral` ist; `auto_publish` wird direkt aus `ticker_mode` des Spiels gesetzt. Nur Events mit erfolgreicher Datenbankzeile (zurückgegebene `id`, kein `DO NOTHING`-Konflikt) passieren den Filter-Knoten und triggern den Backend-Endpunkt. Ein zusätzlicher EF-spezifischer Zweig liest Spielerdaten von `profis.eintracht.de`, baut S3-Video-URLs aus neunstellig aufgefüllten Spieler-IDs auf und persistiert Torjubel-Videos als Ticker-Einträge.
+Workflow `09` ist der kritischste im System: Er importiert Live-Ereignisse via Webhook (`POST /Events`), persistiert sie per UPSERT (`ON CONFLICT (source_id) DO NOTHING`) und triggert die KI-Generierung für jeden neuen Event. Eine initiale SQL-Abfrage bestimmt anhand der Teamzugehörigkeit, ob die Instanz `ef_whitelabel` oder `generic` ist; `auto_publish` wird direkt aus `ticker_mode` des Spiels gesetzt. Der Stil wird als `neutral` übergeben — das Backend übernimmt die automatische Hochstufung auf `euphorisch` für `ef_whitelabel`-Instanzen (vgl. Abschnitt 5.2.4). Nur Events mit erfolgreicher Datenbankzeile (zurückgegebene `id`, kein `DO NOTHING`-Konflikt) passieren den Filter-Knoten und triggern den Backend-Endpunkt. Ein zusätzlicher EF-spezifischer Zweig liest Spielerdaten von `profis.eintracht.de`, baut S3-Video-URLs aus neunstellig aufgefüllten Spieler-IDs auf und persistiert Torjubel-Videos als Ticker-Einträge.
 
 ---
 
@@ -624,7 +623,7 @@ Workflow `14` verarbeitet Spielzustands-Übergänge (Anpfiff, Halbzeit, Abpfiff 
 
 ### Halbzeit/Abpfiff-Zusammenfassung (`13_Halftime_aftertime.json`)
 
-Workflow `13` erzeugt narrative Zusammenfassungen für Halbzeit und Abpfiff. Im Gegensatz zu `09` ruft er OpenRouter (`google/gemini-2.0-flash-lite-001`) **direkt** auf, da Zusammenfassungen keinen Few-Shot-Stil aus der Datenbank benötigen, sondern einen umfangreicheren Prompt mit parallel geladenen Statistiken (Ballbesitz, Schüsse, Pässe, Spieler-Ratings) erfordern. Das Ergebnis wird über `POST /api/v1/ticker/manual` als Ticker-Eintrag gespeichert — je nach `ticker_mode` direkt als `published` oder als `draft`.
+Workflow `13` erzeugt narrative Zusammenfassungen für Halbzeit und Abpfiff. Im Gegensatz zu `09` ruft er OpenRouter (`google/gemini-2.0-flash-lite-001`) **direkt** auf, da Zusammenfassungen einen umfangreicheren Prompt mit parallel geladenen Statistiken (Ballbesitz, Schüsse, Pässe, Spieler-Ratings) erfordern. Der Prompt enthält die volle Stil-Beschreibung (`STYLE_DESC`) inklusive situationsadaptiver Emotion und erkennt Eintracht-Spiele anhand der Teamnamen, um den Stil automatisch auf `euphorisch` zu setzen. Das Ergebnis wird über `POST /api/v1/ticker/manual` als Ticker-Eintrag gespeichert — je nach `ticker_mode` direkt als `published` oder als `draft`.
 
 ---
 
@@ -649,7 +648,6 @@ Workflow `08` sucht Medien-Assets bei ScorePlay für Spieler eines Torereignisse
 **5. Instanz-Routing** — Die Unterscheidung zwischen `ef_whitelabel` und `generic` erfolgt per `ILIKE '%Frankfurt%'`-Abfrage auf Teamnamen. Das Ergebnis steuert Stilwahl, Few-Shot-Auswahl im Backend und ob der Torjubel-Video-Pfad aktiviert wird.
 
 ---
-
 
 ## Qualitätssicherung und Tests
 

@@ -1,7 +1,14 @@
 // ============================================================
 // EntryEditor.jsx  — Slash-Command Editor mit Autocomplete
 // ============================================================
-import React, { memo, useState, useMemo, useCallback, useRef, useEffect } from "react";
+import React, {
+  memo,
+  useState,
+  useMemo,
+  useCallback,
+  useRef,
+  useEffect,
+} from "react";
 import { parseCommand } from "../../utils/parseCommand";
 import { COMMAND_PALETTE, NEEDS_ARG } from "./CommandPalette";
 import { MODES, COMMAND_PREFIX_REGEX } from "../../constants";
@@ -155,7 +162,6 @@ export const EntryEditor = memo(function EntryEditor({
     } else {
       onPublish?.({
         text: trimmed,
-        icon: "📣",
         minute: minute != null ? minute : null,
         phase: null,
       });
@@ -348,7 +354,12 @@ export const EntryEditor = memo(function EntryEditor({
           onChange={handleChange}
           onKeyDown={handleKeyDown}
           placeholder="Ticker-Eintrag …"
-          style={{ overflow: "hidden", resize: "none", minHeight: 120, display: "block" }}
+          style={{
+            overflow: "hidden",
+            resize: "none",
+            minHeight: 120,
+            display: "block",
+          }}
         />
 
         {!value && (
@@ -400,7 +411,10 @@ export const EntryEditor = memo(function EntryEditor({
           Annehmen <kbd className="lt-btn__kbd">⌘↵</kbd>
         </button>
         {onCancel && (
-          <button className="lt-btn lt-btn--ghost lt-btn--sm" onClick={onCancel}>
+          <button
+            className="lt-btn lt-btn--ghost lt-btn--sm"
+            onClick={onCancel}
+          >
             Abbrechen <kbd className="lt-btn__kbd">Esc</kbd>
           </button>
         )}

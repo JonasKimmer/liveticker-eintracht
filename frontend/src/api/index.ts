@@ -61,14 +61,14 @@ export const generateTicker = (
 export const createManualTicker = (
   matchId: number,
   text: string,
-  icon = "📝",
+  icon?: string,
   minute?: number | null,
   phase?: MatchPhase | null,
 ) =>
   api.post("/ticker/manual", {
     match_id: matchId,
     text,
-    icon,
+    ...(icon != null ? { icon } : {}),
     minute: minute ?? null,
     phase: phase ?? null,
   });
@@ -204,9 +204,12 @@ export const triggerInstagramImport = () =>
   n8n.post("/149b541b-34f0-44f8-b3ce-c66bd3d75714");
 
 // ── Clips (persistent DB) ───────────────────────────────────
-export const fetchYoutubeClips = () => api.get("/clips/by-source?source=youtube");
-export const fetchTwitterPosts = () => api.get("/clips/by-source?source=twitter");
-export const fetchInstagramPosts = () => api.get("/clips/by-source?source=instagram");
+export const fetchYoutubeClips = () =>
+  api.get("/clips/by-source?source=youtube");
+export const fetchTwitterPosts = () =>
+  api.get("/clips/by-source?source=twitter");
+export const fetchInstagramPosts = () =>
+  api.get("/clips/by-source?source=instagram");
 export const generateClipDraft = (
   clipId: number,
   matchId: number,

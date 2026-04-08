@@ -171,7 +171,7 @@ export function useTicker({
   const handleManualPublish = useCallback(
     async (
       text: string,
-      icon = "📝",
+      icon?: string,
       minute?: number | null,
       phase?: MatchPhase | null,
       rawInput?: string,

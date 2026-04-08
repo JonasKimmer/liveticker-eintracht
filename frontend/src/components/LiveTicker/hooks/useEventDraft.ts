@@ -56,7 +56,9 @@ export function useEventDraft() {
   const selectedDraft = useMemo(
     () =>
       selectedEvent
-        ? tickerTexts.find((t) => t.event_id === selectedEvent.id)
+        ? tickerTexts.find(
+            (t) => t.event_id === selectedEvent.id && t.status !== "deleted",
+          )
         : null,
     [selectedEvent, tickerTexts],
   );
@@ -90,7 +92,10 @@ export function useEventDraft() {
   const handleRegenerateEventDraft = useCallback(
     async (eventId, style) => {
       const existing = tickerTexts.find(
-        (t) => t.event_id === eventId && t.status !== "rejected",
+        (t) =>
+          t.event_id === eventId &&
+          t.status !== "rejected" &&
+          t.status !== "deleted",
       );
       if (existing) await api.deleteTicker(existing.id);
       await onGenerate(eventId, style);
