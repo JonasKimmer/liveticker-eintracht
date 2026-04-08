@@ -96,7 +96,6 @@
 .lt-start__logo-img {
   height: 64px;
   width: auto;
-  filter: invert(1);
 }
 .lt-start__title {
   font-family: var(--lt-font-mono);

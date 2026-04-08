@@ -21,7 +21,6 @@
 .lt-header__logo-img {
   height: 28px;
   width: auto;
-  filter: invert(1);
 }
 .lt-header__breadcrumb {
   display: flex;
