@@ -7,6 +7,12 @@ const MODE_ITEMS = [
   { value: "manual" as const, label: "✍️ Manuell" },
 ];
 
+const MODE_DESC: Record<TickerMode, string> = {
+  auto: "KI generiert Ticker-Texte automatisch.",
+  coop: "KI schlägt vor — du bestätigst oder bearbeitest.",
+  manual: "Du schreibst alle Ticker-Texte selbst.",
+};
+
 interface TickerModeSelectorProps {
   value: TickerMode;
   onChange: (mode: TickerMode) => void;
@@ -18,13 +24,16 @@ export function TickerModeSelector({
 }: TickerModeSelectorProps) {
   const active = MODE_ITEMS.find((o) => o.value === value);
   return (
-    <Dropdown
-      label="Ticker-Modus"
-      value={value}
-      placeholder="Modus wählen"
-      displayValue={active?.label}
-      items={MODE_ITEMS}
-      onSelect={(v) => onChange(v as TickerMode)}
-    />
+    <div className="lt-mode-row">
+      <Dropdown
+        label="Ticker-Modus"
+        value={value}
+        placeholder="Modus wählen"
+        displayValue={active?.label}
+        items={MODE_ITEMS}
+        onSelect={(v) => onChange(v as TickerMode)}
+      />
+      <span className="lt-mode-row__desc">{MODE_DESC[value]}</span>
+    </div>
   );
 }
