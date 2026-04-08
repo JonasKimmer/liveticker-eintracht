@@ -127,7 +127,11 @@ async def generate_for_event(
     ticker_repo = TickerEntryRepository(db)
     existing = ticker_repo.get_by_event(event_id)
     if existing:
-        return existing
+        # Style-Wechsel: alten Eintrag löschen und neu generieren
+        if data.style and existing.style != data.style:
+            ticker_repo.delete(existing.id)
+        else:
+            return existing
 
     match = MatchRepository(db).get_by_id(event.match_id)
     match_context = ts.build_match_context(match, event.time)
@@ -322,9 +326,7 @@ async def generate_match_phases(
     ),
     db: Session = Depends(get_db),
 ) -> list[TickerEntryResponse]:
-    match = require_or_404(
-        MatchRepository(db).get_by_id(match_id), "Match not found"
-    )
+    match = require_or_404(MatchRepository(db).get_by_id(match_id), "Match not found")
 
     ticker_repo = TickerEntryRepository(db)
     synth_repo = SyntheticEventRepository(db)

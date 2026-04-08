@@ -222,7 +222,7 @@ export const CenterPanel = memo<CenterPanelProps>(function CenterPanel({
                   .slice()
                   .sort((a, b) => (a.time ?? 0) - (b.time ?? 0))
                   .map((ev) => {
-                  const draft = tickerTexts.find((t) => t.event_id === ev.id);
+                  const draft = tickerTexts.find((t) => t.event_id === ev.id && t.status !== "deleted");
                   const isSelected = selectedEvent?.id === ev.id;
                   return (
                     <div key={ev.id}>
