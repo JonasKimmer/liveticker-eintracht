@@ -1,21 +1,28 @@
-import { useState } from "react";
 import type { TickerMode } from "../../../../types";
 
-const MODE_OPTIONS: { value: TickerMode; label: string; desc: string }[] = [
+const MODE_OPTIONS: {
+  value: TickerMode;
+  icon: string;
+  label: string;
+  desc: string;
+}[] = [
   {
     value: "auto",
+    icon: "⚡",
     label: "Auto",
-    desc: "KI generiert und veröffentlicht Ticker-Einträge vollautomatisch.",
+    desc: "KI generiert und veröffentlicht vollautomatisch",
   },
   {
     value: "coop",
+    icon: "🤝",
     label: "Co-Op",
-    desc: "KI erstellt Entwürfe, du prüfst und veröffentlichst per Klick oder TAB.",
+    desc: "KI erstellt Entwürfe, du prüfst und veröffentlichst",
   },
   {
     value: "manual",
+    icon: "✍️",
     label: "Manuell",
-    desc: "Du schreibst alle Ticker-Einträge selbst. Keine KI-Generierung.",
+    desc: "Du schreibst alle Einträge selbst",
   },
 ];
 
@@ -28,42 +35,23 @@ export function TickerModeSelector({
   value,
   onChange,
 }: TickerModeSelectorProps) {
-  const [showInfo, setShowInfo] = useState(false);
-
   return (
     <div className="lt-mode-sel">
-      <div className="lt-mode-sel__header">
-        <label className="lt-start__label">Ticker-Modus</label>
-        <button
-          className="lt-mode-sel__info-btn"
-          onClick={() => setShowInfo((v) => !v)}
-          title="Modus-Beschreibungen anzeigen"
-          type="button"
-        >
-          ⓘ
-        </button>
-      </div>
-      <div className="lt-mode-sel__group">
+      <label className="lt-start__label">Ticker-Modus</label>
+      <div className="lt-mode-sel__cards">
         {MODE_OPTIONS.map((opt) => (
           <button
             key={opt.value}
-            className={`lt-mode-sel__btn${value === opt.value ? " lt-mode-sel__btn--active" : ""}`}
+            className={`lt-mode-sel__card${value === opt.value ? " lt-mode-sel__card--active" : ""}`}
             onClick={() => onChange(opt.value)}
             type="button"
           >
-            {opt.label}
+            <span className="lt-mode-sel__icon">{opt.icon}</span>
+            <span className="lt-mode-sel__label">{opt.label}</span>
+            <span className="lt-mode-sel__desc">{opt.desc}</span>
           </button>
         ))}
       </div>
-      {showInfo && (
-        <div className="lt-mode-sel__descs">
-          {MODE_OPTIONS.map((opt) => (
-            <div key={opt.value} className="lt-mode-sel__desc">
-              <strong>{opt.label}:</strong> {opt.desc}
-            </div>
-          ))}
-        </div>
-      )}
     </div>
   );
 }
