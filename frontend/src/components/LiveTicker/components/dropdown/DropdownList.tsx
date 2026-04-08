@@ -98,14 +98,15 @@ export function DropdownList({
       </div>
       <div
         style={{
-          padding: "0.3rem 0.85rem",
+          padding: "0.45rem 0.85rem",
           borderTop: "1px solid var(--lt-border)",
           color: "var(--lt-text-muted)",
-          fontSize: "0.7rem",
+          fontSize: "0.72rem",
           fontFamily: "var(--lt-font-mono)",
+          lineHeight: 1.4,
         }}
       >
-        {filtered.length} / {total} {unit} · ↑↓ navigieren · Enter auswählen
+        {filtered.length} / {total} {unit} · ↑↓ Enter
       </div>
     </div>
   );

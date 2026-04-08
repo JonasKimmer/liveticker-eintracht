@@ -63,9 +63,6 @@ export const StartScreen = memo(function StartScreen({
               />
             </div>
             <h1 className="lt-start__title">Spiel auswählen</h1>
-            <p className="lt-start__sub">
-              Wähle ein Spiel, um den Live-Ticker zu starten
-            </p>
           </>
         )}
 
