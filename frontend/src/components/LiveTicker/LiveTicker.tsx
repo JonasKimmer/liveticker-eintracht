@@ -234,9 +234,6 @@ export default function LiveTicker() {
     return () => ro.disconnect();
   }, []);
 
-  // ── Render ────────────────────────────────────────────────
-  if (appLoading) return <LoadingScreen />;
-
   // Wraps onMatchChange: setzt Modus in DB wenn Match gewählt wird
   const handleMatchSelect = useCallback(
     (matchId: number) => {
@@ -245,6 +242,9 @@ export default function LiveTicker() {
     },
     [navProps, selectedMode],
   );
+
+  // ── Render ────────────────────────────────────────────────
+  if (appLoading) return <LoadingScreen />;
 
   if (!selMatchId) {
     return (
