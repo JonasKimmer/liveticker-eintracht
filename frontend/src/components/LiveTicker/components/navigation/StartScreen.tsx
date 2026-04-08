@@ -106,20 +106,22 @@ export const StartScreen = memo(function StartScreen({
           />
         </div>
 
-        <MatchdayPicker
-          matchdays={matchdays}
-          matchdaysLoading={matchdaysLoading}
-          matchdaysError={matchdaysError}
-          selRound={selRound}
-          onRoundChange={onRoundChange}
-          matches={matches}
-          onMatchChange={onMatchChange}
-          disabled={!selCompetitionId}
-        />
+        <div className="lt-start__row2">
+          <MatchdayPicker
+            matchdays={matchdays}
+            matchdaysLoading={matchdaysLoading}
+            matchdaysError={matchdaysError}
+            selRound={selRound}
+            onRoundChange={onRoundChange}
+            matches={matches}
+            onMatchChange={onMatchChange}
+            disabled={!selCompetitionId}
+          />
 
-        {mode && onModeChange && (
-          <TickerModeSelector value={mode} onChange={onModeChange} />
-        )}
+          {mode && onModeChange && (
+            <TickerModeSelector value={mode} onChange={onModeChange} />
+          )}
+        </div>
 
         {!compact && (
           <div className="lt-start__hint">
