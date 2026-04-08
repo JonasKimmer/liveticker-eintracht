@@ -133,8 +133,10 @@ export const PublishedEntry = memo(function PublishedEntry({
     const phaseLabel = hasPhaseLabel ? PHASE_SHORT_LABEL[phase] : undefined;
     const phaseIcon = PHASE_DEFAULT_ICON[tickerText?.phase] ?? null;
     // Dedup-Keys (z.B. "pass_h_90") sind kein Emoji → Fallback auf 📊
-    const isCodeKey = tickerText?.icon && /^[a-z0-9_]+$/i.test(tickerText.icon);
-    const displayIcon = isCodeKey ? "📊" : (tickerText?.icon ?? phaseIcon);
+    // "•" gilt als kein Icon (Legacy-Wert aus alten Einträgen)
+    const rawIcon = tickerText?.icon === "•" ? null : tickerText?.icon;
+    const isCodeKey = rawIcon && /^[a-z0-9_]+$/i.test(rawIcon);
+    const displayIcon = isCodeKey ? "📊" : (rawIcon ?? phaseIcon);
     // null-Label: minute vorhanden → echte Minute zeigen, sonst leer
     // string-Label: immer das Label zeigen
     // kein Label in PHASE_SHORT_LABEL → echte Minute oder "–"
