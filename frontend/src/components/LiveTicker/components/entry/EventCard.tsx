@@ -27,7 +27,7 @@ export const EventCard = memo(function EventCard({
       role={onSelect ? "button" : undefined}
       tabIndex={onSelect ? 0 : undefined}
     >
-      <div className="lt-event-card__row">
+      <div className="lt-event-card__row" style={{ flexWrap: "wrap" }}>
         <span className="lt-event-card__minute">{event.time}'</span>
         <span className="lt-event-card__icon">{icon}</span>
         <span className="lt-event-card__raw">
@@ -58,7 +58,7 @@ export const EventCard = memo(function EventCard({
         {confirmDismiss && (
           <div
             className="lt-delete-confirm"
-            style={{ marginLeft: "auto" }}
+            style={{ marginLeft: "auto", flexShrink: 0 }}
             onClick={(e) => e.stopPropagation()}
           >
             <span className="lt-delete-confirm__label">Entfernen?</span>

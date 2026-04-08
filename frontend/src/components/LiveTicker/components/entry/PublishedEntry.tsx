@@ -131,7 +131,7 @@ export const PublishedEntry = memo(function PublishedEntry({
     const phase = tickerText?.phase;
     const hasPhaseLabel = phase != null && phase in PHASE_SHORT_LABEL;
     const phaseLabel = hasPhaseLabel ? PHASE_SHORT_LABEL[phase] : undefined;
-    const phaseIcon = PHASE_DEFAULT_ICON[tickerText?.phase] ?? icon ?? null;
+    const phaseIcon = PHASE_DEFAULT_ICON[tickerText?.phase] ?? null;
     // Dedup-Keys (z.B. "pass_h_90") sind kein Emoji → Fallback auf 📊
     const isCodeKey = tickerText?.icon && /^[a-z0-9_]+$/i.test(tickerText.icon);
     const displayIcon = isCodeKey ? "📊" : (tickerText?.icon ?? phaseIcon);

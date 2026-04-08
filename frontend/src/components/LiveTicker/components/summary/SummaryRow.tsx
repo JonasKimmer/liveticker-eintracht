@@ -61,7 +61,7 @@ export function SummaryRow({
       role="button"
       tabIndex={0}
     >
-      <div className="lt-event-card__row">
+      <div className="lt-event-card__row" style={{ flexWrap: "wrap" }}>
         <span className="lt-event-card__icon">{icon}</span>
         <span className="lt-event-card__raw">
           {label}
@@ -94,7 +94,7 @@ export function SummaryRow({
         {confirmReject && (
           <div
             className="lt-delete-confirm"
-            style={{ marginLeft: "auto" }}
+            style={{ marginLeft: "auto", flexShrink: 0 }}
             onClick={(e) => e.stopPropagation()}
           >
             <span className="lt-delete-confirm__label">Ablehnen?</span>
