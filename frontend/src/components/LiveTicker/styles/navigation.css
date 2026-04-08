@@ -313,10 +313,6 @@
   font-family: var(--lt-font-mono);
 }
 
-/* ── TickerMode Selector ──────────────────────────────────── */
-.lt-mode-sel {
-  width: 100%;
-  display: flex;
 /* ── TickerMode Dropdown ───────────────────────────────────── */
 .lt-mode-sel__trigger {
   width: 100%;
