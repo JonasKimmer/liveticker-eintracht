@@ -88,13 +88,11 @@ def build_context_data(
     generic: enthält nur den Score (falls vorhanden).
     """
     score_part = {"score": score_str} if score_str else {}
-    if instance == "ef_whitelabel":
-        return {
-            "home_team": match_context.get("home_team"),
-            "away_team": match_context.get("away_team"),
-            **score_part,
-        }
-    return score_part
+    return {
+        "home_team": match_context.get("home_team"),
+        "away_team": match_context.get("away_team"),
+        **score_part,
+    }
 
 
 async def call_llm(
