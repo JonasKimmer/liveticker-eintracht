@@ -145,16 +145,16 @@ export function SummaryDraftCard({
       </div>
       <div className="lt-draft__actions">
         <button
-          className="lt-btn lt-btn--primary"
+          className="lt-btn lt-btn--primary lt-btn--sm"
           onClick={() => onPublish(text, showMinute ? minute : undefined)}
         >
           Annehmen <kbd className="lt-btn__kbd">TAB</kbd>
         </button>
-        <button className="lt-btn lt-btn--ghost" onClick={onReject}>
+        <button className="lt-btn lt-btn--ghost lt-btn--sm" onClick={onReject}>
           Ablehnen <kbd className="lt-btn__kbd">ESC</kbd>
         </button>
         <button
-          className="lt-btn lt-btn--ghost"
+          className="lt-btn lt-btn--ghost lt-btn--sm"
           onClick={() => setEditing(true)}
         >
           ✎ Bearbeiten

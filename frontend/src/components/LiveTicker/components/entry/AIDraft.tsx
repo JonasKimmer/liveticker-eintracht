@@ -47,14 +47,14 @@ export const AIDraft = memo(function AIDraft({
       </div>
 
       <div className="lt-draft__actions">
-        <button className="lt-btn lt-btn--primary" onClick={onAccept}>
+        <button className="lt-btn lt-btn--primary lt-btn--sm" onClick={onAccept}>
           Annehmen <kbd className="lt-btn__kbd">TAB</kbd>
         </button>
-        <button className="lt-btn lt-btn--ghost" onClick={onReject}>
+        <button className="lt-btn lt-btn--ghost lt-btn--sm" onClick={onReject}>
           Ablehnen <kbd className="lt-btn__kbd">ESC</kbd>
         </button>
         {onEdit && (
-          <button className="lt-btn lt-btn--ghost" onClick={onEdit}>
+          <button className="lt-btn lt-btn--ghost lt-btn--sm" onClick={onEdit}>
             ✎ Bearbeiten
           </button>
         )}
