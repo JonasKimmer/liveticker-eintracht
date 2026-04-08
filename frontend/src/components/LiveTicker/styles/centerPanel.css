@@ -578,3 +578,30 @@
   opacity: 0.4;
   cursor: not-allowed;
 }
+
+/* ── Löschen-Bestätigung (EventCard & SummaryRow) ─────────── */
+.lt-delete-confirm {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+.lt-delete-confirm__label {
+  font-size: 0.7rem;
+  color: var(--lt-text-muted);
+}
+.lt-delete-confirm__btn {
+  font-size: 0.7rem;
+  padding: 1px 6px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+.lt-delete-confirm__btn--ok {
+  background: rgba(239, 68, 68, 0.15);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  color: #f87171;
+}
+.lt-delete-confirm__btn--cancel {
+  background: none;
+  border: 1px solid var(--lt-border);
+  color: var(--lt-text-muted);
+}

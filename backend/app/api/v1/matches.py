@@ -201,12 +201,17 @@ async def sync_live(matchId: int, db: Session = Depends(get_db)) -> MatchRespons
     fixture_status = fixtures[0].get("fixture", {}).get("status", {})
     elapsed: Optional[int] = fixture_status.get("elapsed")
     short: Optional[str] = fixture_status.get("short")
+    goals = fixtures[0].get("goals", {})
 
     update_data: dict = {}
     if elapsed is not None:
         update_data["minute"] = elapsed
     if short and short in FOOTBALL_API_PHASE_MAP:
         update_data["match_phase"] = FOOTBALL_API_PHASE_MAP[short]
+    if goals.get("home") is not None:
+        update_data["home_score"] = goals["home"]
+    if goals.get("away") is not None:
+        update_data["away_score"] = goals["away"]
 
     if update_data:
         updated = repo.update(matchId, MatchUpdate(**update_data))

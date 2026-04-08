@@ -93,27 +93,13 @@ export function SummaryRow({
         )}
         {confirmReject && (
           <div
-            style={{
-              marginLeft: "auto",
-              display: "flex",
-              alignItems: "center",
-              gap: "0.35rem",
-            }}
+            className="lt-delete-confirm"
+            style={{ marginLeft: "auto" }}
             onClick={(e) => e.stopPropagation()}
           >
-            <span style={{ fontSize: "0.7rem", color: "var(--lt-text-muted)" }}>
-              Ablehnen?
-            </span>
+            <span className="lt-delete-confirm__label">Ablehnen?</span>
             <button
-              style={{
-                fontSize: "0.7rem",
-                padding: "1px 6px",
-                background: "rgba(239,68,68,0.15)",
-                border: "1px solid rgba(239,68,68,0.3)",
-                color: "#f87171",
-                borderRadius: 4,
-                cursor: "pointer",
-              }}
+              className="lt-delete-confirm__btn lt-delete-confirm__btn--ok"
               onClick={() => {
                 onReject();
                 setConfirmReject(false);
@@ -122,15 +108,7 @@ export function SummaryRow({
               Ja
             </button>
             <button
-              style={{
-                fontSize: "0.7rem",
-                padding: "1px 6px",
-                background: "none",
-                border: "1px solid var(--lt-border)",
-                color: "var(--lt-text-muted)",
-                borderRadius: 4,
-                cursor: "pointer",
-              }}
+              className="lt-delete-confirm__btn lt-delete-confirm__btn--cancel"
               onClick={() => setConfirmReject(false)}
             >
               Nein

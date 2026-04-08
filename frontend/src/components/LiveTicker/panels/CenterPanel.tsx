@@ -1,9 +1,9 @@
 import { useState, useEffect, memo, useMemo } from "react";
-import { AIDraft } from "../components/entry/AIDraft";
 import { AutoModePanel } from "../components/mode/AutoModePanel";
 import { CollapsibleSection } from "../components/Collapsible";
 import { EntryEditor } from "../components/entry/EntryEditor";
 import { EventCard } from "../components/entry/EventCard";
+import { SummaryDraftCard } from "../components/summary/SummaryDraftCard";
 import { MediaPickerPanel } from "../components/media/MediaPickerPanel";
 import { SummarySection } from "../components/summary/SummarySection";
 import { PublishedSummarySection } from "../components/summary/PublishedSummarySection";
@@ -80,17 +80,12 @@ export const CenterPanel = memo<CenterPanelProps>(function CenterPanel({
     pendingEvents,
     selectedEvent,
     setSelectedEventId,
-    editMode,
-    setEditMode,
     editorValue,
     setEditorValue,
     handleDismissEvent,
     handleRegenerateEventDraft,
-    handleAcceptDraft,
     handleRejectDraft,
-    handleOpenEdit,
     handleManualPublish,
-    handleEditPublish,
   } = useEventDraft();
 
   useAutoPublisher({ instance, pendingEvents, onError: setAutoError });
@@ -232,37 +227,31 @@ export const CenterPanel = memo<CenterPanelProps>(function CenterPanel({
                         isSelected={isSelected}
                         onSelect={() => {
                           setSelectedEventId(ev.id);
-                          setEditMode(false);
                         }}
                         onDismiss={() => handleDismissEvent(ev, draft)}
                       />
-                      {isSelected &&
-                        (editMode ? (
-                          <EntryEditor
-                            value={editorValue || draft?.text || ""}
-                            onChange={setEditorValue}
-                            onPublish={handleEditPublish}
-                            onCancel={() => setEditMode(false)}
-                            mode={mode}
-                            currentMinute={ev.time}
-                            playerNames={playerNames}
-                          />
-                        ) : (
-                          <AIDraft
-                            eventType={ev.liveTickerEventType}
-                            draftText={
-                              draft?.text ??
-                              "Kein Draft vorhanden – generiere einen Stil."
-                            }
-                            onAccept={handleAcceptDraft}
-                            onReject={handleRejectDraft}
-                            onEdit={handleOpenEdit}
-                            onTextClick={handleOpenEdit}
-                            onGenerate={handleRegenerateEventDraft}
-                            generatingId={generatingId}
-                            eventId={ev.id}
-                          />
-                        ))}
+                      {isSelected && draft && (
+                        <SummaryDraftCard
+                          draft={draft}
+                          label={ev.liveTickerEventType}
+                          onPublish={(text) => {
+                            api.publishTicker(draft.id, text).then(() => reload.loadTickerTexts());
+                          }}
+                          onReject={handleRejectDraft}
+                          onGenerate={(_, style) => handleRegenerateEventDraft(ev.id, style)}
+                          generatingId={generatingId}
+                        />
+                      )}
+                      {isSelected && !draft && (
+                        <SummaryDraftCard
+                          draft={{ id: -1, text: "", status: "draft" as const, event_id: ev.id } as any}
+                          label={ev.liveTickerEventType}
+                          onPublish={() => {}}
+                          onReject={() => setSelectedEventId(null)}
+                          onGenerate={(_, style) => handleRegenerateEventDraft(ev.id, style)}
+                          generatingId={generatingId}
+                        />
+                      )}
                     </div>
                   );
                 })}
