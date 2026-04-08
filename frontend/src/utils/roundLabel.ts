@@ -1,5 +1,35 @@
-const KNOCKOUT_LABELS_SHORT = { 64: "1/64", 32: "1/32", 16: "1/16", 8: "VF", 4: "HF", 2: "FIN", 1: "FIN" };
-const KNOCKOUT_LABELS_FULL  = { 64: "1/64-Finale", 32: "1/32-Finale", 16: "Achtelfinale", 8: "Viertelfinale", 4: "Halbfinale", 2: "Finale", 1: "Finale" };
+const KNOCKOUT_LABELS_SHORT = {
+  64: "1/64",
+  32: "1/32",
+  16: "1/16",
+  8: "VF",
+  4: "HF",
+  2: "FIN",
+  1: "FIN",
+  97: "PO",
+  98: "1/32",
+  99: "1/16",
+  100: "VF",
+  101: "HF",
+  102: "3.P",
+  103: "FIN",
+};
+const KNOCKOUT_LABELS_FULL = {
+  64: "1/64-Finale",
+  32: "1/32-Finale",
+  16: "Achtelfinale",
+  8: "Viertelfinale",
+  4: "Halbfinale",
+  2: "Finale",
+  1: "Finale",
+  97: "Playoffs",
+  98: "Runde der letzten 32",
+  99: "Achtelfinale",
+  100: "Viertelfinale",
+  101: "Halbfinale",
+  102: "Spiel um Platz 3",
+  103: "Finale",
+};
 
 /**
  * Gibt die Anzahl aufeinanderfolgender Gruppenspielrunden zurück (beginnend bei 1).
@@ -26,7 +56,10 @@ export function knockoutThreshold(allRounds: number[]): number {
  * @param {number[]} allRounds - Alle verfügbaren Rundennummern des Wettbewerbs
  * @returns {{ short: (r: number) => string, full: (r: number) => string }}
  */
-export function makeRoundLabel(allRounds: number[]): { short: (r: number | string) => string; full: (r: number | string) => string } {
+export function makeRoundLabel(allRounds: number[]): {
+  short: (r: number | string) => string;
+  full: (r: number | string) => string;
+} {
   const threshold = knockoutThreshold(allRounds);
   return {
     short: (r) => {
