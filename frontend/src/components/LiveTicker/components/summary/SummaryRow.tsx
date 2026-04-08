@@ -61,7 +61,7 @@ export function SummaryRow({
       role="button"
       tabIndex={0}
     >
-      <div className="lt-event-card__row" style={{ flexWrap: "wrap" }}>
+      <div className="lt-event-card__row">
         <span className="lt-event-card__icon">{icon}</span>
         <span className="lt-event-card__raw">
           {label}
@@ -91,31 +91,31 @@ export function SummaryRow({
             ✕
           </button>
         )}
-        {confirmReject && (
-          <div
-            className="lt-delete-confirm"
-            style={{ marginLeft: "auto", flexShrink: 0 }}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <span className="lt-delete-confirm__label">Ablehnen?</span>
-            <button
-              className="lt-delete-confirm__btn lt-delete-confirm__btn--ok"
-              onClick={() => {
-                onReject();
-                setConfirmReject(false);
-              }}
-            >
-              Ja
-            </button>
-            <button
-              className="lt-delete-confirm__btn lt-delete-confirm__btn--cancel"
-              onClick={() => setConfirmReject(false)}
-            >
-              Nein
-            </button>
-          </div>
-        )}
       </div>
+      {confirmReject && (
+        <div
+          className="lt-delete-confirm"
+          style={{ marginTop: "0.4rem" }}
+          onClick={(e) => e.stopPropagation()}
+        >
+          <span className="lt-delete-confirm__label">Ablehnen?</span>
+          <button
+            className="lt-delete-confirm__btn lt-delete-confirm__btn--ok"
+            onClick={() => {
+              onReject();
+              setConfirmReject(false);
+            }}
+          >
+            Ja
+          </button>
+          <button
+            className="lt-delete-confirm__btn lt-delete-confirm__btn--cancel"
+            onClick={() => setConfirmReject(false)}
+          >
+            Nein
+          </button>
+        </div>
+      )}
     </div>
   );
 }

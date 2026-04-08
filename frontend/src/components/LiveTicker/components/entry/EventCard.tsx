@@ -27,7 +27,7 @@ export const EventCard = memo(function EventCard({
       role={onSelect ? "button" : undefined}
       tabIndex={onSelect ? 0 : undefined}
     >
-      <div className="lt-event-card__row" style={{ flexWrap: "wrap" }}>
+      <div className="lt-event-card__row">
         <span className="lt-event-card__minute">{event.time}'</span>
         <span className="lt-event-card__icon">{icon}</span>
         <span className="lt-event-card__raw">
@@ -39,7 +39,7 @@ export const EventCard = memo(function EventCard({
               e.stopPropagation();
               setConfirmDismiss(true);
             }}
-            title="Entfernen"
+            title="Ablehnen"
             style={{
               marginLeft: "auto",
               flexShrink: 0,
@@ -55,31 +55,31 @@ export const EventCard = memo(function EventCard({
             ✕
           </button>
         )}
-        {confirmDismiss && (
-          <div
-            className="lt-delete-confirm"
-            style={{ marginLeft: "auto", flexShrink: 0 }}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <span className="lt-delete-confirm__label">Entfernen?</span>
-            <button
-              className="lt-delete-confirm__btn lt-delete-confirm__btn--ok"
-              onClick={() => {
-                onDismiss();
-                setConfirmDismiss(false);
-              }}
-            >
-              Ja
-            </button>
-            <button
-              className="lt-delete-confirm__btn lt-delete-confirm__btn--cancel"
-              onClick={() => setConfirmDismiss(false)}
-            >
-              Nein
-            </button>
-          </div>
-        )}
       </div>
+      {confirmDismiss && (
+        <div
+          className="lt-delete-confirm"
+          style={{ marginTop: "0.4rem" }}
+          onClick={(e) => e.stopPropagation()}
+        >
+          <span className="lt-delete-confirm__label">Ablehnen?</span>
+          <button
+            className="lt-delete-confirm__btn lt-delete-confirm__btn--ok"
+            onClick={() => {
+              onDismiss();
+              setConfirmDismiss(false);
+            }}
+          >
+            Ja
+          </button>
+          <button
+            className="lt-delete-confirm__btn lt-delete-confirm__btn--cancel"
+            onClick={() => setConfirmDismiss(false)}
+          >
+            Nein
+          </button>
+        </div>
+      )}
     </div>
   );
 });
