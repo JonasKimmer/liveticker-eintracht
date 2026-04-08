@@ -145,6 +145,9 @@ def create_manual_entry(
     if data.phase and not data.video_url and not data.image_url:
         existing = ticker_repo.get_by_phase(data.match_id, data.phase)
         if existing:
+            # Never overwrite a published entry — return it unchanged
+            if existing.status == TickerStatus.published:
+                return existing
             update_data: dict = {}
             if data.text:
                 update_data["text"] = data.text
