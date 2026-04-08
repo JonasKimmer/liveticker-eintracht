@@ -71,6 +71,12 @@ export const StartScreen = memo(function StartScreen({
           </>
         )}
 
+        {mode && onModeChange && (
+          <div className="lt-start__mode">
+            <TickerModeSelector value={mode} onChange={onModeChange} />
+          </div>
+        )}
+
         <div className="lt-start__selects">
           <CountryDropdown
             countries={countries}
@@ -106,22 +112,16 @@ export const StartScreen = memo(function StartScreen({
           />
         </div>
 
-        <div className="lt-start__row2">
-          <MatchdayPicker
-            matchdays={matchdays}
-            matchdaysLoading={matchdaysLoading}
-            matchdaysError={matchdaysError}
-            selRound={selRound}
-            onRoundChange={onRoundChange}
-            matches={matches}
-            onMatchChange={onMatchChange}
-            disabled={!selCompetitionId}
-          />
-
-          {mode && onModeChange && (
-            <TickerModeSelector value={mode} onChange={onModeChange} />
-          )}
-        </div>
+        <MatchdayPicker
+          matchdays={matchdays}
+          matchdaysLoading={matchdaysLoading}
+          matchdaysError={matchdaysError}
+          selRound={selRound}
+          onRoundChange={onRoundChange}
+          matches={matches}
+          onMatchChange={onMatchChange}
+          disabled={!selCompetitionId}
+        />
 
         {!compact && (
           <div className="lt-start__hint">

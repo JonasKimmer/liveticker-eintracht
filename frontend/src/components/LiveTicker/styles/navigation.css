@@ -118,23 +118,15 @@
   gap: 1.25rem;
 }
 
-/* Desktop: 3 Spalten für Land/Team/Wettbewerb, Spieltag bleibt allein darunter */
+/* Desktop: 3 Spalten für Land/Team/Wettbewerb */
 .lt:not(.lt--mobile) .lt-start:not(.lt-start--compact) .lt-start__selects {
   grid-template-columns: repeat(3, 1fr);
 }
-/* Spieltag + Ticker-Modus nebeneinander */
-.lt-start__row2 {
+
+/* Ticker-Modus: eigenständig vor den Selects, begrenzte Breite */
+.lt-start__mode {
   width: 100%;
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 1.25rem;
-  align-items: start;
-}
-.lt:not(.lt--mobile) .lt-start:not(.lt-start--compact) .lt-start__row2 {
-  grid-template-columns: 2fr 1fr;
-}
-.lt-start--compact .lt-start__row2 {
-  grid-template-columns: 1fr;
+  max-width: 220px;
 }
 .lt-start__select-wrap {
   display: flex;
