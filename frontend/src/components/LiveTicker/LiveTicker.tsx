@@ -249,7 +249,11 @@ export default function LiveTicker() {
                   onClick={() => setSelMatchId(null)}
                   title="Zurück zur Startseite"
                 >
-                  {config.clubName}
+                  <img
+                    src="/lt-logo.png"
+                    alt={config.clubName}
+                    className="lt-header__logo-img"
+                  />
                 </div>
                 <Breadcrumb
                   match={match}

@@ -90,10 +90,13 @@
   width: 100%;
 }
 .lt-start__logo {
-  font-family: var(--lt-font-display);
-  font-size: 1.6rem;
-  color: var(--lt-accent);
-  letter-spacing: 0.05em;
+  display: flex;
+  justify-content: center;
+}
+.lt-start__logo-img {
+  height: 64px;
+  width: auto;
+  filter: invert(1);
 }
 .lt-start__title {
   font-family: var(--lt-font-mono);

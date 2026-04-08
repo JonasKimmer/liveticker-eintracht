@@ -14,11 +14,14 @@
   position: relative;
 }
 .lt-header__logo {
-  font-family: var(--lt-font-display);
-  font-size: 1.2rem;
-  color: var(--lt-accent);
-  letter-spacing: 0.05em;
   cursor: pointer;
+  display: flex;
+  align-items: center;
+}
+.lt-header__logo-img {
+  height: 28px;
+  width: auto;
+  filter: invert(1);
 }
 .lt-header__breadcrumb {
   display: flex;
@@ -121,7 +124,9 @@
   margin-right: 3px;
 }
 @media (max-width: 768px) {
-  .lt-lang-picker__prefix { display: none; }
+  .lt-lang-picker__prefix {
+    display: none;
+  }
 }
 .lt-lang-picker__trigger {
   display: flex;
@@ -276,5 +281,3 @@
 .lt-breadcrumb:hover .lt-breadcrumb__edit {
   color: var(--lt-accent);
 }
-
-
