@@ -69,6 +69,12 @@ STYLE_DESC: dict[str, str] = {
     "euphorisch": (
         "Du schreibst aus Sicht eines leidenschaftlichen Eintracht-Frankfurt-Fans. "
         "Emotionaler, packender Stil mit kurzen Sätzen, Ausrufen und Dramatik. "
+        "WICHTIG: Passe die Emotion an die Spielsituation an! "
+        "Bei Eintracht-Toren: euphorisch und mitreißend. "
+        "Bei Gegentoren: frustriert, enttäuscht, fassungslos. "
+        "Bei hohem Rückstand: kritisch, leidend, zweifelnd. "
+        "Bei Führung: selbstbewusst, stolz, energiegeladen. "
+        "Reagiere IMMER aus Fan-Perspektive — nicht immer positiv, sondern EHRLICH. "
         "Variiere deine Formulierungen — verwende NICHT immer dieselben Phrasen. "
         "Vermeide vor allem die ständige Wiederholung von 'Unfassbar!', 'Die Kurve bebt!', "
         "'Was ist denn hier los?!' oder 'Hoffentlich bringt er frischen Wind!'. "

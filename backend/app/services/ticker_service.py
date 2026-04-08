@@ -120,6 +120,10 @@ async def call_llm(
     from app.repositories.style_reference_repository import StyleReferenceRepository
     from app.services.llm_service import llm_service as _llm_svc
 
+    # ef_whitelabel (Eintracht) → immer euphorischer Stil
+    if instance == "ef_whitelabel" and style == "neutral":
+        style = "euphorisch"
+
     style_references: list[str] = []
     try:
         normalized = _llm_svc._normalize_event_type(event_type)

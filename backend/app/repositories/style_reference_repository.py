@@ -11,6 +11,17 @@ from app.models.style_reference import StyleReference
 
 
 class StyleReferenceRepository:
+    # Fallback: wenn für einen event_type keine Referenzen existieren,
+    # auf einen verwandten Typ zurückfallen.
+    _FALLBACK_MAP: dict[str, str] = {
+        "kick_off": "comment",
+        "halftime": "halftime_comment",
+        "fulltime": "post_match",
+        "extra_time_start": "comment",
+        "extra_halftime": "halftime_comment",
+        "penalty_shootout": "comment",
+    }
+
     def __init__(self, db: Session):
         self.db = db
 
@@ -43,7 +54,21 @@ class StyleReferenceRepository:
                 return results
             # Fallback: ohne League-Filter
 
-        return self._random_sample(base_filters, limit)
+        results = self._random_sample(base_filters, limit)
+        if results:
+            return results
+
+        # Fallback auf verwandten event_type
+        fallback = self._FALLBACK_MAP.get(event_type)
+        if fallback:
+            fallback_filters = [
+                StyleReference.event_type == fallback,
+                StyleReference.instance == instance,
+                func.length(StyleReference.text) >= min_text_length,
+            ]
+            return self._random_sample(fallback_filters, limit)
+
+        return []
 
     def _random_sample(self, filters: list, limit: int) -> list[StyleReference]:
         return (
