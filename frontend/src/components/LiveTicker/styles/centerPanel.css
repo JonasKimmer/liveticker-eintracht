@@ -18,16 +18,16 @@
 /* AI Draft Card */
 .lt-draft {
   background: var(--lt-bg-card-2);
-  border: 2px solid var(--lt-border-focus);
+  border: 1px solid var(--lt-border-focus);
   border-radius: var(--lt-radius-lg);
-  padding: 1.25rem;
-  margin-bottom: 1.25rem;
+  padding: 0.75rem 1rem;
+  margin-bottom: 0.75rem;
 }
 .lt-draft__header {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  margin-bottom: 0.75rem;
+  margin-bottom: 0.5rem;
 }
 .lt-draft__label {
   font-family: var(--lt-font-mono);
@@ -42,9 +42,9 @@
   background: rgba(0, 0, 0, 0.4);
   border: 1px solid var(--lt-border-focus);
   border-radius: var(--lt-radius);
-  padding: 1rem;
-  margin-bottom: 1rem;
-  min-height: 72px;
+  padding: 0.6rem 0.75rem;
+  margin-bottom: 0.6rem;
+  min-height: 52px;
 }
 .lt-draft__text {
   font-family: var(--lt-font-mono);
