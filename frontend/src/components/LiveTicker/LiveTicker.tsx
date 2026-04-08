@@ -42,6 +42,8 @@ import { PublishToast } from "./components/PublishToast";
 import { useTicker } from "./hooks/useTicker";
 import ErrorBoundary from "../ErrorBoundary";
 import { isOurTeamMatch } from "../../utils/isOurTeamMatch";
+import { MODES } from "./constants";
+import type { TickerMode } from "../../types";
 
 export default function LiveTicker() {
   // ── Navigation (Länder / Teams / Wettbewerbe / Spiele) ────
@@ -56,6 +58,9 @@ export default function LiveTicker() {
   } = useNavigation();
 
   const isMobile = useIsMobile();
+
+  // ── Pre-Match Ticker-Modus (StartScreen) ────────────────
+  const [selectedMode, setSelectedMode] = useState<TickerMode>(MODES.COOP);
 
   // ── UI State ──────────────────────────────────────────────
   const [modalOpen, setModalOpen] = useState(false);
@@ -137,7 +142,13 @@ export default function LiveTicker() {
     instance,
     language,
     matchTickerMode: match?.tickerMode,
+    initialMode: selectedMode,
   });
+
+  // Sync: wenn Modus im Spiel geändert wird, auch selectedMode aktualisieren
+  useEffect(() => {
+    setSelectedMode(mode);
+  }, [mode]);
 
   // ── Mobile Panel: Modus-abhängig wechseln ─────────────────
   useEffect(() => {
@@ -226,10 +237,24 @@ export default function LiveTicker() {
   // ── Render ────────────────────────────────────────────────
   if (appLoading) return <LoadingScreen />;
 
+  // Wraps onMatchChange: setzt Modus in DB wenn Match gewählt wird
+  const handleMatchSelect = useCallback(
+    (matchId: number) => {
+      navProps.onMatchChange(matchId);
+      api.setMatchTickerMode(matchId, selectedMode).catch(() => {});
+    },
+    [navProps, selectedMode],
+  );
+
   if (!selMatchId) {
     return (
       <div className={`lt${isMobile ? " lt--mobile" : ""}`}>
-        <StartScreen {...navProps} />
+        <StartScreen
+          {...navProps}
+          onMatchChange={handleMatchSelect}
+          mode={selectedMode}
+          onModeChange={setSelectedMode}
+        />
       </div>
     );
   }

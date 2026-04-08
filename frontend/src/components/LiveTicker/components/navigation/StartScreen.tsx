@@ -3,7 +3,8 @@ import config from "config/whitelabel";
 import { CountryDropdown } from "../dropdown/CountryDropdown";
 import { Dropdown } from "../dropdown/Dropdown";
 import { MatchdayPicker } from "./MatchdayPicker";
-import type { Team, Competition, Match } from "../../../../types";
+import { TickerModeSelector } from "./TickerModeSelector";
+import type { Team, Competition, Match, TickerMode } from "../../../../types";
 
 export interface StartScreenProps {
   countries: string[];
@@ -26,6 +27,8 @@ export interface StartScreenProps {
   onMatchChange: (id: number) => void;
   compact?: boolean;
   firstInputRef?: RefObject<HTMLInputElement>;
+  mode?: TickerMode;
+  onModeChange?: (mode: TickerMode) => void;
 }
 
 export const StartScreen = memo(function StartScreen({
@@ -49,6 +52,8 @@ export const StartScreen = memo(function StartScreen({
   onMatchChange,
   compact = false,
   firstInputRef,
+  mode,
+  onModeChange,
 }: StartScreenProps) {
   return (
     <div className={compact ? "lt-start lt-start--compact" : "lt-start"}>
@@ -64,6 +69,10 @@ export const StartScreen = memo(function StartScreen({
             </div>
             <h1 className="lt-start__title">Spiel auswählen</h1>
           </>
+        )}
+
+        {mode && onModeChange && (
+          <TickerModeSelector value={mode} onChange={onModeChange} />
         )}
 
         <div className="lt-start__selects">

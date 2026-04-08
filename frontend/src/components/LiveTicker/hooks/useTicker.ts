@@ -6,7 +6,12 @@ import { useState, useCallback, useMemo, useRef, useEffect } from "react";
 import * as api from "api";
 import logger from "utils/logger";
 import { useTickerMode } from "./useTickerMode";
-import type { TickerMode, ReloadFunctions, TickerStyle, MatchPhase } from "../../../types";
+import type {
+  TickerMode,
+  ReloadFunctions,
+  TickerStyle,
+  MatchPhase,
+} from "../../../types";
 import type { TickerModeContextValue } from "../../../context/TickerModeContext";
 
 /**
@@ -32,6 +37,7 @@ interface UseTickerParams {
   instance: string;
   language: string;
   matchTickerMode?: TickerMode;
+  initialMode?: TickerMode;
 }
 
 export function useTicker({
@@ -40,6 +46,7 @@ export function useTicker({
   instance,
   language,
   matchTickerMode,
+  initialMode,
 }: UseTickerParams) {
   // ── Aktiver Draft ─────────────────────────────────────────
   const [activeDraftId, setActiveDraftId] = useState<number | null>(null);
@@ -105,7 +112,11 @@ export function useTicker({
     }
   }, [activeDraftId, reload]);
 
-  const { mode, setMode } = useTickerMode(acceptDraft, rejectDraft);
+  const { mode, setMode } = useTickerMode(
+    acceptDraft,
+    rejectDraft,
+    initialMode,
+  );
 
   // Modus in DB speichern wenn gewechselt wird
   const handleModeChange = useCallback(
@@ -180,7 +191,10 @@ export function useTicker({
 
   const handleEditEntry = useCallback(
     async (id: number, text: string, minute?: number | null) => {
-      await api.updateTicker(id, { text, ...(minute != null ? { minute } : {}) });
+      await api.updateTicker(id, {
+        text,
+        ...(minute != null ? { minute } : {}),
+      });
       await reload.loadTickerTexts();
     },
     [reload],
