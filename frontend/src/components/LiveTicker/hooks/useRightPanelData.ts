@@ -119,17 +119,29 @@ export function useRightPanelData({
 
   const injuriesBlock = useMemo(() => {
     if (!injuries.length || !match) return null;
-    const homeInj = injuries.find(
+
+    const homeGroups = injuries.filter(
       (g) => g.team_id === match.homeTeam?.externalId || g.team_name === match.homeTeam?.name,
     );
-    const awayInj = injuries.find(
+    const awayGroups = injuries.filter(
       (g) => g.team_id === match.awayTeam?.externalId || g.team_name === match.awayTeam?.name,
     );
+
+    const dedupPlayers = (groups: typeof injuries) => {
+      const seen = new Set<string>();
+      return groups.flatMap((g) => g.players ?? []).filter((p) => {
+        const key = p.player_name ?? p.name ?? "";
+        if (!key || seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      });
+    };
+
     return {
-      homePlayers: homeInj?.players ?? [],
-      awayPlayers: awayInj?.players ?? [],
-      homeName: homeInj?.team_name ?? homeAbbr,
-      awayName: awayInj?.team_name ?? awayAbbr,
+      homePlayers: dedupPlayers(homeGroups),
+      awayPlayers: dedupPlayers(awayGroups),
+      homeName: homeGroups[0]?.team_name ?? homeAbbr,
+      awayName: awayGroups[0]?.team_name ?? awayAbbr,
     };
   }, [injuries, match, homeAbbr, awayAbbr]);
 
