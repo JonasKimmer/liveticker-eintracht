@@ -116,9 +116,9 @@
   gap: 1.25rem;
 }
 
-/* Selects immer untereinander (auch Desktop, auch im Drawer) */
-.lt:not(.lt--mobile) .lt-start__selects {
-  grid-template-columns: 1fr;
+/* Desktop: 3 Spalten für Land/Team/Wettbewerb, Spieltag bleibt allein darunter */
+.lt:not(.lt--mobile) .lt-start:not(.lt-start--compact) .lt-start__selects {
+  grid-template-columns: repeat(3, 1fr);
 }
 .lt-start__select-wrap {
   display: flex;
