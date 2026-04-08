@@ -126,7 +126,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const styleMap = {\n  'match_kickoff':        'neutral',\n  'match_halftime':       'neutral',\n  'match_second_half':    'neutral',\n  'match_fulltime':       'emotional',\n  'match_extra_kickoff':  'neutral',\n  'match_extra_halftime': 'neutral',\n  'match_fulltime_aet':   'emotional',\n  'match_penalties':      'neutral',\n  'match_fulltime_pen':   'emotional',\n};\nconst style = styleMap[$json.type] ?? 'neutral';\nconst ticker_mode = $('Webhook match-status').first().json.body.ticker_mode\n  ?? $('SQL: Match laden').first().json.ticker_mode\n  ?? 'coop';\nreturn [{ json: { id: $json.id, style, ticker_mode } }];"
+        "jsCode": "// Style wird jetzt zentral im Backend gesetzt:\n// ef_whitelabel + neutral → automatisch euphorisch\nconst ticker_mode = $('Webhook match-status').first().json.body.ticker_mode\n  ?? $('SQL: Match laden').first().json.ticker_mode\n  ?? 'coop';\nreturn [{ json: { id: $json.id, style: 'neutral', ticker_mode } }];"
       },
       "id": "cd8d3056-2da6-42ea-b738-225186873686",
       "name": "Style wählen",
