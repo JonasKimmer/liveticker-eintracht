@@ -14,10 +14,11 @@ interface NavDrawerProps {
 export function NavDrawer({ open, onClose, navProps }: NavDrawerProps) {
   const firstInputRef = useRef<HTMLInputElement>(null);
 
-  // Fokus auf erstes Eingabefeld nach Drawer-Animation (280ms)
+  // Fokus auf Drawer (nicht auf Input, damit Land-Dropdown nicht aufgeht)
+  const drawerRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
     if (!open) return;
-    const id = setTimeout(() => firstInputRef.current?.focus(), 300);
+    const id = setTimeout(() => drawerRef.current?.focus(), 300);
     return () => clearTimeout(id);
   }, [open]);
   return (
@@ -38,6 +39,8 @@ export function NavDrawer({ open, onClose, navProps }: NavDrawerProps) {
       />
       {/* Drawer Panel */}
       <div
+        ref={drawerRef}
+        tabIndex={-1}
         style={{
           position: "fixed",
           top: 0,
@@ -53,6 +56,7 @@ export function NavDrawer({ open, onClose, navProps }: NavDrawerProps) {
           overflowY: "auto",
           display: "flex",
           flexDirection: "column",
+          outline: "none",
         }}
       >
         {/* Header */}
