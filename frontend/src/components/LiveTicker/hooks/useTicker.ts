@@ -131,7 +131,9 @@ export function useTicker({
     [setMode, selMatchId],
   );
 
-  // Modus aus DB lesen wenn Spiel geladen wird (match.tickerMode überschreibt Initial-State)
+  // Modus aus DB lesen wenn Spiel geladen wird — NUR wenn kein expliziter
+  // initialMode vom StartScreen gesetzt wurde (d.h. nur bei Page-Reload
+  // oder wenn DB-Wert sich durch externen Wechsel geändert hat).
   const syncedMatchIdRef = useRef<number | null>(null);
   useEffect(() => {
     if (!selMatchId) {
@@ -141,8 +143,12 @@ export function useTicker({
     if (!matchTickerMode) return;
     if (syncedMatchIdRef.current === selMatchId) return; // bereits synchronisiert
     syncedMatchIdRef.current = selMatchId;
+    // initialMode hat Vorrang — der User hat den Modus gerade auf dem
+    // StartScreen explizit gewählt und via handleMatchSelect in die DB geschrieben.
+    // matchTickerMode kann noch den alten Wert enthalten (PATCH-Race-Condition).
+    if (initialMode) return;
     setMode(matchTickerMode);
-  }, [selMatchId, matchTickerMode, setMode]);
+  }, [selMatchId, matchTickerMode, setMode, initialMode]);
 
   const [generatingId, setGeneratingId] = useState<number | null>(null);
 
