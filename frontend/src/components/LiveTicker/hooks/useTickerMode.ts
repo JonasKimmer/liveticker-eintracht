@@ -22,6 +22,11 @@ export function useTickerMode(
 ) {
   const [mode, setMode] = useState<TickerMode>(initialMode);
 
+  // Sync wenn initialMode sich ändert (z.B. StartScreen → Match gewählt)
+  useEffect(() => {
+    setMode(initialMode);
+  }, [initialMode]);
+
   const acceptDraft = useCallback(() => {
     if (typeof onAccept === "function") onAccept();
   }, [onAccept]);

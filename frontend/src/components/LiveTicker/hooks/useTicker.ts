@@ -134,7 +134,11 @@ export function useTicker({
   // Modus aus DB lesen wenn Spiel geladen wird (match.tickerMode überschreibt Initial-State)
   const syncedMatchIdRef = useRef<number | null>(null);
   useEffect(() => {
-    if (!selMatchId || !matchTickerMode) return;
+    if (!selMatchId) {
+      syncedMatchIdRef.current = null;
+      return;
+    }
+    if (!matchTickerMode) return;
     if (syncedMatchIdRef.current === selMatchId) return; // bereits synchronisiert
     syncedMatchIdRef.current = selMatchId;
     setMode(matchTickerMode);
