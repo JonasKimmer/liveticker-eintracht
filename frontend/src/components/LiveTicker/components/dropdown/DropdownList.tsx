@@ -4,6 +4,7 @@ import { DROPDOWN_LIST_STYLE } from "./dropdownStyles";
 interface DropdownListItem {
   key: string | number;
   label: string;
+  desc?: string;
   val: string | number;
 }
 
@@ -47,7 +48,7 @@ export function DropdownList({
             Keine Treffer
           </div>
         ) : (
-          filtered.map(({ key, label, val }, idx) => {
+          filtered.map(({ key, label, desc, val }, idx) => {
             const isActive = idx === activeIdx;
             const isSelected = val === value;
             return (
@@ -90,7 +91,22 @@ export function DropdownList({
                 {isSelected && (
                   <span style={{ color: "var(--lt-accent)" }}>✓</span>
                 )}
-                {label}
+                <span>
+                  {label}
+                  {desc && (
+                    <span
+                      style={{
+                        display: "block",
+                        fontSize: "0.68rem",
+                        color: "var(--lt-text-muted)",
+                        marginTop: 2,
+                        fontWeight: "normal",
+                      }}
+                    >
+                      {desc}
+                    </span>
+                  )}
+                </span>
               </button>
             );
           })

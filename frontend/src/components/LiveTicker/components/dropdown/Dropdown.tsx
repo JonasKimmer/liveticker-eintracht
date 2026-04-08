@@ -8,6 +8,7 @@ import { useRef } from "react";
 interface DropdownItem {
   value: number | string;
   label: string;
+  desc?: string;
 }
 
 interface DropdownProps {
@@ -48,6 +49,7 @@ export function Dropdown({
         .map((item) => ({
           key: item.value,
           label: item.label,
+          desc: item.desc,
           val: item.value,
         })),
     [items, query],
@@ -62,9 +64,12 @@ export function Dropdown({
       requestAnimationFrame(() => {
         const el = ref.current;
         const inputEl = inputRef.current;
-        const parent = el?.closest(".lt-start__selects") ?? el?.parentElement?.parentElement;
+        const parent =
+          el?.closest(".lt-start__selects") ?? el?.parentElement?.parentElement;
         if (!parent || !inputEl) return;
-        const inputs = Array.from(parent.querySelectorAll("input:not([disabled])")) as HTMLInputElement[];
+        const inputs = Array.from(
+          parent.querySelectorAll("input:not([disabled])"),
+        ) as HTMLInputElement[];
         const idx = inputs.indexOf(inputEl);
         if (idx >= 0 && idx + 1 < inputs.length) inputs[idx + 1].focus();
       });

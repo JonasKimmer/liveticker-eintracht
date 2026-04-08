@@ -124,27 +124,10 @@
 }
 
 /* Ticker-Modus: eigenständig vor den Selects */
+/* Ticker-Modus: eigenständig vor den Selects */
 .lt-start__mode {
   width: 100%;
-  max-width: 440px;
-}
-
-/* Modus-Zeile: Dropdown + Beschreibung nebeneinander */
-.lt-mode-row {
-  display: flex;
-  align-items: flex-end;
-  gap: 0.75rem;
-}
-.lt-mode-row .lt-dd {
-  min-width: 180px;
-  flex-shrink: 0;
-}
-.lt-mode-row__desc {
-  font-size: 0.8rem;
-  color: var(--lt-text-muted);
-  line-height: 1.4;
-  padding-bottom: 0.45rem;
-  white-space: nowrap;
+  max-width: 220px;
 }
 .lt-start__select-wrap {
   display: flex;
