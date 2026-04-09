@@ -137,30 +137,35 @@ export const RightPanel = memo(function RightPanel() {
             />
           </div>
           {(homeCoach || awayCoach) && (
-            <div
-              className="lt-lineup-grid"
-              style={{ marginTop: 10, marginBottom: 2 }}
-            >
-              <div
-                style={{
-                  fontFamily: "var(--lt-font-mono)",
-                  fontSize: "0.72rem",
-                  color: "var(--lt-text-muted)",
-                }}
-              >
-                {homeCoach && <span>🧑‍💼 {homeCoach.playerName}</span>}
+            <>
+              <div className="lt-right__section-title" style={{ marginTop: 12 }}>
+                🧑‍💼 Trainer
               </div>
               <div
-                style={{
-                  fontFamily: "var(--lt-font-mono)",
-                  fontSize: "0.72rem",
-                  color: "var(--lt-text-muted)",
-                  textAlign: "right",
-                }}
+                className="lt-lineup-grid"
+                style={{ marginBottom: 2 }}
               >
-                {awayCoach && <span>{awayCoach.playerName} 🧑‍💼</span>}
+                <div
+                  style={{
+                    fontFamily: "var(--lt-font-mono)",
+                    fontSize: "0.72rem",
+                    color: "var(--lt-text-muted)",
+                  }}
+                >
+                  {homeCoach && <span>{homeCoach.playerName}</span>}
+                </div>
+                <div
+                  style={{
+                    fontFamily: "var(--lt-font-mono)",
+                    fontSize: "0.72rem",
+                    color: "var(--lt-text-muted)",
+                    textAlign: "right",
+                  }}
+                >
+                  {awayCoach && <span>{awayCoach.playerName}</span>}
+                </div>
               </div>
-            </div>
+            </>
           )}
 
           <SubstitutionsSection
