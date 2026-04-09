@@ -20,6 +20,7 @@
 \usepackage{longtable}
 \usepackage{fvextra}
 \usepackage{framed}
+\usepackage{float}
 \usepackage{xfp}
 \usepackage{calc}
 \usepackage{tikz}
@@ -115,6 +116,21 @@
 \newunicodechar{🔔}{*}
 \newunicodechar{🥅}{*}
 \newunicodechar{🎬}{*}
+% Box-drawing characters (used in directory trees / code listings)
+\newunicodechar{├}{\texttt{|--}}
+\newunicodechar{└}{\texttt{`--}}
+\newunicodechar{─}{\texttt{-}}
+\newunicodechar{│}{\texttt{|}}
+\newunicodechar{┬}{\texttt{-|-}}
+\newunicodechar{┤}{\texttt{-|}}
+\newunicodechar{┼}{\texttt{-+-}}
+\newunicodechar{╠}{\texttt{|=}}
+\newunicodechar{╔}{\texttt{.=}}
+\newunicodechar{╗}{\texttt{=.}}
+\newunicodechar{╚}{\texttt{`=}}
+\newunicodechar{╝}{\texttt{=`}}
+\newunicodechar{═}{\texttt{=}}
+\newunicodechar{║}{\texttt{||}}
 
 \geometry{left=2.5cm, right=2cm, top=2.5cm, bottom=2.5cm}
 \onehalfspacing

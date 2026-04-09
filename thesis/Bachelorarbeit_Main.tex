@@ -22,6 +22,28 @@
 \usepackage{fvextra}
 \usepackage{framed}
 \usetikzlibrary{shapes,shapes.geometric,arrows,positioning,calc,fit,backgrounds}
+\usepackage{newunicodechar}
+% Box-drawing characters (used in directory trees / code listings)
+\newunicodechar{→}{$\rightarrow$}
+\newunicodechar{←}{$\leftarrow$}
+\newunicodechar{≈}{$\approx$}
+\newunicodechar{≥}{$\geq$}
+\newunicodechar{≤}{$\leq$}
+\newunicodechar{−}{$-$}
+\newunicodechar{├}{\texttt{|--}}
+\newunicodechar{└}{\texttt{`--}}
+\newunicodechar{─}{\texttt{-}}
+\newunicodechar{│}{\texttt{|}}
+\newunicodechar{┬}{\texttt{-|-}}
+\newunicodechar{┤}{\texttt{-|}}
+\newunicodechar{┼}{\texttt{-+-}}
+\newunicodechar{╠}{\texttt{|=}}
+\newunicodechar{╔}{\texttt{.=}}
+\newunicodechar{╗}{\texttt{=.}}
+\newunicodechar{╚}{\texttt{`=}}
+\newunicodechar{╝}{\texttt{=`}}
+\newunicodechar{═}{\texttt{=}}
+\newunicodechar{║}{\texttt{||}}
 
 % TikZ diagram definitions
 \input{diagrams.tex}
