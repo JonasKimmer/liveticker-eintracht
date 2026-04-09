@@ -263,8 +263,19 @@
   \node[sub] (pe) at (1.5,-4.8) {PublishedEntry};
   \draw[arr] (lp) -- (pe);
 
-  % RightPanel children
-  \node[sub] (coll) at (8.5,-4.8) {Collapsible\\StatRow etc.};
-  \draw[arr] (rp) -- (coll);
+  % RightPanel children (collapsible sections)
+  \tikzset{collapsible/.style={rectangle, draw=gray!70, fill=gray!8, rounded corners,
+    text centered, font=\tiny, minimum height=0.5cm, text width=1.9cm,
+    append after command={\pgfextra{\draw[gray!50, thin]
+      ([xshift=-0.75cm,yshift=0.08cm]\tikzlastnode.north east)
+      -- ([xshift=-0.6cm,yshift=-0.05cm]\tikzlastnode.north east)
+      -- ([xshift=-0.45cm,yshift=0.08cm]\tikzlastnode.north east);}}}
+  }
+  \node[collapsible] (stat)  at (7.2,-4.8) {Statistiken\\{\tiny\textit{(\textcolor{gray}{auf-/zuklappbar})}}};
+  \node[collapsible] (auf)   at (9.2,-4.8) {Auswechselbank\\{\tiny\textit{(\textcolor{gray}{auf-/zuklappbar})}}};
+  \node[collapsible] (verletzt) at (8.2,-6.1) {Verletzt /\\Fraglich\\{\tiny\textit{(\textcolor{gray}{auf-/zuklappbar})}}};
+  \draw[arr] (rp) -- (stat);
+  \draw[arr] (rp) -- (auf);
+  \draw[arr] (rp) -- (verletzt);
 \end{tikzpicture}%
 }

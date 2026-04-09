@@ -371,7 +371,6 @@
 .lt-pcat__col-hd--away {
   color: var(--lt-color-away);
   border-color: var(--lt-color-away);
-  text-align: right;
 }
 .lt-pcat__cols {
   display: grid;
@@ -380,12 +379,12 @@
 }
 .lt-pcat__row {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 0.3rem;
   padding: 0.12rem 0;
 }
 .lt-pcat__row--away {
-  flex-direction: row-reverse;
+  flex-direction: row;
 }
 .lt-pcat__val {
   font-family: var(--lt-font-mono);

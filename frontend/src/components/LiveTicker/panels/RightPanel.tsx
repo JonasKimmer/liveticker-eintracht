@@ -214,6 +214,7 @@ export const RightPanel = memo(function RightPanel() {
               </div>
               {topAway.map((p) => (
                 <div key={p.id} className="lt-pcat__row lt-pcat__row--away">
+                  <span className="lt-pcat__val">{p.rating?.toFixed(1) ?? "–"}</span>
                   <div style={{ minWidth: 0 }}>
                     <span className="lt-pcat__name">
                       {p.resolvedName ?? `#${p.jerseyNumber ?? "?"}`}
@@ -226,7 +227,6 @@ export const RightPanel = memo(function RightPanel() {
                       {p.cardsRed > 0 && " 🟥"}
                     </span>
                   </div>
-                  <span className="lt-pcat__val">{p.rating?.toFixed(1) ?? "–"}</span>
                 </div>
               ))}
             </div>

@@ -58,10 +58,10 @@ export const StatCategorySection = memo(function StatCategorySection({
           </div>
           {awayTop.map((p) => (
             <div key={p.id} className="lt-pcat__row lt-pcat__row--away">
+              <span className="lt-pcat__val">{fmt(p)}</span>
               <span className="lt-pcat__name">
                 {p.resolvedName ?? `#${p.jerseyNumber ?? "?"}`}
               </span>
-              <span className="lt-pcat__val">{fmt(p)}</span>
             </div>
           ))}
         </div>
