@@ -51,8 +51,14 @@ export const FormationColumn = memo(function FormationColumn({
 
   return (
     <div className={away ? "lt-formation-column--away" : undefined}>
-      <div className={`lt-lineup-team-label ${labelClass}`}>{abbr}</div>
-      {formation && <div className="lt-lineup-formation">{formation}</div>}
+      <div className={`lt-lineup-team-label ${labelClass}`}>
+        {abbr}
+        {formation && (
+          <span className="lt-lineup-formation" style={{ display: "inline", marginLeft: "0.4rem", borderBottom: "none", padding: 0, marginBottom: 0 }}>
+            {formation}
+          </span>
+        )}
+      </div>
       <div className="lt-formation-rows">
         {rows.map((row, ri) => (
           <div key={ri} className="lt-formation-row">
