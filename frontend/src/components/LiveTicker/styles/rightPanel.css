@@ -452,29 +452,29 @@
 .lt-pitch-svg { width: 100%; display: block; }
 
 /* Pitch background & stripes */
-.lt-pitch-bg { fill: #1b3d25; }
-.lt-pitch-stripe-a { fill: #1b3d25; }
-.lt-pitch-stripe-b { fill: #1a3a23; }
+.lt-pitch-bg { fill: transparent; }
+.lt-pitch-stripe-a { fill: transparent; }
+.lt-pitch-stripe-b { fill: transparent; }
 
 /* Pitch lines */
 .lt-pitch-outline {
   fill: none;
-  stroke: rgba(255,255,255,0.28);
+  stroke: var(--lt-border);
   stroke-width: 0.6;
 }
 .lt-pitch-circle {
   fill: none;
-  stroke: rgba(255,255,255,0.2);
+  stroke: var(--lt-border);
   stroke-width: 0.5;
 }
-.lt-pitch-spot { fill: rgba(255,255,255,0.35); }
+.lt-pitch-spot { fill: var(--lt-border); }
 .lt-pitch-area {
   fill: none;
-  stroke: rgba(255,255,255,0.22);
+  stroke: var(--lt-border);
   stroke-width: 0.5;
 }
 .lt-pitch-midline {
-  stroke: rgba(255,255,255,0.4);
+  stroke: var(--lt-border);
   stroke-width: 0.8;
 }
 
