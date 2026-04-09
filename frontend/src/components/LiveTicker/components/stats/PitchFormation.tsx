@@ -56,16 +56,20 @@ function FullPitchLines() {
 function HalfPitchLines() {
   const W = 100, H = 90, m = 3;
   const pw = W - m * 2, ph = H - m * 2;
+  const cx = W / 2;
   const paW = pw * 0.58, paH = ph * 0.22;
   const paX = m + (pw - paW) / 2;
   const sW = pw * 0.34, sH = ph * 0.1;
   const sX = m + (pw - sW) / 2;
+  const r = ph * 0.09; // center circle radius for half
   return (
     <svg viewBox={`0 0 ${W} ${H}`} className="lt-pitch-svg lt-pitch-svg--half">
       {/* Outline */}
       <rect x={m} y={m} width={pw} height={ph} className="lt-pitch-outline" />
       {/* Midfield line at top */}
       <line x1={m} y1={m} x2={W - m} y2={m} className="lt-pitch-midline" />
+      {/* Center circle semicircle bulging downward */}
+      <path d={`M ${cx - r} ${m} A ${r} ${r} 0 0 1 ${cx + r} ${m}`} className="lt-pitch-circle" />
       {/* Penalty area at bottom */}
       <rect x={paX} y={H - m - paH} width={paW} height={paH} className="lt-pitch-area" />
       <rect x={sX} y={H - m - sH} width={sW} height={sH} className="lt-pitch-area" />
@@ -169,11 +173,25 @@ function FullPitch({
       <FullPitchLines />
       <div className="lt-pitch-overlay">
         <div className="lt-pitch-half lt-pitch-half--home">
-          <div className="lt-lineup-team-label lt-lineup-team-label--home lt-pitch-label">{homeAbbr}</div>
+          <div className="lt-lineup-team-label lt-lineup-team-label--home lt-pitch-label">
+            {homeAbbr}
+            {homeRows[0]?.[0]?.formation && (
+              <span className="lt-lineup-formation" style={{ display: "inline", marginLeft: "0.4rem", borderBottom: "none", padding: 0, marginBottom: 0 }}>
+                {homeRows[0][0].formation}
+              </span>
+            )}
+          </div>
           <FormationRows rows={homeRows} playerName={playerName} playerStats={playerStats} subMinuteMap={subMinuteMap} />
         </div>
         <div className="lt-pitch-half lt-pitch-half--away">
-          <div className="lt-lineup-team-label lt-lineup-team-label--away lt-pitch-label">{awayAbbr}</div>
+          <div className="lt-lineup-team-label lt-lineup-team-label--away lt-pitch-label">
+            {awayAbbr}
+            {awayRows[0]?.[0]?.formation && (
+              <span className="lt-lineup-formation" style={{ display: "inline", marginLeft: "0.4rem", borderBottom: "none", padding: 0, marginBottom: 0 }}>
+                {awayRows[0][0].formation}
+              </span>
+            )}
+          </div>
           <FormationRows rows={awayRows} playerName={playerName} playerStats={playerStats} subMinuteMap={subMinuteMap} reverse />
         </div>
       </div>
@@ -191,16 +209,25 @@ function HalfPitch({
   playerStats: PlayerStat[];
   subMinuteMap: Record<string | number, number>;
 }) {
+  const formation = rows[0]?.[0]?.formation ?? "";
   const labelClass = isHome
     ? "lt-lineup-team-label lt-lineup-team-label--home"
     : "lt-lineup-team-label lt-lineup-team-label--away";
   return (
     <div>
-      <div className={labelClass}>{abbr}</div>
+      <div className={labelClass}>
+        {abbr}
+        {formation && (
+          <span className="lt-lineup-formation" style={{ display: "inline", marginLeft: "0.4rem", borderBottom: "none", padding: 0, marginBottom: 0 }}>
+            {formation}
+          </span>
+        )}
+      </div>
       <div className="lt-pitch-wrap">
         <HalfPitchLines />
         <div className="lt-pitch-overlay lt-pitch-overlay--single">
-          <FormationRows rows={rows} playerName={playerName} playerStats={playerStats} subMinuteMap={subMinuteMap} />
+          {/* reverse=true: GK at bottom near penalty area */}
+          <FormationRows rows={rows} playerName={playerName} playerStats={playerStats} subMinuteMap={subMinuteMap} reverse />
         </div>
       </div>
     </div>
