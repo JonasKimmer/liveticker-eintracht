@@ -124,6 +124,7 @@ export const RightPanel = memo(function RightPanel() {
             awayAbbr={awayAbbr}
             playerName={playerName}
             playerStats={playerStats}
+            subMinuteMap={subMinuteMap}
           />
           {(homeCoach || awayCoach) && (
             <>

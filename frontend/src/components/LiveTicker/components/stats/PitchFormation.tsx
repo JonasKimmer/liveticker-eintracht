@@ -1,4 +1,5 @@
 import { memo } from "react";
+import { PlayerBadges } from "./PlayerBadges";
 import type { LineupEntry, PlayerStat } from "../../../../types";
 
 interface PitchFormationProps {
@@ -8,6 +9,7 @@ interface PitchFormationProps {
   awayAbbr: string;
   playerName: (id: number | undefined | null) => string | null;
   playerStats: PlayerStat[];
+  subMinuteMap: Record<string | number, number>;
 }
 
 function getRows(lineup: LineupEntry[]): LineupEntry[][] {
@@ -35,238 +37,172 @@ function getRows(lineup: LineupEntry[]): LineupEntry[][] {
   return Object.values(groups);
 }
 
-function interpY(numRows: number, i: number, yStart: number, yEnd: number) {
-  if (numRows <= 1) return (yStart + yEnd) / 2;
-  return yStart + (i / (numRows - 1)) * (yEnd - yStart);
-}
-
-interface PlayerDotProps {
-  p: LineupEntry;
-  x: number;
-  y: number;
-  isHome: boolean;
-  label: string;
-  rating?: number | null;
-}
-
-function PlayerDot({ p, x, y, isHome, label, rating }: PlayerDotProps) {
-  const colorClass = isHome ? "lt-pitch-dot--home" : "lt-pitch-dot--away";
+// SVG pitch lines only — no players
+function FullPitchLines() {
+  const W = 100, H = 160, m = 3;
+  const cx = W / 2, cy = H / 2;
+  const pw = W - m * 2, ph = H - m * 2;
+  const paW = pw * 0.58, paH = ph * 0.13;
+  const paX = m + (pw - paW) / 2;
+  const sW = pw * 0.34, sH = ph * 0.055;
+  const sX = m + (pw - sW) / 2;
   return (
-    <g>
-      <circle
-        cx={x}
-        cy={y}
-        r={4}
-        className={`lt-pitch-dot ${colorClass}`}
-      />
-      <text
-        x={x}
-        y={y + 0.5}
-        textAnchor="middle"
-        dominantBaseline="middle"
-        className="lt-pitch-num"
-      >
-        {p.jerseyNumber}
-      </text>
-      <text x={x} y={y + 7.5} textAnchor="middle" className="lt-pitch-name">
-        {label}
-      </text>
-      {rating != null && (
-        <text x={x} y={y + 11} textAnchor="middle" className="lt-pitch-rating">
-          {rating.toFixed(1)}
-        </text>
-      )}
-    </g>
+    <svg viewBox={`0 0 ${W} ${H}`} className="lt-pitch-svg lt-pitch-svg--full">
+      <PitchLines m={m} pw={pw} ph={ph} cx={cx} cy={cy} paX={paX} paW={paW} paH={paH} sX={sX} sW={sW} sH={sH} />
+    </svg>
   );
 }
 
-interface TeamLayerProps {
-  rows: LineupEntry[][];
-  yStart: number;
-  yEnd: number;
-  isHome: boolean;
-  playerName: (id: number | undefined | null) => string | null;
-  playerStats: PlayerStat[];
+function HalfPitchLines() {
+  const W = 100, H = 90, m = 3;
+  const pw = W - m * 2, ph = H - m * 2;
+  const paW = pw * 0.58, paH = ph * 0.22;
+  const paX = m + (pw - paW) / 2;
+  const sW = pw * 0.34, sH = ph * 0.1;
+  const sX = m + (pw - sW) / 2;
+  return (
+    <svg viewBox={`0 0 ${W} ${H}`} className="lt-pitch-svg lt-pitch-svg--half">
+      {/* Outline */}
+      <rect x={m} y={m} width={pw} height={ph} className="lt-pitch-outline" />
+      {/* Midfield line at top */}
+      <line x1={m} y1={m} x2={W - m} y2={m} className="lt-pitch-midline" />
+      {/* Penalty area at bottom */}
+      <rect x={paX} y={H - m - paH} width={paW} height={paH} className="lt-pitch-area" />
+      <rect x={sX} y={H - m - sH} width={sW} height={sH} className="lt-pitch-area" />
+    </svg>
+  );
 }
 
-function TeamLayer({ rows, yStart, yEnd, isHome, playerName, playerStats }: TeamLayerProps) {
+interface PitchLinesProps {
+  m: number; pw: number; ph: number;
+  cx: number; cy: number;
+  paX: number; paW: number; paH: number;
+  sX: number; sW: number; sH: number;
+}
+function PitchLines({ m, pw, ph, cx, cy, paX, paW, paH, sX, sW, sH }: PitchLinesProps) {
   return (
     <>
-      {rows.map((row, ri) =>
-        row.map((p, pi) => {
-          const x = row.length === 1 ? 50 : 7 + (pi / (row.length - 1)) * 86;
-          const y = interpY(rows.length, ri, yStart, yEnd);
-          const name = playerName(p.playerId) ?? "";
-          const lastName = name.split(" ").pop() ?? name;
-          const label = lastName.length > 8 ? lastName.slice(0, 7) + "…" : lastName || `#${p.jerseyNumber}`;
-          const stat = playerStats.find((s) => s.playerId === p.playerId);
-          return (
-            <PlayerDot
-              key={p.id}
-              p={p}
-              x={x}
-              y={y}
-              isHome={isHome}
-              label={label}
-              rating={stat?.rating}
-            />
-          );
-        })
-      )}
+      <rect x={m} y={m} width={pw} height={ph} className="lt-pitch-outline" />
+      <line x1={m} y1={cy} x2={m + pw} y2={cy} className="lt-pitch-outline" />
+      <circle cx={cx} cy={cy} r={ph * 0.09} className="lt-pitch-circle" />
+      <circle cx={cx} cy={cy} r={0.8} className="lt-pitch-spot" />
+      <rect x={paX} y={m} width={paW} height={paH} className="lt-pitch-area" />
+      <rect x={sX} y={m} width={sW} height={sH} className="lt-pitch-area" />
+      <rect x={paX} y={m + ph - paH} width={paW} height={paH} className="lt-pitch-area" />
+      <rect x={sX} y={m + ph - sH} width={sW} height={sH} className="lt-pitch-area" />
     </>
   );
 }
 
-// Shared pitch markings as SVG defs/group
-function PitchMarkings({ w, h }: { w: number; h: number }) {
-  const m = 3; // margin
-  const cx = w / 2;
-  const cy = h / 2;
-  const pw = w - m * 2; // pitch width
-  const ph = h - m * 2; // pitch height
-  const paW = pw * 0.58; // penalty area width (~58% of pitch)
-  const paH = ph * 0.16; // penalty area height
-  const paX = m + (pw - paW) / 2;
-  const sW = pw * 0.34; // 6yd box width
-  const sH = ph * 0.075;
-  const sX = m + (pw - sW) / 2;
-
+// Formation player — same style as old FormationColumn
+function FormationPlayer({
+  p,
+  playerName,
+  stat,
+  subMinuteMap,
+}: {
+  p: LineupEntry;
+  playerName: (id: number | undefined | null) => string | null;
+  stat?: PlayerStat;
+  subMinuteMap: Record<string | number, number>;
+}) {
+  const name = playerName(p.playerId) ?? "";
+  const short = name.length > 9 ? name.split(" ").pop() ?? name : name || `#${p.jerseyNumber}`;
   return (
-    <g className="lt-pitch-lines">
-      {/* Stripes */}
-      {Array.from({ length: 6 }, (_, i) => (
-        <rect
-          key={i}
-          x={m}
-          y={m + (i * ph) / 6}
-          width={pw}
-          height={ph / 6}
-          className={i % 2 === 0 ? "lt-pitch-stripe-a" : "lt-pitch-stripe-b"}
-        />
-      ))}
-      {/* Outline */}
-      <rect x={m} y={m} width={pw} height={ph} className="lt-pitch-outline" />
-      {/* Center line */}
-      <line x1={m} y1={cy} x2={w - m} y2={cy} className="lt-pitch-outline" />
-      {/* Center circle */}
-      <circle cx={cx} cy={cy} r={ph * 0.1} className="lt-pitch-circle" />
-      <circle cx={cx} cy={cy} r={0.8} className="lt-pitch-spot" />
-      {/* Top penalty area */}
-      <rect x={paX} y={m} width={paW} height={paH} className="lt-pitch-area" />
-      <rect x={sX} y={m} width={sW} height={sH} className="lt-pitch-area" />
-      {/* Bottom penalty area */}
-      <rect x={paX} y={h - m - paH} width={paW} height={paH} className="lt-pitch-area" />
-      <rect x={sX} y={h - m - sH} width={sW} height={sH} className="lt-pitch-area" />
-    </g>
+    <div className="lt-formation-player">
+      <div className="lt-formation-player__num">#{p.jerseyNumber}</div>
+      <div className="lt-formation-player__name" title={name}>{short}</div>
+      {stat?.rating != null && (
+        <div className="lt-formation-player__rating">{stat.rating.toFixed(1)}</div>
+      )}
+      <PlayerBadges entry={p} stat={stat} subMinuteMap={subMinuteMap} />
+    </div>
   );
 }
 
-function HalfPitchMarkings({ w, h }: { w: number; h: number }) {
-  const m = 3;
-  const pw = w - m * 2;
-  const ph = h - m * 2;
-  const paW = pw * 0.58;
-  const paH = ph * 0.22;
-  const paX = m + (pw - paW) / 2;
-  const sW = pw * 0.34;
-  const sH = ph * 0.1;
-  const sX = m + (pw - sW) / 2;
-
+function FormationRows({
+  rows,
+  playerName,
+  playerStats,
+  subMinuteMap,
+  reverse = false,
+}: {
+  rows: LineupEntry[][];
+  playerName: (id: number | undefined | null) => string | null;
+  playerStats: PlayerStat[];
+  subMinuteMap: Record<string | number, number>;
+  reverse?: boolean;
+}) {
+  const displayed = reverse ? [...rows].reverse() : rows;
   return (
-    <g className="lt-pitch-lines">
-      {Array.from({ length: 3 }, (_, i) => (
-        <rect
-          key={i}
-          x={m}
-          y={m + (i * ph) / 3}
-          width={pw}
-          height={ph / 3}
-          className={i % 2 === 0 ? "lt-pitch-stripe-a" : "lt-pitch-stripe-b"}
-        />
+    <div className="lt-pitch-rows">
+      {displayed.map((row, ri) => (
+        <div key={ri} className="lt-formation-row">
+          {row.map((p) => (
+            <FormationPlayer
+              key={p.id}
+              p={p}
+              playerName={playerName}
+              stat={playerStats.find((s) => s.playerId === p.playerId)}
+              subMinuteMap={subMinuteMap}
+            />
+          ))}
+        </div>
       ))}
-      <rect x={m} y={m} width={pw} height={ph} className="lt-pitch-outline" />
-      {/* Midfield line at top */}
-      <line x1={m} y1={m} x2={w - m} y2={m} className="lt-pitch-midline" />
-      {/* Penalty area at bottom */}
-      <rect x={paX} y={h - m - paH} width={paW} height={paH} className="lt-pitch-area" />
-      <rect x={sX} y={h - m - sH} width={sW} height={sH} className="lt-pitch-area" />
-    </g>
+    </div>
   );
 }
 
-// Full pitch: both teams
-function FullPitch({ homeRows, awayRows, homeAbbr, awayAbbr, playerName, playerStats }: {
+function FullPitch({
+  homeRows, awayRows, homeAbbr, awayAbbr, playerName, playerStats, subMinuteMap,
+}: {
   homeRows: LineupEntry[][];
   awayRows: LineupEntry[][];
   homeAbbr: string;
   awayAbbr: string;
   playerName: (id: number | undefined | null) => string | null;
   playerStats: PlayerStat[];
+  subMinuteMap: Record<string | number, number>;
 }) {
-  const W = 100;
-  const H = 160;
   return (
-    <svg viewBox={`0 0 ${W} ${H}`} className="lt-pitch-svg">
-      <rect width={W} height={H} className="lt-pitch-bg" />
-      <PitchMarkings w={W} h={H} />
-      {/* Labels */}
-      <text x={W / 2} y={1.5} textAnchor="middle" className="lt-pitch-team lt-pitch-team--home">
-        {homeAbbr}
-      </text>
-      <text x={W / 2} y={H - 0.5} textAnchor="middle" className="lt-pitch-team lt-pitch-team--away">
-        {awayAbbr}
-      </text>
-      {/* Home: GK top (y≈9), FWD toward center (y≈70) */}
-      <TeamLayer
-        rows={homeRows}
-        yStart={9}
-        yEnd={70}
-        isHome
-        playerName={playerName}
-        playerStats={playerStats}
-      />
-      {/* Away: GK bottom (y≈151), FWD toward center (y≈90) */}
-      <TeamLayer
-        rows={awayRows}
-        yStart={151}
-        yEnd={90}
-        isHome={false}
-        playerName={playerName}
-        playerStats={playerStats}
-      />
-    </svg>
+    <div className="lt-pitch-wrap">
+      <FullPitchLines />
+      <div className="lt-pitch-overlay">
+        <div className="lt-pitch-half lt-pitch-half--home">
+          <div className="lt-lineup-team-label lt-lineup-team-label--home lt-pitch-label">{homeAbbr}</div>
+          <FormationRows rows={homeRows} playerName={playerName} playerStats={playerStats} subMinuteMap={subMinuteMap} />
+        </div>
+        <div className="lt-pitch-half lt-pitch-half--away">
+          <div className="lt-lineup-team-label lt-lineup-team-label--away lt-pitch-label">{awayAbbr}</div>
+          <FormationRows rows={awayRows} playerName={playerName} playerStats={playerStats} subMinuteMap={subMinuteMap} reverse />
+        </div>
+      </div>
+    </div>
   );
 }
 
-// Half pitch: one team
-function HalfPitch({ rows, abbr, isHome, playerName, playerStats }: {
+function HalfPitch({
+  rows, abbr, isHome, playerName, playerStats, subMinuteMap,
+}: {
   rows: LineupEntry[][];
   abbr: string;
   isHome: boolean;
   playerName: (id: number | undefined | null) => string | null;
   playerStats: PlayerStat[];
+  subMinuteMap: Record<string | number, number>;
 }) {
-  const W = 100;
-  const H = 90;
   const labelClass = isHome
     ? "lt-lineup-team-label lt-lineup-team-label--home"
     : "lt-lineup-team-label lt-lineup-team-label--away";
   return (
     <div>
       <div className={labelClass}>{abbr}</div>
-      <svg viewBox={`0 0 ${W} ${H}`} className="lt-pitch-svg">
-        <rect width={W} height={H} className="lt-pitch-bg" />
-        <HalfPitchMarkings w={W} h={H} />
-        {/* GK at bottom (y≈82), FWD at top (y≈10) */}
-        <TeamLayer
-          rows={rows}
-          yStart={82}
-          yEnd={10}
-          isHome={isHome}
-          playerName={playerName}
-          playerStats={playerStats}
-        />
-      </svg>
+      <div className="lt-pitch-wrap">
+        <HalfPitchLines />
+        <div className="lt-pitch-overlay lt-pitch-overlay--single">
+          <FormationRows rows={rows} playerName={playerName} playerStats={playerStats} subMinuteMap={subMinuteMap} />
+        </div>
+      </div>
     </div>
   );
 }
@@ -278,13 +214,13 @@ export const PitchFormation = memo(function PitchFormation({
   awayAbbr,
   playerName,
   playerStats,
+  subMinuteMap,
 }: PitchFormationProps) {
   const homeRows = getRows(homeStarters);
   const awayRows = getRows(awayStarters);
 
   return (
     <>
-      {/* Narrow: one full pitch */}
       <div className="lt-pitch-full">
         <FullPitch
           homeRows={homeRows}
@@ -293,9 +229,9 @@ export const PitchFormation = memo(function PitchFormation({
           awayAbbr={awayAbbr}
           playerName={playerName}
           playerStats={playerStats}
+          subMinuteMap={subMinuteMap}
         />
       </div>
-      {/* Wide: two half pitches */}
       <div className="lt-pitch-halves">
         <HalfPitch
           rows={homeRows}
@@ -303,6 +239,7 @@ export const PitchFormation = memo(function PitchFormation({
           isHome
           playerName={playerName}
           playerStats={playerStats}
+          subMinuteMap={subMinuteMap}
         />
         <HalfPitch
           rows={awayRows}
@@ -310,6 +247,7 @@ export const PitchFormation = memo(function PitchFormation({
           isHome={false}
           playerName={playerName}
           playerStats={playerStats}
+          subMinuteMap={subMinuteMap}
         />
       </div>
     </>
