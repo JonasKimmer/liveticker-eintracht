@@ -42,16 +42,21 @@
 
 % Define Shaded and Highlighting environments for pandoc-generated code blocks
 \definecolor{shadecolor}{gray}{0.95}
-% Disable babel's active " inside code blocks to prevent conflicts (e.g. erDiagram)
+% \par ensures vertical mode (prevents LR-mode crash); shorthandoff fixes babel/ngerman conflict
 \newenvironment{Shaded}{%
+  \par
   \shorthandoff{"}%
   \begin{shaded}}{%
   \end{shaded}%
-  \shorthandon{"}}
+  \shorthandon{"}%
+  \par}
 
-% Highlighting uses Verbatim with commandchars so \NormalTok{} etc. are processed correctly
-\newenvironment{Highlighting}[1][]{%
-  \begin{Verbatim}[commandchars=\\\{\}]}{\end{Verbatim}}
+% breaklines+breakanywhere prevent LR-mode crashes on long Mermaid lines
+\DefineVerbatimEnvironment{Highlighting}{Verbatim}{%
+  commandchars=\\\{\},
+  breaklines=true,
+  breakanywhere=true,
+  fontsize=\small}
 
 % Pandoc token commands
 \newcommand{\NormalTok}[1]{#1}
@@ -91,6 +96,7 @@
 
 \geometry{left=2.5cm, right=2cm, top=2.5cm, bottom=2.5cm}
 \onehalfspacing
+\emergencystretch 3em
 
 \pagestyle{fancy}
 \fancyhf{}
