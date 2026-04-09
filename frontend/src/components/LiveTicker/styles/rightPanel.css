@@ -426,12 +426,7 @@
     gap: 0;
   }
 
-  /* Away-Zeile nicht gespiegelt */
-  .lt-pcat__row--away {
-    flex-direction: row;
-  }
-
-  /* Away-Teamheader linksbündig */
+  /* Away-Teamheader linksbündig (war rechts bei 2-spaltig) */
   .lt-pcat__col-hd--away {
     text-align: left;
   }
