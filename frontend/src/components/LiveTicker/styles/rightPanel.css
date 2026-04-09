@@ -398,3 +398,43 @@
   text-overflow: ellipsis;
   flex: 1;
 }
+
+/* ── Responsive: schmale Phones ≤ 480px ─────────────────── */
+@media (max-width: 480px) {
+  /* Aufstellung + Auswechselbank: eine Spalte statt zwei */
+  .lt-lineup-grid {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+
+  /* Away-Spalte linksbündig (war rechts durch Reihenfolge) */
+  .lt-lineup-team-label--away {
+    text-align: left;
+  }
+
+  /* Beste Spieler Kategorien: eine Spalte */
+  .lt-pcat__cols {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+
+  /* Away-Zeile nicht mehr umgekehrt */
+  .lt-pcat__row--away {
+    flex-direction: row;
+  }
+
+  /* Away-Teamheader linksbündig */
+  .lt-pcat__col-hd--away {
+    text-align: left;
+  }
+
+  /* Formation-Namen etwas breiter */
+  .lt-formation-player__name {
+    max-width: 56px;
+  }
+
+  /* Lineup-Schrift minimal kleiner */
+  .lt-lineup-list li {
+    font-size: 0.7rem;
+  }
+}
