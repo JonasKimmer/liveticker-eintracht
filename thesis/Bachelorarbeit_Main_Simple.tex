@@ -40,11 +40,29 @@
   postbreak=\mbox{\textcolor{red}{$\hookrightarrow$}\space},
 }
 
-% Define Shaded environment for code blocks
+% Define Shaded and Highlighting environments for pandoc-generated code blocks
 \definecolor{shadecolor}{gray}{0.95}
-\newenvironment{Shaded}
-  {\begin{shaded}}
-  {\end{shaded}}
+% Disable babel's active " inside code blocks to prevent conflicts (e.g. erDiagram)
+\newenvironment{Shaded}{%
+  \shorthandoff{"}%
+  \begin{shaded}}{%
+  \end{shaded}%
+  \shorthandon{"}}
+
+% Highlighting uses Verbatim with commandchars so \NormalTok{} etc. are processed correctly
+\newenvironment{Highlighting}[1][]{%
+  \begin{Verbatim}[commandchars=\\\{\}]}{\end{Verbatim}}
+
+% Pandoc token commands
+\newcommand{\NormalTok}[1]{#1}
+\providecommand{\KeywordTok}[1]{\textcolor[rgb]{0.00,0.44,0.13}{\textbf{#1}}}
+\providecommand{\StringTok}[1]{\textcolor[rgb]{0.25,0.44,0.63}{#1}}
+\providecommand{\CommentTok}[1]{\textcolor[rgb]{0.38,0.63,0.69}{\textit{#1}}}
+\providecommand{\OtherTok}[1]{\textcolor[rgb]{0.00,0.44,0.13}{#1}}
+\providecommand{\AlertTok}[1]{\textcolor[rgb]{1.00,0.00,0.00}{#1}}
+\providecommand{\FunctionTok}[1]{\textcolor[rgb]{0.02,0.16,0.49}{#1}}
+\providecommand{\RegionMarkerTok}[1]{#1}
+\providecommand{\ErrorTok}[1]{\textcolor[rgb]{1.00,0.00,0.00}{\textbf{#1}}}
 
 % Define \real for Pandoc table calculations
 \providecommand{\real}[1]{#1}
