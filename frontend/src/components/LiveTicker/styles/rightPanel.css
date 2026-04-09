@@ -408,8 +408,8 @@
 
 /* ── Container Query: Panel ≤ 480px → 1-spaltig ─────────── */
 @container (max-width: 480px) {
-  /* Aufstellung + Auswechselbank: eine Spalte */
-  .lt-lineup-grid {
+  /* Nur Formation: eine Spalte (Auswechselbank/Verletzt bleiben 2-spaltig) */
+  .lt-lineup-grid--formation {
     grid-template-columns: 1fr;
     gap: 0.75rem;
   }

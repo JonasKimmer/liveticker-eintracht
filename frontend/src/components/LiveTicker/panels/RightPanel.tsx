@@ -117,7 +117,7 @@ export const RightPanel = memo(function RightPanel() {
       {/* 2. Aufstellung */}
       {(homeLineup.length > 0 || awayLineup.length > 0) && (
         <Collapsible title="📋 Aufstellung">
-          <div className="lt-lineup-grid">
+          <div className="lt-lineup-grid lt-lineup-grid--formation">
             <FormationColumn
               lineup={homeStarters}
               playerName={playerName}
