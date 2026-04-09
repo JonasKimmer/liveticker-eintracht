@@ -68,8 +68,11 @@ function HalfPitchLines() {
       <rect x={m} y={m} width={pw} height={ph} className="lt-pitch-outline" />
       {/* Midfield line at top */}
       <line x1={m} y1={m} x2={W - m} y2={m} className="lt-pitch-midline" />
-      {/* Center circle at midfield line */}
-      <circle cx={cx} cy={m} r={r} className="lt-pitch-circle" />
+      {/* Center circle — nur untere Hälfte (innerhalb des Feldes) */}
+      <clipPath id="half-clip">
+        <rect x={0} y={m} width={W} height={H} />
+      </clipPath>
+      <circle cx={cx} cy={m} r={r} className="lt-pitch-circle" clipPath="url(#half-clip)" />
       {/* Penalty area at bottom */}
       <rect x={paX} y={H - m - paH} width={paW} height={paH} className="lt-pitch-area" />
       <rect x={sX} y={H - m - sH} width={sW} height={sH} className="lt-pitch-area" />
