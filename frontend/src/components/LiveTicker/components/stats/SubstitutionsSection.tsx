@@ -32,18 +32,14 @@ export const SubstitutionsSection = memo(function SubstitutionsSection({
       <span className="lt-pcat__val">
         {p.jerseyNumber != null ? `#${p.jerseyNumber}` : "–"}
       </span>
-      <div style={{ minWidth: 0 }}>
-        <span className="lt-pcat__name">
-          {playerName(p.playerId) ?? `#${p.jerseyNumber ?? "?"}`}
-        </span>
-        <span className="lt-prow__sub">
-          <PlayerBadges
-            entry={p}
-            stat={playerStats.find((s) => s.playerId === p.playerId)}
-            subMinuteMap={subMinuteMap}
-          />
-        </span>
-      </div>
+      <span className="lt-pcat__name" style={{ display: "flex", alignItems: "center", gap: "0.25rem" }}>
+        {playerName(p.playerId) ?? `#${p.jerseyNumber ?? "?"}`}
+        <PlayerBadges
+          entry={p}
+          stat={playerStats.find((s) => s.playerId === p.playerId)}
+          subMinuteMap={subMinuteMap}
+        />
+      </span>
     </div>
   );
 

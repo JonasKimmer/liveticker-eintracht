@@ -193,18 +193,16 @@ export const RightPanel = memo(function RightPanel() {
               {topHome.map((p) => (
                 <div key={p.id} className="lt-pcat__row">
                   <span className="lt-pcat__val">{p.rating?.toFixed(1) ?? "–"}</span>
-                  <div style={{ minWidth: 0 }}>
-                    <span className="lt-pcat__name">
-                      {p.resolvedName ?? `#${p.jerseyNumber ?? "?"}`}
-                    </span>
-                    <span className="lt-prow__sub">
+                  <span className="lt-pcat__name">
+                    {p.resolvedName ?? `#${p.jerseyNumber ?? "?"}`}
+                    <span className="lt-prow__sub" style={{ display: "inline", marginLeft: "0.25rem" }}>
                       {p.minutes ?? 0}'{p.goals > 0 && ` ⚽${p.goals}`}
                       {p.assists > 0 && ` 🅰️${p.assists}`}
                       {p.shotsOnTarget > 0 && ` 🎯${p.shotsOnTarget}`}
                       {p.cardsYellow > 0 && " 🟨"}
                       {p.cardsRed > 0 && " 🟥"}
                     </span>
-                  </div>
+                  </span>
                 </div>
               ))}
             </div>
@@ -215,18 +213,16 @@ export const RightPanel = memo(function RightPanel() {
               {topAway.map((p) => (
                 <div key={p.id} className="lt-pcat__row lt-pcat__row--away">
                   <span className="lt-pcat__val">{p.rating?.toFixed(1) ?? "–"}</span>
-                  <div style={{ minWidth: 0 }}>
-                    <span className="lt-pcat__name">
-                      {p.resolvedName ?? `#${p.jerseyNumber ?? "?"}`}
-                    </span>
-                    <span className="lt-prow__sub">
+                  <span className="lt-pcat__name">
+                    {p.resolvedName ?? `#${p.jerseyNumber ?? "?"}`}
+                    <span className="lt-prow__sub" style={{ display: "inline", marginLeft: "0.25rem" }}>
                       {p.minutes ?? 0}'{p.goals > 0 && ` ⚽${p.goals}`}
                       {p.assists > 0 && ` 🅰️${p.assists}`}
                       {p.shotsOnTarget > 0 && ` 🎯${p.shotsOnTarget}`}
                       {p.cardsYellow > 0 && " 🟨"}
                       {p.cardsRed > 0 && " 🟥"}
                     </span>
-                  </div>
+                  </span>
                 </div>
               ))}
             </div>
