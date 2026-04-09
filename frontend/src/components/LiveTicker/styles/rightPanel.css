@@ -38,28 +38,28 @@
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 0.25rem;
-  margin-bottom: 0.35rem;
+  margin-bottom: 0.15rem;
 }
 .lt-stat-teams__home {
   font-family: var(--lt-font-mono);
-  font-size: 0.65rem;
+  font-size: 0.62rem;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.06em;
   color: var(--lt-color-home);
   border-bottom: 1px solid var(--lt-color-home);
-  padding-bottom: 0.1rem;
+  padding: 0.1rem 0;
 }
 .lt-stat-teams__away {
   font-family: var(--lt-font-mono);
-  font-size: 0.65rem;
+  font-size: 0.62rem;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.06em;
   color: var(--lt-color-away);
   text-align: right;
   border-bottom: 1px solid var(--lt-color-away);
-  padding-bottom: 0.1rem;
+  padding: 0.1rem 0;
 }
 .lt-stat-row {
   display: grid;
@@ -118,21 +118,23 @@
 }
 .lt-lineup-team-label {
   font-family: var(--lt-font-mono);
-  font-size: 0.7rem;
+  font-size: 0.62rem;
   font-weight: 700;
   text-transform: uppercase;
-  text-align: center;
-  margin-bottom: 0.3rem;
+  letter-spacing: 0.06em;
+  padding: 0.1rem 0;
+  margin-bottom: 0.15rem;
+  border-bottom: 1px solid;
 }
 .lt-lineup-team-label--home {
   color: var(--lt-color-home);
-  border-bottom: 1px solid var(--lt-color-home);
-  padding-bottom: 0.1rem;
+  border-color: var(--lt-color-home);
+  text-align: left;
 }
 .lt-lineup-team-label--away {
   color: var(--lt-color-away);
-  border-bottom: 1px solid var(--lt-color-away);
-  padding-bottom: 0.1rem;
+  border-color: var(--lt-color-away);
+  text-align: right;
 }
 .lt-lineup-formation {
   font-family: var(--lt-font-mono);
@@ -327,13 +329,10 @@
 }
 .lt-prow__rating {
   font-family: var(--lt-font-mono);
-  font-size: 0.76rem;
+  font-size: 0.72rem;
   font-weight: 700;
-  color: var(--lt-accent);
-  background: var(--lt-accent-dim);
-  padding: 0.1rem 0.35rem;
-  border-radius: 4px;
-  white-space: nowrap;
+  color: var(--lt-text-sec);
+  flex-shrink: 0;
 }
 .lt-formation-player__rating {
   font-size: 0.55rem;
