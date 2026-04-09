@@ -134,6 +134,7 @@ export const RightPanel = memo(function RightPanel() {
               subMinuteMap={subMinuteMap}
               abbr={awayAbbr}
               labelClass="lt-lineup-team-label--away"
+              away
             />
           </div>
           {(homeCoach || awayCoach) && (

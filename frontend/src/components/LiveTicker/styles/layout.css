@@ -85,6 +85,8 @@
 .lt-col--stats {
   border-left: 1px solid var(--lt-border);
   background: var(--lt-bg-card);
+  overflow-x: hidden;
+  min-width: 0;
 }
 
 /* ============================================================

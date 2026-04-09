@@ -9,6 +9,7 @@ interface FormationColumnProps {
   subMinuteMap?: Record<string | number, number>;
   abbr: string;
   labelClass: string;
+  away?: boolean;
 }
 
 export const FormationColumn = memo(function FormationColumn({
@@ -18,6 +19,7 @@ export const FormationColumn = memo(function FormationColumn({
   subMinuteMap = {},
   abbr,
   labelClass,
+  away = false,
 }: FormationColumnProps) {
   const formation = lineup[0]?.formation ?? "";
 
@@ -48,7 +50,7 @@ export const FormationColumn = memo(function FormationColumn({
   }
 
   return (
-    <div>
+    <div className={away ? "lt-formation-column--away" : undefined}>
       <div className={`lt-lineup-team-label ${labelClass}`}>{abbr}</div>
       {formation && <div className="lt-lineup-formation">{formation}</div>}
       <div className="lt-formation-rows">

@@ -187,7 +187,7 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  max-width: 48px;
+  max-width: clamp(44px, 8vw, 60px);
   line-height: 1.2;
 }
 
@@ -431,6 +431,11 @@
   /* Formation-Namen etwas breiter */
   .lt-formation-player__name {
     max-width: 56px;
+  }
+
+  /* Away-Formation spiegeln: Stürmer oben, Torwart unten */
+  .lt-formation-column--away .lt-formation-rows {
+    flex-direction: column-reverse;
   }
 
   /* Lineup-Schrift minimal kleiner */
