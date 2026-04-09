@@ -68,8 +68,10 @@ function HalfPitchLines() {
       <rect x={m} y={m} width={pw} height={ph} className="lt-pitch-outline" />
       {/* Midfield line at top */}
       <line x1={m} y1={m} x2={W - m} y2={m} className="lt-pitch-midline" />
-      {/* Center circle semicircle bulging downward */}
+      {/* Center circle semicircle at midfield line (bulges into field) */}
       <path d={`M ${cx - r} ${m} A ${r} ${r} 0 0 1 ${cx + r} ${m}`} className="lt-pitch-circle" />
+      {/* Penalty arc (D) at bottom */}
+      <path d={`M ${paX + paW * 0.23} ${H - m - paH} A ${paH * 0.6} ${paH * 0.6} 0 0 0 ${paX + paW * 0.77} ${H - m - paH}`} className="lt-pitch-circle" />
       {/* Penalty area at bottom */}
       <rect x={paX} y={H - m - paH} width={paW} height={paH} className="lt-pitch-area" />
       <rect x={sX} y={H - m - sH} width={sW} height={sH} className="lt-pitch-area" />
