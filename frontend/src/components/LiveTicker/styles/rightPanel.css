@@ -36,7 +36,7 @@
 /* Stats */
 .lt-stat-teams {
   display: grid;
-  grid-template-columns: 1fr 2fr 1fr;
+  grid-template-columns: 1fr 1fr;
   gap: 0.25rem;
   margin-bottom: 0.35rem;
 }
@@ -47,7 +47,6 @@
   text-transform: uppercase;
   letter-spacing: 0.08em;
   color: var(--lt-color-home);
-  text-align: right;
   border-bottom: 1px solid var(--lt-color-home);
   padding-bottom: 0.1rem;
 }
@@ -58,7 +57,7 @@
   text-transform: uppercase;
   letter-spacing: 0.08em;
   color: var(--lt-color-away);
-  text-align: left;
+  text-align: right;
   border-bottom: 1px solid var(--lt-color-away);
   padding-bottom: 0.1rem;
 }
@@ -407,8 +406,8 @@
   flex: 1;
 }
 
-/* ── Container Query: Panel ≤ 400px → 1-spaltig ─────────── */
-@container (max-width: 400px) {
+/* ── Container Query: Panel ≤ 480px → 1-spaltig ─────────── */
+@container (max-width: 480px) {
   /* Aufstellung + Auswechselbank: eine Spalte */
   .lt-lineup-grid {
     grid-template-columns: 1fr;
@@ -445,6 +444,12 @@
   /* Lineup-Schrift minimal kleiner */
   .lt-lineup-list li {
     font-size: 0.7rem;
+  }
+
+  /* Beste Spieler: Namen umbrechen statt abschneiden */
+  .lt-pcat__name {
+    white-space: normal;
+    word-break: break-word;
   }
 }
 

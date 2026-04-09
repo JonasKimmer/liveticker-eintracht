@@ -70,7 +70,6 @@ export const RightPanel = memo(function RightPanel() {
         <Collapsible title="📊 Statistiken">
           <div className="lt-stat-teams">
             <span className="lt-stat-teams__home">{homeAbbr}</span>
-            <span />
             <span className="lt-stat-teams__away">{awayAbbr}</span>
           </div>
           <StatRow
