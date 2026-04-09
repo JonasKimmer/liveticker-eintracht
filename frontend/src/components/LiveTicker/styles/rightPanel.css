@@ -420,17 +420,6 @@
     border-bottom-color: var(--lt-color-away);
   }
 
-  /* Beste Spieler Kategorien: eine Spalte */
-  .lt-pcat__cols {
-    grid-template-columns: 1fr;
-    gap: 0;
-  }
-
-  /* Away-Teamheader linksbündig (war rechts bei 2-spaltig) */
-  .lt-pcat__col-hd--away {
-    text-align: left;
-  }
-
   /* Formation-Namen etwas breiter wenn 1-spaltig */
   .lt-formation-player__name {
     max-width: 64px;
@@ -439,12 +428,6 @@
   /* Lineup-Schrift minimal kleiner */
   .lt-lineup-list li {
     font-size: 0.7rem;
-  }
-
-  /* Beste Spieler: Namen umbrechen statt abschneiden */
-  .lt-pcat__name {
-    white-space: normal;
-    word-break: break-word;
   }
 }
 
