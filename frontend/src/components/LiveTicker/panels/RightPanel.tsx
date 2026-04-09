@@ -163,12 +163,6 @@ export const RightPanel = memo(function RightPanel() {
             </div>
           )}
 
-        </Collapsible>
-      )}
-
-      {/* 3. Auswechselbank */}
-      {(homeSubs.length > 0 || awaySubs.length > 0) && (
-        <Collapsible title="🔄 Auswechselbank">
           <SubstitutionsSection
             homeSubs={homeSubs}
             awaySubs={awaySubs}
@@ -176,12 +170,7 @@ export const RightPanel = memo(function RightPanel() {
             playerStats={playerStats}
             subMinuteMap={subMinuteMap}
           />
-        </Collapsible>
-      )}
 
-      {/* 4. Verletzt / Fraglich */}
-      {injuriesBlock && (
-        <Collapsible title="🤕 Verletzt / Fraglich">
           <InjuriesSection injuriesBlock={injuriesBlock} />
         </Collapsible>
       )}

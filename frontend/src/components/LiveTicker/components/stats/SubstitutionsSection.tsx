@@ -1,4 +1,5 @@
 import { memo } from "react";
+import { CollapsibleCat } from "../Collapsible";
 import type { LineupEntry, PlayerStat } from "../../../../types";
 import { PlayerBadges } from "./PlayerBadges";
 
@@ -20,7 +21,7 @@ export const SubstitutionsSection = memo(function SubstitutionsSection({
   if (homeSubs.length === 0 && awaySubs.length === 0) return null;
 
   return (
-    <>
+    <CollapsibleCat title="🔄 Auswechselbank">
       <div className="lt-lineup-grid">
         <ul className="lt-lineup-list">
           {homeSubs
@@ -61,6 +62,6 @@ export const SubstitutionsSection = memo(function SubstitutionsSection({
             ))}
         </ul>
       </div>
-    </>
+    </CollapsibleCat>
   );
 });

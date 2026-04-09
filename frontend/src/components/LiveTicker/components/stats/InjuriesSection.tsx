@@ -1,4 +1,5 @@
 import { memo } from "react";
+import { CollapsibleCat } from "../Collapsible";
 import type { InjuryPlayer } from "../../../../types";
 
 interface InjuriesBlock {
@@ -18,7 +19,7 @@ export const InjuriesSection = memo(function InjuriesSection({
   if (!injuriesBlock) return null;
 
   return (
-    <>
+    <CollapsibleCat title="🤕 Verletzt / Fraglich">
       <div className="lt-lineup-grid">
         <div>
           <div className="lt-pcat__col-hd lt-pcat__col-hd--home">
@@ -89,6 +90,6 @@ export const InjuriesSection = memo(function InjuriesSection({
           </ul>
         </div>
       </div>
-    </>
+    </CollapsibleCat>
   );
 });
