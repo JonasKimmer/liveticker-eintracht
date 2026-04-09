@@ -57,16 +57,16 @@
 
 /* ============================================================
    LAYOUT
-   Normal:     [Events 320px] | [Ticker 1fr] | [Stats 380px]
-   Auto-Modus: [Ticker 1fr]   | [Stats 380px]  (Events nicht gerendert)
+   Normal:     [Events 320px] | [Ticker 1fr] | [Stats 440px]
+   Auto-Modus: [Ticker 1fr]   | [Stats 440px]  (Events nicht gerendert)
    ============================================================ */
 .lt-columns {
   display: grid;
-  grid-template-columns: 320px 1fr 380px;
+  grid-template-columns: 320px 1fr 440px;
   min-height: calc(100vh - var(--lt-top-bar-h, 224px));
 }
 .lt-columns--auto {
-  grid-template-columns: 1fr 380px;
+  grid-template-columns: 1fr 440px;
 }
 .lt-col {
   overflow-y: auto;
@@ -87,6 +87,7 @@
   background: var(--lt-bg-card);
   overflow-x: hidden;
   min-width: 0;
+  container-type: inline-size;
 }
 
 /* ============================================================

@@ -195,7 +195,7 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  max-width: clamp(44px, 8vw, 60px);
+  max-width: 52px;
   line-height: 1.2;
 }
 
@@ -407,20 +407,50 @@
   flex: 1;
 }
 
-/* ── Responsive: schmale Phones ≤ 480px ─────────────────── */
-@media (max-width: 480px) {
-  /* Formation-Namen etwas breiter */
-  .lt-formation-player__name {
-    max-width: 56px;
+/* ── Container Query: Panel ≤ 400px → 1-spaltig ─────────── */
+@container (max-width: 400px) {
+  /* Aufstellung + Auswechselbank: eine Spalte */
+  .lt-lineup-grid {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
   }
 
-  /* Away-Formation spiegeln: Stürmer oben, Torwart unten */
-  .lt-formation-column--away .lt-formation-rows {
-    flex-direction: column-reverse;
+  /* Away-Label linksbündig wenn gestapelt */
+  .lt-lineup-team-label--away {
+    text-align: left;
+    border-bottom-color: var(--lt-color-away);
+  }
+
+  /* Beste Spieler Kategorien: eine Spalte */
+  .lt-pcat__cols {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+
+  /* Away-Zeile nicht gespiegelt */
+  .lt-pcat__row--away {
+    flex-direction: row;
+  }
+
+  /* Away-Teamheader linksbündig */
+  .lt-pcat__col-hd--away {
+    text-align: left;
+  }
+
+  /* Formation-Namen etwas breiter wenn 1-spaltig */
+  .lt-formation-player__name {
+    max-width: 64px;
   }
 
   /* Lineup-Schrift minimal kleiner */
   .lt-lineup-list li {
     font-size: 0.7rem;
+  }
+}
+
+/* Away-Formation spiegeln auf schmalen Screens (unabhängig von Container) */
+@media (max-width: 480px) {
+  .lt-formation-column--away .lt-formation-rows {
+    flex-direction: column-reverse;
   }
 }
