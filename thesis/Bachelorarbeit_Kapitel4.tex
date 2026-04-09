@@ -1,8 +1,8 @@
-\section{Systemkonzeption}\label{systemkonzeption}
+\chapter{Systemkonzeption}\label{systemkonzeption}
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
-\subsection{Überblick und
+\section{Überblick und
 Schichtenmodell}\label{uxfcberblick-und-schichtenmodell}
 
 Das System ist als \textbf{eigenständiger Cloud-Service} konzipiert, der
@@ -50,7 +50,7 @@ und Kommunikationspfaden:
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
-\subsubsection{Kommunikations- und
+\subsection{Kommunikations- und
 Triggerarchitektur}\label{kommunikations--und-triggerarchitektur}
 
 Der Kommunikationsfluss folgt dem Prinzip \textbf{„read first, trigger
@@ -103,7 +103,7 @@ weitgehend automatisierte Live-Prozesse.
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
-\subsubsection{Partner-Team-Konzept und
+\subsection{Partner-Team-Konzept und
 White-Label-Steuerung}\label{partner-team-konzept-und-white-label-steuerung}
 
 Das System unterscheidet zwischen dem \textbf{Partner-Team} --- dem
@@ -138,9 +138,9 @@ vorgesehen ist. Die konkreten Implementierungen sind in Kapitel 5.2.2
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
-\subsection{Backend-Konzeption}\label{backend-konzeption}
+\section{Backend-Konzeption}\label{backend-konzeption}
 
-\subsubsection{Framework-Wahl: FastAPI}\label{framework-wahl-fastapi}
+\subsection{Framework-Wahl: FastAPI}\label{framework-wahl-fastapi}
 
 Als Backend-Framework wurde FastAPI gewählt (vgl. Abschnitt 3.6.2 für
 die technische Einordnung). Die Entscheidung begründet sich durch drei
@@ -155,7 +155,7 @@ Eingaben gegen typisierte Schemas validiert werden.
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
-\subsubsection{Interne Struktur und
+\subsection{Interne Struktur und
 Datenzugriff}\label{interne-struktur-und-datenzugriff}
 
 Die interne Struktur folgt einer klaren Trennung aus API-Routern,
@@ -181,7 +181,7 @@ verbessert Wartbarkeit und Testbarkeit.
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
-\subsubsection{API-Design und
+\subsection{API-Design und
 Endpunktstrategie}\label{api-design-und-endpunktstrategie}
 
 Die Backend-Schnittstelle ist als versionierte REST-API unter
@@ -205,7 +205,7 @@ Frontend und n8n-Workflows deterministisch reagieren können.
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
-\subsubsection{Asynchronität, Nebenläufigkeit und
+\subsection{Asynchronität, Nebenläufigkeit und
 Performance}\label{asynchronituxe4t-nebenluxe4ufigkeit-und-performance}
 
 Die Laufzeitkonzeption setzt Asynchronität gezielt auf I/O-intensiven
@@ -235,7 +235,7 @@ entlastet wird.
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
-\subsubsection{Fehlerbehandlung, Robustheit und
+\subsection{Fehlerbehandlung, Robustheit und
 Betriebsaspekte}\label{fehlerbehandlung-robustheit-und-betriebsaspekte}
 
 Für den Live-Betrieb wurde das Backend auf robuste Fehlerbehandlung und
@@ -252,7 +252,7 @@ fortgeführt werden.
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
-\subsubsection{Sicherheitskonzept}\label{sicherheitskonzept}
+\subsection{Sicherheitskonzept}\label{sicherheitskonzept}
 
 Das System adressiert Sicherheit auf drei Ebenen, wobei der
 Projektrahmen einer Bachelorarbeit eine bewusste Priorisierung
@@ -284,7 +284,7 @@ Erweiterungsperspektive eingeordnet.
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
-\subsection{Datenbankkonzeption}\label{datenbankkonzeption}
+\section{Datenbankkonzeption}\label{datenbankkonzeption}
 
 Die Persistenzschicht basiert auf PostgreSQL und umfasst in der
 aktuellen Fassung \textbf{18 Tabellen} (17 ORM-Modelle sowie eine
@@ -300,7 +300,7 @@ Datenbanken erhalten bleiben. Das Schema ist auf einen stabilen
 Live-Betrieb mit wiederholbaren Importen, klaren Zustandsübergängen und
 nachvollziehbaren Redaktionsentscheidungen ausgelegt.
 
-\subsubsection{Schemadesign-Prinzipien}\label{schemadesign-prinzipien}
+\subsection{Schemadesign-Prinzipien}\label{schemadesign-prinzipien}
 
 Die folgende Abbildung zeigt die zentralen Entitäten und ihre
 Beziehungen:
@@ -355,7 +355,7 @@ Normalisierung und gezielter Schemaflexibilität:
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
-\subsubsection{Status-Lifecycle der
+\subsection{Status-Lifecycle der
 Ticker-Einträge}\label{status-lifecycle-der-ticker-eintruxe4ge}
 
 Jeder Ticker-Eintrag in \texttt{ticker\_entries} folgt einem klaren
@@ -401,7 +401,7 @@ allein auf den Tabellenzustand zu stützen.
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
-\subsubsection{Die drei Betriebsmodi}\label{die-drei-betriebsmodi}
+\subsection{Die drei Betriebsmodi}\label{die-drei-betriebsmodi}
 
 Das Feld \texttt{ticker\_mode} in \texttt{matches} steuert das Verhalten
 der Generierungspipeline pro Spiel und ist zur Laufzeit umschaltbar über
@@ -434,7 +434,7 @@ dargestellt.
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
-\subsubsection{Integrität, Idempotenz und
+\subsection{Integrität, Idempotenz und
 Auswertbarkeit}\label{integrituxe4t-idempotenz-und-auswertbarkeit}
 
 Für den Zusammenschluss aus n8n-Workflows, externen APIs und
@@ -466,7 +466,7 @@ Backend-Routen ist die Datenbank auf idempotente Verarbeitung ausgelegt:
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
-\subsection{Workflow-Konzeption (n8n)}\label{workflow-konzeption-n8n}
+\section{Workflow-Konzeption (n8n)}\label{workflow-konzeption-n8n}
 
 Die Workflow-Schicht ist als entkoppelte Orchestrierungsebene zwischen
 externen Datenquellen und Backend ausgelegt. n8n wurde gegenüber
@@ -479,7 +479,7 @@ Transformation, Persistenzvorbereitung und Triggersteuerung, während das
 FastAPI-Backend als transaktionaler Kern und Integrationspunkt für
 Frontend und KI-Generierung fungiert.
 
-\subsubsection{Workflow-Klassen und
+\subsection{Workflow-Klassen und
 Verantwortlichkeiten}\label{workflow-klassen-und-verantwortlichkeiten}
 
 Alle Generierungs-Workflows folgen einem konsistenten
@@ -532,7 +532,7 @@ dokumentiert.
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
-\subsubsection{Workflow-Grenzen und projektspezifische
+\subsection{Workflow-Grenzen und projektspezifische
 Besonderheiten}\label{workflow-grenzen-und-projektspezifische-besonderheiten}
 
 Die Workflow-Landschaft ist funktional umfassend, enthält aber bewusst
@@ -561,9 +561,9 @@ modularen, nachvollziehbaren und erweiterbaren Ablauf zusammenführt.
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
-\subsection{KI-Komponente}\label{ki-komponente}
+\section{KI-Komponente}\label{ki-komponente}
 
-\subsubsection{Multi-Provider-Architektur}\label{multi-provider-architektur}
+\subsection{Multi-Provider-Architektur}\label{multi-provider-architektur}
 
 Die KI-Komponente ist als providerunabhängige Abstraktionsschicht
 implementiert. Der LLM-Dienst kapselt mehrere Anbieter hinter einer
@@ -646,7 +646,7 @@ insbesondere für Evaluationsvergleiche zwischen Modellen genutzt wird
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
-\subsubsection{Prompt-Engineering-Strategie}\label{prompt-engineering-strategie}
+\subsection{Prompt-Engineering-Strategie}\label{prompt-engineering-strategie}
 
 Die Generierung verwendet ein template-basiertes Prompting mit modularen
 Bausteinen, die dynamisch zusammengesetzt werden:
@@ -694,7 +694,7 @@ Abweichungen vom Originaltext zu minimieren.
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
-\subsubsection{Stilprofile und
+\subsection{Stilprofile und
 Instanzspezifik}\label{stilprofile-und-instanzspezifik}
 
 Das System unterstützt drei zentrale Stilprofile:
@@ -725,7 +725,7 @@ aufrufende Workflow übergibt.
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
-\subsubsection{Mehrsprachigkeit}\label{mehrsprachigkeit}
+\subsection{Mehrsprachigkeit}\label{mehrsprachigkeit}
 
 Die Mehrsprachigkeit ist als First-Class-Parameter der LLM-Pipeline
 implementiert: Die Zielsprache (\texttt{language}, Standard \texttt{de})
@@ -756,9 +756,9 @@ Referenzen wäre der naheliegende Folgeschritt (vgl. Kap. 8.3.2).
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
-\subsection{Frontend-Konzeption}\label{frontend-konzeption}
+\section{Frontend-Konzeption}\label{frontend-konzeption}
 
-\subsubsection{Architekturprinzipien}\label{architekturprinzipien}
+\subsection{Architekturprinzipien}\label{architekturprinzipien}
 
 Das Frontend ist als React-Client mit TypeScript und klarer Trennung
 zwischen UI-Komponenten, datenbezogenen Hooks und API-Zugriffsschicht
@@ -778,7 +778,7 @@ mit dem Backend.
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
-\subsubsection{Hook- und
+\subsection{Hook- und
 State-Architektur}\label{hook--und-state-architektur}
 
 Die Zustands- und Interaktionslogik ist in wiederverwendbare Custom
@@ -815,7 +815,7 @@ gliedern lassen:
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
-\subsubsection{Dreispalten-Layout und
+\subsection{Dreispalten-Layout und
 Redaktionsfluss}\label{dreispalten-layout-und-redaktionsfluss}
 
 Die Hauptansicht folgt einem responsiven Dreispalten-Ansatz mit klarer
@@ -845,7 +845,7 @@ Aufgabenverteilung:
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
-\subsubsection{Moduslogik und
+\subsection{Moduslogik und
 Interaktionsdesign}\label{moduslogik-und-interaktionsdesign}
 
 Die Modusumschaltung (vgl. Kap. 4.3.3 für Modi-Definition) ist zentraler
@@ -859,7 +859,7 @@ Tastatur-Interaktionen für den Accept-/Reject-Flow (\texttt{TAB} /
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
-\subsubsection{Kommunikationsmuster im
+\subsection{Kommunikationsmuster im
 Frontend}\label{kommunikationsmuster-im-frontend}
 
 Das Frontend setzt die in Kapitel 4.1.1 definierte hybride
@@ -875,10 +875,10 @@ Reconnect-Parameter sind in Kapitel 5.4.3--5.4.5 dokumentiert.
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
-\subsection{Skalierbarkeit, Erweiterbarkeit und
+\section{Skalierbarkeit, Erweiterbarkeit und
 Systemgrenzen}\label{skalierbarkeit-erweiterbarkeit-und-systemgrenzen}
 
-\subsubsection{Horizontale Skalierung des
+\subsection{Horizontale Skalierung des
 Backends}\label{horizontale-skalierung-des-backends}
 
 Die Anwendungsschicht ist zustandslos konzipiert und kann horizontal
@@ -895,7 +895,7 @@ verteiltes Pub/Sub-System (z. B. Redis) ergänzt werden.
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
-\subsubsection{Erweiterung um neue
+\subsection{Erweiterung um neue
 Ereignistypen}\label{erweiterung-um-neue-ereignistypen}
 
 Neue Ereignistypen können ohne Datenbankschema-Änderungen ergänzt
@@ -912,7 +912,7 @@ Typ-Strings entkoppelt.
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
-\subsubsection{Erweiterung um neue
+\subsection{Erweiterung um neue
 LLM-Anbieter}\label{erweiterung-um-neue-llm-anbieter}
 
 Der LLM-Dienst dispatcht über ein zentrales Dictionary auf den
@@ -928,7 +928,7 @@ Modelle ohne separate API-Clients bietet.
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
-\subsubsection{Deployment-Architektur}\label{deployment-architektur}
+\subsection{Deployment-Architektur}\label{deployment-architektur}
 
 Das System wird auf der Cloud-Plattform \textbf{Render} betrieben und
 gliedert sich in drei Deployment-Einheiten:
@@ -959,7 +959,7 @@ Skalierung der einzelnen Dienste.
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
-\subsection{Fazit der
+\section{Fazit der
 Systemkonzeption}\label{fazit-der-systemkonzeption}
 
 Die Systemkonzeption legt fünf interdependente Designpfeiler fest, die
