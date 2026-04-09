@@ -175,6 +175,8 @@ export const RightPanel = memo(function RightPanel() {
             playerName={playerName}
             playerStats={playerStats}
             subMinuteMap={subMinuteMap}
+            homeAbbr={homeAbbr}
+            awayAbbr={awayAbbr}
           />
 
           <InjuriesSection injuriesBlock={injuriesBlock} />

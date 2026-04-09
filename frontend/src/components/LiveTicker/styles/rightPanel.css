@@ -48,6 +48,8 @@
   letter-spacing: 0.08em;
   color: var(--lt-color-home);
   text-align: right;
+  border-bottom: 1px solid var(--lt-color-home);
+  padding-bottom: 0.1rem;
 }
 .lt-stat-teams__away {
   font-family: var(--lt-font-mono);
@@ -57,6 +59,8 @@
   letter-spacing: 0.08em;
   color: var(--lt-color-away);
   text-align: left;
+  border-bottom: 1px solid var(--lt-color-away);
+  padding-bottom: 0.1rem;
 }
 .lt-stat-row {
   display: grid;
@@ -123,9 +127,13 @@
 }
 .lt-lineup-team-label--home {
   color: var(--lt-color-home);
+  border-bottom: 1px solid var(--lt-color-home);
+  padding-bottom: 0.1rem;
 }
 .lt-lineup-team-label--away {
   color: var(--lt-color-away);
+  border-bottom: 1px solid var(--lt-color-away);
+  padding-bottom: 0.1rem;
 }
 .lt-lineup-formation {
   font-family: var(--lt-font-mono);
@@ -401,33 +409,6 @@
 
 /* ── Responsive: schmale Phones ≤ 480px ─────────────────── */
 @media (max-width: 480px) {
-  /* Aufstellung + Auswechselbank: eine Spalte statt zwei */
-  .lt-lineup-grid {
-    grid-template-columns: 1fr;
-    gap: 0.75rem;
-  }
-
-  /* Away-Spalte linksbündig (war rechts durch Reihenfolge) */
-  .lt-lineup-team-label--away {
-    text-align: left;
-  }
-
-  /* Beste Spieler Kategorien: eine Spalte */
-  .lt-pcat__cols {
-    grid-template-columns: 1fr;
-    gap: 0;
-  }
-
-  /* Away-Zeile nicht mehr umgekehrt */
-  .lt-pcat__row--away {
-    flex-direction: row;
-  }
-
-  /* Away-Teamheader linksbündig */
-  .lt-pcat__col-hd--away {
-    text-align: left;
-  }
-
   /* Formation-Namen etwas breiter */
   .lt-formation-player__name {
     max-width: 56px;
