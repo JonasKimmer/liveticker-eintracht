@@ -191,18 +191,20 @@ export const RightPanel = memo(function RightPanel() {
                 {homeAbbr}
               </div>
               {topHome.map((p) => (
-                <div key={p.id} className="lt-pcat__row">
+                <div key={p.id} className="lt-pcat__row" style={{ alignItems: "flex-start" }}>
                   <span className="lt-pcat__val">{p.rating?.toFixed(1) ?? "–"}</span>
-                  <span className="lt-pcat__name">
-                    {p.resolvedName ?? `#${p.jerseyNumber ?? "?"}`}
-                    <span className="lt-prow__sub" style={{ display: "inline", marginLeft: "0.25rem" }}>
+                  <div style={{ minWidth: 0, overflow: "hidden" }}>
+                    <span className="lt-pcat__name">
+                      {p.resolvedName ?? `#${p.jerseyNumber ?? "?"}`}
+                    </span>
+                    <span className="lt-prow__sub" style={{ whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", display: "block" }}>
                       {p.minutes ?? 0}'{p.goals > 0 && ` ⚽${p.goals}`}
                       {p.assists > 0 && ` 🅰️${p.assists}`}
                       {p.shotsOnTarget > 0 && ` 🎯${p.shotsOnTarget}`}
                       {p.cardsYellow > 0 && " 🟨"}
                       {p.cardsRed > 0 && " 🟥"}
                     </span>
-                  </span>
+                  </div>
                 </div>
               ))}
             </div>
@@ -211,18 +213,20 @@ export const RightPanel = memo(function RightPanel() {
                 {awayAbbr}
               </div>
               {topAway.map((p) => (
-                <div key={p.id} className="lt-pcat__row lt-pcat__row--away">
+                <div key={p.id} className="lt-pcat__row lt-pcat__row--away" style={{ alignItems: "flex-start" }}>
                   <span className="lt-pcat__val">{p.rating?.toFixed(1) ?? "–"}</span>
-                  <span className="lt-pcat__name">
-                    {p.resolvedName ?? `#${p.jerseyNumber ?? "?"}`}
-                    <span className="lt-prow__sub" style={{ display: "inline", marginLeft: "0.25rem" }}>
+                  <div style={{ minWidth: 0, overflow: "hidden" }}>
+                    <span className="lt-pcat__name">
+                      {p.resolvedName ?? `#${p.jerseyNumber ?? "?"}`}
+                    </span>
+                    <span className="lt-prow__sub" style={{ whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", display: "block" }}>
                       {p.minutes ?? 0}'{p.goals > 0 && ` ⚽${p.goals}`}
                       {p.assists > 0 && ` 🅰️${p.assists}`}
                       {p.shotsOnTarget > 0 && ` 🎯${p.shotsOnTarget}`}
                       {p.cardsYellow > 0 && " 🟨"}
                       {p.cardsRed > 0 && " 🟥"}
                     </span>
-                  </span>
+                  </div>
                 </div>
               ))}
             </div>
