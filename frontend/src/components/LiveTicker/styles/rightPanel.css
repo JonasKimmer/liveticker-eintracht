@@ -427,6 +427,10 @@
 }
 
 @container (max-width: 480px) {
+  .lt-formation-column--away {
+    display: flex;
+    flex-direction: column-reverse;
+  }
   .lt-formation-column--away .lt-formation-rows {
     flex-direction: column-reverse;
   }
