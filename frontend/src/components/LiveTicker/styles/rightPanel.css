@@ -44,7 +44,6 @@
   font-family: var(--lt-font-mono);
   font-size: 0.62rem;
   font-weight: 700;
-  text-transform: uppercase;
   letter-spacing: 0.06em;
   color: var(--lt-color-home);
   border-bottom: 1px solid var(--lt-color-home);
@@ -54,7 +53,6 @@
   font-family: var(--lt-font-mono);
   font-size: 0.62rem;
   font-weight: 700;
-  text-transform: uppercase;
   letter-spacing: 0.06em;
   color: var(--lt-color-away);
   text-align: right;
@@ -120,7 +118,6 @@
   font-family: var(--lt-font-mono);
   font-size: 0.62rem;
   font-weight: 700;
-  text-transform: uppercase;
   letter-spacing: 0.06em;
   padding: 0.1rem 0;
   margin-bottom: 0.15rem;
@@ -391,8 +388,7 @@
   font-size: 0.72rem;
   font-weight: 700;
   color: var(--lt-text-sec);
-  min-width: 14px;
-  text-align: center;
+  flex-shrink: 0;
 }
 .lt-pcat__name {
   font-family: var(--lt-font-mono);

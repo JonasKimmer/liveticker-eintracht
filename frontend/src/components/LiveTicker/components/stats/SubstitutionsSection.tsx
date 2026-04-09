@@ -24,52 +24,39 @@ export const SubstitutionsSection = memo(function SubstitutionsSection({
 }: SubstitutionsSectionProps) {
   if (homeSubs.length === 0 && awaySubs.length === 0) return null;
 
+  const sorted = (list: LineupEntry[]) =>
+    [...list].sort((a, b) => (a.jerseyNumber ?? 99) - (b.jerseyNumber ?? 99));
+
+  const renderPlayer = (p: LineupEntry) => (
+    <div key={p.id} className="lt-pcat__row">
+      <span className="lt-pcat__val">
+        {p.jerseyNumber != null ? `#${p.jerseyNumber}` : "–"}
+      </span>
+      <div style={{ minWidth: 0 }}>
+        <span className="lt-pcat__name">
+          {playerName(p.playerId) ?? `#${p.jerseyNumber ?? "?"}`}
+        </span>
+        <span className="lt-prow__sub">
+          <PlayerBadges
+            entry={p}
+            stat={playerStats.find((s) => s.playerId === p.playerId)}
+            subMinuteMap={subMinuteMap}
+          />
+        </span>
+      </div>
+    </div>
+  );
+
   return (
     <CollapsibleCat title="🔄 Auswechselbank">
-      <div className="lt-lineup-grid">
+      <div className="lt-pcat__cols">
         <div>
           <div className="lt-pcat__col-hd lt-pcat__col-hd--home">{homeAbbr}</div>
-          <ul className="lt-lineup-list">
-            {homeSubs
-              .sort((a, b) => (a.jerseyNumber ?? 99) - (b.jerseyNumber ?? 99))
-              .map((p) => (
-                <li key={p.id}>
-                  {p.jerseyNumber != null && (
-                    <span className="lt-lineup-num">#{p.jerseyNumber}</span>
-                  )}
-                  <span>
-                    {playerName(p.playerId) ?? `#${p.jerseyNumber ?? "?"}`}
-                  </span>
-                  <PlayerBadges
-                    entry={p}
-                    stat={playerStats.find((s) => s.playerId === p.playerId)}
-                    subMinuteMap={subMinuteMap}
-                  />
-                </li>
-              ))}
-          </ul>
+          {sorted(homeSubs).map(renderPlayer)}
         </div>
         <div>
           <div className="lt-pcat__col-hd lt-pcat__col-hd--away">{awayAbbr}</div>
-          <ul className="lt-lineup-list">
-            {awaySubs
-              .sort((a, b) => (a.jerseyNumber ?? 99) - (b.jerseyNumber ?? 99))
-              .map((p) => (
-                <li key={p.id}>
-                  {p.jerseyNumber != null && (
-                    <span className="lt-lineup-num">#{p.jerseyNumber}</span>
-                  )}
-                  <span>
-                    {playerName(p.playerId) ?? `#${p.jerseyNumber ?? "?"}`}
-                  </span>
-                  <PlayerBadges
-                    entry={p}
-                    stat={playerStats.find((s) => s.playerId === p.playerId)}
-                    subMinuteMap={subMinuteMap}
-                  />
-                </li>
-              ))}
-          </ul>
+          {sorted(awaySubs).map(renderPlayer)}
         </div>
       </div>
     </CollapsibleCat>
