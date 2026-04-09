@@ -191,7 +191,7 @@ export const RightPanel = memo(function RightPanel() {
                 {homeAbbr}
               </div>
               {topHome.map((p) => (
-                <div key={p.id} className="lt-pcat__row" style={{ alignItems: "flex-start" }}>
+                <div key={p.id} className="lt-pcat__row" style={{ alignItems: "baseline" }}>
                   <span className="lt-pcat__val">{p.rating?.toFixed(1) ?? "–"}</span>
                   <div style={{ minWidth: 0, overflow: "hidden" }}>
                     <span className="lt-pcat__name">
@@ -213,7 +213,7 @@ export const RightPanel = memo(function RightPanel() {
                 {awayAbbr}
               </div>
               {topAway.map((p) => (
-                <div key={p.id} className="lt-pcat__row lt-pcat__row--away" style={{ alignItems: "flex-start" }}>
+                <div key={p.id} className="lt-pcat__row lt-pcat__row--away" style={{ alignItems: "baseline" }}>
                   <span className="lt-pcat__val">{p.rating?.toFixed(1) ?? "–"}</span>
                   <div style={{ minWidth: 0, overflow: "hidden" }}>
                     <span className="lt-pcat__name">
