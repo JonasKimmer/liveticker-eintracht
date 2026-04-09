@@ -426,8 +426,7 @@
   }
 }
 
-/* Away-Formation spiegeln auf schmalen Screens (unabhängig von Container) */
-@media (max-width: 480px) {
+@container (max-width: 480px) {
   .lt-formation-column--away .lt-formation-rows {
     flex-direction: column-reverse;
   }
