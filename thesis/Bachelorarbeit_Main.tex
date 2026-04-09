@@ -26,15 +26,29 @@
 \let\tightlist\relax
 \providecommand{\tightlist}{\setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
 
-% Define Shaded and Highlighting environments for code blocks
+% Define Shaded and Highlighting environments for pandoc-generated code blocks
 \definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}
-\newenvironment{Shaded}{\begin{snugshade}}{\end{snugshade}}
+% Disable babel's active " inside code blocks to prevent conflicts (e.g. in erDiagram)
+\newenvironment{Shaded}{%
+  \shorthandoff{"}%
+  \begin{snugshade}}{%
+  \end{snugshade}%
+  \shorthandon{"}}
 
-\newenvironment{Highlighting}[1]{%
-  \begin{minted}[linenos=false,breaklines=true,breaksymbolleft=,bgcolor=shadecolor]{#1}}
-{\end{minted}}
+% Highlighting uses Verbatim with commandchars so \NormalTok{} etc. are processed correctly
+\newenvironment{Highlighting}[1][]{%
+  \begin{Verbatim}[commandchars=\\\{\}]}{\end{Verbatim}}
 
-\usepackage{minted}
+% Pandoc token commands – NormalTok is the only one used; define others as no-ops for safety
+\newcommand{\NormalTok}[1]{#1}
+\providecommand{\KeywordTok}[1]{\textcolor[rgb]{0.00,0.44,0.13}{\textbf{#1}}}
+\providecommand{\StringTok}[1]{\textcolor[rgb]{0.25,0.44,0.63}{#1}}
+\providecommand{\CommentTok}[1]{\textcolor[rgb]{0.38,0.63,0.69}{\textit{#1}}}
+\providecommand{\OtherTok}[1]{\textcolor[rgb]{0.00,0.44,0.13}{#1}}
+\providecommand{\AlertTok}[1]{\textcolor[rgb]{1.00,0.00,0.00}{#1}}
+\providecommand{\FunctionTok}[1]{\textcolor[rgb]{0.02,0.16,0.49}{#1}}
+\providecommand{\RegionMarkerTok}[1]{#1}
+\providecommand{\ErrorTok}[1]{\textcolor[rgb]{1.00,0.00,0.00}{\textbf{#1}}}
 
 \geometry{left=2.5cm, right=2cm, top=2.5cm, bottom=2.5cm}
 \onehalfspacing
