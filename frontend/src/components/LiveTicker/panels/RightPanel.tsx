@@ -4,7 +4,7 @@
 // ============================================================
 import { memo } from "react";
 import { Collapsible } from "../components/Collapsible";
-import { FormationColumn } from "../components/stats/FormationColumn";
+import { PitchFormation } from "../components/stats/PitchFormation";
 import { StatRow } from "../components/stats/StatRow";
 import { SubstitutionsSection } from "../components/stats/SubstitutionsSection";
 import { InjuriesSection } from "../components/stats/InjuriesSection";
@@ -117,25 +117,14 @@ export const RightPanel = memo(function RightPanel() {
       {/* 2. Aufstellung */}
       {(homeLineup.length > 0 || awayLineup.length > 0) && (
         <Collapsible title="📋 Aufstellung">
-          <div className="lt-lineup-grid lt-lineup-grid--formation">
-            <FormationColumn
-              lineup={homeStarters}
-              playerName={playerName}
-              playerStats={playerStats}
-              subMinuteMap={subMinuteMap}
-              abbr={homeAbbr}
-              labelClass="lt-lineup-team-label--home"
-            />
-            <FormationColumn
-              lineup={awayStarters}
-              playerName={playerName}
-              playerStats={playerStats}
-              subMinuteMap={subMinuteMap}
-              abbr={awayAbbr}
-              labelClass="lt-lineup-team-label--away"
-              away
-            />
-          </div>
+          <PitchFormation
+            homeStarters={homeStarters}
+            awayStarters={awayStarters}
+            homeAbbr={homeAbbr}
+            awayAbbr={awayAbbr}
+            playerName={playerName}
+            playerStats={playerStats}
+          />
           {(homeCoach || awayCoach) && (
             <>
               <div className="lt-right__section-title" style={{ marginTop: 12 }}>

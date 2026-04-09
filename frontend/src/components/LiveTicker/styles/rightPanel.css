@@ -435,3 +435,79 @@
     flex-direction: column-reverse;
   }
 }
+
+/* ── Pitch Formation ─────────────────────────────────────── */
+.lt-pitch-full { display: none; }
+.lt-pitch-halves {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+  margin-top: 0.25rem;
+}
+@container (max-width: 480px) {
+  .lt-pitch-full { display: block; }
+  .lt-pitch-halves { display: none; }
+}
+
+.lt-pitch-svg { width: 100%; display: block; }
+
+/* Pitch background & stripes */
+.lt-pitch-bg { fill: #1b3d25; }
+.lt-pitch-stripe-a { fill: #1b3d25; }
+.lt-pitch-stripe-b { fill: #1a3a23; }
+
+/* Pitch lines */
+.lt-pitch-outline {
+  fill: none;
+  stroke: rgba(255,255,255,0.28);
+  stroke-width: 0.6;
+}
+.lt-pitch-circle {
+  fill: none;
+  stroke: rgba(255,255,255,0.2);
+  stroke-width: 0.5;
+}
+.lt-pitch-spot { fill: rgba(255,255,255,0.35); }
+.lt-pitch-area {
+  fill: none;
+  stroke: rgba(255,255,255,0.22);
+  stroke-width: 0.5;
+}
+.lt-pitch-midline {
+  stroke: rgba(255,255,255,0.4);
+  stroke-width: 0.8;
+}
+
+/* Player dots */
+.lt-pitch-dot {
+  stroke: rgba(255,255,255,0.85);
+  stroke-width: 0.6;
+}
+.lt-pitch-dot--home { fill: var(--lt-color-home); }
+.lt-pitch-dot--away { fill: var(--lt-color-away); }
+
+/* Player text */
+.lt-pitch-num {
+  font-size: 2.8px;
+  font-weight: 700;
+  fill: #fff;
+  font-family: var(--lt-font-mono, monospace);
+}
+.lt-pitch-name {
+  font-size: 2.8px;
+  fill: rgba(255,255,255,0.85);
+  font-family: var(--lt-font-mono, monospace);
+}
+.lt-pitch-rating {
+  font-size: 2.4px;
+  fill: #f5a623;
+  font-weight: 700;
+  font-family: var(--lt-font-mono, monospace);
+}
+.lt-pitch-team {
+  font-size: 3.5px;
+  font-weight: 700;
+  font-family: var(--lt-font-mono, monospace);
+}
+.lt-pitch-team--home { fill: var(--lt-color-home); }
+.lt-pitch-team--away { fill: var(--lt-color-away); }
