@@ -9,6 +9,7 @@
   color: var(--lt-text);
   font-family: var(--lt-font-ui);
   user-select: none;
+  overflow-x: hidden;
 }
 
 /* Desktop: Top-Bar sticky (Header + MatchHeader + ModeBar als Einheit) */

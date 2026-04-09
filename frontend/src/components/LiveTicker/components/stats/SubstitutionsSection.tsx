@@ -21,9 +21,6 @@ export const SubstitutionsSection = memo(function SubstitutionsSection({
 
   return (
     <>
-      <div className="lt-right__section-title" style={{ marginTop: "12px" }}>
-        🔄 Einwechslungen
-      </div>
       <div className="lt-lineup-grid">
         <ul className="lt-lineup-list">
           {homeSubs

@@ -19,9 +19,6 @@ export const InjuriesSection = memo(function InjuriesSection({
 
   return (
     <>
-      <div className="lt-right__section-title" style={{ marginTop: "12px" }}>
-        🤕 Verletzt / Fraglich
-      </div>
       <div className="lt-lineup-grid">
         <div>
           <div className="lt-pcat__col-hd lt-pcat__col-hd--home">

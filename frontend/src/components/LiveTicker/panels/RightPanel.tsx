@@ -163,6 +163,12 @@ export const RightPanel = memo(function RightPanel() {
             </div>
           )}
 
+        </Collapsible>
+      )}
+
+      {/* 3. Auswechselbank */}
+      {(homeSubs.length > 0 || awaySubs.length > 0) && (
+        <Collapsible title="🔄 Auswechselbank">
           <SubstitutionsSection
             homeSubs={homeSubs}
             awaySubs={awaySubs}
@@ -170,12 +176,17 @@ export const RightPanel = memo(function RightPanel() {
             playerStats={playerStats}
             subMinuteMap={subMinuteMap}
           />
+        </Collapsible>
+      )}
 
+      {/* 4. Verletzt / Fraglich */}
+      {injuriesBlock && (
+        <Collapsible title="🤕 Verletzt / Fraglich">
           <InjuriesSection injuriesBlock={injuriesBlock} />
         </Collapsible>
       )}
 
-      {/* 3. Beste Spieler + Spieler-Statistiken */}
+      {/* 5. Beste Spieler + Spieler-Statistiken */}
       {(topHome.length > 0 || topAway.length > 0) && (
         <Collapsible title="⭐ Beste Spieler">
           <div className="lt-pcat__cols">
@@ -277,7 +288,7 @@ export const RightPanel = memo(function RightPanel() {
         </Collapsible>
       )}
 
-      {/* 4. Torschützen */}
+      {/* 6. Torschützen */}
       {topScorers.length > 0 && (
         <Collapsible title="⚽ Torschützen">
           {topScorers.map((p) => (
@@ -298,7 +309,7 @@ export const RightPanel = memo(function RightPanel() {
         </Collapsible>
       )}
 
-      {/* 5. Karten */}
+      {/* 7. Karten */}
       {withCards.length > 0 && (
         <Collapsible title="🟨 Karten">
           {withCards.map((p) => (
