@@ -191,9 +191,10 @@ export const RightPanel = memo(function RightPanel() {
                 {homeAbbr}
               </div>
               {topHome.map((p) => (
-                <div key={p.id} className="lt-prow lt-prow--home">
-                  <div className="lt-prow__body">
-                    <span className="lt-prow__name">
+                <div key={p.id} className="lt-pcat__row">
+                  <span className="lt-pcat__val">{p.rating?.toFixed(1) ?? "–"}</span>
+                  <div style={{ minWidth: 0 }}>
+                    <span className="lt-pcat__name">
                       {p.resolvedName ?? `#${p.jerseyNumber ?? "?"}`}
                     </span>
                     <span className="lt-prow__sub">
@@ -204,9 +205,6 @@ export const RightPanel = memo(function RightPanel() {
                       {p.cardsRed > 0 && " 🟥"}
                     </span>
                   </div>
-                  <span className="lt-prow__rating">
-                    {p.rating?.toFixed(1)}
-                  </span>
                 </div>
               ))}
             </div>
@@ -215,9 +213,9 @@ export const RightPanel = memo(function RightPanel() {
                 {awayAbbr}
               </div>
               {topAway.map((p) => (
-                <div key={p.id} className="lt-prow lt-prow--away">
-                  <div className="lt-prow__body">
-                    <span className="lt-prow__name">
+                <div key={p.id} className="lt-pcat__row lt-pcat__row--away">
+                  <div style={{ minWidth: 0 }}>
+                    <span className="lt-pcat__name">
                       {p.resolvedName ?? `#${p.jerseyNumber ?? "?"}`}
                     </span>
                     <span className="lt-prow__sub">
@@ -228,9 +226,7 @@ export const RightPanel = memo(function RightPanel() {
                       {p.cardsRed > 0 && " 🟥"}
                     </span>
                   </div>
-                  <span className="lt-prow__rating">
-                    {p.rating?.toFixed(1)}
-                  </span>
+                  <span className="lt-pcat__val">{p.rating?.toFixed(1) ?? "–"}</span>
                 </div>
               ))}
             </div>
