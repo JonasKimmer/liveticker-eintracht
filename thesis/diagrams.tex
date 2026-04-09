@@ -182,3 +182,89 @@
   \draw[arrow, bend right=45] (store) -- node[right, font=\tiny] {broadcast} (import);
 \end{tikzpicture}%
 }
+
+%% DIAGRAM 9: Ticker Generation Flow (Sequence-style, Kapitel 5)
+\newcommand{\DiagramTickerGenerationFlow}{%
+\begin{tikzpicture}[x=2.8cm, y=-1.1cm]
+  \tikzset{
+    actor/.style={rectangle, draw, fill=orange!15, text width=1.8cm, text centered,
+                  minimum height=0.65cm, font=\footnotesize},
+    msg/.style={->, thick, >=stealth, font=\tiny},
+    retmsg/.style={->, thick, dashed, >=stealth, font=\tiny},
+    altbox/.style={draw=blue!40, fill=blue!5, rounded corners=2pt},
+  }
+  % Participants (top row)
+  \foreach \x/\lbl in {0/n8n,1/FastAPI,2/PostgreSQL,3/LLM,4/Frontend}{
+    \node[actor] at (\x,0) {\lbl};
+    \draw[gray!50, thin] (\x,0.35) -- (\x,9.5);
+  }
+  % Messages
+  \draw[msg]    (0,1)   -- node[above]{POST /events}         (1,1);
+  \draw[msg]    (1,1.8) -- node[above]{INSERT events}        (2,1.8);
+  \draw[msg]    (0,2.6) -- node[above]{POST /ticker/generate/\{id\}} (1,2.6);
+  \draw[msg]    (1,3.4) -- node[above]{SELECT (Dedup-Check)} (2,3.4);
+  % Alt box: Neues Ereignis
+  \draw[altbox] (0.05,3.9) rectangle (3.95,7.6);
+  \node[font=\tiny, text=blue!70, anchor=north west] at (0.05,3.9) {[Neues Ereignis]};
+  \draw[msg]    (1,4.4) -- node[above]{SELECT match + teams} (2,4.4);
+  \draw[msg]    (1,5.1) -- node[above]{SELECT style\_refs}   (2,5.1);
+  \draw[msg]    (1,5.8) -- node[above]{Prompt (Fakten+Kontext+Few-Shot)} (3,5.8);
+  \draw[retmsg] (3,6.5) -- node[above]{Generierter Text}     (1,6.5);
+  \draw[msg]    (1,7.2) -- node[above]{INSERT ticker\_entry (draft|published)} (2,7.2);
+  \draw[retmsg] (1,7.9) -- node[above]{201 Created}          (0,7.9);
+  % Polling
+  \draw[msg]    (4,8.6) -- node[above]{GET /ticker/\{id\} (Polling 5 s)} (1,8.6);
+  \draw[retmsg] (1,9.3) -- node[above]{TickerEntry[]}        (4,9.3);
+\end{tikzpicture}%
+}
+
+%% DIAGRAM 10: React Frontend Component Tree (Kapitel 5)
+\newcommand{\DiagramFrontendComponentTree}{%
+\begin{tikzpicture}[
+  comp/.style={rectangle, draw, fill=blue!10, rounded corners, text centered,
+               font=\small, minimum height=0.6cm, text width=2.1cm},
+  sub/.style={rectangle, draw, fill=blue!5, rounded corners, text centered,
+              font=\tiny, minimum height=0.5cm, text width=1.7cm},
+  ctx/.style={rectangle, draw=orange!60, fill=orange!10, rounded corners, text centered,
+              font=\tiny, minimum height=0.5cm, text width=2cm},
+  arr/.style={->, thick, >=stealth},
+  ctxarr/.style={->, dashed, orange!70, >=stealth},
+]
+  % Root
+  \node[comp] (app) at (5,0) {App};
+  \node[comp] (lt)  at (5,-1.4) {LiveTicker};
+  \draw[arr] (app) -- (lt);
+
+  % Context annotation
+  \node[ctx]  (ctx) at (9,-1.4) {3 Contexts:\\Mode / Data / Actions};
+  \draw[ctxarr] (ctx.west) -- (lt.east);
+
+  % Three panels
+  \node[comp] (lp) at (1.5,-3) {LeftPanel};
+  \node[comp] (cp) at (5,-3)   {CenterPanel};
+  \node[comp] (rp) at (8.5,-3) {RightPanel};
+  \draw[arr] (lt) -- (lp);
+  \draw[arr] (lt) -- (cp);
+  \draw[arr] (lt) -- (rp);
+
+  % CenterPanel children
+  \node[sub] (ec) at (3.2,-4.8) {EventCard};
+  \node[sub] (ee) at (5,-4.8)   {EntryEditor};
+  \node[sub] (ai) at (6.8,-4.8) {AIDraft};
+  \draw[arr] (cp) -- (ec);
+  \draw[arr] (cp) -- (ee);
+  \draw[arr] (cp) -- (ai);
+
+  % Context callbacks
+  \draw[ctxarr, bend right=20] (ec.north) to node[left,font=\tiny]{onGenerate} (ctx.south);
+  \draw[ctxarr, bend left=10]  (ai.north) to node[right,font=\tiny]{onPublish} (ctx.south);
+
+  % LeftPanel child
+  \node[sub] (pe) at (1.5,-4.8) {PublishedEntry};
+  \draw[arr] (lp) -- (pe);
+
+  % RightPanel children
+  \node[sub] (coll) at (8.5,-4.8) {Collapsible\\StatRow etc.};
+  \draw[arr] (rp) -- (coll);
+\end{tikzpicture}%
+}
