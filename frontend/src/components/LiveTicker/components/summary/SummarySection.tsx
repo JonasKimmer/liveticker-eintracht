@@ -3,7 +3,7 @@ import { CollapsibleSection } from "../Collapsible";
 import { SummaryDraftCard } from "./SummaryDraftCard";
 import { SummaryRow, getDraftLabel } from "./SummaryRow";
 import { AutoPlayVideo } from "../AutoPlayVideo";
-import { PREMATCH_PHASES } from "../../constants";
+import { PREMATCH_PHASES, STATS_ENTRY_ICON } from "../../constants";
 import { useTickerDataContext } from "context/TickerDataContext";
 import { useTickerActionsContext } from "context/TickerActionsContext";
 import * as api from "api";
@@ -65,6 +65,7 @@ export function SummarySection({
         t.status === "draft" &&
         !t.event_id &&
         !t.video_url &&
+        t.icon !== STATS_ENTRY_ICON &&
         (isPrematch
           ? PREMATCH_PHASES.has(t.phase)
           : !PREMATCH_PHASES.has(t.phase)),

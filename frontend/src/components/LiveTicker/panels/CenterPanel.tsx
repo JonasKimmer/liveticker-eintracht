@@ -7,10 +7,11 @@ import { SummaryDraftCard } from "../components/summary/SummaryDraftCard";
 import { MediaPickerPanel } from "../components/media/MediaPickerPanel";
 import { SummarySection } from "../components/summary/SummarySection";
 import { PublishedSummarySection } from "../components/summary/PublishedSummarySection";
+import { StatsDraftSection } from "../components/summary/StatsDraftSection";
 import { YouTubePanel } from "../components/social/YouTubePanel";
 import { TwitterPanel } from "../components/social/TwitterPanel";
 import { InstagramPanel } from "../components/social/InstagramPanel";
-import { MODES, AUTO_ERROR_TIMEOUT_MS } from "../constants";
+import { MODES, AUTO_ERROR_TIMEOUT_MS, STATS_ENTRY_ICON } from "../constants";
 import { useTickerModeContext } from "context/TickerModeContext";
 import { useTickerDataContext } from "context/TickerDataContext";
 import { useTickerActionsContext } from "context/TickerActionsContext";
@@ -68,7 +69,14 @@ export const CenterPanel = memo<CenterPanelProps>(function CenterPanel({
   );
 
   const hasPendingSummaries = useMemo(
-    () => tickerTexts.some((t) => t.status === "draft" && !t.event_id && !t.video_url),
+    () =>
+      tickerTexts.some(
+        (t) =>
+          t.status === "draft" &&
+          !t.event_id &&
+          !t.video_url &&
+          t.icon !== STATS_ENTRY_ICON,
+      ),
     [tickerTexts],
   );
 
@@ -160,6 +168,11 @@ export const CenterPanel = memo<CenterPanelProps>(function CenterPanel({
               generatingId={bulkPublishingSection}
               onBulkPublish={handleBulkPublishSpielphase}
               onRegenerate={handleRegenerateSummaryDraft}
+            />
+
+            <StatsDraftSection
+              selectedId={selectedSummaryDraftId}
+              onSelect={setSelectedSummaryDraftId}
             />
 
             <PublishedSummarySection onRetract={setPendingAutoExpandId} />
