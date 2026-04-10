@@ -12,12 +12,12 @@ SYNTHETIC_EVENT_PHASE_MAP: dict[str, str] = {
     "match_kickoff": "FirstHalf",
     "match_halftime": "FirstHalfBreak",
     "match_second_half": "SecondHalf",
-    "match_fulltime": "After",
+    "match_fulltime": "FullTime",
     "match_extra_kickoff": "ExtraFirstHalf",
     "match_extra_halftime": "ExtraBreak",
     "match_penalties": "PenaltyShootout",
-    "match_fulltime_aet": "After",
-    "match_fulltime_pen": "After",
+    "match_fulltime_aet": "FullTime",
+    "match_fulltime_pen": "FullTime",
 }
 
 
@@ -90,7 +90,7 @@ STANDARD_PHASES: list[tuple[str, str, int]] = [
     ("match_kickoff", "FirstHalf", 1),
     ("match_halftime", "FirstHalfBreak", 45),
     ("match_second_half", "SecondHalf", 46),
-    ("match_fulltime", "After", 90),
+    ("match_fulltime", "FullTime", 90),
 ]
 
 
