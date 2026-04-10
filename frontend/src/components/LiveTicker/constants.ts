@@ -44,6 +44,7 @@ export const PHASE_SORT = {
   FirstHalfBreak: 45.5,
   Halftime: 45.5,
   SecondHalf: null,
+  FullTime: null,
   SecondHalfBreak: 90.5,
   ExtraFirstHalf: null,
   ExtraBreak: 105.5,
