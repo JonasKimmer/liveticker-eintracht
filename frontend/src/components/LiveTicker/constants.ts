@@ -116,7 +116,6 @@ export const PHASE_DEFAULT_ICON = {
   FirstHalfBreak: "📣",
   SecondHalfBreak: "📣",
   ExtraBreak: "📣",
-  After: "📣",
   FullTime: "📣",
   PenaltyShootout: "🥅",
 };
