@@ -94,11 +94,9 @@ export const PREMATCH_PHASES = new Set(["Before", "PreMatch"]);
 // null = Phase bekannt, aber Minutenspalte bleibt leer.
 export const PHASE_SHORT_LABEL: Partial<Record<string, string | null>> = {
   Before: "i",
-  After: "i",
-  FullTime: null,        // Abpfiff → leere Minutenspalte (kein minute-Wert erwartet)
-  Halftime: "i",         // Halbzeitanalyse via Halftime-Phase → Info-Icon
-  FirstHalfBreak: null,  // Halbzeit-Event/Analyse: null → leer wenn minute=null, sonst echte Minute
-  SecondHalf: "i",       // Anstoß 2. HZ → Info-Icon
+  FullTime: null, // null → echte Minute zeigen wenn vorhanden
+  Halftime: "i", // Halbzeitbericht via Halftime-Phase → Info-Icon (kein minute-Wert)
+  FirstHalfBreak: null, // null → echte Minute zeigen wenn vorhanden (z.B. 45')
   SecondHalfBreak: "Pause",
   ExtraBreak: "VZ·P",
   ExtraSecondHalfBreak: "Elfm.P",
@@ -155,7 +153,7 @@ export const INSTA_GRADIENT =
 // ── API-Status Anzeige-Konfiguration ─────────────────────────
 export const API_STATUS_CFG = {
   checking: { dot: "#6b7385", label: "Verbinde…" },
-  ok:       { dot: "#22c55e", label: "Bereit" },
+  ok: { dot: "#22c55e", label: "Bereit" },
   degraded: { dot: "#f59e0b", label: "Degradiert" },
-  offline:  { dot: "#ef4444", label: "Offline" },
+  offline: { dot: "#ef4444", label: "Offline" },
 };
