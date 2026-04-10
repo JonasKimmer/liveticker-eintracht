@@ -98,6 +98,7 @@ export const PREMATCH_PHASES = new Set(["Before", "PreMatch"]);
 export const PHASE_SHORT_LABEL: Partial<Record<string, string>> = {
   Before: "i",
   Halftime: "i",
+  After: "i",
   SecondHalfBreak: "Pause",
   ExtraBreak: "VZ·P",
   ExtraSecondHalfBreak: "Elfm.P",
