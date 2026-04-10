@@ -149,7 +149,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const text = $('OpenRouter1').first().json.choices?.[0]?.message?.content?.trim() ?? '';\nconst { match_id, phase, style, ticker_mode } = $('Build Prompt1').first().json;\nreturn [{ json: { match_id, phase, text, style, ticker_mode } }];"
+        "jsCode": "const text = $('OpenRouter1').first().json.choices?.[0]?.message?.content?.trim() ?? '';\nconst { match_id, phase, style, ticker_mode } = $('Build Prompt1').first().json;\n// Normalisierung: FirstHalfBreak → Halftime, damit Summary-Einträge nie phase=FirstHalfBreak haben\nconst normalizedPhase = phase === 'FirstHalfBreak' ? 'Halftime' : phase;\nreturn [{ json: { match_id, phase: normalizedPhase, text, style, ticker_mode } }];"
       },
       "id": "80655f09-967e-41c9-ad91-650bf97dfe8f",
       "name": "Extract Response1",

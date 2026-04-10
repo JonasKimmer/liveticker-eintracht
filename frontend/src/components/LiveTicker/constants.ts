@@ -55,10 +55,8 @@ export const PHASE_SORT = {
 // Fallback-Minuten wenn minute: null aber Phase bekannt
 export const PHASE_MINUTE_DEFAULT: Partial<Record<string, number>> = {
   FirstHalf: 1,
-  FirstHalfBreak: 45,
   SecondHalf: 46,
   FullTime: 90,
-  After: 90,
   ExtraFirstHalf: 91,
   ExtraSecondHalf: 106,
   PenaltyShootout: 121,
