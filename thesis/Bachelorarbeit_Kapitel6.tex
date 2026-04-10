@@ -534,9 +534,9 @@ Anthropic & \texttt{claude-haiku-4-5-20251001} & --- & --- & --- &
 }
 
 \emph{Messgrundlage: N = 16 deutschsprachige KI-generierte Einträge
-(OpenRouter), N = 7 (Mock), gemessen über 28 FullTime-Spiele auf dem
-Render-Deployment. Qualitätswerte (1--5) wurden manuell anhand der
-Kriterien aus Abschnitt 6.3.6 bewertet.}
+(OpenRouter), N = 7 (Mock), aus 9 Bundesliga-Spielen der Saison
+2024/25 auf dem Render-Deployment. Qualitätswerte (1--5) wurden
+manuell anhand der Kriterien aus Abschnitt 6.3.6 bewertet.}
 
 Die detaillierte Latenzanalyse einschließlich der Charakterisierung der
 Antwortzeit-Verteilung findet sich in Abschnitt 6.5.1. Die deskriptiven
@@ -887,10 +887,10 @@ Beispiel
 emotionale Formulierungen & „33. Minute: Oh nein! Lienhart sieht Gelb!
 \ldots{} Aber Kopf hoch, Jungs! Kämpfen!'' \emph{(angefordert:
 neutral)} \\
-\textbf{Fakten-Halluzination} & 1 / 16 (6 \%) & Das LLM erfindet
-Details, die nicht im Kontext stehen & Pre-Match-Text erfand eine
-Wettempfehlung: „Wir tippen auf Double Chance: Sieg \ldots{} oder
-Remis.'' \\
+\textbf{Fakten-Halluzination} & 1 / 16 (6 \%, statistisch instabil
+bei kleiner Stichprobe) & Das LLM erfindet Details, die nicht im
+Kontext stehen & Pre-Match-Text erfand eine Wettempfehlung: „Wir
+tippen auf Double Chance: Sieg \ldots{} oder Remis.'' \\
 \textbf{Score-Halluzination} & 1 / 9 (11 \%) & Spielstand aus
 Match-Kontext wird ignoriert, fiktiver Ausgang erzeugt & Abpfiff-Text
 „Eintracht schlägt die Bayern!'' bei übergebenem Spielstand 1:2

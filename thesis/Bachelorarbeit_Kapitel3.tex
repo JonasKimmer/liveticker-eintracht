@@ -40,7 +40,7 @@ voraussetzt. Kompakte Modelle bieten für solche kurzen, faktenbasierten
 Textgenerierungsaufgaben eine vergleichbare Qualität wie größere
 Modelle, bei deutlich niedrigerer Latenz und geringeren Kosten ---
 Eigenschaften, die für hochfrequente Echtzeit-Generierungsszenarien
-entscheidend sind (vgl. Kap. 4.5.1 für die konkrete Modellauswahl).
+entscheidend sind (vgl. Brown et al.~2020; OpenAI 2023).
 
 Trotz ihrer Leistungsfähigkeit weisen LLMs strukturelle Schwächen auf,
 insbesondere die Neigung zu \textbf{Halluzinationen} --- also der
@@ -87,7 +87,7 @@ Techniken unterscheiden:
   S. 13). Dieser Ansatz maximiert Flexibilität und eignet sich für
   generische Anwendungsfälle ohne spezifische Stilerwartungen.
 \item
-  \textbf{Few-Shot Prompting:} Dem Modell werden neben der
+  \textbf{Few-Shot-Prompting:} Dem Modell werden neben der
   Aufgabenbeschreibung zusätzlich wenige Beispiele (typischerweise 1--5)
   als Stilreferenz bereitgestellt. Diese Beispiele konditionieren das
   Modell auf eine gewünschte Tonalität, ohne dass ein modellseitiges
@@ -139,8 +139,7 @@ werden (z. B. „{[}Spieler{]} erzielt in der {[}Minute{]} Minute das
 {[}Tor-Nr.{]} für {[}Team{]}``). Der Vorteil liegt in vorhersagbarer
 Qualität und vollständiger Kontrolle über die Ausgabe; der Nachteil ist
 stilistische Monotonie und begrenzte sprachliche Variabilität.
-Puduppully und Lapata (2021, S. 520) beschreiben diese stilistische
-Monotonie und begrenzte sprachliche Variabilität als strukturelles
+Puduppully und Lapata (2021, S. 520) beschreiben dies als strukturelles
 Defizit regelbasierter Systeme, insbesondere bei komplexeren narrativen
 Anforderungen.
 

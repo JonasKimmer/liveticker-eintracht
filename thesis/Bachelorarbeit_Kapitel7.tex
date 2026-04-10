@@ -54,7 +54,8 @@ Die Arbeit leistet drei Beiträge zum aktuellen Forschungsstand:
 \item
   \textbf{Praktischer Beitrag}: Die White-Label-Architektur mit
   instanzspezifischer Stilsteuerung adressiert den in Kapitel 2.3
-  beschriebenen Bedarf von Vereinen als eigenständige Medienproduzenten.
+  beschriebenen Bedarf von Vereinen als eigenständige Medienproduzenten
+  (vgl. Abschnitt 7.3 für die ausführliche Diskussion).
 \end{enumerate}
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
@@ -132,7 +133,7 @@ weiteren Härtung der Codebasis.
 
 Die in Kapitel 2.5 hergeleiteten linguistischen Anforderungen an
 Liveticker --- Ellipsen, konzeptionelle Mündlichkeit, Graphostilistik
-(z. B. „TOOOOR!{\kern0pt}``) --- stellen besondere Anforderungen an die
+(z. B. „TOOOOR!!!") --- stellen besondere Anforderungen an die
 Prompt-Gestaltung. Die Erfahrung zeigt, dass LLMs dazu neigen, in einem
 formelleren Register zu schreiben als es das Genre Liveticker erfordert.
 Die Few-Shot-Referenzen aus der \texttt{style\_references}-Tabelle sind
@@ -153,7 +154,7 @@ Der in Kapitel 3.1 beschriebene Halluzinationseffekt ist im Kontext von
 Livetickern besonders kritisch, da fehlerhafte Fakten (falscher
 Torschütze, falsches Ergebnis) unmittelbar die Glaubwürdigkeit
 zerstören. Die explizite Schutzregel für Pre-Match-Prompts und die
-niedrige Temperatur (vgl. Abschnitt 7.4.2) sind Gegenmaßnahmen, deren
+niedrige Temperatur (vgl. Abschnitt 7.4.1) sind Gegenmaßnahmen, deren
 Wirksamkeit jedoch nur im \texttt{coop}-Modus durch die redaktionelle
 Kontrolle vollständig abgesichert ist. Im \texttt{auto}-Modus verbleibt
 ein Restrisiko fehlerhafter Veröffentlichungen.
@@ -207,7 +208,7 @@ Laufzeit per API-Call --- ermöglicht eine schrittweise Einführung in
 Redaktionen: Neue Nutzer können im \texttt{manual}-Modus beginnen, über
 den \texttt{coop}-Modus Vertrauen in die KI-Qualität aufbauen und für
 unkritische Standardereignisse schließlich den \texttt{auto}-Modus
-aktivieren. Diese Graduierung adressiert den in Kapitel 2.1
+aktivieren. Diese gestaffelte Einführung adressiert den in Kapitel 2.1
 beschriebenen Akzeptanzbedarf bei der Einführung KI-gestützter Werkzeuge
 in redaktionelle Workflows.
 

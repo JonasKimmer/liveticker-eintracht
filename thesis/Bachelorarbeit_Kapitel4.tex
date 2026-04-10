@@ -5,10 +5,13 @@
 \section{Überblick und
 Schichtenmodell}\label{uxfcberblick-und-schichtenmodell}
 
-Das System ist als \textbf{eigenständiger Cloud-Service} konzipiert, der
+Das System ist als \textbf{cloud-fähige Architektur} konzipiert, die
 alle Spiele der konfigurierten Wettbewerbe automatisch verarbeitet ---
-von der Datenimportierung über die KI-Textgenerierung bis zur
-Publikation. Es ist eine serviceorientierte, dreischichtige Architektur,
+von Datenimportierung über KI-Textgenerierung bis zur Publikation. Die
+Datenbeschaffungs- und Automatisierungsschicht (n8n) wird in der
+aktuellen Implementierung lokal über ngrok betrieben; für
+Produktivbetrieb müsste die n8n-Instanz auf einer Cloud-Plattform
+deployed werden. Es ist eine serviceorientierte, dreischichtige Architektur,
 die Datenbeschaffung, Anwendungslogik und Präsentation klar voneinander
 trennt. Diese Schichtentrennung folgt dem etablierten Prinzip der
 \emph{Separation of Concerns} (Parnas 1972), das die unabhängige
@@ -23,17 +26,19 @@ schreibt diese strukturiert in die Persistenzschicht beziehungsweise
 Integrationslogik in n8n ermöglicht eine schnelle Anpassung von
 Import-Workflows, ohne den Anwendungskern ändern zu müssen.
 
-Die \textbf{Anwendungs- und Persistenzschicht} basiert auf FastAPI
-(Python) und PostgreSQL. Sie stellt die REST-Schnittstellen bereit,
+Die \textbf{Logikschicht} basiert auf FastAPI (Python), während
+PostgreSQL als \textbf{Persistenzschicht} dient. Sie stellt die REST-Schnittstellen bereit,
 verwaltet den Zustandsübergang der Ticker-Einträge (z. B. draft,
 published, rejected), orchestriert KI-Generierungsschritte und übernimmt
 die konsistente Speicherung aller Domänendaten (u. a. Teams,
 Wettbewerbe, Spiele, Events, Statistiken, Ticker- und Media-Daten).
 
-Die \textbf{Präsentationsschicht} ist als White-Label-Frontend in React
+Die \textbf{Präsentationsschicht} ist als White-Label-Frontend mit React
 und TypeScript realisiert. Sie bildet den Redaktionsworkflow für
-Auswahl, Sichtung, Bearbeitung und Publikation ab und bleibt dabei
-mandantenfähig konfigurierbar (z. B. Instanz, Stil, Sprache, Branding).
+Auswahl, Bearbeitung und Publikation ab und bleibt dabei
+mandantenfähig konfigurierbar (z. B. Vereinsname, Stilprofil, Sprache,
+Farben und Instanzpfad, hinterlegt in
+\texttt{config/whitelabel.ts}).
 Technisch kombiniert das Frontend REST-basiertes Polling für Ticker- und
 Spieldaten mit einem dedizierten WebSocket-Kanal für
 Echtzeit-Medienupdates.
@@ -54,9 +59,11 @@ und Kommunikationspfaden:
 Triggerarchitektur}\label{kommunikations--und-triggerarchitektur}
 
 Der Kommunikationsfluss folgt dem Prinzip \textbf{„read first, trigger
-if missing''}: Das Frontend liest zunächst den vorhandenen Datenbestand
-über REST; nur bei fehlenden Daten wird ein passender n8n-Webhook
-ausgelöst. Dadurch werden externe API-Aufrufe minimiert und redundante
+if missing''} als Leitlinie: Das Frontend liest zunächst den
+vorhandenen Datenbestand über REST-Polling; bei fehlenden oder
+veralteten Daten können passende n8n-Webhooks ausgelöst werden. Im
+Live-Betrieb können Importe zusätzlich redaktionell manuell getriggert
+werden. Dadurch werden externe API-Aufrufe minimiert und redundante
 Importe vermieden.
 
 \begin{figure}[H]
@@ -85,16 +92,18 @@ Die Systemkopplung erfolgt über drei klar getrennte Schnittstellentypen:
     \textbf{Initialisierungs-Trigger} --- Aufbau fehlender Stammdaten
     (Länder, Teams, Wettbewerbe, Spiele)
   \item
-    \textbf{Match-Kontext-Trigger} --- spielbezogene Importe nach
-    Matchauswahl (Events, Lineups, Statistiken, Prematch)
+    \textbf{Match-Kontext-Trigger} --- spielbezogene Datenimporte nach
+    Matchauswahl (Events, Lineups, Statistiken), die mehrere
+    Generierungsschritte versorgen
   \item
-    \textbf{Generierungs-Trigger} --- Anstoß von KI-Textprozessen
-    (Event-basiert, Matchphasen, Zusammenfassungen)
+    \textbf{Generierungs-Trigger} --- ereignisbasierte KI-Textprozesse
+    sowie Matchphasen-Trigger (Anpfiff, Halbzeit, Abpfiff) und
+    Pre-Match-Generierung
   \end{enumerate}
 \item
   \textbf{WebSocket \texttt{/ws/media}} --- Echtzeit-Push für
-  latenzkritische Medieninhalte (ScorePlay-Bilder, Social-Media-Clips);
-  Ticker- und Matchdaten bleiben bewusst im Polling-Modell.
+  latenzkritische Medieninhalte (ScorePlay-Bilder); Ticker- und
+  Matchdaten bleiben bewusst im Polling-Modell.
 \end{itemize}
 
 Diese hybride Triggerarchitektur unterstützt sowohl redaktionelle
@@ -107,10 +116,11 @@ weitgehend automatisierte Live-Prozesse.
 White-Label-Steuerung}\label{partner-team-konzept-und-white-label-steuerung}
 
 Das System unterscheidet zwischen dem \textbf{Partner-Team} --- dem
-Verein, für den die White-Label-Instanz konfiguriert ist --- und den
-jeweiligen Gegnern. Diese Unterscheidung wird über ein konfigurierbares
-Team-Keyword umgesetzt, das sowohl in den n8n-Workflows als auch im
-Frontend gegen den Teamnamen abgeglichen wird.
+Verein, für den die White-Label-Instanz konfiguriert ist --- den
+jeweiligen Gegnern sowie neutralen Spielen ohne Beteiligung des
+Partner-Teams. Diese Unterscheidung wird über einen konfigurierbaren
+Teamnamen-Abgleich umgesetzt (\texttt{teamKeyword}), der sowohl in den
+n8n-Workflows als auch im Frontend gegen den Teamnamen geprüft wird.
 
 Auf Basis dieser Erkennung werden zwei Verarbeitungspfade gesteuert:
 
@@ -118,16 +128,19 @@ Auf Basis dieser Erkennung werden zwei Verarbeitungspfade gesteuert:
 \tightlist
 \item
   \textbf{Instanz und Stil}: Partner-Team-Spiele verwenden den
-  \texttt{ef\_whitelabel}-Instanzpfad mit euphorischem Stil; alle
-  anderen Spiele den \texttt{generic}-Pfad mit neutralem Stil.
+  \texttt{ef\_whitelabel}-Instanzpfad mit situationsadaptivem Stil
+  (euphorisch bei eigenen Erfolgen, neutral bei gegnerischen Toren,
+  kritisch bei Rückständen); alle anderen Spiele den
+  \texttt{generic}-Pfad mit neutralem Stil.
 \item
   \textbf{UI-Anpassung}: Das Frontend blendet vereinsspezifische
-  Bereiche (Social-Media-Panels, Torjubel-Videos) ausschließlich bei
-  erkannten Partner-Team-Spielen ein.
+  Bereiche (Social-Media-Panels: YouTube, Twitter/X, Instagram)
+  ausschließlich bei erkannten Partner-Team-Spielen ein.
 \item
   \textbf{Erweiterte Kontextdaten}: Für Tormomente des Partner-Teams
-  werden zusätzlich Spielerdaten und Torjubel-Video-URLs aus einer
-  externen Vereinsquelle in den Prompt-Kontext eingebettet.
+  werden zusätzlich Mediendaten (z. B. ScorePlay-Bilder) über den
+  WebSocket-Kanal bereitgestellt und in den redaktionellen Kontext
+  eingebettet.
 \end{itemize}
 
 Das Datenbankschema enthält ergänzend ein
@@ -515,7 +528,9 @@ Trigger
 \bottomrule\noalign{}
 \endlastfoot
 \textbf{A) Stammdaten} & 01--04: Countries, Teams, Competitions, Matches
-& Bei leeren Daten \\
+& Bei leeren Daten. Hinweis: Der Wettbewerb (Competition) wird für den
+Kontext abgerufen, aber nicht direkt persistiert; die Persistenz erfolgt
+implizit über nachgelagerte Abhängigkeitsketten. \\
 \textbf{B) Matchdaten} & 05--07: Lineups, Match-/Player-Statistics,
 Prematch & Nach Matchauswahl \\
 \textbf{C) KI-Generierung} & 09 Events-LLM, 13 Halftime/Aftertime, 14
@@ -784,7 +799,7 @@ State-Architektur}\label{hook--und-state-architektur}
 Die Zustands- und Interaktionslogik ist in wiederverwendbare Custom
 Hooks aufgeteilt --- ein Entwurfsmuster, das React seit Version 16.8 als
 Alternative zu Klassenkomponenten eingeführt hat. Das Frontend umfasst
-25 spezialisierte Hooks, die sich in fünf funktionale Kategorien
+26 spezialisierte Hooks, die sich in fünf funktionale Kategorien
 gliedern lassen:
 
 \begin{enumerate}
@@ -827,7 +842,8 @@ Aufgabenverteilung:
 \item
   \textbf{Linkes Panel} --- Veröffentlichungsperspektive: listet
   publizierte Ticker-Einträge als chronologischen Feed, dedupliziert
-  nach \texttt{event\_id} und sortiert nach Spielminute.
+  nach \texttt{event\_id}, gefiltert nach Spielphase und
+  Vorberichtserstattung, sortiert nach Spielminute.
 \item
   \textbf{Mittleres Panel} --- Redaktionelle Kernarbeit:
   Event-Verarbeitung in Abhängigkeit vom Modus (auto, coop, manual),
@@ -835,8 +851,8 @@ Aufgabenverteilung:
   Command-Parser (z. B. \texttt{/g}, \texttt{/gelb}, \texttt{/rot},
   \texttt{/s}), sowie am unteren Rand integrierte Media- und
   Social-Panels (ScorePlay-Bilder, YouTube, Twitter/X, Instagram). Die
-  Social-Media-Panels werden ausschließlich bei erkannten EF-Spielen
-  (\texttt{isOurTeam}) eingeblendet.
+  Social-Media-Panels werden ausschließlich bei erkannten
+  Partner-Team-Spielen eingeblendet.
 \item
   \textbf{Rechtes Panel} --- Kontext- und Analyseinformationen:
   Matchstatistiken, Aufstellungen inkl. Wechsel-/Karten-/Injury-Kontext

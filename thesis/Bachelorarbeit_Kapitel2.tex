@@ -41,16 +41,16 @@ oberste Priorität (Bluhm \& Schäfer 2023, S. 35).
 Aus den genannten Merkmalen ergibt sich folgender konkreter Workflow:
 Ein Ereignis findet auf dem Spielfeld statt --- etwa ein Tor, eine
 Auswechslung oder ein Foul. Die Autorin oder der Autor muss das
-Geschehen wahrnehmen, in Sekundenbruchteilen die journalistische
-Relevanz bewerten, den Eintrag mental strukturieren und unmittelbar in
-eine sprachlich angemessene Form bringen (vgl. Bluhm \& Schäfer 2023, S.
-27; Walter 2020, S. 29). Gleichzeitig sind Kontextinformationen
-abzurufen: Wie steht es? Wer hat das letzte Tor erzielt? In welcher
-Minute war der letzte Eintrag? Diese kognitive Parallelverarbeitung aus
-Beobachtung, Bewertung, Kontextualisierung und Textproduktion macht den
-Liveticker zu einer Echtzeit-Textgattung, die sich fundamental von
-retrospektiven Formaten wie dem Spielbericht unterscheidet (vgl. Hauser
-2008, S. 2--3).
+Geschehen in Sekundenbruchteilen wahrnehmen und die journalistische
+Relevanz bewerten (vgl. Bluhm \& Schäfer 2023, S. 27; Walter 2020,
+S. 29). Unmittelbar muss der Eintrag mental strukturiert und in
+sprachlich angemessene Form gebracht werden. Gleichzeitig sind
+Kontextinformationen abzurufen: Wie steht es? Wer hat das letzte Tor
+erzielt? In welcher Minute war der letzte Eintrag? Diese kognitive
+Parallelverarbeitung aus Beobachtung, Bewertung, Kontextualisierung und
+Textproduktion macht den Liveticker zu einer Echtzeit-Textgattung, die
+sich fundamental von retrospektiven Formaten wie dem Spielbericht
+unterscheidet (vgl. Hauser 2008, S. 2--3).
 
 Erschwerend kommt der extreme Zeitdruck hinzu. Unmittelbar nach einer
 relevanten Spielszene haben die Autorinnen und Autoren nur wenige
@@ -188,7 +188,12 @@ Der entscheidende Unterschied liegt im Blickwinkel. Während
 überregionale Medien neutral bleiben, betrachten Vereinsticker die
 Partie aus der Perspektive der eigenen Fans (Beils 2023, S. 57). Ein
 Ereignis muss je nach Medium anders getönt sein: emotional für den
-Vereinskanal, sachlich für neutrale Plattformen. Die in Kapitel 2.1
+Vereinskanal, sachlich für neutrale Plattformen. Darüber hinaus
+erfordert die fanbezogene Perspektive einen dritten Tonfall: Bei
+anhaltenden Rückständen oder schwachen Leistungen des eigenen Teams
+kann ein kritisch-analysierender Stil angemessener sein als
+unkritische Euphorie. Daraus resultieren drei funktional
+unterschiedliche Stilprofile: neutral, euphorisch und kritisch. Die in Kapitel 2.1
 beschriebene personelle Fluktuation verschärft das Problem zusätzlich:
 Eine konsistente Markenstimme ist mit wechselndem Personal manuell kaum
 zu gewährleisten. Eine technologische Lösung muss daher auch die
@@ -320,7 +325,7 @@ Zentrale linguistische Merkmale für das Prompt Design sind:
   Präteritum für vergangene Ereignisse (Walter 2020, S. 39).
 \item
   \textbf{Graphostilistik:} Einsatz von Großschreibung und
-  Zeicheniterationen (z. B. „TOOOOR!{\kern0pt}``) als Äquivalent zu
+  Zeicheniterationen (z. B. „TOOOOR!!!") als Äquivalent zu
   Lautstärke und Tonhöhe (Smułczyński 2020, S. 54; Walter 2020, S. 41).
 \end{itemize}
 
@@ -436,9 +441,11 @@ Herleitung
 \bottomrule\noalign{}
 \endlastfoot
 A1 & Drei-Schichten-Architektur & Kap. 2.1, 2.3 (Modularität) \\
-A2 & Repository-Pattern & Wartbarkeit, Testbarkeit; austauschbare
-Datenschichten ermöglichen unterschiedliche Backend-Implementierungen
-pro Mandant (vgl. Kap. 2.3) \\
+A2 & Isolierte Datenzugriffsschicht: Persistenzlogik muss von
+API-Logik getrennt sein, sodass Datenbankzugriffe unabhängig testbar
+und austauschbar bleiben & Wartbarkeit, Testbarkeit; Mandanten mit
+unterschiedlichen Backend-Anforderungen müssen bedienbar sein, ohne
+den Anwendungskern zu ändern (vgl. Kap. 2.3) \\
 A3 & REST-API zur vollständigen Systemsteuerung und
 Mandantenkonfiguration & Kap. 2.3 (White-Label) \\
 A4 & Vollständiges Datenmodell & Kap. 2.1, 2.4 \\

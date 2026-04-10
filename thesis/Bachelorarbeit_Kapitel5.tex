@@ -542,7 +542,12 @@ Ticker-Eintrag für die \texttt{event\_id} existiert:
 Dies macht den Endpunkt idempotent gegenüber Mehrfachaufrufen --- ein
 wichtiges Merkmal, da n8n-Workflows bei Fehlern automatisch wiederholen.
 Ohne diese Prüfung würde jeder Retry einen zusätzlichen Ticker-Eintrag
-mit unterschiedlichem (nicht-deterministischem) Text erzeugen.
+mit unterschiedlichem (nicht-deterministischem) Text erzeugen. Die
+\texttt{get\_by\_event}-Methode berücksichtigt dabei auch den
+Eintragsstatus: Einträge mit Status \texttt{rejected} oder
+\texttt{deleted} werden nicht als „bereits vorhanden'' gewertet,
+sodass für abgelehnte Events bei Bedarf eine Neugenerierung möglich
+bleibt.
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
@@ -1153,39 +1158,14 @@ WebSocket an verbundene Frontend-Clients verteilt.
 \subsection{Implementierungsübergreifende
 Muster}\label{implementierungsuxfcbergreifende-muster}
 
-Über alle Workflows hinweg lassen sich fünf Implementierungsmuster
-identifizieren:
-
-\textbf{1. Idempotente UPSERT-Strategie} --- Alle Insert-Operationen
-verwenden \texttt{ON\ CONFLICT\ DO\ UPDATE} oder \texttt{DO\ NOTHING}.
-Als Konfliktschlüssel dienen externe IDs (\texttt{source\_id},
-\texttt{external\_id}, \texttt{vid}), zusammengesetzte Schlüssel
-(\texttt{match\_id,\ type}) oder Unique-Constraints auf Namensfeldern.
-Das macht alle Workflows bei Mehrfachausführung sicher.
-
-\textbf{2. Filter-vor-Trigger-Muster} --- Vor jedem LLM-Trigger steht
-ein Filter-Knoten, der nur Rows mit einer \texttt{id} (erfolgreicher
-DB-Insert) durchlässt. Events mit \texttt{DO\ NOTHING}-Konflikten
-(bereits importiert) erzeugen keinen neuen LLM-Aufruf.
-
-\textbf{3. Statusbasierte Filterung} --- Bei synthetischen Events und
-Ticker-Einträgen werden vorhandene Zustände berücksichtigt, um
-redundante Generierungen zu vermeiden: Ein LLM-Aufruf wird nur
-getriggert, wenn noch kein nicht-verworfener Ticker-Eintrag für das
-Event existiert (vgl. die WHERE-Bedingungen in 5.5.2 und 5.5.3). Bei
-Re-Triggern werden bereits publizierte Phasen-Texte auf \texttt{draft}
-zurückgestuft (\texttt{demote}-CTE in 5.5.3).
-
-\textbf{4. Ticker-Mode-Propagation} --- \texttt{ticker\_mode} wird in
-allen Generierungsworkflows als \texttt{auto\_publish}-Flag an das
-Backend weitergegeben (vgl. Kap. 5.3.3). Die Moduslogik sitzt damit
-vollständig in der Datenbank; n8n liest sie bei jedem Aufruf neu aus.
-
-\textbf{5. Instanz-Routing} --- Die Unterscheidung zwischen
-\texttt{ef\_whitelabel} und \texttt{generic} erfolgt per
-\texttt{ILIKE\ \textquotesingle{}\%Frankfurt\%\textquotesingle{}}-Abfrage
-auf Teamnamen. Das Ergebnis steuert Stilwahl, Few-Shot-Auswahl im
-Backend und ob der Torjubel-Video-Pfad aktiviert wird.
+Über alle beschriebenen Workflows lassen sich fünf konsistente
+Implementierungsmuster beobachten: idempotente UPSERT-Strategien mit
+externen Konfliktschlüsseln, Filter-Knoten vor jedem LLM-Trigger,
+statusbasierte Filterung zur Vermeidung redundanter Generierungen,
+Ticker-Mode-Propagation via \texttt{auto\_publish}-Flag sowie
+Instanz-Routing über Teamnamen-Abgleich. Diese Muster sind
+strukturell in Kapitel 4.4 dokumentiert; die vorliegende
+Implementierung folgt ihnen konsistent über alle Workflows hinweg.
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
