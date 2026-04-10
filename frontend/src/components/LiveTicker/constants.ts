@@ -53,9 +53,12 @@ export const PHASE_SORT = {
   After: 999,
 };
 // Fallback-Minuten wenn minute: null aber Phase bekannt
-export const PHASE_MINUTE_DEFAULT = {
+export const PHASE_MINUTE_DEFAULT: Partial<Record<string, number>> = {
   FirstHalf: 1,
+  FirstHalfBreak: 45,
   SecondHalf: 46,
+  FullTime: 90,
+  After: 90,
   ExtraFirstHalf: 91,
   ExtraSecondHalf: 106,
   PenaltyShootout: 121,
@@ -92,11 +95,9 @@ export const PREMATCH_PHASES = new Set(["Before", "PreMatch"]);
 // ── Kurzbezeichnungen für Phasen (Minuten-Spalte im Ticker) ──
 // Kurze Anzeige-Labels z.B. "HZ", "FT" — getrennt von PHASE_LABEL (vollständige Namen).
 // null = Phase bekannt, aber Minutenspalte bleibt leer.
-export const PHASE_SHORT_LABEL: Partial<Record<string, string | null>> = {
+export const PHASE_SHORT_LABEL: Partial<Record<string, string>> = {
   Before: "i",
-  FullTime: null, // null → echte Minute zeigen wenn vorhanden
-  Halftime: "i", // Halbzeitbericht via Halftime-Phase → Info-Icon (kein minute-Wert)
-  FirstHalfBreak: null, // null → echte Minute zeigen wenn vorhanden (z.B. 45')
+  Halftime: "i",
   SecondHalfBreak: "Pause",
   ExtraBreak: "VZ·P",
   ExtraSecondHalfBreak: "Elfm.P",

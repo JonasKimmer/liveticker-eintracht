@@ -6,6 +6,7 @@ import { getEventMeta } from "../../utils/parseCommand";
 import {
   PHASE_SHORT_LABEL,
   PHASE_DEFAULT_ICON,
+  PHASE_MINUTE_DEFAULT,
 } from "../../constants";
 import type { MatchEvent, TickerEntry } from "../../../../types";
 import { getMediaIcon, getMediaLabel, getDisplayText } from "./entryUtils";
@@ -129,20 +130,16 @@ export const PublishedEntry = memo(function PublishedEntry({
 
   if (isManual) {
     const phase = tickerText?.phase;
-    const hasPhaseLabel = phase != null && phase in PHASE_SHORT_LABEL;
-    const phaseLabel = hasPhaseLabel ? PHASE_SHORT_LABEL[phase] : undefined;
+    const phaseShort = phase != null ? PHASE_SHORT_LABEL[phase] : undefined;
     const phaseIcon = PHASE_DEFAULT_ICON[tickerText?.phase] ?? null;
     // Dedup-Keys (z.B. "pass_h_90") sind kein Emoji → Fallback auf 📊
     // "•" gilt als kein Icon (Legacy-Wert aus alten Einträgen)
     const rawIcon = tickerText?.icon === "•" ? null : tickerText?.icon;
     const isCodeKey = rawIcon && /^[a-z0-9_]+$/i.test(rawIcon);
     const displayIcon = isCodeKey ? "📊" : (rawIcon ?? phaseIcon);
-    // null-Label: minute vorhanden → echte Minute zeigen, sonst leer
-    // string-Label: immer das Label zeigen
-    // kein Label in PHASE_SHORT_LABEL → echte Minute oder "–"
-    const minuteDisplay = hasPhaseLabel
-      ? (phaseLabel !== null ? phaseLabel : (tickerText?.minute != null ? `${tickerText.minute}'` : ""))
-      : (tickerText?.minute != null ? `${tickerText.minute}'` : "–");
+    // Priorität: festes Phase-Label (z.B. "i") → echte Minute → Fallback-Minute aus PHASE_MINUTE_DEFAULT → "–"
+    const resolvedMinute = tickerText?.minute ?? (phase != null ? PHASE_MINUTE_DEFAULT[phase] : undefined);
+    const minuteDisplay = phaseShort ?? (resolvedMinute != null ? `${resolvedMinute}'` : "–");
     return (
       <div className="lt-entry lt-entry--manual">
         {onEdit && minuteEditing ? minuteInputEl : (
