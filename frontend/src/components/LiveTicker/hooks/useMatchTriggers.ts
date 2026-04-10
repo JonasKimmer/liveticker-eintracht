@@ -139,10 +139,11 @@ export function useMatchTriggers({
       return;
     const callMinute = () =>
       api
-        .triggerMinuteUpdate(match.externalId!)
+        .syncMatchLive(match.id)
+        .then(() => reload.loadMatch?.())
         .catch((err) =>
           logger.warn(
-            "[useMatchTriggers] triggerMinuteUpdate silenced:",
+            "[useMatchTriggers] syncMatchLive silenced:",
             err?.message,
           ),
         );

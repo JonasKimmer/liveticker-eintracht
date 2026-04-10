@@ -35,6 +35,8 @@ export const fetchTeamMatchesByMatchday = (
 // ── Matches ────────────────────────────────────────────
 export const fetchMatch = (id: number): Promise<AxiosResponse<Match>> =>
   api.get(`/matches/${id}`);
+export const syncMatchLive = (id: number): Promise<AxiosResponse<Match>> =>
+  api.post(`/matches/${id}/sync-live`);
 export const setMatchTickerMode = (matchId: number, mode: TickerMode) =>
   api.patch(`/matches/${matchId}/ticker-mode`, { mode });
 

@@ -25,16 +25,16 @@ export const MatchHeader = memo(function MatchHeader({
   const liveMinute = useLiveMinute(match);
 
   useEffect(() => {
-    if (status !== "live" || !match?.externalId) return;
+    if (status !== "live" || !match?.id) return;
     const sync = () =>
       api
-        .triggerMinuteUpdate(match.externalId)
+        .syncMatchLive(match.id)
         .then(() => onMinuteSync?.())
-        .catch((e) => logger.warn("[MatchHeader] sync error", e));
+        .catch((e) => logger.warn("[MatchHeader] sync-live error", e));
     sync();
     const id = setInterval(sync, SYNC_MATCH_INTERVAL_MS);
     return () => clearInterval(id);
-  }, [status, match?.externalId, onMinuteSync]);
+  }, [status, match?.id, onMinuteSync]);
 
   if (!match || !match.homeTeam || !match.awayTeam) return null;
   const homeAbbr = match.homeTeam.name.substring(0, 3).toUpperCase();
