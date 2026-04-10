@@ -213,7 +213,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const llmText = $('Generate Text1').item.json.choices?.[0]?.message?.content?.trim() || '';\nconst facts = $('Analyze Facts2').item.json;\n\nif (!llmText) throw new Error('LLM returned empty text');\n\nreturn [{\n  json: {\n    match_id: facts.match_id,\n    text: llmText,\n    minute: facts.minute,\n    status: facts.auto_publish ? 'published' : 'draft',\n    icon: '📊 Statistik',\n  }\n}];"
+        "jsCode": "const llmText = $('Generate Text1').item.json.choices?.[0]?.message?.content?.trim() || '';\nconst facts = $('Analyze Facts2').item.json;\n\nif (!llmText) throw new Error('LLM returned empty text');\n\nreturn [{\n  json: {\n    match_id: facts.match_id,\n    text: llmText,\n    minute: facts.minute,\n    status: facts.auto_publish ? 'published' : 'draft',\n    icon: '📊',\n  }\n}];"
       },
       "id": "ec9f846c-520c-4d9f-9fec-e7cdce4ac47d",
       "name": "Build Ticker Entry2",
@@ -230,7 +230,7 @@
         "url": "https://liveticker-backend.onrender.com/api/v1/ticker/manual",
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={\n  \"match_id\": {{ $json.match_id }},\n  \"text\": \"{{ $json.text }}\",\n  \"minute\": {{ $json.minute }},\n  \"status\": \"{{ $json.status }}\",\n  \"icon\": \"{{ $json.icon }}\"\n}\n",
+        "jsonBody": "={\n  \"match_id\": {{ $json.match_id }},\n  \"text\": \"{{ $json.text }}\",\n  \"minute\": {{ $json.minute }},\n  \"status\": \"{{ $json.status }}\",\n  \"icon\": \"📊\"\n}\n",
         "options": {}
       },
       "id": "1f99ea14-906c-4167-8d8a-662d01a5085f",

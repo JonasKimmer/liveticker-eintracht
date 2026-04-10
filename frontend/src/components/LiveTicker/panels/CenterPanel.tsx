@@ -42,7 +42,7 @@ export const CenterPanel = memo<CenterPanelProps>(function CenterPanel({
 }: CenterPanelProps) {
   const { mode } = useTickerModeContext();
   const { match, tickerTexts, generatingId, reload } = useTickerDataContext();
-  const { onPublished } = useTickerActionsContext();
+  useTickerActionsContext();
 
   const playerNames = useMemo(() => {
     const fromLineup = lineups.map((l) => l.playerName).filter(Boolean);
@@ -173,6 +173,8 @@ export const CenterPanel = memo<CenterPanelProps>(function CenterPanel({
             <StatsDraftSection
               selectedId={selectedSummaryDraftId}
               onSelect={setSelectedSummaryDraftId}
+              instance={instance}
+              language={language}
             />
 
             <PublishedSummarySection onRetract={setPendingAutoExpandId} />

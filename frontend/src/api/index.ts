@@ -83,6 +83,15 @@ export const updateTicker = (entryId: number, data: Partial<TickerEntry>) =>
   api.patch(`/ticker/${entryId}`, data);
 export const deleteTicker = (entryId: number) =>
   api.delete(`/ticker/${entryId}`);
+export const regenerateStatsEntry = (
+  entryId: number,
+  style: TickerStyle,
+  instance = "ef_whitelabel",
+  language = "de",
+): Promise<AxiosResponse<TickerEntry>> =>
+  api.post(`/ticker/${entryId}/regenerate-style`, null, {
+    params: { style, instance, language },
+  });
 export const generateSyntheticEvent = (
   syntheticEventId: number,
   style = "neutral",

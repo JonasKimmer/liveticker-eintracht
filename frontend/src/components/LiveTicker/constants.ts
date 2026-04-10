@@ -126,7 +126,7 @@ export const COMMAND_PREFIX_REGEX = /^\/\w+\s*/;
 
 // ── Statistik-Einträge (n8n live-stats-monitor Workflow) ─────
 // Dieses Icon identifiziert KI-generierte Statistik-Updates im Frontend.
-export const STATS_ENTRY_ICON = "📊 Statistik";
+export const STATS_ENTRY_ICON = "📊";
 
 // ── Standard-Icons für Medien-Einträge ────────────────────────
 export const MEDIA_DEFAULT_ICONS = ["🎬", "📷", "📸"];

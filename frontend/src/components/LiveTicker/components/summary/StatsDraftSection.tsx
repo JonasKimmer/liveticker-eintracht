@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { CollapsibleSection } from "../Collapsible";
 import { SummaryRow } from "./SummaryRow";
 import { SummaryDraftCard } from "./SummaryDraftCard";
@@ -6,15 +6,24 @@ import { STATS_ENTRY_ICON } from "../../constants";
 import { useTickerDataContext } from "context/TickerDataContext";
 import { useTickerActionsContext } from "context/TickerActionsContext";
 import * as api from "api";
+import type { TickerStyle } from "../../../../types";
 
 interface StatsDraftSectionProps {
   selectedId: number | null;
   onSelect: (updater: ((prev: number | null) => number | null) | null) => void;
+  instance?: string;
+  language?: string;
 }
 
-export function StatsDraftSection({ selectedId, onSelect }: StatsDraftSectionProps) {
+export function StatsDraftSection({
+  selectedId,
+  onSelect,
+  instance = "ef_whitelabel",
+  language = "de",
+}: StatsDraftSectionProps) {
   const { tickerTexts, reload } = useTickerDataContext();
   const { onPublished } = useTickerActionsContext();
+  const [regeneratingId, setRegeneratingId] = useState<number | null>(null);
 
   const drafts = useMemo(
     () =>
@@ -48,6 +57,19 @@ export function StatsDraftSection({ selectedId, onSelect }: StatsDraftSectionPro
       onPublished?.(draftId, text);
     },
     [reload, onPublished],
+  );
+
+  const handleRegenerate = useCallback(
+    async (draftId: number, style: TickerStyle) => {
+      setRegeneratingId(draftId);
+      try {
+        await api.regenerateStatsEntry(draftId, style, instance, language);
+        await reload.loadTickerTexts();
+      } finally {
+        setRegeneratingId(null);
+      }
+    },
+    [instance, language, reload],
   );
 
   const handleBulkPublish = useCallback(async () => {
@@ -92,6 +114,8 @@ export function StatsDraftSection({ selectedId, onSelect }: StatsDraftSectionPro
                 label="Statistik-Update"
                 onPublish={(text, minute) => handlePublish(draft.id, text, minute)}
                 onReject={() => handleReject(draft.id)}
+                onGenerate={(id, style) => handleRegenerate(id, style)}
+                generatingId={regeneratingId === draft.id ? "regenerating" : null}
                 showMinute
               />
             )}

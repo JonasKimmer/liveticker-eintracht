@@ -10,6 +10,7 @@ Enthält:
 - PATCH /ticker/{entry_id}
 - PATCH /ticker/{entry_id}/publish
 - PATCH /ticker/{entry_id}/reject
+- POST  /ticker/{entry_id}/regenerate-style
 - POST  /ticker/manual
 """
 
@@ -21,12 +22,14 @@ from sqlalchemy.orm import Session
 from app.core.constants import VALID_PHASES
 from app.core.database import get_db
 from app.utils.http_errors import require_or_404
+from app.repositories.match_repository import MatchRepository
 from app.repositories.ticker_entry_repository import TickerEntryRepository
 from app.schemas.ticker_entry import (
     ManualEntryRequest,
     TickerEntryUpdate,
     TickerEntryResponse,
     TickerStatus,
+    TickerStyle,
 )
 from app.services import ticker_service as ts
 
@@ -124,6 +127,48 @@ def reject_ticker_entry(
     repo = TickerEntryRepository(db)
     entry = require_or_404(repo.get_by_id(entry_id), "Entry not found")
     return repo.update(entry_id, TickerEntryUpdate(status=TickerStatus.rejected))
+
+
+@router.post(
+    "/{entry_id}/regenerate-style",
+    response_model=TickerEntryResponse,
+    summary="Statistik-Draft mit neuem Stil neu generieren",
+)
+async def regenerate_stats_style(
+    entry_id: int,
+    style: TickerStyle = Query("neutral"),
+    language: str = Query("de"),
+    instance: str = Query("ef_whitelabel"),
+    db: Session = Depends(get_db),
+) -> TickerEntryResponse:
+    """Generiert den Text eines manuellen Stats-Drafts mit anderem Stil neu."""
+    repo = TickerEntryRepository(db)
+    entry = require_or_404(repo.get_by_id(entry_id), "Entry not found")
+
+    match = MatchRepository(db).get_by_id(entry.match_id)
+    match_context = ts.build_match_context(match, entry.minute)
+
+    text, _ = await ts.call_llm(
+        event_type="live_stats_update",
+        event_detail=entry.text,
+        minute=entry.minute,
+        style=style,
+        language=language,
+        context_data={
+            "home_team": match_context.get("home_team"),
+            "away_team": match_context.get("away_team"),
+            "triggers": [],
+            "curr_stats": {},
+        },
+        match_context=match_context,
+        db=db,
+        instance=instance,
+    )
+
+    return repo.update(
+        entry_id,
+        TickerEntryUpdate(text=text, style=style),
+    )
 
 
 @router.post(
