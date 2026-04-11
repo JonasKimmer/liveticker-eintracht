@@ -137,7 +137,7 @@ export function useMatchTriggers({
   useEffect(() => {
     if (!selMatchId || !match?.externalId || match.matchState !== "Live")
       return;
-    const callMinute = () =>
+    const callMinute = () => {
       api
         .syncMatchLive(match.id)
         .then(() => reload.loadMatch?.())
@@ -147,6 +147,15 @@ export function useMatchTriggers({
             err?.message,
           ),
         );
+      api
+        .triggerMinuteUpdate(match.externalId!)
+        .catch((err) =>
+          logger.warn(
+            "[useMatchTriggers] triggerMinuteUpdate silenced:",
+            err?.message,
+          ),
+        );
+    };
     const callEvents = () =>
       api
         .importEvents(match.externalId!, tickerMode)
