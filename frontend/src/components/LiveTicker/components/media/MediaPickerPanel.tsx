@@ -186,6 +186,15 @@ export function MediaPickerPanel({
     }
   }, []);
 
+  const handleInputKeyDown = useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter" && selectedPlayer && playerSuggestions.length === 0) {
+      e.preventDefault();
+      handleLoadImages();
+      return;
+    }
+    listKeyDown(e);
+  }, [selectedPlayer, playerSuggestions.length, listKeyDown, handleLoadImages]);
+
   const handlePublished = useCallback((mediaId) => {
     setImages((prev) => prev.filter((img) => img.media_id !== mediaId));
     setModalImage(null);
@@ -251,7 +260,7 @@ export function MediaPickerPanel({
                   setPlayerQuery(e.target.value);
                   if (selectedPlayer) setSelectedPlayer(null);
                 }}
-                onKeyDown={listKeyDown}
+                onKeyDown={handleInputKeyDown}
                 style={{
                   width: "100%",
                   boxSizing: "border-box",
@@ -295,11 +304,11 @@ export function MediaPickerPanel({
                     onMouseDown={(e) => { e.preventDefault(); selectSuggestion(p); }}
                   >
                     {p.jerseyNumber != null && (
-                      <span className="lt-cmd-palette__icon" style={{ fontWeight: 700, color: "var(--lt-accent)", minWidth: 22, textAlign: "right" }}>
+                      <span className="lt-cmd-palette__icon" style={{ fontWeight: 700, color: "var(--lt-text-muted)", minWidth: 22, textAlign: "right" }}>
                         {p.jerseyNumber}
                       </span>
                     )}
-                    <span className="lt-cmd-palette__cmd">{p.playerName}</span>
+                    <span className="lt-cmd-palette__cmd" style={{ color: "var(--lt-text)" }}>{p.playerName}</span>
                   </button>
                 ))}
               </div>
