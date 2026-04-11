@@ -304,6 +304,7 @@ export function MediaPickerPanel({
                     key={p.playerId ?? p.jerseyNumber}
                     className={`lt-cmd-palette__item${i === activeIdx ? " lt-cmd-palette__item--active" : ""}`}
                     onMouseDown={(e) => { e.preventDefault(); selectSuggestion(p); }}
+                    style={{ background: "none", width: "100%" }}
                   >
                     {p.jerseyNumber != null && (
                       <span className="lt-cmd-palette__icon" style={{ fontWeight: 700, color: "var(--lt-text-muted)", minWidth: 22, textAlign: "right" }}>
