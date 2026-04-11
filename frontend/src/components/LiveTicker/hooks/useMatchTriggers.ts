@@ -154,18 +154,27 @@ export function useMatchTriggers({
 
   // ── Minuten-Update + Events (jede Minute bei laufendem Spiel) ─────
   useEffect(() => {
-    if (!selMatchId || !match?.externalId || match.matchState !== "Live")
+    if (
+      !selMatchId ||
+      !match?.externalId ||
+      (match.matchState !== "Live" &&
+        match.matchState !== "PreMatch" &&
+        match.matchState !== "ToBeConfirmed")
+    )
       return;
+    const isLive = match.matchState === "Live";
     const callMinute = () => {
-      api
-        .syncMatchLive(match.id)
-        .then(() => reload.loadMatch?.())
-        .catch((err) =>
-          logger.warn(
-            "[useMatchTriggers] syncMatchLive silenced:",
-            err?.message,
-          ),
-        );
+      if (isLive) {
+        api
+          .syncMatchLive(match.id)
+          .then(() => reload.loadMatch?.())
+          .catch((err) =>
+            logger.warn(
+              "[useMatchTriggers] syncMatchLive silenced:",
+              err?.message,
+            ),
+          );
+      }
       api
         .triggerMinuteUpdate(match.externalId!)
         .catch((err) =>
