@@ -11,6 +11,7 @@ import { fetchMediaQueue, clearMediaQueue } from "api";
 import { PickerPanelShell } from "../PickerPanelShell";
 import { MediaThumbnail } from "./MediaThumbnail";
 import { MediaPublishModal } from "./MediaPublishModal";
+import { useListKeyboard } from "hooks/useListKeyboard";
 import config from "config/whitelabel";
 
 const N8N_WEBHOOK = `${config.n8nBase}/scoreplay-media`;
@@ -117,6 +118,20 @@ export function MediaPickerPanel({
       )
       .slice(0, 8);
   }, [playerQuery, selectedPlayer, lineupPlayers]);
+
+  const selectSuggestion = useCallback((p: LineupPlayer) => {
+    setSelectedPlayer(p);
+    setPlayerQuery(
+      p.jerseyNumber != null
+        ? `#${p.jerseyNumber} ${p.playerName}`
+        : (p.playerName ?? ""),
+    );
+  }, []);
+
+  const { activeIdx, onKeyDown: listKeyDown } = useListKeyboard(playerSuggestions, {
+    onSelect: selectSuggestion,
+    onClose: () => { setPlayerQuery(""); setSelectedPlayer(null); },
+  });
 
   useEffect(() => {
     if (!open) return;
@@ -229,66 +244,41 @@ export function MediaPickerPanel({
             <div style={{ position: "relative" }}>
               <input
                 type="text"
+                className="lt-entry-editor__input"
                 placeholder="# oder Name suchen…"
                 value={playerQuery}
                 onChange={(e) => {
                   setPlayerQuery(e.target.value);
                   if (selectedPlayer) setSelectedPlayer(null);
                 }}
-                onKeyDown={(e) => {
-                  if (e.key === "Escape") {
-                    setPlayerQuery("");
-                    setSelectedPlayer(null);
-                  }
-                }}
+                onKeyDown={listKeyDown}
                 style={{
                   width: "100%",
                   boxSizing: "border-box",
-                  background: "var(--lt-bg-input)",
                   border: `1px solid ${selectedPlayer ? "var(--lt-accent)" : "var(--lt-border)"}`,
-                  borderRadius: 6,
                   padding: "0.4rem 2rem 0.4rem 0.65rem",
-                  fontFamily: "var(--lt-font-mono)",
-                  fontSize: "0.75rem",
-                  color: "var(--lt-text)",
-                  outline: "none",
                 }}
               />
               {selectedPlayer ? (
                 <button
-                  onClick={() => {
-                    setSelectedPlayer(null);
-                    setPlayerQuery("");
-                  }}
+                  onClick={() => { setSelectedPlayer(null); setPlayerQuery(""); }}
                   style={{
-                    position: "absolute",
-                    right: 6,
-                    top: "50%",
-                    transform: "translateY(-50%)",
-                    background: "none",
-                    border: "none",
-                    cursor: "pointer",
-                    color: "var(--lt-text-muted)",
-                    fontSize: "0.7rem",
-                    padding: 0,
-                    lineHeight: 1,
+                    position: "absolute", right: 6, top: "50%",
+                    transform: "translateY(-50%)", background: "none",
+                    border: "none", cursor: "pointer",
+                    color: "var(--lt-text-muted)", fontSize: "0.7rem",
+                    padding: 0, lineHeight: 1,
                   }}
                 >
                   ✕
                 </button>
               ) : (
                 playerQuery && (
-                  <span
-                    style={{
-                      position: "absolute",
-                      right: 8,
-                      top: "50%",
-                      transform: "translateY(-50%)",
-                      color: "var(--lt-text-faint)",
-                      fontSize: "0.65rem",
-                      pointerEvents: "none",
-                    }}
-                  >
+                  <span style={{
+                    position: "absolute", right: 8, top: "50%",
+                    transform: "translateY(-50%)", color: "var(--lt-text-faint)",
+                    fontSize: "0.65rem", pointerEvents: "none",
+                  }}>
                     ↵
                   </span>
                 )
@@ -297,75 +287,19 @@ export function MediaPickerPanel({
 
             {/* Vorschläge */}
             {playerSuggestions.length > 0 && (
-              <div
-                style={{
-                  position: "absolute",
-                  top: "calc(100% + 4px)",
-                  left: 0,
-                  right: 0,
-                  zIndex: 50,
-                  background: "var(--lt-bg-card)",
-                  border: "1px solid var(--lt-border)",
-                  borderRadius: 6,
-                  overflow: "hidden",
-                  boxShadow: "0 8px 24px rgba(0,0,0,0.4)",
-                }}
-              >
-                {playerSuggestions.map((p) => (
+              <div className="lt-cmd-palette" style={{ position: "absolute", top: "calc(100% + 4px)", left: 0, right: 0, zIndex: 50 }}>
+                {playerSuggestions.map((p, i) => (
                   <button
                     key={p.playerId ?? p.jerseyNumber}
-                    onMouseDown={(e) => {
-                      e.preventDefault();
-                      setSelectedPlayer(p);
-                      setPlayerQuery(
-                        p.jerseyNumber != null
-                          ? `#${p.jerseyNumber} ${p.playerName}`
-                          : p.playerName,
-                      );
-                    }}
-                    style={{
-                      width: "100%",
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "0.5rem",
-                      padding: "0.4rem 0.65rem",
-                      background: "transparent",
-                      border: "none",
-                      cursor: "pointer",
-                      textAlign: "left",
-                      borderBottom: "1px solid var(--lt-border)",
-                    }}
-                    onMouseEnter={(e) =>
-                      (e.currentTarget.style.background =
-                        "var(--lt-bg-card-2)")
-                    }
-                    onMouseLeave={(e) =>
-                      (e.currentTarget.style.background = "transparent")
-                    }
+                    className={`lt-cmd-palette__item${i === activeIdx ? " lt-cmd-palette__item--active" : ""}`}
+                    onMouseDown={(e) => { e.preventDefault(); selectSuggestion(p); }}
                   >
                     {p.jerseyNumber != null && (
-                      <span
-                        style={{
-                          fontFamily: "var(--lt-font-mono)",
-                          fontSize: "0.68rem",
-                          fontWeight: 700,
-                          color: "var(--lt-accent)",
-                          minWidth: 22,
-                          textAlign: "right",
-                        }}
-                      >
+                      <span className="lt-cmd-palette__icon" style={{ fontWeight: 700, color: "var(--lt-accent)", minWidth: 22, textAlign: "right" }}>
                         {p.jerseyNumber}
                       </span>
                     )}
-                    <span
-                      style={{
-                        fontFamily: "var(--lt-font-mono)",
-                        fontSize: "0.75rem",
-                        color: "var(--lt-text)",
-                      }}
-                    >
-                      {p.playerName}
-                    </span>
+                    <span className="lt-cmd-palette__cmd">{p.playerName}</span>
                   </button>
                 ))}
               </div>

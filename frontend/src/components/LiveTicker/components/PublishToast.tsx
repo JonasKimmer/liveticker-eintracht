@@ -40,10 +40,10 @@ export function PublishToast({
       <div className="lt-publish-toast__top">
         <span className="lt-publish-toast__status">
           <span className="lt-publish-toast__dot" />
-          PUBLISHED — Retract in {seconds}s
+          Veröffentlicht — Stornieren in {seconds}s
         </span>
         <button className="lt-publish-toast__retract" onClick={onRetract}>
-          ↩ RETRACT
+          ↩ Stornieren
         </button>
       </div>
       <p className="lt-publish-toast__text">
