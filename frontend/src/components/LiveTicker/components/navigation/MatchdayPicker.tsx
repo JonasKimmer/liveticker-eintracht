@@ -132,9 +132,15 @@ export function MatchdayPicker({
           onMouseDown={() => { mouseIsDownRef.current = true; }}
           onClick={() => setOpen((v) => !v)}
           onFocus={() => {
-            // Nur bei Tastatur-Fokus (Tab) öffnen, nicht bei Mausklick
+            // Nur bei Tastatur-Fokus (Tab/Enter-Advance) öffnen, nicht bei Mausklick
             if (!mouseIsDownRef.current && !disabled && matchdays.length) setOpen(true);
             mouseIsDownRef.current = false;
+          }}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" && !open && !disabled && matchdays.length) {
+              e.preventDefault();
+              setOpen(true);
+            }
           }}
           style={{
             display: "flex",

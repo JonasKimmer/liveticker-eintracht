@@ -266,6 +266,8 @@ export function MediaPickerPanel({
                   boxSizing: "border-box",
                   border: `1px solid ${selectedPlayer ? "var(--lt-accent)" : "var(--lt-border)"}`,
                   padding: "0.4rem 2rem 0.4rem 0.65rem",
+                  background: "var(--lt-bg-card)",
+                  color: "var(--lt-text)",
                 }}
               />
               {selectedPlayer ? (
@@ -296,7 +298,7 @@ export function MediaPickerPanel({
 
             {/* Vorschläge */}
             {playerSuggestions.length > 0 && (
-              <div className="lt-cmd-palette" style={{ position: "absolute", top: "calc(100% + 4px)", left: 0, right: 0, zIndex: 50 }}>
+              <div className="lt-cmd-palette" style={{ position: "absolute", top: "calc(100% + 4px)", left: 0, right: 0, zIndex: 50, background: "var(--lt-bg-card)", border: "1px solid var(--lt-border)" }}>
                 {playerSuggestions.map((p, i) => (
                   <button
                     key={p.playerId ?? p.jerseyNumber}

@@ -55,26 +55,31 @@ export function Dropdown({
     [items, query],
   );
 
+  const advanceFocus = useCallback(() => {
+    requestAnimationFrame(() => {
+      const el = ref.current;
+      const inputEl = inputRef.current;
+      const parent =
+        el?.closest(".lt-start__selects") ?? el?.parentElement?.parentElement;
+      if (!parent || !inputEl) return;
+      const focusables = Array.from(
+        parent.querySelectorAll<HTMLElement>(
+          "input:not([disabled]), button:not([disabled])",
+        ),
+      );
+      const idx = focusables.indexOf(inputEl);
+      if (idx >= 0 && idx + 1 < focusables.length) focusables[idx + 1].focus();
+    });
+  }, []);
+
   const handleSelect = useCallback(
     (val: number | string) => {
       onSelect(val);
       setOpen(false);
       setQuery("");
-      // Nach Auswahl: Fokus aufs nächste nicht-disabled Input im selben Container
-      requestAnimationFrame(() => {
-        const el = ref.current;
-        const inputEl = inputRef.current;
-        const parent =
-          el?.closest(".lt-start__selects") ?? el?.parentElement?.parentElement;
-        if (!parent || !inputEl) return;
-        const inputs = Array.from(
-          parent.querySelectorAll("input:not([disabled])"),
-        ) as HTMLInputElement[];
-        const idx = inputs.indexOf(inputEl);
-        if (idx >= 0 && idx + 1 < inputs.length) inputs[idx + 1].focus();
-      });
+      advanceFocus();
     },
-    [onSelect],
+    [onSelect, advanceFocus],
   );
 
   const handleClose = useCallback(() => {
@@ -119,7 +124,17 @@ export function Dropdown({
           onChange={(e) => setQuery(e.target.value)}
           onFocus={handleFocus}
           onBlur={handleBlur}
-          onKeyDown={open ? onKeyDown : undefined}
+          onKeyDown={(e) => {
+            if (!open) {
+              if (e.key === "Enter") {
+                e.preventDefault();
+                if (value != null) advanceFocus();
+                else setOpen(true);
+              }
+              return;
+            }
+            onKeyDown(e);
+          }}
           style={{
             ...DROPDOWN_INPUT_STYLE,
             borderColor: open ? "var(--lt-accent)" : "var(--lt-border)",
