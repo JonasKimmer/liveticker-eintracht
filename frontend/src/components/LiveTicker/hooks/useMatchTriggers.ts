@@ -93,6 +93,7 @@ export function useMatchTriggers({
     if (match.id !== selMatchId) return; // stale match aus vorherigem Spiel
 
     const isSecondHalfOrLater = [
+      MATCH_PHASES.FIRST_HALF_BREAK,
       MATCH_PHASES.SECOND_HALF,
       MATCH_PHASES.EXTRA_FIRST_HALF,
       MATCH_PHASES.EXTRA_BREAK,
