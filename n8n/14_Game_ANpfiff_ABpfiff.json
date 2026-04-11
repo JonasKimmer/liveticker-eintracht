@@ -170,7 +170,7 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "http://localhost:5678/webhook/match-summary",
+        "url": "https://deine-n8n.railway.app/webhook/match-summary",
         "sendBody": true,
         "specifyBody": "json",
         "jsonBody": "={{ JSON.stringify({ match_id: $json.match_id, phase: $json.phase, style: $json.style, ticker_mode: $json.ticker_mode }) }}",
