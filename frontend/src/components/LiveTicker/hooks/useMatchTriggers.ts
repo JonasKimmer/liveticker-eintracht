@@ -291,9 +291,10 @@ export function useMatchTriggers({
     );
     if (alreadyHandled) return;
 
-    // Beim Öffnen eines laufenden Spiels in der 2. HZ oder später:
-    // generate-match-phases füllt fehlende Phasen mit korrekten Default-Minuten (1/45/46/90)
-    if (status === "2H" || status === "FT") {
+    // Beim Öffnen eines laufenden Spiels in der 2. HZ:
+    // generate-match-phases füllt fehlende frühere Phasen mit korrekten Default-Minuten (1/45/46)
+    // Bei FT nicht nötig — triggerMatchStatus("FT") erzeugt bereits alle 4 Phasen via n8n
+    if (status === "2H") {
       api
         .generateMatchPhases(selMatchId, style, instance, language, tickerMode === "auto")
         .then(() => reload.loadTickerTexts())
