@@ -92,14 +92,27 @@ export function useMatchTriggers({
     if (!selMatchId || !match || !tickerTextsLoaded) return;
     if (match.id !== selMatchId) return; // stale match aus vorherigem Spiel
 
-    const phasesToCheck = [];
-    if (
-      match.matchPhase === MATCH_PHASES.FIRST_HALF_BREAK ||
-      match.matchState === MATCH_PHASES.FULL_TIME
-    ) {
+    const isSecondHalfOrLater = [
+      MATCH_PHASES.SECOND_HALF,
+      MATCH_PHASES.EXTRA_FIRST_HALF,
+      MATCH_PHASES.EXTRA_BREAK,
+      MATCH_PHASES.EXTRA_SECOND_HALF,
+      MATCH_PHASES.PENALTY_SHOOTOUT,
+    ].includes(match.matchPhase ?? "");
+    const isFullTime = match.matchState === MATCH_PHASES.FULL_TIME;
+
+    const hasHalftimeSummary = tickerTexts.some(
+      (t) => (t.phase === "Halftime" || t.phase === MATCH_PHASES.FIRST_HALF_BREAK) && t.status !== "deleted",
+    );
+    const hasAfterSummary = tickerTexts.some(
+      (t) => (t.phase === MATCH_PHASES.AFTER || t.phase === "FullTime") && !t.synthetic_event_id && t.status !== "deleted",
+    );
+
+    const phasesToCheck: string[] = [];
+    if ((isSecondHalfOrLater || isFullTime) && !hasHalftimeSummary) {
       phasesToCheck.push(MATCH_PHASES.FIRST_HALF_BREAK);
     }
-    if (match.matchState === MATCH_PHASES.FULL_TIME) {
+    if (isFullTime && !hasAfterSummary) {
       phasesToCheck.push(MATCH_PHASES.AFTER);
     }
     if (phasesToCheck.length === 0) return;
@@ -271,6 +284,20 @@ export function useMatchTriggers({
       ),
     );
     if (alreadyHandled) return;
+
+    // Beim Öffnen eines laufenden Spiels in der 2. HZ oder später:
+    // generate-match-phases füllt fehlende Phasen mit korrekten Default-Minuten (1/45/46/90)
+    if (status === "2H" || status === "FT") {
+      api
+        .generateMatchPhases(selMatchId, style, instance, language, tickerMode === "auto")
+        .then(() => reload.loadTickerTexts())
+        .catch((err) =>
+          logger.warn(
+            "[useMatchTriggers] generateMatchPhases silenced:",
+            err?.message,
+          ),
+        );
+    }
 
     // Anchor-Reloads ab jetzt — unabhängig vom API-Timing (n8n kann busy sein)
     const scheduledFor = selMatchId;
