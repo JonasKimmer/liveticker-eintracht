@@ -51,13 +51,21 @@ export function MatchdayPicker({
     return [...group, ...knockout];
   }, [matchdays]);
 
-  // Nur beim ersten Laden auto-öffnen, nicht bei jedem Polling-Update
+  // Nur beim ersten Laden auto-öffnen, nicht wenn disabled oder leer
   useEffect(() => {
-    if (matchdays.length > 0 && !hasAutoOpenedRef.current) {
+    if (matchdays.length > 0 && !disabled && !hasAutoOpenedRef.current) {
       setOpen(true);
       hasAutoOpenedRef.current = true;
     }
-  }, [matchdays]);
+  }, [matchdays, disabled]);
+
+  // Schließen + Reset wenn Picker deaktiviert wird (kein Wettbewerb gewählt)
+  useEffect(() => {
+    if (disabled) {
+      setOpen(false);
+      hasAutoOpenedRef.current = false;
+    }
+  }, [disabled]);
   useClickOutside(ref, () => setOpen(false));
   useEffect(() => {
     if (open) panelRef.current?.focus();
