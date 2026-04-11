@@ -333,7 +333,12 @@ async def generate_match_phases(
     results = []
     failed: list[tuple[str, str]] = []
 
+    is_live = match.match_state == "Live"
+
     for event_type, phase, default_minute in STANDARD_PHASES:
+        # Bei laufendem Spiel FullTime nicht vorab erstellen
+        if is_live and phase == "FullTime":
+            continue
         if ticker_repo.get_by_phase(match_id, phase):
             continue
 

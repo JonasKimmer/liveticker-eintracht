@@ -291,9 +291,9 @@ export function useMatchTriggers({
     );
     if (alreadyHandled) return;
 
-    // Nach Spielende: generate-match-phases füllt fehlende Phasen mit Default-Minuten (1/45/46/90)
-    // Nur bei FullTime — bei laufendem 2H würde sonst 90' prematurely erstellt
-    if (status === "FT") {
+    // generate-match-phases füllt fehlende Phasen mit Default-Minuten (1/45/46/90)
+    // Backend überspringt FullTime bei laufendem Spiel (matchState=Live)
+    if (status === "2H" || status === "FT") {
       api
         .generateMatchPhases(selMatchId, style, instance, language, tickerMode === "auto")
         .then(() => reload.loadTickerTexts())
