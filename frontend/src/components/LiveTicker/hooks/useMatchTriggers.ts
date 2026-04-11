@@ -291,18 +291,30 @@ export function useMatchTriggers({
     );
     if (alreadyHandled) return;
 
-    // generate-match-phases füllt fehlende Phasen mit Default-Minuten (1/45/46/90)
+    // Catchup beim Öffnen: generate-match-phases füllt fehlende Phasen mit Default-Minuten
     // Backend überspringt FullTime bei laufendem Spiel (matchState=Live)
+    // Kein triggerMatchStatus danach — verhindert Race Condition (n8n würde aktuelle Minute nehmen)
     if (status === "2H" || status === "FT") {
+      const scheduledForCatchup = selMatchId;
       api
         .generateMatchPhases(selMatchId, style, instance, language, tickerMode === "auto")
-        .then(() => reload.loadTickerTexts())
+        .then(() => {
+          if (currentMatchIdRef.current === scheduledForCatchup)
+            reload.loadTickerTexts();
+        })
         .catch((err) =>
           logger.warn(
             "[useMatchTriggers] generateMatchPhases silenced:",
             err?.message,
           ),
         );
+      POST_MATCH_RELOAD_DELAYS_MS.forEach((delay) => {
+        setTimeout(() => {
+          if (currentMatchIdRef.current === scheduledForCatchup)
+            reload.loadTickerTexts();
+        }, delay);
+      });
+      return; // kein triggerMatchStatus — würde Phasen mit falscher Minute erstellen
     }
 
     // Anchor-Reloads ab jetzt — unabhängig vom API-Timing (n8n kann busy sein)
