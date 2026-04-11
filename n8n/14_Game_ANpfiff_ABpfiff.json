@@ -159,13 +159,13 @@
     },
     {
       "parameters": {
-        "jsCode": "const { type, match_id, style, ticker_mode } = $('Style wählen').item.json;\nconst summaryPhaseMap = {\n  match_halftime: 'Halftime',\n  match_fulltime: 'After',\n};\nconst summaryPhase = summaryPhaseMap[type];\nif (!summaryPhase) return [];\nreturn [{ json: { match_id, phase: summaryPhase, style, ticker_mode } }];"
+        "jsCode": "// Parallel-Branch: läuft für JEDE gültige Transition,\n// unabhängig ob Ticker-Eintrag schon existiert.\n// Nur für HT und FT wird match-summary ausgelöst.\nconst summaryPhaseMap = {\n  match_halftime: 'Halftime',\n  match_fulltime: 'After',\n  match_fulltime_aet: 'After',\n  match_fulltime_pen: 'After',\n};\nconst eventType = $json.event_type;\nconst summaryPhase = summaryPhaseMap[eventType];\nif (!summaryPhase) return [];\n\nconst ticker_mode = $('Webhook match-status').first().json.body.ticker_mode\n  ?? $('SQL: Match laden').first().json.ticker_mode\n  ?? 'coop';\nconst style = $('Webhook match-status').first().json.body.style ?? 'neutral';\n\nreturn [{ json: {\n  match_id: $json.match_id,\n  phase: summaryPhase,\n  style,\n  ticker_mode\n} }];"
       },
-      "id": "f3a1b2c4-d5e6-4f78-9abc-def012345678",
-      "name": "Check Summary Trigger",
+      "id": "b1c2d3e4-f5a6-4b78-9cde-f01234567890",
+      "name": "Summary Branch",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [1952, -192]
+      "position": [992, -368]
     },
     {
       "parameters": {
@@ -180,7 +180,7 @@
       "name": "HTTP: match-summary",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [2192, -192]
+      "position": [1232, -368]
     }
   ],
   "connections": {
@@ -224,6 +224,11 @@
             "node": "SQL: Update + Insert2",
             "type": "main",
             "index": 0
+          },
+          {
+            "node": "Summary Branch",
+            "type": "main",
+            "index": 0
           }
         ]
       ]
@@ -261,18 +266,7 @@
         ]
       ]
     },
-    "LLM Trigger": {
-      "main": [
-        [
-          {
-            "node": "Check Summary Trigger",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Check Summary Trigger": {
+    "Summary Branch": {
       "main": [
         [
           {
