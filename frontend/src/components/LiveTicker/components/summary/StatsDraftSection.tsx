@@ -62,14 +62,16 @@ export function StatsDraftSection({
   const handleRegenerate = useCallback(
     async (draftId: number, style: TickerStyle) => {
       setRegeneratingId(draftId);
+      onSelect(null); // Karte schließen damit neuer Text beim Öffnen geladen wird
       try {
         await api.regenerateStatsEntry(draftId, style, instance, language);
         await reload.loadTickerTexts();
       } finally {
         setRegeneratingId(null);
+        onSelect((prev) => (prev === null ? draftId : prev)); // Karte wieder öffnen
       }
     },
-    [instance, language, reload],
+    [instance, language, reload, onSelect],
   );
 
   const handleBulkPublish = useCallback(async () => {

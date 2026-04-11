@@ -80,6 +80,16 @@ export const CenterPanel = memo<CenterPanelProps>(function CenterPanel({
     [tickerTexts],
   );
 
+  const hasPendingStats = useMemo(
+    () =>
+      tickerTexts.some(
+        (t) =>
+          t.status === "draft" &&
+          t.icon === STATS_ENTRY_ICON,
+      ),
+    [tickerTexts],
+  );
+
   const [selectedSummaryDraftId, setSelectedSummaryDraftId] = useState<number | null>(null);
   const [pendingAutoExpandId, setPendingAutoExpandId] = useState<number | null>(null);
   const [autoError, setAutoError] = useState<string | null>(null);
@@ -180,7 +190,7 @@ export const CenterPanel = memo<CenterPanelProps>(function CenterPanel({
             <PublishedSummarySection onRetract={setPendingAutoExpandId} />
 
             {/* Events */}
-            {pendingEvents.length === 0 && !hasPendingSummaries && (
+            {pendingEvents.length === 0 && !hasPendingSummaries && !hasPendingStats && (
               <div className="lt-empty">
                 <div className="lt-empty__icon">✓</div>
                 Alle Events verarbeitet
