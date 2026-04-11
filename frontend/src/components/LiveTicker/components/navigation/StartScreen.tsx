@@ -113,6 +113,7 @@ export const StartScreen = memo(function StartScreen({
         </div>
 
         <MatchdayPicker
+          key={selCompetitionId ?? "none"}
           matchdays={matchdays}
           matchdaysLoading={matchdaysLoading}
           matchdaysError={matchdaysError}

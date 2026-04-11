@@ -235,14 +235,14 @@ export function MediaPickerPanel({
         icon="📷"
         label="Bilder"
         badgeCount={images.length}
-        badgeBackground="var(--lt-accent)"
+        badgeBackground="#3b82f6"
         importing={loadingTrigger}
         loading={false}
         onImport={handleLoadImages}
         onRefresh={handleRefresh}
         importLabel="↓ Bilder laden"
         importingLabel="Lädt..."
-        importBackground="var(--lt-accent)"
+        importBackground="#3b82f6"
         emptyLabel="Keine Bilder in der Queue"
         hintLabel="Doppelklick zum Veröffentlichen"
         statusMsg={statusMsg}
@@ -298,7 +298,7 @@ export function MediaPickerPanel({
 
             {/* Vorschläge */}
             {playerSuggestions.length > 0 && (
-              <div className="lt-cmd-palette" style={{ position: "absolute", top: "calc(100% + 4px)", left: 0, right: 0, zIndex: 50, background: "var(--lt-bg-card)", border: "1px solid var(--lt-border)" }}>
+              <div className="lt-cmd-palette" style={{ position: "absolute", top: "calc(100% + 4px)", left: 0, right: 0, width: "100%", zIndex: 50, background: "var(--lt-bg-card)", border: "1px solid var(--lt-border)" }}>
                 {playerSuggestions.map((p, i) => (
                   <button
                     key={p.playerId ?? p.jerseyNumber}

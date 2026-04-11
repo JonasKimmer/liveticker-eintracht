@@ -97,7 +97,7 @@ export const LeftPanel = memo(function LeftPanel() {
   return (
     <div className="lt-col lt-col--ticker">
       <div className="lt-left__header">
-        <span>Published Entries</span>
+        <span>Veröffentlichte Einträge</span>
         <span className="lt-left__count">{allEntries.length}</span>
       </div>
 

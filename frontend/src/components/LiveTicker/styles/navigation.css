@@ -167,8 +167,8 @@
   opacity: 0.35;
   cursor: not-allowed;
 }
-/* Letztes Select (Spiel) highlighten wenn enabled */
-.lt-start__select-wrap:last-child .lt-start__select:not(:disabled) {
+/* Letztes Select (Wettbewerb) highlighten wenn enabled — nur innerhalb von lt-start__selects */
+.lt-start__selects .lt-start__select-wrap:last-child .lt-start__select:not(:disabled) {
   border-color: var(--lt-accent);
   background-color: var(--lt-accent-dim);
 }
