@@ -4,12 +4,18 @@ import * as api from "api";
 /**
  * Lädt Matchdays für ein Team + Competition.
  * - Sofortiger Fetch (triggert Backend-Webhook einmalig)
- * - Ein verzögerter Refresh nach 25s (holt neue Daten nach Import)
+ * - Retry alle 4s bis die Daten stabil sind (max. 6 Versuche ≈ 20s)
+ *   → Verhindert, dass der Nutzer zurück-und-vor wechseln muss wenn
+ *     der Match-Import noch nicht abgeschlossen ist.
  *
  * @param {number|null} teamId - Interne Team-ID.
  * @param {number|null} competitionId - Interne Competition-ID.
- * @returns {{ matchdays: object[], loading: boolean, error: Error|null }}
+ * @returns {{ matchdays: number[], loading: boolean, error: string|null }}
  */
+
+const MAX_RETRIES = 6;
+const RETRY_INTERVAL_MS = 4000;
+
 export function usePollingMatchdays(
   teamId: number | null,
   competitionId: number | null,
@@ -17,7 +23,7 @@ export function usePollingMatchdays(
   const [matchdays, setMatchdays] = useState<number[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     if (!teamId || !competitionId) {
@@ -28,31 +34,34 @@ export function usePollingMatchdays(
     setMatchdays([]);
     setError(null);
     setLoading(true);
-    clearTimeout(timeoutRef.current);
+    clearTimeout(timerRef.current);
 
-    const fetchMatchdays = async () => {
+    let attempt = 0;
+    let lastCount = -1;
+
+    const fetchAndSchedule = async () => {
+      attempt++;
       try {
         const res = await api.fetchTeamMatchdays(teamId, competitionId);
-        return res.data;
+        const data: number[] = res.data;
+        setMatchdays(data);
+
+        // Stop early if count has stabilized (same non-zero count twice in a row)
+        if (data.length > 0 && data.length === lastCount) return;
+        lastCount = data.length;
       } catch {
         setError("Fehler beim Laden der Spieltage.");
-        return null;
+      } finally {
+        if (attempt === 1) setLoading(false);
+      }
+
+      if (attempt < MAX_RETRIES) {
+        timerRef.current = setTimeout(fetchAndSchedule, RETRY_INTERVAL_MS);
       }
     };
 
-    // Initialer Fetch — triggert Backend-Webhook
-    fetchMatchdays().then((data) => {
-      if (data) setMatchdays(data);
-      setLoading(false);
-    });
-
-    // Einmaliger Refresh nach 25s — holt importierte Daten
-    timeoutRef.current = setTimeout(async () => {
-      const data = await fetchMatchdays();
-      if (data && data.length > 0) setMatchdays(data);
-    }, 25000);
-
-    return () => clearTimeout(timeoutRef.current);
+    fetchAndSchedule();
+    return () => clearTimeout(timerRef.current);
   }, [teamId, competitionId]);
 
   return { matchdays, loading, error };
