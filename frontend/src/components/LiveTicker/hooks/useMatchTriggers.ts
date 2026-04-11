@@ -102,10 +102,16 @@ export function useMatchTriggers({
     const isFullTime = match.matchState === MATCH_PHASES.FULL_TIME;
 
     const hasHalftimeSummary = tickerTexts.some(
-      (t) => (t.phase === "Halftime" || t.phase === MATCH_PHASES.FIRST_HALF_BREAK) && t.status !== "deleted",
+      (t) =>
+        (t.phase === "Halftime" || t.phase === MATCH_PHASES.FIRST_HALF_BREAK) &&
+        !t.synthetic_event_id &&
+        t.status !== "deleted",
     );
     const hasAfterSummary = tickerTexts.some(
-      (t) => (t.phase === MATCH_PHASES.AFTER || t.phase === "FullTime") && !t.synthetic_event_id && t.status !== "deleted",
+      (t) =>
+        (t.phase === MATCH_PHASES.AFTER || t.phase === "FullTime") &&
+        !t.synthetic_event_id &&
+        t.status !== "deleted",
     );
 
     const phasesToCheck: string[] = [];
