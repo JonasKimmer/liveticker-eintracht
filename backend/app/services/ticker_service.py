@@ -49,16 +49,11 @@ def score_at_event(event_repo: EventRepository, event, match) -> Optional[str]:
         except (ValueError, TypeError):
             continue
         tid = d.get("team_id")
-        if g.event_type == "own_goal":
-            if tid == home_ext:
-                away_score += 1
-            elif tid == away_ext:
-                home_score += 1
-        else:
-            if tid == home_ext:
-                home_score += 1
-            elif tid == away_ext:
-                away_score += 1
+        # API-Football: team_id = Nutzniesser (auch bei own_goal)
+        if tid == home_ext:
+            home_score += 1
+        elif tid == away_ext:
+            away_score += 1
     return f"{home_score}:{away_score}"
 
 
