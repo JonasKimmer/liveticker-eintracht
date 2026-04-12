@@ -379,8 +379,3 @@
   font-size: 0.75rem;
   color: var(--lt-text-dim);
 }
-
-@keyframes lt-spin {
-  from { transform: rotate(0deg); }
-  to   { transform: rotate(360deg); }
-}

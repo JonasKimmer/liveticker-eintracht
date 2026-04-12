@@ -37,7 +37,6 @@ import { useIsMobile } from "../../hooks/useIsMobile";
 import { useKeyboardShortcuts } from "./hooks/useKeyboardShortcuts";
 import { useMatchTriggers } from "./hooks/useMatchTriggers";
 import { usePanelResize } from "../../hooks/usePanelResize";
-import { usePullToRefresh } from "../../hooks/usePullToRefresh";
 import { CommandsModal } from "./components/entry/CommandsModal";
 import { PublishToast } from "./components/PublishToast";
 import { useTicker } from "./hooks/useTicker";
@@ -202,17 +201,6 @@ export default function LiveTicker() {
     reload,
   });
 
-  // ── Pull-to-Refresh (Touch) ───────────────────────────────
-  const handlePullRefresh = useCallback(async () => {
-    await Promise.all([
-      reload.loadTickerTexts(),
-      reload.loadEvents?.(),
-      reload.loadMatch?.(),
-    ]);
-  }, [reload]);
-
-  const { pullY, refreshing } = usePullToRefresh(handlePullRefresh, !!selMatchId);
-
   // ── Keyboard Shortcuts ────────────────────────────────────
   useKeyboardShortcuts({
     onToggleHints: () => setShowHints((s) => !s),
@@ -276,33 +264,6 @@ export default function LiveTicker() {
       <TickerDataContext.Provider value={tickerDataCtx}>
         <TickerActionsContext.Provider value={tickerActionsCtx}>
           <div className={`lt${isMobile ? " lt--mobile" : ""}`}>
-            {/* Pull-to-Refresh Indikator */}
-            {(pullY > 0 || refreshing) && (
-              <div style={{
-                position: "fixed",
-                top: 0,
-                left: "50%",
-                transform: `translateX(-50%) translateY(${refreshing ? 12 : Math.min(pullY - 8, 20)}px)`,
-                zIndex: 9999,
-                background: "var(--lt-bg-card)",
-                border: "1px solid var(--lt-border)",
-                borderRadius: 20,
-                padding: "4px 14px",
-                fontFamily: "var(--lt-font-mono)",
-                fontSize: "0.65rem",
-                color: refreshing ? "var(--lt-accent)" : pullY >= 72 ? "var(--lt-accent)" : "var(--lt-text-muted)",
-                display: "flex",
-                alignItems: "center",
-                gap: 6,
-                transition: refreshing ? "none" : "none",
-                pointerEvents: "none",
-              }}>
-                <span style={{ display: "inline-block", animation: refreshing ? "lt-spin 0.8s linear infinite" : "none" }}>
-                  {refreshing ? "↺" : pullY >= 72 ? "↺" : "↓"}
-                </span>
-                {refreshing ? "Aktualisiert…" : pullY >= 72 ? "Loslassen" : "Ziehen zum Aktualisieren"}
-              </div>
-            )}
             <div
               className={`lt-top-bar${modalOpen ? " lt-top-bar--hidden" : ""}`}
               ref={topBarRef}
