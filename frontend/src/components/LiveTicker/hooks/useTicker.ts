@@ -118,7 +118,7 @@ export function useTicker({
     initialMode,
   );
 
-  // Modus in DB speichern wenn gewechselt wird
+  // Modus in DB speichern + Daten sofort neu laden (AUTO→COOP sieht frischen Stand)
   const handleModeChange = useCallback(
     async (newMode: TickerMode) => {
       setMode(newMode);
@@ -127,8 +127,12 @@ export function useTicker({
           await api.setMatchTickerMode(selMatchId, newMode);
         } catch (_) {}
       }
+      await Promise.all([
+        reload.loadTickerTexts(),
+        reload.loadEvents?.(),
+      ]);
     },
-    [setMode, selMatchId],
+    [setMode, selMatchId, reload],
   );
 
   // Modus aus DB lesen wenn Spiel geladen wird — NUR wenn kein expliziter
