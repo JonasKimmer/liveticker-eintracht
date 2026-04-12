@@ -160,12 +160,14 @@ export const publishMedia = ({
   description,
   matchId,
   minute,
+  phase,
   icon,
 }: {
   mediaId: number;
   description: string;
   matchId: number;
   minute?: number | null;
+  phase?: string | null;
   icon?: string | null;
 }) =>
   api.post("/media/publish", {
@@ -173,6 +175,7 @@ export const publishMedia = ({
     description,
     match_id: matchId,
     minute: minute ? Number(minute) : null,
+    phase: phase || null,
     icon: icon ?? null,
   });
 

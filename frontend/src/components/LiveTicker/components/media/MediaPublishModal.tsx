@@ -13,6 +13,7 @@ import { useCommandPalette, CommandPalettePortal } from "../entry/CommandPalette
 import { MinuteEditor } from "../entry/MinuteEditor";
 import { useNameAutocomplete } from "../../hooks/useNameAutocomplete";
 import { PublishModalShell } from "../PublishModalShell";
+import { PUBLISH_PHASES as PHASES } from "../../constants";
 
 interface MediaPublishModalProps {
   image: {
@@ -39,6 +40,7 @@ export function MediaPublishModal({
   const [loading, setLoading] = useState(false);
   const [generating, setGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [phase, setPhase] = useState("");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   // Live minute — syncs from prop, ticks every 60s, can be manually overridden
@@ -125,11 +127,13 @@ export function MediaPublishModal({
       setLoading(true);
       setError(null);
       try {
+        const publishMinute = phase === "Halftime" ? 45 : phase ? null : minute || null;
         await publishMedia({
           mediaId: Number(image.media_id),
           description: textToPublish,
           matchId,
-          minute: minute || null,
+          minute: publishMinute,
+          phase: phase || null,
           icon,
         });
         onPublished(image.media_id);
@@ -278,15 +282,30 @@ export function MediaPublishModal({
         </button>
       }
       extraControls={
-        <MinuteEditor
-          minute={minute}
-          setMinute={setMinute}
-          minuteEditing={minuteEditing}
-          setMinuteEditing={setMinuteEditing}
-          minuteOverride={minuteOverride}
-          setMinuteOverride={setMinuteOverride}
-          currentMinute={currentMinute}
-        />
+        <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+          <select
+            value={phase}
+            onChange={(e) => setPhase(e.target.value)}
+            className="lt-form-input"
+          >
+            {PHASES.map((p) => (
+              <option key={p.value} value={p.value}>
+                {p.label}
+              </option>
+            ))}
+          </select>
+          {!phase && (
+            <MinuteEditor
+              minute={minute}
+              setMinute={setMinute}
+              minuteEditing={minuteEditing}
+              setMinuteEditing={setMinuteEditing}
+              minuteOverride={minuteOverride}
+              setMinuteOverride={setMinuteOverride}
+              currentMinute={currentMinute}
+            />
+          )}
+        </div>
       }
       hintContent={
         !description ? (
