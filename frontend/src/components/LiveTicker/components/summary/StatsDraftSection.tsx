@@ -30,7 +30,6 @@ export function StatsDraftSection({
       tickerTexts.filter(
         (t) =>
           t.status === "draft" &&
-          t.source === "manual" &&
           t.icon === STATS_ENTRY_ICON &&
           !t.event_id,
       ),

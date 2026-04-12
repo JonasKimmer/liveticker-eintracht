@@ -179,7 +179,9 @@ export const PublishedEntry = memo(function PublishedEntry({
             <div className="lt-entry__text">{getDisplayText(tickerText)}</div>
           )}
           <div className="lt-entry__meta">
-            {getMediaLabel(tickerText?.video_url, tickerText?.image_url)}
+            {tickerText?.source === "ai"
+              ? `${tickerText.style} · ${tickerText.llm_model}`
+              : getMediaLabel(tickerText?.video_url, tickerText?.image_url)}
           </div>
         </div>
         <EntryMenu
