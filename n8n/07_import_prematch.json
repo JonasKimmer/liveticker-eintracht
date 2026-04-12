@@ -405,7 +405,7 @@
         "genericAuthType": "httpHeaderAuth",
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={{ JSON.stringify({ synthetic_event_id: $json.id, style: \"neutral\", auto_publish: $('Webhook import-prematch').first().json.body.ticker_mode === 'auto' }) }}\n",
+        "jsonBody": "={{ JSON.stringify({ synthetic_event_id: $json.id, style: 'neutral', instance: $('Webhook import-prematch').first().json.body.instance || 'generic', auto_publish: $('Webhook import-prematch').first().json.body.ticker_mode === 'auto' }) }}\n",
         "options": {}
       },
       "id": "831fb574-3444-4197-b9c6-e801816911c1",

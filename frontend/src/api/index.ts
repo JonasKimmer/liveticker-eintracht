@@ -201,10 +201,11 @@ export const importLineups = (matchId: number) =>
 export const importMatchStats = (matchId: number) =>
   n8n.post("/match-statistics", { match_id: matchId });
 
-export const importPrematch = (fixtureId: number, tickerMode = "coop") =>
+export const importPrematch = (fixtureId: number, tickerMode = "coop", instance = "generic") =>
   n8n.post("/import-prematch", {
     fixture_id: fixtureId,
     ticker_mode: tickerMode,
+    instance,
   });
 
 export const importPlayerStatistics = (matchId: number) =>

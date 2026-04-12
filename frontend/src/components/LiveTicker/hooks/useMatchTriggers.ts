@@ -423,7 +423,7 @@ export function useMatchTriggers({
     });
 
     api
-      .importPrematch(match.externalId, tickerMode)
+      .importPrematch(match.externalId, tickerMode, instance)
       .then(() => reload.loadPrematch())
       .then(() =>
         api
