@@ -181,16 +181,18 @@ export function useTicker({
       rawInput?: string,
     ) => {
       try {
+        const status = mode === "coop" ? "draft" : "published";
         const res = await api.createManualTicker(
           selMatchId,
           text,
           icon,
           minute,
           phase,
+          status,
         );
         await reload.loadTickerTexts();
         if (res?.data?.id)
-          showPublishToast(res.data.id, rawInput || text, true);
+          showPublishToast(res.data.id, rawInput || text, mode !== "coop");
       } catch (err) {
         logger.error("manualPublish error:", err);
       }

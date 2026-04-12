@@ -66,6 +66,7 @@ export const createManualTicker = (
   icon?: string,
   minute?: number | null,
   phase?: MatchPhase | null,
+  status?: string,
 ) =>
   api.post("/ticker/manual", {
     match_id: matchId,
@@ -73,6 +74,7 @@ export const createManualTicker = (
     ...(icon != null ? { icon } : {}),
     minute: minute ?? null,
     phase: phase ?? null,
+    ...(status != null ? { status } : {}),
   });
 export const publishTicker = (
   entryId: number,
