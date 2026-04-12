@@ -7,7 +7,10 @@
       },
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [0, 0],
+      "position": [
+        0,
+        0
+      ],
       "id": "fc82cfd7-c90e-4c2e-9ce1-2c02f2fe8ef9",
       "name": "Fetch Kader page-data"
     },
@@ -17,7 +20,10 @@
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [256, 0],
+      "position": [
+        256,
+        0
+      ],
       "id": "59e074bb-8bf9-4b29-bc99-9dbe7c807cf0",
       "name": "Spieler + URLs extrahieren"
     },
@@ -27,7 +33,10 @@
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [512, 0],
+      "position": [
+        512,
+        0
+      ],
       "id": "e4dc3ba9-7d2d-4cbf-bd10-5dda69e261d4",
       "name": "Upsert-Query bauen"
     },
@@ -39,7 +48,10 @@
       },
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.6,
-      "position": [768, 0],
+      "position": [
+        768,
+        0
+      ],
       "id": "8c816809-e591-4605-a9df-abba48bc2fd7",
       "name": "DB: Spieler updaten",
       "credentials": {
@@ -57,7 +69,10 @@
       },
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2.1,
-      "position": [-496, 688],
+      "position": [
+        -496,
+        688
+      ],
       "id": "8ee6d58a-061a-4d4a-a0cc-6db7aafbce18",
       "name": "Webhook Events2",
       "webhookId": "6188adc1-362c-45e1-9e8a-abd1889bbe3b"
@@ -70,7 +85,10 @@
       },
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.6,
-      "position": [-240, 688],
+      "position": [
+        -240,
+        688
+      ],
       "id": "9a6364a6-d789-4bfa-abd1-5096eaebee97",
       "name": "DB: Match-Instanz1",
       "credentials": {
@@ -98,7 +116,10 @@
       },
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [16, 688],
+      "position": [
+        16,
+        688
+      ],
       "id": "af4cd463-6470-4413-81f6-86e783c04fa7",
       "name": "API: Events abrufen3",
       "credentials": {
@@ -114,7 +135,10 @@
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [336, 688],
+      "position": [
+        336,
+        688
+      ],
       "id": "6fcf67aa-622f-4dcb-bb84-15aac8dd88d9",
       "name": "Events extrahieren2"
     },
@@ -124,7 +148,10 @@
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [544, 688],
+      "position": [
+        544,
+        688
+      ],
       "id": "887202e2-7bc2-48f5-b08a-002ae50ff022",
       "name": "Events Insert - Code Node2"
     },
@@ -136,7 +163,10 @@
       },
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.6,
-      "position": [896, 688],
+      "position": [
+        896,
+        688
+      ],
       "id": "6805bfd4-e000-4872-9344-61683d658c02",
       "name": "Insert Events3",
       "credentials": {
@@ -173,7 +203,10 @@
       },
       "type": "n8n-nodes-base.filter",
       "typeVersion": 2.2,
-      "position": [1232, 688],
+      "position": [
+        1232,
+        688
+      ],
       "id": "fb1757a2-24f4-4824-bb5d-9bac4b09acdc",
       "name": "Filter2"
     },
@@ -190,7 +223,10 @@
       },
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [1424, 688],
+      "position": [
+        1424,
+        688
+      ],
       "id": "a07d784c-6dbc-4210-8682-57051577a0ae",
       "name": "LLM Trigger Node2",
       "credentials": {
@@ -235,7 +271,10 @@
       },
       "type": "n8n-nodes-base.filter",
       "typeVersion": 2.2,
-      "position": [1232, 928],
+      "position": [
+        1232,
+        928
+      ],
       "id": "f1eb0520-c0fd-4b10-86ba-1f7efb073bf3",
       "name": "Nur EF-Tore"
     },
@@ -245,7 +284,10 @@
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [1488, 928],
+      "position": [
+        1488,
+        928
+      ],
       "id": "fe70e3cf-f2df-444a-b94c-62f6bcd235f1",
       "name": "Video-Query bauen"
     },
@@ -257,7 +299,10 @@
       },
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.6,
-      "position": [1744, 928],
+      "position": [
+        1744,
+        928
+      ],
       "id": "41d027bc-8585-4de6-8a18-65115210d5d8",
       "name": "DB: Torschützen-Video",
       "credentials": {
@@ -294,7 +339,10 @@
       },
       "type": "n8n-nodes-base.filter",
       "typeVersion": 2.2,
-      "position": [2000, 928],
+      "position": [
+        2000,
+        928
+      ],
       "id": "1938393b-31b0-4fba-808b-970cfe584918",
       "name": "Hat Video?"
     },
@@ -311,7 +359,10 @@
       },
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [2256, 928],
+      "position": [
+        2256,
+        928
+      ],
       "id": "c1009dfc-11d8-4b6a-843d-12aa303b15ea",
       "name": "Torjubel-Ticker posten",
       "credentials": {
@@ -348,7 +399,10 @@
       },
       "type": "n8n-nodes-base.filter",
       "typeVersion": 2.2,
-      "position": [2480, 928],
+      "position": [
+        2480,
+        928
+      ],
       "id": "3f96f417-efe1-4b30-9385-4a966e3617b3",
       "name": "Video CO-OP?",
       "disabled": true
@@ -366,7 +420,10 @@
       },
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [2704, 928],
+      "position": [
+        2704,
+        928
+      ],
       "id": "db7b611b-7533-48bc-b596-1dc4f0f3f025",
       "name": "Set Video Draft",
       "credentials": {
@@ -403,7 +460,10 @@
       },
       "type": "n8n-nodes-base.filter",
       "typeVersion": 2.2,
-      "position": [2496, 1072],
+      "position": [
+        2496,
+        1072
+      ],
       "id": "e15e958b-7371-4bad-906d-aeded4b4014b",
       "name": "Video AUTO?"
     },
@@ -420,7 +480,10 @@
       },
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [2720, 1072],
+      "position": [
+        2720,
+        1072
+      ],
       "id": "03a2961d-5d6f-4994-b5d5-62dfe34ec2fb",
       "name": "Video AUTO publishen",
       "credentials": {
@@ -443,13 +506,39 @@
       },
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [2272, 1072],
+      "position": [
+        2272,
+        1072
+      ],
       "id": "196683e4-2ed2-4930-aae8-172dab31889f",
       "name": "Torjubel-Ticker posten1",
       "credentials": {
         "httpHeaderAuth": {
           "id": "nw1wvLZ4u2BCZRVl",
           "name": "Header Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "WITH match_teams AS (\n  SELECT m.id, m.home_team_id, m.away_team_id,\n    ht.external_id AS home_ext,\n    at.external_id AS away_ext\n  FROM matches m\n  JOIN teams ht ON ht.id = m.home_team_id\n  JOIN teams at ON at.id = m.away_team_id\n  WHERE m.id = $1\n),\nscores AS (\n  SELECT\n    COALESCE(SUM(CASE\n      WHEN e.event_type = 'goal'     AND (e.description::jsonb->>'team_id')::integer = mt.home_ext THEN 1\n      WHEN e.event_type = 'own_goal' AND (e.description::jsonb->>'team_id')::integer = mt.away_ext THEN 1\n      ELSE 0 END), 0) AS home_score,\n    COALESCE(SUM(CASE\n      WHEN e.event_type = 'goal'     AND (e.description::jsonb->>'team_id')::integer = mt.away_ext THEN 1\n      WHEN e.event_type = 'own_goal' AND (e.description::jsonb->>'team_id')::integer = mt.home_ext THEN 1\n      ELSE 0 END), 0) AS away_score\n  FROM events e, match_teams mt\n  WHERE e.match_id = mt.id\n    AND e.event_type IN ('goal', 'own_goal')\n)\nUPDATE matches SET\n  home_score = (SELECT home_score FROM scores),\n  away_score = (SELECT away_score FROM scores)\nWHERE id = $1\nRETURNING id, home_score, away_score",
+        "options": {
+          "queryReplacement": "={{ [$('DB: Match-Instanz1').first().json.match_id] }}"
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        896,
+        480
+      ],
+      "id": "b2c4e6f8-a1d3-4c5e-8b7a-9f0e1d2c3b4a",
+      "name": "Update Match Score",
+      "credentials": {
+        "postgres": {
+          "id": "5VeE2cikA9rLeOKz",
+          "name": "Postgres account 2"
         }
       }
     }
@@ -553,6 +642,11 @@
           },
           {
             "node": "Nur EF-Tore",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Update Match Score",
             "type": "main",
             "index": 0
           }
