@@ -117,24 +117,20 @@ export function MediaPublishModal({
         return;
       }
       const raw = description.trim();
-      let textToPublish = raw;
-      let icon = null;
-      if (raw.startsWith("/")) {
-        const parsed = parseCommand(raw, minute);
-        icon = parsed.meta?.icon ?? null;
-        textToPublish = raw.replace(/^\/\w+\s*/, "").trim() || raw;
-      }
+      const textToPublish = raw.startsWith("/")
+        ? raw.replace(/^\/\w+\s*/, "").trim() || raw
+        : raw;
+      const publishMinute = phase === "Halftime" ? 45 : phase ? null : minute || null;
       setLoading(true);
       setError(null);
       try {
-        const publishMinute = phase === "Halftime" ? 45 : phase ? null : minute || null;
         await publishMedia({
           mediaId: Number(image.media_id),
           description: textToPublish,
           matchId,
           minute: publishMinute,
           phase: phase || null,
-          icon,
+          icon: null, // Backend setzt immer 📷
         });
         onPublished(image.media_id);
       } catch (err) {

@@ -193,8 +193,9 @@ def media_publish(
         ts.make_manual_entry(
             match_id=data.match_id,
             text=data.description,
-            icon=data.icon or "📷",
+            icon="📷",
             minute=data.minute,
+            phase=data.phase,
             image_url=media.compressed_url or media.original_url or media.thumbnail_url,
         )
     )
