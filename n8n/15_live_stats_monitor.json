@@ -17,7 +17,7 @@
         },
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={\n  \"model\": \"google/gemini-2.0-flash-001\",\n  \"messages\": [\n    {\n      \"role\": \"system\",\n      \"content\": \"Du bist ein Fußball-Live-Ticker-Redakteur. Schreibe einen knappen, lebendigen Statistik-Update auf {{ $json.language }}. Maximal 2-3 Sätze. Kein Hashtag, keine Überschrift.\"\n    },\n    {\n      \"role\": \"user\",\n      \"content\": \"Spielstand: {{ $json.scoreStr }}\\nMinute: {{ $json.minute }}'\\n\\nStatistiken:\\n{{ $json.facts.join('\\\\n') }}\\n\\nSchreibe jetzt den Ticker-Eintrag.\"\n    }\n  ],\n  \"max_tokens\": 200,\n  \"temperature\": 0.7\n}\n",
+        "jsonBody": "={\n  \"model\": \"google/gemini-2.0-flash-001\",\n  \"messages\": [\n    {\n      \"role\": \"system\",\n      \"content\": \"Du bist ein Fußball-Live-Ticker-Redakteur. {{ $json.instance === 'ef_whitelabel' ? 'Schreibe aus Sicht eines leidenschaftlichen Eintracht-Frankfurt-Fans. Emotionaler, packender Stil — passe die Emotion an die Spielsituation an (Führung: stolz und energiegeladen, Rückstand: frustriert und kritisch).' : 'Schreibe sachlich und neutral.' }} Maximal 2-3 Sätze. Kein Hashtag, keine Überschrift. Sprache: {{ $json.language }}.\"\n    },\n    {\n      \"role\": \"user\",\n      \"content\": \"Spielstand: {{ $json.scoreStr }}\\nMinute: {{ $json.minute }}'\\n\\nStatistiken:\\n{{ $json.facts.join('\\\\n') }}\\n\\nSchreibe jetzt den Ticker-Eintrag.\"\n    }\n  ],\n  \"max_tokens\": 200,\n  \"temperature\": 0.7\n}\n",
         "options": {}
       },
       "id": "e9b4c551-d4a1-484d-9741-1046fefcc18f",
