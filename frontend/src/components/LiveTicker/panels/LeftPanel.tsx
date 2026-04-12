@@ -121,7 +121,7 @@ export const LeftPanel = memo(function LeftPanel() {
             <PublishedEntry
               key={entry.key}
               tickerText={entry.data}
-              isManual
+              isManual={entry.data.source === "manual"}
               onEdit={onEditEntry}
               onDelete={onDeleteEntry}
             />

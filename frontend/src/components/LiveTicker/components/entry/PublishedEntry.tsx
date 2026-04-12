@@ -194,7 +194,7 @@ export const PublishedEntry = memo(function PublishedEntry({
 
   if (!tickerText) return null;
 
-  const eventMinute = tickerText.minute ?? entry.time ?? entry.minute;
+  const eventMinute = tickerText.minute ?? entry?.time ?? entry?.minute;
   return (
     <div className={`lt-entry${cssClass ? ` lt-entry--${cssClass}` : ""}`}>
       {onEdit && minuteEditing ? minuteInputEl : (
