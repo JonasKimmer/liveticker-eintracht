@@ -16,7 +16,7 @@
     {
       "parameters": {
         "operation": "executeQuery",
-        "query": "SELECT id, external_id, match_state, ticker_mode FROM matches WHERE external_id = $1",
+        "query": "SELECT m.id, m.external_id, m.match_state, m.ticker_mode,\n  CASE WHEN (ht.name ILIKE '%Frankfurt%' OR at.name ILIKE '%Frankfurt%')\n       THEN 'ef_whitelabel' ELSE 'generic' END AS instance\nFROM matches m\nJOIN teams ht ON ht.id = m.home_team_id\nJOIN teams at ON at.id = m.away_team_id\nWHERE m.external_id = $1",
         "options": {
           "queryReplacement": "={{ [$json.body.fixture_id] }}"
         }
@@ -126,7 +126,7 @@
     },
     {
       "parameters": {
-        "jsCode": "// Style wird jetzt zentral im Backend gesetzt:\n// ef_whitelabel + neutral → automatisch euphorisch\nconst ticker_mode = $('Webhook match-status').first().json.body.ticker_mode\n  ?? $('SQL: Match laden').first().json.ticker_mode\n  ?? 'coop';\nreturn [{ json: {\n  id: $json.id,\n  type: $json.type,\n  match_id: $('SQL: Match laden').first().json.id,\n  style: 'neutral',\n  ticker_mode\n} }];"
+        "jsCode": "// Style wird jetzt zentral im Backend gesetzt:\n// ef_whitelabel + neutral → automatisch euphorisch\nconst ticker_mode = $('Webhook match-status').first().json.body.ticker_mode\n  ?? $('SQL: Match laden').first().json.ticker_mode\n  ?? 'coop';\nconst instance = $('SQL: Match laden').first().json.instance || 'generic';\nreturn [{ json: {\n  id: $json.id,\n  type: $json.type,\n  match_id: $('SQL: Match laden').first().json.id,\n  style: 'neutral',\n  ticker_mode,\n  instance\n} }];"
       },
       "id": "cd8d3056-2da6-42ea-b738-225186873686",
       "name": "Style wählen",
@@ -142,7 +142,7 @@
         "genericAuthType": "httpHeaderAuth",
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={{ JSON.stringify({ synthetic_event_id: $json.id, style: $json.style, auto_publish: $json.ticker_mode === 'auto' }) }}",
+        "jsonBody": "={{ JSON.stringify({ synthetic_event_id: $json.id, style: $json.style, instance: $json.instance, auto_publish: $json.ticker_mode === 'auto' }) }}",
         "options": {}
       },
       "id": "30af6612-cd98-40a2-a581-22143825cd82",

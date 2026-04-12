@@ -293,7 +293,8 @@ export const triggerLiveStatsMonitor = (
   matchId: number,
   instance = "generic",
   language = "de",
-) => n8n.post("/live-stats-monitor", { match_id: matchId, instance, language });
+  tickerMode = "coop",
+) => n8n.post("/live-stats-monitor", { match_id: matchId, instance, language, ticker_mode: tickerMode });
 
 export const triggerMinuteUpdate = (fixtureId: number) =>
   n8n.post("/update-minute", { fixture_id: fixtureId });

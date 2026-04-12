@@ -230,7 +230,7 @@ export function useMatchTriggers({
     if (!selMatchId || !match?.matchState) return;
     if (match.matchState === "PreMatch") return;
     api
-      .triggerLiveStatsMonitor(selMatchId, instance, language)
+      .triggerLiveStatsMonitor(selMatchId, instance, language, tickerMode)
       .catch((err) =>
         logger.warn(
           "[useMatchTriggers] triggerLiveStatsMonitor silenced:",
@@ -241,7 +241,7 @@ export function useMatchTriggers({
     const interval = setInterval(
       () => {
         api
-          .triggerLiveStatsMonitor(selMatchId, instance, language)
+          .triggerLiveStatsMonitor(selMatchId, instance, language, tickerMode)
           .catch((err) =>
             logger.warn(
               "[useMatchTriggers] triggerLiveStatsMonitor silenced:",

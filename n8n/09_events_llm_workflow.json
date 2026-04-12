@@ -185,7 +185,7 @@
         "genericAuthType": "httpHeaderAuth",
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={\n  \"style\": \"{{ $('DB: Match-Instanz1').first().json.style || 'neutral' }}\",\n  \"instance\": \"{{ $('DB: Match-Instanz1').first().json.instance || 'generic' }}\",\n  \"language\": \"{{ $('Webhook Events2').first().json.body.language || 'de' }}\",\n  \"auto_publish\": {{ ($('Webhook Events2').first().json.body.ticker_mode ?? $('DB: Match-Instanz1').first().json.ticker_mode) === 'auto' }}\n}\n",
+        "jsonBody": "={\n  \"style\": \"{{ $('DB: Match-Instanz1').first().json.style || 'neutral' }}\",\n  \"instance\": \"{{ $('DB: Match-Instanz1').first().json.instance || 'generic' }}\",\n  \"language\": \"{{ $('Webhook Events2').first().json.body.language || 'de' }}\",\n  \"auto_publish\": {{ $('DB: Match-Instanz1').first().json.ticker_mode === 'auto' }}\n}\n",
         "options": {}
       },
       "type": "n8n-nodes-base.httpRequest",
