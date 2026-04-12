@@ -8,7 +8,7 @@
         "genericAuthType": "httpHeaderAuth",
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={{ JSON.stringify({ match_id: $json.match_id, text: $json.text, phase: $json.phase, status: $json.ticker_mode === 'auto' ? 'published' : 'draft' }) }}",
+        "jsonBody": "={{ JSON.stringify({ match_id: $json.match_id, text: $json.text, phase: $json.phase, status: $json.ticker_mode === 'auto' ? 'published' : 'draft', style: $json.style, instance: $json.instance, llm_model: $json.llm_model, source: 'ai' }) }}",
         "options": {}
       },
       "id": "a8a1b12c-d26b-4649-8f17-a1bf0b245cb1",
@@ -149,7 +149,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const text = $('OpenRouter1').first().json.choices?.[0]?.message?.content?.trim() ?? '';\nconst { match_id, phase, style, ticker_mode } = $('Build Prompt1').first().json;\n// Normalisierung: FirstHalfBreak → Halftime, damit Summary-Einträge nie phase=FirstHalfBreak haben\nconst normalizedPhase = phase === 'FirstHalfBreak' ? 'Halftime' : phase;\nreturn [{ json: { match_id, phase: normalizedPhase, text, style, ticker_mode } }];"
+        "jsCode": "const text = $('OpenRouter1').first().json.choices?.[0]?.message?.content?.trim() ?? '';\nconst { match_id, phase, style, ticker_mode } = $('Build Prompt1').first().json;\nconst model = $('OpenRouter1').first().json.model || 'google/gemini-2.0-flash-lite-001';\n// Normalisierung: FirstHalfBreak → Halftime, damit Summary-Einträge nie phase=FirstHalfBreak haben\nconst normalizedPhase = phase === 'FirstHalfBreak' ? 'Halftime' : phase;\nconst webhookBody = $('Webhook1').first().json.body;\nconst instance = webhookBody.instance || 'generic';\nreturn [{ json: { match_id, phase: normalizedPhase, text, style, instance, llm_model: model, ticker_mode } }];"
       },
       "id": "80655f09-967e-41c9-ad91-650bf97dfe8f",
       "name": "Extract Response1",

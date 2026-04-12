@@ -79,7 +79,10 @@ class ManualEntryRequest(BaseModel):
     text: str = Field("", max_length=2000)
     event_id: Optional[int] = None
     style: Optional[str] = None
+    instance: Optional[str] = None
     icon: Optional[str] = None
+    llm_model: Optional[str] = None
+    source: Optional[str] = None
     minute: Optional[int] = None
     phase: Optional[str] = Field(None, max_length=50)
     image_url: Optional[str] = None
