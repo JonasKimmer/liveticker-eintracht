@@ -53,53 +53,11 @@ Echtzeit-Medienupdates.
 Die folgende Abbildung zeigt die drei Schichten mit ihren Technologien
 und Kommunikationspfaden:
 
-\begin{Shaded}
-\begin{Highlighting}[]
-\NormalTok{graph LR}
-\NormalTok{    classDef schicht fill:\#EFF6FF,stroke:\#3B82F6,stroke{-}width:1.5px,color:\#1E3A8A}
-\NormalTok{    classDef extern fill:\#F9FAFB,stroke:\#9CA3AF,stroke{-}width:1px,color:\#374151}
-\NormalTok{    classDef db fill:\#F0FDF4,stroke:\#22C55E,stroke{-}width:1.5px,color:\#14532D}
-
-\NormalTok{    subgraph EXT["  Externe Dienste  "]}
-\NormalTok{        FAPI["Football{-}API\textbackslash{}napi{-}sports.io"]}
-\NormalTok{        LLM["LLM Provider\textbackslash{}nOpenRouter"]}
-\NormalTok{        SP["ScorePlay\textbackslash{}nMedia"]}
-\NormalTok{        EF["EF Spielerdaten\textbackslash{}nprofis.eintracht.de"]}
-\NormalTok{    end}
-
-\NormalTok{    subgraph AUTO["  Automatisierungsschicht  "]}
-\NormalTok{        N8N["n8n\textbackslash{}n16 Workflows"]}
-\NormalTok{    end}
-
-\NormalTok{    subgraph APP["  Anwendungs{-} \& Persistenzschicht  "]}
-\NormalTok{        BE["FastAPI\textbackslash{}nPython · Uvicorn"]}
-\NormalTok{        DB[("PostgreSQL\textbackslash{}n18 Tabellen")]}
-\NormalTok{        BE \textless{}{-}{-}\textgreater{}|"ORM"| DB}
-\NormalTok{    end}
-
-\NormalTok{    subgraph UI["  Präsentationsschicht  "]}
-\NormalTok{        FE["React Frontend\textbackslash{}nTypeScript"]}
-\NormalTok{    end}
-
-\NormalTok{    N8N {-}{-}\textgreater{}|"HTTP GET"| FAPI}
-\NormalTok{    N8N {-}{-}\textgreater{}|"HTTP GET/POST"| SP}
-\NormalTok{    N8N {-}{-}\textgreater{}|"HTTP GET"| EF}
-\NormalTok{    N8N {-}{-}\textgreater{}|"Zusammenfassungen"| LLM}
-\NormalTok{    N8N {-}{-}\textgreater{}|"REST POST /api/v1"| BE}
-
-\NormalTok{    BE {-}{-}\textgreater{}|"LLM{-}Aufrufe"| LLM}
-
-\NormalTok{    FE {-}{-}\textgreater{}|"REST Polling · 5s"| BE}
-\NormalTok{    FE {-}.{-}\textgreater{}|"WebSocket /ws/media"| BE}
-\NormalTok{    FE {-}{-}\textgreater{}|"Webhook{-}Trigger"| N8N}
-
-\NormalTok{    class FE schicht}
-\NormalTok{    class BE schicht}
-\NormalTok{    class N8N schicht}
-\NormalTok{    class DB db}
-\NormalTok{    class FAPI,LLM,SP,EF extern}
-\end{Highlighting}
-\end{Shaded}
+\begin{figure}[H]
+\centering
+\DiagramSystemArchitektur
+\caption{Systemarchitektur: drei Schichten und externe Dienste}
+\end{figure}
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
@@ -113,35 +71,11 @@ Datenbestand über REST; nur bei fehlenden Daten wird ein passender
 n8n-Webhook ausgelöst. Dadurch werden externe API-Aufrufe minimiert und
 redundante Importe vermieden.
 
-\begin{Shaded}
-\begin{Highlighting}[]
-\NormalTok{sequenceDiagram}
-\NormalTok{    participant FE as React Frontend}
-\NormalTok{    participant BE as FastAPI Backend}
-\NormalTok{    participant N8N as n8n}
-\NormalTok{    participant FAPI as Football{-}API}
-
-\NormalTok{    FE{-}\textgreater{}\textgreater{}BE: GET /teams/countries}
-\NormalTok{    alt Keine Daten vorhanden}
-\NormalTok{        FE{-}\textgreater{}\textgreater{}N8N: Webhook import{-}countries}
-\NormalTok{        N8N{-}\textgreater{}\textgreater{}FAPI: GET /countries}
-\NormalTok{        N8N{-}\textgreater{}\textgreater{}BE: POST /api/v1/countries (Upsert)}
-\NormalTok{        FE{-}\textgreater{}\textgreater{}BE: GET /teams/countries (erneut)}
-\NormalTok{    end}
-
-\NormalTok{    FE{-}\textgreater{}\textgreater{}BE: GET /matches (nach Teamauswahl)}
-\NormalTok{    FE{-}\textgreater{}\textgreater{}N8N: Webhook import{-}prematch, import{-}lineups, ...}
-\NormalTok{    N8N{-}\textgreater{}\textgreater{}BE: POST /api/v1/events, /api/v1/ticker/generate/...}
-
-\NormalTok{    loop Polling alle 5s (Events, Ticker, Match)}
-\NormalTok{        FE{-}\textgreater{}\textgreater{}BE: GET /api/v1/ticker/\{match\_id\}}
-\NormalTok{        BE{-}{-}\textgreater{}\textgreater{}FE: TickerEntry[] (inkl. neuer Entwürfe)}
-\NormalTok{    end}
-
-\NormalTok{    N8N{-}\textgreater{}\textgreater{}BE: POST /api/v1/media/incoming}
-\NormalTok{    BE{-}{-}\textgreater{}\textgreater{}FE: WebSocket /ws/media → neue Medien}
-\end{Highlighting}
-\end{Shaded}
+\begin{figure}[H]
+\centering
+\DiagramCommunicationFlow
+\caption{Kommunikationsfluss: Frontend, Backend, n8n und externe APIs}
+\end{figure}
 
 Die Systemkopplung erfolgt über drei klar getrennte Schnittstellentypen:
 
@@ -480,23 +414,11 @@ Statusmodell mit vier Zuständen:
   Listenabfragen herausgefiltert, bleibt aber in der Datenbank erhalten
 \end{itemize}
 
-\begin{Shaded}
-\begin{Highlighting}[]
-\NormalTok{stateDiagram{-}v2}
-\NormalTok{    [*] {-}{-}\textgreater{} draft : KI generiert (coop)\textbackslash{}nauto\_publish=false}
-\NormalTok{    [*] {-}{-}\textgreater{} published : KI generiert (auto)\textbackslash{}nauto\_publish=true}
-\NormalTok{    [*] {-}{-}\textgreater{} published : Manuell\textbackslash{}nPOST /ticker/manual}
-
-\NormalTok{    draft {-}{-}\textgreater{} published : Redakteur bestätigt\textbackslash{}nPATCH status=published}
-\NormalTok{    draft {-}{-}\textgreater{} rejected  : Redakteur verwirft\textbackslash{}nPATCH status=rejected}
-\NormalTok{    published {-}{-}\textgreater{} draft : PATCH status=draft}
-\NormalTok{    published {-}{-}\textgreater{} deleted : DELETE /ticker/\{id\}}
-\NormalTok{    draft {-}{-}\textgreater{} deleted : DELETE /ticker/\{id\}}
-
-\NormalTok{    note right of rejected : Bleibt erhalten\textbackslash{}n(Auswertbarkeit)}
-\NormalTok{    note right of deleted : Weich gelöscht\textbackslash{}n(aus Abfragen gefiltert)}
-\end{Highlighting}
-\end{Shaded}
+\begin{figure}[H]
+\centering
+\DiagramTickerStates
+\caption{Zustandsautomat der Ticker-Einträge (draft, published, rejected, deleted)}
+\end{figure}
 
 Eine Rückstufung von \texttt{published} auf \texttt{draft} ist über
 \texttt{PATCH\ status=draft} möglich und wird insbesondere bei
@@ -799,20 +721,11 @@ Bausteinen, die dynamisch zusammengesetzt werden:
   Regelblock mit formativen und inhaltlichen Einschränkungen
 \end{enumerate}
 
-\begin{Shaded}
-\begin{Highlighting}[]
-\NormalTok{flowchart TD}
-\NormalTok{    A["Ereignis{-}Typ\textbackslash{}n(z.B. goal)"] {-}{-}\textgreater{} P}
-\NormalTok{    B["Fakten\textbackslash{}n(Spieler, Minute, Team)"] {-}{-}\textgreater{} P}
-\NormalTok{    C["Match{-}Kontext\textbackslash{}n(Spielstand, Teams, Liga)"] {-}{-}\textgreater{} P}
-\NormalTok{    D["Few{-}Shot{-}Beispiele\textbackslash{}naus style\_references\textbackslash{}n(0–3 Texte)"] {-}{-}\textgreater{} P}
-\NormalTok{    E["Regelblock\textbackslash{}n(Länge, Sprache, kein Markdown)"] {-}{-}\textgreater{} P}
-\NormalTok{    F["Stilinstruktion\textbackslash{}nneutral / euphorisch / kritisch"] {-}{-}\textgreater{} P}
-
-\NormalTok{    P["Vollständiger\textbackslash{}nSystem{-}Prompt"] {-}{-}\textgreater{} LLM["LLM\textbackslash{}n(temp=0.3)"]}
-\NormalTok{    LLM {-}{-}\textgreater{} T["Generierter\textbackslash{}nTicker{-}Text"]}
-\end{Highlighting}
-\end{Shaded}
+\begin{figure}[H]
+\centering
+\DiagramPromptPipeline
+\caption{Prompt-Aufbau: Eingaben, System-Prompt, LLM-Aufruf und Ticker-Text}
+\end{figure}
 
 Der Few-Shot-Block wird aus der Tabelle \texttt{style\_references}
 gespeist, die manuell kuratierte Original-Tickertexte von Eintracht
