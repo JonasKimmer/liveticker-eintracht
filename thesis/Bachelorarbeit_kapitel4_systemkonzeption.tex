@@ -1,5 +1,17 @@
 \chapter{Systemkonzeption}\label{systemkonzeption}
 
+Dieses Kapitel beschreibt die Konzeption des Liveticker-Systems auf
+Basis der in Kapitel 2 hergeleiteten Anforderungen und der in Kapitel 3
+aufgearbeiteten technologischen Grundlagen. Es gliedert sich in sieben
+Bereiche: das Schichtenmodell und die Kommunikationsarchitektur
+(Kap.~4.1), die Backend-Konzeption mit API-Design und
+Sicherheitskonzept (Kap.~4.2), die Datenbankkonzeption mit
+Ticker-Lifecycle und Betriebsmodi (Kap.~4.3), die
+Workflow-Konzeption in n8n (Kap.~4.4), die KI-Komponente mit
+Multi-Provider-Architektur und Prompt-Design (Kap.~4.5), die
+Frontend-Konzeption mit Hook- und Kontextarchitektur (Kap.~4.6) sowie
+Skalierbarkeit und Systemgrenzen (Kap.~4.7).
+
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
 \section{Überblick und
@@ -56,7 +68,7 @@ und Kommunikationspfaden:
 \NormalTok{    end}
 
 \NormalTok{    subgraph AUTO["  Automatisierungsschicht  "]}
-\NormalTok{        N8N["n8n\textbackslash{}n15 Workflows"]}
+\NormalTok{        N8N["n8n\textbackslash{}n16 Workflows"]}
 \NormalTok{    end}
 
 \NormalTok{    subgraph APP["  Anwendungs{-} \& Persistenzschicht  "]}
@@ -94,11 +106,12 @@ und Kommunikationspfaden:
 \subsection{Kommunikations- und
 Triggerarchitektur}\label{kommunikations--und-triggerarchitektur}
 
-Der Kommunikationsfluss folgt dem Prinzip \textbf{„read first, trigger
-if missing''}: Das Frontend liest zunächst den vorhandenen Datenbestand
-über REST; nur bei fehlenden Daten wird ein passender n8n-Webhook
-ausgelöst. Dadurch werden externe API-Aufrufe minimiert und redundante
-Importe vermieden.
+Der Kommunikationsfluss folgt dem Entwurfsprinzip \textbf{„read first,
+trigger if missing''} --- strukturell verwandt mit dem Cache-Aside
+Pattern (vgl. Fowler 2002): Das Frontend liest zunächst den vorhandenen
+Datenbestand über REST; nur bei fehlenden Daten wird ein passender
+n8n-Webhook ausgelöst. Dadurch werden externe API-Aufrufe minimiert und
+redundante Importe vermieden.
 
 \begin{Shaded}
 \begin{Highlighting}[]
@@ -204,6 +217,11 @@ vorgesehen ist. Die konkreten Implementierungen sind in Kapitel 5.2.2
 
 \section{Backend-Konzeption}\label{backend-konzeption}
 
+Die Backend-Konzeption umfasst die Wahl des Frameworks, die interne
+Schichtstruktur, das API-Design sowie das Sicherheitskonzept. Alle
+Entscheidungen orientieren sich an den Anforderungen aus Kap.~2.6 und
+den technologischen Grundlagen aus Kap.~3.6.
+
 \subsection{Framework-Wahl: FastAPI}\label{framework-wahl-fastapi}
 
 Als Backend-Framework wurde FastAPI gewählt (vgl. Abschnitt 3.6.2 für
@@ -223,8 +241,8 @@ Eingaben gegen typisierte Schemas validiert werden.
 Datenzugriff}\label{interne-struktur-und-datenzugriff}
 
 Die interne Struktur folgt einer klaren Trennung aus API-Routern,
-Repository-Schicht (vgl. Kap. 3.6.3) sowie \textbf{SQLAlchemy
-2.0}-ORM-Modellen und Pydantic-Schemas. Die Router bilden die
+Repository-Schicht (vgl. Kap. 3.6.3) sowie SQLAlchemy-ORM-Modellen
+und Pydantic-Schemas. Die Router bilden die
 HTTP-Schnittstelle und übernehmen Validierung, Statuscodes sowie die
 Orchestrierung einzelner Use Cases. Datenbankzugriffe sind in
 dedizierten Repositories gekapselt. Dadurch bleibt die API-Schicht frei
@@ -445,7 +463,7 @@ Normalisierung und gezielter Schemaflexibilität:
 Ticker-Einträge}\label{status-lifecycle-der-ticker-eintruxe4ge}
 
 Jeder Ticker-Eintrag in \texttt{ticker\_entries} folgt einem klaren
-Statusmodell mit drei Zuständen:
+Statusmodell mit vier Zuständen:
 
 \begin{itemize}
 \tightlist
@@ -457,6 +475,9 @@ Statusmodell mit drei Zuständen:
 \item
   \textbf{\texttt{rejected}}: verworfen, bleibt zur Nachvollziehbarkeit
   erhalten
+\item
+  \textbf{\texttt{deleted}}: weich gelöscht; wird in allen
+  Listenabfragen herausgefiltert, bleibt aber in der Datenbank erhalten
 \end{itemize}
 
 \begin{Shaded}
@@ -469,8 +490,11 @@ Statusmodell mit drei Zuständen:
 \NormalTok{    draft {-}{-}\textgreater{} published : Redakteur bestätigt\textbackslash{}nPATCH status=published}
 \NormalTok{    draft {-}{-}\textgreater{} rejected  : Redakteur verwirft\textbackslash{}nPATCH status=rejected}
 \NormalTok{    published {-}{-}\textgreater{} draft : PATCH status=draft}
+\NormalTok{    published {-}{-}\textgreater{} deleted : DELETE /ticker/\{id\}}
+\NormalTok{    draft {-}{-}\textgreater{} deleted : DELETE /ticker/\{id\}}
 
 \NormalTok{    note right of rejected : Bleibt erhalten\textbackslash{}n(Auswertbarkeit)}
+\NormalTok{    note right of deleted : Weich gelöscht\textbackslash{}n(aus Abfragen gefiltert)}
 \end{Highlighting}
 \end{Shaded}
 
@@ -478,7 +502,10 @@ Eine Rückstufung von \texttt{published} auf \texttt{draft} ist über
 \texttt{PATCH\ status=draft} möglich und wird insbesondere bei
 Re-Triggern von Matchphasen-Workflows genutzt (vgl. Kap. 5.5.3).
 \texttt{rejected} ist ein terminaler Zustand --- ein verworfener Eintrag
-kann nicht reaktiviert werden.
+kann nicht reaktiviert werden. \texttt{deleted} kennzeichnet weich
+gelöschte Einträge: Sie bleiben in der Datenbank erhalten, werden aber
+durch ein explizites Filter-Prädikat (\texttt{status\ !=\ deleted}) aus
+allen regulären Listenabfragen ausgeschlossen.
 
 Ergänzend markiert das Feld \texttt{source} die Herkunft (\texttt{ai}
 vs.~\texttt{manual}) und erlaubt eine saubere Trennung für Evaluationen
@@ -588,8 +615,8 @@ Generierungsworkflows zum LLM-Trigger. Dieses Muster garantiert
 Idempotenz: Mehrfachaufrufe desselben Events erzeugen weder
 Datenduplikate noch redundante LLM-Aufrufe.
 
-Die n8n-Landschaft gliedert sich in vier funktionale Klassen. Die
-folgende Übersicht zeigt alle 15 Workflows und ihren Auslöser:
+Die n8n-Landschaft gliedert sich in sechs funktionale Klassen. Die
+folgende Übersicht zeigt alle 16 Workflows und ihren Auslöser:
 
 {\def\LTcaptype{none} % do not increment counter
 \begin{longtable}[]{@{}
@@ -610,12 +637,14 @@ Trigger
 \endlastfoot
 \textbf{A) Stammdaten} & 01--04: Countries, Teams, Competitions, Matches
 & Bei leeren Daten \\
-\textbf{B) Matchdaten} & 05--07: Lineups, Match-/Player-Statistics,
+\textbf{B) Matchdaten} & 04--07: Lineups, Match-/Player-Statistics,
 Prematch & Nach Matchauswahl \\
 \textbf{C) KI-Generierung} & 09 Events-LLM, 13 Halftime/Aftertime, 14
 Anpfiff/Abpfiff & Modus- und Event-gesteuert \\
 \textbf{D) Medien \& Social} & 08 ScorePlay, 10 Twitter/X, 11 YouTube,
 12 Instagram & Medien-Suche \\
+\textbf{E) Monitoring} & 15 Live-Stats-Monitor & Spieltag-gesteuert \\
+\textbf{F) Spielzeit} & 16 Aktuelle-Minute-Update & Webhook (Spielminute ändern) \\
 \end{longtable}
 }
 
@@ -656,6 +685,13 @@ modularen, nachvollziehbaren und erweiterbaren Ablauf zusammenführt.
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
 \section{KI-Komponente}\label{ki-komponente}
+
+Die KI-Komponente bildet das Herzstück des Systems: Sie übersetzt
+strukturierte Spielereignisse in natürlichsprachliche Ticker-Texte und
+verbindet dabei die LLM-Pipeline mit dem Betriebsmodus, der
+Stilkonfiguration und dem Mehrsprachigkeitsparameter. Dieser Abschnitt
+beschreibt die Multi-Provider-Architektur, die Prompt-Konzeption, die
+Concurrency-Steuerung sowie die Mehrsprachigkeitsstrategie.
 
 \subsection{Multi-Provider-Architektur}\label{multi-provider-architektur}
 
@@ -834,11 +870,13 @@ als relevant identifizierten Sprachen.
 
 Für bestehende Einträge steht eine Batch-Übersetzung über
 \texttt{POST\ /api/v1/ticker/translate-batch/\{match\_id\}} zur
-Verfügung. Sie übersetzt alle veröffentlichten KI-Einträge eines Spiels
-mit reduzierter Temperatur (\texttt{0.1}), um möglichst deterministische
-Ergebnisse zu erzielen. Der aktuelle Implementierungsstand schließt
-dabei auch manuell erstellte Einträge ein --- eine Einschränkung, die in
-Kapitel 6.7 dokumentiert ist.
+Verfügung. Sie übersetzt alle Einträge eines Spiels unabhängig von
+Status und Herkunft mit reduzierter Temperatur (\texttt{0.1}), um
+möglichst deterministische Ergebnisse zu erzielen. Dies schließt
+\texttt{draft}-, \texttt{published}- und manuell erstellte Einträge
+gleichermaßen ein --- eine bewusste Vereinfachung des aktuellen
+Implementierungsstands, die in Kapitel 6.7 als Limitation dokumentiert
+ist.
 
 Eine verbleibende Limitation betrifft die Few-Shot-Referenzen: Die
 \texttt{style\_references}-Tabelle enthält ausschließlich
@@ -851,6 +889,12 @@ Referenzen wäre der naheliegende Folgeschritt (vgl. Kap. 8.3.2).
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
 \section{Frontend-Konzeption}\label{frontend-konzeption}
+
+Das Frontend realisiert die Präsentationsschicht des Systems als
+React-Anwendung mit TypeScript. Dieser Abschnitt beschreibt die
+Architekturprinzipien, die Hook- und Zustandsarchitektur, das
+Dreispalten-Redaktionslayout, die Moduslogik sowie die
+Kommunikationsmuster zwischen Frontend und Backend.
 
 \subsection{Architekturprinzipien}\label{architekturprinzipien}
 
@@ -878,7 +922,7 @@ State-Architektur}\label{hook--und-state-architektur}
 Die Zustands- und Interaktionslogik ist in wiederverwendbare Custom
 Hooks aufgeteilt --- ein Entwurfsmuster, das React seit Version 16.8 als
 Alternative zu Klassenkomponenten eingeführt hat. Das Frontend umfasst
-25 spezialisierte Hooks, die sich in fünf funktionale Kategorien
+26 spezialisierte Hooks, die sich in fünf funktionale Kategorien
 gliedern lassen:
 
 \begin{enumerate}
@@ -971,6 +1015,11 @@ Reconnect-Parameter sind in Kapitel 5.4.3--5.4.5 dokumentiert.
 
 \section{Skalierbarkeit, Erweiterbarkeit und
 Systemgrenzen}\label{skalierbarkeit-erweiterbarkeit-und-systemgrenzen}
+
+Dieser Abschnitt bewertet das System hinsichtlich seiner Fähigkeit zur
+horizontalen Skalierung, identifiziert bekannte Grenzen der aktuellen
+Architektur und skizziert die Erweiterbarkeit für zukünftige
+Anforderungen.
 
 \subsection{Horizontale Skalierung des
 Backends}\label{horizontale-skalierung-des-backends}

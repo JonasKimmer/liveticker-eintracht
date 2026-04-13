@@ -1,46 +1,57 @@
 \chapter{Stand der Technik}\label{stand-der-technik}
 
+Dieses Kapitel legt die technologischen Grundlagen für das vorliegende
+System. Es gliedert sich in acht Bereiche: KI-gestützte Textgenerierung
+mit Large Language Models und Prompt Engineering (Kap. 3.1--3.2),
+automatisierte Sprachgenerierung im Sportjournalismus (Kap. 3.3),
+Echtzeit-Kommunikationsmuster (Kap. 3.4), ETL-Workflows und
+Automatisierungsplattformen (Kap. 3.5) sowie die eingesetzten Backend-,
+Frontend- und Deployment-Technologien (Kap. 3.6--3.8). Kapitel 3.9
+synthetisiert die Erkenntnisse und leitet daraus die
+Technologieentscheidungen für das Systemdesign ab.
+
 \section{Large Language Models}\label{large-language-models}
 
-Die Entwicklung großer Sprachmodelle (Large Language Models, LLMs) hat
-die Verarbeitung natürlicher Sprache in den vergangenen Jahren
-grundlegend verändert. Den technischen Ausgangspunkt bildet die
-\textbf{Transformer-Architektur}, die Vaswani et al.~(2017, S. 1) als
-ein neuartiges Netzwerkdesign einführten, das ausschließlich auf
-Aufmerksamkeitsmechanismen basiert. Das Modell verarbeitet Text
-autoregressiv --- bei jedem Schritt werden die zuvor generierten Tokens
-als zusätzliche Eingabe für die Erzeugung des nächsten verwendet
-(Vaswani et al.~2017, S. 2). Diese Eigenschaft macht
-Transformer-basierte Modelle besonders geeignet für sequenzielle
-Textgenerierungsaufgaben wie die Liveticker-Produktion.
+Große Sprachmodelle (Large Language Models, LLMs) sind KI-Systeme, die
+auf Basis umfangreicher Textkorpora trainiert werden und natürliche
+Sprache verstehen sowie erzeugen können. Ihr Einsatz hat sich in den
+vergangenen Jahren von der Forschung in die industrielle Anwendung
+verbreitet --- unter anderem für automatisierte Textproduktion im
+Medienbereich (vgl. Bluhm \& Schäfer 2023, S. 33).
 
-Diese großen Sprachmodelle werden zunächst auf umfangreichen Textkorpora
-vortrainiert und können anschließend durch \textbf{Transfer Learning}
---- also die Übertragung erlernter Sprachstrukturen auf neue Aufgaben
---- ohne aufgabenspezifisches Fine-tuning eingesetzt werden (Brown et
+Den technischen Ausgangspunkt bildet die \textbf{Transformer-Architektur}
+(Vaswani et al.~2017), die Text mithilfe sogenannter
+\textbf{Aufmerksamkeitsmechanismen} (Attention) verarbeitet: Das Modell
+gewichtet bei der Verarbeitung eines Wortes alle anderen Wörter im
+Kontext nach ihrer Relevanz. Dadurch kann es semantische Zusammenhänge
+auch über lange Textabschnitte hinweg erfassen. Die Textgenerierung
+erfolgt autoregressiv --- das Modell erzeugt ein Wort nach dem anderen,
+wobei jedes neue Wort auf den bereits generierten Text aufbaut.
+
+Diese Modelle werden auf umfangreichen Textkorpora vortrainiert und
+erwerben dabei ein breites Sprachverständnis. Aufgrund dieser Breite
+können sie direkt auf neue Aufgaben angewendet werden, ohne
+aufgabenspezifisches Fine-tuning zu erfordern --- eine Eigenschaft, die
+als \textbf{Zero-Shot-Generalisierung} bezeichnet wird (Brown et
 al.~2020, S. 2). Das ermöglicht den Einsatz von LLMs für spezialisierte
 Aufgaben wie die Liveticker-Generierung, ohne modellseitige Anpassungen
 vornehmen zu müssen.
 
-Die empirische Grundlage für das In-Context Learning wurde mit
-\textbf{GPT-3} gelegt --- einem autoregressiven Sprachmodell mit 175
-Milliarden Parametern (Brown et al.~2020, S. 1). Das Prinzip, Modelle
-über Beispiele im Prompt zu konditionieren, ohne ihre Gewichte
-anzupassen, hat sich seitdem als Standard etabliert. Parallel
-entwickelten weitere Anbieter --- darunter Meta (LLaMA-Familie),
-Anthropic (Claude) und Mistral --- vergleichbare Architekturen, die in
-unterschiedlichen Größenordnungen und Lizenzmodellen verfügbar sind und
-die breite Adaption von LLMs für spezialisierte Aufgaben ermöglichen.
+Die empirische Grundlage für das \textbf{In-Context Learning} wurde mit
+GPT-3 gelegt (Brown et al.~2020). Das Prinzip, Modelle über Beispiele
+im Prompt zu konditionieren, ohne ihre Gewichte anzupassen, hat sich
+seitdem als Standard etabliert und wird auch im vorliegenden System
+genutzt.
 
 Für die Liveticker-Produktion sind \textbf{kompakte Modelle} besonders
-relevant. Die Generierungsaufgabe erfordert kurze Texte (1--3 Sätze) auf
-Basis strukturierter Eingabedaten (Spielereignisse, Kontext) --- eine
-Aufgabe, die keine komplexe Inferenz oder umfangreiches Weltwissen
-voraussetzt. Kompakte Modelle bieten für solche kurzen, faktenbasierten
-Textgenerierungsaufgaben eine vergleichbare Qualität wie größere
-Modelle, bei deutlich niedrigerer Latenz und geringeren Kosten ---
+relevant. Die Generierungsaufgabe erfordert kurze Texte (1--3 Sätze)
+auf Basis strukturierter Eingabedaten (Spielereignisse, Kontext) ---
+eine Aufgabe, die keine komplexe Inferenz oder umfangreiches Weltwissen
+voraussetzt. Für solche klar definierten, strukturierten Generierungsaufgaben
+erzielen kompakte Modelle eine für den Anwendungsfall ausreichende
+Qualität bei deutlich niedrigerer Latenz und geringeren Kosten ---
 Eigenschaften, die für hochfrequente Echtzeit-Generierungsszenarien
-entscheidend sind (vgl. Kap. 4.5.1 für die konkrete Modellauswahl).
+entscheidend sind (vgl. Ouyang et al.~2022, S. 3).
 
 Trotz ihrer Leistungsfähigkeit weisen LLMs strukturelle Schwächen auf,
 insbesondere die Neigung zu \textbf{Halluzinationen} --- also der
@@ -58,9 +69,7 @@ Freigabeentscheidung verbleibt jedoch beim Redakteur.
 Die Qualität der Ausgaben eines LLM hängt maßgeblich vom \textbf{Prompt}
 ab. Prompt Engineering bezeichnet die systematische Gestaltung dieser
 Eingaben, um das Modell ohne Änderung seiner Gewichte zu einem
-gewünschten Verhalten zu lenken (Brown et al.~2020). Das Prinzip des
-\textbf{In-Context Learning} sieht vor, dass das Modell auf eine
-Instruktion und ggf. Beispiele konditioniert wird.
+gewünschten Verhalten zu lenken (Brown et al.~2020).
 
 Für die Anwendung von LLMs auf spezifische Aufgaben existieren
 grundsätzlich zwei Ansätze: \textbf{Fine-tuning} erfordert ein
@@ -94,6 +103,14 @@ Techniken unterscheiden:
   Fine-tuning erforderlich ist (Brown et al.~2020, S. 14).
 \end{enumerate}
 
+Moderne Chat-Modelle unterscheiden strukturell zwischen zwei
+Prompt-Rollen: Der \textbf{System Prompt} legt die übergeordnete Persona
+und Constraints des Modells fest (z.\,B. Stilanforderungen, inhaltliche
+Grenzen, Ausgabeformat), während der \textbf{User Prompt} die konkrete
+Aufgabe mit aufgabenspezifischen Daten enthält. Diese Trennung erlaubt
+es, allgemeine Verhaltensregeln einmalig im System Prompt zu definieren
+und den User Prompt auf die jeweilige Aufgabe zu beschränken.
+
 Ein weiterer zentraler Steuerungsparameter ist die \textbf{Temperature},
 die die Wahrscheinlichkeitsverteilung der Token-Auswahl beeinflusst
 (Brown et al.~2020, S. 24). Niedrige Werte (z. B. 0,0--0,3) führen zu
@@ -102,13 +119,9 @@ deterministischeren, faktentreueren Ausgaben; höhere Werte (z. B.
 bei denen faktische Korrektheit priorisiert wird, sind niedrige
 Temperature-Werte vorzuziehen.
 
-Die in Kapitel 2.5 hergeleiteten linguistischen Anforderungen ---
-Ellipsen, Tempora, Graphostilistik --- definieren dabei das Zielformat,
-das über Few-Shot-Beispiele und explizite Stilanweisungen im Prompt
-operationalisiert wird. Die konkrete Umsetzung im vorliegenden System
---- einschließlich der Prompt-Template-Struktur, Few-Shot-Datenquellen,
-Stilprofile und Temperature-Konfiguration --- wird in Kapitel 4.5.2
-beschrieben.
+Die konkrete Prompt-Struktur, Few-Shot-Beispiele und
+Temperature-Konfiguration des vorliegenden Systems werden in
+Kapitel~4.5.2 beschrieben.
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
@@ -138,11 +151,9 @@ Systeme nutzen vordefinierte Satzmuster, in die Ereignisdaten eingesetzt
 werden (z. B. „{[}Spieler{]} erzielt in der {[}Minute{]} Minute das
 {[}Tor-Nr.{]} für {[}Team{]}``). Der Vorteil liegt in vorhersagbarer
 Qualität und vollständiger Kontrolle über die Ausgabe; der Nachteil ist
-stilistische Monotonie und begrenzte sprachliche Variabilität.
-Puduppully und Lapata (2021, S. 520) beschreiben diese stilistische
-Monotonie und begrenzte sprachliche Variabilität als strukturelles
-Defizit regelbasierter Systeme, insbesondere bei komplexeren narrativen
-Anforderungen.
+stilistische Monotonie und begrenzte sprachliche Variabilität ---
+insbesondere bei komplexeren narrativen Anforderungen (Puduppully \&
+Lapata 2021, S. 520).
 
 Moderne \textbf{neuronale End-to-End-Ansätze} überwinden diese Grenzen
 durch datengetriebenes Lernen sprachlicher Muster. Statt starrer Regeln
@@ -277,11 +288,8 @@ Verarbeitung und effizienten Webhook-Mechanismen, um auf externe
 Ereignisse sofort reagieren zu können (vgl. Nakavisute \& Sincharoonsak
 2025).
 
-Die konkrete Umsetzung der ETL-Architektur im vorliegenden System ---
-einschließlich der gewählten Orchestrierungsplattform, der Datenquellen
-(API-Football, ScorePlay, Social Media), der 15 definierten Workflows
-und der Webhook-basierten Triggerstruktur --- wird in Kapitel 4.4
-beschrieben.
+Die konkrete Umsetzung der ETL-Architektur im vorliegenden System wird
+in Kapitel~4.4 beschrieben.
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
@@ -289,17 +297,14 @@ beschrieben.
 
 \subsection{Python}\label{python}
 
-\textbf{Python} hat sich als dominierende Programmiersprache für
-datenintensive Webanwendungen und KI-Systeme etabliert --- ein Konsens,
-der sich in konsistenten Rankings von Entwickler-Umfragen (Stack
-Overflow Developer Survey 2024) und akademischen Studien zum
-KI-Ökosystem widerspiegelt. Die Sprache verbindet dynamische Typisierung
-mit einem umfangreichen Ökosystem an Bibliotheken für
-HTTP-Kommunikation, Datenbankzugriff und maschinelles Lernen. Darüber
-hinaus ermöglicht Pythons \texttt{asyncio}-Eventloop --- auf dem
-ASGI-Frameworks wie FastAPI aufsetzen --- die nicht-blockierende
-Verarbeitung paralleler I/O-Operationen, was für Echtzeitsysteme mit
-hoher externer API-Latenz entscheidend ist (vgl. Kap. 3.6.2).
+\textbf{Python} ist eine interpretierte, dynamisch typisierte
+Programmiersprache, die sich als Standard für datenintensive
+Webanwendungen und KI-Systeme etabliert hat (Stack Overflow Developer
+Survey 2024). Das umfangreiche Ökosystem an Bibliotheken für
+HTTP-Kommunikation, Datenbankzugriff und maschinelles Lernen sowie
+Pythons \texttt{asyncio}-Eventloop --- auf dem ASGI-Frameworks aufsetzen
+--- machen sie zur natürlichen Wahl für Echtzeitsysteme mit hoher
+externer API-Latenz.
 
 \subsection{ASGI und asynchrone
 Web-Frameworks}\label{asgi-und-asynchrone-web-frameworks}
@@ -311,9 +316,12 @@ nicht-blockierende Verarbeitung auf Basis von Pythons
 \textbf{FastAPI} können während wartender I/O-Operationen
 (Datenbankabfragen, LLM-API-Aufrufe) andere Anfragen bearbeiten, was
 insbesondere für Anwendungen mit vielen externen Abhängigkeiten eine
-signifikant höhere Durchsatzrate ermöglicht. Das vorliegende System
-verwendet FastAPI als primäres ASGI-Framework; die
-Entscheidungsbegründung erfolgt in Kapitel 4.2.
+signifikant höhere Durchsatzrate ermöglicht. Darüber hinaus generiert
+FastAPI aus den Pydantic-Schemata automatisch eine
+\textbf{OpenAPI-konforme API-Dokumentation}, die sowohl als interaktive
+Entwicklungsschnittstelle als auch als maschinenlesbarer API-Vertrag
+dient. Das vorliegende System verwendet FastAPI als primäres
+ASGI-Framework; die Entscheidungsbegründung erfolgt in Kapitel 4.2.
 
 \subsection{ORM und Repository
 Pattern}\label{orm-und-repository-pattern}
@@ -345,11 +353,15 @@ Feldformate liefern.
 \textbf{Relationale Datenbankmanagementsysteme (RDBMS)} organisieren
 Daten in Tabellen mit definierten Schemata und erzwingen referenzielle
 Integrität über Fremdschlüssel-Constraints (Codd 1970). RDBMS wie
-PostgreSQL garantieren \textbf{ACID-Eigenschaften} (Atomicity,
+\textbf{PostgreSQL} garantieren \textbf{ACID-Eigenschaften} (Atomicity,
 Consistency, Isolation, Durability) und bieten für Anwendungen mit stark
 strukturierten, relational verknüpften Entitäten (Spiele, Teams,
 Ereignisse, Texte) Vorteile hinsichtlich Datenkonsistenz und
-Abfragekomplexität gegenüber dokumentbasierten Alternativen.
+Abfragekomplexität gegenüber dokumentbasierten Alternativen. PostgreSQL
+erweitert den SQL-Standard um native \textbf{JSON-Spaltentypen}, die das
+flexible Speichern semi-strukturierter Nutzdaten --- etwa variabler
+Ereignisbeschreibungen --- ermöglichen, ohne auf ein separates
+Dokumentensystem ausweichen zu müssen.
 
 Die konkrete Backend-Architektur des vorliegenden Systems wird in
 Kapitel 4.2 beschrieben.
@@ -363,9 +375,13 @@ Kapitel 4.2 beschrieben.
 \textbf{TypeScript} erweitert JavaScript um ein statisches Typsystem,
 das Typfehler bereits zur Entwicklungszeit erkennt (Microsoft 2012). Der
 Compiler transpiliert den typisierten Quellcode in Standard-JavaScript.
-Für größere Codebasen reduziert statische Typisierung die Fehlerquote
-und verbessert die Wartbarkeit durch IDE-Autocompletion und
-automatisierte Refactoring-Unterstützung.
+Zentrale Sprachkonstrukte wie \textbf{Interfaces} und \textbf{generische
+Typen} erlauben es, Verträge zwischen Komponenten und API-Schnittstellen
+explizit zu definieren: Änderungen an einer Datenschnittstelle erzeugen
+sofort Kompilierfehler an allen betroffenen Aufrufstellen. Für größere
+Codebasen reduziert statische Typisierung damit die Fehlerquote
+erheblich und verbessert die Wartbarkeit durch IDE-Autocompletion und
+automatisiertes Refactoring.
 
 \subsection{Komponentenbasierte
 UI-Architekturen}\label{komponentenbasierte-ui-architekturen}
@@ -379,20 +395,27 @@ beschrieben, und React übernimmt die effiziente DOM-Aktualisierung
 (Virtual DOM / Reconciliation). \textbf{React Hooks} (ab 16.8)
 ermöglichen die Verwaltung von Zustand und Seiteneffekten in
 funktionalen Komponenten; \textbf{Custom Hooks} erlauben die Extraktion
-wiederverwendbarer zustandsbehafteter Logik. Gegenüber vergleichbaren
-Frameworks wie Vue oder Angular zeichnet sich React durch ein schlankes
-Kernmodell aus, das Zustandsverwaltung, Polling-Logik und
-WebSocket-Integration konsequent in Custom Hooks kapseln lässt --- ein
-Vorteil für datenintensive Echtzeit-Oberflächen mit vielen unabhängigen
-Datensträngen.
+wiederverwendbarer zustandsbehafteter Logik. Für komponentenübergreifend
+geteilten Zustand stellt React mit der \textbf{Context API} einen
+eingebauten Mechanismus bereit: Ein Context-Provider stellt Werte für
+beliebig tief verschachtelte Kindkomponenten bereit, ohne diese Werte
+über Prop-Ketten explizit durchzureichen (\emph{Prop Drilling}). Dieses
+Muster eignet sich für Anwendungszustand, der logisch global ist ---
+etwa den aktiven Betriebsmodus einer Redaktionsoberfläche --- ohne den
+Overhead vollständiger State-Management-Bibliotheken wie Redux.
 
 \subsection{Single-Page Applications}\label{single-page-applications}
 
 \textbf{Single-Page Applications (SPAs)} laden die Anwendungslogik beim
 initialen Seitenaufruf und aktualisieren die Darstellung dynamisch über
-JavaScript, ohne vollständige Seitenneuladen. Dieses Modell eignet sich
-für interaktive Werkzeuge mit häufigen Zustandsänderungen --- wie
-Redaktionsoberflächen oder Echtzeit-Dashboards.
+JavaScript, ohne vollständige Seitenneuladen. Die Navigation zwischen
+Ansichten übernimmt ein \textbf{Client-seitiger Router} (z.\,B. React
+Router), der URL-Pfade auf Komponentenbäume abbildet, ohne den Server zu
+kontaktieren. Dieses Modell eignet sich besonders für interaktive,
+authentifizierungspflichtige Werkzeuge mit häufigen Zustandsänderungen
+--- wie Redaktionsoberflächen oder Echtzeit-Dashboards --- bei denen
+Suchmaschinenindexierung (SEO) keine Rolle spielt und damit der
+Hauptnachteil von SPAs gegenüber Server-Side-Rendering entfällt.
 
 Die konkrete Frontend-Architektur des vorliegenden Systems wird in
 Kapitel 4.6 beschrieben.
@@ -408,6 +431,12 @@ Containerisierung}\label{deployment-und-containerisierung}
 mitsamt Laufzeitumgebung und Abhängigkeiten in portable, isolierte
 Container. Die zentrale Eigenschaft ist \textbf{Reproduzierbarkeit}:
 Dieselbe Anwendung verhält sich lokal identisch zur Produktionsumgebung.
+Für Systeme mit mehreren Diensten --- etwa Backend, Datenbank und
+Workflow-Engine --- koordiniert \textbf{Docker Compose} das gemeinsame
+Starten, Vernetzen und Konfigurieren aller Container über eine
+deklarative \texttt{docker-compose.yml}-Datei. Dies ermöglicht eine
+vollständige lokale Entwicklungsumgebung mit einem einzigen Befehl und
+spiegelt die Produktionsarchitektur exakt wider.
 
 \subsection{Platform-as-a-Service
 (PaaS)}\label{platform-as-a-service-paas}
@@ -416,6 +445,12 @@ Dieselbe Anwendung verhält sich lokal identisch zur Produktionsumgebung.
 Infrastrukturverwaltung und ermöglichen Deployments direkt aus Quellcode
 oder Container-Images. Für kleine Teams ohne dedizierte
 DevOps-Kapazitäten reduziert PaaS den operativen Aufwand erheblich.
+Moderne PaaS-Plattformen integrieren dabei eine \textbf{git-basierte
+Deployment-Pipeline}: Jeder Push auf den konfigurierten Branch löst
+automatisch einen Build- und Deploy-Zyklus aus. Diese enge Kopplung von
+Versionskontrolle und Deployment eliminiert manuelle
+Auslieferungsschritte und stellt sicher, dass der produktive Stand stets
+dem aktuellen Repository-Stand entspricht.
 
 \subsection{Stateless Design und
 Skalierung}\label{stateless-design-und-skalierung}
@@ -440,12 +475,14 @@ Few-Shot-Prompting (Kap. 3.1--3.2) liefern die erforderliche
 Textqualität bei vertretbarer Latenz und ohne ressourcenintensives
 Fine-tuning; der hybride NLG-Ansatz mit menschlicher Kontrollinstanz
 (Kap. 3.3) adressiert das systemimmanente Halluzinationsproblem von LLMs
-im journalistischen Kontext. Die in Kapitel 3.4 beschriebenen
-Kommunikationsmuster --- Polling, SSE und WebSocket --- zeigen
-unterschiedliche Trade-offs zwischen Implementierungseinfachheit und
-Latenz; welches Hybridmuster für den konkreten Anwendungsfall geeignet
-ist, wird auf Basis der Infrastrukturanforderungen in Kapitel 4.6.5
-begründet. n8n als Low-Code-Orchestrierungsplattform (Kap. 3.5)
+im journalistischen Kontext und entspricht damit der in Kap. 2.1
+beschriebenen Anforderung, redaktionellen Aufwand zu reduzieren ohne
+editoriale Kontrolle aufzugeben. Die in Kapitel 3.4 beschriebenen
+Kommunikationsmuster zeigen unterschiedliche Trade-offs zwischen
+Implementierungseinfachheit und Latenz; das vorliegende System nutzt
+HTTP-Polling für Ticker- und Ereignisdaten sowie WebSocket für
+Medienupdates --- die Begründung dieser Hybridwahl erfolgt in
+Kapitel~4.6.5. n8n als Low-Code-Orchestrierungsplattform (Kap. 3.5)
 entkoppelt die ETL-Komplexität vom Anwendungskern und ermöglicht eine
 schnelle Anpassung von Datenquellen unabhängig von
 Backend-Deployment-Zyklen. FastAPI auf ASGI-Basis (Kap. 3.6), React mit

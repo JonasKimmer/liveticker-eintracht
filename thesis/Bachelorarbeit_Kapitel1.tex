@@ -23,7 +23,8 @@ Einsatz neuer technologischer Lösungen notwendig machen:
   Der \textbf{operative Zeitdruck} bei der manuellen Texterstellung:
   Redakteure müssen Spielereignisse in Echtzeit beobachten, einordnen
   und in stilistisch kohärente Kurztexte überführen --- typischerweise
-  innerhalb von 30 bis 120 Sekunden pro Eintrag.
+  innerhalb von 30 bis 120 Sekunden pro Eintrag (vgl. Walter
+  2020, S. 29; Bluhm \& Schäfer 2023, S. 35).
 \item
   Die Herausforderungen der \textbf{Internationalisierung} durch
   Mehrsprachigkeit: Profifußballvereine bedienen zunehmend
@@ -46,10 +47,10 @@ Das übergeordnete Ziel der vorliegenden Arbeit ist daher die Konzeption
 und Implementierung eines produktionsfähigen Redaktionssystems, das
 diesen Konflikt durch den gezielten Einsatz von \textbf{Large Language
 Models} auflöst, während die finale Entscheidungshoheit und
-publizistische Verantwortung beim Menschen verbleiben. Das System wird
-dabei in zwei Ausprägungen realisiert: einer generischen Instanz für
-beliebige Vereine sowie einer vereinsspezifischen White-Label-Instanz am
-Beispiel \textbf{Eintracht Frankfurt}.
+publizistische Verantwortung beim Menschen verbleiben. Das System wird dabei in zwei Ausprägungen realisiert: einer
+generischen Instanz für beliebige Vereine sowie einer
+vereinsspezifischen White-Label-Instanz am Beispiel \textbf{Eintracht
+Frankfurt}.
 
 Um dieses Ziel zu operationalisieren, definiert und evaluiert die Arbeit
 drei Betriebsmodi:
@@ -158,10 +159,7 @@ Eintracht Frankfurt entstand das System in direkter Kooperation mit den
 fachlichen Anforderungen einer professionellen Redaktion. Das Ergebnis
 ist ein vollständiges, eigenständig lauffähiges Redaktionssystem, das
 als Cloud-Service alle Spiele der konfigurierten Wettbewerbe
-verarbeitet. Zusätzlich werden publizierte Inhalte über Export-Workflows
-an die bestehende \textbf{Stackwork Demo App} übertragen, wodurch das
-Projekt zwei unabhängige Zielsysteme über nahezu identische Workflows
-bedient. Die technischen Details der Architektur und Implementierung
+verarbeitet. Die technischen Details der Architektur und Implementierung
 werden in Kapitel 4 und 5 beschrieben.
 
 Dennoch bestehen Einschränkungen hinsichtlich Authentifizierung,
@@ -195,9 +193,9 @@ Die vorliegende Arbeit gliedert sich in acht Kapitel:
   Datenmodell, LLM-Pipeline und Prompt-Design.
 \item
   \textbf{Kapitel 5 -- Implementierung:} Umsetzung als produktionsfähige
-  Webanwendung mit über 70 API-Endpunkten, TypeScript-Frontend und
-  n8n-ETL-System; ergänzt durch vollständige TypeScript-Typisierung,
-  automatisierte Testsuite und Cloud-Deployment.
+  Webanwendung mit TypeScript-Frontend, REST-API und n8n-ETL-System;
+  ergänzt durch vollständige TypeScript-Typisierung, automatisierte
+  Testsuite und Cloud-Deployment.
 \item
   \textbf{Kapitel 6 -- Evaluation:} Technische Qualitätssicherung
   (Tests, Coverage, Typsicherheit), Evaluation der KI-Textgenerierung

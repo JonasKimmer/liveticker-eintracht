@@ -1,6 +1,18 @@
 \chapter{Motivation und
 Anforderungen}\label{motivation-und-anforderungen}
 
+Dieses Kapitel begründet die Notwendigkeit eines KI-gestützten
+Liveticker-Systems und leitet daraus formale Anforderungen ab. Zunächst
+werden drei strukturelle Problemdimensionen der manuellen
+Liveticker-Produktion herausgearbeitet: der redaktionelle Aufwand unter
+Echtzeit-Bedingungen (Kap.~2.1), die Herausforderung der
+Mehrsprachigkeit (Kap.~2.2) sowie der White-Label-Bedarf im Profisport
+(Kap.~2.3). Kapitel 2.4 konkretisiert diese Dimensionen am Fallbeispiel
+Eintracht Frankfurt und beschreibt das zur empirischen Validierung
+eingesetzte Experteninterview. Kapitel 2.5 ergänzt die linguistischen
+Anforderungen an die Textgenerierung. Kapitel 2.6 fasst alle
+Anforderungen in einem formalen Pflichtenheft zusammen.
+
 \section{Redaktioneller Aufwand bei
 Livetickern}\label{redaktioneller-aufwand-bei-livetickern}
 
@@ -133,9 +145,9 @@ Millionen-Reichweiten auf globalen Plattformen (vgl. Beils 2023, S.
 200). Am Beispiel von Eintracht Frankfurt zeigt sich dies konkret: Durch
 Spieler wie Makoto Hasebe und Daichi Kamada verfügte der Verein in
 zurückliegenden Spielzeiten über eine beachtliche internationale
-Anhängerschaft, insbesondere in Japan, wie sich an den fremdsprachigen
-Interaktionen auf den offiziellen Social-Media-Kanälen des Vereins
-beobachten lässt (eigene Beobachtung). Eine rein deutschsprachige
+Anhängerschaft, insbesondere in Japan --- erkennbar an den fremdsprachigen
+Interaktionen auf den offiziellen Social-Media-Kanälen des Vereins,
+die im Rahmen der Projektbeobachtung dokumentiert wurden. Eine rein deutschsprachige
 Berichterstattung wird dieser Reichweite nicht mehr gerecht.
 
 Die Herausforderung beschränkt sich dabei nicht auf eine reine
@@ -266,9 +278,9 @@ Anforderungen:
   60 Pflichtspiele (34 Bundesliga-Spieltage, bis zu 6 DFB-Pokal-Runden,
   bis zu 17 europäische Gruppenspiele und K.o.-Runden sowie Testspiele
   und Supercup). Pro Spiel fallen durchschnittlich 20--40
-  Ticker-Einträge an (erfahrungsbasierte Schätzung aus dem
-  Projektverlauf, gestützt auf Beobachtung öffentlich zugänglicher
-  Vereinsticker). Eine manuelle Abdeckung aller Spiele mit konsistenter
+  Ticker-Einträge an (Schätzung auf Basis systematischer Beobachtung
+  öffentlich zugänglicher Vereinsticker; im Experteninterview
+  bestätigt). Eine manuelle Abdeckung aller Spiele mit konsistenter
   Qualität erfordert einen Personalaufwand, der für Vereine außerhalb
   der absoluten Spitze kaum darstellbar ist.
 \item
@@ -290,8 +302,13 @@ Abschnitt 6.3.6) und die \textbf{Zukunftsperspektive} (IF16--IF18,
 adressiert in Kap. 7.5.2). Ein valides Systemurteil zu Block 3 und 4
 setzt die vorherige Exposition mit dem laufenden System voraus, weshalb
 diese Blöcke sequenziell nach der Systemdemonstration eingesetzt werden.
-Der vollständige Interviewleitfaden mit 18 Fragen ist als separates
-Dokument beigefügt.
+Das Interview bestätigte die drei Problemdimensionen in allen
+wesentlichen Punkten: den hohen manuellen Aufwand an Spieltagen, den
+Bedarf an konsistenter Stilführung sowie das Interesse an
+mehrsprachiger Berichterstattung. Die vollständige Auswertung mit
+Einzelergebnissen erfolgt in Abschnitt~6.3.6. Der vollständige
+Interviewleitfaden mit 18 Fragen ist als separates Dokument
+beigefügt.
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
@@ -466,8 +483,8 @@ mehrsprachige Generierung (F7) als Antwort auf die
 Internationalisierungsanforderung, sprachgattungskonformes Prompt Design
 (F2, F4, F11) als Antwort auf die in Kapitel 2.5 hergeleiteten
 linguistischen Anforderungen, und eine konfigurierbare Instanzlogik (A5)
-als Antwort auf den White-Label-Bedarf. Die in den Tabellen 2.6.1--2.6.3
-formalisierten 23 Anforderungen bilden damit das vollständige
-Pflichtenheft für die Systemkonzeption in Kapitel 4; die hierfür
+als Antwort auf den White-Label-Bedarf. Die in Abschnitt~2.6
+formalisierten 23 Anforderungen (F1--F12, N1--N6, A1--A5) bilden damit
+das vollständige Pflichtenheft für die Systemkonzeption in Kapitel 4; die hierfür
 notwendigen technologischen Grundlagen werden in Kapitel 3
 aufgearbeitet.
