@@ -12,7 +12,7 @@ Schichten aus Modellen, Repositories, Services und Routern; die
 KI-Generierungspipeline von der Ereigniserkennung bis zum
 Ticker-Eintrag; die Frontend-Implementierung mit React,
 Context-basiertem Zustandsmanagement und dem slash-command-getriebenen
-Eingabesystem; sowie die n8n-Workflow-Implementierung der fünf zentralen
+Eingabesystem; sowie die n8n-Workflow-Implementierung der zentralen
 Automatisierungsworkflows. Ergänzend werden die TypeScript-Migration und
 die Testabdeckung als Qualitätsmerkmale des Entwicklungsprozesses
 dokumentiert.
@@ -1063,10 +1063,10 @@ untypisierten Stellen folgt in Abschnitt 6.2.5.
 Workflow-Implementierung}\label{n8n-workflow-implementierung}
 
 Die n8n-Workflows bilden die Orchestrierungsschicht zwischen externen
-Datenquellen, dem FastAPI-Backend und dem LLM-Dienst. Alle 15
+Datenquellen, dem FastAPI-Backend und dem LLM-Dienst. Alle 16
 Workflow-Dateien liegen als versionierte JSON-Exporte im
 Projektverzeichnis \texttt{n8n/} vor und können direkt in eine
-n8n-Instanz importiert werden. Die Workflows gliedern sich in vier
+n8n-Instanz importiert werden. Die Workflows gliedern sich in sechs
 funktionale Gruppen:
 
 \textbf{A) Stammdaten und Matchstruktur} --- Die Workflows
@@ -1102,8 +1102,21 @@ das diese über WebSocket verteilt; die Social-Media-Workflows speichern
 Clips in der Datenbank. Diese Workflows dienen der Ingestion, nicht dem
 Publishing.
 
-Dieser Abschnitt dokumentiert die Implementierungsdetails der fünf
-zentralen Workflows (Gruppen B--D).
+\textbf{E) Live-Stats-Monitor} --- \texttt{15\_live\_stats\_monitor}
+überwacht laufende Spiele per Webhook und aktualisiert Statistiken in
+Echtzeit. Der Workflow prüft, ob ein Spiel aktiv ist, und delegiert die
+Aktualisierung an den entsprechenden Backend-Endpunkt.
+
+\textbf{F) Aktuelle-Minute-Update} ---
+\texttt{16\_aktuelle\_minute\_livespiel} empfängt minutengenaue
+Statusupdates aus der Football-API, ermittelt Phase und Zustand des
+Spiels (\texttt{1H}/\texttt{2H}/\texttt{HT}/\texttt{FT} u.\,a.) und
+aktualisiert \texttt{minute}, \texttt{match\_phase} und
+\texttt{match\_state} in der Datenbank. Bei Phasenwechsel triggert der
+Workflow automatisch den \texttt{match-status}-Webhook.
+
+Dieser Abschnitt dokumentiert die Implementierungsdetails der zentralen
+Workflows (Gruppen B--D).
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
