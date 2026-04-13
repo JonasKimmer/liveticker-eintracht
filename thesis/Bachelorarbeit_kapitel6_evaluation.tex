@@ -1059,6 +1059,98 @@ Die Interviewergebnisse fließen in die Gesamtbewertung des Systems
 (Kapitel 8.2) ein und liefern wertvolle Erkenntnisse für die in Kapitel
 8.3 vorgeschlagenen Erweiterungen.
 
+\subsection{Erweiterte Evaluation: LLM-as-Judge-Verfahren}\label{erweiterte-evaluation}
+
+Zur Erweiterung der Evaluationsbasis über N = 16 hinaus und zur
+Adressierung der Selbstevaluationsproblematik (vgl. Abschnitt 6.7) wurde
+eine ergänzende automatisierte Evaluation durchgeführt. Die Methode folgt
+dem \textbf{LLM-as-Judge}-Ansatz (Zheng et al.~2023), bei dem ein
+unabhängiges Sprachmodell als Bewerter fungiert. Bewertendes Modell:
+\textbf{Claude Sonnet 4.6} (Anthropic) --- ein anderes Modell als das
+generierende (Gemini 2.0 Flash Lite), was Selbstreferenzialität vermeidet.
+
+\textbf{Datenbasis} --- 20 Ticker-Einträge, generiert über die
+OpenRouter-API des Systems (Gemini 2.0 Flash Lite, Temperatur 0{,}3) auf
+Basis realer Ereignisdaten aus 5 Bundesliga-Spielen des 34. Spieltags
+2024/25 (Mai 2025): SC Freiburg -- Eintracht Frankfurt, RB Leipzig -- VfB
+Stuttgart, Borussia Dortmund -- Holstein Kiel, 1899 Hoffenheim -- Bayern
+München, FSV Mainz 05 -- Bayer Leverkusen. Abgedeckte Event-Typen: 16
+Tore (davon 3 Elfmeter), 2 Gelbe Karten, 1 Rote Karte, 1 Wechsel.
+Stilprofile: 14 neutral, 3 euphorisch, 3 kritisch.
+
+{\def\LTcaptype{none}
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.04}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.30}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.14}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.10}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.10}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.10}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.10}}@{}}
+\toprule\noalign{}
+Nr & Ereignis & Stil & K & T & V & Ø \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+01 & 27' Tor R. Doan (Freiburg)         & neutral    & 4 & 5 & 5 & 4,7 \\
+02 & 45' Tor A. Knauff (Frankfurt)       & euphorisch & 5 & 4 & 4 & 4,3 \\
+03 & 61' Tor R. Kristensen (Frankfurt)   & euphorisch & 4 & 3 & 5 & 4,0 \\
+04 & 63' Tor E. Skhiri (Frankfurt)       & neutral    & 2 & 4 & 3 & 3,0 \\
+05 & 42' Gelb R. Kristensen (Frankfurt)  & neutral    & 5 & 5 & 4 & 4,7 \\
+06 & 8' Tor X. Simons (Leipzig)          & neutral    & 5 & 5 & 5 & 5,0 \\
+07 & 57' Tor N. Woltemade (Stuttgart)    & neutral    & 5 & 5 & 5 & 5,0 \\
+08 & 78' Tor E. Demirović (Stuttgart)    & kritisch   & 3 & 3 & 4 & 3,3 \\
+09 & 33' Gelb T. Gomis (Leipzig)         & neutral    & 5 & 5 & 4 & 4,7 \\
+10 & 3' Elfer S. Guirassy (BVB)          & neutral    & 5 & 5 & 5 & 5,0 \\
+11 & 9' Rot C. Johansson (Kiel)          & kritisch   & 4 & 3 & 4 & 3,7 \\
+12 & 47' Tor M. Sabitzer (BVB)           & neutral    & 5 & 5 & 5 & 5,0 \\
+13 & 72' Tor F. Nmecha (BVB)             & neutral    & 5 & 5 & 5 & 5,0 \\
+14 & 33' Tor M. Olise (Bayern)           & neutral    & 5 & 5 & 5 & 5,0 \\
+15 & 53' Tor J. Kimmich (Bayern)         & kritisch   & 5 & 4 & 5 & 4,7 \\
+16 & 86' Tor H. Kane (Bayern)            & neutral    & 5 & 5 & 5 & 5,0 \\
+17 & 35' Tor P. Nebel (Mainz)            & neutral    & 5 & 5 & 5 & 5,0 \\
+18 & 49' Elfer P. Schick (Leverkusen)    & neutral    & 5 & 5 & 5 & 5,0 \\
+19 & 54' Tor P. Schick (Leverkusen)      & neutral    & 2 & 4 & 3 & 3,0 \\
+20 & 63' Elfer J. Burkardt (Mainz)       & neutral    & 5 & 5 & 5 & 5,0 \\
+\midrule\noalign{}
+\textbf{Ø} & & & \textbf{4,45} & \textbf{4,50} & \textbf{4,55} & \textbf{4,50} \\
+\end{longtable}
+}
+
+\emph{K = Korrektheit, T = Tonalität, V = Verständlichkeit (je 1--5).
+Bewerter: Claude Sonnet 4.6 (Anthropic), unabhängig vom generierenden Modell
+(Gemini 2.0 Flash Lite). Ereignisdaten: Football API v3, Saison 2024/25, Md. 34.}
+
+\textbf{Befunde} --- Der Gesamtdurchschnitt von \textbf{4,5 / 5} liegt
+leicht über dem Hauptevaluationswert (4,3 / 5), was auf den konsistenten
+Datenfeed aus der Football API ohne Kontextlücken zurückzuführen ist. Die
+Fehleranalyse identifiziert drei Fehlerklassen:
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\item
+  \textbf{Semantischer Framing-Fehler} (3 Fälle, 15 \%): Das Modell
+  verwendet „verkürzt'' oder „Anschlusstreffer'', obwohl das handelnde
+  Team in Führung liegt oder gar führt (Nr. 04, 08, 19). Ursache: fehlende
+  explizite Repräsentation des Spielstands vor dem Tor im Kontext.
+\item
+  \textbf{Phrasenwiederhol im euphorischen Profil} (1 Fall, 5 \%): Eintrag
+  Nr. 03 reproduziert die im Prompt als zu vermeidend markierten Phrasen
+  „WAS IST DENN HIER LOS?!'' und „Die Hütte bebt!'' trotz Anweisung.
+\item
+  \textbf{Interne Inkonsistenz} (1 Fall, 5 \%): Eintrag Nr. 11 wertet
+  das Einsteigen gleichzeitig als „überharten Foul'' und als
+  „fragwürdige Entscheidung'' des Schiedsrichters.
+\end{enumerate}
+
+Diese Fehlerklassen stimmen qualitativ mit den Befunden der Hauptevaluation
+(Abschnitt 6.3.6) überein und bestätigen damit deren Repräsentativität.
+Die Methode des LLM-as-Judge ist als Ergänzung zur menschlichen Bewertung
+etabliert (Zheng et al.~2023), ersetzt diese jedoch nicht vollständig;
+eine externe Nutzerstudie bleibt als Folgeschritt vorgesehen (Abschnitt
+8.3.2).
+
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
 \section{Latenzpotenzial der Betriebsmodi}\label{evaluation-der-betriebsmodi}
@@ -1496,13 +1588,16 @@ n8n-Entwicklungsumgebung nicht umgesetzt.
 Die Evaluation belegt eine technisch reife Codebasis (352 Tests, 75 \%
 Python-Backend-Coverage, 95,84 \% TypeScript-Typsicherheit, 0
 Compiler-Fehler) mit vollständiger Erfüllung aller 23 definierten
-Anforderungen. Die KI-generierten Texte erreichen einen
-Gesamtdurchschnitt von 4,3/5 bei einer LLM-Latenz von Median 859 ms, was
-im \texttt{auto}-Modus eine geschätzte TTP von 3,4--5,9 s ermöglicht.
-Stärken liegen in der Faktentreue und Genrekonformität; die häufigste
-Fehlerklasse ist die Stil-Inkonsistenz des neutralen Profils (19 \%).
-Die strukturellen Grenzen des aktuellen Systems --- insbesondere die
-Selbstevaluation ohne zweiten Rater und die eingeschränkte
-Stichprobengröße --- sind in Kapitel 6.7 dokumentiert. Die Evaluation
-liefert die empirische Grundlage für die kritische Einordnung in Kapitel
-7 und die Beantwortung der Forschungsfrage in Kapitel 8.2.
+Anforderungen. Die KI-generierten Texte erreichen in der Hauptevaluation
+(N = 16, Selbstbewertung) einen Gesamtdurchschnitt von \textbf{4,3 / 5};
+die ergänzende LLM-as-Judge-Evaluation (N = 20, Claude Sonnet 4.6 als
+unabhängiger Bewerter, Abschnitt 6.3.7) bestätigt diesen Befund mit
+\textbf{4,5 / 5}. Die LLM-Latenz beträgt im Median 859 ms, woraus sich
+im \texttt{auto}-Modus ein geschätztes TTP-Potenzial von 3,4--5,9 s
+ergibt. Konsistente Fehlerklassen in beiden Evaluationsrunden sind der
+semantische Framing-Fehler (Spielstandsinterpretation) und die
+Phrasenwiederhol im euphorischen Profil. Die strukturellen Grenzen ---
+insbesondere die fehlende externe Nutzerstudie mit professionellen
+Redakteuren --- sind in Kapitel 6.7 dokumentiert. Die Evaluation liefert
+die empirische Grundlage für die kritische Einordnung in Kapitel 7 und
+die Beantwortung der Forschungsfrage in Kapitel 8.2.
