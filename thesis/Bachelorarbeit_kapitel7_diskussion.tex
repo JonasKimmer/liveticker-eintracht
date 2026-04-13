@@ -98,7 +98,7 @@ Netzwerkabsicherung aus. Die Architektur ist durch die saubere
 Middleware-Schichtung (FastAPI Dependencies) für eine nachträgliche
 JWT-Integration vorbereitet.
 
-Die 15 n8n-Workflows (vgl. Kapitel 6.7, „Keine Tests für
+Die 16 n8n-Workflows (vgl. Kapitel 6.7, „Keine Tests für
 n8n-Workflows'') stellen den größten nicht automatisiert getesteten
 Systemteil dar. Da sie die gesamte Datenversorgung des Systems
 verantworten, wäre eine Absicherung durch Integrationstests gegen eine
@@ -110,23 +110,11 @@ Laufzeit-Strategie. Für einen Produktivbetrieb mit mehreren
 gleichzeitigen Spielen wäre ein expliziter Konfigurationsmechanismus pro
 Spiel (z. B. ein Datenbankfeld) robuster.
 
-Der \texttt{useAutoPublisher}-Hook im Frontend enthält eine semantische
-Doppelung: Im Auto-Modus setzt n8n über \texttt{auto\_publish=True} den
-Status bereits beim Generieren; der Hook fängt Residualfälle auf. Diese
-Zweispurigkeit entstand durch inkrementelle Entwicklung und könnte auf
-eine definitive Strategie konsolidiert werden.
-
 Die WebSocket-Verbindung existiert als In-Memory-Singleton pro Prozess.
 Bei einem Multi-Prozess-Deployment (mehrere Uvicorn-Worker hinter einem
 Load-Balancer) würden Medien-Updates nur Clients des jeweiligen Workers
 erreichen; eine Redis-Pub/Sub-Erweiterung wäre die natürliche
 Skalierungsstufe.
-
-Der \texttt{strict}-Modus in \texttt{tsconfig.json} ist derzeit
-deaktiviert, um die inkrementelle TypeScript-Migration nicht zu
-blockieren. Eine schrittweise Aktivierung von \texttt{strictNullChecks}
-und \texttt{noImplicitAny} ist der naheliegende Folgeschritt zur
-weiteren Härtung der Codebasis.
 
 \subsection{Inhaltliche Reflexion}\label{inhaltliche-reflexion}
 
@@ -203,13 +191,14 @@ ohne Systemunterbrechung möglich ist.
 Praxis}\label{implikationen-fuxfcr-die-praxis}
 
 Die Koexistenz aller drei Modi in einem System --- umschaltbar zur
-Laufzeit per API-Call --- ermöglicht eine schrittweise Einführung in
-Redaktionen: Neue Nutzer können im \texttt{manual}-Modus beginnen, über
-den \texttt{coop}-Modus Vertrauen in die KI-Qualität aufbauen und für
-unkritische Standardereignisse schließlich den \texttt{auto}-Modus
-aktivieren. Diese Graduierung adressiert den in Kapitel 2.1
-beschriebenen Akzeptanzbedarf bei der Einführung KI-gestützter Werkzeuge
-in redaktionelle Workflows.
+Laufzeit per API-Call --- könnte eine schrittweise Einführung in
+Redaktionen unterstützen: Neue Nutzer könnten im \texttt{manual}-Modus
+beginnen, über den \texttt{coop}-Modus Vertrauen in die KI-Qualität
+aufbauen und für unkritische Standardereignisse schließlich den
+\texttt{auto}-Modus aktivieren. Ob diese Graduierung in der Praxis so
+durchlaufen wird, ist empirisch nicht belegt; sie adressiert jedoch den
+in Kapitel 2.1 beschriebenen Akzeptanzbedarf bei der Einführung
+KI-gestützter Werkzeuge in redaktionelle Workflows.
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
