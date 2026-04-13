@@ -295,173 +295,62 @@ in Kapitel~4.4 beschrieben.
 
 \section{Backend-Technologien}\label{backend-technologien}
 
-\subsection{Python}\label{python}
+Das vorliegende System setzt im Backend auf \textbf{Python} mit dem
+\textbf{ASGI-Framework FastAPI}. Die Wahl begründet sich durch drei
+Anforderungen: erstens die nicht-blockierende Verarbeitung paralleler
+LLM-API-Aufrufe (Pythons \texttt{asyncio}-Eventloop); zweitens die
+automatische Generierung einer \textbf{OpenAPI-konformen Dokumentation}
+aus Pydantic-Schemata, die als maschinenlesbarer API-Vertrag für das
+Frontend und die n8n-Workflows dient; drittens das umfangreiche
+Ökosystem für Datenbankzugriff und HTTP-Kommunikation. Als
+Datenzugriffsschicht kapselt das \textbf{Repository Pattern} (Fowler
+2002, S. 322) alle Datenbankoperationen in dedizierte Klassen und
+entkoppelt Service-Logik von der Persistenzschicht --- eine Voraussetzung
+für transaktionale Tests mit Rollback. \textbf{SQLAlchemy} bildet die
+ORM-Schicht; \textbf{Pydantic} übernimmt die typisierte
+Request/Response-Validierung.
 
-\textbf{Python} ist eine interpretierte, dynamisch typisierte
-Programmiersprache, die sich als Standard für datenintensive
-Webanwendungen und KI-Systeme etabliert hat (Stack Overflow Developer
-Survey 2024). Das umfangreiche Ökosystem an Bibliotheken für
-HTTP-Kommunikation, Datenbankzugriff und maschinelles Lernen sowie
-Pythons \texttt{asyncio}-Eventloop --- auf dem ASGI-Frameworks aufsetzen
---- machen sie zur natürlichen Wahl für Echtzeitsysteme mit hoher
-externer API-Latenz.
-
-\subsection{ASGI und asynchrone
-Web-Frameworks}\label{asgi-und-asynchrone-web-frameworks}
-
-Das \textbf{ASGI-Protokoll} (Asynchronous Server Gateway Interface)
-ermöglicht im Gegensatz zum klassischen synchronen WSGI eine
-nicht-blockierende Verarbeitung auf Basis von Pythons
-\texttt{asyncio}-Eventloop (Grigorev 2019). ASGI-Frameworks wie
-\textbf{FastAPI} können während wartender I/O-Operationen
-(Datenbankabfragen, LLM-API-Aufrufe) andere Anfragen bearbeiten, was
-insbesondere für Anwendungen mit vielen externen Abhängigkeiten eine
-signifikant höhere Durchsatzrate ermöglicht. Darüber hinaus generiert
-FastAPI aus den Pydantic-Schemata automatisch eine
-\textbf{OpenAPI-konforme API-Dokumentation}, die sowohl als interaktive
-Entwicklungsschnittstelle als auch als maschinenlesbarer API-Vertrag
-dient. Das vorliegende System verwendet FastAPI als primäres
-ASGI-Framework; die Entscheidungsbegründung erfolgt in Kapitel 4.2.
-
-\subsection{ORM und Repository
-Pattern}\label{orm-und-repository-pattern}
-
-Das \textbf{Object-Relational Mapping (ORM)} bildet
-Programmiersprachenklassen auf relationale Datenbanktabellen ab und
-abstrahiert den direkten SQL-Zugriff. \textbf{SQLAlchemy} implementiert
-dieses Muster für Python: Modellklassen werden über deklarative
-Klassendefinitionen auf Datenbanktabellen abgebildet, SQL-Abfragen über
-eine typsichere Fluent-API konstruiert. Das ergänzende
-\textbf{Repository Pattern} (Fowler 2002, S. 322) kapselt den
-Datenzugriff in dedizierte Klassen und bietet eine abstrahierte
-Schnittstelle zur Service-Schicht --- das erleichtert Testbarkeit und
-ermöglicht den Austausch der Persistenzschicht ohne Änderungen an der
-Geschäftslogik.
-
-Für die API-Schicht übernimmt \textbf{Pydantic} die typisierte
-Schema-Validierung: Eingabe- und Ausgabestrukturen werden als
-Python-Datenklassen mit Type-Annotations definiert, die Pydantic zur
-Laufzeit gegen eingehende Payloads prüft. FastAPI integriert Pydantic
-direkt in die Request/Response-Pipeline, sodass API-Vertrag und
-Validierungslogik in einer einzigen Klassendefinition ausgedrückt werden
---- ein entscheidender Vorteil für Systeme, in denen mehrere externe
-Datenquellen (n8n-Workflows, Frontend, Partner-API) unterschiedliche
-Feldformate liefern.
-
-\subsection{Relationale Datenbanken}\label{relationale-datenbanken}
-
-\textbf{Relationale Datenbankmanagementsysteme (RDBMS)} organisieren
-Daten in Tabellen mit definierten Schemata und erzwingen referenzielle
-Integrität über Fremdschlüssel-Constraints (Codd 1970). RDBMS wie
-\textbf{PostgreSQL} garantieren \textbf{ACID-Eigenschaften} (Atomicity,
-Consistency, Isolation, Durability) und bieten für Anwendungen mit stark
-strukturierten, relational verknüpften Entitäten (Spiele, Teams,
-Ereignisse, Texte) Vorteile hinsichtlich Datenkonsistenz und
-Abfragekomplexität gegenüber dokumentbasierten Alternativen. PostgreSQL
-erweitert den SQL-Standard um native \textbf{JSON-Spaltentypen}, die das
-flexible Speichern semi-strukturierter Nutzdaten --- etwa variabler
-Ereignisbeschreibungen --- ermöglichen, ohne auf ein separates
-Dokumentensystem ausweichen zu müssen.
-
-Die konkrete Backend-Architektur des vorliegenden Systems wird in
-Kapitel 4.2 beschrieben.
+Als Datenbank kommt \textbf{PostgreSQL} zum Einsatz. Die Wahl gegenüber
+dokumentbasierten Alternativen begründet sich durch die stark strukturierten,
+relational verknüpften Entitäten (Spiele, Teams, Events, Ticker-Einträge)
+und den Bedarf an referenzieller Integrität sowie transaktionaler Sicherheit.
+PostgreSQL ermöglicht zudem native JSON-Spalten für semi-strukturierte
+Eventbeschreibungen, ohne ein separates Dokumentensystem zu erfordern. Die
+konkrete Backend-Architektur wird in Kapitel 4.2 beschrieben.
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
 \section{Frontend-Technologien}\label{frontend-technologien}
 
-\subsection{TypeScript}\label{typescript}
-
-\textbf{TypeScript} erweitert JavaScript um ein statisches Typsystem,
-das Typfehler bereits zur Entwicklungszeit erkennt (Microsoft 2012). Der
-Compiler transpiliert den typisierten Quellcode in Standard-JavaScript.
-Zentrale Sprachkonstrukte wie \textbf{Interfaces} und \textbf{generische
-Typen} erlauben es, Verträge zwischen Komponenten und API-Schnittstellen
-explizit zu definieren: Änderungen an einer Datenschnittstelle erzeugen
-sofort Kompilierfehler an allen betroffenen Aufrufstellen. Für größere
-Codebasen reduziert statische Typisierung damit die Fehlerquote
-erheblich und verbessert die Wartbarkeit durch IDE-Autocompletion und
-automatisiertes Refactoring.
-
-\subsection{Komponentenbasierte
-UI-Architekturen}\label{komponentenbasierte-ui-architekturen}
-
-\textbf{React} (Facebook, heute Meta, 2013) implementiert ein
-komponentenbasiertes Architekturmuster --- die Benutzeroberfläche wird
-in wiederverwendbare, isolierte Bausteine zerlegt, die Markup, Logik und
-Styling kapseln. React nutzt eine deklarative, zustandsgesteuerte
-Rendering-Logik: Die Oberfläche wird als Funktion des Anwendungszustands
-beschrieben, und React übernimmt die effiziente DOM-Aktualisierung
-(Virtual DOM / Reconciliation). \textbf{React Hooks} (ab 16.8)
-ermöglichen die Verwaltung von Zustand und Seiteneffekten in
-funktionalen Komponenten; \textbf{Custom Hooks} erlauben die Extraktion
-wiederverwendbarer zustandsbehafteter Logik. Für komponentenübergreifend
-geteilten Zustand stellt React mit der \textbf{Context API} einen
-eingebauten Mechanismus bereit: Ein Context-Provider stellt Werte für
-beliebig tief verschachtelte Kindkomponenten bereit, ohne diese Werte
-über Prop-Ketten explizit durchzureichen (\emph{Prop Drilling}). Dieses
-Muster eignet sich für Anwendungszustand, der logisch global ist ---
-etwa den aktiven Betriebsmodus einer Redaktionsoberfläche --- ohne den
-Overhead vollständiger State-Management-Bibliotheken wie Redux.
-
-\subsection{Single-Page Applications}\label{single-page-applications}
-
-\textbf{Single-Page Applications (SPAs)} laden die Anwendungslogik beim
-initialen Seitenaufruf und aktualisieren die Darstellung dynamisch über
-JavaScript, ohne vollständige Seitenneuladen. Die Navigation zwischen
-Ansichten übernimmt ein \textbf{Client-seitiger Router} (z.\,B. React
-Router), der URL-Pfade auf Komponentenbäume abbildet, ohne den Server zu
-kontaktieren. Dieses Modell eignet sich besonders für interaktive,
-authentifizierungspflichtige Werkzeuge mit häufigen Zustandsänderungen
---- wie Redaktionsoberflächen oder Echtzeit-Dashboards --- bei denen
-Suchmaschinenindexierung (SEO) keine Rolle spielt und damit der
-Hauptnachteil von SPAs gegenüber Server-Side-Rendering entfällt.
-
-Die konkrete Frontend-Architektur des vorliegenden Systems wird in
-Kapitel 4.6 beschrieben.
+Das Frontend wird als \textbf{Single-Page Application (SPA)} mit
+\textbf{React} und \textbf{TypeScript} realisiert. TypeScript ergänzt
+JavaScript um ein statisches Typsystem, das Schnittstellenbrüche zwischen
+Frontend-Komponenten und API-Datenstrukturen bereits zur Entwicklungszeit
+als Compilerfehler sichtbar macht (Microsoft 2012) --- entscheidend für
+eine Codebasis, die über mehrere Entwicklungsphasen hinweg konsistente
+API-Verträge mit dem Backend einhalten muss. Reacts komponentenbasiertes
+Modell und die \textbf{Context API} eignen sich für Redaktionsoberflächen
+mit global getreiltem Zustand (aktiver Betriebsmodus, Spielauswahl), ohne
+den Overhead vollständiger State-Management-Bibliotheken. Das SPA-Modell
+ist für diesen Anwendungsfall geeignet, da Suchmaschinenindexierung nicht
+erforderlich ist und die Oberfläche ausschließlich intern genutzt wird.
+Die konkrete Frontend-Architektur wird in Kapitel 4.6 beschrieben.
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
 \section{Deployment und
 Containerisierung}\label{deployment-und-containerisierung}
 
-\subsection{Containerisierung}\label{containerisierung}
-
-\textbf{Docker} (Merkel 2014) ermöglicht die Paketierung einer Anwendung
-mitsamt Laufzeitumgebung und Abhängigkeiten in portable, isolierte
-Container. Die zentrale Eigenschaft ist \textbf{Reproduzierbarkeit}:
-Dieselbe Anwendung verhält sich lokal identisch zur Produktionsumgebung.
-Für Systeme mit mehreren Diensten --- etwa Backend, Datenbank und
-Workflow-Engine --- koordiniert \textbf{Docker Compose} das gemeinsame
-Starten, Vernetzen und Konfigurieren aller Container über eine
-deklarative \texttt{docker-compose.yml}-Datei. Dies ermöglicht eine
-vollständige lokale Entwicklungsumgebung mit einem einzigen Befehl und
-spiegelt die Produktionsarchitektur exakt wider.
-
-\subsection{Platform-as-a-Service
-(PaaS)}\label{platform-as-a-service-paas}
-
-\textbf{PaaS}-Anbieter wie Render oder Heroku abstrahieren die
-Infrastrukturverwaltung und ermöglichen Deployments direkt aus Quellcode
-oder Container-Images. Für kleine Teams ohne dedizierte
-DevOps-Kapazitäten reduziert PaaS den operativen Aufwand erheblich.
-Moderne PaaS-Plattformen integrieren dabei eine \textbf{git-basierte
-Deployment-Pipeline}: Jeder Push auf den konfigurierten Branch löst
-automatisch einen Build- und Deploy-Zyklus aus. Diese enge Kopplung von
-Versionskontrolle und Deployment eliminiert manuelle
-Auslieferungsschritte und stellt sicher, dass der produktive Stand stets
-dem aktuellen Repository-Stand entspricht.
-
-\subsection{Stateless Design und
-Skalierung}\label{stateless-design-und-skalierung}
-
-PaaS-Plattformen setzen typischerweise ein \textbf{Stateless-Design}
-voraus: Persistente Daten werden in externe Dienste ausgelagert, sodass
-bei erhöhter Last zusätzliche Instanzen ohne Zustandskonsistenz
-gestartet werden können (\textbf{horizontale Skalierung}).
-
-Die konkrete Deployment-Architektur des vorliegenden Systems wird in
-Kapitel 4.7.4 beschrieben.
+Das System wird über \textbf{Docker} containerisiert: Backend und
+Datenbank sind über \texttt{docker-compose.yml} als isolierte, reproduzierbare
+Dienste definiert, die lokal identisch zur Produktionsumgebung laufen. Das
+Cloud-Deployment erfolgt auf \textbf{Render} als PaaS-Plattform, die aus dem
+konfigurierten Git-Branch automatisch Build- und Deploy-Zyklen auslöst ---
+ohne manuellen Infrastrukturaufwand, der für ein Einzelprojekt nicht
+verhältnismäßig wäre. Die Plattform setzt ein \textbf{Stateless-Design}
+voraus (persistente Daten in PostgreSQL ausgelagert), was horizontale
+Skalierung ohne Zustandskonsistenzprobleme ermöglicht. Die konkrete
+Deployment-Architektur wird in Kapitel 4.7.4 beschrieben.
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
