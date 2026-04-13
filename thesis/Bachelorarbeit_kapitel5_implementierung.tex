@@ -1218,15 +1218,15 @@ Tests}\label{qualituxe4tssicherung-und-tests}
 
 Die Qualitätssicherung folgt dem Testpyramiden-Modell nach Cohn (2009)
 mit drei Ebenen: Unit-Tests, Integrations-Tests und End-to-End-Tests.
-Insgesamt umfasst die Testsuite \textbf{391 Tests} (187 Frontend, 198
+Insgesamt umfasst die Testsuite \textbf{352 Tests} (168 Frontend, 178
 Backend, 6 E2E), die alle grün durchlaufen.
 
 \textbf{Frontend-Tests} --- Das Frontend verwendet Jest mit
-\texttt{@testing-library/react} für 187 Tests in 15 Dateien. Die
+\texttt{@testing-library/react} für 168 Tests in 15 Dateien. Die
 Testdateien sind kolokiert mit ihrem Quellcode: Komponentendateien unter
 \texttt{components/LiveTicker/components/}, Hook-Tests unter
 \texttt{hooks/} und Utility-Tests unter \texttt{utils/}. Besonders
-umfangreich getestet ist der \texttt{parseCommand}-Parser (45
+umfangreich getestet ist der \texttt{parseCommand}-Parser (29
 Testfälle), da er die kritische manuelle Eingabeschicht bildet. Ein
 exemplarischer Testfall illustriert das Prüfmuster:
 
@@ -1244,7 +1244,7 @@ exemplarischer Testfall illustriert das Prüfmuster:
 \end{Shaded}
 
 \textbf{Backend-Tests} --- Das Backend nutzt pytest mit FastAPI
-\texttt{TestClient} und transaktionalem Rollback für 198 Tests bei 75 \%
+\texttt{TestClient} und transaktionalem Rollback für 178 Tests bei 75 \%
 Statement-Coverage. Die Tests gliedern sich in API-Integrations-Tests
 (\texttt{test\_ticker\_api.py}, \texttt{test\_matches\_api.py},
 \texttt{test\_events\_api.py} u. a.), die Endpunkte gegen eine
