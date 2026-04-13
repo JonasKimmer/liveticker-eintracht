@@ -69,7 +69,7 @@ Fehlermeldungen erzeugen.
 \subsection{Frontend-Unit-Tests (Jest + React Testing
 Library)}\label{frontend-unit-tests-jest-react-testing-library}
 
-Das Frontend verfügt über \textbf{187 Unit-Tests} in 15 Testdateien, die
+Das Frontend verfügt über \textbf{168 Unit-Tests} in 15 Testdateien, die
 alle mit \texttt{npm\ test\ -\/-\ -\/-watchAll=false} grün durchlaufen.
 Die Tests decken vier Kategorien ab: Utility-Funktionen, React-Hooks,
 UI-Komponenten und TypeScript-Typen.
@@ -94,7 +94,7 @@ Fokus
 \endhead
 \bottomrule\noalign{}
 \endlastfoot
-\texttt{parseCommand} & \texttt{utils/parseCommand.test.ts} & 45 &
+\texttt{parseCommand} & \texttt{utils/parseCommand.test.ts} & 29 &
 Slash-Command-Parser: alle Events, Phasen, Fehlerfälle \\
 \texttt{roundLabel} & \texttt{utils/roundLabel.test.ts} & 16 &
 Spieltag-Beschriftungen, Knockout-Mapping \\
@@ -102,7 +102,7 @@ Spieltag-Beschriftungen, Knockout-Mapping \\
 \texttt{components/RightPanelComponents.test.tsx} & 18 & Aufstellung,
 Statistiken, Tabs \\
 \texttt{PublishedEntry} & \texttt{components/PublishedEntry.test.tsx} &
-17 & Eintrag-Darstellung, Bearbeitungsmodus \\
+14 & Eintrag-Darstellung, Bearbeitungsmodus \\
 \texttt{EntryEditor} & \texttt{components/EntryEditor.test.tsx} & 19 &
 Publish-Flow, Preview-Rendering, Keyboard-Shortcuts \\
 \texttt{useRightPanelData} & \texttt{hooks/useRightPanelData.test.ts} &
@@ -134,7 +134,7 @@ Event-Listener-Lifecycle \\
 
 Der \texttt{parseCommand}-Utility ist das komplexeste Stück
 Geschäftslogik im Frontend --- er transformiert Slash-Commands (z. B.
-\texttt{/g\ Müller\ SGE}) in strukturierte Ticker-Einträge. Die 45 Tests
+\texttt{/g\ Müller\ SGE}) in strukturierte Ticker-Einträge. Die 29 Tests
 decken alle 11 Command-Typen (Tor, Eigentor, Gelbe/Rote Karte, Wechsel,
 Notiz, verfehlter Elfmeter und alle 11 Phasen-Commands) sowie explizit
 die Fehlerfälle ab: Jeder Test prüft \texttt{isValid}, \texttt{type},
@@ -155,14 +155,14 @@ bei fehlendem Kickoff-Timestamp ab (vgl.
 \subsection{Backend-Unit-Tests
 (pytest)}\label{backend-unit-tests-pytest}
 
-Das Backend verfügt über \textbf{198 Tests} in 11 Test-Dateien, die mit
-einer Gesamt-Coverage von \textbf{75 \%} abgeschlossen werden. Alle 198
-Tests laufen grün durch (\texttt{198\ passed}).
+Das Backend verfügt über \textbf{178 Tests} in 11 Test-Dateien, die mit
+einer Gesamt-Coverage von \textbf{75 \%} abgeschlossen werden. Alle 178
+Tests laufen grün durch (\texttt{178\ passed}).
 
 \begin{verbatim}
 $ pytest tests/ --cov=app -q
 ...
-198 passed in 3.9s
+178 passed in 3.9s
 TOTAL  3230  793  75%
 \end{verbatim}
 
@@ -186,7 +186,7 @@ Fokus
 \endhead
 \bottomrule\noalign{}
 \endlastfoot
-\texttt{test\_ticker\_api.py} & 20 & API (Integration) & Ticker CRUD,
+\texttt{test\_ticker\_api.py} & 21 & API (Integration) & Ticker CRUD,
 Publish/Reject, Manual-Entry, Phasen-Deduplizierung \\
 \texttt{test\_matches\_api.py} & 27 & API (Integration) & Match CRUD,
 Ticker-Mode, Lineup, Statistiken, Player-Stats, Verletzungen \\
@@ -198,13 +198,13 @@ Wettbewerbe: Listenabfrage, Paginierung \\
 Abfrage, Sortierung \\
 \texttt{test\_ticker\_entry\_repository.py} & 10 & Repository (Unit) &
 CRUD-Operationen auf Datenbankebene \\
-\texttt{test\_ticker\_service.py} & 10 & Service (Unit) &
+\texttt{test\_ticker\_service.py} & 12 & Service (Unit) &
 Kontext-Aufbau, Score-Berechnung, KI-Eintrag-Erstellung \\
-\texttt{test\_evaluation\_metrics.py} & 18 & Utility (Unit) & TTP,
+\texttt{test\_evaluation\_metrics.py} & 17 & Utility (Unit) & TTP,
 Cliff's Delta, Bootstrap-CI, Cohen's Kappa, Verteilungsanalyse \\
-\texttt{test\_llm\_service.py} & 28 & Service (Unit/Mock) &
+\texttt{test\_llm\_service.py} & 14 & Service (Unit/Mock) &
 LLM-Provider-Routing, Prompt-Aufbau, Fallback-Logik \\
-\texttt{test\_constants.py} & 14 & Utility (Unit) &
+\texttt{test\_constants.py} & 6 & Utility (Unit) &
 Konstanten-Vollständigkeit, Phasen-Mapping \\
 \texttt{test\_utils.py} & 37 & Utility (Unit) & HTTP-Fehlerbehandlung,
 DB-Utilities, Context-Builder \\
@@ -1491,7 +1491,7 @@ n8n-Entwicklungsumgebung nicht umgesetzt.
 
 \section{Zusammenfassung}\label{zusammenfassung}
 
-Die Evaluation belegt eine technisch reife Codebasis (391 Tests, 75 \%
+Die Evaluation belegt eine technisch reife Codebasis (352 Tests, 75 \%
 Python-Backend-Coverage, 95,84 \% TypeScript-Typsicherheit, 0
 Compiler-Fehler) mit vollständiger Erfüllung aller 23 definierten
 Anforderungen. Die KI-generierten Texte erreichen einen
