@@ -914,10 +914,10 @@ Command & Ausgabe & Phase & Icon \\
 Expansion) erzeugen strukturierte Texte mit Validierungshinweisen:
 
 \begin{verbatim}
-/g Mustermann EF  → "TOR — Mustermann (EF)"  + icon ⚽
-/gelb Müller EF   → "Gelb — Müller (EF)"     + icon 🟨
-/rot Huber Bayern → "Rote Karte — Huber (Bayern)" + icon 🟥
-/s EinRaus AusRein EF → "Wechsel — EinRaus ↔ AusRein (EF)" + icon 🔄
+/g Mustermann EF  → "TOR — Mustermann (EF)"          + icon [Tor]
+/gelb Müller EF   → "Gelb — Müller (EF)"             + icon [Gelb]
+/rot Huber Bayern → "Rote Karte — Huber (Bayern)"    + icon [Rot]
+/s EinRaus AusRein EF → "Wechsel — EinRaus <-> AusRein (EF)" + icon [Wechsel]
 /n Freistoß knapp über das Tor → "Freistoß knapp über das Tor"
 \end{verbatim}
 
@@ -1266,7 +1266,7 @@ exemplarischer Testfall illustriert das Prüfmuster:
   \FunctionTok{expect}\NormalTok{(result}\OperatorTok{.}\AttributeTok{isValid}\NormalTok{)}\OperatorTok{.}\FunctionTok{toBe}\NormalTok{(}\KeywordTok{true}\NormalTok{)}\OperatorTok{;}
   \FunctionTok{expect}\NormalTok{(result}\OperatorTok{.}\AttributeTok{type}\NormalTok{)}\OperatorTok{.}\FunctionTok{toBe}\NormalTok{(}\StringTok{"goal"}\NormalTok{)}\OperatorTok{;}
   \FunctionTok{expect}\NormalTok{(result}\OperatorTok{.}\AttributeTok{formatted}\NormalTok{)}\OperatorTok{.}\FunctionTok{toBe}\NormalTok{(}\StringTok{"TOR {-}{-} Muller (EIN)"}\NormalTok{)}\OperatorTok{;}
-  \FunctionTok{expect}\NormalTok{(result}\OperatorTok{.}\AttributeTok{meta}\OperatorTok{.}\AttributeTok{icon}\NormalTok{)}\OperatorTok{.}\FunctionTok{toBe}\NormalTok{(}\StringTok{"⚽"}\NormalTok{)}\OperatorTok{;}
+  \FunctionTok{expect}\NormalTok{(result}\OperatorTok{.}\AttributeTok{meta}\OperatorTok{.}\AttributeTok{icon}\NormalTok{)}\OperatorTok{.}\FunctionTok{toBe}\NormalTok{(}\StringTok{"[Tor]"}\NormalTok{)}\OperatorTok{;}
   \FunctionTok{expect}\NormalTok{(result}\OperatorTok{.}\AttributeTok{warnings}\NormalTok{)}\OperatorTok{.}\FunctionTok{toHaveLength}\NormalTok{(}\DecValTok{0}\NormalTok{)}\OperatorTok{;}
 \NormalTok{\})}\OperatorTok{;}
 \end{Highlighting}
