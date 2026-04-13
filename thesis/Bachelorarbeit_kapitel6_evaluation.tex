@@ -1061,22 +1061,24 @@ Die Interviewergebnisse fließen in die Gesamtbewertung des Systems
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
-\section{Evaluation der Betriebsmodi}\label{evaluation-der-betriebsmodi}
+\section{Latenzpotenzial der Betriebsmodi}\label{evaluation-der-betriebsmodi}
 
 \subsection{Drei Betriebsmodi}\label{drei-betriebsmodi}
 
 Das System unterstützt drei zur Laufzeit umschaltbare Betriebsmodi
 (\texttt{auto}, \texttt{coop}, \texttt{manual}), die in Abschnitt 4.3.3
-konzeptionell beschrieben sind. Die folgende Evaluation vergleicht ihre
-Leistungsfähigkeit anhand messbarer Metriken.
+konzeptionell beschrieben sind. Da ein kontrolliertes Feldexperiment mit
+echten Redakteuren im Evaluationszeitraum nicht durchführbar war, wird
+das Publikationslatenzpotenzial je Modus auf Basis gemessener
+Systemlatenzen und der implementierten Architektur abgeschätzt.
 
-\subsection{Vergleich der Modi}\label{vergleich-der-modi}
+\subsection{Modusvergleich: Latenzpotenzial}\label{vergleich-der-modi}
 
-Ein kontrollierter Vergleich derselben Spiels in allen drei Modi war im
-Evaluationszeitraum nicht durchführbar, da kein parallel in mehreren
-Modi betriebenes Live-Spiel vorlag. Die folgende Tabelle beruht auf den
-gemessenen Latenzdaten (Abschnitt 6.5.1) und der implementierten
-Systemarchitektur:
+Die folgende Tabelle beruht auf den gemessenen LLM-Latenzdaten
+(Abschnitt 6.5.1), dem Polling-Modell des Frontends (Abschnitt 6.5.3)
+und der manuellen Baseline aus Kapitel 2.1. Die TTP-Werte sind
+architekturbasierte Abschätzungen, keine im Feldbetrieb gemessenen
+Paare:
 
 {\def\LTcaptype{none} % do not increment counter
 \begin{longtable}[]{@{}

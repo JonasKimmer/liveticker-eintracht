@@ -177,9 +177,9 @@ Stackwork GmbH, Eintracht Frankfurt\\[3cm]
 % ABSTRACT
 \chapter*{Abstract}
 
-Die manuelle Erstellung von Liveticker-Einträgen im Profifußball ist ein kognitiv anspruchsvoller, zeitkritischer Prozess. Das entwickelte System kombiniert eine FastAPI-Backend-Architektur mit einer mehrsprachigen LLM-Pipeline und einem React-Frontend. Drei Betriebsmodi ermöglichen einen graduellen Übergang zwischen autonomer KI-Generierung und redaktioneller Kontrolle.
+Die manuelle Erstellung von Liveticker-Einträgen im Profifußball ist ein kognitiv anspruchsvoller, zeitkritischer Prozess. Diese Arbeit konzipiert und implementiert ein hybrides KI-gestütztes Redaktionssystem auf Basis von Large Language Models: eine FastAPI/PostgreSQL-Backend-Architektur mit mehrsprachiger LLM-Pipeline und React-Frontend. Drei Betriebsmodi (\textit{auto}, \textit{coop}, \textit{manual}) ermöglichen einen graduellen Übergang zwischen autonomer KI-Generierung und redaktioneller Kontrolle.
 
-Die Evaluation umfasst 352 automatisierte Tests, eine TypeScript-Typenabdeckung von 95,84\% sowie eine qualitative Bewertung von 16 KI-generierten Ticker-Einträgen aus 9 Bundesliga-Spielen. Die KI-generierten Texte erzielen einen Gesamtdurchschnitt von 4,3/5 Punkten. Die geschätzte Time-to-Publish im Auto-Modus beträgt 3,4--5,9 Sekunden gegenüber 30--120 Sekunden im manuellen Modus.
+Die Evaluation umfasst 352 automatisierte Tests, eine TypeScript-Typenabdeckung von 95,84\% sowie eine qualitative Bewertung von 16 KI-generierten Ticker-Einträgen aus 9 Bundesliga-Spielen. Die KI-generierten Texte erzielen einen Gesamtdurchschnitt von 4,3/5 Punkten (Korrektheit 4,6, Tonalität 4,1, Verständlichkeit 4,3). Auf Basis gemessener LLM-Latenzen ergibt sich ein geschätztes TTP-Potenzial von 3,4--5,9 Sekunden im \textit{auto}-Modus gegenüber 30--120 Sekunden im manuellen Status quo.
 
 \noindent\textbf{Schlüsselwörter:} Large Language Models, Liveticker, Natural Language Generation, Human-in-the-Loop, Few-Shot Prompting, Sportjournalismus, FastAPI, React, TypeScript
 
