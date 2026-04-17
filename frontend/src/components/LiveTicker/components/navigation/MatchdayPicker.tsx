@@ -47,7 +47,12 @@ export function MatchdayPicker({
     const group = matchdays.filter((r) => r <= threshold).sort((a, b) => a - b);
     const knockout = matchdays
       .filter((r) => r > threshold)
-      .sort((a, b) => b - a);
+      .sort((a, b) => {
+        // Sondercodes (97+) werden mit steigender Nummer später im Turnier (PO→FIN) → aufsteigend
+        // Standardcodes (2–64): kleinere Zahl = weniger Teams = spätere Runde → absteigend
+        if (a >= 97 && b >= 97) return a - b;
+        return b - a;
+      });
     return [...group, ...knockout];
   }, [matchdays]);
 
@@ -88,6 +93,16 @@ export function MatchdayPicker({
   useEffect(() => {
     matchItemRefs.current[matchActiveIdx]?.scrollIntoView({ block: "nearest" });
   }, [matchActiveIdx]);
+
+  function handlePanelWheel(e: React.WheelEvent<HTMLDivElement>) {
+    e.preventDefault();
+    const idx = sortedMatchdays.indexOf(selRound);
+    const next =
+      e.deltaY > 0
+        ? sortedMatchdays[Math.min(idx + 1, sortedMatchdays.length - 1)]
+        : sortedMatchdays[Math.max(idx - 1, 0)];
+    if (next !== undefined && next !== selRound) onRoundChange(next);
+  }
 
   function handlePanelKeyDown(e: React.KeyboardEvent<HTMLDivElement>) {
     if (["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown"].includes(e.key)) {
@@ -181,6 +196,7 @@ export function MatchdayPicker({
           ref={panelRef}
           tabIndex={-1}
           onKeyDown={handlePanelKeyDown}
+          onWheel={handlePanelWheel}
           style={{ outline: "none" }}
         >
           {matchdays.length > 0 && (
