@@ -251,9 +251,9 @@
 }
 
 .lt-mdp__day--active {
-  background: var(--lt-accent);
+  background: var(--lt-accent-dim);
   border-color: var(--lt-accent);
-  color: #fff;
+  color: var(--lt-accent);
   font-weight: 600;
 }
 
