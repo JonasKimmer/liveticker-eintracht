@@ -42,7 +42,7 @@ export const CenterPanel = memo<CenterPanelProps>(function CenterPanel({
 }: CenterPanelProps) {
   const { mode } = useTickerModeContext();
   const { match, tickerTexts, generatingId, reload } = useTickerDataContext();
-  useTickerActionsContext();
+  const { onPublished } = useTickerActionsContext();
 
   const playerNames = useMemo(() => {
     const fromLineup = lineups.map((l) => l.playerName).filter(Boolean);
@@ -260,7 +260,10 @@ export const CenterPanel = memo<CenterPanelProps>(function CenterPanel({
                           draft={draft}
                           label={ev.liveTickerEventType}
                           onPublish={(text) => {
-                            api.publishTicker(draft.id, text).then(() => reload.loadTickerTexts());
+                            api.publishTicker(draft.id, text).then(() => {
+                              reload.loadTickerTexts();
+                              onPublished(draft.id, text);
+                            });
                           }}
                           onReject={handleRejectDraft}
                           onGenerate={(_, style) => handleRegenerateEventDraft(ev.id, style)}
