@@ -45,14 +45,15 @@ export function MatchdayPicker({
   const sortedMatchdays = useMemo(() => {
     const threshold = knockoutThreshold(matchdays);
     const group = matchdays.filter((r) => r <= threshold).sort((a, b) => a - b);
+    // Explizite Phasen-Reihenfolge: frühere Runde = kleinere Zahl
+    // Standardcodes (64→1/64, 32→1/32, ..., 2/1→Finale) und Sondercodes (97=PO, ..., 103=FIN)
+    const KO_PHASE: Record<number, number> = {
+      64: 1, 32: 2, 16: 3, 8: 4, 4: 5, 2: 6, 1: 7,
+      97: 8, 98: 9, 99: 10, 100: 11, 101: 12, 102: 13, 103: 14,
+    };
     const knockout = matchdays
       .filter((r) => r > threshold)
-      .sort((a, b) => {
-        // Sondercodes (97+) werden mit steigender Nummer später im Turnier (PO→FIN) → aufsteigend
-        // Standardcodes (2–64): kleinere Zahl = weniger Teams = spätere Runde → absteigend
-        if (a >= 97 && b >= 97) return a - b;
-        return b - a;
-      });
+      .sort((a, b) => (KO_PHASE[a] ?? 99) - (KO_PHASE[b] ?? 99));
     return [...group, ...knockout];
   }, [matchdays]);
 
