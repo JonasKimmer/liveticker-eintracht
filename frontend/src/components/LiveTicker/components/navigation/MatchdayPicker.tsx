@@ -170,6 +170,7 @@ export function MatchdayPicker({
             display: "flex",
             alignItems: "center",
             justifyContent: "space-between",
+            padding: "0.45rem 0.7rem",
           }}
         >
           <span>{label}</span>
