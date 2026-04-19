@@ -68,7 +68,8 @@ export const PublishedEntry = memo(function PublishedEntry({
 
   const eventType =
     entry?.liveTickerEventType ?? entry?.event_type ?? entry?.type;
-  const { icon, cssClass } = getEventMeta(eventType, entry?.detail);
+  const { icon: metaIcon, cssClass } = getEventMeta(eventType, entry?.detail);
+  const icon = metaIcon === "•" && tickerText?.icon ? tickerText.icon : metaIcon;
 
   const minuteInputEl = (
     <input

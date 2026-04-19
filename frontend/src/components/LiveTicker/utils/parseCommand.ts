@@ -337,6 +337,7 @@ export function getEventMeta(
   if (t === "missed_penalty") return { icon: "❌", cssClass: "card" };
   if (t === "yellow_card") return { icon: "🟨", cssClass: "card" };
   if (t === "red_card") return { icon: "🟥", cssClass: "card" };
+  if (t === "yellow_red_card") return { icon: "🟨🟥", cssClass: "card" };
   if (t === "substitution") return { icon: "🔄", cssClass: "sub" };
   if (
     t === "kick_off" ||
@@ -402,6 +403,7 @@ export function getRawEventText(event: RawEvent): string {
   if (t === "missed_penalty") return `Elfmeter verschossen — ${player}`;
   if (t === "yellow_card") return `Gelb — ${player}`;
   if (t === "red_card") return `Rot — ${player}`;
+  if (t === "yellow_red_card") return `Gelb-Rot — ${player}`;
   if (t === "substitution")
     return `↑ ${assist}${player ? ` / ↓ ${player}` : ""}`;
   if (t === "kick_off") return "Anstoß";
