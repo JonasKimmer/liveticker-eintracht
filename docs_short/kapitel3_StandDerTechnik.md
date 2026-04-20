@@ -1,0 +1,142 @@
+# Stand der Technik
+
+## Large Language Models
+
+Die Entwicklung großer Sprachmodelle (Large Language Models, LLMs) hat die Verarbeitung natürlicher Sprache in den vergangenen Jahren grundlegend verändert. Den technischen Ausgangspunkt bildet die **Transformer-Architektur**, die Vaswani et al. (2017, S. 1) als ein neuartiges Netzwerkdesign einführten, das ausschließlich auf Aufmerksamkeitsmechanismen basiert. Das Modell verarbeitet Text autoregressiv — bei jedem Schritt werden die zuvor generierten Tokens als zusätzliche Eingabe für die Erzeugung des nächsten verwendet (Vaswani et al. 2017, S. 2). Diese Eigenschaft macht Transformer-basierte Modelle besonders geeignet für sequenzielle Textgenerierungsaufgaben wie die Liveticker-Produktion.
+
+Diese großen Sprachmodelle werden zunächst auf umfangreichen Textkorpora vortrainiert und können anschließend durch **Transfer Learning** — also die Übertragung erlernter Sprachstrukturen auf neue Aufgaben — ohne aufgabenspezifisches Fine-tuning eingesetzt werden (Brown et al. 2020, S. 2). Das ermöglicht den Einsatz von LLMs für spezialisierte Aufgaben wie die Liveticker-Generierung, ohne modellseitige Anpassungen vornehmen zu müssen.
+
+Die empirische Grundlage für das In-Context Learning wurde mit **GPT-3** gelegt — einem autoregressiven Sprachmodell mit 175 Milliarden Parametern (Brown et al. 2020, S. 1). Das Prinzip, Modelle über Beispiele im Prompt zu konditionieren, ohne ihre Gewichte anzupassen, hat sich seitdem als Standard etabliert. Parallel entwickelten weitere Anbieter — darunter Meta (LLaMA-Familie), Anthropic (Claude) und Mistral — vergleichbare Architekturen, die in unterschiedlichen Größenordnungen und Lizenzmodellen verfügbar sind und die breite Adaption von LLMs für spezialisierte Aufgaben ermöglichen.
+
+Für die Liveticker-Produktion sind **kompakte Modelle** besonders relevant. Die Generierungsaufgabe erfordert kurze Texte (1–3 Sätze) auf Basis strukturierter Eingabedaten (Spielereignisse, Kontext) — eine Aufgabe, die keine komplexe Inferenz oder umfangreiches Weltwissen voraussetzt. Kompakte Modelle bieten für solche kurzen, faktenbasierten Textgenerierungsaufgaben eine vergleichbare Qualität wie größere Modelle, bei deutlich niedrigerer Latenz und geringeren Kosten — Eigenschaften, die für hochfrequente Echtzeit-Generierungsszenarien entscheidend sind (vgl. Kap. 4.5.1 für die konkrete Modellauswahl).
+
+Trotz ihrer Leistungsfähigkeit weisen LLMs strukturelle Schwächen auf, insbesondere die Neigung zu **Halluzinationen** — also der Generierung von Inhalten, die sachlich unzutreffend oder erfunden sind (OpenAI 2023, S. 46). Im journalistischen Kontext ist dies kritisch, da faktische Fehler die Glaubwürdigkeit nachhaltig beschädigen (Bluhm & Schäfer 2023, S. 33). Dies begründet den **hybriden Ansatz** der vorliegenden Arbeit: Das System generiert Textvorschläge, die finale Freigabeentscheidung verbleibt jedoch beim Redakteur.
+
+---
+
+## Prompt Engineering
+
+Die Qualität der Ausgaben eines LLM hängt maßgeblich vom **Prompt** ab. Prompt Engineering bezeichnet die systematische Gestaltung dieser Eingaben, um das Modell ohne Änderung seiner Gewichte zu einem gewünschten Verhalten zu lenken (Brown et al. 2020). Das Prinzip des **In-Context Learning** sieht vor, dass das Modell auf eine Instruktion und ggf. Beispiele konditioniert wird.
+
+Für die Anwendung von LLMs auf spezifische Aufgaben existieren grundsätzlich zwei Ansätze: **Fine-tuning** erfordert ein aufgabenspezifisches Nachtrainieren des Modells auf kuratierten Datensätzen und ist ressourcenintensiv (Rechenzeit, Infrastruktur, Datenkuration). **Prompting-basierte Ansätze** hingegen nutzen das vortrainierte Modell direkt und steuern dessen Verhalten ausschließlich über die Eingabeformulierung (Brown et al. 2020, S. 1). Für ressourcenbeschränkte Kontexte wie den Vereinssport ist Prompting dabei nicht nur kostengünstiger, sondern auch methodisch vorzuziehen: Da kein domänenspezifischer Trainingsdatensatz in ausreichender Größe existiert, würde Fine-tuning zu Overfitting neigen, während Few-Shot-Prompting mit wenigen kuratierten Beispielen auskommt.
+
+Innerhalb des Prompting-Paradigmas lassen sich zwei wesentliche Techniken unterscheiden:
+
+1.  **Zero-Shot Prompting:** Das Modell erhält ausschließlich eine Aufgabenbeschreibung ohne Demonstrationsbeispiele (Brown et al. 2020, S. 13). Dieser Ansatz maximiert Flexibilität und eignet sich für generische Anwendungsfälle ohne spezifische Stilerwartungen.
+2.  **Few-Shot Prompting:** Dem Modell werden neben der Aufgabenbeschreibung zusätzlich wenige Beispiele (typischerweise 1–5) als Stilreferenz bereitgestellt. Diese Beispiele konditionieren das Modell auf eine gewünschte Tonalität, ohne dass ein modellseitiges Fine-tuning erforderlich ist (Brown et al. 2020, S. 14).
+
+Ein weiterer zentraler Steuerungsparameter ist die **Temperature**, die die Wahrscheinlichkeitsverteilung der Token-Auswahl beeinflusst (Brown et al. 2020, S. 24). Niedrige Werte (z. B. 0,0–0,3) führen zu deterministischeren, faktentreueren Ausgaben; höhere Werte (z. B. 0,7–1,0) erhöhen die kreative Varianz. Für journalistische Anwendungen, bei denen faktische Korrektheit priorisiert wird, sind niedrige Temperature-Werte vorzuziehen.
+
+Die in Kapitel 2.5 hergeleiteten linguistischen Anforderungen — Ellipsen, Tempora, Graphostilistik — definieren dabei das Zielformat, das über Few-Shot-Beispiele und explizite Stilanweisungen im Prompt operationalisiert wird. Die konkrete Umsetzung im vorliegenden System — einschließlich der Prompt-Template-Struktur, Few-Shot-Datenquellen, Stilprofile und Temperature-Konfiguration — wird in Kapitel 4.5.2 beschrieben.
+
+---
+
+## Natural Language Generation im Sportjournalismus
+
+Die automatisierte Erzeugung natürlichsprachlicher Texte aus strukturierten Daten (Data-to-Text Generation) bildet die technische Grundlage für KI-gestützte Berichterstattungssysteme. Im Sportkontext bedeutet dies die Überführung von Spielereignissen und Statistiken in journalistisch verwertbare Texte (Puduppully & Lapata 2021, S. 510).
+
+Der Sportjournalismus bietet für NLG-Systeme besonders günstige Voraussetzungen: Spielereignisse folgen standardisierten Mustern (Tore, Karten, Auswechslungen), liegen bereits in strukturierter Form vor und erfordern eine zeitnahe Verarbeitung. Diese Kombination aus strukturierten Eingabedaten und Echtzeitanforderung macht Sport zu einer der erfolgreichsten Anwendungsdomänen für Data-to-Text-Systeme (Puduppully & Lapata 2021, S. 510). Für kleinere Vereine und Medienunternehmen ermöglicht automatisierte Textgenerierung zudem eine skalierbare Berichterstattung, die mit rein manueller Redaktion nicht wirtschaftlich darstellbar wäre.
+
+Historische NLG-Systeme basierten überwiegend auf **regelbasierten Template-Architekturen** (vgl. Puduppully & Lapata 2021, S. 520). Diese Systeme nutzen vordefinierte Satzmuster, in die Ereignisdaten eingesetzt werden (z. B. „[Spieler] erzielt in der [Minute] Minute das [Tor-Nr.] für [Team]"). Der Vorteil liegt in vorhersagbarer Qualität und vollständiger Kontrolle über die Ausgabe; der Nachteil ist stilistische Monotonie und begrenzte sprachliche Variabilität. Puduppully und Lapata (2021, S. 520) beschreiben diese stilistische Monotonie und begrenzte sprachliche Variabilität als strukturelles Defizit regelbasierter Systeme, insbesondere bei komplexeren narrativen Anforderungen.
+
+Moderne **neuronale End-to-End-Ansätze** überwinden diese Grenzen durch datengetriebenes Lernen sprachlicher Muster. Statt starrer Regeln trainieren diese Modelle auf großen Textkorpora und erzeugen flüssigere, natürlichere Formulierungen. Im professionellen Roboterjournalismus erzeugt beispielsweise „Die Welt" bereits automatisierte Spielberichte via Retresco (Beils 2023, S. 207). Solche Systeme stoßen jedoch bei unvorhergesehenen Ereignissen, unsauberer Datenlage oder der Notwendigkeit emotionaler Tonalität an Grenzen — insbesondere die Neigung zu Halluzinationen (vgl. Kap. 3.1) bleibt eine systemische Herausforderung für den journalistischen Einsatz.
+
+Die Kombination beider Ansätze in einem **hybriden System** verbindet die Stärken: LLMs übernehmen die flexible, stilistisch variable Textgenerierung, während menschliche Redakteure die faktische Korrektheit absichern und editoriale Entscheidungen treffen. Dieser **Human-in-the-Loop-Ansatz** bildet die konzeptionelle Grundlage des vorliegenden Systems: Er adressiert die Qualitätsanforderungen des Journalismus durch redaktionelle Kontrolle und ermöglicht gleichzeitig — durch die Entlastung von der Texterstellung — eine Skalierung, die den in Kapitel 2.1 beschriebenen Ressourcenbeschränkungen kleinerer Redaktionen Rechnung trägt.
+
+---
+
+## Echtzeit-Kommunikation im Web
+
+Die Übertragung von Daten zwischen Frontend und Backend erfordert eine ausgewogene Balance zwischen Latenz, Ressourcenverbrauch und Implementierungskomplexität. Für Echtzeitanwendungen wie Liveticker stehen mehrere etablierte Kommunikationsmuster zur Verfügung, die sich hinsichtlich dieser Dimensionen unterscheiden.
+
+**HTTP-Polling** ist das einfachste Muster: Der Client sendet in regelmäßigen Intervallen Anfragen an den Server, um neue Daten abzurufen. Der Vorteil liegt in der Einfachheit und breiten Kompatibilität — das Muster nutzt Standard-HTTP-Requests ohne zusätzliche Protokollschichten. Nachteile sind die inhärente Latenz (Daten werden erst beim nächsten Polling-Zyklus sichtbar) und der erhöhte Ressourcenverbrauch durch wiederholte Request/Response-Zyklen, selbst wenn keine neuen Daten vorliegen. Für Anwendungen mit akzeptabler Latenztoleranz (z. B. wenige Sekunden) und begrenzter Updatefrequenz ist Polling jedoch eine robuste und wartbare Lösung.
+
+**Server-Sent Events (SSE)** bieten als Zwischenlösung eine HTTP-basierte Push-Verbindung vom Server zum Client (Hickson 2015) — ressourceneffizienter als Polling, jedoch auf unidirektionale Kommunikation beschränkt.
+
+**WebSocket** etabliert eine vollständig bidirektionale, persistente Verbindung über das WebSocket-Protokoll (RFC 6455). Nach einem initialen HTTP-Handshake wechselt die Verbindung in ein binäres Protokoll mit minimalen Framing-Overhead (Fette & Melnikov 2011, S. 1). WebSocket eignet sich für latenzkritische Echtzeitanwendungen, bei denen minimale Latenz und eine persistente Verbindung erforderlich sind — auch wenn die Kommunikation faktisch überwiegend unidirektional (Server → Client) verläuft. RFC 6455 nennt Börsen-Ticker explizit als Einsatzszenario — eine strukturelle Parallele zum Sport-Liveticker. Der Preis für niedrige Latenz sind höhere Implementierungskomplexität und erhöhter Server-Ressourcenbedarf durch persistente Verbindungen. Clientseitig ist eine Reconnect-Strategie erforderlich, da Netzwerkunterbrechungen die persistente Verbindung unerwartet beenden können — üblich ist dabei ein exponentielles Backoff, um den Server bei wiederholten Verbindungsversuchen nicht zu überlasten.
+
+Die Wahl des Kommunikationsmusters hängt von den Anforderungen der Anwendung ab: Polling bevorzugt Einfachheit, SSE bietet effizienten unidirektionalen Push, WebSocket minimiert Latenz bei bidirektionaler Kommunikation. Hybridansätze nutzen verschiedene Muster für unterschiedliche Datenströme innerhalb derselben Anwendung, um Trade-offs gezielt zu optimieren.
+
+Die konkrete Umsetzung im vorliegenden System wird in Kapitel 4.6.5 beschrieben.
+
+---
+
+## ETL-Prozesse und Workflow-Automatisierung
+
+Die Datenbeschaffung in datengetriebenen Anwendungen folgt überwiegend dem **Extract-Transform-Load-Prinzip (ETL)**. Daten werden aus heterogenen Quellen extrahiert, in ein einheitliches Zielformat transformiert und in den Datenspeicher geladen (Freitas et al. 2025, S. 807). Für Sport-Liveticker bedeutet dies die Integration von Live-Spielereignissen, Statistiken, Aufstellungen und Mediendaten aus unterschiedlichen APIs oder Datenfeeds. Die Herausforderung besteht darin, diese Daten zeitnah, konsistent und in einer für die Anwendungslogik verwertbaren Struktur bereitzustellen.
+
+Historisch wurden ETL-Prozesse durch monolithische Batch-Jobs oder direkt in Anwendungscode implementiert. Moderne Ansätze setzen zunehmend auf **Workflow-Orchestrierungsplattformen**, die ETL-Logik als konfigurierbare Prozesse abbilden. Diese Plattformen basieren typischerweise auf **Directed Acyclic Graphs (DAGs)**, die Datenflüsse als gerichtete, azyklische Graphen modellieren und damit Abhängigkeiten zwischen Verarbeitungsschritten explizit machen. Jeder Knoten im DAG repräsentiert eine Transformation oder einen API-Aufruf, während Kanten die Datenflussrichtung definieren (vgl. Venkiteela 2025, S. 3).
+
+**Low-Code- und No-Code-Plattformen** haben diesen Ansatz weiter demokratisiert: Statt prozeduralen Code zu schreiben, werden Workflows grafisch zusammengestellt. Diese visuellen Editoren erleichtern sowohl die Entwicklung als auch die Wartung von Integrationspfaden. Für kleinere Teams oder prototypische Systeme bieten solche Plattformen eine erheblich niedrigere Einstiegshürde als vollprogrammierte ETL-Pipelines. Gleichzeitig erlauben sie bei Bedarf die Einbettung von Custom-Code-Blöcken für komplexe Transformationen (vgl. Venkiteela 2025, S. 2).
+
+Innerhalb dieser Klasse lassen sich cloud-basierte iPaaS-Dienste (z. B. Zapier, Make) von self-hostbaren Open-Source-Plattformen (z. B. n8n) unterscheiden (vgl. Venkiteela 2025, S. 2). Cloud-Dienste bieten sofortige Verfügbarkeit ohne Infrastrukturaufwand, unterliegen jedoch Datenschutzeinschränkungen und eingeschränkter Kontrolle über Ausführungsumgebung und Kosten. Self-hostbare Plattformen wie n8n ermöglichen dagegen den Betrieb in der eigenen Infrastruktur, bieten volle Kontrolle über Datenflüsse (vgl. Nakavisute & Sincharoonsak 2025) und erlauben den direkten Datenbankzugriff — ein entscheidender Vorteil, wenn Workflows transaktionale Schreiboperationen direkt in die Persistenzschicht ausführen sollen, ohne den Umweg über HTTP-Endpunkte nehmen zu müssen (vgl. Venkiteela 2025, S. 4).
+
+Für Echtzeitanwendungen wie Liveticker ist zusätzlich die **Latenz der Orchestrierung** kritisch. Während klassische Batch-ETL-Prozesse mit Stunden- oder Minutentakten arbeiten (vgl. Freitas et al. 2025, S. 808), müssen Sport-Events innerhalb von Sekunden verarbeitet werden. Das erfordert Orchestrierungsplattformen mit niedrigem Overhead, asynchroner Verarbeitung und effizienten Webhook-Mechanismen, um auf externe Ereignisse sofort reagieren zu können (vgl. Nakavisute & Sincharoonsak 2025).
+
+Die konkrete Umsetzung der ETL-Architektur im vorliegenden System — einschließlich der gewählten Orchestrierungsplattform, der Datenquellen (API-Football, ScorePlay, Social Media), der 15 definierten Workflows und der Webhook-basierten Triggerstruktur — wird in Kapitel 4.4 beschrieben.
+
+---
+
+## Backend-Technologien
+
+### Python
+
+**Python** hat sich als dominierende Programmiersprache für datenintensive Webanwendungen und KI-Systeme etabliert — ein Konsens, der sich in konsistenten Rankings von Entwickler-Umfragen (Stack Overflow Developer Survey 2024) und akademischen Studien zum KI-Ökosystem widerspiegelt. Die Sprache verbindet dynamische Typisierung mit einem umfangreichen Ökosystem an Bibliotheken für HTTP-Kommunikation, Datenbankzugriff und maschinelles Lernen. Darüber hinaus ermöglicht Pythons `asyncio`-Eventloop — auf dem ASGI-Frameworks wie FastAPI aufsetzen — die nicht-blockierende Verarbeitung paralleler I/O-Operationen, was für Echtzeitsysteme mit hoher externer API-Latenz entscheidend ist (vgl. Kap. 3.6.2).
+
+### ASGI und asynchrone Web-Frameworks
+
+Das **ASGI-Protokoll** (Asynchronous Server Gateway Interface) ermöglicht im Gegensatz zum klassischen synchronen WSGI eine nicht-blockierende Verarbeitung auf Basis von Pythons `asyncio`-Eventloop (Grigorev 2019). ASGI-Frameworks wie **FastAPI** können während wartender I/O-Operationen (Datenbankabfragen, LLM-API-Aufrufe) andere Anfragen bearbeiten, was insbesondere für Anwendungen mit vielen externen Abhängigkeiten eine signifikant höhere Durchsatzrate ermöglicht. Das vorliegende System verwendet FastAPI als primäres ASGI-Framework; die Entscheidungsbegründung erfolgt in Kapitel 4.2.
+
+### ORM und Repository Pattern
+
+Das **Object-Relational Mapping (ORM)** bildet Programmiersprachenklassen auf relationale Datenbanktabellen ab und abstrahiert den direkten SQL-Zugriff. **SQLAlchemy** implementiert dieses Muster für Python: Modellklassen werden über deklarative Klassendefinitionen auf Datenbanktabellen abgebildet, SQL-Abfragen über eine typsichere Fluent-API konstruiert. Das ergänzende **Repository Pattern** (Fowler 2002, S. 322) kapselt den Datenzugriff in dedizierte Klassen und bietet eine abstrahierte Schnittstelle zur Service-Schicht — das erleichtert Testbarkeit und ermöglicht den Austausch der Persistenzschicht ohne Änderungen an der Geschäftslogik.
+
+Für die API-Schicht übernimmt **Pydantic** die typisierte Schema-Validierung: Eingabe- und Ausgabestrukturen werden als Python-Datenklassen mit Type-Annotations definiert, die Pydantic zur Laufzeit gegen eingehende Payloads prüft. FastAPI integriert Pydantic direkt in die Request/Response-Pipeline, sodass API-Vertrag und Validierungslogik in einer einzigen Klassendefinition ausgedrückt werden — ein entscheidender Vorteil für Systeme, in denen mehrere externe Datenquellen (n8n-Workflows, Frontend, Partner-API) unterschiedliche Feldformate liefern.
+
+### Relationale Datenbanken
+
+**Relationale Datenbankmanagementsysteme (RDBMS)** organisieren Daten in Tabellen mit definierten Schemata und erzwingen referenzielle Integrität über Fremdschlüssel-Constraints (Codd 1970). RDBMS wie PostgreSQL garantieren **ACID-Eigenschaften** (Atomicity, Consistency, Isolation, Durability) und bieten für Anwendungen mit stark strukturierten, relational verknüpften Entitäten (Spiele, Teams, Ereignisse, Texte) Vorteile hinsichtlich Datenkonsistenz und Abfragekomplexität gegenüber dokumentbasierten Alternativen.
+
+Die konkrete Backend-Architektur des vorliegenden Systems wird in Kapitel 4.2 beschrieben.
+
+---
+
+## Frontend-Technologien
+
+### TypeScript
+
+**TypeScript** erweitert JavaScript um ein statisches Typsystem, das Typfehler bereits zur Entwicklungszeit erkennt (Microsoft 2012). Der Compiler transpiliert den typisierten Quellcode in Standard-JavaScript. Für größere Codebasen reduziert statische Typisierung die Fehlerquote und verbessert die Wartbarkeit durch IDE-Autocompletion und automatisierte Refactoring-Unterstützung.
+
+### Komponentenbasierte UI-Architekturen
+
+**React** (Facebook, heute Meta, 2013) implementiert ein komponentenbasiertes Architekturmuster — die Benutzeroberfläche wird in wiederverwendbare, isolierte Bausteine zerlegt, die Markup, Logik und Styling kapseln. React nutzt eine deklarative, zustandsgesteuerte Rendering-Logik: Die Oberfläche wird als Funktion des Anwendungszustands beschrieben, und React übernimmt die effiziente DOM-Aktualisierung (Virtual DOM / Reconciliation). **React Hooks** (ab 16.8) ermöglichen die Verwaltung von Zustand und Seiteneffekten in funktionalen Komponenten; **Custom Hooks** erlauben die Extraktion wiederverwendbarer zustandsbehafteter Logik. Gegenüber vergleichbaren Frameworks wie Vue oder Angular zeichnet sich React durch ein schlankes Kernmodell aus, das Zustandsverwaltung, Polling-Logik und WebSocket-Integration konsequent in Custom Hooks kapseln lässt — ein Vorteil für datenintensive Echtzeit-Oberflächen mit vielen unabhängigen Datensträngen.
+
+### Single-Page Applications
+
+**Single-Page Applications (SPAs)** laden die Anwendungslogik beim initialen Seitenaufruf und aktualisieren die Darstellung dynamisch über JavaScript, ohne vollständige Seitenneuladen. Dieses Modell eignet sich für interaktive Werkzeuge mit häufigen Zustandsänderungen — wie Redaktionsoberflächen oder Echtzeit-Dashboards.
+
+Die konkrete Frontend-Architektur des vorliegenden Systems wird in Kapitel 4.6 beschrieben.
+
+---
+
+## Deployment und Containerisierung
+
+### Containerisierung
+
+**Docker** (Merkel 2014) ermöglicht die Paketierung einer Anwendung mitsamt Laufzeitumgebung und Abhängigkeiten in portable, isolierte Container. Die zentrale Eigenschaft ist **Reproduzierbarkeit**: Dieselbe Anwendung verhält sich lokal identisch zur Produktionsumgebung.
+
+### Platform-as-a-Service (PaaS)
+
+**PaaS**-Anbieter wie Render oder Heroku abstrahieren die Infrastrukturverwaltung und ermöglichen Deployments direkt aus Quellcode oder Container-Images. Für kleine Teams ohne dedizierte DevOps-Kapazitäten reduziert PaaS den operativen Aufwand erheblich.
+
+### Stateless Design und Skalierung
+
+PaaS-Plattformen setzen typischerweise ein **Stateless-Design** voraus: Persistente Daten werden in externe Dienste ausgelagert, sodass bei erhöhter Last zusätzliche Instanzen ohne Zustandskonsistenz gestartet werden können (**horizontale Skalierung**).
+
+Die konkrete Deployment-Architektur des vorliegenden Systems wird in Kapitel 4.7.4 beschrieben.
+
+---
+
+## Synthese: Technologische Konsequenzen für das Systemdesign
+
+Der Stand der Technik zeigt, dass für das vorliegende System kein einzelnes Werkzeug ausreicht, sondern ein abgestimmtes Zusammenspiel mehrerer Technologieschichten notwendig ist. Kompakte Sprachmodelle mit Few-Shot-Prompting (Kap. 3.1–3.2) liefern die erforderliche Textqualität bei vertretbarer Latenz und ohne ressourcenintensives Fine-tuning; der hybride NLG-Ansatz mit menschlicher Kontrollinstanz (Kap. 3.3) adressiert das systemimmanente Halluzinationsproblem von LLMs im journalistischen Kontext. Die in Kapitel 3.4 beschriebenen Kommunikationsmuster — Polling, SSE und WebSocket — zeigen unterschiedliche Trade-offs zwischen Implementierungseinfachheit und Latenz; welches Hybridmuster für den konkreten Anwendungsfall geeignet ist, wird auf Basis der Infrastrukturanforderungen in Kapitel 4.6.5 begründet. n8n als Low-Code-Orchestrierungsplattform (Kap. 3.5) entkoppelt die ETL-Komplexität vom Anwendungskern und ermöglicht eine schnelle Anpassung von Datenquellen unabhängig von Backend-Deployment-Zyklen. FastAPI auf ASGI-Basis (Kap. 3.6), React mit TypeScript (Kap. 3.7) und Docker-basiertes PaaS-Deployment (Kap. 3.8) vervollständigen einen Stack, der Produktionsfähigkeit, Wartbarkeit und Skalierbarkeit im ressourcenbeschränkten Vereinsumfeld vereint. Konkret begründen die Anforderungen aus Kapitel 2 folgende Technologieentscheidungen: Die in Kap. 2.3 formulierte Anforderung nach Datenschutz- und Betriebskonformität begründet die Wahl von n8n gegenüber cloud-basierten iPaaS-Diensten (vgl. Kap. 3.5); die Kostenrestriktion und Latenzanforderung aus Kap. 2.1 motiviert den Einsatz kompakter Sprachmodelle statt größerer Generationssysteme (vgl. Kap. 3.1); die stark verknüpften Spielentitäten (Spiele, Teams, Ereignisse, Statistiken) begründen eine relationale Datenbankstruktur (Kap. 3.6.4) gegenüber dokumentbasierten Alternativen. Diese technologischen Grundlagen münden in die Systemkonzeption (Kapitel 4) und deren Implementierung (Kapitel 5).

@@ -1,0 +1,284 @@
+\chapter{Fazit und Ausblick}\label{fazit-und-ausblick}
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\section{Zusammenfassung der
+Ergebnisse}\label{zusammenfassung-der-ergebnisse}
+
+Die vorliegende Arbeit hat ein hybrides Redaktionssystem für die
+KI-gestützte Liveticker-Erstellung im Profifußball konzipiert,
+implementiert und evaluiert. Das System entstand in direkter Kooperation
+mit der \textbf{Stackwork GmbH} im IT-Bereich von Eintracht Frankfurt
+und exportiert produzierte Inhalte über API-Schnittstellen in die
+bestehende \textbf{Stackwork Demo App}. Es adressiert die drei in
+Kapitel 1.1 identifizierten Problemdimensionen --- operativer Zeitdruck,
+Mehrsprachigkeit und White-Label-Bedarf --- durch eine dreischichtige
+Architektur aus Datenbeschaffung (n8n), Anwendungslogik (FastAPI,
+PostgreSQL) und Präsentation (React, TypeScript).
+
+\subsection{Technische Ergebnisse}\label{technische-ergebnisse}
+
+Die technische Evaluation (Kapitel 6.2) belegt eine produktionsnahe
+Codebasis mit vollständiger Testpyramide, hoher Typsicherheit und
+lückenloser Erfüllung aller 23 definierten Anforderungen (vgl. Kapitel
+6.6). Die bewusst ausgeklammerte Authentifizierungsschicht ist als
+Systembeschränkung dokumentiert (vgl. Kapitel 6.7).
+
+\subsection{KI-Textgenerierung}\label{ki-textgenerierung}
+
+Die Multi-Provider-Architektur mit Prioritätskette gewährleistet eine
+hohe Verfügbarkeit der Textgenerierung. Die qualitative Bewertung
+(Abschnitt 6.3.6) zeigt durchgängig gute Ergebnisse über alle drei
+Qualitätsdimensionen; die stärkste Einschränkung liegt in der
+Stil-Inkonsistenz des neutralen Profils. Die quantitativen Einzelwerte
+und Latenzmetriken sind in Kapitel 6.3--6.5 vollständig dokumentiert.
+
+\subsection{Systemarchitektur und
+Designentscheide}\label{systemarchitektur-und-designentscheide}
+
+Das System realisiert die in Kapitel 4 konzipierte dreischichtige
+Architektur vollständig (Datenschicht via n8n-ETL, Anwendungsschicht via
+FastAPI/PostgreSQL, Präsentationsschicht via React/TypeScript). Die
+\textbf{White-Label-Architektur} und die \textbf{drei Betriebsmodi}
+bilden die Kernbeiträge des Systemdesigns (vgl. Kap. 4.3.3, 5.3.3).
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\section{Beantwortung der
+Forschungsfrage}\label{beantwortung-der-forschungsfrage}
+
+Die in Kapitel 1.2 formulierte Forschungsfrage lautet:
+
+\begin{quote}
+\emph{Wie lässt sich ein hybrides KI-gestütztes Redaktionssystem für die
+Liveticker-Erstellung im Profifußball konzipieren und prototypisch
+implementieren, das journalistische Qualitätsanforderungen hinsichtlich
+Korrektheit, Tonalität und Verständlichkeit erfüllt --- und welches
+Potenzial zur Reduktion der Publikationslatenz lässt sich auf Basis der
+Systemarchitektur und gemessener Latenzdaten belegen?}
+\end{quote}
+
+Die Beantwortung erfolgt entlang der beiden Teile der Forschungsfrage.
+
+\subsection{Konstruktiver Teil: Konzeption und
+Implementierung}\label{konstruktiver-teil}
+
+Der erste Teil der Forschungsfrage fragt, ob ein solches System
+realisierbar ist. Die Antwort ist eindeutig positiv: Das entwickelte
+System realisiert die dreischichtige Architektur aus n8n-Datenbeschaffung,
+FastAPI/PostgreSQL-Backend und React/TypeScript-Frontend vollständig. Die
+16 n8n-Workflows versorgen das System automatisiert mit Echtzeit-Daten;
+die LLM-Pipeline (Gemini 2.0 Flash Lite via OpenRouter) generiert
+Ticker-Einträge für alle definierten Event-Typen in drei Stilprofilen und
+mehreren Sprachen. Die White-Label-Architektur und das dreistufige
+Betriebs\-modus-Konzept (\texttt{auto}, \texttt{coop}, \texttt{manual})
+sind produktionsnah realisiert und im Cloud-Deployment erreichbar. Alle
+23 definierten funktionalen, nicht-funktionalen und architektonischen
+Anforderungen werden erfüllt (vgl. Abschnitt 6.6); 352 automatisierte
+Tests und eine TypeScript-Typenabdeckung von 95,84 \% belegen die
+technische Reife.
+
+\subsection{Qualitative Dimension: Journalistische
+Qualität}\label{qualitative-dimension-journalistische-qualituxe4t}
+
+Die journalistische Qualität wurde entlang der drei in der
+Forschungsfrage definierten Kriterien operationalisiert:
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\item
+  \textbf{Korrektheit}: Die generierten Texte erreichen einen Ø-Wert von
+  \textbf{4,6 / 5}. In 15 von 16 bewerteten Einträgen (94 \%) wurden
+  alle verfügbaren Fakten (Spieler, Team, Minute, Ergebnis) korrekt
+  wiedergegeben (Hauptevaluation, N = 16, deutschsprachig). Die
+  ergänzende Evaluation mit synthetischem Kontext (N = 9) bestätigt
+  diesen Befund und erweitert ihn um bislang fehlende Event-Typen (Rote
+  Karte, Phasen-Events). Die Pre-Match-Schutzregel verhindert
+  zuverlässig die Erfindung von Live-Spielszenen; eine Wettempfehlung (1
+  von 16 Einträgen, 6 \%) stellt eine inhaltliche Halluzination
+  geringerer Schwere dar.
+\item
+  \textbf{Tonalität}: Mit einem Ø-Wert von \textbf{4,1 / 5} erzeugen die
+  drei Stilprofile deutlich unterscheidbare Textstile. Der euphorische
+  Modus erzielt die stärksten qualitativen Ergebnisse; das neutrale
+  Profil zeigt die größte Inkonsistenz (19 \% der Einträge zu emotional
+  formuliert), bedingt durch die starken euphorischen Few-Shot-Referenzen.
+\item
+  \textbf{Verständlichkeit}: Mit \textbf{4,3 / 5} erfüllen die
+  generierten Texte die linguistischen Anforderungen des
+  Liveticker-Genres (Kapitel 2.5) zuverlässig: kurze Satzkonstruktionen,
+  Präsenskonstruktionen, idiomatische Ausrufe und konzeptionelle
+  Mündlichkeit sind durchgehend vorhanden.
+\end{enumerate}
+
+Die Qualitätsbewertung stützt sich auf drei Evaluationsebenen: die in
+Abschnitt 6.3.6 dokumentierte Hauptevaluation (N = 16,
+Entwicklerselbstbewertung), das Experteninterview mit einem
+professionellen Sportredakteur von Eintracht Frankfurt (vgl. Abschnitt
+6.3.6) sowie die LLM-as-Judge-Evaluation (N = 20, Claude Sonnet 4.6 als
+unabhängiger Bewerter, Abschnitt 6.3.7). Die ergänzende Evaluation
+bestätigt den Gesamtdurchschnitt mit 4,5 / 5 und repliziert dieselben
+Fehlerklassen (semantischer Framing-Fehler, Phrasenwiederhol im
+euphorischen Profil).
+
+\subsection{Latenzpotenzial: Publikationsbeschleunigung}\label{latenzpotenzial}
+
+Der zweite Teil der Forschungsfrage fragt nach dem nachweisbaren
+Latenzpotenzial. Da ein kontrolliertes Feldexperiment nicht durchführbar
+war, basiert die Abschätzung auf gemessenen LLM-Latenzen (Median 859 ms,
+P95 2.047 ms, vgl. Abschnitt 6.5.1) und der implementierten
+Systemarchitektur. Im \texttt{auto}-Modus ergibt sich daraus eine
+geschätzte TTP von \textbf{3,4--5,9 s}; im \texttt{coop}-Modus von
+\textbf{15--30 s} (zuzüglich redaktioneller Prüfzeit). Gegenüber der
+manuellen Baseline von \textbf{30--120 s} (Kapitel 2.1) entspricht dies
+einem geschätzten \textbf{Reduktionsfaktor von 5× bis 35×} im
+\texttt{auto}-Modus. Die Abschätzung ist konservativ und methodisch
+transparent (vgl. Abschnitt 6.4); ein Feldtest mit echten
+Redakteuren bleibt als Folgestudie vorgesehen (vgl. Abschnitt 8.3.2).
+
+\subsection{Synthese}\label{synthese}
+
+Die Forschungsfrage ist in beiden Teilen positiv zu beantworten: Das
+System ist realisierbar und wurde vollständig implementiert; die
+Textqualität erfüllt die definierten journalistischen Anforderungen; das
+Publikationslatenzpotenzial ist durch Latenzmessungen und
+Architekturanalyse belegt.
+
+Die modus-spezifische Betrachtung ergibt dabei eine klare Empfehlung:
+Im \texttt{auto}-Modus ist das Latenzpotenzial maximal, die
+Qualitätssicherung jedoch nicht vollständig abgedeckt (Stil-Inkonsistenz
+19 \%, Halluzinationsrate 6 \%). Im \texttt{coop}-Modus werden beide
+Anforderungen --- Beschleunigung und Qualitätssicherung --- gleichzeitig
+erfüllt: Die KI übernimmt die zeitkritische Textproduktion, der Redakteur
+die publizistische Verantwortung. \textbf{Der \texttt{coop}-Modus ist
+damit der optimale Betriebsmodus für den produktiven Einsatz.} Der
+\texttt{manual}-Modus bleibt als Rückfalloption und
+Vertrauensaufbau-Stufe erhalten. Das Human-in-the-Loop-Design löst den
+Speed-Quality-Trade-off nicht durch Kompromiss, sondern durch klare
+Aufgabenteilung.
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\section{Ausblick}\label{ausblick}
+
+\subsection{Kurzfristige
+Erweiterungen}\label{kurzfristige-erweiterungen}
+
+\textbf{Authentifizierung und Rollensystem}: Die Integration eines JWT-
+oder OAuth-2.0-basierten Authentifizierungsframeworks ist die wichtigste
+Voraussetzung für einen Mehrbenutzerbetrieb. Ein rollenbasiertes
+Zugriffskonzept (Redakteur, Chefredakteur, Administrator) würde die
+Freigabe-Workflows im \texttt{coop}-Modus um eine Vier-Augen-Prüfung
+erweitern.
+
+\textbf{Server-Sent Events für Ticker-Updates}: Die Ablösung des
+5-Sekunden-Pollings durch SSE für den Ticker-Datenfluss würde die
+End-to-End-Latenz im \texttt{coop}-Modus weiter reduzieren und die
+Serverlast bei vielen gleichzeitigen Nutzern senken.
+
+\textbf{Erweiterte E2E-Tests}: Die Ausweitung der Playwright-Tests auf
+den vollständigen Redaktionsworkflow mit laufendem Backend und
+Testdatenbank (Spiel auswählen, Events empfangen, Ticker-Einträge
+bearbeiten, Freigeben) würde die Regressionssicherheit erhöhen.
+
+\textbf{n8n-Workflow-Tests}: Die 16 n8n-Workflows (vgl. Kapitel 6.7)
+sind derzeit ausschließlich manuell verifiziert. Integrationstests gegen
+eine Staging-Datenbank würden die Zuverlässigkeit der
+Datenversorgungspipeline absichern.
+
+\textbf{Few-Shot-Kontextualisierung in n8n-Workflows}: Die n8n-Workflows
+für Halbzeit- und Abpfiff-Zusammenfassungen (Workflow 13) rufen
+OpenRouter direkt auf, ohne Stilreferenzen aus der
+\texttt{style\_references}-Tabelle einzubinden. Eine Erweiterung dieser
+Workflows um einen SQL-Schritt zur Referenzabfrage würde die
+stilistische Kohärenz zwischen Backend-generierten und n8n-generierten
+Einträgen herstellen.
+
+\textbf{Größere Evaluationsstichprobe}: Die Hauptevaluation umfasst 16
+Einträge aus 9 Spielen --- eine für explorative Erkenntnisse
+ausreichende, für statistisch belastbare Aussagen jedoch zu kleine
+Datenbasis. Eine Folgestudie mit ≥ 100 Einträgen aus verschiedenen
+Wettbewerben, Ligen und Spielsituationen würde die Generalisierbarkeit
+der Ergebnisse stärken und den Einsatz der implementierten
+nicht-parametrischen Verfahren (Cliff's Delta, Bootstrap-CI)
+rechtfertigen.
+
+\textbf{Langzeitbetrieb}: Das System wurde nicht über einen längeren
+Zeitraum evaluiert. Aspekte wie Drift der Textqualität über die Zeit,
+kumulative API-Kosten im Saison-Betrieb und Rate-Limit-Häufigkeit unter
+realer Dauerlast sind nicht erfasst. Eine Saisonbegleitung über
+mindestens 34 Bundesliga-Spieltage würde hier belastbare Betriebsdaten
+liefern.
+
+\subsection{Mittelfristige
+Erweiterungen}\label{mittelfristige-erweiterungen}
+
+\textbf{Externe Nutzerstudie}: Eine systematische Evaluation mit
+professionellen Sportredakteuren, die das System im realen Spielbetrieb
+nutzen, würde die externe Validität der Qualitätsbewertung stärken. Das
+implementierte Evaluationsframework (TTP, Cliff's Delta, Cohen's Kappa)
+ist dafür vorbereitet.
+
+\textbf{Fine-Tuning statt Few-Shot}: Für vereinsspezifische Instanzen
+könnte ein Fine-Tuning auf dem Korpus historischer Vereinsticker die
+stilistische Konsistenz über den Few-Shot-Ansatz hinaus verbessern. Die
+\texttt{style\_references}-Tabelle bildet bereits eine kuratierte
+Datenbasis, die als Ausgangspunkt für ein Fine-Tuning-Dataset dienen
+könnte.
+
+\textbf{Differenziertes Polling}: Die vorbereitete Infrastruktur in
+\texttt{resolvePollingInterval} ermöglicht eine phasenabhängige
+Anpassung der Polling-Frequenz (z. B. 30 Sekunden im PreMatch, 5
+Sekunden während Live). Dies würde die Serverlast im Ruhezustand
+reduzieren.
+
+\textbf{Evaluation der Mehrsprachigkeit}: Eine separate
+Qualitätsevaluation der mehrsprachigen Textgenerierung --- insbesondere
+für die im Kontext von Eintracht Frankfurt relevanten Sprachen Englisch
+und Japanisch --- würde die in Kapitel 2.2 motivierte
+Internationalisierungsanforderung empirisch absichern.
+
+\subsection{Langfristige Perspektiven}\label{langfristige-perspektiven}
+
+\textbf{Multimodale Ticker}: Die bestehende Integration von
+Medieninhalten (ScorePlay, YouTube, Instagram) könnte zu einem
+multimodalen Ticker weiterentwickelt werden, in dem Bild, Video und Text
+automatisch zu einem kohärenten Narrativ verwoben werden.
+Vision-Language-Modelle könnten dabei Spielszenen aus Bildern
+beschreiben und in den Tickertext integrieren.
+
+\textbf{Autonomes Scoring der Textqualität}: Die Ablösung der manuellen
+Qualitätsbewertung durch ein trainiertes Scoring-Modell, das
+Korrektheit, Tonalität und Verständlichkeit automatisch bewertet, würde
+eine kontinuierliche Qualitätsüberwachung im Produktivbetrieb
+ermöglichen. Die implementierte
+\texttt{aggregate\_quality\_by\_group}-Funktion bildet die
+Aggregationslogik hierfür bereits ab.
+
+\textbf{Generalisierung über den Fußball hinaus}: Die
+Provider-agnostische LLM-Architektur und das Event-basierte
+Generierungsmodell sind nicht fußballspezifisch. Eine Erweiterung auf
+andere Sportarten (Handball, Basketball, Eishockey) erforderte primär
+die Anpassung der Event-Typ-Mappings, der Phasendefinitionen und der
+Kontextbuilder --- die Kernarchitektur bliebe unverändert.
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\section{Schlusswort}\label{schlusswort}
+
+Die vorliegende Arbeit zeigt, dass ein hybrides KI-gestütztes
+Redaktionssystem den operativen Zeitdruck bei der Liveticker-Erstellung
+adressieren kann, ohne die redaktionelle Kontrolle aufzugeben. Der
+\texttt{coop}-Modus realisiert das in Kapitel 1.1 formulierte Zielbild
+eines Systems, in dem „die finale Entscheidungshoheit und publizistische
+Verantwortung beim Menschen verbleiben''.
+
+Die technische Reife des Systems (vgl. Kap. 6.2) sowie die Erfüllung
+aller definierten Anforderungen dokumentieren die Tragfähigkeit des
+Architekturansatzes. Die in Kapitel 7 diskutierten Limitationen
+markieren klare Erweiterungspfade, stellen aber die grundsätzliche
+Funktionalität nicht in Frage.
+
+Die KI-gestützte Liveticker-Generierung ersetzt den Redakteur nicht ---
+sie gibt ihm die Zeit zurück, die er braucht, um seiner eigentlichen
+Aufgabe nachzukommen: Journalismus.
