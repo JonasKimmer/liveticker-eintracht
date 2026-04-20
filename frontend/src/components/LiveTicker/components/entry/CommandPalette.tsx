@@ -7,6 +7,7 @@ export const COMMAND_PALETTE = [
   { cmd: "/og", desc: "Eigentor", icon: "⚽", hint: "Spieler Team" },
   { cmd: "/gelb", desc: "Gelbe Karte", icon: "🟨", hint: "Spieler Team" },
   { cmd: "/rot", desc: "Rote Karte", icon: "🟥", hint: "Spieler Team" },
+  { cmd: "/gelbrot", desc: "Gelb-Rote Karte", icon: "🟨🟥", hint: "Spieler Team" },
   {
     cmd: "/ep",
     desc: "Elfmeter verschossen",
@@ -37,6 +38,8 @@ export const NEEDS_ARG = [
   "/og",
   "/gelb",
   "/rot",
+  "/gelbrot",
+  "/gr",
   "/ep",
   "/c",
   "/s",

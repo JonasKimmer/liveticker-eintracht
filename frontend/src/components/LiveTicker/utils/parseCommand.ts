@@ -40,6 +40,8 @@ const CMD_MAP: Record<string, string> = {
   "/c": "card",
   "/gelb": "card_yellow",
   "/rot": "card_red",
+  "/gelbrot": "card_yellow_red",
+  "/gr": "card_yellow_red",
   "/sub": "sub",
   "/s": "sub",
   "/note": "note",
@@ -275,6 +277,21 @@ export function parseCommand(
         warnings,
         isValid: !!(player && team),
         meta: { icon: "🟥", phase: null, minute: currentMinute || null },
+      };
+    }
+
+    case "card_yellow_red": {
+      const player = args[0];
+      const team = args[1];
+      const warnings: string[] = [];
+      if (!player) warnings.push("Fehlend: Spieler");
+      if (!team) warnings.push("Fehlend: Team");
+      return {
+        type: "card",
+        formatted: `Gelb-Rot — ${player ?? "[SPIELER]"} (${team ?? "[TEAM]"})`,
+        warnings,
+        isValid: !!(player && team),
+        meta: { icon: "🟨🟥", phase: null, minute: currentMinute || null },
       };
     }
 
