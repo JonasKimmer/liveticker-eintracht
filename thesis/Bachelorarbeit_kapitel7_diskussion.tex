@@ -14,27 +14,11 @@ Das in dieser Arbeit entwickelte System unterscheidet sich von
 bestehenden Ansätzen der automatisierten Sportberichterstattung (Kapitel
 3.3) in mehreren Aspekten:
 
-\textbf{Gegenüber templatebasierten Systemen} (z. B. Retresco, vgl.
-Beils 2023, S. 207) bietet der LLM-basierte Ansatz eine höhere
-sprachliche Varianz und Anpassungsfähigkeit an unterschiedliche
-Stilprofile. Templatebasierte Systeme erzeugen deterministische, aber
-oft formelhaft wirkende Texte; LLM-generierte Texte sind sprachlich
-natürlicher, dafür nicht-deterministisch.
-
-\textbf{Gegenüber vollautonomen KI-Systemen} betont die vorliegende
-Arbeit bewusst den hybriden Ansatz mit Human-in-the-Loop-Kontrolle. Dies
-begründet sich durch die in Kapitel 3.1 beschriebene
-Halluzinationsproblematik, die im journalistischen Kontext besonders
-kritisch ist (Bluhm \& Schäfer 2023, S. 33). Der \texttt{coop}-Modus
-repräsentiert damit einen Mittelweg, der die Effizienzgewinne der
-Automatisierung nutzt, ohne die publizistische Verantwortung an die KI
-zu delegieren.
-
-\textbf{Gegenüber reinen Übersetzungslösungen} für Mehrsprachigkeit
-bietet das System eine nativ multilinguale Generierung, bei der die
-Zielsprache als Prompt-Parameter übergeben wird. Die zusätzliche
-Batch-Übersetzungsfunktion mit reduzierter Temperatur (0,1) ergänzt dies
-für nachträgliche Lokalisierung bestehender Einträge.
+\begin{itemize}\tightlist
+\item \textbf{Gegenüber templatebasierten Systemen} (z. B. Retresco, vgl. Beils 2023, S. 207) bietet der LLM-basierte Ansatz eine höhere sprachliche Varianz und Anpassungsfähigkeit an unterschiedliche Stilprofile. Templatebasierte Systeme erzeugen deterministische, aber oft formelhaft wirkende Texte; LLM-generierte Texte sind sprachlich natürlicher, dafür nicht-deterministisch.
+\item \textbf{Gegenüber vollautonomen KI-Systemen} betont die vorliegende Arbeit bewusst den hybriden Ansatz mit Human-in-the-Loop-Kontrolle. Dies begründet sich durch die in Kapitel 3.1 beschriebene Halluzinationsproblematik, die im journalistischen Kontext besonders kritisch ist (Bluhm \& Schäfer 2023, S. 33). Der \texttt{coop}-Modus repräsentiert damit einen Mittelweg, der die Effizienzgewinne der Automatisierung nutzt, ohne die publizistische Verantwortung an die KI zu delegieren.
+\item \textbf{Gegenüber reinen Übersetzungslösungen} für Mehrsprachigkeit bietet das System eine nativ multilinguale Generierung, bei der die Zielsprache als Prompt-Parameter übergeben wird. Die zusätzliche Batch-Übersetzungsfunktion mit reduzierter Temperatur (0,1) ergänzt dies für nachträgliche Lokalisierung bestehender Einträge.
+\end{itemize}
 
 \subsection{Beitrag zur Forschung}\label{beitrag-zur-forschung}
 
