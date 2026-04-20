@@ -188,39 +188,12 @@ KI-gestützter Werkzeuge in redaktionelle Workflows.
 \section{Diskussion der
 Prompt-Architektur}\label{diskussion-der-prompt-architektur}
 
-\subsection{Few-Shot-Prompting als
-Stilsteuerung}\label{few-shot-prompting-als-stilsteuerung}
+\subsection{Few-Shot-Prompting, Temperatur und
+Kontext}\label{few-shot-prompting-als-stilsteuerung}
 
-Die dynamische Einbindung von bis zu drei Stilreferenzen aus der
-\texttt{style\_references}-Datenbanktabelle stellt einen zentralen
-Designentscheid dar. Im Vergleich zu einem statischen System-Prompt bietet dieser Ansatz zwei Vorteile: \textbf{Anpassbarkeit ohne Codeänderung} --- neue Stilbeispiele können über die Datenbank hinzugefügt werden, ohne den Prompt-Code zu modifizieren --- sowie \textbf{Instanzspezifik} durch die Filterung nach Event-Typ und Instanz (\texttt{ef\_whitelabel} vs.~\texttt{generic}), die unterschiedliche Stilprofile für verschiedene Einsatzkontexte ermöglicht.
+Die dynamische Einbindung von bis zu drei Stilreferenzen aus der \texttt{style\_references}-Datenbanktabelle stellt einen zentralen Designentscheid dar. Im Vergleich zu einem statischen System-Prompt bietet dieser Ansatz zwei Vorteile: \textbf{Anpassbarkeit ohne Codeänderung} --- neue Stilbeispiele können über die Datenbank hinzugefügt werden, ohne den Prompt-Code zu modifizieren --- sowie \textbf{Instanzspezifik} durch die Filterung nach Event-Typ und Instanz (\texttt{ef\_whitelabel} vs.~\texttt{generic}), die unterschiedliche Stilprofile für verschiedene Einsatzkontexte ermöglicht. Ein kontrollierter A/B-Test (mit vs.~ohne Referenzen) war nicht durchführbar (vgl. Abschnitt~6.3.5). Qualitativ zeigt die Evaluation konsistente Formatierungsmuster in der \texttt{ef\_whitelabel}-Instanz --- insbesondere bei TOOOOR-Konvention und Minutenformat. Der Effekt ist sichtbar, aber statistisch nicht isoliert messbar.
 
-Ein kontrollierter A/B-Test (mit vs.~ohne Referenzen) war nicht
-durchführbar (vgl. Abschnitt 6.3.5). Qualitativ zeigt die Evaluation
-konsistente Formatierungsmuster in der \texttt{ef\_whitelabel}-Instanz
---- insbesondere bei TOOOOR-Konvention und Minutenformat. Der Effekt ist
-sichtbar, aber statistisch nicht isoliert messbar.
-
-\subsection{Temperatur und
-Determinismus}\label{temperatur-und-determinismus}
-
-Die gewählte Temperatur von 0,3 für die Textgenerierung und 0,1 für
-Übersetzungen ist ein Kompromiss zwischen sprachlicher Varianz und
-Vorhersagbarkeit. Eine niedrigere Temperatur würde die
-Halluzinationsrate weiter senken, aber die Texte formelhafter machen ---
-ein Zielkonflikt, der im Genre Liveticker (das von Überraschung und
-sprachlicher Kreativität lebt) besonders relevant ist.
-
-\subsection{Kontext-Aufbereitung}\label{kontext-aufbereitung}
-
-Die sieben spezialisierten Context-Builder (vgl. Abschnitt 5.2.6)
-strukturieren die Fakten vor der Übergabe an das LLM. Diese
-Vorverarbeitung reduziert die Wahrscheinlichkeit von Halluzinationen, da
-das Modell nicht aus unstrukturierten Rohdaten extrahieren muss, sondern
-bereits aufbereitete Faktenblöcke erhält. Die Wirksamkeit dieses
-Ansatzes zeigt sich insbesondere bei Pre-Match-Einträgen, wo die
-Faktengrundlage (z. B. Verletzungslisten, H2H-Statistiken) klar
-abgegrenzt ist.
+Die gewählte Temperatur von 0,3 für die Textgenerierung und 0,1 für Übersetzungen ist ein Kompromiss zwischen sprachlicher Varianz und Vorhersagbarkeit. Eine niedrigere Temperatur würde die Halluzinationsrate weiter senken, aber die Texte formelhafter machen --- ein Zielkonflikt, der im Genre Liveticker (das von Überraschung und sprachlicher Kreativität lebt) besonders relevant ist. Die sieben spezialisierten Context-Builder (vgl. Abschnitt~5.2.6) strukturieren die Fakten vor der Übergabe an das LLM und reduzieren damit die Wahrscheinlichkeit von Halluzinationen, da das Modell bereits aufbereitete Faktenblöcke erhält statt unstrukturierte Rohdaten. Die Wirksamkeit zeigt sich insbesondere bei Pre-Match-Einträgen, wo die Faktengrundlage (z.~B. Verletzungslisten, H2H-Statistiken) klar abgegrenzt ist.
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 

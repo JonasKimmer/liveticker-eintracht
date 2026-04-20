@@ -775,125 +775,20 @@ systemkritischen Workflows.
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
-\subsection{\texorpdfstring{Events-LLM-Workflow
-(\texttt{09\_events\_llm\_workflow.json})}{Events-LLM-Workflow (09\_events\_llm\_workflow.json)}}\label{events-llm-workflow-09_events_llm_workflow.json}
+\subsection{Systemkritische Workflows und übergreifende
+Muster}\label{events-llm-workflow-09_events_llm_workflow.json}
 
-Workflow \texttt{09} ist der kritischste im System: Er importiert
-Live-Ereignisse via Webhook (\texttt{POST\ /Events}), persistiert sie
-per UPSERT (\texttt{ON\ CONFLICT\ (source\_id)\ DO\ NOTHING}) und
-triggert die KI-Generierung für jeden neuen Event. Eine initiale
-SQL-Abfrage bestimmt anhand der Teamzugehörigkeit, ob die Instanz
-\texttt{ef\_whitelabel} oder \texttt{generic} und der Stil
-\texttt{euphorisch} oder \texttt{neutral} ist; \texttt{auto\_publish}
-wird direkt aus \texttt{ticker\_mode} des Spiels gesetzt. Nur Events mit
-erfolgreicher Datenbankzeile (zurückgegebene \texttt{id}, kein
-\texttt{DO\ NOTHING}-Konflikt) passieren den Filter-Knoten und triggern
-den Backend-Endpunkt. Ein zusätzlicher EF-spezifischer Zweig liest
-Spielerdaten von \texttt{profis.eintracht.de}, baut S3-Video-URLs aus
-neunstellig aufgefüllten Spieler-IDs auf und persistiert Torjubel-Videos
-als Ticker-Einträge.
+\textbf{Events-LLM-Workflow (09)} ist der kritischste im System: Er importiert Live-Ereignisse via Webhook (\texttt{POST /Events}), persistiert sie per UPSERT (\texttt{ON CONFLICT (source\_id) DO NOTHING}) und triggert die KI-Generierung für jeden neuen Event. Eine initiale SQL-Abfrage bestimmt anhand der Teamzugehörigkeit, ob die Instanz \texttt{ef\_whitelabel} oder \texttt{generic} und der Stil \texttt{euphorisch} oder \texttt{neutral} ist; \texttt{auto\_publish} wird direkt aus \texttt{ticker\_mode} des Spiels gesetzt. Nur Events mit erfolgreicher Datenbankzeile passieren den Filter-Knoten. Ein EF-spezifischer Zweig liest Spielerdaten von \texttt{profis.eintracht.de}, baut S3-Video-URLs auf und persistiert Torjubel-Videos als Ticker-Einträge.
 
-\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+\textbf{Prematch-Import-Workflow (07)} baut den Vorberichtskontext aus fünf parallelen Football-API-Abfragen auf (Verletzungen, Head-to-Head, Teamstatistiken Heim/Gast, Tabellenstand) und persistiert die Ergebnisse als \texttt{synthetic\_events} mit idempotenter \texttt{ON CONFLICT (match\_id, type) DO UPDATE}-Strategie. Ein LLM-Trigger wird nur ausgelöst, wenn noch kein nicht-verworfener Ticker-Eintrag für das jeweilige synthetische Event existiert (\texttt{WHERE te.id IS NULL}).
 
-\subsection{\texorpdfstring{Prematch-Import-Workflow
-(\texttt{07\_import\_prematch.json})}{Prematch-Import-Workflow (07\_import\_prematch.json)}}\label{prematch-import-workflow-07_import_prematch.json}
+\textbf{Matchphasen-Workflow (14)} verarbeitet Spielzustands-Übergänge via Webhook (\texttt{POST /match-status}). Ein JavaScript-Knoten validiert Übergänge gegen eine Matrix erlaubter Vorzustände. Für Vollzeit-Ereignisse (\texttt{FT}, \texttt{AET}, \texttt{PEN}) generiert der Workflow die gesamte Phasensequenz rückwirkend; ein \texttt{FT}-Signal erzeugt vier synthetische Events. Das zentrale SQL-Statement kombiniert Match-Update, Event-Insert und eine \texttt{demote}-CTE in einer einzigen Transaktion --- Letztere stuft bereits publizierte Phasen-Texte bei Re-Triggers auf \texttt{draft} zurück.
 
-Workflow \texttt{07} baut den Vorberichtskontext aus fünf parallelen
-Football-API-Abfragen auf (Verletzungen, Head-to-Head, Teamstatistiken
-Heim/Gast, Tabellenstand) und persistiert die Ergebnisse als
-\texttt{synthetic\_events} mit idempotenter
-\texttt{ON\ CONFLICT\ (match\_id,\ type)\ DO\ UPDATE}-Strategie. Ein
-LLM-Trigger wird nur ausgelöst, wenn noch kein nicht-verworfener
-Ticker-Eintrag für das jeweilige synthetische Event existiert
-(\texttt{WHERE\ te.id\ IS\ NULL}) --- bereits generierte und eventuell
-publizierte Texte werden damit nicht überschrieben.
+\textbf{Halbzeit/Abpfiff-Zusammenfassung (13)} erzeugt narrative Zusammenfassungen und ruft OpenRouter dabei direkt auf, da Zusammenfassungen einen umfangreicheren Prompt mit parallel geladenen Statistiken (Ballbesitz, Schüsse, Spieler-Ratings) erfordern und keinen Few-Shot-Stil aus der Datenbank benötigen. Das Ergebnis wird je nach \texttt{ticker\_mode} als \texttt{published} oder \texttt{draft} gespeichert.
 
-\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+\textbf{ScorePlay-Medien-Workflow (08)} sucht Medien-Assets bei ScorePlay für Spieler eines Torereignisses. Die Spieler-Suche normalisiert Umlaute und matcht gegen vier Namensfelder. Gefundene URLs werden an \texttt{POST /api/v1/media/incoming} übertragen und vom Backend per WebSocket an verbundene Clients verteilt.
 
-\subsection{\texorpdfstring{Matchphasen-Workflow
-(\texttt{14\_Game\_ANpfiff\_ABpfiff.json})}{Matchphasen-Workflow (14\_Game\_ANpfiff\_ABpfiff.json)}}\label{matchphasen-workflow-14_game_anpfiff_abpfiff.json}
-
-Workflow \texttt{14} verarbeitet Spielzustands-Übergänge (Anpfiff,
-Halbzeit, Abpfiff etc.) via Webhook (\texttt{POST\ /match-status}). Ein
-JavaScript-Knoten validiert Zustandsübergänge gegen eine Matrix
-erlaubter Vorzustände --- ungültige Übergänge (z. B. direkt von
-\texttt{PreMatch} zu \texttt{2H}) werden zurückgewiesen. Für
-Vollzeit-Ereignisse (\texttt{FT}, \texttt{AET}, \texttt{PEN}) generiert
-der Workflow die gesamte Phasensequenz rückwirkend: Ein
-\texttt{FT}-Signal erzeugt vier synthetische Events (Anstoß, Halbzeit,
-2. Halbzeit, Abpfiff). Das zentrale SQL-Statement kombiniert
-Match-Update, Event-Insert und eine \texttt{demote}-CTE in einer
-einzigen Transaktion --- Letztere stuft bereits publizierte Phasen-Texte
-bei Re-Triggers auf \texttt{draft} zurück, sodass die Redaktion sie
-erneut prüfen kann.
-
-\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
-
-\subsection{\texorpdfstring{Halbzeit/Abpfiff-Zusammenfassung
-(\texttt{13\_Halftime\_aftertime.json})}{Halbzeit/Abpfiff-Zusammenfassung (13\_Halftime\_aftertime.json)}}\label{halbzeitabpfiff-zusammenfassung-13_halftime_aftertime.json}
-
-Workflow \texttt{13} erzeugt narrative Zusammenfassungen für Halbzeit
-und Abpfiff. Im Gegensatz zu \texttt{09} ruft er OpenRouter
-(\texttt{google/gemini-2.0-flash-lite-001}) \textbf{direkt} auf, da
-Zusammenfassungen keinen Few-Shot-Stil aus der Datenbank benötigen,
-sondern einen umfangreicheren Prompt mit parallel geladenen Statistiken
-(Ballbesitz, Schüsse, Pässe, Spieler-Ratings) erfordern. Das Ergebnis
-wird über \texttt{POST\ /api/v1/ticker/manual} als Ticker-Eintrag
-gespeichert --- je nach \texttt{ticker\_mode} direkt als
-\texttt{published} oder als \texttt{draft}.
-
-\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
-
-\subsection{\texorpdfstring{ScorePlay-Medien-Workflow
-(\texttt{08\_scoreplay\_media\_workflow.json})}{ScorePlay-Medien-Workflow (08\_scoreplay\_media\_workflow.json)}}\label{scoreplay-medien-workflow-08_scoreplay_media_workflow.json}
-
-Workflow \texttt{08} sucht Medien-Assets bei ScorePlay für Spieler eines
-Torereignisses. Die Spieler-Suche (\texttt{GET\ /v1/tag/search})
-normalisiert Umlaute (ä→a, ö→o, ü→u, ß→ss) und matcht gegen vier
-Namensfelder (\texttt{full\_name}, \texttt{first\_name},
-\texttt{last\_name}, \texttt{ai\_name}). Gefundene Thumbnail-,
-Compressed- und Original-URLs werden an
-\texttt{POST\ /api/v1/media/incoming} übertragen und vom Backend per
-WebSocket an verbundene Frontend-Clients verteilt.
-
-\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
-
-\subsection{Implementierungsübergreifende
-Muster}\label{implementierungsuxfcbergreifende-muster}
-
-Über alle Workflows hinweg lassen sich fünf Implementierungsmuster
-identifizieren:
-
-\textbf{1. Idempotente UPSERT-Strategie} --- Alle Insert-Operationen
-verwenden \texttt{ON\ CONFLICT\ DO\ UPDATE} oder \texttt{DO\ NOTHING}.
-Als Konfliktschlüssel dienen externe IDs (\texttt{source\_id},
-\texttt{external\_id}, \texttt{vid}), zusammengesetzte Schlüssel
-(\texttt{match\_id,\ type}) oder Unique-Constraints auf Namensfeldern.
-Das macht alle Workflows bei Mehrfachausführung sicher.
-
-\textbf{2. Filter-vor-Trigger-Muster} --- Vor jedem LLM-Trigger steht
-ein Filter-Knoten, der nur Rows mit einer \texttt{id} (erfolgreicher
-DB-Insert) durchlässt. Events mit \texttt{DO\ NOTHING}-Konflikten
-(bereits importiert) erzeugen keinen neuen LLM-Aufruf.
-
-\textbf{3. Statusbasierte Filterung} --- Bei synthetischen Events und
-Ticker-Einträgen werden vorhandene Zustände berücksichtigt, um
-redundante Generierungen zu vermeiden: Ein LLM-Aufruf wird nur
-getriggert, wenn noch kein nicht-verworfener Ticker-Eintrag für das
-Event existiert (vgl. die WHERE-Bedingungen in 5.5.2 und 5.5.3). Bei
-Re-Triggern werden bereits publizierte Phasen-Texte auf \texttt{draft}
-zurückgestuft (\texttt{demote}-CTE in 5.5.3).
-
-\textbf{4. Ticker-Mode-Propagation} --- \texttt{ticker\_mode} wird in
-allen Generierungsworkflows als \texttt{auto\_publish}-Flag an das
-Backend weitergegeben (vgl. Kap. 5.3.3). Die Moduslogik sitzt damit
-vollständig in der Datenbank; n8n liest sie bei jedem Aufruf neu aus.
-
-\textbf{5. Instanz-Routing} --- Die Unterscheidung zwischen
-\texttt{ef\_whitelabel} und \texttt{generic} erfolgt per
-\texttt{ILIKE\ \textquotesingle{}\%Frankfurt\%\textquotesingle{}}-Abfrage
-auf Teamnamen. Das Ergebnis steuert Stilwahl, Few-Shot-Auswahl im
-Backend und ob der Torjubel-Video-Pfad aktiviert wird.
+Über alle Workflows hinweg lassen sich fünf übergreifende Muster identifizieren: Alle Insert-Operationen verwenden idempotente \textbf{UPSERT-Strategien} (\texttt{ON CONFLICT DO UPDATE/DO NOTHING}). Vor jedem LLM-Trigger steht ein \textbf{Filter-Knoten}, der nur Rows mit einer \texttt{id} (erfolgreicher DB-Insert) durchlässt. \textbf{Statusbasierte Filterung} verhindert redundante Generierungen. \texttt{ticker\_mode} wird als \texttt{auto\_publish}-Flag an das Backend weitergegeben (\textbf{Mode-Propagation}). Die Unterscheidung zwischen \texttt{ef\_whitelabel} und \texttt{generic} erfolgt per \texttt{ILIKE '\%Frankfurt\%'}-Abfrage (\textbf{Instanz-Routing}).
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 

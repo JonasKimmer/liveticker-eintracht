@@ -623,67 +623,23 @@ Architekturprinzipien, die Hook- und Zustandsarchitektur, das
 Dreispalten-Redaktionslayout, die Moduslogik sowie die
 Kommunikationsmuster zwischen Frontend und Backend.
 
-\subsection{Architekturprinzipien}\label{architekturprinzipien}
+\subsection{Architektur, Zustandsmanagement und
+Hooks}\label{architekturprinzipien}
 
-Das Frontend ist als React-Client mit TypeScript und klarer Trennung
-zwischen UI-Komponenten, datenbezogenen Hooks und API-Zugriffsschicht
-umgesetzt. Der zentrale Anwendungszustand wird überwiegend lokal bzw.
-feature-nah gehalten; gemeinsamer Zustand für tief verschachtelte
-Komponenten wird über drei dedizierte Contexts bereitgestellt
-(\texttt{TickerModeContext}, \texttt{TickerDataContext},
-\texttt{TickerActionsContext}), um Prop-Drilling zu vermeiden und
-Re-Renders besser zu kontrollieren.
-
-Die White-Label-Fähigkeit ist über eine Konfigurationsschicht
-(\texttt{config/whitelabel.ts}) realisiert (u. a. Farben, Team-Keyword,
-API-Base-URLs). Die Oberfläche unterstützt alle drei Betriebsmodi
-(\texttt{auto}, \texttt{coop}, \texttt{manual}) inklusive
-Laufzeitumschaltung über den \texttt{ModeSelector} und Synchronisierung
-mit dem Backend.
-
-\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
-
-\subsection{Hook- und
-State-Architektur}\label{hook--und-state-architektur}
+Das Frontend ist als React-Client mit TypeScript und klarer Trennung zwischen UI-Komponenten, datenbezogenen Hooks und API-Zugriffsschicht umgesetzt. Der zentrale Anwendungszustand wird überwiegend lokal bzw. feature-nah gehalten; gemeinsamer Zustand für tief verschachtelte Komponenten wird über drei dedizierte Contexts bereitgestellt (\texttt{TickerModeContext}, \texttt{TickerDataContext}, \texttt{TickerActionsContext}), um Prop-Drilling zu vermeiden und Re-Renders besser zu kontrollieren. Die White-Label-Fähigkeit ist über eine Konfigurationsschicht (\texttt{config/whitelabel.ts}) realisiert (u. a. Farben, Team-Keyword, API-Base-URLs). Die Oberfläche unterstützt alle drei Betriebsmodi (\texttt{auto}, \texttt{coop}, \texttt{manual}) inklusive Laufzeitumschaltung über den \texttt{ModeSelector} und Synchronisierung mit dem Backend.
 
 Die Zustands- und Interaktionslogik ist in wiederverwendbare Custom Hooks aufgeteilt --- ein Entwurfsmuster, das React seit Version 16.8 als Alternative zu Klassenkomponenten eingeführt hat. Das Frontend umfasst 26 spezialisierte Hooks in fünf funktionalen Kategorien. Navigation und Datenauswahl steuern die hierarchische Auswahlkette (Land → Team → Wettbewerb → Spieltag → Spiel) und lösen bei leerem Datenbestand bedarfsgesteuert n8n-Importtrigger aus. Datenabfrage und Polling laden Match-, Event- und Tickerdaten periodisch über drei spezialisierte Hooks, die jeweils einen eigenen Abfragezyklus betreiben und über einen aggregierenden Hook koordiniert werden. Die Echtzeitkommunikation stellt eine WebSocket-Verbindung für den Medien-Feed mit automatischer Reconnect-Strategie bereit. Redaktionsinteraktion umfasst Modusverwaltung, Draft-Bestätigung und -Ablehnung, Tastatursteuerung sowie automatische Publikation im Vollautomatik-Modus. UI-Steuerung deckt Panel-Größenanpassung, Spielminuten-Berechnung, Spielernamen-Autovervollständigung und Systemstatus-Überwachung ab.
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
-\subsection{Dreispalten-Layout und
-Redaktionsfluss}\label{dreispalten-layout-und-redaktionsfluss}
+\subsection{Layout, Moduslogik und
+Kommunikation}\label{dreispalten-layout-und-redaktionsfluss}
 
 Die Hauptansicht folgt einem responsiven Dreispalten-Ansatz mit klarer Aufgabenverteilung. Das linke Panel übernimmt die Veröffentlichungsperspektive: Es listet publizierte Ticker-Einträge als chronologischen Feed, dedupliziert nach \texttt{event\_id} und sortiert nach Spielminute. Das mittlere Panel bildet die redaktionelle Kernarbeit ab --- Event-Verarbeitung in Abhängigkeit vom Modus (\texttt{auto}, \texttt{coop}, \texttt{manual}), Draft-Prüfung und Freigabe/Ablehnung, manuelle Eingabe mit Command-Parser (z. B. \texttt{/g}, \texttt{/gelb}, \texttt{/rot}, \texttt{/s}) sowie am unteren Rand integrierte Media- und Social-Panels (ScorePlay-Bilder, YouTube, Twitter/X, Instagram); letztere werden ausschließlich bei erkannten EF-Spielen (\texttt{isOurTeam}) eingeblendet. Das rechte Panel liefert Kontext- und Analyseinformationen: Matchstatistiken, Aufstellungen inklusive Wechsel-, Karten- und Injury-Kontext sowie spielerbezogene Leistungsdaten.
 
-\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+Die Modusumschaltung (vgl. Kap.~4.3.3 für die Modi-Definition) ist zentraler Bestandteil der Frontend-Konzeption. Die Umschaltung erfolgt über einen dedizierten \texttt{ModeSelector} mit Portal-basiertem Bestätigungsdialog, visueller Toast-Rückmeldung (2200~ms) und Tastatur-Shortcuts (\texttt{Ctrl+1} / \texttt{Ctrl+2} / \texttt{Ctrl+3}). Im kooperativen Modus sind zusätzliche Tastatur-Interaktionen für den Accept-/Reject-Flow (\texttt{TAB} / \texttt{ESC}) eingebunden, um den Redaktionsdurchsatz zu erhöhen.
 
-\subsection{Moduslogik und
-Interaktionsdesign}\label{moduslogik-und-interaktionsdesign}
-
-Die Modusumschaltung (vgl. Kap. 4.3.3 für Modi-Definition) ist zentraler
-Bestandteil der Frontend-Konzeption. Die Umschaltung erfolgt über einen
-dedizierten \texttt{ModeSelector} mit Portal-basiertem
-Bestätigungsdialog, visueller Toast-Rückmeldung (2200 ms) und
-Tastatur-Shortcuts (\texttt{Ctrl+1} / \texttt{Ctrl+2} /
-\texttt{Ctrl+3}). Im kooperativen Modus sind zusätzliche
-Tastatur-Interaktionen für den Accept-/Reject-Flow (\texttt{TAB} /
-\texttt{ESC}) eingebunden, um den Redaktionsdurchsatz zu erhöhen.
-
-\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
-
-\subsection{Kommunikationsmuster im
-Frontend}\label{kommunikationsmuster-im-frontend}
-
-Das Frontend setzt die in Kapitel 4.1.1 definierte hybride
-Triggerarchitektur mit drei spezialisierten Mechanismen um:
-\textbf{REST-Polling} (5-Sekunden-Intervall) für Kerndaten wie
-Ticker-Einträge und Spielevents, \textbf{Webhook-Trigger} für
-bedarfsgesteuerte n8n-Importe (vgl. Kap. 4.4.1) sowie \textbf{WebSocket}
-(\texttt{/ws/media}) mit Exponential-Backoff-Reconnect für
-latenzkritische Medieninhalte. REST-Polling wurde gegenüber SSE gewählt,
-da die zustandslose HTTP-Architektur die Skalierbarkeit auf Render
-vereinfacht. Die konkreten Hook-Implementierungen und
-Reconnect-Parameter sind in Kapitel 5.4.3--5.4.5 dokumentiert.
+Das Frontend setzt die in Kapitel 4.1.1 definierte hybride Triggerarchitektur mit drei spezialisierten Mechanismen um: \textbf{REST-Polling} (5-Sekunden-Intervall) für Kerndaten wie Ticker-Einträge und Spielevents, \textbf{Webhook-Trigger} für bedarfsgesteuerte n8n-Importe (vgl. Kap.~4.4.1) sowie \textbf{WebSocket} (\texttt{/ws/media}) mit Exponential-Backoff-Reconnect für latenzkritische Medieninhalte. REST-Polling wurde gegenüber SSE gewählt, da die zustandslose HTTP-Architektur die Skalierbarkeit auf Render vereinfacht. Die konkreten Hook-Implementierungen und Reconnect-Parameter sind in Kapitel 5.4.3--5.4.5 dokumentiert.
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
@@ -695,55 +651,12 @@ horizontalen Skalierung, identifiziert bekannte Grenzen der aktuellen
 Architektur und skizziert die Erweiterbarkeit für zukünftige
 Anforderungen.
 
-\subsection{Horizontale Skalierung des
-Backends}\label{horizontale-skalierung-des-backends}
+\subsection{Skalierung, Erweiterbarkeit und
+Deployment}\label{horizontale-skalierung-des-backends}
 
-Die Anwendungsschicht ist zustandslos konzipiert und kann horizontal
-skaliert werden, indem zusätzliche Uvicorn-Prozesse hinter einem
-Load-Balancer gestartet werden. Der gemeinsame
-PostgreSQL-Connection-Pool (\texttt{QueuePool} mit
-\texttt{pool\_size=20}, \texttt{max\_overflow=30}) stellt sicher, dass
-mehrere Backend-Instanzen dieselbe Datenbankverbindungskapazität teilen.
-Die WebSocket-Verbindungen für Medien stellen eine
-Skalierungseinschränkung dar: Der
-in-Memory-\texttt{MediaConnectionManager} funktioniert nicht über
-Prozessgrenzen hinweg und müsste bei Multi-Prozess-Deployment durch ein
-verteiltes Pub/Sub-System (z. B. Redis) ergänzt werden.
+Die Anwendungsschicht ist zustandslos konzipiert und kann horizontal skaliert werden, indem zusätzliche Uvicorn-Prozesse hinter einem Load-Balancer gestartet werden. Der gemeinsame PostgreSQL-Connection-Pool (\texttt{QueuePool} mit \texttt{pool\_size=20}, \texttt{max\_overflow=30}) stellt sicher, dass mehrere Backend-Instanzen dieselbe Datenbankverbindungskapazität teilen. Der in-Memory-\texttt{MediaConnectionManager} für WebSocket-Verbindungen funktioniert hingegen nicht über Prozessgrenzen hinweg und müsste bei Multi-Prozess-Deployment durch ein verteiltes Pub/Sub-System (z.~B. Redis) ergänzt werden.
 
-\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
-
-\subsection{Erweiterung um neue
-Ereignistypen}\label{erweiterung-um-neue-ereignistypen}
-
-Neue Ereignistypen können ohne Datenbankschema-Änderungen ergänzt
-werden: Die \texttt{events}-Tabelle verfügt über ein generisches
-\texttt{description}-Feld, und die \texttt{synthetic\_events}-Tabelle
-nutzt JSONB für vollständig flexible Payloads. Die Übersetzung von
-Football-API-Codes auf interne Typbezeichnungen ist im Backend in einer
-zentralen \texttt{EVENT\_TYPE\_MAP}-Konfiguration hinterlegt. Im
-Frontend bildet die Funktion \texttt{getEventMeta()} jeden Ereignistyp
-auf Icon und CSS-Klasse ab --- neue Typen erfordern ausschließlich einen
-zusätzlichen Eintrag in dieser Funktion. Alle übrigen Komponenten
-konsumieren das normalisierte Icon und sind damit von konkreten
-Typ-Strings entkoppelt.
-
-\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
-
-\subsection{Erweiterung um neue
-LLM-Anbieter}\label{erweiterung-um-neue-llm-anbieter}
-
-Der LLM-Dienst dispatcht über ein zentrales Dictionary auf den
-providerabhängigen Handler: Für jeden Anbieter existiert eine interne
-Methode (\texttt{\_generate\_openai\_text},
-\texttt{\_generate\_gemini\_text} etc.), die im dispatch-Dictionary
-unter dem Providernamen registriert ist. Neue Anbieter können durch
-Implementierung eines gleichnamigen Handlers und einen Eintrag in diesem
-Dictionary ergänzt werden, ohne bestehenden Code zu berühren. OpenRouter
-wird bereits als generischer Proxy-Einstiegspunkt genutzt, der unter
-Verwendung des OpenAI-kompatiblen SDK Zugang zu einer Vielzahl weiterer
-Modelle ohne separate API-Clients bietet.
-
-\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+Neue Ereignistypen können ohne Datenbankschema-Änderungen ergänzt werden: Die \texttt{events}-Tabelle verfügt über ein generisches \texttt{description}-Feld, und die \texttt{synthetic\_events}-Tabelle nutzt JSONB für vollständig flexible Payloads. Die Übersetzung von Football-API-Codes auf interne Typbezeichnungen ist in einer zentralen \texttt{EVENT\_TYPE\_MAP}-Konfiguration hinterlegt; im Frontend bildet \texttt{getEventMeta()} jeden Typ auf Icon und CSS-Klasse ab. Neue Typen erfordern ausschließlich einen zusätzlichen Eintrag in diesen beiden Stellen. Der LLM-Dienst lässt sich um neue Anbieter erweitern, indem eine providerabhängige Handler-Methode implementiert und im zentralen dispatch-Dictionary registriert wird, ohne bestehenden Code zu berühren.
 
 \subsection{Deployment-Architektur}\label{deployment-architektur}
 
