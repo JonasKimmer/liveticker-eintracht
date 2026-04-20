@@ -4,31 +4,7 @@
 
 \section{Zielsetzung der Evaluation}\label{zielsetzung-der-evaluation}
 
-Das Ziel der Evaluation ist es, das implementierte System auf mehreren
-Ebenen nachweisbar zu bewerten. Die Evaluation gliedert sich in drei
-Blöcke:
-
-\begin{enumerate}
-\def\labelenumi{\arabic{enumi}.}
-\tightlist
-\item
-  \textbf{Technische Qualitätssicherung} (Abschnitt 6.2): Korrektheit
-  der Kernlogik (Unit-Tests), Zusammenspiel der API-Schichten
-  (Integrations-Tests), Stabilität der Benutzeroberfläche
-  (End-to-End-Tests) und statische Typsicherheit (TypeScript-Coverage).
-\item
-  \textbf{Evaluation der KI-Textgenerierung} (Abschnitte 6.3--6.4):
-  Quantitative Metriken, qualitative Analyse der generierten Texte und
-  Vergleich der Betriebsmodi.
-\item
-  \textbf{Systembetrachtung} (Abschnitte 6.5--6.7): Performance und
-  Laufzeitverhalten, Anforderungsabgleich (Soll-Ist) sowie Limitationen
-  und offene Punkte.
-\end{enumerate}
-
-Die Metriken dienen nicht nur der Qualitätssicherung, sondern
-dokumentieren auch die Reife der Codebasis für einen produktiven Einsatz
-und identifizieren gleichzeitig die Grenzen des aktuellen Systems.
+Das Ziel der Evaluation ist es, das implementierte System auf mehreren Ebenen nachweisbar zu bewerten. Die Evaluation gliedert sich in drei Blöcke: Die \textbf{technische Qualitätssicherung} (Abschnitt~6.2) prüft die Korrektheit der Kernlogik über Unit-Tests, das Zusammenspiel der API-Schichten über Integrations-Tests, die Stabilität der Benutzeroberfläche über End-to-End-Tests sowie die statische Typsicherheit über TypeScript-Coverage. Die \textbf{Evaluation der KI-Textgenerierung} (Abschnitte 6.3--6.4) umfasst quantitative Metriken, eine qualitative Analyse der generierten Texte und den Vergleich der Betriebsmodi. Die \textbf{Systembetrachtung} (Abschnitte 6.5--6.7) behandelt Performance und Laufzeitverhalten, den Anforderungsabgleich (Soll-Ist) sowie Limitationen und offene Punkte. Die Metriken dienen nicht nur der Qualitätssicherung, sondern dokumentieren auch die Reife der Codebasis für einen produktiven Einsatz und identifizieren gleichzeitig die Grenzen des aktuellen Systems.
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
@@ -353,47 +329,11 @@ Nach Interface-Ausbau (Hooks, Panels) & \textasciitilde89 \% & 0 \\
 \end{longtable}
 }
 
-Der Wert von 95,84 \% bedeutet: Von 18.813 gemessenen Typausdrücken sind
-18.031 explizit getypt. Die verbleibenden \textasciitilde4,2 \%
-verteilen sich auf wenige, bewusst offen gelassene Stellen:
-
-\begin{itemize}
-\tightlist
-\item
-  \textbf{\texttt{MatchSelectorModal.tsx}}: Ein großes Modal mit
-  komplexem internen State, in dem die Typisierung stark von einer
-  kommenden API-Stabilisierung abhängt.
-\item
-  \textbf{\texttt{MediaPickerPanel.tsx} / \texttt{YouTubePanel.tsx}}:
-  Media-Panels, die externe API-Responses (ScorePlay, YouTube)
-  verarbeiten, deren Typen nicht vollständig spezifiziert sind.
-\item
-  \textbf{Exports in \texttt{components/index.ts}}: Barrel-Exports mit
-  \texttt{export\ \{\ X\ \}} ohne explizite Typ-Annotationen ---
-  technisch korrekt, aber von \texttt{type-coverage} als untypiert
-  gezählt.
-\end{itemize}
+Der Wert von 95,84 \% bedeutet: Von 18.813 gemessenen Typausdrücken sind 18.031 explizit getypt. Die verbleibenden \textasciitilde4,2 \% verteilen sich auf wenige, bewusst offen gelassene Stellen. \texttt{MatchSelectorModal.tsx} ist ein großes Modal mit komplexem internen State, dessen Typisierung stark von einer kommenden API-Stabilisierung abhängt. Die Media-Panels \texttt{MediaPickerPanel.tsx} und \texttt{YouTubePanel.tsx} verarbeiten externe API-Responses (ScorePlay, YouTube), deren Typen nicht vollständig spezifiziert sind. Die Barrel-Exports in \texttt{components/index.ts} (\texttt{export \{ X \}}) fehlen explizite Typ-Annotationen --- sie sind technisch korrekt, werden von \texttt{type-coverage} jedoch als untypiert gezählt.
 
 \textbf{Nutzen im Entwicklungsprozess}
 
-Die TypeScript-Migration hat im Verlauf der Implementierung mehrere
-Fehler früh aufgedeckt, die sonst erst zur Laufzeit sichtbar geworden
-wären:
-
-\begin{itemize}
-\tightlist
-\item
-  \texttt{Country} war als Objekt-Interface typisiert, die API liefert
-  jedoch \texttt{string{[}{]}} --- TypeScript erzwang die Korrektur
-\item
-  \texttt{parseInt(v)} erhielt ein
-  \texttt{string\ \textbar{}\ number}-Argument --- ohne Typ wäre dies
-  still übergangen worden
-\item
-  \texttt{e.target.closest(...)} erforderte
-  \texttt{as\ Element\ \textbar{}\ null} --- TypeScript verhinderte den
-  Null-Zugriff
-\end{itemize}
+Die TypeScript-Migration hat im Verlauf der Implementierung mehrere Fehler früh aufgedeckt, die sonst erst zur Laufzeit sichtbar geworden wären. So war \texttt{Country} zunächst als Objekt-Interface typisiert, obwohl die API \texttt{string[]} liefert --- TypeScript erzwang die Korrektur. \texttt{parseInt(v)} erhielt ein \texttt{string | number}-Argument, was ohne Typisierung still übergangen worden wäre. Und \texttt{e.target.closest(...)} erforderte \texttt{as Element | null}, um einen Null-Zugriff zur Laufzeit zu verhindern.
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
@@ -430,56 +370,7 @@ durchführen, ohne die Global-Konfiguration zu verändern.
 
 \subsection{Quantitative Metriken}\label{quantitative-metriken}
 
-Das Evaluationsmodul (\texttt{app/utils/evaluation\_metrics.py}) stellt
-sechs Metriken bereit, die sich in zwei Kategorien gliedern:
-
-\textbf{Zeitliche Metriken:}
-
-\begin{itemize}
-\tightlist
-\item
-  \textbf{Time-to-Publish (TTP)}: Misst die Latenz zwischen
-  Ereigniszeitpunkt und Veröffentlichung des Ticker-Eintrags in
-  Sekunden. Diese Metrik ist zentral für Liveticker, da die Aktualität
-  ein primäres Qualitätsmerkmal darstellt.
-\end{itemize}
-
-\textbf{Statistische Vergleichsmetriken:}
-
-\begin{itemize}
-\tightlist
-\item
-  \textbf{Cliff's Delta} (Cliff 1993): Nicht-parametrische Effektstärke
-  für ordinale Daten. Berechnet den Anteil konkordanter vs.~diskordanter
-  Paare zwischen zwei Stichproben. Wertebereich {[}−1, 1{]}, wobei
-  \textbar δ\textbar{} \textless{} 0,147 als vernachlässigbar,
-  \textbar δ\textbar{} \textless{} 0,33 als klein und
-  \textbar δ\textbar{} \textgreater{} 0,474 als groß gilt.
-\item
-  \textbf{Bootstrap-Konfidenzintervall}: Resampling-basierte Schätzung
-  des Mittelwertunterschieds zwischen zwei Gruppen (5.000 Iterationen,
-  Konfidenz 95 \%, deterministisch via Seed). Liefert
-  \texttt{(observed\_diff,\ lower\_ci,\ upper\_ci)}.
-\item
-  \textbf{Cohen's Kappa} (Cohen 1960): Interrater-Reliabilität für
-  kategoriale Bewertungen. Korrigiert die beobachtete Übereinstimmung um
-  den Zufall. κ \textgreater{} 0,61 gilt als substantielle
-  Übereinstimmung.
-\item
-  \textbf{Verteilungsanalyse} (\texttt{summarize\_distribution}):
-  Berechnet Median, Standardabweichung, Quartile (Q1, Q3), IQR und 95.
-  Perzentil --- robuste Lagemaße, die gegen Ausreißer unempfindlich
-  sind.
-\item
-  \textbf{Qualitätsaggregation}
-  (\texttt{aggregate\_quality\_by\_group}): Gruppiert
-  Bewertungsergebnisse nach einem Schlüssel (z. B. Modus oder Modell)
-  und berechnet je Dimension (Korrektheit, Tonalität, Verständlichkeit)
-  den Mittelwert sowie einen Gesamtscore.
-\end{itemize}
-
-Alle sechs Funktionen sind durch 17 Unit-Tests abgesichert
-(\textasciitilde96 \% Coverage).
+Das Evaluationsmodul (\texttt{app/utils/evaluation\_metrics.py}) stellt sechs Metriken bereit. Als zeitliche Metrik misst die \textbf{Time-to-Publish (TTP)} die Latenz zwischen Ereigniszeitpunkt und Veröffentlichung des Ticker-Eintrags in Sekunden --- zentral für Liveticker, da Aktualität ein primäres Qualitätsmerkmal darstellt. Die statistischen Vergleichsmetriken umfassen: \textbf{Cliff's Delta} (Cliff 1993), eine nicht-parametrische Effektstärke für ordinale Daten, die den Anteil konkordanter vs.~diskordanter Paare berechnet (Wertebereich [−1, 1], wobei |δ| < 0,147 als vernachlässigbar, |δ| < 0,33 als klein und |δ| > 0,474 als groß gilt); ein \textbf{Bootstrap-Konfidenzintervall} als Resampling-basierte Schätzung des Mittelwertunterschieds zwischen zwei Gruppen (5.000 Iterationen, 95 \%, deterministisch via Seed, Rückgabe: \texttt{(observed\_diff, lower\_ci, upper\_ci)}); \textbf{Cohen's Kappa} (Cohen 1960) als Interrater-Reliabilitätsmaß für kategoriale Bewertungen (κ > 0,61 gilt als substantielle Übereinstimmung); eine \textbf{Verteilungsanalyse} (\texttt{summarize\_distribution}), die Median, Standardabweichung, Quartile, IQR und 95.~Perzentil berechnet; sowie eine \textbf{Qualitätsaggregation} (\texttt{aggregate\_quality\_by\_group}), die Bewertungsergebnisse nach Schlüssel (z.~B. Modus oder Modell) gruppiert und je Dimension den Mittelwert und Gesamtscore berechnet. Alle sechs Funktionen sind durch 17 Unit-Tests abgesichert (\textasciitilde96 \% Coverage).
 
 \subsection{Modell- und
 Provider-Evaluation}\label{modell--und-provider-evaluation}
@@ -570,21 +461,7 @@ gegenüber dem Mock in der Tonalitätstreue (Δ = 1,1 Skalenpunkte).
 
 \subsection{Einfluss der Stilprofile}\label{einfluss-der-stilprofile}
 
-Das System generiert Texte in drei Stilprofilen, die über den Prompt
-gesteuert werden:
-
-\begin{itemize}
-\tightlist
-\item
-  \textbf{neutral}: „sachlich und neutral --- keine Vereinspräferenz''
-\item
-  \textbf{euphorisch}: „begeistert und emotional --- aus Sicht der
-  Heimfans''
-\item
-  \textbf{kritisch}: „analytisch und kritisch''
-\end{itemize}
-
-Da der Backend-Deduplizierungsmechanismus für identische
+Das System generiert Texte in drei Stilprofilen, die über den Prompt gesteuert werden: \texttt{neutral} (sachlich und neutral, keine Vereinspräferenz), \texttt{euphorisch} (begeistert und emotional aus Sicht der Heimfans) sowie \texttt{kritisch} (analytisch und kritisch). Da der Backend-Deduplizierungsmechanismus für identische
 \texttt{event\_id} denselben Eintrag zurückgibt, wurde der Stilvergleich
 anhand typischer Treffer-Einträge (Event-Typ: Tor) aus unterschiedlichen
 Spielen durchgeführt --- die jeweils zugehörige Stilanweisung war
@@ -683,27 +560,7 @@ Few-Shot-Kontextualisierung.
 \subsection{Qualitative Analyse der generierten
 Texte}\label{qualitative-analyse-der-generierten-texte}
 
-Für die qualitative Analyse wurden \textbf{16 KI-generierte
-Ticker-Einträge} (Modell: \texttt{google/gemini-2.0-flash-lite-001},
-Sprache: Deutsch) aus \textbf{9 Bundesliga-Spielen} der Saison 2024/25
-manuell auf drei Dimensionen bewertet:
-
-\begin{enumerate}
-\def\labelenumi{\arabic{enumi}.}
-\tightlist
-\item
-  \textbf{Korrektheit}: Sind alle Fakten (Spieler, Team, Minute,
-  Ergebnis) korrekt wiedergegeben? Enthält der Text Halluzinationen?
-\item
-  \textbf{Tonalität}: Entspricht der Stil dem gewählten Profil
-  (neutral/euphorisch/kritisch)?
-\item
-  \textbf{Verständlichkeit}: Ist der Text sprachlich flüssig,
-  grammatikalisch korrekt und dem Genre „Liveticker'' angemessen?
-\end{enumerate}
-
-Jede Dimension wurde auf einer Skala von 1 (ungenügend) bis 5
-(exzellent) bewertet. Die Bewertung erfolgte durch den Entwickler; ein
+Für die qualitative Analyse wurden \textbf{16 KI-generierte Ticker-Einträge} (Modell: \texttt{google/gemini-2.0-flash-lite-001}, Sprache: Deutsch) aus \textbf{9 Bundesliga-Spielen} der Saison 2024/25 manuell auf drei Dimensionen bewertet. \textbf{Korrektheit} prüft, ob alle Fakten (Spieler, Team, Minute, Ergebnis) korrekt wiedergegeben sind und der Text keine Halluzinationen enthält. \textbf{Tonalität} bewertet, ob der Stil dem gewählten Profil (neutral/euphorisch/kritisch) entspricht. \textbf{Verständlichkeit} beurteilt, ob der Text sprachlich flüssig, grammatikalisch korrekt und dem Genre „Liveticker'' angemessen ist. Jede Dimension wurde auf einer Skala von 1 (ungenügend) bis 5 (exzellent) bewertet. Die Bewertung erfolgte durch den Entwickler; ein
 zweiter Rater stand nicht zur Verfügung, sodass kein Cohen's Kappa
 berechnet wurde. Die externe Validierung erfolgt durch das
 Experteninterview (s. u.).
@@ -982,51 +839,7 @@ Ausblick (Kapitel 8.3.2) vorgesehen.
 \textbf{Experteninterview: Praxisvalidierung durch professionellen
 Redakteur}
 
-Zur Validierung der Systemeignung im operativen redaktionellen Kontext
-wurde ein \textbf{strukturiertes Experteninterview} mit einem
-professionellen Sportredakteur von Eintracht Frankfurt durchgeführt. Das
-Interview ergänzt die quantitative Evaluation um die Perspektive der
-primären Zielnutzergruppe und adressiert dabei drei Kernfragen:
-
-\begin{enumerate}
-\def\labelenumi{\arabic{enumi}.}
-\tightlist
-\item
-  \textbf{Praxistauglichkeit}: Inwiefern entsprechen die generierten
-  Texte den redaktionellen Standards und Erwartungen eines
-  professionellen Sportredakteurs?
-\item
-  \textbf{Workflow-Integration}: Welche Auswirkungen hätte das System
-  auf bestehende redaktionelle Arbeitsabläufe und -prozesse?
-\item
-  \textbf{Qualitätswahrnehmung}: Wie bewerten Fachexperten die Qualität
-  der KI-generierten Texte im Vergleich zu manuell verfassten Inhalten?
-\end{enumerate}
-
-Die folgenden Interviewfragen leiten die Systembewertung (vgl.
-Interviewleitfaden, Kap. 2.4):
-
-\begin{itemize}
-\tightlist
-\item
-  \emph{IF10: Wie bewerten Sie die Qualität der KI-generierten
-  Ticker-Texte im Vergleich zu manuell verfassten?}
-\item
-  \emph{IF11: Lesen sich die Texte wie ein typischer
-  Eintracht-Frankfurt-Ticker?}
-\item
-  \emph{IF12: Welchen der drei Modi (auto/coop/manual) würden Sie im
-  Redaktionsalltag bevorzugt einsetzen?}
-\item
-  \emph{IF13: Ist der Coop-Modus --- also KI-Entwurf mit redaktioneller
-  Freigabe --- ein realistischer Kompromiss zwischen Zeitersparnis und
-  Qualitätskontrolle?}
-\item
-  \emph{IF14: Welche Features fehlen für einen produktiven Einsatz?}
-\item
-  \_IF15: Erkennen Sie den vereinsspezifischen Eintracht-Stil in den
-  generierten Texten wieder?
-\end{itemize}
+Zur Validierung der Systemeignung im operativen redaktionellen Kontext wurde ein \textbf{strukturiertes Experteninterview} mit einem professionellen Sportredakteur von Eintracht Frankfurt durchgeführt. Das Interview ergänzt die quantitative Evaluation um die Perspektive der primären Zielnutzergruppe und adressiert drei Kernfragen: die \textbf{Praxistauglichkeit} (inwiefern die generierten Texte den redaktionellen Standards entsprechen), die \textbf{Workflow-Integration} (welche Auswirkungen das System auf bestehende Abläufe hätte) sowie die \textbf{Qualitätswahrnehmung} (wie Fachexperten die KI-generierten Texte im Vergleich zu manuell verfassten beurteilen). Die Leitfragen IF10--IF15 adressieren Textqualität, Tonalität, Moduswahl, Realisierbarkeit des Coop-Flows, fehlende Features und Markenwiedererkennung (vgl. Interviewleitfaden, Kap.~2.4).
 
 \textbf{Methodik} --- Das Interview folgte einem
 \textbf{semi-strukturierten Ansatz} mit vorbereiteten Leitfragen und
@@ -1036,24 +849,7 @@ Event-Kategorien (Tore, Karten, Wechsel, Pre-Match) zur Bewertung
 vorgelegt, ohne dass die KI-Herkunft der Texte explizit offengelegt
 wurde.
 
-\textbf{Zentrale Erkenntnisse} --- Das Interview findet im Rahmen der
-Abschlussphase dieser Arbeit statt; die Ergebnisse werden nachfolgend
-ergänzt.
-
-\begin{itemize}
-\tightlist
-\item
-  \textbf{Textqualität}: {[}Ergebnisse werden nach Durchführung
-  ergänzt{]}
-\item
-  \textbf{Praktikabilität}: {[}Ergebnisse werden nach Durchführung
-  ergänzt{]}
-\item
-  \textbf{Verbesserungsvorschläge}: {[}Ergebnisse werden nach
-  Durchführung ergänzt{]}
-\item
-  \textbf{Akzeptanz}: {[}Ergebnisse werden nach Durchführung ergänzt{]}
-\end{itemize}
+\textbf{Zentrale Erkenntnisse} --- Das Interview findet im Rahmen der Abschlussphase dieser Arbeit statt; die Ergebnisse zu Textqualität, Praktikabilität, Verbesserungsvorschlägen und Akzeptanz werden nach Durchführung nachfolgend ergänzt.
 
 Die Interviewergebnisse fließen in die Gesamtbewertung des Systems
 (Kapitel 8.2) ein und liefern wertvolle Erkenntnisse für die in Kapitel
@@ -1122,27 +918,7 @@ Nr & Ereignis & Stil & K & T & V & Ø \\
 Bewerter: Claude Sonnet 4.6 (Anthropic), unabhängig vom generierenden Modell
 (Gemini 2.0 Flash Lite). Ereignisdaten: Football API v3, Saison 2024/25, Md. 34.}
 
-\textbf{Befunde} --- Der Gesamtdurchschnitt von \textbf{4,5 / 5} liegt
-leicht über dem Hauptevaluationswert (4,3 / 5), was auf den konsistenten
-Datenfeed aus der Football API ohne Kontextlücken zurückzuführen ist. Die
-Fehleranalyse identifiziert drei Fehlerklassen:
-
-\begin{enumerate}
-\def\labelenumi{\arabic{enumi}.}
-\item
-  \textbf{Semantischer Framing-Fehler} (3 Fälle, 15 \%): Das Modell
-  verwendet „verkürzt'' oder „Anschlusstreffer'', obwohl das handelnde
-  Team in Führung liegt oder gar führt (Nr. 04, 08, 19). Ursache: fehlende
-  explizite Repräsentation des Spielstands vor dem Tor im Kontext.
-\item
-  \textbf{Phrasenwiederhol im euphorischen Profil} (1 Fall, 5 \%): Eintrag
-  Nr. 03 reproduziert die im Prompt als zu vermeidend markierten Phrasen
-  „WAS IST DENN HIER LOS?!'' und „Die Hütte bebt!'' trotz Anweisung.
-\item
-  \textbf{Interne Inkonsistenz} (1 Fall, 5 \%): Eintrag Nr. 11 wertet
-  das Einsteigen gleichzeitig als „überharten Foul'' und als
-  „fragwürdige Entscheidung'' des Schiedsrichters.
-\end{enumerate}
+\textbf{Befunde} --- Der Gesamtdurchschnitt von \textbf{4,5 / 5} liegt leicht über dem Hauptevaluationswert (4,3 / 5), was auf den konsistenten Datenfeed aus der Football API ohne Kontextlücken zurückzuführen ist. Die Fehleranalyse identifiziert drei Fehlerklassen. Ein \textbf{semantischer Framing-Fehler} trat in 3 von 20 Fällen (15~\%) auf: Das Modell verwendete „verkürzt'' oder „Anschlusstreffer'', obwohl das handelnde Team in Führung lag (Nr. 04, 08, 19) --- Ursache ist die fehlende explizite Repräsentation des Spielstands vor dem Tor im Kontext. \textbf{Phrasenwiederholung im euphorischen Profil} trat einmalig (5~\%) auf: Eintrag Nr.~03 reproduzierte die im Prompt als zu vermeidend markierten Phrasen „WAS IST DENN HIER LOS?!'' und „Die Hütte bebt!'' trotz Anweisung. Eine \textbf{interne Inkonsistenz} zeigte sich ebenfalls einmalig (5~\%): Eintrag Nr.~11 wertete das Einsteigen gleichzeitig als „überharten Foul'' und als „fragwürdige Entscheidung'' des Schiedsrichters.
 
 Diese Fehlerklassen stimmen qualitativ mit den Befunden der Hauptevaluation
 (Abschnitt 6.3.6) überein und bestätigen damit deren Repräsentativität.

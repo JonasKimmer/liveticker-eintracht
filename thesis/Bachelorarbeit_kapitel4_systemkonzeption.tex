@@ -77,40 +77,19 @@ redundante Importe vermieden.
 \caption{Kommunikationsfluss: Frontend, Backend, n8n und externe APIs}
 \end{figure}
 
-Die Systemkopplung erfolgt über drei klar getrennte Schnittstellentypen:
-
-\begin{itemize}
-\tightlist
-\item
-  \textbf{REST-API} --- stabiler Kern für alle Lese- und
-  Schreiboperationen: Navigation, Ticker-CRUD, Statusübergänge
-  (\texttt{draft} → \texttt{published} → \texttt{rejected}), manuelle
-  Eingaben.
-\item
-  \textbf{n8n-Webhooks} --- bedarfsgesteuerte Trigger für drei Klassen:
-
-  \begin{enumerate}
-  \def\labelenumi{\arabic{enumi}.}
-  \tightlist
-  \item
-    \textbf{Initialisierungs-Trigger} --- Aufbau fehlender Stammdaten
-    (Länder, Teams, Wettbewerbe, Spiele)
-  \item
-    \textbf{Match-Kontext-Trigger} --- spielbezogene Importe nach
-    Matchauswahl (Events, Lineups, Statistiken, Prematch)
-  \item
-    \textbf{Generierungs-Trigger} --- Anstoß von KI-Textprozessen
-    (Event-basiert, Matchphasen, Zusammenfassungen)
-  \end{enumerate}
-\item
-  \textbf{WebSocket \texttt{/ws/media}} --- Echtzeit-Push für
-  latenzkritische Medieninhalte (ScorePlay-Bilder, Social-Media-Clips);
-  Ticker- und Matchdaten bleiben bewusst im Polling-Modell.
-\end{itemize}
-
-Diese hybride Triggerarchitektur unterstützt sowohl redaktionelle
-Kontrolle im Sinne eines \textbf{Human-in-the-Loop}-Ansatzes als auch
-weitgehend automatisierte Live-Prozesse.
+Die Systemkopplung erfolgt über drei klar getrennte Schnittstellentypen.
+Die \textbf{REST-API} bildet den stabilen Kern für alle Lese- und
+Schreiboperationen: Navigation, Ticker-CRUD, Statusübergänge und manuelle
+Eingaben. \textbf{n8n-Webhooks} werden bedarfsgesteuert in drei Klassen
+eingesetzt: Initialisierungs-Trigger bauen fehlende Stammdaten auf;
+Match-Kontext-Trigger lösen spielbezogene Importe nach Matchauswahl aus;
+Generierungs-Trigger stoßen KI-Textprozesse für Events, Matchphasen und
+Zusammenfassungen an. Der \textbf{WebSocket-Kanal \texttt{/ws/media}}
+übernimmt den Echtzeit-Push für latenzkritische Medieninhalte; Ticker- und
+Matchdaten verbleiben bewusst im stabileren Polling-Modell. Diese hybride
+Triggerarchitektur unterstützt sowohl redaktionelle Kontrolle im Sinne des
+\textbf{Human-in-the-Loop}-Ansatzes als auch weitgehend automatisierte
+Live-Prozesse.
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
@@ -124,22 +103,13 @@ Team-Keyword umgesetzt, das sowohl in den n8n-Workflows als auch im
 Frontend gegen den Teamnamen abgeglichen wird.
 
 Auf Basis dieser Erkennung werden zwei Verarbeitungspfade gesteuert:
-
-\begin{itemize}
-\tightlist
-\item
-  \textbf{Instanz und Stil}: Partner-Team-Spiele verwenden den
-  \texttt{ef\_whitelabel}-Instanzpfad mit euphorischem Stil; alle
-  anderen Spiele den \texttt{generic}-Pfad mit neutralem Stil.
-\item
-  \textbf{UI-Anpassung}: Das Frontend blendet vereinsspezifische
-  Bereiche (Social-Media-Panels, Torjubel-Videos) ausschließlich bei
-  erkannten Partner-Team-Spielen ein.
-\item
-  \textbf{Erweiterte Kontextdaten}: Für Tormomente des Partner-Teams
-  werden zusätzlich Spielerdaten und Torjubel-Video-URLs aus einer
-  externen Vereinsquelle in den Prompt-Kontext eingebettet.
-\end{itemize}
+Partner-Team-Spiele verwenden den \texttt{ef\_whitelabel}-Instanzpfad mit
+euphorischem Stil, alle anderen Spiele den \texttt{generic}-Pfad mit
+neutralem Stil. Das Frontend blendet vereinsspezifische Bereiche
+(Social-Media-Panels, Torjubel-Videos) ausschließlich bei erkannten
+Partner-Team-Spielen ein. Für Tormomente des Partner-Teams werden
+zusätzlich Spielerdaten und Torjubel-Video-URLs aus einer externen
+Vereinsquelle in den Prompt-Kontext eingebettet.
 
 Das Datenbankschema enthält ergänzend ein
 \texttt{is\_partner\_team}-Flag, das für zukünftige Erweiterungen
@@ -156,26 +126,21 @@ Schichtstruktur, das API-Design sowie das Sicherheitskonzept. Alle
 Entscheidungen orientieren sich an den Anforderungen aus Kap.~2.6 und
 den technologischen Grundlagen aus Kap.~3.6.
 
-\subsection{Framework-Wahl: FastAPI}\label{framework-wahl-fastapi}
+\subsection{Framework-Wahl, interne Struktur und
+Datenzugriff}\label{interne-struktur-und-datenzugriff}
 
-Als Backend-Framework wurde FastAPI gewählt (vgl. Abschnitt 3.6.2 für
+Als Backend-Framework wurde FastAPI gewählt (vgl. Abschnitt~3.6 für
 die technische Einordnung). Die Entscheidung begründet sich durch drei
-systemspezifische Anforderungen: Erstens erfordert die parallele
-Verarbeitung von LLM-Aufrufen, externen API-Abfragen und
-Medienverarbeitung native Unterstützung für asynchrone I/O. Zweitens
-vereinfacht die automatisch generierte OpenAPI-Spezifikation die
-Integration mit n8n-Workflows erheblich, da Endpunkte über Swagger UI
-direkt testbar sind. Drittens reduziert die enge Pydantic-Integration
+systemspezifische Anforderungen: Die parallele Verarbeitung von
+LLM-Aufrufen, externen API-Abfragen und Medienverarbeitung erfordert
+native Unterstützung für asynchrone I/O; die automatisch generierte
+OpenAPI-Spezifikation vereinfacht die Integration mit n8n-Workflows
+erheblich; und die enge Pydantic-Integration reduziert
 Schnittstellenfehler zwischen Frontend, Backend und n8n, indem alle
 Eingaben gegen typisierte Schemas validiert werden.
 
-\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
-
-\subsection{Interne Struktur und
-Datenzugriff}\label{interne-struktur-und-datenzugriff}
-
 Die interne Struktur folgt einer klaren Trennung aus API-Routern,
-Repository-Schicht (vgl. Kap. 3.6.3) sowie SQLAlchemy-ORM-Modellen
+Repository-Schicht (vgl. Kap.~3.6) sowie SQLAlchemy-ORM-Modellen
 und Pydantic-Schemas. Die Router bilden die
 HTTP-Schnittstelle und übernehmen Validierung, Statuscodes sowie die
 Orchestrierung einzelner Use Cases. Datenbankzugriffe sind in
@@ -221,50 +186,28 @@ Frontend und n8n-Workflows deterministisch reagieren können.
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
-\subsection{Asynchronität, Nebenläufigkeit und
-Performance}\label{asynchronituxe4t-nebenluxe4ufigkeit-und-performance}
+\subsection{Asynchronität, Fehlerbehandlung und
+Robustheit}\label{asynchronituxe4t-nebenluxe4ufigkeit-und-performance}
 
 Die Laufzeitkonzeption setzt Asynchronität gezielt auf I/O-intensiven
-Pfaden ein, insbesondere bei LLM-bezogenen Generierungsrouten,
-Media-Verarbeitung und WebSocket-Kommunikation. Das erhöht die
-Reaktionsfähigkeit unter paralleler Last, da Wartezeiten auf externe
-Dienste keine Worker dauerhaft blockieren.
-
-Die Anzahl gleichzeitiger LLM-Aufrufe wird über einen konfigurierbaren
-\textbf{Semaphore-Mechanismus} begrenzt (Standard: 8 parallele
-Anfragen). Diese Begrenzung reduziert Lastspitzen und verringert die
-Wahrscheinlichkeit von Rate-Limit-Problemen seitens der LLM-Provider.
-Der Semaphore wirkt dabei pro Prozessinstanz --- bei horizontaler
-Skalierung steigt die effektive Gesamtkonkurrenz entsprechend der Anzahl
-laufender Instanzen. Ergänzend greift ein \textbf{Retry-Mechanismus mit
-Backoff}: Bei Rate-Limit-Fehlern erfolgen automatische
-Wiederholungsversuche mit linearem Backoff (3 Versuche, 30 s / 60 s / 90
-s); bei sonstigen transienten Fehlern exponentielles Backoff (1 s / 2 s
-/ 4 s).
-
-Die Implementierung ist bewusst hybrid aus synchronen und asynchronen
-Pfaden aufgebaut. Nicht alle Endpunkte sind vollständig asynchronisiert;
-stattdessen wurde ein pragmatischer Kompromiss zwischen Performance,
-Komplexität und Wartbarkeit gewählt. Langlaufende Integrationslogik ist
-in n8n ausgelagert, wodurch der API-Server als transaktionaler Kern
-entlastet wird.
-
-\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
-
-\subsection{Fehlerbehandlung, Robustheit und
-Betriebsaspekte}\label{fehlerbehandlung-robustheit-und-betriebsaspekte}
-
-Für den Live-Betrieb wurde das Backend auf robuste Fehlerbehandlung und
-kontrollierte Degradation ausgelegt. Fehler werden über konsistente
-HTTP-Antworten und strukturierte Meldungen zurückgegeben, sodass
-Frontend und n8n-Workflows differenziert reagieren können.
-
-Die Datenpersistenz ist auf \textbf{idempotente Verarbeitung} ausgelegt
-(vgl. Kap. 4.3.4 für Details zu Upsert-Strategien und Schlüsseldesign).
-Bei Teilausfällen externer Dienste bleibt das System eingeschränkt
-funktionsfähig --- bereits persistierte Daten bleiben verfügbar,
-redaktionelle Kernprozesse (z. B. manuelle Tickererstellung) können
-fortgeführt werden.
+Pfaden ein --- insbesondere bei LLM-Generierungsrouten, Media-Verarbeitung
+und WebSocket-Kommunikation --- um die Reaktionsfähigkeit unter paralleler
+Last zu erhöhen, ohne Worker dauerhaft zu blockieren. Die Anzahl
+gleichzeitiger LLM-Aufrufe begrenzt ein konfigurierbarer
+\textbf{Semaphore-Mechanismus} (Standard: 8 parallele Anfragen), der
+Lastspitzen und Rate-Limit-Probleme reduziert. Ergänzend greift ein
+\textbf{Retry-Mechanismus mit Backoff}: Bei Rate-Limit-Fehlern folgen
+automatische Wiederholungsversuche mit linearem Backoff (3 Versuche,
+30~s / 60~s / 90~s); bei sonstigen transienten Fehlern exponentielles
+Backoff (1~s / 2~s / 4~s). Nicht alle Endpunkte sind vollständig
+asynchronisiert; langlaufende Integrationslogik ist in n8n ausgelagert,
+wodurch der API-Server als transaktionaler Kern entlastet wird. Für den
+Live-Betrieb ist das Backend auf kontrollierte Degradation ausgelegt:
+Fehler werden über konsistente HTTP-Antworten strukturiert zurückgegeben;
+bei Teilausfällen externer Dienste bleiben bereits persistierte Daten
+verfügbar und redaktionelle Kernprozesse können fortgeführt werden. Die
+Datenpersistenz ist auf \textbf{idempotente Verarbeitung} ausgelegt
+(vgl. Kap.~4.3.4).
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
@@ -274,29 +217,19 @@ Das System adressiert Sicherheit auf drei Ebenen, wobei der
 Projektrahmen einer Bachelorarbeit eine bewusste Priorisierung
 erfordert:
 
-\textbf{Transportebene:} Die gesamte Kommunikation zwischen Frontend,
-Backend und externen Diensten erfolgt über HTTPS. Die Render-Plattform
-übernimmt die TLS-Terminierung und Zertifikatsverwaltung automatisiert.
-
-\textbf{API-Absicherung:} Der Backend-Server konfiguriert eine
-\textbf{CORS-Whitelist} (Cross-Origin Resource Sharing), die Anfragen
-ausschließlich von autorisierten Frontend-Ursprüngen akzeptiert. Die
-API-Schlüssel externer Dienste (LLM-Provider, API-Football, ScorePlay)
-werden über Umgebungsvariablen injiziert und sind weder im Quellcode
-noch im Frontend exponiert. Die Pydantic-basierte Eingabevalidierung
-schützt zusätzlich vor Injection-Angriffen, da sämtliche
-Request-Payloads gegen typisierte Schemas geprüft werden, bevor sie die
-Geschäftslogik erreichen.
-
-\textbf{Authentifizierung und Autorisierung:} Eine feingranulare
-Benutzerauthentifizierung mit Rollenkonzept (z. B. Redakteur,
-Administrator) ist im aktuellen Stand \textbf{nicht implementiert}. Das
-System ist als internes Redaktionswerkzeug konzipiert und setzt auf
-Netzwerksegmentierung statt individueller Zugangskontrolle. Für einen
-produktiven Mehrbenutzerbetrieb wäre die Integration eines
-Authentifizierungsframeworks (z. B. OAuth 2.0 oder JWT-basierte
-Token-Authentifizierung) erforderlich --- dies wird in Kapitel 7 als
-Erweiterungsperspektive eingeordnet.
+Die gesamte Kommunikation erfolgt über HTTPS; die Render-Plattform
+übernimmt TLS-Terminierung und Zertifikatsverwaltung automatisch. Der
+Backend-Server konfiguriert eine \textbf{CORS-Whitelist}, die Anfragen
+ausschließlich von autorisierten Frontend-Ursprüngen akzeptiert; API-Schlüssel
+werden über Umgebungsvariablen injiziert und sind weder im Quellcode noch
+im Frontend exponiert. Die Pydantic-basierte Eingabevalidierung schützt
+vor Injection-Angriffen, da sämtliche Request-Payloads gegen typisierte
+Schemas geprüft werden, bevor sie die Geschäftslogik erreichen. Eine
+feingranulare Benutzerauthentifizierung ist im aktuellen Stand
+\textbf{nicht implementiert}; das System setzt als internes
+Redaktionswerkzeug auf Netzwerksegmentierung. Für produktiven
+Mehrbenutzerbetrieb wäre ein Authentifizierungsframework (z.\,B. OAuth 2.0
+oder JWT) erforderlich --- dies wird in Kapitel~7 eingeordnet.
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
@@ -360,36 +293,7 @@ LLM-Promptgenerierung; \texttt{media\_queue} wird applikationsseitig
 über die Media-Endpunkte verwaltet.
 \end{quote}
 
-Das Schema folgt einem hybriden Entwurfsansatz aus strukturierter
-Normalisierung und gezielter Schemaflexibilität:
-
-\begin{enumerate}
-\def\labelenumi{\arabic{enumi}.}
-\tightlist
-\item
-  \textbf{Normalisierte Kernentitäten} --- Zentrale Domänenobjekte wie
-  \texttt{teams}, \texttt{matches}, \texttt{events},
-  \texttt{ticker\_entries}, \texttt{players}, \texttt{competitions} und
-  Zuordnungstabellen sind in dritter Normalform modelliert (Codd 1970).
-  Dadurch bleiben Beziehungen, Integrität und Auswertbarkeit im
-  Live-Betrieb stabil.
-\item
-  \textbf{Gezielter JSONB-Einsatz} --- JSONB wird bewusst nur dort
-  eingesetzt, wo sich Strukturen dynamisch ändern oder kontextabhängig
-  sind (z. B. \texttt{synthetic\_events.data}, sowie mehrere
-  Kontextfelder in \texttt{matches}). Die Statistiktabellen
-  (\texttt{match\_statistics}, \texttt{player\_statistics}) sind dagegen
-  bewusst stark typisiert über explizite Spalten modelliert, um
-  konsistente Abfragen und robuste Aggregationen zu ermöglichen.
-\item
-  \textbf{Schlüsselstrategie: Integer-PK + UUID-Fachschlüssel} --- Das
-  Schema verwendet numerische Primärschlüssel (\texttt{id}) für
-  performante Joins und Fremdschlüsselbeziehungen. Zusätzlich existiert
-  in mehreren Kernentitäten ein eindeutiges \texttt{uid}-Feld (UUID) als
-  stabiler externer Referenzschlüssel. Es handelt sich damit nicht um
-  ein reines UUID-Primary-Key-Schema, sondern um eine kombinierte
-  Strategie.
-\end{enumerate}
+Das Schema folgt einem hybriden Entwurfsansatz aus strukturierter Normalisierung und gezielter Schemaflexibilität. \textbf{Normalisierte Kernentitäten} --- zentrale Domänenobjekte wie \texttt{teams}, \texttt{matches}, \texttt{events}, \texttt{ticker\_entries}, \texttt{players}, \texttt{competitions} und Zuordnungstabellen --- sind in dritter Normalform modelliert (Codd 1970), sodass Beziehungen, Integrität und Auswertbarkeit im Live-Betrieb stabil bleiben. \textbf{Gezielter JSONB-Einsatz} erfolgt bewusst nur dort, wo sich Strukturen dynamisch ändern oder kontextabhängig sind (z.~B. \texttt{synthetic\_events.data} sowie mehrere Kontextfelder in \texttt{matches}); die Statistiktabellen (\texttt{match\_statistics}, \texttt{player\_statistics}) sind dagegen stark typisiert über explizite Spalten modelliert, um konsistente Abfragen und robuste Aggregationen zu ermöglichen. Die \textbf{Schlüsselstrategie} kombiniert numerische Primärschlüssel (\texttt{id}) für performante Joins mit einem eindeutigen \texttt{uid}-Feld (UUID) als stabilem externen Referenzschlüssel in mehreren Kernentitäten --- kein reines UUID-Primary-Key-Schema, sondern eine kombinierte Strategie.
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
@@ -397,22 +301,12 @@ Normalisierung und gezielter Schemaflexibilität:
 Ticker-Einträge}\label{status-lifecycle-der-ticker-eintruxe4ge}
 
 Jeder Ticker-Eintrag in \texttt{ticker\_entries} folgt einem klaren
-Statusmodell mit vier Zuständen:
-
-\begin{itemize}
-\tightlist
-\item
-  \textbf{\texttt{draft}}: Entwurf, noch nicht freigegeben
-\item
-  \textbf{\texttt{published}}: redaktionell oder automatisch
-  veröffentlicht
-\item
-  \textbf{\texttt{rejected}}: verworfen, bleibt zur Nachvollziehbarkeit
-  erhalten
-\item
-  \textbf{\texttt{deleted}}: weich gelöscht; wird in allen
-  Listenabfragen herausgefiltert, bleibt aber in der Datenbank erhalten
-\end{itemize}
+Statusmodell mit vier Zuständen: \texttt{draft} (Entwurf, noch nicht
+freigegeben), \texttt{published} (redaktionell oder automatisch
+veröffentlicht), \texttt{rejected} (verworfen, bleibt zur
+Nachvollziehbarkeit erhalten) und \texttt{deleted} (weich gelöscht;
+wird in Listenabfragen herausgefiltert, bleibt aber in der Datenbank
+erhalten).
 
 \begin{figure}[H]
 \centering
@@ -448,28 +342,16 @@ allein auf den Tabellenzustand zu stützen.
 
 Das Feld \texttt{ticker\_mode} in \texttt{matches} steuert das Verhalten
 der Generierungspipeline pro Spiel und ist zur Laufzeit umschaltbar über
-\texttt{PATCH\ /api/v1/matches/\{id\}/ticker-mode}. Es sind drei Modi
-implementiert:
-
-\begin{enumerate}
-\def\labelenumi{\arabic{enumi}.}
-\tightlist
-\item
-  \textbf{\texttt{auto}} (vollautomatisch) --- Triggerkette läuft ohne
-  redaktionellen Eingriff; KI-Ergebnisse werden direkt veröffentlicht.
-\item
-  \textbf{\texttt{coop}} (kooperativ / Human-in-the-Loop) --- KI erzeugt
-  Entwürfe (\texttt{draft}), die Redaktion entscheidet über
-  Veröffentlichung oder Ablehnung. Dieser Modus bildet das primäre
-  Zielbild des Systems.
-\item
-  \textbf{\texttt{manual}} (rein redaktionell) --- Einträge werden
-  manuell erstellt; KI-Generierung ist nicht leitend für den
-  Veröffentlichungsprozess. Im \texttt{manual}-Modus werden keine
-  KI-Generierungsendpunkte getriggert; eingehende Events lösen
-  ausschließlich die Datenpersistenz aus, nicht die LLM-Pipeline. Dieser
-  Modus dient als Referenz für Vergleiche in der Evaluation.
-\end{enumerate}
+\texttt{PATCH\ /api/v1/matches/\{id\}/ticker-mode}. Es sind drei Modi implementiert. Im Modus \textbf{\texttt{auto}}
+(vollautomatisch) läuft die Triggerkette ohne redaktionellen Eingriff;
+KI-Ergebnisse werden direkt veröffentlicht. Im Modus
+\textbf{\texttt{coop}} (kooperativ / Human-in-the-Loop) erzeugt die KI
+Entwürfe (\texttt{draft}), über deren Veröffentlichung oder Ablehnung die
+Redaktion entscheidet --- dieser Modus bildet das primäre Zielbild des
+Systems. Im Modus \textbf{\texttt{manual}} (rein redaktionell) werden
+Einträge ausschließlich manuell erstellt; eingehende Events lösen nur die
+Datenpersistenz aus, nicht die LLM-Pipeline. Dieser Modus dient als
+Referenz für Vergleiche in der Evaluation.
 
 Der Moduswechsel ist als Laufzeitparameter auf Datenbankebene
 abgebildet; der Statusfluss ist im State-Diagramm in Abschnitt 4.3.2
@@ -481,31 +363,16 @@ dargestellt.
 Auswertbarkeit}\label{integrituxe4t-idempotenz-und-auswertbarkeit}
 
 Für den Zusammenschluss aus n8n-Workflows, externen APIs und
-Backend-Routen ist die Datenbank auf idempotente Verarbeitung ausgelegt:
-
-\begin{enumerate}
-\def\labelenumi{\arabic{enumi}.}
-\tightlist
-\item
-  \textbf{Konfliktarme Wiederholbarkeit} --- Wiederholte Imports führen
-  durch Unique-Constraints und Upsert-Strategien nicht zu
-  unkontrollierten Duplikaten.
-\item
-  \textbf{Eindeutige Zuordnung in zentralen Tabellen} --- Eindeutige
-  Schlüssel (z. B. \texttt{source\_id} pro Ereignisquelle) sichern die
-  Nachvollziehbarkeit importierter Ereignisse.
-\item
-  \textbf{Referenzielle Integrität über FK-Regeln} --- Lösch- und
-  Nullsetz-Strategien (\texttt{CASCADE}, \texttt{SET\ NULL}) sorgen
-  dafür, dass abhängige Daten konsistent bleiben und Historie dort
-  erhalten wird, wo sie fachlich relevant ist.
-\item
-  \textbf{Auswertungskompatibilität} --- Die Kombination aus
-  \texttt{ticker\_mode}, \texttt{status}, \texttt{source}, Spielbezug
-  und Zeitfeldern schafft die Grundlage für reproduzierbare
-  Vergleichsauswertungen zwischen manuellen, kooperativen und
-  automatisierten Abläufen.
-\end{enumerate}
+Backend-Routen ist die Datenbank auf idempotente Verarbeitung ausgelegt.
+Wiederholte Imports führen durch Unique-Constraints und Upsert-Strategien
+nicht zu unkontrollierten Duplikaten; eindeutige Schlüssel (z.\,B.
+\texttt{source\_id} pro Ereignisquelle) sichern die Nachvollziehbarkeit
+importierter Ereignisse. Lösch- und Nullsetz-Strategien (\texttt{CASCADE},
+\texttt{SET\ NULL}) halten abhängige Daten konsistent und bewahren
+fachlich relevante Historie. Die Kombination aus \texttt{ticker\_mode},
+\texttt{status}, \texttt{source}, Spielbezug und Zeitfeldern schafft die
+Grundlage für reproduzierbare Vergleichsauswertungen zwischen den
+Betriebsmodi.
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
@@ -580,25 +447,7 @@ dokumentiert.
 \subsection{Workflow-Grenzen und projektspezifische
 Besonderheiten}\label{workflow-grenzen-und-projektspezifische-besonderheiten}
 
-Die Workflow-Landschaft ist funktional umfassend, enthält aber bewusst
-pragmatische Projektentscheidungen:
-
-\begin{enumerate}
-\def\labelenumi{\arabic{enumi}.}
-\tightlist
-\item
-  \textbf{Teilweise saisonspezifische Fixierung} --- In einzelnen Flows
-  ist die Saisonlogik auf 2025 begrenzt.
-\item
-  \textbf{Hybride Aktualisierungslogik} --- Nicht alle Datenpfade sind
-  eventgetrieben; ein Teil wird durch Polling und bedarfsgesteuerte
-  Trigger ergänzt.
-\item
-  \textbf{Instanzspezifische Spezialpfade} --- Einige
-  LLM-/Medienprozesse enthalten EF-spezifische Logik, was für eine
-  vollständig generalisierte White-Label-Fähigkeit parametriert werden
-  müsste.
-\end{enumerate}
+Die Workflow-Landschaft ist funktional umfassend, enthält aber bewusst pragmatische Projektentscheidungen. In einzelnen Flows ist die Saisonlogik auf 2025 begrenzt (teilweise saisonspezifische Fixierung). Nicht alle Datenpfade sind eventgetrieben --- ein Teil wird durch Polling und bedarfsgesteuerte Trigger ergänzt (hybride Aktualisierungslogik). Einige LLM- und Medienprozesse enthalten EF-spezifische Logik, die für eine vollständig generalisierte White-Label-Fähigkeit noch parametrisiert werden müsste (instanzspezifische Spezialpfade).
 
 In Summe bildet n8n eine tragfähige Orchestrierungsschicht, die externe
 Datenquellen, interne Persistenz und KI-generierte Inhalte in einem
@@ -626,25 +475,14 @@ Fallbackszenarien ohne API-Key.
 \textbf{Primärzugang: OpenRouter als API-Gateway}
 
 Das vorliegende System setzt primär \textbf{OpenRouter} als LLM-Gateway
-ein. OpenRouter fungiert als einheitliche API-Schnittstelle, über die
-mit einem einzelnen API-Schlüssel verschiedene Sprachmodelle
-unterschiedlicher Anbieter angesprochen werden können. Diese
-Architekturentscheidung bietet drei Vorteile:
-
-\begin{enumerate}
-\def\labelenumi{\arabic{enumi}.}
-\tightlist
-\item
-  \textbf{Kein Vendor Lock-in}: Der Wechsel zwischen Modellen erfordert
-  lediglich eine Änderung der Umgebungsvariable
-  \texttt{OPENROUTER\_MODEL}, keine Codeanpassung.
-\item
-  \textbf{Vergleichbarkeit}: Verschiedene Modelle können auf demselben
-  Prompt evaluiert werden (vgl. Abschnitt 6.3.3).
-\item
-  \textbf{Kostenoptimierung}: Das jeweils kostengünstigste Modell für
-  die Aufgabe kann gewählt werden.
-\end{enumerate}
+ein. OpenRouter fungiert als einheitliche API-Schnittstelle, über die mit
+einem einzelnen API-Schlüssel verschiedene Sprachmodelle unterschiedlicher
+Anbieter angesprochen werden können. Der Wechsel zwischen Modellen erfordert
+lediglich eine Änderung der Umgebungsvariable \texttt{OPENROUTER\_MODEL};
+verschiedene Modelle können auf demselben Prompt evaluiert werden
+(vgl. Abschnitt~6.3.3); und das jeweils kostengünstigste Modell lässt sich
+ohne Codeanpassung wählen --- ein entscheidender Faktor für
+Vereinsredaktionen mit begrenztem Budget.
 
 Im produktiven Einsatz wird aktuell \textbf{Gemini 2.0 Flash Lite}
 (Modell-ID \texttt{google/gemini-2.0-flash-lite-001}) über OpenRouter
@@ -655,7 +493,7 @@ vergleichbare Qualität bei deutlich niedrigerer Latenz erzielen. Für
 Vereinsredaktionen mit begrenztem Budget ist dieser Kostenvorteil ein
 entscheidender Faktor für die Praxistauglichkeit des Systems.
 
-\textbf{Fallback-Kette und Mock-Provider}
+\textbf{Fallback-Kette und Mock-Provider} ---
 
 Ergänzend implementiert das Backend eine \textbf{Fallback-Kette} für den
 Fall, dass OpenRouter nicht konfiguriert ist. Das System prüft zur
@@ -700,26 +538,14 @@ insbesondere für Evaluationsvergleiche zwischen Modellen genutzt wird
 
 \subsection{Prompt-Engineering-Strategie}\label{prompt-engineering-strategie}
 
-Die Generierung verwendet ein template-basiertes Prompting mit modularen
-Bausteinen, die dynamisch zusammengesetzt werden:
-
-\begin{enumerate}
-\def\labelenumi{\arabic{enumi}.}
-\tightlist
-\item
-  Rolleninstruktion (Persona, Aufgabe, Gattung)
-\item
-  Stilinstruktion (neutral / euphorisch / kritisch)
-\item
-  Faktenblock zum Ereignis (Typ, Detail, Minute, beteiligte
-  Spieler/Team)
-\item
-  Dynamischer Kontextblock mit relevanten Matchinformationen
-\item
-  Optionaler Few-Shot-Block mit Stilbeispielen
-\item
-  Regelblock mit formativen und inhaltlichen Einschränkungen
-\end{enumerate}
+Die Generierung verwendet ein template-basiertes Prompting mit sechs
+modularen Bausteinen, die dynamisch zusammengesetzt werden: einer
+Rolleninstruktion (Persona, Aufgabe, Gattung), einer Stilinstruktion
+(neutral / euphorisch / kritisch), einem Faktenblock zum Ereignis (Typ,
+Detail, Minute, beteiligte Spieler und Team), einem dynamischen
+Kontextblock mit relevanten Matchinformationen, einem optionalen
+Few-Shot-Block mit Stilbeispielen sowie einem Regelblock mit formativen
+und inhaltlichen Einschränkungen.
 
 \begin{figure}[H]
 \centering
@@ -748,19 +574,7 @@ Abweichungen vom Originaltext zu minimieren.
 \subsection{Stilprofile und
 Instanzspezifik}\label{stilprofile-und-instanzspezifik}
 
-Das System unterstützt drei zentrale Stilprofile:
-
-\begin{itemize}
-\tightlist
-\item
-  \textbf{\texttt{neutral}}: sachlich, ausgewogen, ohne Vereinspräferenz
-\item
-  \textbf{\texttt{euphorisch}}: emotional und fan-nah
-\item
-  \textbf{\texttt{kritisch}}: analytisch und bewertend
-\end{itemize}
-
-Ergänzend steuert die Instanzkonfiguration (\texttt{generic}
+Das System unterstützt drei zentrale Stilprofile: \texttt{neutral} (sachlich, ausgewogen, ohne Vereinspräferenz), \texttt{euphorisch} (emotional und fan-nah) sowie \texttt{kritisch} (analytisch und bewertend). Ergänzend steuert die Instanzkonfiguration (\texttt{generic}
 vs.~\texttt{ef\_whitelabel}) die Tonalität. Für \texttt{ef\_whitelabel}
 werden vereinsspezifische Stilbeispiele aus \texttt{style\_references}
 als Few-Shot-Kontext eingebunden; die generische Instanz kann ohne
@@ -832,67 +646,14 @@ mit dem Backend.
 \subsection{Hook- und
 State-Architektur}\label{hook--und-state-architektur}
 
-Die Zustands- und Interaktionslogik ist in wiederverwendbare Custom
-Hooks aufgeteilt --- ein Entwurfsmuster, das React seit Version 16.8 als
-Alternative zu Klassenkomponenten eingeführt hat. Das Frontend umfasst
-26 spezialisierte Hooks, die sich in fünf funktionale Kategorien
-gliedern lassen:
-
-\begin{enumerate}
-\def\labelenumi{\arabic{enumi}.}
-\tightlist
-\item
-  \textbf{Navigation und Datenauswahl} --- Steuerung der hierarchischen
-  Auswahlkette (Land → Team → Wettbewerb → Spieltag → Spiel) mit
-  bedarfsgesteuerter Auslösung von n8n-Importtriggern bei leerem
-  Datenbestand.
-\item
-  \textbf{Datenabfrage und Polling} --- Periodisches Laden von Match-,
-  Event- und Tickerdaten über drei spezialisierte Hooks, die jeweils
-  einen eigenen Abfragezyklus betreiben und über einen aggregierenden
-  Hook koordiniert werden.
-\item
-  \textbf{Echtzeitkommunikation} --- WebSocket-Verbindung für den
-  Medien-Feed mit automatischer Reconnect-Strategie.
-\item
-  \textbf{Redaktionsinteraktion} --- Modusverwaltung,
-  Draft-Bestätigung/-Ablehnung, Tastatursteuerung sowie automatische
-  Publikation im Vollautomatik-Modus.
-\item
-  \textbf{UI-Steuerung} --- Panel-Größenanpassung,
-  Spielminuten-Berechnung, Spielernamen-Autovervollständigung und
-  Systemstatus-Überwachung.
-\end{enumerate}
+Die Zustands- und Interaktionslogik ist in wiederverwendbare Custom Hooks aufgeteilt --- ein Entwurfsmuster, das React seit Version 16.8 als Alternative zu Klassenkomponenten eingeführt hat. Das Frontend umfasst 26 spezialisierte Hooks in fünf funktionalen Kategorien. Navigation und Datenauswahl steuern die hierarchische Auswahlkette (Land → Team → Wettbewerb → Spieltag → Spiel) und lösen bei leerem Datenbestand bedarfsgesteuert n8n-Importtrigger aus. Datenabfrage und Polling laden Match-, Event- und Tickerdaten periodisch über drei spezialisierte Hooks, die jeweils einen eigenen Abfragezyklus betreiben und über einen aggregierenden Hook koordiniert werden. Die Echtzeitkommunikation stellt eine WebSocket-Verbindung für den Medien-Feed mit automatischer Reconnect-Strategie bereit. Redaktionsinteraktion umfasst Modusverwaltung, Draft-Bestätigung und -Ablehnung, Tastatursteuerung sowie automatische Publikation im Vollautomatik-Modus. UI-Steuerung deckt Panel-Größenanpassung, Spielminuten-Berechnung, Spielernamen-Autovervollständigung und Systemstatus-Überwachung ab.
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
 \subsection{Dreispalten-Layout und
 Redaktionsfluss}\label{dreispalten-layout-und-redaktionsfluss}
 
-Die Hauptansicht folgt einem responsiven Dreispalten-Ansatz mit klarer
-Aufgabenverteilung:
-
-\begin{enumerate}
-\def\labelenumi{\arabic{enumi}.}
-\tightlist
-\item
-  \textbf{Linkes Panel} --- Veröffentlichungsperspektive: listet
-  publizierte Ticker-Einträge als chronologischen Feed, dedupliziert
-  nach \texttt{event\_id} und sortiert nach Spielminute.
-\item
-  \textbf{Mittleres Panel} --- Redaktionelle Kernarbeit:
-  Event-Verarbeitung in Abhängigkeit vom Modus (auto, coop, manual),
-  Draft-Prüfung und Freigabe/Ablehnung, manuelle Eingabe mit
-  Command-Parser (z. B. \texttt{/g}, \texttt{/gelb}, \texttt{/rot},
-  \texttt{/s}), sowie am unteren Rand integrierte Media- und
-  Social-Panels (ScorePlay-Bilder, YouTube, Twitter/X, Instagram). Die
-  Social-Media-Panels werden ausschließlich bei erkannten EF-Spielen
-  (\texttt{isOurTeam}) eingeblendet.
-\item
-  \textbf{Rechtes Panel} --- Kontext- und Analyseinformationen:
-  Matchstatistiken, Aufstellungen inkl. Wechsel-/Karten-/Injury-Kontext
-  sowie spielerbezogene Leistungsdaten.
-\end{enumerate}
+Die Hauptansicht folgt einem responsiven Dreispalten-Ansatz mit klarer Aufgabenverteilung. Das linke Panel übernimmt die Veröffentlichungsperspektive: Es listet publizierte Ticker-Einträge als chronologischen Feed, dedupliziert nach \texttt{event\_id} und sortiert nach Spielminute. Das mittlere Panel bildet die redaktionelle Kernarbeit ab --- Event-Verarbeitung in Abhängigkeit vom Modus (\texttt{auto}, \texttt{coop}, \texttt{manual}), Draft-Prüfung und Freigabe/Ablehnung, manuelle Eingabe mit Command-Parser (z. B. \texttt{/g}, \texttt{/gelb}, \texttt{/rot}, \texttt{/s}) sowie am unteren Rand integrierte Media- und Social-Panels (ScorePlay-Bilder, YouTube, Twitter/X, Instagram); letztere werden ausschließlich bei erkannten EF-Spielen (\texttt{isOurTeam}) eingeblendet. Das rechte Panel liefert Kontext- und Analyseinformationen: Matchstatistiken, Aufstellungen inklusive Wechsel-, Karten- und Injury-Kontext sowie spielerbezogene Leistungsdaten.
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
@@ -986,24 +747,7 @@ Modelle ohne separate API-Clients bietet.
 
 \subsection{Deployment-Architektur}\label{deployment-architektur}
 
-Das System wird auf der Cloud-Plattform \textbf{Render} betrieben und
-gliedert sich in drei Deployment-Einheiten:
-
-\begin{enumerate}
-\def\labelenumi{\arabic{enumi}.}
-\tightlist
-\item
-  \textbf{Backend} --- Docker-Container (\texttt{python:3.12-slim}) als
-  Render Web Service. Beim Start werden automatisch Datenbankmigrationen
-  ausgeführt, bevor der Uvicorn-Server Anfragen entgegennimmt.
-\item
-  \textbf{Frontend} --- Statisches Build-Artefakt (Create React App),
-  das als Render Static Site ausgeliefert wird. Die Konfiguration
-  erfolgt zur Buildzeit über Umgebungsvariablen.
-\item
-  \textbf{PostgreSQL} --- Render Managed Database als zentrale
-  Persistenzschicht, auf die sowohl Backend als auch n8n zugreifen.
-\end{enumerate}
+Das System wird auf der Cloud-Plattform \textbf{Render} betrieben und gliedert sich in drei Deployment-Einheiten. Das \textbf{Backend} läuft als Docker-Container (\texttt{python:3.12-slim}) als Render Web Service; beim Start werden automatisch Datenbankmigrationen ausgeführt, bevor der Uvicorn-Server Anfragen entgegennimmt. Das \textbf{Frontend} ist ein statisches Build-Artefakt (Create React App), das als Render Static Site ausgeliefert wird und zur Buildzeit über Umgebungsvariablen konfiguriert wird. \textbf{PostgreSQL} ist als Render Managed Database die zentrale Persistenzschicht, auf die sowohl Backend als auch n8n zugreifen.
 
 n8n wird als separater Self-Hosting-Dienst betrieben und kommuniziert
 ausschließlich über HTTP-Endpunkte mit dem Backend. Die n8n-Instanz wird
