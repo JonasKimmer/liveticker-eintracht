@@ -254,25 +254,18 @@ Er koordiniert Datenbankabfragen, Kontextaufbau und den LLM-Aufruf, hält
 dabei aber die Schichten klar getrennt: \texttt{llm\_service.py} hat
 keine Datenbankabhängigkeit.
 
-Die vier zentralen Funktionen:
-
-\textbf{\texttt{score\_at\_event()}} berechnet den Spielstand zum
-Zeitpunkt eines Torereignisses. Da die Football-API den kumulativen
-Stand liefert, muss der Stand \emph{vor} dem aktuellen Event
-rekonstruiert werden. Die Funktion lädt alle Tore bis zur
-\texttt{position} des Events, unterscheidet zwischen regulären Toren und
-Eigentoren (letztere zählen für den Gegner) und akkumuliert die Scores
-für Heim- und Auswärtsteam.
-
-\textbf{\texttt{build\_match\_context()}} erstellt das
-Kontext-Dictionary für den LLM-Prompt: Teamnamen, aktueller Stand,
+Der Service umfasst vier zentrale Funktionen. \texttt{score\_at\_event()}
+berechnet den Spielstand zum Zeitpunkt eines Torereignisses: Da die
+Football-API den kumulativen Stand liefert, muss der Stand \emph{vor}
+dem aktuellen Event rekonstruiert werden, wobei Eigentore gesondert
+behandelt werden. \texttt{build\_match\_context()} erstellt das
+Kontext-Dictionary für den LLM-Prompt aus Teamnamen, aktuellem Stand,
 Matchzustand, Spielminute und Liga.
 
-\textbf{\texttt{call\_llm()}} ist der zentrale, Semaphore-gesicherte
-LLM-Aufruf. Er lädt zunächst aus dem \texttt{StyleReferenceRepository}
-bis zu drei Stilbeispiele für
-\texttt{event\_type\ +\ instance\ +\ league} als Few-Shot-Kontext und
-delegiert dann an \texttt{generate\_ticker\_text()}:
+\texttt{call\_llm()} ist der zentrale, Semaphore-gesicherte LLM-Aufruf.
+Er lädt zunächst aus dem \texttt{StyleReferenceRepository} bis zu drei
+Stilbeispiele für \texttt{event\_type\ +\ instance\ +\ league} als
+Few-Shot-Kontext und delegiert dann an \texttt{generate\_ticker\_text()}:
 
 \begin{Shaded}
 \begin{Highlighting}[]
@@ -289,11 +282,11 @@ Die Semaphore ist auf Modulebene als Singleton definiert
 (\texttt{\_llm\_semaphore\ =\ asyncio.Semaphore(settings.LLM\_CONCURRENCY)},
 Standard: 8) und begrenzt gleichzeitige LLM-Aufrufe pro Prozessinstanz.
 
-\textbf{\texttt{make\_ai\_entry()}} ist ein schlanker Builder, der aus
-den LLM-Ergebnissen ein \texttt{TickerEntryCreate}-Schema erzeugt. Er
-setzt \texttt{source="ai"} und legt den initialen Status abhängig vom
-Aufrufkontext fest (\texttt{draft} im Co-op-Modus, \texttt{published} im
-Auto-Modus).
+\texttt{make\_ai\_entry()} schließlich ist ein schlanker Builder, der aus
+den LLM-Ergebnissen ein \texttt{TickerEntryCreate}-Schema erzeugt,
+\texttt{source="ai"} setzt und den initialen Status abhängig vom
+Aufrufkontext festlegt (\texttt{draft} im Co-op-Modus,
+\texttt{published} im Auto-Modus).
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
@@ -321,16 +314,13 @@ Das Dispatch-Pattern macht es trivial, neue Provider hinzuzufügen:
 Implementierung einer Methode \texttt{\_generate\_X\_text()} und ein
 Eintrag im Dictionary.
 
-Der Prompt wird in vier modularen Methoden aufgebaut:
-
-\textbf{\texttt{\_build\_event\_lines()}} erzeugt die Fakten-Sektion.
-Jeder Parameter (Ereignistyp, Detail, Minute, Spieler, Team) wird nur
-dann eingebunden, wenn er vorhanden ist. Die Ereignisbezeichnung wird
-aus \texttt{EVENT\_TYPE\_LABEL} in lesbares Deutsch übersetzt (z. B.
-\texttt{"goal"} → \texttt{"Tor"}).
-
-\textbf{\texttt{\_build\_few\_shot\_block()}} formatiert die
-Stilreferenzen als nummerierte Beispiele:
+Der Prompt wird in vier modularen Methoden aufgebaut.
+\texttt{\_build\_event\_lines()} erzeugt die Fakten-Sektion; jeder
+Parameter wird nur dann eingebunden, wenn er vorhanden ist, und
+Ereignisbezeichnungen werden aus \texttt{EVENT\_TYPE\_LABEL} in lesbares
+Deutsch übersetzt (z.\,B. \texttt{"goal"} → \texttt{"Tor"}).
+\texttt{\_build\_few\_shot\_block()} formatiert die Stilreferenzen als
+nummerierte Beispiele:
 
 \begin{verbatim}
 ### STILREFERENZEN
@@ -339,10 +329,9 @@ Schreibe in exakt diesem Stil (Rhythmus, Wortwahl, Emotionalität):
 - "Eintracht schlägt zu – der erste Treffer des Abends!"
 \end{verbatim}
 
-\textbf{\texttt{\_build\_prematch\_parts()}} ergänzt für Pre-Match-Typen
-eine zusätzliche harte Instruktion: Das Modell darf keine Live-Szenen
-erfinden, sondern ausschließlich Vorschau- und Analyseinhalte
-produzieren.
+\texttt{\_build\_prematch\_parts()} ergänzt für Pre-Match-Typen eine
+zusätzliche harte Instruktion, die das Modell auf Vorschau- und
+Analyseinhalte beschränkt und das Erfinden von Live-Szenen verhindert.
 
 Der vollständig zusammengesetzte System-Prompt folgt der in Abschnitt
 4.5.2 beschriebenen modularen Struktur aus sechs Bausteinen
@@ -362,11 +351,11 @@ Versuche mit linearem Backoff (\texttt{30\ s\ /\ 60\ s\ /\ 90\ s})
 unternommen; bei sonstigen transienten Fehlern greift exponentielles
 Backoff (\texttt{1\ s\ /\ 2\ s\ /\ 4\ s}).
 
-\textbf{Normalisierung des Event-Typs} erfolgt vorab in
-\texttt{\_normalize\_event\_type()}. Die \texttt{EVENT\_TYPE\_MAP}
-übersetzt externe Strings (Partner-API: \texttt{PartnerGoal},
-Football-API: \texttt{Goal}) auf interne Bezeichner (\texttt{goal}).
-Nicht erkannte Typen fallen auf \texttt{"comment"} zurück.
+Vorab normalisiert \texttt{\_normalize\_event\_type()} den Ereignistyp:
+Die \texttt{EVENT\_TYPE\_MAP} übersetzt externe Strings beider APIs
+(z.\,B. \texttt{PartnerGoal} bzw. \texttt{Goal}) auf einheitliche
+interne Bezeichner (\texttt{goal}); unbekannte Typen fallen auf
+\texttt{"comment"} zurück.
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
@@ -694,31 +683,19 @@ statt einen Laufzeitfehler zu werfen.
 Frontend}\label{modusimplementierung-im-frontend}
 
 Der aktive Modus (\texttt{auto} / \texttt{coop} / \texttt{manual})
-steuert das Verhalten mehrerer Frontend-Komponenten (vgl. Kap. 4.6.4 für
-die konzeptionelle Einordnung der Moduslogik und Interaktionsdesign).
-Die Implementierung verteilt sich auf drei Ebenen:
-
-\textbf{Persistenz und Synchronisation} --- \texttt{useTickerMode}
-initialisiert den Modus lokal mit \texttt{coop} als Standardwert und
-überschreibt diesen beim Laden eines Spiels mit dem in der Datenbank
-gespeicherten \texttt{ticker\_mode}. Änderungen werden über
-\texttt{PATCH\ /matches/\{id\}/ticker-mode} ans Backend
-zurückgeschrieben. Lokale Optimistic-Updates vermeiden wahrnehmbare
-Latenz beim Umschalten.
-
-\textbf{Keyboard-Shortcuts} --- Im Co-op-Modus registriert
-\texttt{useTickerMode} die Shortcuts \texttt{TAB} (acceptDraft) und
-\texttt{ESC} (rejectDraft) direkt als Keyboard-Event-Listener. Die
-Shortcut-Registrierung ist an den Modus-Zustand gebunden und wird bei
-Moduswechsel automatisch aktualisiert.
-
-\textbf{\texttt{useAutoPublisher}} --- Im Auto-Modus überwacht dieser
-Hook die \texttt{tickerTexts} auf neue Draft-Einträge
-(\texttt{status="draft"}) und publiziert sie automatisch. Dies ist als
-Frontend-Fallback gedacht: Primär setzt n8n mit
-\texttt{auto\_publish=True} den Status direkt beim Generieren;
-\texttt{useAutoPublisher} fängt Fälle auf, in denen das nicht geschehen
-ist.
+steuert das Verhalten mehrerer Frontend-Komponenten (vgl. Kap.~4.6.4).
+\texttt{useTickerMode} initialisiert den Modus lokal mit \texttt{coop}
+als Standardwert, überschreibt diesen beim Laden eines Spiels mit dem in
+der Datenbank gespeicherten \texttt{ticker\_mode} und schreibt
+Änderungen per \texttt{PATCH\ /matches/\{id\}/ticker-mode} sofort ans
+Backend zurück; Optimistic-Updates vermeiden wahrnehmbare Latenz beim
+Umschalten. Im Co-op-Modus registriert derselbe Hook die Shortcuts
+\texttt{TAB} (acceptDraft) und \texttt{ESC} (rejectDraft) als
+Keyboard-Event-Listener, die bei Moduswechsel automatisch aktualisiert
+werden. Im Auto-Modus übernimmt \texttt{useAutoPublisher} die
+automatische Publikation neu eintreffender Draft-Einträge; dies dient
+als Frontend-Fallback, da n8n mit \texttt{auto\_publish=True}
+Einträge bereits beim Generieren direkt veröffentlicht.
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
@@ -729,20 +706,14 @@ TypeScript migriert. Ziel war nicht die vollständige Auflösung aller
 \texttt{any}-Typen, sondern eine pragmatische Typisierung der
 systemkritischen Pfade mit messbaren Qualitätskennzahlen.
 
-\textbf{Migrationsstrategie} --- Die Migration folgte einem
-schrittweisen Ansatz: Zuerst wurden alle \texttt{.js}- und
-\texttt{.jsx}-Dateien in \texttt{.ts} und \texttt{.tsx} umbenannt, dann
-\texttt{tsconfig.json} konfiguriert (\texttt{target:\ es2015},
-\texttt{module:\ esnext}, \texttt{jsx:\ react-jsx},
-\texttt{moduleResolution:\ node}). Anschließend wurden TypeScript-Fehler
-von innen nach außen behoben --- beginnend mit dem Typ-System
-(\texttt{src/types/index.ts}) über Contexts bis zu den Komponenten. Der
-\texttt{strict}-Modus ist derzeit deaktiviert
-(\texttt{"strict":\ false}), um die inkrementelle Migration ohne
-blockierende Fehlereskalation zu ermöglichen.
-
-\textbf{Zentrale Typ-Definitionen} --- \texttt{src/types/index.ts}
-definiert die gemeinsamen Domain-Interfaces:
+Die Migration folgte einem schrittweisen Ansatz: Zunächst wurden alle
+\texttt{.js}/\texttt{.jsx}-Dateien umbenannt und die
+\texttt{tsconfig.json} konfiguriert; anschließend wurden
+TypeScript-Fehler von innen nach außen behoben --- beginnend mit dem
+Typ-System (\texttt{src/types/index.ts}) über Contexts bis zu den
+Komponenten. Der \texttt{strict}-Modus ist bewusst deaktiviert, um
+inkrementelle Migration ohne blockierende Fehlereskalation zu erlauben.
+\texttt{src/types/index.ts} definiert die zentralen Domain-Interfaces:
 
 \begin{Shaded}
 \begin{Highlighting}[]
@@ -768,11 +739,10 @@ definiert die gemeinsamen Domain-Interfaces:
 \end{Highlighting}
 \end{Shaded}
 
-\textbf{Ergebnis} --- Nach der Migration erzielt das Projekt \textbf{0
-TypeScript-Compilerfehler} und eine \textbf{type-coverage von 95,84 \%}
-(gemessen mit \texttt{type-coverage\ -\/-strict}). Die detaillierte
-Darstellung der Migrationsergebnisse und die Analyse der verbleibenden
-untypisierten Stellen folgt in Abschnitt 6.2.5.
+Nach der Migration erzielt das Projekt \textbf{0
+TypeScript-Compilerfehler} und eine type-coverage von \textbf{95,84\,\%}
+(gemessen mit \texttt{type-coverage\ -\/-strict}); die detaillierte
+Auswertung folgt in Abschnitt~6.2.5.
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
@@ -781,59 +751,27 @@ Workflow-Implementierung}\label{n8n-workflow-implementierung}
 
 Die n8n-Workflows bilden die Orchestrierungsschicht zwischen externen
 Datenquellen, dem FastAPI-Backend und dem LLM-Dienst. Alle 16
-Workflow-Dateien liegen als versionierte JSON-Exporte im
-Projektverzeichnis \texttt{n8n/} vor und können direkt in eine
-n8n-Instanz importiert werden. Die Workflows gliedern sich in sechs
-funktionale Gruppen:
+Workflow-Dateien liegen als versionierte JSON-Exporte unter \texttt{n8n/}
+vor. Die Workflows gliedern sich funktional in sechs Gruppen: Workflows
+\texttt{01}--\texttt{04} laden Stammdaten (Länder, Teams, Wettbewerbe,
+Spielpläne) via Upsert aus API-Football. Workflows \texttt{04}--\texttt{07}
+importieren spielbezogene Detaildaten (Aufstellungen, Statistiken); der
+Prematch-Workflow (\texttt{07}) erzeugt zusätzlich strukturierte
+Kontextdaten als synthetische Events, die dem LLM als Promptkontext
+dienen. Die KI-Generierungs-Workflows (\texttt{09}, \texttt{13},
+\texttt{14}) importieren Live-Ereignisse und delegieren die
+Textgenerierung an das Backend; Zusammenfassungen für Halbzeit und Abpfiff
+rufen den LLM-Provider direkt auf. Medien- und Social-Media-Workflows
+(\texttt{08}, \texttt{10}--\texttt{12}) dienen der Ingestion von
+Bildern, YouTube-Clips und Social-Media-Inhalten. Workflow \texttt{15}
+überwacht laufende Spiele und aktualisiert Live-Statistiken per
+Backend-Endpunkt; Workflow \texttt{16} empfängt minutengenaue
+Statusupdates, aktualisiert \texttt{minute}, \texttt{match\_phase} und
+\texttt{match\_state} und triggert bei Phasenwechsel automatisch den
+\texttt{match-status}-Webhook.
 
-\textbf{A) Stammdaten und Matchstruktur} --- Die Workflows
-\texttt{01\_import\_countries}, \texttt{02\_import\_teams\_by\_country},
-\texttt{03\_import\_competitions\_and\_matches} und
-\texttt{04\_import\_matches} laden Länder, Teams, Wettbewerbe und
-Spielpläne aus API-Football und persistieren diese via
-Upsert-Strategien. Externe IDs dienen als stabile Zuordnungsschlüssel
-für konfliktfreie Aktualisierungen.
-
-\textbf{B) Spielbezogene Detaildaten} --- \texttt{04\_import\_lineups},
-\texttt{05\_import\_match\_statistics},
-\texttt{06\_import\_player\_statistics} und
-\texttt{07\_import\_prematch} importieren Aufstellungen, Match- und
-Spielerstatistiken matchbezogen. Der Prematch-Workflow erzeugt
-zusätzlich strukturierte Kontextdaten (Verletzungen, Head-to-Head,
-Tabellenstand) als synthetische Events, die dem LLM als Promptkontext
-dienen.
-
-\textbf{C) KI-Generierung} --- \texttt{09\_events\_llm\_workflow},
-\texttt{13\_Halftime\_aftertime} und \texttt{14\_Game\_ANpfiff\_ABpfiff}
-importieren Live-Ereignisse, erzeugen synthetische Phasenereignisse und
-delegieren die Textgenerierung an das Backend. Der
-Zusammenfassungs-Workflow (\texttt{13}) ruft den LLM-Provider direkt
-auf, da Halbzeit-/Abpfiff-Zusammenfassungen einen umfangreicheren Prompt
-mit Statistiken erfordern.
-
-\textbf{D) Medien und Social Media} ---
-\texttt{08\_scoreplay\_media\_workflow}, \texttt{10\_Twitter},
-\texttt{11\_youtube} und \texttt{12\_insta} importieren Medien- und
-Social-Media-Inhalte. Der Media-Workflow übergibt Bilder an das Backend,
-das diese über WebSocket verteilt; die Social-Media-Workflows speichern
-Clips in der Datenbank. Diese Workflows dienen der Ingestion, nicht dem
-Publishing.
-
-\textbf{E) Live-Stats-Monitor} --- \texttt{15\_live\_stats\_monitor}
-überwacht laufende Spiele per Webhook und aktualisiert Statistiken in
-Echtzeit. Der Workflow prüft, ob ein Spiel aktiv ist, und delegiert die
-Aktualisierung an den entsprechenden Backend-Endpunkt.
-
-\textbf{F) Aktuelle-Minute-Update} ---
-\texttt{16\_aktuelle\_minute\_livespiel} empfängt minutengenaue
-Statusupdates aus der Football-API, ermittelt Phase und Zustand des
-Spiels (\texttt{1H}/\texttt{2H}/\texttt{HT}/\texttt{FT} u.\,a.) und
-aktualisiert \texttt{minute}, \texttt{match\_phase} und
-\texttt{match\_state} in der Datenbank. Bei Phasenwechsel triggert der
-Workflow automatisch den \texttt{match-status}-Webhook.
-
-Dieser Abschnitt dokumentiert die Implementierungsdetails der zentralen
-Workflows (Gruppen B--D).
+Die folgenden Abschnitte beschreiben die Implementierungsdetails der
+systemkritischen Workflows.
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
