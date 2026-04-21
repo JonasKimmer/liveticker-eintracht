@@ -171,37 +171,11 @@ Implementierungskomplexität. Für Echtzeitanwendungen wie Liveticker
 stehen mehrere etablierte Kommunikationsmuster zur Verfügung, die sich
 hinsichtlich dieser Dimensionen unterscheiden.
 
-\textbf{HTTP-Polling} ist das einfachste Muster: Der Client sendet in
-regelmäßigen Intervallen Anfragen an den Server, um neue Daten
-abzurufen. Der Vorteil liegt in der Einfachheit und breiten
-Kompatibilität --- das Muster nutzt Standard-HTTP-Requests ohne
-zusätzliche Protokollschichten. Nachteile sind die inhärente Latenz
-(Daten werden erst beim nächsten Polling-Zyklus sichtbar) und der
-erhöhte Ressourcenverbrauch durch wiederholte Request/Response-Zyklen,
-selbst wenn keine neuen Daten vorliegen. Für Anwendungen mit akzeptabler
-Latenztoleranz (z. B. wenige Sekunden) und begrenzter Updatefrequenz ist
-Polling jedoch eine robuste und wartbare Lösung.
-
-\textbf{Server-Sent Events (SSE)} bieten als Zwischenlösung eine
-HTTP-basierte Push-Verbindung vom Server zum Client (Hickson 2015) ---
-ressourceneffizienter als Polling, jedoch auf unidirektionale
-Kommunikation beschränkt.
-
-\textbf{WebSocket} etabliert eine vollständig bidirektionale,
-persistente Verbindung über das WebSocket-Protokoll (RFC 6455). Nach
-einem initialen HTTP-Handshake wechselt die Verbindung in ein binäres
-Protokoll mit minimalen Framing-Overhead (Fette \& Melnikov 2011, S. 1).
-WebSocket eignet sich für latenzkritische Echtzeitanwendungen, bei denen
-minimale Latenz und eine persistente Verbindung erforderlich sind ---
-auch wenn die Kommunikation faktisch überwiegend unidirektional (Server
-→ Client) verläuft. RFC 6455 nennt Börsen-Ticker explizit als
-Einsatzszenario --- eine strukturelle Parallele zum Sport-Liveticker.
-Der Preis für niedrige Latenz sind höhere Implementierungskomplexität
-und erhöhter Server-Ressourcenbedarf durch persistente Verbindungen.
-Clientseitig ist eine Reconnect-Strategie erforderlich, da
-Netzwerkunterbrechungen die persistente Verbindung unerwartet beenden
-können --- üblich ist dabei ein exponentielles Backoff, um den Server
-bei wiederholten Verbindungsversuchen nicht zu überlasten.
+\begin{itemize}\tightlist
+\item \textbf{HTTP-Polling} ist das einfachste Muster: Der Client sendet in regelmäßigen Intervallen Anfragen an den Server, um neue Daten abzurufen. Der Vorteil liegt in der Einfachheit und breiten Kompatibilität --- das Muster nutzt Standard-HTTP-Requests ohne zusätzliche Protokollschichten. Nachteile sind die inhärente Latenz (Daten werden erst beim nächsten Polling-Zyklus sichtbar) und der erhöhte Ressourcenverbrauch durch wiederholte Request/Response-Zyklen, selbst wenn keine neuen Daten vorliegen. Für Anwendungen mit akzeptabler Latenztoleranz (z. B. wenige Sekunden) und begrenzter Updatefrequenz ist Polling jedoch eine robuste und wartbare Lösung.
+\item \textbf{Server-Sent Events (SSE)} bieten als Zwischenlösung eine HTTP-basierte Push-Verbindung vom Server zum Client (Hickson 2015) --- ressourceneffizienter als Polling, jedoch auf unidirektionale Kommunikation beschränkt.
+\item \textbf{WebSocket} etabliert eine vollständig bidirektionale, persistente Verbindung über das WebSocket-Protokoll (RFC 6455). Nach einem initialen HTTP-Handshake wechselt die Verbindung in ein binäres Protokoll mit minimalen Framing-Overhead (Fette \& Melnikov 2011, S. 1). WebSocket eignet sich für latenzkritische Echtzeitanwendungen, bei denen minimale Latenz und eine persistente Verbindung erforderlich sind --- auch wenn die Kommunikation faktisch überwiegend unidirektional (Server → Client) verläuft. RFC 6455 nennt Börsen-Ticker explizit als Einsatzszenario --- eine strukturelle Parallele zum Sport-Liveticker. Der Preis für niedrige Latenz sind höhere Implementierungskomplexität und erhöhter Server-Ressourcenbedarf durch persistente Verbindungen. Clientseitig ist eine Reconnect-Strategie erforderlich, da Netzwerkunterbrechungen die persistente Verbindung unerwartet beenden können --- üblich ist dabei ein exponentielles Backoff, um den Server bei wiederholten Verbindungsversuchen nicht zu überlasten.
+\end{itemize}
 
 Die Wahl des Kommunikationsmusters hängt von den Anforderungen der
 Anwendung ab: Polling bevorzugt Einfachheit, SSE bietet effizienten

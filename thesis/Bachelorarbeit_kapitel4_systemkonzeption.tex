@@ -472,8 +472,6 @@ einheitlichen Schnittstelle und unterstützt aktuell OpenAI, Anthropic,
 Google Gemini, OpenRouter sowie einen Mock-Modus für Entwicklungs- und
 Fallbackszenarien ohne API-Key.
 
-\textbf{Primärzugang: OpenRouter als API-Gateway}
-
 Das vorliegende System setzt primär \textbf{OpenRouter} als LLM-Gateway
 ein. OpenRouter fungiert als einheitliche API-Schnittstelle, über die mit
 einem einzelnen API-Schlüssel verschiedene Sprachmodelle unterschiedlicher
@@ -492,8 +490,6 @@ faktenbasiert --- eine Aufgabe, für die kompakte Modelle eine
 vergleichbare Qualität bei deutlich niedrigerer Latenz erzielen. Für
 Vereinsredaktionen mit begrenztem Budget ist dieser Kostenvorteil ein
 entscheidender Faktor für die Praxistauglichkeit des Systems.
-
-\textbf{Fallback-Kette und Mock-Provider} ---
 
 Ergänzend implementiert das Backend eine \textbf{Fallback-Kette} für den
 Fall, dass OpenRouter nicht konfiguriert ist. Das System prüft zur
