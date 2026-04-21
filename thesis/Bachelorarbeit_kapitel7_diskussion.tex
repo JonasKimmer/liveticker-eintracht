@@ -7,6 +7,8 @@ Dieses Kapitel ordnet die Evaluationsergebnisse in den Stand der Technik ein, re
 \section{Einordnung in den Stand der
 Technik}\label{einordnung-in-den-stand-der-technik}
 
+Das entwickelte System lässt sich entlang zweier Achsen in den Stand der Technik einordnen: einer Abgrenzung zu bestehenden automatisierten Berichterstattungssystemen und einem Beitrag zum aktuellen Forschungsstand.
+
 \subsection{Abgrenzung zu bestehenden
 Systemen}\label{abgrenzung-zu-bestehenden-systemen}
 
@@ -22,7 +24,7 @@ bestehenden Ansätzen der automatisierten Sportberichterstattung (Kapitel
 
 \subsection{Beitrag zur Forschung}\label{beitrag-zur-forschung}
 
-Die Arbeit leistet drei Beiträge zum aktuellen Forschungsstand. Als \textbf{architektonischen Beitrag} demonstriert sie eine produktionsnahe Referenzarchitektur für KI-gestützte Echtzeit-Textgenerierung mit modularer Provider-Abstraktion, Few-Shot-Prompting aus einer kuratierten Stilreferenz-Datenbank und dreistufigem Betriebsmodus-Konzept. Als \textbf{methodischen Beitrag} stellt die Evaluationsinfrastruktur mit Bulk-Generierungsendpunkt, Provider-Override und statistischen Vergleichsmetriken (Cliff's Delta, Bootstrap-CI, Cohen's Kappa) systematische und reproduzierbare Modellvergleiche bereit. Als \textbf{praktischen Beitrag} adressiert die White-Label-Architektur mit instanzspezifischer Stilsteuerung den in Kapitel 2.3 beschriebenen Bedarf von Vereinen als eigenständige Medienproduzenten.
+Die Arbeit leistet drei Beiträge zum aktuellen Forschungsstand. Als architektonischen Beitrag demonstriert sie eine produktionsnahe Referenzarchitektur für KI-gestützte Echtzeit-Textgenerierung mit modularer Provider-Abstraktion, Few-Shot-Prompting aus einer kuratierten Stilreferenz-Datenbank und dreistufigem Betriebsmodus-Konzept. Als methodischen Beitrag stellt die Evaluationsinfrastruktur mit Bulk-Generierungsendpunkt, Provider-Override und statistischen Vergleichsmetriken (Cliff's Delta, Bootstrap-CI, Cohen's Kappa) systematische und reproduzierbare Modellvergleiche bereit. Als praktischen Beitrag adressiert die White-Label-Architektur mit instanzspezifischer Stilsteuerung den in Kapitel 2.3 beschriebenen Bedarf von Vereinen als eigenständige Medienproduzenten.
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
@@ -93,14 +95,14 @@ formelleren Register zu schreiben als es das Genre Liveticker erfordert.
 Die Few-Shot-Referenzen aus der \texttt{style\_references}-Tabelle sind
 das primäre Mittel, um diese stilistische Lücke zu schließen.
 
-Die Evaluationsergebnisse (Abschnitt 6.3.6) zeigen, dass die
+Die Evaluationsergebnisse (Abschnitt~6.3.4) zeigen, dass die
 Few-Shot-Referenzen das Format zuverlässig konditionieren ---
 Minutenangaben, TOOOOR-Konvention und Textkürze werden konsistent
 übernommen. Die stilistische Lücke ist damit teilweise geschlossen:
 Faktentreue und Verständlichkeit profitieren von der strukturierten
 Kontextübergabe, während Tonalität als schwächste Dimension verbleibt.
 Die häufigste Fehlerklasse --- Stil-Inkonsistenz (vgl.
-Fehlerklassen-Tabelle in Abschnitt 6.3.6) --- tritt gerade dort auf, wo
+Fehlerklassen-Tabelle in Abschnitt~6.3.4) --- tritt gerade dort auf, wo
 euphorische Few-Shot-Muster in den neutralen Stil bluten. Eine Trennung
 der Referenz-Pools nach Stilprofil wäre die naheliegende Korrektur.
 
@@ -108,7 +110,7 @@ Der in Kapitel 3.1 beschriebene Halluzinationseffekt ist im Kontext von
 Livetickern besonders kritisch, da fehlerhafte Fakten (falscher
 Torschütze, falsches Ergebnis) unmittelbar die Glaubwürdigkeit
 zerstören. Die explizite Schutzregel für Pre-Match-Prompts und die
-niedrige Temperatur (vgl. Abschnitt 7.4.2) sind Gegenmaßnahmen, deren
+niedrige Temperatur (vgl. Abschnitt~7.4) sind Gegenmaßnahmen, deren
 Wirksamkeit jedoch nur im \texttt{coop}-Modus durch die redaktionelle
 Kontrolle vollständig abgesichert ist. Im \texttt{auto}-Modus verbleibt
 ein Restrisiko fehlerhafter Veröffentlichungen.
@@ -172,12 +174,9 @@ KI-gestützter Werkzeuge in redaktionelle Workflows.
 \section{Diskussion der
 Prompt-Architektur}\label{diskussion-der-prompt-architektur}
 
-\subsection{Few-Shot-Prompting, Temperatur und
-Kontext}\label{few-shot-prompting-als-stilsteuerung}
+Die dynamische Einbindung von bis zu drei Stilreferenzen aus der \texttt{style\_references}-Datenbanktabelle stellt einen zentralen Designentscheid dar. Im Vergleich zu einem statischen System-Prompt bietet dieser Ansatz zwei Vorteile: \textbf{Anpassbarkeit ohne Codeänderung} --- neue Stilbeispiele können über die Datenbank hinzugefügt werden, ohne den Prompt-Code zu modifizieren --- sowie \textbf{Instanzspezifik} durch die Filterung nach Event-Typ und Instanz (\texttt{ef\_whitelabel} vs.~\texttt{generic}), die unterschiedliche Stilprofile für verschiedene Einsatzkontexte ermöglicht. Ein kontrollierter A/B-Test (mit vs.~ohne Referenzen) war nicht durchführbar (vgl. Abschnitt~6.3.3). Qualitativ zeigt die Evaluation konsistente Formatierungsmuster in der \texttt{ef\_whitelabel}-Instanz --- insbesondere bei TOOOOR-Konvention und Minutenformat. Der Effekt ist sichtbar, aber statistisch nicht isoliert messbar.
 
-Die dynamische Einbindung von bis zu drei Stilreferenzen aus der \texttt{style\_references}-Datenbanktabelle stellt einen zentralen Designentscheid dar. Im Vergleich zu einem statischen System-Prompt bietet dieser Ansatz zwei Vorteile: \textbf{Anpassbarkeit ohne Codeänderung} --- neue Stilbeispiele können über die Datenbank hinzugefügt werden, ohne den Prompt-Code zu modifizieren --- sowie \textbf{Instanzspezifik} durch die Filterung nach Event-Typ und Instanz (\texttt{ef\_whitelabel} vs.~\texttt{generic}), die unterschiedliche Stilprofile für verschiedene Einsatzkontexte ermöglicht. Ein kontrollierter A/B-Test (mit vs.~ohne Referenzen) war nicht durchführbar (vgl. Abschnitt~6.3.5). Qualitativ zeigt die Evaluation konsistente Formatierungsmuster in der \texttt{ef\_whitelabel}-Instanz --- insbesondere bei TOOOOR-Konvention und Minutenformat. Der Effekt ist sichtbar, aber statistisch nicht isoliert messbar.
-
-Die gewählte Temperatur von 0,3 für die Textgenerierung und 0,1 für Übersetzungen ist ein Kompromiss zwischen sprachlicher Varianz und Vorhersagbarkeit. Eine niedrigere Temperatur würde die Halluzinationsrate weiter senken, aber die Texte formelhafter machen --- ein Zielkonflikt, der im Genre Liveticker (das von Überraschung und sprachlicher Kreativität lebt) besonders relevant ist. Die sieben spezialisierten Context-Builder (vgl. Abschnitt~5.2.6) strukturieren die Fakten vor der Übergabe an das LLM und reduzieren damit die Wahrscheinlichkeit von Halluzinationen, da das Modell bereits aufbereitete Faktenblöcke erhält statt unstrukturierte Rohdaten. Die Wirksamkeit zeigt sich insbesondere bei Pre-Match-Einträgen, wo die Faktengrundlage (z.~B. Verletzungslisten, H2H-Statistiken) klar abgegrenzt ist.
+Die gewählte Temperatur von 0,3 für die Textgenerierung und 0,1 für Übersetzungen ist ein Kompromiss zwischen sprachlicher Varianz und Vorhersagbarkeit. Eine niedrigere Temperatur würde die Halluzinationsrate weiter senken, aber die Texte formelhafter machen --- ein Zielkonflikt, der im Genre Liveticker (das von Überraschung und sprachlicher Kreativität lebt) besonders relevant ist. Die sieben spezialisierten Context-Builder (vgl. Abschnitt~5.1) strukturieren die Fakten vor der Übergabe an das LLM und reduzieren damit die Wahrscheinlichkeit von Halluzinationen, da das Modell bereits aufbereitete Faktenblöcke erhält statt unstrukturierte Rohdaten. Die Wirksamkeit zeigt sich insbesondere bei Pre-Match-Einträgen, wo die Faktengrundlage (z.~B. Verletzungslisten, H2H-Statistiken) klar abgegrenzt ist.
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
@@ -188,7 +187,7 @@ Sportjournalismus}\label{implikationen-fuxfcr-den-sportjournalismus}
 Redakteursrolle}\label{veruxe4nderung-der-redakteursrolle}
 
 Das hybride System verschiebt die Rolle des Liveticker-Redakteurs von
-der \textbf{Textproduktion} zur \textbf{Textredaktion}: Statt unter
+der Textproduktion zur Textredaktion: Statt unter
 Zeitdruck zu formulieren, prüft, editiert und kuratiert der Redakteur
 KI-generierte Vorschläge. Diese Verschiebung entspricht dem von Bluhm
 und Schäfer (2023, S. 35) beschriebenen Wandel hin zu einer „augmented
