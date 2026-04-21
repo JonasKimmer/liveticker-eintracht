@@ -7,7 +7,7 @@ Dieses Kapitel ordnet die Evaluationsergebnisse in den Stand der Technik ein, re
 \section{Einordnung in den Stand der
 Technik}\label{einordnung-in-den-stand-der-technik}
 
-Das entwickelte System lässt sich entlang zweier Achsen in den Stand der Technik einordnen: einer Abgrenzung zu bestehenden automatisierten Berichterstattungssystemen und einem Beitrag zum aktuellen Forschungsstand.
+Das entwickelte System lässt sich in den Stand der Technik in zwei Richtungen einordnen: durch Abgrenzung zu bestehenden automatisierten Berichterstattungssystemen und durch seinen Beitrag zum aktuellen Forschungsstand.
 
 \subsection{Abgrenzung zu bestehenden
 Systemen}\label{abgrenzung-zu-bestehenden-systemen}
@@ -90,8 +90,8 @@ Skalierungsstufe.
 Die in Kapitel 2.5 hergeleiteten linguistischen Anforderungen an
 Liveticker --- Ellipsen, konzeptionelle Mündlichkeit, Graphostilistik
 (z. B. „TOOOOR!{\kern0pt}``) --- stellen besondere Anforderungen an die
-Prompt-Gestaltung. Die Erfahrung zeigt, dass LLMs dazu neigen, in einem
-formelleren Register zu schreiben als es das Genre Liveticker erfordert.
+Prompt-Gestaltung. Die Evaluation zeigt, dass LLMs dazu neigen, in einem
+formelleren Register zu schreiben, als es das Genre Liveticker erfordert (vgl. Abschnitt~6.3.4).
 Die Few-Shot-Referenzen aus der \texttt{style\_references}-Tabelle sind
 das primäre Mittel, um diese stilistische Lücke zu schließen.
 
@@ -139,10 +139,11 @@ unkritische Event-Typen (z. B. Phasenwechsel wie „Anpfiff'' oder
 Produktivbetrieb}\label{coop-modus-der-intendierte-produktivbetrieb}
 
 Im Evaluationszeitraum wurden im Coop-Modus keine Einträge nach Freigabe
-zurückgezogen --- ein Hinweis darauf, dass die redaktionelle Prüfung als
-Qualitätsstufe wirksam ist. Ob einzelne Entwürfe vor der Freigabe
-inhaltlich editiert wurden, wurde nicht systematisch erfasst;
-Bearbeitungen sind über das Frontend jedoch jederzeit möglich. Die
+zurückgezogen. Dies deutet darauf hin, dass die redaktionelle Prüfung als
+Qualitätsschicht greift; ob Entwürfe vor der Freigabe inhaltlich editiert
+wurden, wurde jedoch nicht systematisch erfasst (vgl. Abschnitt~6.7),
+weshalb eine abschließende Bewertung der Filterleistung des
+\texttt{coop}-Modus einer Folgestudie vorbehalten bleibt. Die
 TAB/ESC-Tastatursteuerung erweist sich als zentrales Mittel, um den
 Entscheidungsdurchsatz zu sichern, ohne den Redakteur visuell zu
 überlasten.
@@ -165,16 +166,23 @@ Redaktionen unterstützen: Neue Nutzer könnten im \texttt{manual}-Modus
 beginnen, über den \texttt{coop}-Modus Vertrauen in die KI-Qualität
 aufbauen und für unkritische Standardereignisse schließlich den
 \texttt{auto}-Modus aktivieren. Ob diese Graduierung in der Praxis so
-durchlaufen wird, ist empirisch nicht belegt; sie adressiert jedoch den
+durchlaufen wird, ist empirisch nicht belegt; sie würde jedoch den
 in Kapitel 2.1 beschriebenen Akzeptanzbedarf bei der Einführung
-KI-gestützter Werkzeuge in redaktionelle Workflows.
+KI-gestützter Werkzeuge in redaktionelle Workflows adressieren.
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
 \section{Diskussion der
 Prompt-Architektur}\label{diskussion-der-prompt-architektur}
 
-Die dynamische Einbindung von bis zu drei Stilreferenzen aus der \texttt{style\_references}-Datenbanktabelle stellt einen zentralen Designentscheid dar. Im Vergleich zu einem statischen System-Prompt bietet dieser Ansatz zwei Vorteile: \textbf{Anpassbarkeit ohne Codeänderung} --- neue Stilbeispiele können über die Datenbank hinzugefügt werden, ohne den Prompt-Code zu modifizieren --- sowie \textbf{Instanzspezifik} durch die Filterung nach Event-Typ und Instanz (\texttt{ef\_whitelabel} vs.~\texttt{generic}), die unterschiedliche Stilprofile für verschiedene Einsatzkontexte ermöglicht. Ein kontrollierter A/B-Test (mit vs.~ohne Referenzen) war nicht durchführbar (vgl. Abschnitt~6.3.3). Qualitativ zeigt die Evaluation konsistente Formatierungsmuster in der \texttt{ef\_whitelabel}-Instanz --- insbesondere bei TOOOOR-Konvention und Minutenformat. Der Effekt ist sichtbar, aber statistisch nicht isoliert messbar.
+Zwei Aspekte der Prompt-Architektur verdienen eine gesonderte Diskussion: das Design der dynamischen Stilreferenzen und die Wahl der Temperaturparameter in Verbindung mit den spezialisierten Context-Buildern.
+
+\subsection{Dynamische Stilreferenzen}\label{stilreferenzen}
+
+Die dynamische Einbindung von bis zu drei Stilreferenzen aus der \texttt{style\_references}-Datenbanktabelle stellt einen zentralen Designentscheid dar. Im Vergleich zu einem statischen System-Prompt bietet dieser Ansatz zwei Vorteile: Erstens ermöglicht die Anpassbarkeit ohne Codeänderung, neue Stilbeispiele über die Datenbank hinzuzufügen, ohne den Prompt-Code zu modifizieren. Zweitens erlaubt die Instanzspezifik durch Filterung nach Event-Typ und Instanz (\texttt{ef\_whitelabel} vs.~\texttt{generic}) unterschiedliche Stilprofile für verschiedene Einsatzkontexte. Ein kontrollierter A/B-Test (mit vs.~ohne Referenzen) war nicht durchführbar (vgl. Abschnitt~6.3.3). Qualitativ zeigt die Evaluation konsistente Formatierungsmuster in der \texttt{ef\_whitelabel}-Instanz --- insbesondere bei TOOOOR-Konvention und Minutenformat. Der Effekt ist sichtbar, aber statistisch nicht isoliert messbar.
+
+\subsection{Temperaturparameter und
+Context-Builder}\label{temperatur-context}
 
 Die gewählte Temperatur von 0,3 für die Textgenerierung und 0,1 für Übersetzungen ist ein Kompromiss zwischen sprachlicher Varianz und Vorhersagbarkeit. Eine niedrigere Temperatur würde die Halluzinationsrate weiter senken, aber die Texte formelhafter machen --- ein Zielkonflikt, der im Genre Liveticker (das von Überraschung und sprachlicher Kreativität lebt) besonders relevant ist. Die sieben spezialisierten Context-Builder (vgl. Abschnitt~5.1) strukturieren die Fakten vor der Übergabe an das LLM und reduzieren damit die Wahrscheinlichkeit von Halluzinationen, da das Modell bereits aufbereitete Faktenblöcke erhält statt unstrukturierte Rohdaten. Die Wirksamkeit zeigt sich insbesondere bei Pre-Match-Einträgen, wo die Faktengrundlage (z.~B. Verletzungslisten, H2H-Statistiken) klar abgegrenzt ist.
 
