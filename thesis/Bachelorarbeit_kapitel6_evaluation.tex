@@ -201,11 +201,10 @@ Der Wert von 95,84 \% bedeutet: Von 18.813 gemessenen Typausdrücken sind 18.031
 KI-Textgenerierung}\label{evaluation-der-ki-textgenerierung}
 
 Die Evaluation der Textgenerierung gliedert sich in zwei Teile: zunächst
-die implementierte Evaluationsinfrastruktur mit ihren quantitativen
-Metriken und dem Provider-Vergleich, dann die qualitative Analyse
-konkreter Textbeispiele einschließlich Expertenvalidierung.
+die Evaluationsinfrastruktur mit quantitativen Metriken und Provider-Vergleich,
+dann die qualitative Analyse konkreter Textbeispiele einschließlich Expertenvalidierung.
 
-\subsection{Evaluationsinfrastruktur}\label{evaluationsinfrastruktur}
+\subsection{Quantitative Metriken und Evaluationsinfrastruktur}\label{quantitative-metriken}
 
 Das System stellt über den Endpunkt
 \texttt{POST\ /api/v1/ticker/generate-bulk/\{match\_id\}} eine
@@ -227,8 +226,6 @@ Für jeden Aufruf wird eine temporäre \texttt{LLMService}-Instanz
 erzeugt, falls Provider oder Modell vom konfigurierten Singleton
 abweichen. Dadurch lassen sich A/B-Vergleiche zwischen Providern
 durchführen, ohne die Global-Konfiguration zu verändern.
-
-\subsection{Quantitative Metriken}\label{quantitative-metriken}
 
 Das Evaluationsmodul (\texttt{app/utils/evaluation\_metrics.py}) stellt sechs Metriken bereit:
 

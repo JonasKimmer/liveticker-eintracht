@@ -81,12 +81,6 @@ Kernfelder
 \endhead
 \bottomrule\noalign{}
 \endlastfoot
-\texttt{Country} & \texttt{countries} & \texttt{id}, \texttt{name},
-\texttt{uid} \\
-\texttt{Team} & \texttt{teams} & \texttt{id}, \texttt{uid},
-\texttt{name}, \texttt{external\_id}, \texttt{is\_partner\_team} \\
-\texttt{Competition} & \texttt{competitions} & \texttt{id},
-\texttt{title}, \texttt{season\_id} \\
 \texttt{Match} & \texttt{matches} & \texttt{id}, \texttt{uid},
 \texttt{match\_state}, \texttt{match\_phase}, \texttt{ticker\_mode} \\
 \texttt{Event} & \texttt{events} & \texttt{id}, \texttt{match\_id},
@@ -94,20 +88,10 @@ Kernfelder
 \texttt{SyntheticEvent} & \texttt{synthetic\_events} & \texttt{id},
 \texttt{match\_id}, \texttt{type}, \texttt{data} (JSONB) \\
 \texttt{TickerEntry} & \texttt{ticker\_entries} & → siehe unten \\
-\texttt{Lineup} & \texttt{lineups} & \texttt{player\_id},
-\texttt{status}, \texttt{formation\_place}, \texttt{position} \\
-\texttt{MatchStatistic} & \texttt{match\_statistics} & 19 typisierte
-Spalten (Pässe, Zweikämpfe, Schüsse\ldots) \\
-\texttt{PlayerStatistic} & \texttt{player\_statistics} &
-\texttt{player\_id}, \texttt{rating}, \texttt{goals}, \texttt{assists},
-\ldots{} \\
 \texttt{StyleReference} & \texttt{style\_references} &
 \texttt{event\_type}, \texttt{instance}, \texttt{league}, \texttt{text}
 (Few-Shot) \\
-\texttt{MediaQueue} & \texttt{media\_queue} & \texttt{media\_id},
-\texttt{thumbnail\_url}, \texttt{event\_id}, \texttt{status} \\
-\texttt{MediaClip} & \texttt{media\_clips} & \texttt{source},
-\texttt{vid}, \texttt{thumbnail\_url}, \texttt{match\_id} \\
+\texttt{Country}, \texttt{Team}, \texttt{Competition}, \texttt{Lineup}, \texttt{MatchStatistic}, \texttt{PlayerStatistic}, \texttt{MediaQueue}, \texttt{MediaClip} & Stammdaten, Statistiken, Medien & Standardfelder; vollständige Felddefinition in \texttt{app/models/} \\
 \end{longtable}
 }
 
@@ -137,10 +121,6 @@ explizite \texttt{serialization\_alias}-Werte mit Partner-Konvention
 globalen \texttt{alias\_generator=to\_camel} automatisch kanonisches
 camelCase. Für Ticker-Einträge steuert ein separates PATCH-Schema den
 Status, um versehentliche Massenänderungen zu vermeiden.
-
-\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
-
-\subsection{Repository-Schicht}\label{repository-schicht}
 
 Jede Entität hat ein dediziertes Repository, das alle SQL-Operationen
 kapselt. Alle Repositories erben von
@@ -331,8 +311,6 @@ interne Bezeichner (\texttt{goal}); unbekannte Typen fallen auf
 
 \section{KI-Generierungspipeline}\label{ki-generierungspipeline}
 
-\subsection{Ablaufdiagramm}\label{ablaufdiagramm}
-
 Die folgende Darstellung zeigt den vollständigen Ablauf von einem neuen
 Live-Ereignis bis zum publizierten Ticker-Eintrag:
 
@@ -341,10 +319,6 @@ Live-Ereignis bis zum publizierten Ticker-Eintrag:
 \DiagramTickerGenerationFlow
 \caption{Ablauf der KI-Generierungspipeline: Ereignis-Import bis publizierter Ticker-Eintrag}
 \end{figure}
-
-\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
-
-\subsection{Deduplizierung}\label{deduplizierung}
 
 Ein zentrales Qualitätsmerkmal der Pipeline ist die Deduplizierung: Der
 Generierungsendpunkt prüft vor jedem LLM-Aufruf, ob bereits ein
@@ -362,11 +336,6 @@ Dies macht den Endpunkt idempotent gegenüber Mehrfachaufrufen --- ein
 wichtiges Merkmal, da n8n-Workflows bei Fehlern automatisch wiederholen.
 Ohne diese Prüfung würde jeder Retry einen zusätzlichen Ticker-Eintrag
 mit unterschiedlichem (nicht-deterministischem) Text erzeugen.
-
-\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
-
-\subsection{Statusentscheidung und
-Modus-Steuerung}\label{statusentscheidung-und-modus-steuerung}
 
 Der initiale Status des erzeugten Ticker-Eintrags wird über den
 Aufrufparameter \texttt{auto\_publish} gesteuert, den n8n aus dem
@@ -430,11 +399,6 @@ Entscheidungs-Latenz beträgt je nach Komplexität des Entwurfs 15--30
 Sekunden. Dieses Design stellt sicher, dass keine KI-generierten Texte
 ohne menschliche Prüfung publiziert werden --- eine Entscheidung, die
 direkt aus dem journalistischen Qualitätsanspruch in Kapitel 2.1 folgt.
-
-\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
-
-\subsection{Zustandsautomat der
-Ticker-Einträge}\label{zustandsautomat-der-ticker-eintruxe4ge}
 
 Das konzeptionelle Statusmodell (\texttt{draft} → \texttt{published} /
 \texttt{rejected}, Undo-Übergang \texttt{published\ →\ draft}) ist
