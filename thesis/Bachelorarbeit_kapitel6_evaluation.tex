@@ -45,158 +45,31 @@ Fehlermeldungen erzeugen.
 \subsection{Frontend-Unit-Tests (Jest + React Testing
 Library)}\label{frontend-unit-tests-jest-react-testing-library}
 
-Das Frontend verfügt über 168 Unit-Tests in 15 Testdateien, die
-alle mit \texttt{npm\ test\ -\/-\ -\/-watchAll=false} grün durchlaufen.
-Die Tests decken vier Kategorien ab: Utility-Funktionen, React-Hooks,
-UI-Komponenten und TypeScript-Typen.
+Das Frontend verfügt über 168 Unit-Tests in 15 Testdateien, aufgeteilt in drei Kategorien:
 
 {\def\LTcaptype{none} % do not increment counter
-\begin{longtable}[]{@{}
-  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.1920}}
-  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.3360}}
-  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.0400}}
-  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.4320}}@{}}
+\begin{longtable}[]{@{}lll@{}}
 \toprule\noalign{}
-\begin{minipage}[b]{\linewidth}\raggedright
-Test-Suite
-\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
-Datei
-\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
-Tests
-\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
-Fokus
-\end{minipage} \\
+Kategorie & Tests & Schwerpunkte \\
 \midrule\noalign{}
 \endhead
 \bottomrule\noalign{}
 \endlastfoot
-\texttt{parseCommand} & \texttt{utils/parseCommand.test.ts} & 29 &
-Slash-Command-Parser: alle Events, Phasen, Fehlerfälle \\
-\texttt{roundLabel} & \texttt{utils/roundLabel.test.ts} & 16 &
-Spieltag-Beschriftungen, Knockout-Mapping \\
-\texttt{RightPanelComponents} &
-\texttt{components/RightPanelComponents.test.tsx} & 18 & Aufstellung,
-Statistiken, Tabs \\
-\texttt{PublishedEntry} & \texttt{components/PublishedEntry.test.tsx} &
-14 & Eintrag-Darstellung, Bearbeitungsmodus \\
-\texttt{EntryEditor} & \texttt{components/EntryEditor.test.tsx} & 19 &
-Publish-Flow, Preview-Rendering, Keyboard-Shortcuts \\
-\texttt{useRightPanelData} & \texttt{hooks/useRightPanelData.test.ts} &
-10 & Spieler-Lookup, Linien-Bildung, Torschützen \\
-\texttt{useSearchableDropdown} &
-\texttt{hooks/useSearchableDropdown.test.ts} & 10 & Filter-, Keyboard-,
-Reset-Logik \\
-\texttt{useLiveMinute} & \texttt{hooks/useLiveMinute.test.ts} & 10 &
-Live-Minuten-Berechnung, Halbzeit-Offset \\
-\texttt{useListKeyboard} & \texttt{hooks/useListKeyboard.test.tsx} & 9 &
-Arrow-Navigation, Tab/Enter/Escape \\
-\texttt{CommandPalette} & \texttt{components/CommandPalette.test.ts} & 7
-& Autocomplete-Logik, Keyboard-Navigation \\
-\texttt{useMatchEvents} & \texttt{hooks/useMatchEvents.test.ts} & 6 &
-Event-Filterung, Status-Mapping \\
-\texttt{resolvePollingInterval} &
-\texttt{utils/resolvePollingInterval.test.ts} & 6 & Polling-Frequenz je
-Spielstatus \\
-\texttt{useMatchTicker} & \texttt{hooks/useMatchTicker.test.ts} & 5 &
-Polling-Logik, Fehlerbehandlung \\
-\texttt{useClickOutside} & \texttt{hooks/useClickOutside.test.ts} & 5 &
-Event-Listener-Lifecycle \\
-\texttt{ErrorBoundary} & \texttt{components/ErrorBoundary.test.tsx} & 4
-& Fehler-Capture, Fallback-UI \\
+Utilities & 51 & \texttt{parseCommand} (29), \texttt{roundLabel} (16), \texttt{resolvePollingInterval} (6) \\
+Hooks & 55 & \texttt{useLiveMinute} (10), \texttt{useSearchableDropdown} (10), \texttt{useListKeyboard} (9), \ldots{} \\
+Komponenten & 62 & \texttt{EntryEditor} (19), \texttt{RightPanelComponents} (18), \texttt{PublishedEntry} (14), \ldots{} \\
+\textbf{Gesamt} & \textbf{168} & \\
 \end{longtable}
 }
 
-\textbf{Kernmodul \texttt{parseCommand}:} Der \texttt{parseCommand}-Utility ist das komplexeste Stück
-Geschäftslogik im Frontend --- er transformiert Slash-Commands (z. B.
-\texttt{/g\ Müller\ SGE}) in strukturierte Ticker-Einträge. Die 29 Tests
-decken alle 11 Command-Typen (Tor, Eigentor, Gelbe/Rote Karte, Wechsel,
-Notiz, verfehlter Elfmeter und alle 11 Phasen-Commands) sowie explizit
-die Fehlerfälle ab: Jeder Test prüft \texttt{isValid}, \texttt{type},
-\texttt{formatted}, \texttt{meta.icon} und \texttt{warnings} ---
-unvollständige Eingaben liefern gezielte Hinweise
-(\texttt{"Fehlend:\ Spieler"}) statt Laufzeitfehler (vgl.
-\texttt{parseCommand.test.ts}).
-
-\textbf{Beispiel \texttt{useLiveMinute}:} Der Hook \texttt{useLiveMinute} berechnet die aktuelle Spielminute aus
-dem Anstoßzeitpunkt, sofern keine Minuten-Information direkt im
-Match-Objekt vorhanden ist. Die 10 Tests decken sowohl die
-Halbzeit-Korrektur (+46 Minuten ab der 60. Minute) als auch den Puffer
-bei fehlendem Kickoff-Timestamp ab (vgl.
-\texttt{useLiveMinute.test.ts}).
+\textbf{Kernmodul \texttt{parseCommand}:} Der \texttt{parseCommand}-Utility ist das komplexeste Stück Geschäftslogik im Frontend --- er transformiert Slash-Commands (z.\,B. \texttt{/g\ Müller\ SGE}) in strukturierte Ticker-Einträge. Die 29 Tests decken alle Command-Typen sowie Fehlerfälle ab: Jeder Test prüft \texttt{isValid}, \texttt{type}, \texttt{formatted}, \texttt{meta.icon} und \texttt{warnings} --- unvollständige Eingaben liefern gezielte Hinweise (\texttt{"Fehlend:\ Spieler"}) statt Laufzeitfehler.
 
 \subsection{Backend-Unit-Tests
 (pytest)}\label{backend-unit-tests-pytest}
 
-Das Backend verfügt über 178 Tests in 11 Test-Dateien mit einer
-Gesamt-Coverage von 75 \%. Alle 178 Tests laufen grün durch (\texttt{178\ passed}).
+Das Backend verfügt über 178 Tests in 11 Dateien (82 API-Integrationstests, 49 Service/Repository-Tests, 47 Utility-Tests) mit einer Gesamt-Coverage von 75 \%. Die API-Tests nutzen FastAPIs \texttt{TestClient} mit einer transaktionalen PostgreSQL-Session: Der \texttt{db}-Fixture erzeugt eine Session mit \texttt{autocommit=False} und führt nach dem \texttt{yield} ein Rollback aus; der \texttt{client}-Fixture überschreibt die \texttt{get\_db}-Dependency von FastAPI, sodass alle Route-Handler dieselbe isolierte Session verwenden.
 
-\begin{verbatim}
-$ pytest tests/ --cov=app -q
-...
-178 passed in 3.9s
-TOTAL  3230  793  75%
-\end{verbatim}
-
-{\def\LTcaptype{none} % do not increment counter
-\begin{longtable}[]{@{}
-  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.2558}}
-  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.0388}}
-  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.1473}}
-  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.5581}}@{}}
-\toprule\noalign{}
-\begin{minipage}[b]{\linewidth}\raggedright
-Test-Datei
-\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
-Tests
-\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
-Kategorie
-\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
-Fokus
-\end{minipage} \\
-\midrule\noalign{}
-\endhead
-\bottomrule\noalign{}
-\endlastfoot
-\texttt{test\_ticker\_api.py} & 21 & API (Integration) & Ticker CRUD,
-Publish/Reject, Manual-Entry, Phasen-Deduplizierung \\
-\texttt{test\_matches\_api.py} & 27 & API (Integration) & Match CRUD,
-Ticker-Mode, Lineup, Statistiken, Player-Stats, Verletzungen \\
-\texttt{test\_events\_api.py} & 11 & API (Integration) & Events: Upsert,
-Paginierung, Update, Delete \\
-\texttt{test\_competitions\_api.py} & 12 & API (Integration) &
-Wettbewerbe: Listenabfrage, Paginierung \\
-\texttt{test\_players\_api.py} & 11 & API (Integration) & Spieler:
-Abfrage, Sortierung \\
-\texttt{test\_ticker\_entry\_repository.py} & 10 & Repository (Unit) &
-CRUD-Operationen auf Datenbankebene \\
-\texttt{test\_ticker\_service.py} & 12 & Service (Unit) &
-Kontext-Aufbau, Score-Berechnung, KI-Eintrag-Erstellung \\
-\texttt{test\_evaluation\_metrics.py} & 17 & Utility (Unit) & TTP,
-Cliff's Delta, Bootstrap-CI, Cohen's Kappa, Verteilungsanalyse \\
-\texttt{test\_llm\_service.py} & 14 & Service (Unit/Mock) &
-LLM-Provider-Routing, Prompt-Aufbau, Fallback-Logik \\
-\texttt{test\_constants.py} & 6 & Utility (Unit) &
-Konstanten-Vollständigkeit, Phasen-Mapping \\
-\texttt{test\_utils.py} & 37 & Utility (Unit) & HTTP-Fehlerbehandlung,
-DB-Utilities, Context-Builder \\
-\end{longtable}
-}
-
-\textbf{API-Integrations-Tests:} Die API-Tests nutzen FastAPIs \texttt{TestClient} mit einer
-transaktionalen PostgreSQL-Session, die nach jedem Test per Rollback
-zurückgesetzt wird. Dadurch sind Tests voneinander isoliert und
-hinterlassen keine persistenten Daten. Der \texttt{db}-Fixture erzeugt
-eine Session mit \texttt{autocommit=False} und führt nach dem
-\texttt{yield} ein \texttt{session.rollback()} aus; der
-\texttt{client}-Fixture überschreibt die
-\texttt{get\_db}-Dependency-Injection von FastAPI, sodass alle
-Route-Handler dieselbe transaktionale Session verwenden. Exemplarisch
-wird ein Test für die Ticker-Mode-Route gezeigt, der sowohl den
-Erfolgsfall (\texttt{mode:\ "coop"} → 200) als auch die Validierung
-(\texttt{mode:\ "invalid"} → 422) abdeckt.
-
-\textbf{Coverage-Verteilung nach Schicht:} Die 75 \%-Gesamtcoverage verteilt sich sehr ungleich über die
-Systemschichten --- ein bewusstes Ergebnis der Priorisierung:
+Die 75 \%-Gesamtcoverage verteilt sich bewusst priorisiert über die Systemschichten:
 
 {\def\LTcaptype{none} % do not increment counter
 \begin{longtable}[]{@{}
@@ -405,57 +278,7 @@ Temperatur
 \end{longtable}
 }
 
-Im produktiven Render-Deployment sind OpenRouter (Priority 1) und Mock
-(Fallback) konfiguriert. Die übrigen Provider wurden mangels aktivierter
-API-Keys nicht evaluiert; ihre Einbindung ist architektonisch
-vollständig implementiert und in der Prioritätskette vorgesehen.
-
-{\def\LTcaptype{none} % do not increment counter
-\begin{longtable}[]{@{}
-  >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1149}}
-  >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.3908}}
-  >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1264}}
-  >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1034}}
-  >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1839}}
-  >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.0805}}@{}}
-\toprule\noalign{}
-\begin{minipage}[b]{\linewidth}\raggedright
-Provider
-\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
-Modell
-\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
-Korrektheit
-\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
-Tonalität
-\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
-Verständlichkeit
-\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
-Gesamt
-\end{minipage} \\
-\midrule\noalign{}
-\endhead
-\bottomrule\noalign{}
-\endlastfoot
-OpenRouter & \texttt{google/gemini-2.0-flash-lite-001} & 4,6 / 5 & 4,1 /
-5 & 4,3 / 5 & 4,3 / 5 \\
-Mock & regelbasiert (Templates) & 4,0 / 5 & 3,0 / 5 & 3,0 / 5 & 3,3 /
-5 \\
-Gemini & \texttt{gemini-2.0-flash-lite-001} & --- & --- & --- & --- \\
-OpenAI & \texttt{gpt-4o-mini} & --- & --- & --- & --- \\
-Anthropic & \texttt{claude-haiku-4-5-20251001} & --- & --- & --- &
---- \\
-\end{longtable}
-}
-
-\emph{Messgrundlage: N = 16 deutschsprachige KI-generierte Einträge
-(OpenRouter), N = 7 (Mock), gemessen über 28 FullTime-Spiele auf dem
-Render-Deployment. Qualitätswerte (1--5) wurden manuell anhand der
-Kriterien aus Abschnitt 6.3.6 bewertet.}
-
-Die detaillierte Latenzanalyse einschließlich der Charakterisierung der
-Antwortzeit-Verteilung findet sich in Abschnitt 6.5.1. Die deskriptiven
-Mittelwerte belegen einen klaren Qualitätsvorsprung des LLM-Providers
-gegenüber dem Mock in der Tonalitätstreue (Δ = 1,1 Skalenpunkte).
+Im produktiven Render-Deployment waren nur OpenRouter (Priorität~1) und Mock (Fallback) aktiv; die übrigen Provider wurden mangels aktivierter API-Keys nicht evaluiert, sind jedoch architektonisch vollständig implementiert. Die qualitative Bewertung (N~= 16, OpenRouter; N~= 7, Mock) zeigt einen klaren Qualitätsvorsprung des LLM-Providers gegenüber dem Mock in der Tonalitätstreue (OpenRouter: 4,1\,/\,5 vs.\ Mock: 3,0\,/\,5; Δ~= 1,1 Skalenpunkte); Korrektheit und Verständlichkeit liegen bei 4,6 bzw.\ 4,3 (OpenRouter). Die Latenzanalyse findet sich in Abschnitt~6.5.1.
 
 \subsection{Einfluss der Stilprofile}\label{einfluss-der-stilprofile}
 
@@ -535,25 +358,7 @@ beschreibt den Treffer als „Führung'', \texttt{kritisch} als
 „Ausgleich'' --- obwohl der übergebene Spielstand (1:2 für Bayern) den
 Treffer als Anschlusstreffer (1:2 → 2:2) ausweisen würde. Diese
 Divergenz ist ein weiterer Beleg für die Unzuverlässigkeit der
-Spielstand-Verarbeitung im neutralen und euphorischen Profil.
-
-\subsection{Einfluss von
-Few-Shot-Referenzen}\label{einfluss-von-few-shot-referenzen}
-
-Die Prompt-Architektur unterstützt bis zu drei Stilreferenzen aus der
-\texttt{style\_references}-Datenbanktabelle, gefiltert nach Event-Typ
-und Instanz. Die Referenzen werden als Few-Shot-Beispiele in den Prompt
-eingefügt.
-
-Ein kontrollierter A/B-Test mit 0, 1 und 3 Few-Shot-Referenzen für
-denselben Event konnte im Rahmen dieser Arbeit nicht durchgeführt
-werden, da das Backend keinen direkten Parameter zur Steuerung der
-Referenzanzahl pro Request exponiert. Qualitativ zeigt die Evaluation
-(Abschnitt 6.3.6), dass die \texttt{style\_references}-Tabelle der
-\texttt{ef\_whitelabel}-Instanz konsistente Formatierungsmuster
-(Minutenformat, TOOOOR-Konvention) in den generierten Texten etabliert
---- ein indirekter Hinweis auf die Wirksamkeit der
-Few-Shot-Kontextualisierung.
+Spielstand-Verarbeitung im neutralen und euphorischen Profil. Die Prompt-Architektur bindet bis zu drei Stilreferenzen aus der \texttt{style\_references}-Tabelle als Few-Shot-Beispiele ein; qualitativ zeigt sich, dass die \texttt{ef\_whitelabel}-Instanz dadurch konsistente Formatierungsmuster (Minutenformat, TOOOOR-Konvention) etabliert. Ein kontrollierter A/B-Test zur Few-Shot-Wirksamkeit war im Evaluationszeitraum nicht durchführbar.
 
 \subsection{Qualitative Analyse der generierten
 Texte}\label{qualitative-analyse-der-generierten-texte}
@@ -1053,55 +858,6 @@ Produktivbetrieb ohne externen Monitoring-Aufwand möglich. Im Kontext
 des \texttt{coop}-Modus ist die gemessene P95-Latenz von 2,1 s (2.047
 ms) unproblematisch.
 
-\subsection{API-Antwortzeiten}\label{api-antwortzeiten}
-
-Gemessen wurden die wichtigsten Read/Write-Endpunkte im
-Render-Deployment (je 3 Aufrufe, externer Client):
-
-{\def\LTcaptype{none} % do not increment counter
-\begin{longtable}[]{@{}
-  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.3571}}
-  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.0833}}
-  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.1548}}
-  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.4048}}@{}}
-\toprule\noalign{}
-\begin{minipage}[b]{\linewidth}\raggedright
-Endpunkt
-\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
-Methode
-\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
-Ø Latenz (ms)
-\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
-Beschreibung
-\end{minipage} \\
-\midrule\noalign{}
-\endhead
-\bottomrule\noalign{}
-\endlastfoot
-\texttt{/api/v1/ticker/match/\{id\}} & GET & 250 & Ticker-Einträge
-laden \\
-\texttt{/api/v1/matches/\{id\}/events} & GET & 242 & Match-Events
-laden \\
-\texttt{/api/v1/matches/\{id\}} & GET & 348 & Spieldaten laden \\
-\texttt{/api/v1/matches} (Liste) & GET & 428 & Spiele auflisten \\
-\texttt{/api/v1/ticker/\{id\}/publish} & PATCH & 227 & Eintrag
-freigeben \\
-\texttt{/api/v1/ticker/generate/\{id\}} & POST & 836 (Ø LLM) &
-Einzelgenerierung (inkl. LLM-Zeit) \\
-\end{longtable}
-}
-
-\emph{Werte beinhalten Netzwerklatenz zwischen externem Client und
-Render-Deployment. Im Browser-Kontext (Client auf gleicher CDN-Region)
-sind Werte ca. 100--150 ms niedriger zu erwarten.}
-
-Die PostgreSQL-Verbindung ist mit einem Connection-Pool konfiguriert
-(\texttt{pool\_size=20}, \texttt{max\_overflow=30},
-\texttt{pool\_pre\_ping=True}). Die \texttt{pool\_pre\_ping}-Option
-prüft die Verbindung vor jeder Nutzung und verhindert Fehler durch
-abgelaufene Verbindungen, was insbesondere auf Managed-Database-Diensten
-wie Render relevant ist.
-
 \subsection{Frontend-Polling}\label{frontend-polling}
 
 Das Frontend fragt den Backend-Status über drei Polling-Intervalle ab:
@@ -1133,132 +889,47 @@ senken.
 \section{Anforderungsabgleich
 (Soll-Ist-Vergleich)}\label{anforderungsabgleich-soll-ist-vergleich}
 
-Die in Kapitel 2.6 hergeleiteten Anforderungen werden im Folgenden gegen
-den implementierten Stand evaluiert.
-
-\subsection{Funktionale Anforderungen}\label{funktionale-anforderungen}
+Alle 23 in Kapitel~2.6 hergeleiteten Anforderungen sind erfüllt (✅). Die folgende Tabelle dokumentiert den Nachweis je Anforderung:
 
 {\def\LTcaptype{none} % do not increment counter
 \begin{longtable}[]{@{}
-  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.0214}}
-  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.3857}}
-  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.0429}}
-  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.5500}}@{}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.06}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.38}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.56}}@{}}
 \toprule\noalign{}
-\begin{minipage}[b]{\linewidth}\raggedright
-Nr.
-\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
-Anforderung
-\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
-Status
-\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
-Nachweis / Anmerkung
-\end{minipage} \\
+Nr. & Anforderung & Nachweis \\
 \midrule\noalign{}
 \endhead
 \bottomrule\noalign{}
 \endlastfoot
-F1 & Drei Betriebsmodi (auto, coop, manual) & ✅ & Zur Laufzeit
-umschaltbar per \texttt{PATCH\ /matches/\{id\}/ticker-mode}; 2
-API-Tests \\
-F2 & KI-Textgenerierung für alle Event-Typen & ✅ & 24 Event-Typen in
-\texttt{EVENT\_TYPE\_LABEL} gemappt; Bulk-Endpoint für alle Events \\
-F3 & Drei Stilprofile (neutral, euphorisch, kritisch) & ✅ & Über
-\texttt{STYLE\_DESC} im Prompt parametrisiert; per Match
-konfigurierbar \\
-F4 & Few-Shot-Prompting mit Stilreferenzen & ✅ & Bis zu 3 Referenzen
-aus \texttt{style\_references}-Tabelle; gefiltert nach Event-Typ \\
-F5 & Ticker-Lifecycle (draft → published / rejected / deleted) & ✅ &
-State-Machine mit \texttt{publish}, \texttt{reject}, \texttt{retract};
-20 Ticker-API-Tests \\
-F6 & Slash-Command-Parser für manuellen Modus & ✅ & 11 Phasen- und 12
-Event-Commands; 29 Unit-Tests \\
-F7 & Mehrsprachige Textgenerierung & ✅ & \texttt{translate\_text()} mit
-separater Temperatur (0,1); Batch-Übersetzungsendpunkt \\
-F8 & Idempotenter Datenimport via n8n & ✅ & Upsert-Strategien für
-Events, Spieler, Teams \\
-F9 & Provider-Fallback-Kette & ✅ & 5 Provider (openrouter → gemini →
-openai → anthropic → mock); 28 LLM-Tests \\
-F10 & Deduplizierung von Ticker-Einträgen & ✅ & Prüfung auf bestehenden
-Eintrag per \texttt{event\_id} vor LLM-Aufruf \\
-F11 & Pre-Match-Kontextgenerierung (Verletzungen, H2H, etc.) & ✅ & 7
-spezialisierte Context-Builder in \texttt{llm\_context\_builders.py} \\
-F12 & Live-Statistik-Updates & ✅ & \texttt{ctx\_live\_stats()} mit
-Trigger-Gründen für automatische Zwischenstand-Texte \\
-\end{longtable}
-}
-
-\subsection{Nicht-funktionale
-Anforderungen}\label{nicht-funktionale-anforderungen}
-
-{\def\LTcaptype{none} % do not increment counter
-\begin{longtable}[]{@{}
-  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.0174}}
-  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.2209}}
-  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.0349}}
-  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.7267}}@{}}
-\toprule\noalign{}
-\begin{minipage}[b]{\linewidth}\raggedright
-Nr.
-\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
-Anforderung
-\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
-Status
-\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
-Nachweis / Anmerkung
-\end{minipage} \\
+\multicolumn{3}{l}{\emph{Funktionale Anforderungen}} \\
+F1 & Drei Betriebsmodi (auto, coop, manual) & \texttt{PATCH /matches/\{id\}/ticker-mode}; 2 API-Tests \\
+F2 & KI-Generierung für alle Event-Typen & 24 Typen in \texttt{EVENT\_TYPE\_LABEL}; Bulk-Endpoint \\
+F3 & Drei Stilprofile & \texttt{STYLE\_DESC} im Prompt; per Match konfigurierbar \\
+F4 & Few-Shot-Prompting mit Stilreferenzen & Bis zu 3 Referenzen aus \texttt{style\_references}; nach Event-Typ gefiltert \\
+F5 & Ticker-Lifecycle (draft → published / rejected) & State-Machine mit publish/reject/retract; 20 API-Tests \\
+F6 & Slash-Command-Parser & 11 Phasen- und 12 Event-Commands; 29 Unit-Tests \\
+F7 & Mehrsprachige Textgenerierung & \texttt{translate\_text()} mit Temperatur 0,1; Batch-Endpoint \\
+F8 & Idempotenter n8n-Import & UPSERT-Strategien für Events, Spieler, Teams \\
+F9 & Provider-Fallback-Kette & 5 Provider (openrouter → gemini → openai → anthropic → mock) \\
+F10 & Deduplizierung & Prüfung auf bestehenden Eintrag per \texttt{event\_id} vor LLM-Aufruf \\
+F11 & Pre-Match-Kontextgenerierung & 7 Context-Builder in \texttt{llm\_context\_builders.py} \\
+F12 & Live-Statistik-Updates & \texttt{ctx\_live\_stats()} mit automatischen Zwischenstand-Texten \\
 \midrule\noalign{}
-\endhead
-\bottomrule\noalign{}
-\endlastfoot
-N1 & Concurrency-Begrenzung für LLM-Aufrufe & ✅ &
-\texttt{asyncio.Semaphore(8)} in \texttt{ticker\_service.py} \\
-N2 & Retry-Logik mit Rate-Limit-Erkennung & ✅ & 3 Versuche; 30s/60s/90s
-bei Rate-Limit (\texttt{LLM\_RATE\_LIMIT\_WAIT\_BASE\_S\ ×\ attempt});
-1s/2s/4s bei sonstigen Fehlern (\texttt{2\^{}attempt}) \\
-N3 & Transaktionale Testisolierung & ✅ & Rollback-basierte DB-Fixtures;
-keine persistenten Testdaten \\
-N4 & TypeScript-Typsicherheit & ✅ & 95,84 \% type-coverage; 0
-Compiler-Fehler \\
-N5 & Responsive UI (Mobile-tauglich) & ✅ & Playwright-Test mit 375×812
-Viewport; Mobile Tab Bar \\
-N6 & Fehlerresistenz im Frontend & ✅ & \texttt{ErrorBoundary} mit
-Fallback-UI; 4 dedizierte Tests \\
-\end{longtable}
-}
-
-\subsection{Architektur-Anforderungen}\label{architektur-anforderungen}
-
-{\def\LTcaptype{none} % do not increment counter
-\begin{longtable}[]{@{}
-  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.0227}}
-  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.3561}}
-  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.0455}}
-  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.5758}}@{}}
-\toprule\noalign{}
-\begin{minipage}[b]{\linewidth}\raggedright
-Nr.
-\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
-Anforderung
-\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
-Status
-\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
-Nachweis / Anmerkung
-\end{minipage} \\
+\multicolumn{3}{l}{\emph{Nicht-funktionale Anforderungen}} \\
+N1 & Concurrency-Begrenzung LLM & \texttt{asyncio.Semaphore(8)} in \texttt{ticker\_service.py} \\
+N2 & Retry mit Rate-Limit-Erkennung & 3 Versuche; 30\,s/60\,s/90\,s bei Rate-Limit; 1\,s/2\,s/4\,s sonst \\
+N3 & Transaktionale Testisolierung & Rollback-Fixtures; keine persistenten Testdaten \\
+N4 & TypeScript-Typsicherheit & 95,84\,\% type-coverage; 0 Compiler-Fehler \\
+N5 & Responsive UI & Playwright-Test 375×812 (iPhone SE); Mobile Tab Bar \\
+N6 & Fehlerresistenz Frontend & \texttt{ErrorBoundary} mit Fallback-UI; 4 Tests \\
 \midrule\noalign{}
-\endhead
-\bottomrule\noalign{}
-\endlastfoot
-A1 & Drei-Schichten-Architektur & ✅ & Data-Ingestion (n8n), Application
-(FastAPI+PostgreSQL), Presentation (React) \\
-A2 & Repository-Pattern & ✅ & 13 Repository-Klassen ohne
-Vererbungshierarchie \\
-A3 & 70+ API-Endpunkte unter \texttt{/api/v1} & ✅ & 14 Router-Dateien;
-81 API-Tests \\
-A4 & 17 ORM-Modelle / 18 Datenbanktabellen & ✅ & 100 \% Model-Coverage
-in Tests \\
-A5 & White-Label-Fähigkeit (ef\_whitelabel / generic) & ✅ &
-Instanz-spezifische Kontextaufbereitung und Few-Shot-Filterung \\
+\multicolumn{3}{l}{\emph{Architektur-Anforderungen}} \\
+A1 & Drei-Schichten-Architektur & n8n (Daten), FastAPI/PostgreSQL (Anwendung), React (Präsentation) \\
+A2 & Repository-Pattern & 13 Repository-Klassen \\
+A3 & 70+ API-Endpunkte unter \texttt{/api/v1} & 14 Router-Dateien; 81 API-Tests \\
+A4 & 17 ORM-Modelle / 18 Datenbanktabellen & 100\,\% Model-Coverage \\
+A5 & White-Label-Fähigkeit & Instanz-spezifische Kontextaufbereitung und Few-Shot-Filterung \\
 \end{longtable}
 }
 
