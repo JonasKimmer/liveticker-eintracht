@@ -1,36 +1,8 @@
 \chapter{Implementierung}\label{implementierung}
 
-Dieses Kapitel beschreibt die konkrete technische Umsetzung des in Kapitel~4 konzipierten Systems. Im Fokus stehen die Implementierungsentscheidungen auf Code-Ebene, die über das Konzept hinausgehen: die interne Schichtstruktur des Backends, die KI-Generierungspipeline vom Ereigniseingang bis zum publizierten Ticker-Eintrag, die Frontend-Architektur mit Context-basiertem Zustandsmanagement sowie die n8n-Workflow-Implementierung der zentralen Automatisierungsworkflows.
+Dieses Kapitel dokumentiert die konkrete Umsetzung des in Kapitel~4 konzipierten Systems. Im Fokus stehen die technischen Entscheidungen auf Code-Ebene: die interne Struktur des FastAPI-Backends mit seinen Schichten aus Modellen, Repositories, Services und Routern; die KI-Generierungspipeline von der Ereigniserkennung bis zum publizierten Ticker-Eintrag; die Frontend-Implementierung mit React, Context-basiertem Zustandsmanagement und dem slash-command-getriebenen Eingabesystem; sowie die n8n-Workflow-Implementierung der zentralen Automatisierungsworkflows. Ergänzend werden die TypeScript-Migration und die Testabdeckung als Qualitätsmerkmale des Entwicklungsprozesses dokumentiert.
 
-\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
-
-\section{Überblick und
-Implementierungsstrategie}\label{uxfcberblick-und-implementierungsstrategie}
-
-Dieses Kapitel dokumentiert die konkrete Umsetzung des in Kapitel 4
-konzipierten Systems. Im Fokus stehen die technischen Entscheidungen auf
-Code-Ebene: die interne Struktur des FastAPI-Backends mit seinen
-Schichten aus Modellen, Repositories, Services und Routern; die
-KI-Generierungspipeline von der Ereigniserkennung bis zum
-Ticker-Eintrag; die Frontend-Implementierung mit React,
-Context-basiertem Zustandsmanagement und dem slash-command-getriebenen
-Eingabesystem; sowie die n8n-Workflow-Implementierung der zentralen
-Automatisierungsworkflows. Ergänzend werden die TypeScript-Migration und
-die Testabdeckung als Qualitätsmerkmale des Entwicklungsprozesses
-dokumentiert.
-
-Die Implementierung folgt dem Grundsatz \textbf{„so einfach wie nötig,
-so modular wie sinnvoll''}: Standardpfade (CRUD, Listabfragen) sind
-bewusst direkt gehalten (Router → Repository), während die
-LLM-Generierung mit ihren Retry-, Semaphore- und Few-Shot-Mechanismen in
-einen dedizierten Service extrahiert ist.
-
-Die n8n-Workflows (Abschnitt 5.5) werden abweichend von der
-konzeptionellen Reihenfolge in Kapitel 4 nach der
-Frontend-Implementierung beschrieben: Die Workflows bauen auf
-Backend-Endpunkten auf, die bis dahin vollständig dokumentiert sind,
-sodass die Beschreibung der Orchestrierungslogik erst an dieser Stelle
-vollständig nachvollziehbar ist.
+Die Implementierung folgt dem Grundsatz „so einfach wie nötig, so modular wie sinnvoll": Standardpfade (CRUD, Listabfragen) sind bewusst direkt gehalten (Router → Repository), während die LLM-Generierung mit ihren Retry-, Semaphore- und Few-Shot-Mechanismen in einen dedizierten Service extrahiert ist. Die n8n-Workflows (Abschnitt~5.5) werden nach der Frontend-Implementierung beschrieben, da sie auf Backend-Endpunkten aufbauen, die bis dahin vollständig dokumentiert sind.
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
@@ -89,8 +61,7 @@ Endpunkt & Funktion \\
 \subsection{Datenmodelle: Datenbankschema und
 API-Validierung}\label{datenmodelle-datenbankschema-und-api-validierung}
 
-\textbf{SQLAlchemy-Datenbankmodelle} --- Das Schema umfasst \textbf{17
-ORM-Modelle} (18 Datenbanktabellen, davon eine via Migration). Die
+Das Schema umfasst 17 ORM-Modelle (18 Datenbanktabellen, davon eine via Migration). Die
 zentralen Domänenobjekte sind:
 
 {\def\LTcaptype{none} % do not increment counter
@@ -154,8 +125,7 @@ Deduplizierungs-Check per Event. Das Status-Enum wird als nicht-nativ
 gespeichert (\texttt{native\_enum=False}), damit Migrationen ohne
 Enum-Typ-Änderungen in PostgreSQL auskommen.
 
-\textbf{Pydantic-Schemas und API-Validierung} --- Für jeden Router gibt
-es eigenständige Pydantic-Schemas für Create-, Update- und
+Für jeden Router gibt es eigenständige Pydantic-Schemas für Create-, Update- und
 Response-Strukturen. Alle Schemas nutzen
 \texttt{alias\_generator=to\_camel} aus
 \texttt{pydantic.alias\_generators}, damit JSON-Payloads in camelCase
@@ -586,6 +556,8 @@ Status, Spielstand, Minute) \\
 Karten, Auswechslungen) \\
 \texttt{useTickerMode} & hooks/ & \texttt{mode}-State, PATCH zum
 Backend, Keyboard-Shortcuts \\
+\texttt{useMatchTicker} & LT/hooks/ & Polling der Ticker-Einträge
+(5-Sekunden-Zyklus) \\
 \texttt{useTicker} & LT/hooks/ & Ticker-Actions, Draft-Queue,
 Publish-Toast (Undo) \\
 \texttt{useEventDraft} & LT/hooks/ & Entwurfsansicht,
@@ -599,7 +571,7 @@ Auto-Modus \\
 \texttt{useMatchTicker} betreiben jeweils einen eigenen
 \texttt{setInterval}-Zyklus (5 Sekunden), der bei Mount startet und bei
 Unmount gestoppt wird. Die HTTP-Kommunikation erfolgt über
-\textbf{Axios}. \texttt{useMatchData} aggregiert die Polling-Hooks und
+\texttt{axios}. \texttt{useMatchData} aggregiert die Polling-Hooks und
 stellt die Daten über \texttt{TickerDataContext} bereit; das
 Polling-Intervall ist als Erweiterungspunkt für zustandsabhängige
 Frequenzen (Live vs. Prematch) konzipiert.
@@ -633,9 +605,10 @@ typisiertes \texttt{ParseResult} zurück:
 \end{Highlighting}
 \end{Shaded}
 
-\textbf{Phasen-Commands} (11 Einträge in \texttt{PHASE\_CMDS}) erzeugen
-vordefinierte Texte mit optionaler Minutenangabe. Die folgende Tabelle
-zeigt eine Auswahl der häufigsten Einträge (7 von 11):
+Die Kommandos gliedern sich in zwei Typen:
+
+\begin{itemize}\tightlist
+\item \textbf{Phasen-Commands} (11 Einträge in \texttt{PHASE\_CMDS}) erzeugen vordefinierte Texte mit optionaler Minutenangabe. Die folgende Tabelle zeigt eine Auswahl (7 von 11):
 
 {\def\LTcaptype{none} % do not increment counter
 \begin{longtable}[]{@{}llll@{}}
@@ -657,8 +630,7 @@ Command & Ausgabe & Phase & Icon \\
 \end{longtable}
 }
 
-\textbf{Event-Commands} (12 Einträge in \texttt{CMD\_MAP}, 8 Typen nach
-Expansion) erzeugen strukturierte Texte mit Validierungshinweisen:
+\item \textbf{Event-Commands} (12 Einträge in \texttt{CMD\_MAP}, 8 Typen nach Expansion) erzeugen strukturierte Texte mit Validierungshinweisen:
 
 \begin{verbatim}
 /g Mustermann EF  → "TOR — Mustermann (EF)"          + icon [Tor]
@@ -667,6 +639,8 @@ Expansion) erzeugen strukturierte Texte mit Validierungshinweisen:
 /s EinRaus AusRein EF → "Wechsel — EinRaus <-> AusRein (EF)" + icon [Wechsel]
 /n Freistoß knapp über das Tor → "Freistoß knapp über das Tor"
 \end{verbatim}
+
+\end{itemize}
 
 Für unvollständige Eingaben gibt \texttt{warnings{[}{]}} gezielte
 Hinweise zurück (\texttt{"Fehlend:\ Spieler"}), die im
@@ -739,8 +713,7 @@ inkrementelle Migration ohne blockierende Fehlereskalation zu erlauben.
 \end{Highlighting}
 \end{Shaded}
 
-Nach der Migration erzielt das Projekt \textbf{0
-TypeScript-Compilerfehler} und eine type-coverage von \textbf{95,84\,\%}
+Nach der Migration erzielt das Projekt 0 TypeScript-Compilerfehler und eine type-coverage von 95,84\,\%
 (gemessen mit \texttt{type-coverage\ -\/-strict}); die detaillierte
 Auswertung folgt in Abschnitt~6.2.5.
 
@@ -754,7 +727,10 @@ Datenquellen, dem FastAPI-Backend und dem LLM-Dienst. Alle 16
 Workflow-Dateien liegen als versionierte JSON-Exporte unter \texttt{n8n/}
 vor. Die Workflows gliedern sich funktional in sechs Gruppen: Workflows
 \texttt{01}--\texttt{04} laden Stammdaten (Länder, Teams, Wettbewerbe,
-Spielpläne) via Upsert aus API-Football. Workflows \texttt{04}--\texttt{07}
+Spielpläne) via Upsert aus API-Football --- da zwei parallele
+\texttt{04}-Workflows existieren (\texttt{04\_import\_matches} und
+\texttt{04\_import\_lineups}), überlappt die Nummerierung an dieser Stelle.
+Workflows \texttt{04}--\texttt{07}
 importieren spielbezogene Detaildaten (Aufstellungen, Statistiken); der
 Prematch-Workflow (\texttt{07}) erzeugt zusätzlich strukturierte
 Kontextdaten als synthetische Events, die dem LLM als Promptkontext
@@ -770,13 +746,9 @@ Statusupdates, aktualisiert \texttt{minute}, \texttt{match\_phase} und
 \texttt{match\_state} und triggert bei Phasenwechsel automatisch den
 \texttt{match-status}-Webhook.
 
-Die folgenden Abschnitte beschreiben die Implementierungsdetails der
-systemkritischen Workflows.
+Die folgenden Abschnitte beschreiben die Implementierungsdetails der systemkritischen Workflows.
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
-
-\subsection{Systemkritische Workflows und übergreifende
-Muster}\label{events-llm-workflow-09_events_llm_workflow.json}
 
 \textbf{Events-LLM-Workflow (09)} ist der kritischste im System: Er importiert Live-Ereignisse via Webhook (\texttt{POST /Events}), persistiert sie per UPSERT (\texttt{ON CONFLICT (source\_id) DO NOTHING}) und triggert die KI-Generierung für jeden neuen Event. Eine initiale SQL-Abfrage bestimmt anhand der Teamzugehörigkeit, ob die Instanz \texttt{ef\_whitelabel} oder \texttt{generic} und der Stil \texttt{euphorisch} oder \texttt{neutral} ist; \texttt{auto\_publish} wird direkt aus \texttt{ticker\_mode} des Spiels gesetzt. Nur Events mit erfolgreicher Datenbankzeile passieren den Filter-Knoten. Ein EF-spezifischer Zweig liest Spielerdaten von \texttt{profis.eintracht.de}, baut S3-Video-URLs auf und persistiert Torjubel-Videos als Ticker-Einträge.
 
@@ -788,7 +760,15 @@ Muster}\label{events-llm-workflow-09_events_llm_workflow.json}
 
 \textbf{ScorePlay-Medien-Workflow (08)} sucht Medien-Assets bei ScorePlay für Spieler eines Torereignisses. Die Spieler-Suche normalisiert Umlaute und matcht gegen vier Namensfelder. Gefundene URLs werden an \texttt{POST /api/v1/media/incoming} übertragen und vom Backend per WebSocket an verbundene Clients verteilt.
 
-Über alle Workflows hinweg lassen sich fünf übergreifende Muster identifizieren: Alle Insert-Operationen verwenden idempotente \textbf{UPSERT-Strategien} (\texttt{ON CONFLICT DO UPDATE/DO NOTHING}). Vor jedem LLM-Trigger steht ein \textbf{Filter-Knoten}, der nur Rows mit einer \texttt{id} (erfolgreicher DB-Insert) durchlässt. \textbf{Statusbasierte Filterung} verhindert redundante Generierungen. \texttt{ticker\_mode} wird als \texttt{auto\_publish}-Flag an das Backend weitergegeben (\textbf{Mode-Propagation}). Die Unterscheidung zwischen \texttt{ef\_whitelabel} und \texttt{generic} erfolgt per \texttt{ILIKE '\%Frankfurt\%'}-Abfrage (\textbf{Instanz-Routing}).
+Über alle Workflows hinweg lassen sich fünf übergreifende Muster identifizieren:
+
+\begin{itemize}\tightlist
+\item \textbf{UPSERT-Strategien:} Alle Insert-Operationen verwenden \texttt{ON CONFLICT DO UPDATE/DO NOTHING} für Idempotenz.
+\item \textbf{Filter-Knoten:} Vor jedem LLM-Trigger steht ein Filterknoten, der nur Rows mit einer \texttt{id} (erfolgreicher DB-Insert) durchlässt.
+\item \textbf{Statusbasierte Filterung:} Bestehende nicht-verworfene Ticker-Einträge verhindern redundante Generierungen.
+\item \textbf{Mode-Propagation:} \texttt{ticker\_mode} wird als \texttt{auto\_publish}-Flag an das Backend weitergegeben.
+\item \textbf{Instanz-Routing:} Die Unterscheidung zwischen \texttt{ef\_whitelabel} und \texttt{generic} erfolgt per \texttt{ILIKE '\%Frankfurt\%'}-Abfrage.
+\end{itemize}
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
@@ -796,7 +776,7 @@ Muster}\label{events-llm-workflow-09_events_llm_workflow.json}
 Tests}\label{qualituxe4tssicherung-und-tests}
 
 Die Qualitätssicherung folgt dem Testpyramiden-Modell nach Cohn (2009).
-Die Testsuite umfasst \textbf{352 Tests} (168 Frontend, 178 Backend, 6
+Die Testsuite umfasst 352 Tests (168 Frontend, 178 Backend, 6
 E2E), die alle grün durchlaufen. Das Frontend setzt auf Jest mit
 \texttt{@testing-library/react}; besonders umfangreich ist der
 \texttt{parseCommand}-Parser mit 29 Testfällen, da er die kritische
@@ -814,14 +794,14 @@ Coverage-Verteilungen folgt in Abschnitt~6.2.
 
 \section{Deployment}\label{deployment}
 
-Das System ist auf \textbf{Render.com} (Region: Oregon, US West)
+Das System ist auf Render.com (Region: Oregon, US West)
 deployt. Das FastAPI-Backend läuft als Docker-Container (Free-Tier Web
 Service), die PostgreSQL-15-Datenbank als Managed-Dienst im privaten
 Render-Netzwerk; das React-Frontend wird als statische Seite über das
 Render-CDN ausgeliefert. Alle drei Dienste werden aus demselben
 Repository-Branch (\texttt{deploy/render-v2}) deployt; Konfiguration
 und Zugangsdaten werden als Umgebungsvariablen injiziert. Die n8n-Instanz
-läuft lokal und ist über einen \textbf{ngrok}-Tunnel für externe
+läuft lokal und ist über einen \texttt{ngrok}-Tunnel für externe
 Webhooks erreichbar --- für den Evaluationsbetrieb ausreichend; ein
 Produktivbetrieb würde eine persistente n8n-Instanz erfordern.
 
