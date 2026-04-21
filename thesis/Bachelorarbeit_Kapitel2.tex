@@ -196,7 +196,7 @@ Eintracht Frankfurt dient in dieser Arbeit als konkreter Anwendungsfall
 für die vereinsspezifische White-Label-Instanz. Die Anforderungsanalyse
 stützt sich auf die in den vorangegangenen Abschnitten hergeleiteten
 Problemdimensionen, eine Analyse der öffentlich zugänglichen digitalen
-Kanäle des Vereins sowie ein \textbf{strukturiertes Experteninterview}
+Kanäle des Vereins sowie ein strukturiertes Experteninterview
 mit einem professionellen Sportredakteur von Eintracht Frankfurt. Die
 theoretisch hergeleiteten Anforderungen werden dabei durch das Interview
 empirisch validiert --- insbesondere hinsichtlich des redaktionellen
@@ -220,8 +220,8 @@ Experteninterview bestätigt), was den \textbf{Zeitdruck} auf manuelle
 Abdeckung mit konsistenter Qualität auf ein personell kaum
 darstellbares Niveau treibt. Die internationale Fanbasis --- insbesondere
 in Japan (vgl. Kap.~2.2) --- begründet den Bedarf an
-\textbf{mehrsprachigen} Tickern in mindestens Deutsch und Englisch,
-perspektivisch auch Japanisch. Hinsichtlich \textbf{Tonalität} folgen
+mehrsprachigen Tickern in mindestens Deutsch und Englisch,
+perspektivisch auch Japanisch. Hinsichtlich der Tonalität folgen
 vereinseigene Ticker einer emotionalen, fanbezogenen Perspektive, die
 sich von neutraler Berichterstattung überregionaler Medien unterscheidet
 (vgl. Beils 2023, S. 57); das System muss diese stilistische
@@ -249,25 +249,22 @@ beigefügt.
 Textgenerierung}\label{linguistische-anforderungen-an-die-textgenerierung}
 
 Neben den organisatorischen und stilistischen Anforderungen stellt die
-automatisierte Liveticker-Produktion auch spezifische
-\textbf{linguistische} Anforderungen. Liveticker stellen eine
+automatisierte Liveticker-Produktion auch spezifische linguistische
+Anforderungen. Liveticker stellen eine
 linguistisch eigenständige Textgattung dar (Hauser 2008, S. 1). Hauser
 charakterisiert sie als \textbf{schriftlich-grafische
 Simultanerzählung}. Im Gegensatz zum Spielbericht fehlt der
 \emph{benefit of hindsight}; es handelt sich um eine quasi-synchrone
 Berichterstattung (Hauser 2008, S. 2).
 
-Für das Prompt-Design sind vier linguistische Merkmale leitend. Die
-\textbf{konzeptionelle Mündlichkeit} (Oraliteralität) bezeichnet die
-Verschriftlichung mündlicher Ausdrucksweisen (Smułczyński 2020, S.~54).
-\textbf{Syntaktisch} dominieren Ellipsen und verblose Satzeinheiten;
-Sätze sollten nicht mehr als 15 Wörter umfassen, Hauptsatzkonstruktionen
-sind dominant (Walter 2020, S.~40, 52). Bei den \textbf{Tempora} gilt
-Präsens für gleichzeitige Situationen und Perfekt statt Präteritum für
-vergangene Ereignisse (Walter 2020, S.~39). Die
-\textbf{Graphostilistik} schließlich setzt Großschreibung und
-Zeicheniterationen (z.\,B. „TOOOOR!!!") als Äquivalent zu Lautstärke
-und Betonung ein (Smułczyński 2020, S.~54; Walter 2020, S.~41).
+Für das Prompt-Design sind vier linguistische Merkmale leitend:
+
+\begin{itemize}\tightlist
+\item \textbf{Konzeptionelle Mündlichkeit} (Oraliteralität): Verschriftlichung mündlicher Ausdrucksweisen (Smułczyński 2020, S.~54).
+\item \textbf{Syntax}: Ellipsen und verblose Satzeinheiten dominieren; Sätze sollten nicht mehr als 15 Wörter umfassen, Hauptsatzkonstruktionen sind vorherrschend (Walter 2020, S.~40, 52).
+\item \textbf{Tempus}: Präsens für gleichzeitige Situationen, Perfekt statt Präteritum für vergangene Ereignisse (Walter 2020, S.~39).
+\item \textbf{Graphostilistik}: Großschreibung und Zeicheniterationen (z.\,B. „TOOOOR!!!") als Äquivalent zu Lautstärke und Betonung (Smułczyński 2020, S.~54; Walter 2020, S.~41).
+\end{itemize}
 
 Diese Merkmale definieren das Zielformat, auf das das LLM durch
 gezieltes Prompt Engineering konditioniert werden muss (vgl. Kap. 3.2).
@@ -408,8 +405,7 @@ mehrsprachige Generierung (F7) als Antwort auf die
 Internationalisierungsanforderung, sprachgattungskonformes Prompt Design
 (F2, F4, F11) als Antwort auf die in Kapitel 2.5 hergeleiteten
 linguistischen Anforderungen, und eine konfigurierbare Instanzlogik (A5)
-als Antwort auf den White-Label-Bedarf. Die in Abschnitt~2.6
-formalisierten 23 Anforderungen (F1--F12, N1--N6, A1--A5) bilden damit
+als Antwort auf den White-Label-Bedarf. Die vorstehenden 23 Anforderungen (F1--F12, N1--N6, A1--A5) bilden damit
 das vollständige Pflichtenheft für die Systemkonzeption in Kapitel 4; die hierfür
 notwendigen technologischen Grundlagen werden in Kapitel 3
 aufgearbeitet.

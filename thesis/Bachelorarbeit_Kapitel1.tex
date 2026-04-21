@@ -1,6 +1,6 @@
 \chapter{Einleitung}\label{einleitung}
 
-Ein Liveticker ist eine Form der Echtzeit-Berichterstattung, bei der Spielereignisse eines Fußballspiels --- Tore, Karten, Auswechslungen, Atmosphäre und Spielanalyse --- fortlaufend als kurze Texteinträge publiziert werden. Als digitale Textgattung verbindet er Berichts-, Meinungs- und Unterhaltungselemente und hat sich im Profisport zur dominanten Form der synchronen medialen Spielbegleitung entwickelt. Die vorliegende Arbeit untersucht, wie dieser Produktionsprozess durch den gezielten Einsatz von KI-gestützter Textgenerierung unterstützt werden kann --- ohne die redaktionelle Verantwortung aufzugeben.
+Ein Liveticker ist eine Form der Echtzeit-Berichterstattung, bei der Spielereignisse eines Fußballspiels (Tore, Karten, Auswechslungen, Atmosphäre und Spielanalyse) fortlaufend als kurze Texteinträge publiziert werden. Als digitale Textgattung verbindet er Berichts-, Meinungs- und Unterhaltungselemente und hat sich im Profisport zu einer zentralen Form der synchronen medialen Spielbegleitung entwickelt. Wie die Produktion dieser Texte unter zunehmendem Zeitdruck und wachsenden Anforderungen technologisch unterstützt werden kann, untersucht die vorliegende Arbeit.
 
 \section{Problemstellung und
 Zielsetzung}\label{problemstellung-und-zielsetzung}
@@ -8,15 +8,15 @@ Zielsetzung}\label{problemstellung-und-zielsetzung}
 „Ein vernünftiger Live-Ticker ist fast unmöglich zu schreiben. Denn sein
 Konzept ist die komplette Überforderung. Des Autors. Des Schreibens. Und
 der Wirklichkeit.`` Mit diesen Worten beschreibt der Journalist
-Constantin Seibt das Grundproblem der Liveticker-Berichterstattung ---
-eine Einschätzung, die im modernen digitalen Sportjournalismus bis heute
-nichts an Aktualität verloren hat (zitiert nach Beils 2023, S. 56). Der
-Liveticker hat sich zur dominanten Darstellungsform der
+Constantin Seibt das Grundproblem der Liveticker-Berichterstattung, eine
+Einschätzung, die im modernen digitalen Sportjournalismus bis heute
+nichts an Aktualität verloren hat (Seibt, zit. n. Beils 2023, S. 56). Der
+Liveticker hat sich zur prägenden Darstellungsform der
 Echtzeit-Berichterstattung im Profifußball entwickelt und steht dabei
-exemplarisch für einen Zielkonflikt zwischen \textbf{Geschwindigkeit und
-Qualität}, der mit rein manuellen Mitteln nicht auflösbar ist.
+exemplarisch für einen Zielkonflikt zwischen Geschwindigkeit und
+Qualität, der mit rein manuellen Mitteln nicht auflösbar ist.
 
-Im modernen digitalen Sportjournalismus lassen sich dabei drei strukturelle Herausforderungen identifizieren, die den Einsatz neuer technologischer Lösungen notwendig machen. Der \textbf{operative Zeitdruck} bei der manuellen Texterstellung zwingt Redakteure dazu, Spielereignisse in Echtzeit zu beobachten, einzuordnen und in stilistisch kohärente Kurztexte zu überführen --- typischerweise innerhalb von 30 bis 120 Sekunden pro Eintrag (vgl. Walter 2020, S.~29; Bluhm \& Schäfer 2023, S.~35). Die Herausforderungen der \textbf{Internationalisierung} durch Mehrsprachigkeit wachsen, da Profifußballvereine zunehmend internationale Fanbases bedienen; deutschsprachige Redaktionen stehen vor der Anforderung, Inhalte parallel auf Englisch oder weiteren Sprachen bereitzustellen, ohne ausreichend mehrsprachiges Redaktionspersonal vorzuhalten. Hinzu kommt der \textbf{strukturelle Wandel} der Vereine zu eigenständigen Medienproduzenten mit White-Label-Anforderungen: Vereine betreiben eigene digitale Kanäle und Medienmarken, die Redaktionswerkzeuge mit konfigurierbarem vereinsspezifischem Ton und CI-konformer Gestaltung erfordern.
+Im modernen digitalen Sportjournalismus lassen sich drei strukturelle Herausforderungen identifizieren, die den Einsatz technologischer Lösungen notwendig machen. Erstens zwingt der \textbf{operative Zeitdruck} Redakteure dazu, Spielereignisse in Echtzeit zu beobachten, einzuordnen und in stilistisch kohärente Kurztexte zu überführen, typischerweise innerhalb von 30 bis 120 Sekunden pro Eintrag (vgl. Walter 2020, S.~29; Bluhm \& Schäfer 2023, S.~35). Zweitens stehen Redaktionen vor wachsenden \textbf{Internationalisierungsanforderungen}: Profifußballvereine bedienen zunehmend internationale Fanbases und müssen Inhalte parallel in mehreren Sprachen bereitstellen, ohne ausreichend mehrsprachiges Personal vorzuhalten. Drittens vollzieht sich ein \textbf{struktureller Wandel} der Vereine zu eigenständigen Medienproduzenten, die Redaktionswerkzeuge mit konfigurierbarem vereinsspezifischem Ton und CI-konformer Gestaltung benötigen.
 
 Diese Dimensionen werden in Kapitel 2 wissenschaftlich fundiert und in
 konkrete Systemanforderungen überführt.
@@ -27,8 +27,7 @@ diesen Konflikt durch den gezielten Einsatz von \textbf{Large Language
 Models} auflöst, während die finale Entscheidungshoheit und
 publizistische Verantwortung beim Menschen verbleiben. Das System wird dabei in zwei Ausprägungen realisiert: einer
 generischen Instanz für beliebige Vereine sowie einer
-vereinsspezifischen White-Label-Instanz am Beispiel \textbf{Eintracht
-Frankfurt}.
+vereinsspezifischen White-Label-Instanz am Beispiel Eintracht Frankfurt.
 
 Um dieses Ziel zu operationalisieren, definiert und evaluiert die Arbeit drei Betriebsmodi: den \textbf{Status quo (\texttt{manual})} als vollmanuell erstellte Vergleichsbasis, den \textbf{vollautonomen Modus (\texttt{auto})} mit KI-basierter Texterstellung und Publikation ohne menschliches Korrektiv sowie den \textbf{hybriden Modus (\texttt{coop})} als Kombination aus KI-generierten Textvorschlägen mit redaktioneller Prüfung und Freigabe.
 
@@ -93,7 +92,7 @@ Bootstrap-Konfidenzintervalle) bereit; aufgrund der Stichprobengröße (n
 Anwendung, stehen jedoch für eine Folgestudie mit größerer Datenbasis
 zur Verfügung.
 
-\subsection{Abgrenzung}\label{abgrenzung}
+\section{Abgrenzung}\label{abgrenzung}
 
 Das System geht bewusst über den Umfang eines typischen akademischen
 Projekts hinaus und zielt auf Produktionsfähigkeit: Eine umfassende
