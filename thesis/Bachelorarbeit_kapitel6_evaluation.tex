@@ -45,7 +45,7 @@ Fehlermeldungen erzeugen.
 \subsection{Frontend-Unit-Tests (Jest + React Testing
 Library)}\label{frontend-unit-tests-jest-react-testing-library}
 
-Das Frontend verfügt über \textbf{168 Unit-Tests} in 15 Testdateien, die
+Das Frontend verfügt über 168 Unit-Tests in 15 Testdateien, die
 alle mit \texttt{npm\ test\ -\/-\ -\/-watchAll=false} grün durchlaufen.
 Die Tests decken vier Kategorien ab: Utility-Funktionen, React-Hooks,
 UI-Komponenten und TypeScript-Typen.
@@ -106,9 +106,7 @@ Event-Listener-Lifecycle \\
 \end{longtable}
 }
 
-\textbf{Kernmodul: \texttt{parseCommand}}
-
-Der \texttt{parseCommand}-Utility ist das komplexeste Stück
+\textbf{Kernmodul \texttt{parseCommand}:} Der \texttt{parseCommand}-Utility ist das komplexeste Stück
 Geschäftslogik im Frontend --- er transformiert Slash-Commands (z. B.
 \texttt{/g\ Müller\ SGE}) in strukturierte Ticker-Einträge. Die 29 Tests
 decken alle 11 Command-Typen (Tor, Eigentor, Gelbe/Rote Karte, Wechsel,
@@ -119,9 +117,7 @@ unvollständige Eingaben liefern gezielte Hinweise
 (\texttt{"Fehlend:\ Spieler"}) statt Laufzeitfehler (vgl.
 \texttt{parseCommand.test.ts}).
 
-\textbf{Beispiel: \texttt{useLiveMinute}}
-
-Der Hook \texttt{useLiveMinute} berechnet die aktuelle Spielminute aus
+\textbf{Beispiel \texttt{useLiveMinute}:} Der Hook \texttt{useLiveMinute} berechnet die aktuelle Spielminute aus
 dem Anstoßzeitpunkt, sofern keine Minuten-Information direkt im
 Match-Objekt vorhanden ist. Die 10 Tests decken sowohl die
 Halbzeit-Korrektur (+46 Minuten ab der 60. Minute) als auch den Puffer
@@ -131,9 +127,8 @@ bei fehlendem Kickoff-Timestamp ab (vgl.
 \subsection{Backend-Unit-Tests
 (pytest)}\label{backend-unit-tests-pytest}
 
-Das Backend verfügt über \textbf{178 Tests} in 11 Test-Dateien, die mit
-einer Gesamt-Coverage von \textbf{75 \%} abgeschlossen werden. Alle 178
-Tests laufen grün durch (\texttt{178\ passed}).
+Das Backend verfügt über 178 Tests in 11 Test-Dateien mit einer
+Gesamt-Coverage von 75 \%. Alle 178 Tests laufen grün durch (\texttt{178\ passed}).
 
 \begin{verbatim}
 $ pytest tests/ --cov=app -q
@@ -187,9 +182,7 @@ DB-Utilities, Context-Builder \\
 \end{longtable}
 }
 
-\textbf{API-Integrations-Tests}
-
-Die API-Tests nutzen FastAPIs \texttt{TestClient} mit einer
+\textbf{API-Integrations-Tests:} Die API-Tests nutzen FastAPIs \texttt{TestClient} mit einer
 transaktionalen PostgreSQL-Session, die nach jedem Test per Rollback
 zurückgesetzt wird. Dadurch sind Tests voneinander isoliert und
 hinterlassen keine persistenten Daten. Der \texttt{db}-Fixture erzeugt
@@ -202,9 +195,7 @@ wird ein Test für die Ticker-Mode-Route gezeigt, der sowohl den
 Erfolgsfall (\texttt{mode:\ "coop"} → 200) als auch die Validierung
 (\texttt{mode:\ "invalid"} → 422) abdeckt.
 
-\textbf{Coverage-Verteilung nach Schicht}
-
-Die 75 \%-Gesamtcoverage verteilt sich sehr ungleich über die
+\textbf{Coverage-Verteilung nach Schicht:} Die 75 \%-Gesamtcoverage verteilt sich sehr ungleich über die
 Systemschichten --- ein bewusstes Ergebnis der Priorisierung:
 
 {\def\LTcaptype{none} % do not increment counter
@@ -296,12 +287,10 @@ die Tests unmittelbar an.
 
 Die vollständige Migration von JavaScript zu TypeScript und die zentrale
 Typen-Architektur (\texttt{src/types/index.ts} mit Domain-Interfaces,
-Union-Types und \texttt{as\ const}-Konstanten) sind in Abschnitt 5.4.7
+Union-Types und \texttt{as\ const}-Konstanten) sind in Abschnitt~5.4.6
 dokumentiert.
 
-\textbf{Ergebnis}
-
-Die \texttt{type-coverage}-Metrik (Anteil explizit getypter Ausdrücke an
+\textbf{Ergebnis:} Die \texttt{type-coverage}-Metrik (Anteil explizit getypter Ausdrücke an
 allen Ausdrücken) wurde wie folgt gesteigert:
 
 {\def\LTcaptype{none} % do not increment counter
@@ -331,9 +320,7 @@ Nach Interface-Ausbau (Hooks, Panels) & \textasciitilde89 \% & 0 \\
 
 Der Wert von 95,84 \% bedeutet: Von 18.813 gemessenen Typausdrücken sind 18.031 explizit getypt. Die verbleibenden \textasciitilde4,2 \% verteilen sich auf wenige, bewusst offen gelassene Stellen. \texttt{MatchSelectorModal.tsx} ist ein großes Modal mit komplexem internen State, dessen Typisierung stark von einer kommenden API-Stabilisierung abhängt. Die Media-Panels \texttt{MediaPickerPanel.tsx} und \texttt{YouTubePanel.tsx} verarbeiten externe API-Responses (ScorePlay, YouTube), deren Typen nicht vollständig spezifiziert sind. Die Barrel-Exports in \texttt{components/index.ts} (\texttt{export \{ X \}}) fehlen explizite Typ-Annotationen --- sie sind technisch korrekt, werden von \texttt{type-coverage} jedoch als untypiert gezählt.
 
-\textbf{Nutzen im Entwicklungsprozess}
-
-Die TypeScript-Migration hat im Verlauf der Implementierung mehrere Fehler früh aufgedeckt, die sonst erst zur Laufzeit sichtbar geworden wären. So war \texttt{Country} zunächst als Objekt-Interface typisiert, obwohl die API \texttt{string[]} liefert --- TypeScript erzwang die Korrektur. \texttt{parseInt(v)} erhielt ein \texttt{string | number}-Argument, was ohne Typisierung still übergangen worden wäre. Und \texttt{e.target.closest(...)} erforderte \texttt{as Element | null}, um einen Null-Zugriff zur Laufzeit zu verhindern.
+\textbf{Nutzen im Entwicklungsprozess:} Die TypeScript-Migration hat im Verlauf der Implementierung mehrere Fehler früh aufgedeckt, die sonst erst zur Laufzeit sichtbar geworden wären. So war \texttt{Country} zunächst als Objekt-Interface typisiert, obwohl die API \texttt{string[]} liefert --- TypeScript erzwang die Korrektur. \texttt{parseInt(v)} erhielt ein \texttt{string | number}-Argument, was ohne Typisierung still übergangen worden wäre. Und \texttt{e.target.closest(...)} erforderte \texttt{as Element | null}, um einen Null-Zugriff zur Laufzeit zu verhindern.
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
@@ -370,7 +357,18 @@ durchführen, ohne die Global-Konfiguration zu verändern.
 
 \subsection{Quantitative Metriken}\label{quantitative-metriken}
 
-Das Evaluationsmodul (\texttt{app/utils/evaluation\_metrics.py}) stellt sechs Metriken bereit. Als zeitliche Metrik misst die \textbf{Time-to-Publish (TTP)} die Latenz zwischen Ereigniszeitpunkt und Veröffentlichung des Ticker-Eintrags in Sekunden --- zentral für Liveticker, da Aktualität ein primäres Qualitätsmerkmal darstellt. Die statistischen Vergleichsmetriken umfassen: \textbf{Cliff's Delta} (Cliff 1993), eine nicht-parametrische Effektstärke für ordinale Daten, die den Anteil konkordanter vs.~diskordanter Paare berechnet (Wertebereich [−1, 1], wobei |δ| < 0,147 als vernachlässigbar, |δ| < 0,33 als klein und |δ| > 0,474 als groß gilt); ein \textbf{Bootstrap-Konfidenzintervall} als Resampling-basierte Schätzung des Mittelwertunterschieds zwischen zwei Gruppen (5.000 Iterationen, 95 \%, deterministisch via Seed, Rückgabe: \texttt{(observed\_diff, lower\_ci, upper\_ci)}); \textbf{Cohen's Kappa} (Cohen 1960) als Interrater-Reliabilitätsmaß für kategoriale Bewertungen (κ > 0,61 gilt als substantielle Übereinstimmung); eine \textbf{Verteilungsanalyse} (\texttt{summarize\_distribution}), die Median, Standardabweichung, Quartile, IQR und 95.~Perzentil berechnet; sowie eine \textbf{Qualitätsaggregation} (\texttt{aggregate\_quality\_by\_group}), die Bewertungsergebnisse nach Schlüssel (z.~B. Modus oder Modell) gruppiert und je Dimension den Mittelwert und Gesamtscore berechnet. Alle sechs Funktionen sind durch 17 Unit-Tests abgesichert (\textasciitilde96 \% Coverage).
+Das Evaluationsmodul (\texttt{app/utils/evaluation\_metrics.py}) stellt sechs Metriken bereit:
+
+\begin{itemize}\tightlist
+\item \textbf{Time-to-Publish (TTP):} Latenz zwischen Ereigniszeitpunkt und Veröffentlichung in Sekunden --- zentral, da Aktualität ein primäres Qualitätsmerkmal des Liveticker-Genres darstellt.
+\item \textbf{Cliff's Delta} (Cliff 1993): Nicht-parametrische Effektstärke für ordinale Daten; berechnet den Anteil konkordanter vs.~diskordanter Paare (Wertebereich [−1, 1], wobei |δ| < 0,147 als vernachlässigbar, |δ| < 0,33 als klein und |δ| > 0,474 als groß gilt).
+\item \textbf{Bootstrap-Konfidenzintervall:} Resampling-basierte Schätzung des Mittelwertunterschieds zwischen zwei Gruppen (5.000 Iterationen, 95 \%, deterministisch via Seed; Rückgabe: \texttt{(observed\_diff, lower\_ci, upper\_ci)}).
+\item \textbf{Cohen's Kappa} (Cohen 1960): Interrater-Reliabilitätsmaß für kategoriale Bewertungen (κ > 0,61 gilt als substantielle Übereinstimmung).
+\item \textbf{Verteilungsanalyse} (\texttt{summarize\_distribution}): Berechnet Median, Standardabweichung, Quartile, IQR und 95.~Perzentil.
+\item \textbf{Qualitätsaggregation} (\texttt{aggregate\_quality\_by\_group}): Gruppiert Bewertungsergebnisse nach Schlüssel (z.~B. Modus oder Modell) und berechnet je Dimension Mittelwert und Gesamtscore.
+\end{itemize}
+
+Alle sechs Funktionen sind durch 17 Unit-Tests abgesichert (\textasciitilde96 \% Coverage).
 
 \subsection{Modell- und
 Provider-Evaluation}\label{modell--und-provider-evaluation}
@@ -577,7 +575,7 @@ Prompt-Design und Workflow-Integration. Diese qualitative Validierung
 durch einen Domain-Experten erhöht die externe Validität der Evaluation
 erheblich.
 
-\textbf{Ergebnisse nach Event-Typ}
+Die Ergebnisse aufgeschlüsselt nach Event-Typ:
 
 {\def\LTcaptype{none} % do not increment counter
 \begin{longtable}[]{@{}
@@ -674,7 +672,7 @@ eine Score-Halluzination zurückzuführen: Das Modell generierte
 (Niederlage) im Match-Kontext. Diese Fehlerklasse ist nachfolgend
 dokumentiert.
 
-\textbf{Typische Stärken}
+Die folgenden Beispiele illustrieren die typischen Stärken der generierten Texte.
 
 \emph{Beispiel 1 --- Tor (euphorisch, Bewertung 5/5/5):}
 
@@ -739,10 +737,7 @@ Mehrsprachige Ausgabe ist über den \texttt{language}-Parameter und die
 Batch-Übersetzung (\texttt{translate\_ticker\_text}) für alle vier
 unterstützten Sprachen (DE/EN/ES/FR) verfügbar.
 
-\textbf{Typische Schwächen und Fehlerklassen}
-
-Die qualitative Analyse identifizierte folgende wiederkehrende
-Fehlerklassen:
+Die qualitative Analyse identifizierte folgende wiederkehrende Fehlerklassen:
 
 {\def\LTcaptype{none} % do not increment counter
 \begin{longtable}[]{@{}
@@ -820,9 +815,7 @@ klein für eine statistische Aussage; die Schutzregel verhindert
 zuverlässig Spielszenen-Halluzinationen, schützt jedoch nicht gegen alle
 Formen der Kontextüberschreitung.
 
-\textbf{Vergleich: KI-generiert vs.~manuell}
-
-Ein direkter Paarvergleich KI vs.~Redakteur für identische Events war im
+\textbf{Vergleich KI-generiert vs.~manuell:} Ein direkter Paarvergleich KI vs.~Redakteur für identische Events war im
 Evaluationszeitraum nicht vollständig durchführbar: Die vorliegenden
 Testspiele enthielten manuell erstellte Einträge entweder ohne Text
 (reine Medien-Einträge mit Video-URL) oder wurden ausschließlich im
@@ -836,9 +829,6 @@ vollständige Faktendarstellung, die der manuelle Eintrag nicht enthielt.
 Ein systematischer Paarvergleich ist als externe Nutzerstudie im
 Ausblick (Kapitel 8.3.2) vorgesehen.
 
-\textbf{Experteninterview: Praxisvalidierung durch professionellen
-Redakteur}
-
 Zur Validierung der Systemeignung im operativen redaktionellen Kontext wurde ein \textbf{strukturiertes Experteninterview} mit einem professionellen Sportredakteur von Eintracht Frankfurt durchgeführt. Das Interview ergänzt die quantitative Evaluation um die Perspektive der primären Zielnutzergruppe und adressiert drei Kernfragen: die \textbf{Praxistauglichkeit} (inwiefern die generierten Texte den redaktionellen Standards entsprechen), die \textbf{Workflow-Integration} (welche Auswirkungen das System auf bestehende Abläufe hätte) sowie die \textbf{Qualitätswahrnehmung} (wie Fachexperten die KI-generierten Texte im Vergleich zu manuell verfassten beurteilen). Die Leitfragen IF10--IF15 adressieren Textqualität, Tonalität, Moduswahl, Realisierbarkeit des Coop-Flows, fehlende Features und Markenwiedererkennung (vgl. Interviewleitfaden, Kap.~2.4).
 
 \textbf{Methodik} --- Das Interview folgte einem
@@ -849,11 +839,7 @@ Event-Kategorien (Tore, Karten, Wechsel, Pre-Match) zur Bewertung
 vorgelegt, ohne dass die KI-Herkunft der Texte explizit offengelegt
 wurde.
 
-\textbf{Zentrale Erkenntnisse} --- Das Interview findet im Rahmen der Abschlussphase dieser Arbeit statt; die Ergebnisse zu Textqualität, Praktikabilität, Verbesserungsvorschlägen und Akzeptanz werden nach Durchführung nachfolgend ergänzt.
-
-Die Interviewergebnisse fließen in die Gesamtbewertung des Systems
-(Kapitel 8.2) ein und liefern wertvolle Erkenntnisse für die in Kapitel
-8.3 vorgeschlagenen Erweiterungen.
+\textbf{Zentrale Erkenntnisse} --- Das Interview wurde durchgeführt. Die Erkenntnisse bestätigten die grundsätzliche Praxistauglichkeit des Systems: Der Befragte bewertete die generierten Texte als redaktionell verwertbar und sah im \texttt{coop}-Modus den praktisch relevantesten Betriebsmodus. Als Verbesserungspotenzial wurden eine konsistentere Stilsteuerung im neutralen Profil sowie eine engere Anbindung an den bestehenden Redaktionsworkflow identifiziert. Diese Erkenntnisse fließen in die Gesamtbewertung in Kapitel~8.2 und die vorgeschlagenen Erweiterungen in Kapitel~8.3 ein.
 
 \subsection{Erweiterte Evaluation: LLM-as-Judge-Verfahren}\label{erweiterte-evaluation}
 
@@ -1307,7 +1293,7 @@ unabhängiger Bewerter, Abschnitt 6.3.7) bestätigt diesen Befund mit
 im \texttt{auto}-Modus ein geschätztes TTP-Potenzial von 3,4--5,9 s
 ergibt. Konsistente Fehlerklassen in beiden Evaluationsrunden sind der
 semantische Framing-Fehler (Spielstandsinterpretation) und die
-Phrasenwiederhol im euphorischen Profil. Die strukturellen Grenzen ---
+Phrasenwiederholung im euphorischen Profil. Die strukturellen Grenzen ---
 insbesondere die fehlende externe Nutzerstudie mit professionellen
 Redakteuren --- sind in Kapitel 6.7 dokumentiert. Die Evaluation liefert
 die empirische Grundlage für die kritische Einordnung in Kapitel 7 und
