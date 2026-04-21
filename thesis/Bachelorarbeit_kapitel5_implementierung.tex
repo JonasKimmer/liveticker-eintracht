@@ -4,7 +4,6 @@ Dieses Kapitel dokumentiert die konkrete Umsetzung des in Kapitel~4 konzipierten
 
 Die Implementierung folgt dem Grundsatz „so einfach wie nötig, so modular wie sinnvoll": Standardpfade (CRUD, Listabfragen) sind bewusst direkt gehalten (Router → Repository), während die LLM-Generierung mit ihren Retry-, Semaphore- und Few-Shot-Mechanismen in einen dedizierten Service extrahiert ist. Die n8n-Workflows (Abschnitt~5.5) werden nach der Frontend-Implementierung beschrieben, da sie auf Backend-Endpunkten aufbauen, die bis dahin vollständig dokumentiert sind.
 
-\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
 \section{Backend-Implementierung}\label{backend-implementierung}
 
@@ -56,7 +55,6 @@ Endpunkt & Funktion \\
 \end{longtable}
 }
 
-\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
 \subsection{Datenmodelle: Datenbankschema und
 API-Validierung}\label{datenmodelle-datenbankschema-und-api-validierung}
@@ -132,7 +130,6 @@ Das \texttt{MatchRepository} lädt Heim- und Auswärtsteam, Wettbewerb und
 Saison per \texttt{joinedload} in einer einzigen Abfrage vor, da die
 KI-Generierungsroute vollständige Kontext-Daten benötigt.
 
-\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
 \subsection{API-Router:
 Endpunktstruktur}\label{api-router-endpunktstruktur}
@@ -185,16 +182,15 @@ deterministische Übersetzungen zu erzeugen --- eine gegenüber der
 Originalgenerierung bewusst andere Parametrisierung.
 
 Die wichtigsten Endpunkte gliedern sich in vier funktionale Bereiche:
-\textbf{Stammdaten} (Countries, Teams, Matches, Seasons, Competitions),
-\textbf{Ticker-Lifecycle} (CRUD, Generierung per Event,
-Batch-Generierung für Synthetic Events, Übersetzung), \textbf{Medien \&
-Clips} (ScorePlay-Import, Media-Queue, WebSocket) und
-\textbf{Spielkontext} (Lineups, Statistiken, Events). Insgesamt umfasst
+Stammdaten (Countries, Teams, Matches, Seasons, Competitions),
+Ticker-Lifecycle (CRUD, Generierung per Event,
+Batch-Generierung für Synthetic Events, Übersetzung), Medien und Clips
+(ScorePlay-Import, Media-Queue, WebSocket) sowie
+Spielkontext (Lineups, Statistiken, Events). Insgesamt umfasst
 die API über 70 Routen; die vollständige Endpunktliste ist über die
 automatisch generierte OpenAPI-Dokumentation unter \texttt{/api/docs}
 einsehbar.
 
-\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
 \subsection{Ticker-Service:
 Domänenlogik}\label{ticker-service-domuxe4nenlogik}
@@ -238,7 +234,6 @@ den LLM-Ergebnissen ein \texttt{TickerEntryCreate}-Schema erzeugt,
 Aufrufkontext festlegt (\texttt{draft} im Co-op-Modus,
 \texttt{published} im Auto-Modus).
 
-\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
 \subsection{LLM-Service: Prompt-Aufbau und
 Provider-Dispatch}\label{llm-service-prompt-aufbau-und-provider-dispatch}
@@ -260,9 +255,15 @@ Dispatch-Dictionary aufruft:
 \end{Highlighting}
 \end{Shaded}
 
-Das Dispatch-Pattern macht es trivial, neue Provider hinzuzufügen:
+Das Dispatch-Pattern erlaubt das einfache Hinzufügen neuer Provider:
 Implementierung einer Methode \texttt{\_generate\_X\_text()} und ein
 Eintrag im Dictionary.
+
+Vorab normalisiert \texttt{\_normalize\_event\_type()} den Ereignistyp:
+Die \texttt{EVENT\_TYPE\_MAP} übersetzt externe Strings beider APIs
+(z.\,B. \texttt{PartnerGoal} bzw. \texttt{Goal}) auf einheitliche
+interne Bezeichner (\texttt{goal}); unbekannte Typen fallen auf
+\texttt{"comment"} zurück.
 
 Der Prompt wird in vier modularen Methoden aufgebaut.
 \texttt{\_build\_event\_lines()} erzeugt die Fakten-Sektion; jeder
@@ -301,13 +302,6 @@ Versuche mit linearem Backoff (\texttt{30\ s\ /\ 60\ s\ /\ 90\ s})
 unternommen; bei sonstigen transienten Fehlern greift exponentielles
 Backoff (\texttt{1\ s\ /\ 2\ s\ /\ 4\ s}).
 
-Vorab normalisiert \texttt{\_normalize\_event\_type()} den Ereignistyp:
-Die \texttt{EVENT\_TYPE\_MAP} übersetzt externe Strings beider APIs
-(z.\,B. \texttt{PartnerGoal} bzw. \texttt{Goal}) auf einheitliche
-interne Bezeichner (\texttt{goal}); unbekannte Typen fallen auf
-\texttt{"comment"} zurück.
-
-\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
 \section{KI-Generierungspipeline}\label{ki-generierungspipeline}
 
@@ -416,7 +410,6 @@ sondern behalten ihren Status. Diese Entscheidung sichert die
 Reproduzierbarkeit der Evaluation: Alle je generierten Einträge --- auch
 verworfene --- sind für spätere Qualitätsanalysen auswertbar.
 
-\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
 \section{Frontend-Implementierung}\label{frontend-implementierung}
 
@@ -427,43 +420,27 @@ Hauptansicht (\texttt{LiveTicker}) gliedert sich in drei
 Panel-Komponenten, die von gemeinsam genutzten Hooks und Contexts
 gespeist werden:
 
-\begin{Shaded}
-\begin{Highlighting}[]
-\NormalTok{graph TD}
-\NormalTok{    App {-}{-}\textgreater{} LiveTicker}
-\NormalTok{    LiveTicker {-}{-}\textgreater{} |TickerModeContext| LeftPanel}
-\NormalTok{    LiveTicker {-}{-}\textgreater{} |TickerModeContext| CenterPanel}
-\NormalTok{    LiveTicker {-}{-}\textgreater{} |TickerModeContext| RightPanel}
-\NormalTok{    LiveTicker {-}{-}\textgreater{} |TickerDataContext| LeftPanel}
-\NormalTok{    LiveTicker {-}{-}\textgreater{} |TickerDataContext| CenterPanel}
-\NormalTok{    LiveTicker {-}{-}\textgreater{} |TickerDataContext| RightPanel}
-\NormalTok{    LiveTicker {-}{-}\textgreater{} |TickerActionsContext| CenterPanel}
-
-\NormalTok{    CenterPanel {-}{-}\textgreater{} EventCard}
-\NormalTok{    CenterPanel {-}{-}\textgreater{} EntryEditor}
-\NormalTok{    CenterPanel {-}{-}\textgreater{} AIDraft}
-\NormalTok{    CenterPanel {-}{-}\textgreater{} SummarySection}
-\NormalTok{    CenterPanel {-}{-}\textgreater{} MediaPickerPanel}
-\NormalTok{    CenterPanel {-}{-}\textgreater{} YouTubePanel}
-\NormalTok{    CenterPanel {-}{-}\textgreater{} TwitterPanel}
-\NormalTok{    CenterPanel {-}{-}\textgreater{} InstagramPanel}
-
-\NormalTok{    LeftPanel {-}{-}\textgreater{} PublishedEntry}
-\NormalTok{    RightPanel {-}{-}\textgreater{} Collapsible["Collapsible (Statistiken, Aufstellung, Spieler)"]}
-\NormalTok{    RightPanel {-}{-}\textgreater{} FormationColumn}
-\NormalTok{    RightPanel {-}{-}\textgreater{} StatRow}
-
-\NormalTok{    EventCard {-}{-}\textgreater{} |onGenerate| TickerActionsContext}
-\NormalTok{    AIDraft {-}{-}\textgreater{} |onPublished/onDraftActive| TickerActionsContext}
-\NormalTok{    EntryEditor {-}{-}\textgreater{} |onManualPublish| TickerActionsContext}
-\end{Highlighting}
-\end{Shaded}
+\begin{verbatim}
+App
+└─ LiveTicker  [TickerModeContext | TickerDataContext | TickerActionsContext]
+   ├─ LeftPanel
+   │  └─ PublishedEntry
+   ├─ CenterPanel
+   │  ├─ EventCard          ──onGenerate──────────► TickerActionsContext
+   │  ├─ EntryEditor        ──onManualPublish──────► TickerActionsContext
+   │  ├─ AIDraft            ──onPublished/onDraft──► TickerActionsContext
+   │  ├─ SummarySection
+   │  └─ MediaPickerPanel | YouTubePanel | TwitterPanel | InstagramPanel
+   └─ RightPanel
+      ├─ Collapsible  (Statistiken, Aufstellung, Spieler)
+      ├─ FormationColumn
+      └─ StatRow
+\end{verbatim}
 
 Die drei Panels sind physisch getrennte React-Komponenten, kommunizieren
 aber ausschließlich über Context-Provider --- kein Prop-Drilling über
 Komponentengrenzen hinweg.
 
-\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
 \subsection{React Context-Architektur}\label{react-context-architektur}
 
@@ -483,7 +460,6 @@ Performance-Vorteil: Komponenten, die nur Actions konsumieren (z.\,B.
 Zugriffs-Hook, der bei Verwendung außerhalb des Providers einen klaren
 Fehler wirft.
 
-\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
 \subsection{Hook-Architektur}\label{hook-architektur}
 
@@ -540,7 +516,6 @@ stellt die Daten über \texttt{TickerDataContext} bereit; das
 Polling-Intervall ist als Erweiterungspunkt für zustandsabhängige
 Frequenzen (Live vs. Prematch) konzipiert.
 
-\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
 \subsection{\texorpdfstring{Slash-Command-Parser
 (\texttt{parseCommand.ts})}{Slash-Command-Parser (parseCommand.ts)}}\label{slash-command-parser-parsecommand.ts}
@@ -615,7 +590,6 @@ Nicht erkannte Commands werden mit \texttt{isValid:\ false} und einer
 Fehlermeldung zurückgegeben (\texttt{"Unbekannter\ Command:\ /xyz"}),
 statt einen Laufzeitfehler zu werfen.
 
-\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
 \subsection{Modusimplementierung im
 Frontend}\label{modusimplementierung-im-frontend}
@@ -631,11 +605,10 @@ Umschalten. Im Co-op-Modus registriert derselbe Hook die Shortcuts
 \texttt{TAB} (acceptDraft) und \texttt{ESC} (rejectDraft) als
 Keyboard-Event-Listener, die bei Moduswechsel automatisch aktualisiert
 werden. Im Auto-Modus übernimmt \texttt{useAutoPublisher} die
-automatische Publikation neu eintreffender Draft-Einträge; dies dient
-als Frontend-Fallback, da n8n mit \texttt{auto\_publish=True}
-Einträge bereits beim Generieren direkt veröffentlicht.
+automatische Publikation neu eintreffender Draft-Einträge als Frontend-Fallback
+für den Fall, dass n8n-Webhooks verzögert eintreffen oder ein Spiel direkt im
+Frontend auf Auto-Modus umgeschaltet wird, ohne n8n-Neustart.
 
-\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
 \subsection{TypeScript-Migration}\label{typescript-migration}
 
@@ -681,7 +654,6 @@ Nach der Migration erzielt das Projekt 0 TypeScript-Compilerfehler und eine type
 (gemessen mit \texttt{type-coverage\ -\/-strict}); die detaillierte
 Auswertung folgt in Abschnitt~6.2.5.
 
-\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
 \section{n8n
 Workflow-Implementierung}\label{n8n-workflow-implementierung}
@@ -712,17 +684,21 @@ Statusupdates, aktualisiert \texttt{minute}, \texttt{match\_phase} und
 
 Die folgenden Abschnitte beschreiben die Implementierungsdetails der systemkritischen Workflows.
 
-\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
-\textbf{Events-LLM-Workflow (09)} ist der kritischste im System: Er importiert Live-Ereignisse via Webhook (\texttt{POST /Events}), persistiert sie per UPSERT (\texttt{ON CONFLICT (source\_id) DO NOTHING}) und triggert die KI-Generierung für jeden neuen Event. Eine initiale SQL-Abfrage bestimmt anhand der Teamzugehörigkeit, ob die Instanz \texttt{ef\_whitelabel} oder \texttt{generic} und der Stil \texttt{euphorisch} oder \texttt{neutral} ist; \texttt{auto\_publish} wird direkt aus \texttt{ticker\_mode} des Spiels gesetzt. Nur Events mit erfolgreicher Datenbankzeile passieren den Filter-Knoten. Ein EF-spezifischer Zweig liest Spielerdaten von \texttt{profis.eintracht.de}, baut S3-Video-URLs auf und persistiert Torjubel-Videos als Ticker-Einträge.
+\paragraph{Events-LLM-Workflow (09)}
+Dieser Workflow ist der kritischste im System. Er importiert Live-Ereignisse via Webhook (\texttt{POST /Events}) und persistiert sie per UPSERT (\texttt{ON CONFLICT (source\_id) DO NOTHING}). Eine initiale SQL-Abfrage bestimmt anhand der Teamzugehörigkeit, ob die Instanz \texttt{ef\_whitelabel} oder \texttt{generic} sowie den Stil; \texttt{auto\_publish} wird direkt aus \texttt{ticker\_mode} des Spiels gesetzt. Nur Events mit erfolgreicher Datenbankzeile passieren den Filter-Knoten. Ein EF-spezifischer Zweig liest Spielerdaten von \texttt{profis.eintracht.de}, baut S3-Video-URLs auf und persistiert Torjubel-Videos als Ticker-Einträge.
 
-\textbf{Prematch-Import-Workflow (07)} baut den Vorberichtskontext aus fünf parallelen Football-API-Abfragen auf (Verletzungen, Head-to-Head, Teamstatistiken Heim/Gast, Tabellenstand) und persistiert die Ergebnisse als \texttt{synthetic\_events} mit idempotenter \texttt{ON CONFLICT (match\_id, type) DO UPDATE}-Strategie. Ein LLM-Trigger wird nur ausgelöst, wenn noch kein nicht-verworfener Ticker-Eintrag für das jeweilige synthetische Event existiert (\texttt{WHERE te.id IS NULL}).
+\paragraph{Prematch-Import-Workflow (07)}
+Dieser Workflow baut den Vorberichtskontext aus fünf parallelen Football-API-Abfragen auf (Verletzungen, Head-to-Head, Teamstatistiken Heim/Gast, Tabellenstand) und persistiert die Ergebnisse als \texttt{synthetic\_events} mit idempotenter \texttt{ON CONFLICT (match\_id, type) DO UPDATE}-Strategie. Ein LLM-Trigger wird nur ausgelöst, wenn noch kein nicht-verworfener Ticker-Eintrag für das jeweilige synthetische Event existiert (\texttt{WHERE te.id IS NULL}).
 
-\textbf{Matchphasen-Workflow (14)} verarbeitet Spielzustands-Übergänge via Webhook (\texttt{POST /match-status}). Ein JavaScript-Knoten validiert Übergänge gegen eine Matrix erlaubter Vorzustände. Für Vollzeit-Ereignisse (\texttt{FT}, \texttt{AET}, \texttt{PEN}) generiert der Workflow die gesamte Phasensequenz rückwirkend; ein \texttt{FT}-Signal erzeugt vier synthetische Events. Das zentrale SQL-Statement kombiniert Match-Update, Event-Insert und eine \texttt{demote}-CTE in einer einzigen Transaktion --- Letztere stuft bereits publizierte Phasen-Texte bei Re-Triggers auf \texttt{draft} zurück.
+\paragraph{Matchphasen-Workflow (14)}
+Dieser Workflow verarbeitet Spielzustands-Übergänge via Webhook (\texttt{POST /match-status}). Ein JavaScript-Knoten validiert Übergänge gegen eine Matrix erlaubter Vorzustände. Für Vollzeit-Ereignisse (\texttt{FT}, \texttt{AET}, \texttt{PEN}) generiert der Workflow die gesamte Phasensequenz rückwirkend; ein \texttt{FT}-Signal erzeugt vier synthetische Events. Das zentrale SQL-Statement kombiniert Match-Update, Event-Insert und eine \texttt{demote}-CTE in einer einzigen Transaktion, wobei Letztere bereits publizierte Phasen-Texte bei Re-Triggers auf \texttt{draft} zurückstuft.
 
-\textbf{Halbzeit/Abpfiff-Zusammenfassung (13)} erzeugt narrative Zusammenfassungen und ruft OpenRouter dabei direkt auf, da Zusammenfassungen einen umfangreicheren Prompt mit parallel geladenen Statistiken (Ballbesitz, Schüsse, Spieler-Ratings) erfordern und keinen Few-Shot-Stil aus der Datenbank benötigen. Das Ergebnis wird je nach \texttt{ticker\_mode} als \texttt{published} oder \texttt{draft} gespeichert.
+\paragraph{Halbzeit/Abpfiff-Zusammenfassung (13)}
+Dieser Workflow erzeugt narrative Zusammenfassungen und ruft OpenRouter direkt auf, da Zusammenfassungen einen umfangreicheren Prompt mit parallel geladenen Statistiken (Ballbesitz, Schüsse, Spieler-Ratings) erfordern und keinen Few-Shot-Stil aus der Datenbank benötigen. Das Ergebnis wird je nach \texttt{ticker\_mode} als \texttt{published} oder \texttt{draft} gespeichert.
 
-\textbf{ScorePlay-Medien-Workflow (08)} sucht Medien-Assets bei ScorePlay für Spieler eines Torereignisses. Die Spieler-Suche normalisiert Umlaute und matcht gegen vier Namensfelder. Gefundene URLs werden an \texttt{POST /api/v1/media/incoming} übertragen und vom Backend per WebSocket an verbundene Clients verteilt.
+\paragraph{ScorePlay-Medien-Workflow (08)}
+Dieser Workflow sucht Medien-Assets bei ScorePlay für Spieler eines Torereignisses. Die Spieler-Suche normalisiert Umlaute und matcht gegen vier Namensfelder. Gefundene URLs werden an \texttt{POST /api/v1/media/incoming} übertragen und vom Backend per WebSocket an verbundene Clients verteilt.
 
 Über alle Workflows hinweg lassen sich fünf übergreifende Muster identifizieren:
 
@@ -734,7 +710,6 @@ Die folgenden Abschnitte beschreiben die Implementierungsdetails der systemkriti
 \item \textbf{Instanz-Routing:} Die Unterscheidung zwischen \texttt{ef\_whitelabel} und \texttt{generic} erfolgt per \texttt{ILIKE '\%Frankfurt\%'}-Abfrage.
 \end{itemize}
 
-\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
 \section{Qualitätssicherung und
 Tests}\label{qualituxe4tssicherung-und-tests}
@@ -754,7 +729,6 @@ Delta, Bootstrap-KI, Cohen's Kappa u.\,a.), die in Kapitel 6 direkt
 verwendet werden. Die detaillierte Auswertung der Testmetriken und
 Coverage-Verteilungen folgt in Abschnitt~6.2.
 
-\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
 \section{Deployment}\label{deployment}
 

@@ -62,7 +62,7 @@ Schäfer 2023, S. 33). Dies begründet den \textbf{hybriden Ansatz} der
 vorliegenden Arbeit: Das System generiert Textvorschläge, die finale
 Freigabeentscheidung verbleibt jedoch beim Redakteur.
 
-\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
 
 \section{Prompt Engineering}\label{prompt-engineering}
 
@@ -106,7 +106,7 @@ Die konkrete Prompt-Struktur, Few-Shot-Beispiele und
 Temperature-Konfiguration des vorliegenden Systems werden in
 Kapitel~4.5.2 beschrieben.
 
-\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
 
 \section{Natural Language Generation im
 Sportjournalismus}\label{natural-language-generation-im-sportjournalismus}
@@ -160,7 +160,7 @@ Journalismus durch redaktionelle Kontrolle und ermöglicht gleichzeitig
 den in Kapitel 2.1 beschriebenen Ressourcenbeschränkungen kleinerer
 Redaktionen Rechnung trägt.
 
-\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
 
 \section{Echtzeit-Kommunikation im
 Web}\label{echtzeit-kommunikation-im-web}
@@ -187,7 +187,7 @@ Trade-offs gezielt zu optimieren.
 Die konkrete Umsetzung im vorliegenden System wird in Kapitel 4.6.5
 beschrieben.
 
-\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
 
 \section{ETL-Prozesse und
 Workflow-Automatisierung}\label{etl-prozesse-und-workflow-automatisierung}
@@ -248,25 +248,25 @@ Ereignisse sofort reagieren zu können (vgl. Nakavisute \& Sincharoonsak
 Die konkrete Umsetzung der ETL-Architektur im vorliegenden System wird
 in Kapitel~4.4 beschrieben.
 
-\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
 
 \section{Backend-Technologien}\label{backend-technologien}
 
 Python hat sich als Standard für datenintensive Webanwendungen und KI-Systeme etabliert (Stack Overflow Developer Survey 2024). Pythons \texttt{asyncio}-Eventloop ermöglicht über \textbf{ASGI}-Frameworks wie \texttt{FastAPI} nicht-blockierende Verarbeitung: Während eine Anfrage auf einen LLM-Aufruf oder eine Datenbankabfrage wartet, können andere Anfragen parallel bearbeitet werden (Grigorev 2019). \texttt{FastAPI} generiert aus \texttt{Pydantic}-Schemata automatisch eine OpenAPI-konforme Dokumentation, die gleichzeitig als maschinenlesbarer Vertrag für Frontend und n8n-Workflows dient. Das \textbf{Repository Pattern} (Fowler 2002, S.~322) kapselt den Datenzugriff und entkoppelt die Service-Schicht von der Persistenzschicht --- eine Voraussetzung für transaktionale Testbarkeit. \texttt{SQLAlchemy} implementiert dieses Muster als typsichere ORM-Schicht über PostgreSQL, das mit vollständigen ACID-Garantien referenzielle Integrität erzwingt und über native JSONB-Spalten auch semistrukturierte Daten verwaltet. Die konkrete Backend-Architektur wird in Kapitel~4.2 beschrieben.
 
-\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
 
 \section{Frontend-Technologien}\label{frontend-technologien}
 
 TypeScript erweitert JavaScript um ein statisches Typsystem, das Typfehler zur Entwicklungszeit erkennt und Schnittstellenänderungen sofort an allen Aufrufstellen als Compilerfehler sichtbar macht (Microsoft 2012). React zerlegt die Benutzeroberfläche in isolierte, wiederverwendbare Komponenten; Zustand und Seiteneffekte werden über React Hooks verwaltet, während die \texttt{Context API} global geteilten Zustand bereitstellt, ohne ihn über Prop-Ketten durchzureichen. Als \textbf{Single-Page Application (SPA)} aktualisiert das Frontend die Darstellung dynamisch ohne vollständige Seitenneuladen --- geeignet für interaktive Werkzeuge mit häufigen Zustandsänderungen. Die konkrete Frontend-Architektur wird in Kapitel~4.6 beschrieben.
 
-\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
 
 \section{Deployment und Containerisierung}\label{deployment-und-containerisierung}
 
 Docker (Merkel 2014) paketiert die Anwendung mitsamt Laufzeitumgebung in reproduzierbare Container; \texttt{Docker Compose} koordiniert mehrere Dienste über eine deklarative Konfigurationsdatei. \textbf{Platform-as-a-Service (PaaS)}-Anbieter wie Render abstrahieren die Infrastrukturverwaltung und ermöglichen Deployments direkt aus Git-Branches. PaaS setzt ein \textbf{Stateless-Design} voraus: Persistente Daten werden in externe Dienste ausgelagert, sodass zusätzliche Instanzen ohne Zustandskonsistenzprobleme gestartet werden können. Die konkrete Deployment-Architektur wird in Kapitel~4.7.4 beschrieben.
 
-\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
 
 \section{Synthese: Technologische Konsequenzen für das
 Systemdesign}\label{synthese-technologische-konsequenzen-fuxfcr-das-systemdesign}

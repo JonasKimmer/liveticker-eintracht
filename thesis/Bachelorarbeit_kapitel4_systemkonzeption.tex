@@ -13,7 +13,7 @@ Frontend-Konzeption mit Hook- und Kontextarchitektur (Kap.~4.6),
 Skalierbarkeit und Systemgrenzen (Kap.~4.7) sowie ein abschließendes
 Fazit der Systemkonzeption (Kap.~4.8).
 
-\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
 
 \section{Überblick und
 Schichtenmodell}\label{uxfcberblick-und-schichtenmodell}
@@ -60,7 +60,7 @@ und Kommunikationspfaden:
 \caption{Systemarchitektur: drei Schichten und externe Dienste}
 \end{figure}
 
-\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
 
 \subsection{Kommunikations- und
 Triggerarchitektur}\label{kommunikations--und-triggerarchitektur}
@@ -92,7 +92,7 @@ Triggerarchitektur unterstützt sowohl redaktionelle Kontrolle im Sinne des
 \textbf{Human-in-the-Loop}-Ansatzes als auch weitgehend automatisierte
 Live-Prozesse.
 
-\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
 
 \subsection{Partner-Team-Konzept und
 White-Label-Steuerung}\label{partner-team-konzept-und-white-label-steuerung}
@@ -118,7 +118,7 @@ vorgesehen ist. Die konkreten Implementierungen sind in Kapitel 5.2.2
 (Datenbankmodell, \texttt{is\_partner\_team}-Flag) und Kapitel 5.4.6
 (Frontend-Moduslogik, \texttt{isOurTeam}-Erkennung) dokumentiert.
 
-\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
 
 \section{Backend-Konzeption}\label{backend-konzeption}
 
@@ -161,7 +161,7 @@ definieren die Persistenzstruktur, Pydantic-Schemas die API-Verträge.
 Das stabilisiert die Schnittstellen gegenüber internen Refactorings und
 verbessert Wartbarkeit und Testbarkeit.
 
-\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
 
 \subsection{API-Design und
 Endpunktstrategie}\label{api-design-und-endpunktstrategie}
@@ -185,7 +185,7 @@ ausgelöst werden können. Fehlerfälle werden konsistent über
 HTTP-Statuscodes und strukturierte Fehlermeldungen kommuniziert, sodass
 Frontend und n8n-Workflows deterministisch reagieren können.
 
-\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
 
 \subsection{Asynchronität, Fehlerbehandlung und
 Robustheit}\label{asynchronituxe4t-nebenluxe4ufigkeit-und-performance}
@@ -210,7 +210,7 @@ verfügbar und redaktionelle Kernprozesse können fortgeführt werden. Die
 Datenpersistenz ist auf \textbf{idempotente Verarbeitung} ausgelegt
 (vgl. Kap.~4.3.4).
 
-\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
 
 \subsection{Sicherheitskonzept}\label{sicherheitskonzept}
 
@@ -232,7 +232,7 @@ Redaktionswerkzeug auf Netzwerksegmentierung. Für produktiven
 Mehrbenutzerbetrieb wäre ein Authentifizierungsframework (z.\,B. OAuth 2.0
 oder JWT) erforderlich --- dies wird in Kapitel~7 eingeordnet.
 
-\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
 
 \section{Datenbankkonzeption}\label{datenbankkonzeption}
 
@@ -302,7 +302,7 @@ Das Schema folgt einem hybriden Entwurfsansatz aus strukturierter Normalisierung
 \item \textbf{Schlüsselstrategie:} Numerische Primärschlüssel (\texttt{id}) für performante Joins werden mit einem eindeutigen \texttt{uid}-Feld (UUID) als stabilem externen Referenzschlüssel kombiniert --- kein reines UUID-Schema, sondern eine kombinierte Strategie.
 \end{itemize}
 
-\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
 
 \subsection{Status-Lifecycle der
 Ticker-Einträge}\label{status-lifecycle-der-ticker-eintruxe4ge}
@@ -343,7 +343,7 @@ Evaluationsdatensatz bzw. in der Messlogik erforderlich, statt sich
 allein auf den Tabellenzustand zu stützen.
 \end{quote}
 
-\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
 
 \subsection{Die drei Betriebsmodi}\label{die-drei-betriebsmodi}
 
@@ -364,7 +364,7 @@ Der Moduswechsel ist als Laufzeitparameter auf Datenbankebene
 abgebildet; der Statusfluss ist im State-Diagramm in Abschnitt 4.3.2
 dargestellt.
 
-\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
 
 \subsection{Integrität, Idempotenz und
 Auswertbarkeit}\label{integrituxe4t-idempotenz-und-auswertbarkeit}
@@ -381,7 +381,7 @@ fachlich relevante Historie. Die Kombination aus \texttt{ticker\_mode},
 Grundlage für reproduzierbare Vergleichsauswertungen zwischen den
 Betriebsmodi.
 
-\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
 
 \section{Workflow-Konzeption (n8n)}\label{workflow-konzeption-n8n}
 
@@ -446,7 +446,7 @@ es, einzelne Teilprozesse unabhängig anzupassen. Die konkreten
 Workflow-Dateinamen und Implementierungsdetails sind in Kapitel 5.5
 dokumentiert.
 
-\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
 
 \subsection{Workflow-Grenzen und projektspezifische
 Besonderheiten}\label{workflow-grenzen-und-projektspezifische-besonderheiten}
@@ -457,7 +457,7 @@ In Summe bildet n8n eine tragfähige Orchestrierungsschicht, die externe
 Datenquellen, interne Persistenz und KI-generierte Inhalte in einem
 modularen, nachvollziehbaren und erweiterbaren Ablauf zusammenführt.
 
-\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
 
 \section{KI-Komponente}\label{ki-komponente}
 
@@ -532,7 +532,7 @@ Zusätzlich kann die Auswahl in Generierungsrouten pro Request über
 insbesondere für Evaluationsvergleiche zwischen Modellen genutzt wird
 (vgl. Abschnitt 6.3.3).
 
-\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
 
 \subsection{Prompt-Engineering-Strategie}\label{prompt-engineering-strategie}
 
@@ -567,7 +567,7 @@ kreativer Varianz zu priorisieren. Für Übersetzungsaufgaben wird ein
 noch niedrigerer Wert von \texttt{0.1} verwendet, um semantische
 Abweichungen vom Originaltext zu minimieren.
 
-\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
 
 \section{Frontend-Konzeption}\label{frontend-konzeption}
 
@@ -588,7 +588,7 @@ Die Zustands- und Interaktionslogik ist in wiederverwendbare Custom Hooks aufget
 
 Redaktionsinteraktion umfasst Modusverwaltung, Draft-Bestätigung und -Ablehnung, Tastatursteuerung sowie automatische Publikation im Vollautomatik-Modus. UI-Steuerung deckt Panel-Größenanpassung, Spielminuten-Berechnung, Spielernamen-Autovervollständigung und Systemstatus-Überwachung ab.
 
-\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
 
 \subsection{Layout, Moduslogik und
 Kommunikation}\label{dreispalten-layout-und-redaktionsfluss}
@@ -597,7 +597,7 @@ Die Hauptansicht folgt einem responsiven Dreispalten-Ansatz mit klarer Aufgabenv
 
 Die Modusumschaltung (vgl. Kap.~4.3.3) erfolgt über einen dedizierten \texttt{ModeSelector} mit Portal-basiertem Bestätigungsdialog, visueller Toast-Rückmeldung (2200~ms) und Tastatur-Shortcuts (\texttt{Ctrl+1} / \texttt{Ctrl+2} / \texttt{Ctrl+3}). Im kooperativen Modus sind zusätzliche Tastatur-Interaktionen für den Accept-/Reject-Flow (\texttt{TAB} / \texttt{ESC}) eingebunden. Das Frontend setzt die hybride Triggerarchitektur mit REST-Polling (5-Sekunden-Intervall) für Kerndaten, Webhook-Trigger für bedarfsgesteuerte n8n-Importe sowie WebSocket (\texttt{/ws/media}) mit Exponential-Backoff-Reconnect für latenzkritische Medieninhalte um. Die konkreten Hook-Implementierungen sind in Kapitel~5.4.3--5.4.5 dokumentiert.
 
-\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
 
 \section{Skalierbarkeit, Erweiterbarkeit und
 Systemgrenzen}\label{skalierbarkeit-erweiterbarkeit-und-systemgrenzen}
@@ -626,7 +626,7 @@ Containerisierung gewährleistet Reproduzierbarkeit zwischen
 Entwicklungs- und Produktionsumgebung und ermöglicht eine unabhängige
 Skalierung der einzelnen Dienste.
 
-\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
 
 \section{Fazit der Systemkonzeption}\label{fazit-der-systemkonzeption}
 

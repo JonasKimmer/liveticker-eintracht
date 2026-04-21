@@ -2,7 +2,6 @@
 
 Dieses Kapitel ordnet die Evaluationsergebnisse in den Stand der Technik ein, reflektiert Limitationen methodisch und technisch, diskutiert die Implikationen der Betriebsmodi sowie der Prompt-Architektur und schließt mit einer Betrachtung der Konsequenzen für den Sportjournalismus.
 
-\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
 \section{Einordnung in den Stand der
 Technik}\label{einordnung-in-den-stand-der-technik}
@@ -26,7 +25,6 @@ bestehenden Ansätzen der automatisierten Sportberichterstattung (Kapitel
 
 Die Arbeit leistet drei Beiträge zum aktuellen Forschungsstand. Als architektonischen Beitrag demonstriert sie eine produktionsnahe Referenzarchitektur für KI-gestützte Echtzeit-Textgenerierung mit modularer Provider-Abstraktion, Few-Shot-Prompting aus einer kuratierten Stilreferenz-Datenbank und dreistufigem Betriebsmodus-Konzept. Als methodischen Beitrag stellt die Evaluationsinfrastruktur mit Bulk-Generierungsendpunkt, Provider-Override und statistischen Vergleichsmetriken (Cliff's Delta, Bootstrap-CI, Cohen's Kappa) systematische und reproduzierbare Modellvergleiche bereit. Als praktischen Beitrag adressiert die White-Label-Architektur mit instanzspezifischer Stilsteuerung den in Kapitel 2.3 beschriebenen Bedarf von Vereinen als eigenständige Medienproduzenten.
 
-\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
 \section{Kritische Reflexion}\label{kritische-reflexion}
 
@@ -115,7 +113,6 @@ Wirksamkeit jedoch nur im \texttt{coop}-Modus durch die redaktionelle
 Kontrolle vollständig abgesichert ist. Im \texttt{auto}-Modus verbleibt
 ein Restrisiko fehlerhafter Veröffentlichungen.
 
-\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
 \section{Diskussion der Betriebsmodi}\label{diskussion-der-betriebsmodi}
 
@@ -170,7 +167,6 @@ durchlaufen wird, ist empirisch nicht belegt; sie würde jedoch den
 in Kapitel 2.1 beschriebenen Akzeptanzbedarf bei der Einführung
 KI-gestützter Werkzeuge in redaktionelle Workflows adressieren.
 
-\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
 \section{Diskussion der
 Prompt-Architektur}\label{diskussion-der-prompt-architektur}
@@ -186,7 +182,6 @@ Context-Builder}\label{temperatur-context}
 
 Die gewählte Temperatur von 0,3 für die Textgenerierung und 0,1 für Übersetzungen ist ein Kompromiss zwischen sprachlicher Varianz und Vorhersagbarkeit. Eine niedrigere Temperatur würde die Halluzinationsrate weiter senken, aber die Texte formelhafter machen --- ein Zielkonflikt, der im Genre Liveticker (das von Überraschung und sprachlicher Kreativität lebt) besonders relevant ist. Die sieben spezialisierten Context-Builder (vgl. Abschnitt~5.1) strukturieren die Fakten vor der Übergabe an das LLM und reduzieren damit die Wahrscheinlichkeit von Halluzinationen, da das Modell bereits aufbereitete Faktenblöcke erhält statt unstrukturierte Rohdaten. Die Wirksamkeit zeigt sich insbesondere bei Pre-Match-Einträgen, wo die Faktengrundlage (z.~B. Verletzungslisten, H2H-Statistiken) klar abgegrenzt ist.
 
-\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
 \section{Implikationen für den
 Sportjournalismus}\label{implikationen-fuxfcr-den-sportjournalismus}
@@ -249,7 +244,6 @@ EU-KI-Verordnung (AI Act, EU 2024/1689), deren Transparenzpflichten für
 KI-generierte Texte (Art. 50 Abs. 4) gemäß Art. 113 ab August 2026
 gelten.
 
-\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
 \section{Synthese}\label{synthese}
 
