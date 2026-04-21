@@ -2,15 +2,16 @@
 
 Dieses Kapitel beschreibt die Konzeption des Liveticker-Systems auf
 Basis der in Kapitel 2 hergeleiteten Anforderungen und der in Kapitel 3
-aufgearbeiteten technologischen Grundlagen. Es gliedert sich in sieben
+aufgearbeiteten technologischen Grundlagen. Es gliedert sich in acht
 Bereiche: das Schichtenmodell und die Kommunikationsarchitektur
 (Kap.~4.1), die Backend-Konzeption mit API-Design und
 Sicherheitskonzept (Kap.~4.2), die Datenbankkonzeption mit
 Ticker-Lifecycle und Betriebsmodi (Kap.~4.3), die
 Workflow-Konzeption in n8n (Kap.~4.4), die KI-Komponente mit
 Multi-Provider-Architektur und Prompt-Design (Kap.~4.5), die
-Frontend-Konzeption mit Hook- und Kontextarchitektur (Kap.~4.6) sowie
-Skalierbarkeit und Systemgrenzen (Kap.~4.7).
+Frontend-Konzeption mit Hook- und Kontextarchitektur (Kap.~4.6),
+Skalierbarkeit und Systemgrenzen (Kap.~4.7) sowie ein abschließendes
+Fazit der Systemkonzeption (Kap.~4.8).
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
@@ -293,7 +294,13 @@ LLM-Promptgenerierung; \texttt{media\_queue} wird applikationsseitig
 über die Media-Endpunkte verwaltet.
 \end{quote}
 
-Das Schema folgt einem hybriden Entwurfsansatz aus strukturierter Normalisierung und gezielter Schemaflexibilität. \textbf{Normalisierte Kernentitäten} --- zentrale Domänenobjekte wie \texttt{teams}, \texttt{matches}, \texttt{events}, \texttt{ticker\_entries}, \texttt{players}, \texttt{competitions} und Zuordnungstabellen --- sind in dritter Normalform modelliert (Codd 1970), sodass Beziehungen, Integrität und Auswertbarkeit im Live-Betrieb stabil bleiben. \textbf{Gezielter JSONB-Einsatz} erfolgt bewusst nur dort, wo sich Strukturen dynamisch ändern oder kontextabhängig sind (z.~B. \texttt{synthetic\_events.data} sowie mehrere Kontextfelder in \texttt{matches}); die Statistiktabellen (\texttt{match\_statistics}, \texttt{player\_statistics}) sind dagegen stark typisiert über explizite Spalten modelliert, um konsistente Abfragen und robuste Aggregationen zu ermöglichen. Die \textbf{Schlüsselstrategie} kombiniert numerische Primärschlüssel (\texttt{id}) für performante Joins mit einem eindeutigen \texttt{uid}-Feld (UUID) als stabilem externen Referenzschlüssel in mehreren Kernentitäten --- kein reines UUID-Primary-Key-Schema, sondern eine kombinierte Strategie.
+Das Schema folgt einem hybriden Entwurfsansatz aus strukturierter Normalisierung und gezielter Schemaflexibilität:
+
+\begin{itemize}\tightlist
+\item \textbf{Normalisierte Kernentitäten:} Zentrale Domänenobjekte wie \texttt{teams}, \texttt{matches}, \texttt{events}, \texttt{ticker\_entries}, \texttt{players}, \texttt{competitions} und Zuordnungstabellen sind in dritter Normalform modelliert (Codd 1970), sodass Beziehungen, Integrität und Auswertbarkeit im Live-Betrieb stabil bleiben.
+\item \textbf{Gezielter JSONB-Einsatz:} JSONB-Felder werden bewusst nur dort verwendet, wo sich Strukturen dynamisch ändern oder kontextabhängig sind (z.~B. \texttt{synthetic\_events.data} sowie Kontextfelder in \texttt{matches}). Die Statistiktabellen sind dagegen stark typisiert über explizite Spalten modelliert, um konsistente Abfragen und robuste Aggregationen zu ermöglichen.
+\item \textbf{Schlüsselstrategie:} Numerische Primärschlüssel (\texttt{id}) für performante Joins werden mit einem eindeutigen \texttt{uid}-Feld (UUID) als stabilem externen Referenzschlüssel kombiniert --- kein reines UUID-Schema, sondern eine kombinierte Strategie.
+\end{itemize}
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
@@ -392,17 +399,14 @@ Frontend und KI-Generierung fungiert.
 \subsection{Workflow-Klassen und
 Verantwortlichkeiten}\label{workflow-klassen-und-verantwortlichkeiten}
 
-Alle Generierungs-Workflows folgen einem konsistenten
-Vier-Phasen-Muster: \textbf{(1) Webhook-Trigger} --- ein HTTP-Aufruf
-löst den Workflow aus; \textbf{(2) SQL-Operation} --- ein
-Upsert-Statement persistiert die Daten mit Konfliktbehandlung
-(\texttt{ON\ CONFLICT}); \textbf{(3) Filter-Knoten} --- nur neue, nicht
-bereits vorhandene Zeilen (erkennbar an der zurückgegebenen
-Datenbank-\texttt{id}) passieren weiter; \textbf{(4) Backend-Call} ---
-der entsprechende FastAPI-Endpunkt wird pro neuer Zeile aufgerufen, bei
-Generierungsworkflows zum LLM-Trigger. Dieses Muster garantiert
-Idempotenz: Mehrfachaufrufe desselben Events erzeugen weder
-Datenduplikate noch redundante LLM-Aufrufe.
+Alle Generierungs-Workflows folgen einem konsistenten Vier-Phasen-Muster, das Idempotenz garantiert: Mehrfachaufrufe desselben Events erzeugen weder Datenduplikate noch redundante LLM-Aufrufe.
+
+\begin{enumerate}\tightlist
+\item \textbf{Webhook-Trigger:} Ein HTTP-Aufruf löst den Workflow aus.
+\item \textbf{SQL-Operation:} Ein Upsert-Statement persistiert die Daten mit Konfliktbehandlung (\texttt{ON CONFLICT}).
+\item \textbf{Filter-Knoten:} Nur neue, noch nicht vorhandene Zeilen (erkennbar an der zurückgegebenen Datenbank-\texttt{id}) passieren weiter.
+\item \textbf{Backend-Call:} Der entsprechende FastAPI-Endpunkt wird pro neuer Zeile aufgerufen; bei Generierungsworkflows dient er als LLM-Trigger.
+\end{enumerate}
 
 Die n8n-Landschaft gliedert sich in sechs funktionale Klassen. Die
 folgende Übersicht zeigt alle 16 Workflows und ihren Auslöser:
@@ -482,14 +486,12 @@ verschiedene Modelle können auf demselben Prompt evaluiert werden
 ohne Codeanpassung wählen --- ein entscheidender Faktor für
 Vereinsredaktionen mit begrenztem Budget.
 
-Im produktiven Einsatz wird aktuell \textbf{Gemini 2.0 Flash Lite}
+Im produktiven Einsatz wird aktuell Gemini 2.0 Flash Lite
 (Modell-ID \texttt{google/gemini-2.0-flash-lite-001}) über OpenRouter
 genutzt. Die Wahl dieses kompakten Modells begründet sich durch die
-Aufgabencharakteristik (vgl. Kap. 3.1): Liveticker-Texte sind kurz und
+Aufgabencharakteristik (vgl. Kap.~3.1): Liveticker-Texte sind kurz und
 faktenbasiert --- eine Aufgabe, für die kompakte Modelle eine
-vergleichbare Qualität bei deutlich niedrigerer Latenz erzielen. Für
-Vereinsredaktionen mit begrenztem Budget ist dieser Kostenvorteil ein
-entscheidender Faktor für die Praxistauglichkeit des Systems.
+vergleichbare Qualität bei deutlich niedrigerer Latenz erzielen.
 
 Ergänzend implementiert das Backend eine \textbf{Fallback-Kette} für den
 Fall, dass OpenRouter nicht konfiguriert ist. Das System prüft zur
@@ -559,55 +561,11 @@ Korridor gewahrt bleibt. Für Pre-Match-Typen enthält der Prompt
 zusätzliche harte Restriktionen, um Live-Szenen-Halluzinationen zu
 vermeiden und die Ausgabe auf Vorschau- und Analyseinhalte zu begrenzen.
 
-Der Inferenzparameter \textbf{Temperature} wird für die Textgenerierung
+Der Inferenzparameter Temperature wird für die Textgenerierung
 auf \texttt{0.3} festgelegt, um die faktische Korrektheit gegenüber
 kreativer Varianz zu priorisieren. Für Übersetzungsaufgaben wird ein
 noch niedrigerer Wert von \texttt{0.1} verwendet, um semantische
 Abweichungen vom Originaltext zu minimieren.
-
-\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
-
-\subsection{Stilprofile und
-Instanzspezifik}\label{stilprofile-und-instanzspezifik}
-
-Das System unterstützt drei zentrale Stilprofile: \texttt{neutral} (sachlich, ausgewogen, ohne Vereinspräferenz), \texttt{euphorisch} (emotional und fan-nah) sowie \texttt{kritisch} (analytisch und bewertend). Ergänzend steuert die Instanzkonfiguration (\texttt{generic}
-vs.~\texttt{ef\_whitelabel}) die Tonalität. Für \texttt{ef\_whitelabel}
-werden vereinsspezifische Stilbeispiele aus \texttt{style\_references}
-als Few-Shot-Kontext eingebunden; die generische Instanz kann ohne
-vereinsgebundene Stilprägung betrieben werden.
-
-\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
-
-\subsection{Mehrsprachigkeit}\label{mehrsprachigkeit}
-
-Die Mehrsprachigkeit ist als First-Class-Parameter der LLM-Pipeline
-implementiert: Die Zielsprache (\texttt{language}, Standard \texttt{de})
-wird direkt an den Prompt übergeben, sodass der Text in der gewünschten
-Sprache generiert wird --- nicht nachträglich übersetzt. Dieses Vorgehen
-nutzt die Fähigkeit moderner großer Sprachmodelle, idiomatische Texte
-ohne den Zwischenschritt einer maschinellen Übersetzung zu produzieren
-(vgl. Kap. 3.1). Die Generierungsendpunkte akzeptieren jeden
-ISO-639-1-Sprachcode; getestet sind Deutsch (\texttt{de}), Englisch
-(\texttt{en}) und Japanisch (\texttt{ja}) --- die drei in Kapitel 2.2
-als relevant identifizierten Sprachen.
-
-Für bestehende Einträge steht eine Batch-Übersetzung über
-\texttt{POST\ /api/v1/ticker/translate-batch/\{match\_id\}} zur
-Verfügung. Sie übersetzt alle Einträge eines Spiels unabhängig von
-Status und Herkunft mit reduzierter Temperatur (\texttt{0.1}), um
-möglichst deterministische Ergebnisse zu erzielen. Dies schließt
-\texttt{draft}-, \texttt{published}- und manuell erstellte Einträge
-gleichermaßen ein --- eine bewusste Vereinfachung des aktuellen
-Implementierungsstands, die in Kapitel 6.7 als Limitation dokumentiert
-ist.
-
-Eine verbleibende Limitation betrifft die Few-Shot-Referenzen: Die
-\texttt{style\_references}-Tabelle enthält ausschließlich
-deutschsprachige Beispieltexte. Bei nicht-deutschen Generierungen fehlt
-damit die stilprägende Few-Shot-Komponente, was die Qualität der
-Tonalität gegenüber dem deutschen Modus leicht abschwächen kann. Eine
-Erweiterung der Stildatenbank um englisch- und japanischsprachige
-Referenzen wäre der naheliegende Folgeschritt (vgl. Kap. 8.3.2).
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
@@ -622,20 +580,22 @@ Kommunikationsmuster zwischen Frontend und Backend.
 \subsection{Architektur, Zustandsmanagement und
 Hooks}\label{architekturprinzipien}
 
-Das Frontend ist als React-Client mit TypeScript und klarer Trennung zwischen UI-Komponenten, datenbezogenen Hooks und API-Zugriffsschicht umgesetzt. Der zentrale Anwendungszustand wird überwiegend lokal bzw. feature-nah gehalten; gemeinsamer Zustand für tief verschachtelte Komponenten wird über drei dedizierte Contexts bereitgestellt (\texttt{TickerModeContext}, \texttt{TickerDataContext}, \texttt{TickerActionsContext}), um Prop-Drilling zu vermeiden und Re-Renders besser zu kontrollieren. Die White-Label-Fähigkeit ist über eine Konfigurationsschicht (\texttt{config/whitelabel.ts}) realisiert (u. a. Farben, Team-Keyword, API-Base-URLs). Die Oberfläche unterstützt alle drei Betriebsmodi (\texttt{auto}, \texttt{coop}, \texttt{manual}) inklusive Laufzeitumschaltung über den \texttt{ModeSelector} und Synchronisierung mit dem Backend.
+Das Frontend ist als React-Client mit TypeScript und klarer Trennung zwischen UI-Komponenten, datenbezogenen Hooks und API-Zugriffsschicht umgesetzt. Der zentrale Anwendungszustand wird überwiegend lokal bzw. feature-nah gehalten; gemeinsamer Zustand für tief verschachtelte Komponenten wird über drei dedizierte Contexts bereitgestellt (\texttt{TickerModeContext}, \texttt{TickerDataContext}, \texttt{TickerActionsContext}), um Prop-Drilling zu vermeiden und Re-Renders zu kontrollieren.
 
-Die Zustands- und Interaktionslogik ist in wiederverwendbare Custom Hooks aufgeteilt --- ein Entwurfsmuster, das React seit Version 16.8 als Alternative zu Klassenkomponenten eingeführt hat. Das Frontend umfasst 26 spezialisierte Hooks in fünf funktionalen Kategorien. Navigation und Datenauswahl steuern die hierarchische Auswahlkette (Land → Team → Wettbewerb → Spieltag → Spiel) und lösen bei leerem Datenbestand bedarfsgesteuert n8n-Importtrigger aus. Datenabfrage und Polling laden Match-, Event- und Tickerdaten periodisch über drei spezialisierte Hooks, die jeweils einen eigenen Abfragezyklus betreiben und über einen aggregierenden Hook koordiniert werden. Die Echtzeitkommunikation stellt eine WebSocket-Verbindung für den Medien-Feed mit automatischer Reconnect-Strategie bereit. Redaktionsinteraktion umfasst Modusverwaltung, Draft-Bestätigung und -Ablehnung, Tastatursteuerung sowie automatische Publikation im Vollautomatik-Modus. UI-Steuerung deckt Panel-Größenanpassung, Spielminuten-Berechnung, Spielernamen-Autovervollständigung und Systemstatus-Überwachung ab.
+Die White-Label-Fähigkeit ist über eine Konfigurationsschicht (\texttt{config/whitelabel.ts}) realisiert (u.\,a. Farben, Team-Keyword, API-Base-URLs). Die Oberfläche unterstützt alle drei Betriebsmodi (\texttt{auto}, \texttt{coop}, \texttt{manual}) inklusive Laufzeitumschaltung über den \texttt{ModeSelector} und Synchronisierung mit dem Backend.
+
+Die Zustands- und Interaktionslogik ist in wiederverwendbare Custom Hooks aufgeteilt --- ein Entwurfsmuster, das React seit Version 16.8 als Alternative zu Klassenkomponenten eingeführt hat. Das Frontend umfasst 26 spezialisierte Hooks in fünf funktionalen Kategorien: Navigation und Datenauswahl steuern die hierarchische Auswahlkette und lösen bei leerem Datenbestand bedarfsgesteuert n8n-Importtrigger aus; Datenabfrage und Polling laden Match-, Event- und Tickerdaten periodisch über koordinierte Abfragezyklen; Echtzeitkommunikation stellt eine WebSocket-Verbindung für den Medien-Feed bereit.
+
+Redaktionsinteraktion umfasst Modusverwaltung, Draft-Bestätigung und -Ablehnung, Tastatursteuerung sowie automatische Publikation im Vollautomatik-Modus. UI-Steuerung deckt Panel-Größenanpassung, Spielminuten-Berechnung, Spielernamen-Autovervollständigung und Systemstatus-Überwachung ab.
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
 \subsection{Layout, Moduslogik und
 Kommunikation}\label{dreispalten-layout-und-redaktionsfluss}
 
-Die Hauptansicht folgt einem responsiven Dreispalten-Ansatz mit klarer Aufgabenverteilung. Das linke Panel übernimmt die Veröffentlichungsperspektive: Es listet publizierte Ticker-Einträge als chronologischen Feed, dedupliziert nach \texttt{event\_id} und sortiert nach Spielminute. Das mittlere Panel bildet die redaktionelle Kernarbeit ab --- Event-Verarbeitung in Abhängigkeit vom Modus (\texttt{auto}, \texttt{coop}, \texttt{manual}), Draft-Prüfung und Freigabe/Ablehnung, manuelle Eingabe mit Command-Parser (z. B. \texttt{/g}, \texttt{/gelb}, \texttt{/rot}, \texttt{/s}) sowie am unteren Rand integrierte Media- und Social-Panels (ScorePlay-Bilder, YouTube, Twitter/X, Instagram); letztere werden ausschließlich bei erkannten EF-Spielen (\texttt{isOurTeam}) eingeblendet. Das rechte Panel liefert Kontext- und Analyseinformationen: Matchstatistiken, Aufstellungen inklusive Wechsel-, Karten- und Injury-Kontext sowie spielerbezogene Leistungsdaten.
+Die Hauptansicht folgt einem responsiven Dreispalten-Ansatz mit klarer Aufgabenverteilung. Das linke Panel übernimmt die Veröffentlichungsperspektive: Es listet publizierte Ticker-Einträge als chronologischen Feed, dedupliziert nach \texttt{event\_id} und sortiert nach Spielminute. Das mittlere Panel bildet die redaktionelle Kernarbeit ab: Event-Verarbeitung in Abhängigkeit vom Modus, Draft-Prüfung und Freigabe/Ablehnung, manuelle Eingabe mit Command-Parser (\texttt{/g}, \texttt{/gelb}, \texttt{/rot}, \texttt{/s}) sowie integrierte Media- und Social-Panels, die ausschließlich bei erkannten EF-Spielen eingeblendet werden. Das rechte Panel liefert Kontext- und Analyseinformationen: Matchstatistiken, Aufstellungen sowie spielerbezogene Leistungsdaten.
 
-Die Modusumschaltung (vgl. Kap.~4.3.3 für die Modi-Definition) ist zentraler Bestandteil der Frontend-Konzeption. Die Umschaltung erfolgt über einen dedizierten \texttt{ModeSelector} mit Portal-basiertem Bestätigungsdialog, visueller Toast-Rückmeldung (2200~ms) und Tastatur-Shortcuts (\texttt{Ctrl+1} / \texttt{Ctrl+2} / \texttt{Ctrl+3}). Im kooperativen Modus sind zusätzliche Tastatur-Interaktionen für den Accept-/Reject-Flow (\texttt{TAB} / \texttt{ESC}) eingebunden, um den Redaktionsdurchsatz zu erhöhen.
-
-Das Frontend setzt die in Kapitel 4.1.1 definierte hybride Triggerarchitektur mit drei spezialisierten Mechanismen um: \textbf{REST-Polling} (5-Sekunden-Intervall) für Kerndaten wie Ticker-Einträge und Spielevents, \textbf{Webhook-Trigger} für bedarfsgesteuerte n8n-Importe (vgl. Kap.~4.4.1) sowie \textbf{WebSocket} (\texttt{/ws/media}) mit Exponential-Backoff-Reconnect für latenzkritische Medieninhalte. REST-Polling wurde gegenüber SSE gewählt, da die zustandslose HTTP-Architektur die Skalierbarkeit auf Render vereinfacht. Die konkreten Hook-Implementierungen und Reconnect-Parameter sind in Kapitel 5.4.3--5.4.5 dokumentiert.
+Die Modusumschaltung (vgl. Kap.~4.3.3) erfolgt über einen dedizierten \texttt{ModeSelector} mit Portal-basiertem Bestätigungsdialog, visueller Toast-Rückmeldung (2200~ms) und Tastatur-Shortcuts (\texttt{Ctrl+1} / \texttt{Ctrl+2} / \texttt{Ctrl+3}). Im kooperativen Modus sind zusätzliche Tastatur-Interaktionen für den Accept-/Reject-Flow (\texttt{TAB} / \texttt{ESC}) eingebunden. Das Frontend setzt die hybride Triggerarchitektur mit REST-Polling (5-Sekunden-Intervall) für Kerndaten, Webhook-Trigger für bedarfsgesteuerte n8n-Importe sowie WebSocket (\texttt{/ws/media}) mit Exponential-Backoff-Reconnect für latenzkritische Medieninhalte um. Die konkreten Hook-Implementierungen sind in Kapitel~5.4.3--5.4.5 dokumentiert.
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
@@ -652,11 +612,11 @@ Deployment}\label{horizontale-skalierung-des-backends}
 
 Die Anwendungsschicht ist zustandslos konzipiert und kann horizontal skaliert werden, indem zusätzliche Uvicorn-Prozesse hinter einem Load-Balancer gestartet werden. Der gemeinsame PostgreSQL-Connection-Pool (\texttt{QueuePool} mit \texttt{pool\_size=20}, \texttt{max\_overflow=30}) stellt sicher, dass mehrere Backend-Instanzen dieselbe Datenbankverbindungskapazität teilen. Der in-Memory-\texttt{MediaConnectionManager} für WebSocket-Verbindungen funktioniert hingegen nicht über Prozessgrenzen hinweg und müsste bei Multi-Prozess-Deployment durch ein verteiltes Pub/Sub-System (z.~B. Redis) ergänzt werden.
 
-Neue Ereignistypen können ohne Datenbankschema-Änderungen ergänzt werden: Die \texttt{events}-Tabelle verfügt über ein generisches \texttt{description}-Feld, und die \texttt{synthetic\_events}-Tabelle nutzt JSONB für vollständig flexible Payloads. Die Übersetzung von Football-API-Codes auf interne Typbezeichnungen ist in einer zentralen \texttt{EVENT\_TYPE\_MAP}-Konfiguration hinterlegt; im Frontend bildet \texttt{getEventMeta()} jeden Typ auf Icon und CSS-Klasse ab. Neue Typen erfordern ausschließlich einen zusätzlichen Eintrag in diesen beiden Stellen. Der LLM-Dienst lässt sich um neue Anbieter erweitern, indem eine providerabhängige Handler-Methode implementiert und im zentralen dispatch-Dictionary registriert wird, ohne bestehenden Code zu berühren.
+Neue Ereignistypen können ohne Datenbankschema-Änderungen ergänzt werden: Die \texttt{events}-Tabelle verfügt über ein generisches \texttt{description}-Feld, und die \texttt{synthetic\_events}-Tabelle nutzt JSONB für vollständig flexible Payloads. Die Übersetzung von Football-API-Codes auf interne Typbezeichnungen ist in einer zentralen \texttt{EVENT\_TYPE\_MAP}-Konfiguration hinterlegt; neue Typen erfordern ausschließlich einen zusätzlichen Eintrag dort sowie in \texttt{getEventMeta()} im Frontend. Der LLM-Dienst lässt sich um neue Anbieter erweitern, indem eine providerabhängige Handler-Methode implementiert und im zentralen dispatch-Dictionary registriert wird, ohne bestehenden Code zu berühren.
 
 \subsection{Deployment-Architektur}\label{deployment-architektur}
 
-Das System wird auf der Cloud-Plattform \textbf{Render} betrieben und gliedert sich in drei Deployment-Einheiten. Das \textbf{Backend} läuft als Docker-Container (\texttt{python:3.12-slim}) als Render Web Service; beim Start werden automatisch Datenbankmigrationen ausgeführt, bevor der Uvicorn-Server Anfragen entgegennimmt. Das \textbf{Frontend} ist ein statisches Build-Artefakt (Create React App), das als Render Static Site ausgeliefert wird und zur Buildzeit über Umgebungsvariablen konfiguriert wird. \textbf{PostgreSQL} ist als Render Managed Database die zentrale Persistenzschicht, auf die sowohl Backend als auch n8n zugreifen.
+Das System wird auf der Cloud-Plattform Render betrieben und gliedert sich in drei Deployment-Einheiten. Das Backend läuft als Docker-Container (\texttt{python:3.12-slim}) als Render Web Service; beim Start werden automatisch Datenbankmigrationen ausgeführt, bevor der Uvicorn-Server Anfragen entgegennimmt. Das Frontend ist ein statisches Build-Artefakt (Create React App), das als Render Static Site ausgeliefert wird und zur Buildzeit über Umgebungsvariablen konfiguriert wird. PostgreSQL ist als Render Managed Database die zentrale Persistenzschicht, auf die sowohl Backend als auch n8n zugreifen.
 
 n8n wird als separater Self-Hosting-Dienst betrieben und kommuniziert
 ausschließlich über HTTP-Endpunkte mit dem Backend. Die n8n-Instanz wird
@@ -672,22 +632,22 @@ Skalierung der einzelnen Dienste.
 
 Die Systemkonzeption legt fünf interdependente Designpfeiler fest, die
 gemeinsam die Produktionsfähigkeit des Systems begründen. Die
-dreischichtige Architektur (Kap. 4.1) schafft die strukturelle Basis für
+dreischichtige Architektur (Kap.~4.1) schafft die strukturelle Basis für
 eine unabhängige Weiterentwicklung der Automatisierungs-, Anwendungs-
 und Präsentationsschicht. Das relationale Datenbankschema mit seinem
-definierten Ticker-Lifecycle (Kap. 4.3) sichert referenzielle Integrität
-und Nachvollziehbarkeit aller redaktionellen Entscheidungen --- auch für
-spätere Qualitätsanalysen. Die n8n-Workflow-Schicht (Kap. 4.4)
-entkoppelt die externe Datenbeschaffung und Orchestrierungslogik vom
-Anwendungskern und erlaubt eine schnelle Anpassung von Importprozessen
-ohne Eingriff in das Backend. Die Multi-Provider-LLM-Architektur mit
-Few-Shot-Prompting und instanzspezifischen Stilprofilen (Kap. 4.5)
-maximiert Textqualität und Anbieterunabhängigkeit bei minimaler
-Infrastrukturkomplexität. Das Context-basierte Frontend-Design in
-Kombination mit dem \texttt{ticker\_mode}-Feld (Kap. 4.3.3) ermöglicht
-redaktionelle Kontrolle ohne Latenzeinbußen und ohne Prop-Drilling über
+definierten Ticker-Lifecycle (Kap.~4.3) sichert referenzielle Integrität
+und Nachvollziehbarkeit aller redaktionellen Entscheidungen. Die
+n8n-Workflow-Schicht (Kap.~4.4) entkoppelt die externe Datenbeschaffung
+und Orchestrierungslogik vom Anwendungskern und erlaubt eine schnelle
+Anpassung von Importprozessen ohne Eingriff in das Backend. Die
+Multi-Provider-LLM-Architektur mit Few-Shot-Prompting und
+instanzspezifischen Stilprofilen (Kap.~4.5) maximiert Textqualität und
+Anbieterunabhängigkeit bei minimaler Infrastrukturkomplexität. Das
+Context-basierte Frontend-Design in Kombination mit dem
+\texttt{ticker\_mode}-Feld (Kap.~4.3.3) ermöglicht redaktionelle
+Kontrolle ohne Latenzeinbußen und ohne Prop-Drilling über
 Komponentengrenzen.
 
 Das vorliegende Konzept ist damit als vollständige Spezifikation für die
-Implementierung formuliert, die Kapitel 5 dokumentiert; die
-systematische Evaluation folgt in Kapitel 6.
+Implementierung formuliert, die Kapitel~5 dokumentiert; die
+systematische Evaluation folgt in Kapitel~6.
