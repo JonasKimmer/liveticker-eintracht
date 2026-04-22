@@ -63,8 +63,7 @@ export function SummarySection({
     const filtered = tickerTexts.filter(
       (t) =>
         t.status === "draft" &&
-        !t.event_id &&
-        !t.video_url &&
+        (!t.event_id || !!t.video_url) &&
         t.icon !== STATS_ENTRY_ICON &&
         (isPrematch
           ? PREMATCH_PHASES.has(t.phase)
