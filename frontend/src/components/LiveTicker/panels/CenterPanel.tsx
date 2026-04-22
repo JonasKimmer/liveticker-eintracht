@@ -244,6 +244,10 @@ export const CenterPanel = memo<CenterPanelProps>(function CenterPanel({
                   .map((ev) => {
                   const draft = tickerTexts.find((t) => t.event_id === ev.id && t.status !== "deleted" && !t.video_url);
                   const videoDraft = tickerTexts.find((t) => t.event_id === ev.id && t.status !== "deleted" && !!t.video_url);
+                  // Merge video_url into text draft so both get published together in one card
+                  const combinedDraft = draft && videoDraft
+                    ? { ...draft, video_url: videoDraft.video_url }
+                    : draft;
                   const isSelected = selectedEvent?.id === ev.id;
                   return (
                     <div key={ev.id}>
@@ -256,32 +260,29 @@ export const CenterPanel = memo<CenterPanelProps>(function CenterPanel({
                         }}
                         onDismiss={() => handleDismissEvent(ev, draft)}
                       />
-                      {isSelected && draft && (
+                      {isSelected && combinedDraft && (
                         <SummaryDraftCard
-                          draft={draft}
+                          draft={combinedDraft}
                           label={ev.liveTickerEventType}
                           onPublish={(text) => {
-                            api.publishTicker(draft.id, text).then(() => {
+                            const publishText = api.publishTicker(draft!.id, text);
+                            const publishVideo = videoDraft
+                              ? api.publishTicker(videoDraft.id, videoDraft.text || "")
+                              : Promise.resolve();
+                            Promise.all([publishText, publishVideo]).then(() => {
                               reload.loadTickerTexts();
-                              onPublished(draft.id, text);
+                              onPublished(draft!.id, text);
                             });
                           }}
-                          onReject={handleRejectDraft}
+                          onReject={() => {
+                            handleRejectDraft();
+                            if (videoDraft) api.deleteTicker(videoDraft.id);
+                          }}
                           onGenerate={(_, style) => handleRegenerateEventDraft(ev.id, style)}
                           generatingId={generatingId}
                         />
                       )}
-                      {isSelected && !draft && (
-                        <SummaryDraftCard
-                          draft={{ id: -1, text: "", status: "draft" as const, event_id: ev.id } as any}
-                          label={ev.liveTickerEventType}
-                          onPublish={() => {}}
-                          onReject={() => setSelectedEventId(null)}
-                          onGenerate={(_, style) => handleRegenerateEventDraft(ev.id, style)}
-                          generatingId={generatingId}
-                        />
-                      )}
-                      {isSelected && videoDraft && (
+                      {isSelected && !draft && videoDraft && (
                         <SummaryDraftCard
                           draft={videoDraft}
                           label="Torjubel-Video"
@@ -292,6 +293,16 @@ export const CenterPanel = memo<CenterPanelProps>(function CenterPanel({
                             });
                           }}
                           onReject={() => api.deleteTicker(videoDraft.id).then(reload.loadTickerTexts)}
+                        />
+                      )}
+                      {isSelected && !combinedDraft && !videoDraft && (
+                        <SummaryDraftCard
+                          draft={{ id: -1, text: "", status: "draft" as const, event_id: ev.id } as any}
+                          label={ev.liveTickerEventType}
+                          onPublish={() => {}}
+                          onReject={() => setSelectedEventId(null)}
+                          onGenerate={(_, style) => handleRegenerateEventDraft(ev.id, style)}
+                          generatingId={generatingId}
                         />
                       )}
                     </div>
