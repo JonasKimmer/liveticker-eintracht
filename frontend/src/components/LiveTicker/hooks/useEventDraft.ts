@@ -125,9 +125,10 @@ export function useEventDraft() {
 
   const handleRejectDraft = useCallback(async () => {
     if (!selectedDraft) return;
-    await api.updateTicker(selectedDraft.id, { status: "rejected" });
+    await api.deleteTicker(selectedDraft.id);
+    if (selectedVideoDraft) await api.deleteTicker(selectedVideoDraft.id);
     await reload.loadTickerTexts();
-  }, [selectedDraft, reload]);
+  }, [selectedDraft, selectedVideoDraft, reload]);
 
   const handleOpenEdit = useCallback(() => {
     setEditorValue(selectedDraft?.text ?? "");
