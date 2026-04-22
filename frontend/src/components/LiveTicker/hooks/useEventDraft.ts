@@ -117,7 +117,7 @@ export function useEventDraft() {
     if (!selectedDraft) return;
     await api.publishTicker(selectedDraft.id, selectedDraft.text);
     if (selectedVideoDraft) {
-      await api.publishTicker(selectedVideoDraft.id, selectedVideoDraft.text || "🎬");
+      await api.updateTicker(selectedVideoDraft.id, { status: "published" });
     }
     await reload.loadTickerTexts();
     onPublished?.(selectedDraft.id, selectedDraft.text);
@@ -152,7 +152,7 @@ export function useEventDraft() {
       try {
         await api.publishTicker(selectedDraft.id, textToPublish);
         if (selectedVideoDraft) {
-          await api.publishTicker(selectedVideoDraft.id, selectedVideoDraft.text || "🎬");
+          await api.updateTicker(selectedVideoDraft.id, { status: "published" });
         }
         await reload.loadTickerTexts();
         onPublished?.(selectedDraft.id, textToPublish);

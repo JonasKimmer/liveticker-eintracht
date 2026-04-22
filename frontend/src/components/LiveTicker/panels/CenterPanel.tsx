@@ -267,7 +267,7 @@ export const CenterPanel = memo<CenterPanelProps>(function CenterPanel({
                           onPublish={(text) => {
                             const publishText = api.publishTicker(draft!.id, text);
                             const publishVideo = videoDraft
-                              ? api.publishTicker(videoDraft.id, videoDraft.text || "")
+                              ? api.updateTicker(videoDraft.id, { status: "published" })
                               : Promise.resolve();
                             Promise.all([publishText, publishVideo]).then(() => {
                               reload.loadTickerTexts();
