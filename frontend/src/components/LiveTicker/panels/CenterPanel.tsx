@@ -93,6 +93,7 @@ export const CenterPanel = memo<CenterPanelProps>(function CenterPanel({
   const [selectedSummaryDraftId, setSelectedSummaryDraftId] = useState<number | null>(null);
   const [pendingAutoExpandId, setPendingAutoExpandId] = useState<number | null>(null);
   const [autoError, setAutoError] = useState<string | null>(null);
+  const [selectedVideoId, setSelectedVideoId] = useState<number | null>(null);
 
   const {
     pendingEvents,
@@ -258,21 +259,52 @@ export const CenterPanel = memo<CenterPanelProps>(function CenterPanel({
                   return items.map((item) => {
                     if (item.kind === "video") {
                       const vd = item.vd;
+                      const isVideoSelected = selectedVideoId === vd.id;
                       return (
                         <div key={`video-${vd.id}`}>
-                          <SummaryDraftCard
-                            draft={vd}
-                            label={vd.minute != null ? `${vd.minute}' · Torjubel-Video` : "Torjubel-Video"}
-                            onPublish={() => {
-                              api.updateTicker(vd.id, { status: "published" }).then(() => {
-                                reload.loadTickerTexts();
-                                onPublished(vd.id, "");
-                              });
-                            }}
-                            onReject={() =>
-                              api.deleteTicker(vd.id).then(reload.loadTickerTexts)
-                            }
-                          />
+                          <div
+                            className={`lt-event-card lt-event-card--goal${isVideoSelected ? " lt-event-card--selected" : ""}`}
+                            onClick={() => setSelectedVideoId(isVideoSelected ? null : vd.id)}
+                            role="button"
+                            tabIndex={0}
+                          >
+                            <div className="lt-event-card__row">
+                              {vd.minute != null && (
+                                <span className="lt-event-card__minute">{vd.minute}'</span>
+                              )}
+                              <span className="lt-event-card__icon">🎬</span>
+                              <span className="lt-event-card__raw">Torjubel-Video</span>
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  api.deleteTicker(vd.id).then(reload.loadTickerTexts);
+                                }}
+                                title="Ablehnen"
+                                style={{ marginLeft: "auto", flexShrink: 0, background: "none", border: "none", color: "var(--lt-text-faint)", cursor: "pointer", fontSize: "0.75rem", padding: "0 2px", opacity: 0.5 }}
+                              >
+                                ✕
+                              </button>
+                            </div>
+                          </div>
+                          {isVideoSelected && (
+                            <SummaryDraftCard
+                              draft={vd}
+                              label="Torjubel-Video"
+                              onPublish={(text) => {
+                                const update = text?.trim()
+                                  ? { status: "published" as const, text: text.trim() }
+                                  : { status: "published" as const };
+                                api.updateTicker(vd.id, update).then(() => {
+                                  reload.loadTickerTexts();
+                                  onPublished(vd.id, text || "");
+                                  setSelectedVideoId(null);
+                                });
+                              }}
+                              onReject={() =>
+                                api.deleteTicker(vd.id).then(reload.loadTickerTexts)
+                              }
+                            />
+                          )}
                         </div>
                       );
                     }
