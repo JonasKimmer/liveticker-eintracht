@@ -280,28 +280,26 @@ export const CenterPanel = memo<CenterPanelProps>(function CenterPanel({
                     </div>
                   );
                 })}
+                  {tickerTexts
+                    .filter((t) => !!t.video_url && t.status === "draft")
+                    .map((vd) => (
+                      <SummaryDraftCard
+                        key={`video-${vd.id}`}
+                        draft={vd}
+                        label="Torjubel-Video"
+                        onPublish={() => {
+                          api.updateTicker(vd.id, { status: "published" }).then(() => {
+                            reload.loadTickerTexts();
+                            onPublished(vd.id, "");
+                          });
+                        }}
+                        onReject={() =>
+                          api.deleteTicker(vd.id).then(reload.loadTickerTexts)
+                        }
+                      />
+                    ))}
                 </CollapsibleSection>
             )}
-
-            {/* ── Video-Drafts (unabhängig von Events) ──────── */}
-            {tickerTexts
-              .filter((t) => !!t.video_url && t.status === "draft")
-              .map((vd) => (
-                <SummaryDraftCard
-                  key={`video-${vd.id}`}
-                  draft={vd}
-                  label="Torjubel-Video"
-                  onPublish={() => {
-                    api.updateTicker(vd.id, { status: "published" }).then(() => {
-                      reload.loadTickerTexts();
-                      onPublished(vd.id, "");
-                    });
-                  }}
-                  onReject={() =>
-                    api.deleteTicker(vd.id).then(reload.loadTickerTexts)
-                  }
-                />
-              ))}
           </>
         )}
 
