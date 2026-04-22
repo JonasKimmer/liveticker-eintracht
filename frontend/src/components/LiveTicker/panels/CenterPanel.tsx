@@ -242,7 +242,8 @@ export const CenterPanel = memo<CenterPanelProps>(function CenterPanel({
                   .slice()
                   .sort((a, b) => (a.time ?? 0) - (b.time ?? 0))
                   .map((ev) => {
-                  const draft = tickerTexts.find((t) => t.event_id === ev.id && t.status !== "deleted");
+                  const draft = tickerTexts.find((t) => t.event_id === ev.id && t.status !== "deleted" && !t.video_url);
+                  const videoDraft = tickerTexts.find((t) => t.event_id === ev.id && t.status !== "deleted" && !!t.video_url);
                   const isSelected = selectedEvent?.id === ev.id;
                   return (
                     <div key={ev.id}>
@@ -278,6 +279,19 @@ export const CenterPanel = memo<CenterPanelProps>(function CenterPanel({
                           onReject={() => setSelectedEventId(null)}
                           onGenerate={(_, style) => handleRegenerateEventDraft(ev.id, style)}
                           generatingId={generatingId}
+                        />
+                      )}
+                      {isSelected && videoDraft && (
+                        <SummaryDraftCard
+                          draft={videoDraft}
+                          label="Torjubel-Video"
+                          onPublish={(text) => {
+                            api.publishTicker(videoDraft.id, text).then(() => {
+                              reload.loadTickerTexts();
+                              onPublished(videoDraft.id, text);
+                            });
+                          }}
+                          onReject={() => api.deleteTicker(videoDraft.id).then(reload.loadTickerTexts)}
                         />
                       )}
                     </div>
