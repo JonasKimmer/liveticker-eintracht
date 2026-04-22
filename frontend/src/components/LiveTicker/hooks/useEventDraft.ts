@@ -57,7 +57,17 @@ export function useEventDraft() {
     () =>
       selectedEvent
         ? tickerTexts.find(
-            (t) => t.event_id === selectedEvent.id && t.status !== "deleted",
+            (t) => t.event_id === selectedEvent.id && t.status !== "deleted" && !t.video_url,
+          )
+        : null,
+    [selectedEvent, tickerTexts],
+  );
+
+  const selectedVideoDraft = useMemo(
+    () =>
+      selectedEvent
+        ? tickerTexts.find(
+            (t) => t.event_id === selectedEvent.id && t.status !== "deleted" && !!t.video_url,
           )
         : null,
     [selectedEvent, tickerTexts],
@@ -106,9 +116,12 @@ export function useEventDraft() {
   const handleAcceptDraft = useCallback(async () => {
     if (!selectedDraft) return;
     await api.publishTicker(selectedDraft.id, selectedDraft.text);
+    if (selectedVideoDraft) {
+      await api.publishTicker(selectedVideoDraft.id, selectedVideoDraft.text || "🎬");
+    }
     await reload.loadTickerTexts();
     onPublished?.(selectedDraft.id, selectedDraft.text);
-  }, [selectedDraft, reload, onPublished]);
+  }, [selectedDraft, selectedVideoDraft, reload, onPublished]);
 
   const handleRejectDraft = useCallback(async () => {
     if (!selectedDraft) return;
@@ -138,6 +151,9 @@ export function useEventDraft() {
       if (!selectedDraft || !textToPublish) return;
       try {
         await api.publishTicker(selectedDraft.id, textToPublish);
+        if (selectedVideoDraft) {
+          await api.publishTicker(selectedVideoDraft.id, selectedVideoDraft.text || "🎬");
+        }
         await reload.loadTickerTexts();
         onPublished?.(selectedDraft.id, textToPublish);
         setEditorValue("");
@@ -147,7 +163,7 @@ export function useEventDraft() {
         logger.error("editPublish failed", err);
       }
     },
-    [selectedDraft, editorValue, reload, onPublished],
+    [selectedDraft, selectedVideoDraft, editorValue, reload, onPublished],
   );
 
   return {
