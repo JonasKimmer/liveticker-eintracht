@@ -235,69 +235,96 @@ export const CenterPanel = memo<CenterPanelProps>(function CenterPanel({
                   ) : null
                 }
               >
-                {pendingEvents
-                  .slice()
-                  .sort((a, b) => (a.time ?? 0) - (b.time ?? 0))
-                  .map((ev) => {
-                  const draft = tickerTexts.find((t) => t.event_id === ev.id && t.status !== "deleted" && !t.video_url);
-                  const isSelected = selectedEvent?.id === ev.id;
-                  return (
-                    <div key={ev.id}>
-                      <EventCard
-                        event={ev}
-                        draft={draft}
-                        isSelected={isSelected}
-                        onSelect={() => setSelectedEventId(ev.id)}
-                        onDismiss={() => handleDismissEvent(ev, draft)}
-                      />
-                      {isSelected && draft && (
-                        <SummaryDraftCard
-                          draft={draft}
-                          label={ev.liveTickerEventType}
-                          onPublish={(text) => {
-                            api.publishTicker(draft.id, text).then(() => {
-                              reload.loadTickerTexts();
-                              onPublished(draft.id, text);
-                            });
-                          }}
-                          onReject={() =>
-                            api.deleteTicker(draft.id).then(reload.loadTickerTexts)
-                          }
-                          onGenerate={(_, style) => handleRegenerateEventDraft(ev.id, style)}
-                          generatingId={generatingId}
-                        />
-                      )}
-                      {isSelected && !draft && (
-                        <SummaryDraftCard
-                          draft={{ id: -1, text: "", status: "draft" as const, event_id: ev.id } as any}
-                          label={ev.liveTickerEventType}
-                          onPublish={() => {}}
-                          onReject={() => setSelectedEventId(null)}
-                          onGenerate={(_, style) => handleRegenerateEventDraft(ev.id, style)}
-                          generatingId={generatingId}
-                        />
-                      )}
-                    </div>
+                {(() => {
+                  const videoDrafts = tickerTexts.filter(
+                    (t) => !!t.video_url && t.status === "draft",
                   );
-                })}
-                  {tickerTexts
-                    .filter((t) => !!t.video_url && t.status === "draft")
-                    .map((vd) => (
-                      <SummaryDraftCard
-                        key={`video-${vd.id}`}
-                        draft={vd}
-                        label="Torjubel-Video"
-                        onPublish={() => {
-                          api.updateTicker(vd.id, { status: "published" }).then(() => {
-                            reload.loadTickerTexts();
-                            onPublished(vd.id, "");
-                          });
-                        }}
-                        onReject={() =>
-                          api.deleteTicker(vd.id).then(reload.loadTickerTexts)
-                        }
-                      />
-                    ))}
+                  type Item =
+                    | { kind: "event"; ev: (typeof pendingEvents)[0]; minute: number }
+                    | { kind: "video"; vd: (typeof tickerTexts)[0]; minute: number };
+                  const items: Item[] = [
+                    ...pendingEvents.map((ev) => ({
+                      kind: "event" as const,
+                      ev,
+                      minute: ev.time ?? 0,
+                    })),
+                    ...videoDrafts.map((vd) => ({
+                      kind: "video" as const,
+                      vd,
+                      minute: vd.minute ?? 0,
+                    })),
+                  ].sort((a, b) => a.minute - b.minute);
+
+                  return items.map((item) => {
+                    if (item.kind === "video") {
+                      const vd = item.vd;
+                      return (
+                        <div key={`video-${vd.id}`} style={{ display: "flex", alignItems: "flex-start", gap: "0.5rem" }}>
+                          <span style={{ minWidth: "2.5rem", textAlign: "right", color: "#facc15", fontWeight: 600, fontSize: "0.85rem", paddingTop: "0.75rem" }}>
+                            {vd.minute ? `${vd.minute}'` : ""}
+                          </span>
+                          <div style={{ flex: 1 }}>
+                            <SummaryDraftCard
+                              draft={vd}
+                              label="Torjubel-Video"
+                              onPublish={() => {
+                                api.updateTicker(vd.id, { status: "published" }).then(() => {
+                                  reload.loadTickerTexts();
+                                  onPublished(vd.id, "");
+                                });
+                              }}
+                              onReject={() =>
+                                api.deleteTicker(vd.id).then(reload.loadTickerTexts)
+                              }
+                            />
+                          </div>
+                        </div>
+                      );
+                    }
+
+                    const { ev } = item;
+                    const draft = tickerTexts.find((t) => t.event_id === ev.id && t.status !== "deleted" && !t.video_url);
+                    const isSelected = selectedEvent?.id === ev.id;
+                    return (
+                      <div key={`ev-${ev.id}`}>
+                        <EventCard
+                          event={ev}
+                          draft={draft}
+                          isSelected={isSelected}
+                          onSelect={() => setSelectedEventId(ev.id)}
+                          onDismiss={() => handleDismissEvent(ev, draft)}
+                        />
+                        {isSelected && draft && (
+                          <SummaryDraftCard
+                            draft={draft}
+                            label={ev.liveTickerEventType}
+                            onPublish={(text) => {
+                              api.publishTicker(draft.id, text).then(() => {
+                                reload.loadTickerTexts();
+                                onPublished(draft.id, text);
+                              });
+                            }}
+                            onReject={() =>
+                              api.deleteTicker(draft.id).then(reload.loadTickerTexts)
+                            }
+                            onGenerate={(_, style) => handleRegenerateEventDraft(ev.id, style)}
+                            generatingId={generatingId}
+                          />
+                        )}
+                        {isSelected && !draft && (
+                          <SummaryDraftCard
+                            draft={{ id: -1, text: "", status: "draft" as const, event_id: ev.id } as any}
+                            label={ev.liveTickerEventType}
+                            onPublish={() => {}}
+                            onReject={() => setSelectedEventId(null)}
+                            onGenerate={(_, style) => handleRegenerateEventDraft(ev.id, style)}
+                            generatingId={generatingId}
+                          />
+                        )}
+                      </div>
+                    );
+                  });
+                })()}
                 </CollapsibleSection>
             )}
           </>
