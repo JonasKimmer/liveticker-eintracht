@@ -294,6 +294,8 @@ class LLMService:
             f"- Das 'Verursachende Team' ist der Verein des handelnden Spielers – nicht zwingend das Heimteam\n"
             f"- Spielstand nur nennen wenn er im SPIELKONTEXT unter 'Stand nach diesem Tor' angegeben ist\n"
             f"- Keine Hashtags, keine Emojis außer TOOOOR!\n"
+            f"- Variiere Satzstruktur, Wortwahl und Einstieg — jeder Eintrag soll sich frisch lesen, "
+            f"auch wenn ähnliche Ereignisse sich wiederholen\n"
         )
 
     def _build_context_str(self, event_type: str, context_data: Optional[dict]) -> str:

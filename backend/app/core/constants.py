@@ -65,22 +65,44 @@ EVENT_TYPE_LABEL: dict[str, str] = {
 
 # Human-readable German descriptions for ticker styles.
 STYLE_DESC: dict[str, str] = {
-    "neutral": "sachlich und neutral – keine Vereinspräferenz",
-    "euphorisch": (
-        "Du schreibst aus Sicht eines leidenschaftlichen Eintracht-Frankfurt-Fans. "
-        "Emotionaler, packender Stil mit kurzen Sätzen, Ausrufen und Dramatik. "
-        "WICHTIG: Passe die Emotion an die Spielsituation an! "
-        "Bei Eintracht-Toren: euphorisch und mitreißend. "
-        "Bei Gegentoren: frustriert, enttäuscht, fassungslos. "
-        "Bei hohem Rückstand: kritisch, leidend, zweifelnd. "
-        "Bei Führung: selbstbewusst, stolz, energiegeladen. "
-        "Reagiere IMMER aus Fan-Perspektive — nicht immer positiv, sondern EHRLICH. "
-        "Variiere deine Formulierungen — verwende NICHT immer dieselben Phrasen. "
-        "Vermeide vor allem die ständige Wiederholung von 'Unfassbar!', 'Die Kurve bebt!', "
-        "'Was ist denn hier los?!' oder 'Hoffentlich bringt er frischen Wind!'. "
-        "Orientiere dich stattdessen am Stil der STILREFERENZEN weiter unten."
+    "neutral": (
+        "Sachlicher, unparteiischer Reporter-Stil. "
+        "Keine Vereinspräferenz, keine emotionalen Wertungen — nur Fakten und Spielfluss. "
+        "Kurze, klare Sätze; das Ereignis steht im Mittelpunkt, nicht die Atmosphäre. "
+        "WICHTIG: Variiere den Satzeinstieg. Beginne abwechselnd mit der Minute, dem Spielernamen, "
+        "dem Ereignis selbst oder dem Vereinsnamen — nie zweimal hintereinander gleich. "
+        "Tempo und Präzision sind wichtiger als Dramatik. "
+        "Keine Superlative ohne Anlass, keine Klischees wie 'macht das Ding' oder 'brennt lichterloh'."
     ),
-    "kritisch": "analytisch und kritisch",
+    "euphorisch": (
+        "Du schreibst aus Sicht eines leidenschaftlichen Eintracht-Frankfurt-Fans — "
+        "laut, emotional, aber authentisch. Kurze Sätze, Ausrufe, Dramatik. "
+        "WICHTIG: Passe die Emotion an die Spielsituation an! "
+        "Bei Eintracht-Toren: euphorisch, mitreißend, feiernd. "
+        "Bei Gegentoren: frustriert, fassungslos, hadernder Fan. "
+        "Bei hohem Rückstand: zweifelnd, leidend, gallig. "
+        "Bei Führung: selbstbewusst, stolz, treibend. "
+        "Bei Karten oder Wechseln: situationsgerecht — begeistert, skeptisch oder ärgerlich. "
+        "Reagiere IMMER aus Fan-Perspektive — nicht immer positiv, sondern EHRLICH. "
+        "WICHTIG: Variiere stark! Beginne Einträge unterschiedlich: mal mit einem Ausruf, "
+        "mal mit dem Spielernamen, mal mitten ins Geschehen. "
+        "Verbotene Wiederholungen: 'Unfassbar!', 'Die Kurve bebt!', 'Was ist denn hier los?!', "
+        "'Hoffentlich bringt er frischen Wind!', 'Was für ein Spiel!'. "
+        "Orientiere dich am Rhythmus und der Wortwahl der STILREFERENZEN weiter unten."
+    ),
+    "kritisch": (
+        "Du bist ein nüchtern-analytischer Fußballkommentator mit hohem Qualitätsanspruch — "
+        "kein Jubel, keine Verharmlosung, kein Marketingsprech. "
+        "Benenne Fehler, Schwächen und Fehlentscheidungen direkt und konkret. "
+        "Bei Toren: knappe Ursachenanalyse — Abwehrfehler? Zu spätes Pressing? Konter nicht unterbunden? "
+        "Bei Karten: war es berechtigt, zu hart oder überfällig? "
+        "Bei Wechseln: war der Zeitpunkt richtig — oder zu spät, zu früh, zu defensiv? "
+        "Bei Halbzeit/Abpfiff: ein pointiertes Fazit — was lief strukturell falsch oder richtig? "
+        "WICHTIG: Variiere Formulierung und Einstieg stark. "
+        "Verbotene Floskeln: 'schwache Leistung', 'viel Luft nach oben', 'das war nicht gut genug', "
+        "'da muss mehr kommen'. Formuliere stets konkret, situationsbezogen und frisch. "
+        "Kurze, harte Sätze. Urteilend, aber sachlich begründet."
+    ),
 }
 
 
@@ -147,7 +169,7 @@ VALID_PHASES: frozenset[str] = frozenset(
 # ── LLM-Konfiguration ────────────────────────────────────────
 # Single source of truth für alle LLM-Provider-Aufrufe.
 LLM_MAX_TOKENS: int = 200
-LLM_TEMPERATURE: float = 0.3
+LLM_TEMPERATURE: float = 0.5
 LLM_TRANSLATION_TEMPERATURE: float = 0.1
 LLM_RETRY_ATTEMPTS: int = 3
 LLM_RATE_LIMIT_WAIT_BASE_S: int = 30  # Sekunden; verdoppelt sich pro Attempt
