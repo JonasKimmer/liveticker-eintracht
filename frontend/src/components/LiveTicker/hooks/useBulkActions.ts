@@ -35,7 +35,13 @@ export function useBulkActions({ instance, language = "de", tickerMode = "coop",
       const drafts = (freshRes.data ?? []).filter(
         (t) => t.status !== "published" && t.event_id,
       );
-      for (const d of drafts) await api.publishTicker(d.id, d.text);
+      for (const d of drafts) {
+        if (d.video_url) {
+          await api.updateTicker(d.id, { status: "published" });
+        } else {
+          await api.publishTicker(d.id, d.text);
+        }
+      }
       await reload.loadTickerTexts();
     } catch (err) {
       logger.error("bulkPublish failed", err);
@@ -59,7 +65,13 @@ export function useBulkActions({ instance, language = "de", tickerMode = "coop",
       const drafts = (freshRes.data ?? []).filter(
         (t) => t.status !== "published" && t.event_id,
       );
-      for (const d of drafts) await api.publishTicker(d.id, d.text);
+      for (const d of drafts) {
+        if (d.video_url) {
+          await api.updateTicker(d.id, { status: "published" });
+        } else {
+          await api.publishTicker(d.id, d.text);
+        }
+      }
       await reload.loadTickerTexts();
     } catch (err) {
       logger.error("bulkGenerate failed", err);

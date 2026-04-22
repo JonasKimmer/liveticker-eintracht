@@ -102,7 +102,6 @@ export const CenterPanel = memo<CenterPanelProps>(function CenterPanel({
     setEditorValue,
     handleDismissEvent,
     handleRegenerateEventDraft,
-    handleRejectDraft,
     handleManualPublish,
   } = useEventDraft();
 
@@ -244,10 +243,6 @@ export const CenterPanel = memo<CenterPanelProps>(function CenterPanel({
                   .map((ev) => {
                   const draft = tickerTexts.find((t) => t.event_id === ev.id && t.status !== "deleted" && !t.video_url);
                   const videoDraft = tickerTexts.find((t) => t.event_id === ev.id && t.status !== "deleted" && !!t.video_url);
-                  // Merge video_url into text draft so both get published together in one card
-                  const combinedDraft = draft && videoDraft
-                    ? { ...draft, video_url: videoDraft.video_url }
-                    : draft;
                   const isSelected = selectedEvent?.id === ev.id;
                   return (
                     <div key={ev.id}>
@@ -260,42 +255,44 @@ export const CenterPanel = memo<CenterPanelProps>(function CenterPanel({
                         }}
                         onDismiss={() => handleDismissEvent(ev, draft)}
                       />
-                      {isSelected && combinedDraft && (
+                      {isSelected && draft && (
                         <SummaryDraftCard
-                          draft={combinedDraft}
+                          draft={draft}
                           label={ev.liveTickerEventType}
                           onPublish={(text) => {
-                            const publishText = api.publishTicker(draft!.id, text);
-                            const publishVideo = videoDraft
-                              ? api.updateTicker(videoDraft.id, { status: "published" })
-                              : Promise.resolve();
-                            Promise.all([publishText, publishVideo]).then(() => {
+                            Promise.all([
+                              api.publishTicker(draft.id, text),
+                              videoDraft
+                                ? api.updateTicker(videoDraft.id, { status: "published" })
+                                : Promise.resolve(),
+                            ]).then(() => {
                               reload.loadTickerTexts();
-                              onPublished(draft!.id, text);
+                              onPublished(draft.id, text);
                             });
                           }}
-                          onReject={() => {
-                            handleRejectDraft();
-                            if (videoDraft) api.deleteTicker(videoDraft.id);
-                          }}
+                          onReject={() =>
+                            api.deleteTicker(draft.id).then(reload.loadTickerTexts)
+                          }
                           onGenerate={(_, style) => handleRegenerateEventDraft(ev.id, style)}
                           generatingId={generatingId}
                         />
                       )}
-                      {isSelected && !draft && videoDraft && (
+                      {isSelected && videoDraft && (
                         <SummaryDraftCard
                           draft={videoDraft}
                           label="Torjubel-Video"
                           onPublish={(text) => {
-                            api.publishTicker(videoDraft.id, text).then(() => {
+                            api.updateTicker(videoDraft.id, { status: "published" }).then(() => {
                               reload.loadTickerTexts();
-                              onPublished(videoDraft.id, text);
+                              onPublished(videoDraft.id, text || "");
                             });
                           }}
-                          onReject={() => api.deleteTicker(videoDraft.id).then(reload.loadTickerTexts)}
+                          onReject={() =>
+                            api.deleteTicker(videoDraft.id).then(reload.loadTickerTexts)
+                          }
                         />
                       )}
-                      {isSelected && !combinedDraft && !videoDraft && (
+                      {isSelected && !draft && !videoDraft && (
                         <SummaryDraftCard
                           draft={{ id: -1, text: "", status: "draft" as const, event_id: ev.id } as any}
                           label={ev.liveTickerEventType}

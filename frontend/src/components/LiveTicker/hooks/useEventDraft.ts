@@ -105,7 +105,8 @@ export function useEventDraft() {
         (t) =>
           t.event_id === eventId &&
           t.status !== "rejected" &&
-          t.status !== "deleted",
+          t.status !== "deleted" &&
+          !t.video_url,
       );
       if (existing) await api.deleteTicker(existing.id);
       await onGenerate(eventId, style);
@@ -126,9 +127,8 @@ export function useEventDraft() {
   const handleRejectDraft = useCallback(async () => {
     if (!selectedDraft) return;
     await api.deleteTicker(selectedDraft.id);
-    if (selectedVideoDraft) await api.deleteTicker(selectedVideoDraft.id);
     await reload.loadTickerTexts();
-  }, [selectedDraft, selectedVideoDraft, reload]);
+  }, [selectedDraft, reload]);
 
   const handleOpenEdit = useCallback(() => {
     setEditorValue(selectedDraft?.text ?? "");
