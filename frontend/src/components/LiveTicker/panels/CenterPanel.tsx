@@ -260,12 +260,7 @@ export const CenterPanel = memo<CenterPanelProps>(function CenterPanel({
                           draft={draft}
                           label={ev.liveTickerEventType}
                           onPublish={(text) => {
-                            Promise.all([
-                              api.publishTicker(draft.id, text),
-                              videoDraft
-                                ? api.updateTicker(videoDraft.id, { status: "published" })
-                                : Promise.resolve(),
-                            ]).then(() => {
+                            api.publishTicker(draft.id, text).then(() => {
                               reload.loadTickerTexts();
                               onPublished(draft.id, text);
                             });
