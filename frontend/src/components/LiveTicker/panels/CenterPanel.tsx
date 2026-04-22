@@ -96,6 +96,8 @@ export const CenterPanel = memo<CenterPanelProps>(function CenterPanel({
 
   const {
     pendingEvents,
+    selectedEvent,
+    setSelectedEventId,
     editorValue,
     setEditorValue,
     handleDismissEvent,
@@ -238,17 +240,17 @@ export const CenterPanel = memo<CenterPanelProps>(function CenterPanel({
                   .sort((a, b) => (a.time ?? 0) - (b.time ?? 0))
                   .map((ev) => {
                   const draft = tickerTexts.find((t) => t.event_id === ev.id && t.status !== "deleted" && !t.video_url);
-                  const videoDraft = tickerTexts.find((t) => t.event_id === ev.id && t.status !== "deleted" && !!t.video_url);
+                  const isSelected = selectedEvent?.id === ev.id;
                   return (
                     <div key={ev.id}>
                       <EventCard
                         event={ev}
                         draft={draft}
-                        isSelected={false}
-                        onSelect={() => {}}
+                        isSelected={isSelected}
+                        onSelect={() => setSelectedEventId(ev.id)}
                         onDismiss={() => handleDismissEvent(ev, draft)}
                       />
-                      {draft && (
+                      {isSelected && draft && (
                         <SummaryDraftCard
                           draft={draft}
                           label={ev.liveTickerEventType}
@@ -265,27 +267,12 @@ export const CenterPanel = memo<CenterPanelProps>(function CenterPanel({
                           generatingId={generatingId}
                         />
                       )}
-                      {videoDraft && (
-                        <SummaryDraftCard
-                          draft={videoDraft}
-                          label="Torjubel-Video"
-                          onPublish={(text) => {
-                            api.updateTicker(videoDraft.id, { status: "published" }).then(() => {
-                              reload.loadTickerTexts();
-                              onPublished(videoDraft.id, text || "");
-                            });
-                          }}
-                          onReject={() =>
-                            api.deleteTicker(videoDraft.id).then(reload.loadTickerTexts)
-                          }
-                        />
-                      )}
-                      {!draft && !videoDraft && (
+                      {isSelected && !draft && (
                         <SummaryDraftCard
                           draft={{ id: -1, text: "", status: "draft" as const, event_id: ev.id } as any}
                           label={ev.liveTickerEventType}
                           onPublish={() => {}}
-                          onReject={() => {}}
+                          onReject={() => setSelectedEventId(null)}
                           onGenerate={(_, style) => handleRegenerateEventDraft(ev.id, style)}
                           generatingId={generatingId}
                         />
@@ -295,6 +282,26 @@ export const CenterPanel = memo<CenterPanelProps>(function CenterPanel({
                 })}
                 </CollapsibleSection>
             )}
+
+            {/* ── Video-Drafts (unabhängig von Events) ──────── */}
+            {tickerTexts
+              .filter((t) => !!t.video_url && t.status === "draft")
+              .map((vd) => (
+                <SummaryDraftCard
+                  key={`video-${vd.id}`}
+                  draft={vd}
+                  label="Torjubel-Video"
+                  onPublish={() => {
+                    api.updateTicker(vd.id, { status: "published" }).then(() => {
+                      reload.loadTickerTexts();
+                      onPublished(vd.id, "");
+                    });
+                  }}
+                  onReject={() =>
+                    api.deleteTicker(vd.id).then(reload.loadTickerTexts)
+                  }
+                />
+              ))}
           </>
         )}
 
