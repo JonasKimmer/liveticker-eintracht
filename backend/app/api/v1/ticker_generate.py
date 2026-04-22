@@ -177,6 +177,7 @@ async def generate_for_event(
         model=data.model,
         db=db,
         instance=data.instance,
+        fan_team=data.fan_team,
     )
 
     return ticker_repo.create(

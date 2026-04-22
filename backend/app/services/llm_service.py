@@ -155,6 +155,7 @@ class LLMService:
         language: str = "de",
         context_data: Optional[dict] = None,
         style_references: Optional[list[str]] = None,
+        fan_team: Optional[str] = None,
     ) -> str:
         normalized = self._normalize_event_type(event_type)
         kwargs = dict(
@@ -168,6 +169,7 @@ class LLMService:
             language=language,
             context_data=context_data,
             style_references=style_references,
+            fan_team=fan_team,
         )
         dispatch = {
             "mock": self._generate_mock_text,
@@ -265,13 +267,14 @@ class LLMService:
         language: str,
         context_data: Optional[dict] = None,
         style_references: Optional[list[str]] = None,
+        fan_team: Optional[str] = None,
     ) -> str:
         lang = self._LANG_NAMES.get(language, language)
         style_desc = STYLE_DESC.get(style, STYLE_DESC["neutral"])
         if style == "euphorisch":
-            fan_team = (context_data or {}).get("home_team") or team_name
-            if fan_team:
-                style_desc = f"Du schreibst als leidenschaftlicher Fan von {fan_team}.\n" + style_desc
+            resolved_fan_team = fan_team or (context_data or {}).get("home_team") or team_name
+            if resolved_fan_team:
+                style_desc = f"Du schreibst als leidenschaftlicher Fan von {resolved_fan_team}.\n" + style_desc
 
         event_lines = self._build_event_lines(
             event_type, event_detail, minute, player_name, assist_name, team_name
@@ -404,6 +407,7 @@ class LLMService:
         language: str,
         context_data: Optional[dict],
         style_references: Optional[list[str]],
+        fan_team: Optional[str] = None,
     ) -> str:
         """Shared implementation for OpenAI-compatible APIs (openai, openrouter)."""
         prompt = self._build_prompt(
@@ -417,6 +421,7 @@ class LLMService:
             language,
             context_data,
             style_references,
+            fan_team,
         )
         return self._call_openai_compatible_raw(prompt, LLM_TEMPERATURE)
 
@@ -536,6 +541,7 @@ async def generate_ticker_text(
     style_references: list[str] | None = None,
     provider: Optional[str] = None,
     model: Optional[str] = None,
+    fan_team: Optional[str] = None,
 ) -> tuple[str, str]:
     """Async LLM-Aufruf. Stilreferenzen werden vom Aufrufer übergeben (kein DB-Zugriff hier)."""
     if style_references is None:
@@ -579,6 +585,7 @@ async def generate_ticker_text(
                 language=language,
                 context_data=context_data,
                 style_references=style_references,
+                fan_team=fan_team,
             )
             model_used = model or _model or _provider
             return text, model_used

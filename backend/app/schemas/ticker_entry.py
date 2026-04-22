@@ -46,6 +46,7 @@ class BaseGenerateRequest(BaseModel):
     language: str = Field(default="de", max_length=5)
     instance: TickerInstance = "ef_whitelabel"
     auto_publish: bool = False
+    fan_team: Optional[str] = Field(None, max_length=100)
 
 
 class GenerateEventRequest(BaseGenerateRequest):

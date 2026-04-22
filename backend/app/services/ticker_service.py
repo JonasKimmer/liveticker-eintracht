@@ -106,6 +106,7 @@ async def call_llm(
     instance: str,
     provider: Optional[str] = None,
     model: Optional[str] = None,
+    fan_team: Optional[str] = None,
 ) -> tuple[str, str]:
     """Semaphore-gesicherter LLM-Aufruf inkl. Stilreferenz-Lookup.
 
@@ -156,6 +157,7 @@ async def call_llm(
             style_references=style_references,
             provider=provider,
             model=model,
+            fan_team=fan_team,
         )
 
 
