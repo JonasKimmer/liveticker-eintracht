@@ -22,7 +22,7 @@ Einsatz neuer technologischer Lösungen notwendig machen:
 \item
   Der \textbf{operative Zeitdruck} bei der manuellen Texterstellung:
   Redakteure müssen Spielereignisse in Echtzeit beobachten, einordnen
-  und in stilistisch kohärente Kurztexte überführen --- typischerweise
+  und in stilistisch kohärente Kurztexte überführen --- erfahrungsgemäß
   innerhalb von 30 bis 120 Sekunden pro Eintrag.
 \item
   Die Herausforderungen der \textbf{Internationalisierung} durch
@@ -45,11 +45,14 @@ konkrete Systemanforderungen überführt.
 Das übergeordnete Ziel der vorliegenden Arbeit ist daher die Konzeption
 und Implementierung eines produktionsfähigen Redaktionssystems, das
 diesen Konflikt durch den gezielten Einsatz von \textbf{Large Language
-Models} auflöst, während die finale Entscheidungshoheit und
-publizistische Verantwortung beim Menschen verbleiben. Das System wird
-dabei in zwei Ausprägungen realisiert: einer generischen Instanz für
-beliebige Vereine sowie einer vereinsspezifischen White-Label-Instanz am
-Beispiel \textbf{Eintracht Frankfurt}.
+Models} auflöst. Das System wird dabei in zwei Ausprägungen realisiert:
+einer generischen Instanz für beliebige Vereine sowie einer
+vereinsspezifischen White-Label-Instanz am Beispiel \textbf{Eintracht
+Frankfurt}. Beide Ausprägungen implementieren dieselben drei
+Betriebsmodi; im \texttt{coop}-Modus verbleiben dabei die finale
+Entscheidungshoheit und publizistische Verantwortung vollständig beim
+Menschen, während der \texttt{auto}-Modus bewusst als Kontrollbedingung
+ohne redaktionelles Korrektiv realisiert wird.
 
 Um dieses Ziel zu operationalisieren, definiert und evaluiert die Arbeit
 drei Betriebsmodi:
@@ -72,7 +75,7 @@ drei Betriebsmodi:
 
 \section{Forschungsfrage}\label{forschungsfrage}
 
-Aus der in Kapitel 1.1 entwickelten Zielsetzung ergibt sich folgende
+Aus der in Abschnitt~1.1 entwickelten Zielsetzung ergibt sich folgende
 Forschungsfrage, die der vorliegenden Arbeit zugrunde liegt:
 
 \begin{quote}
@@ -93,7 +96,11 @@ Qualitätskriterium gilt (Beils 2023, S. 57), sprachliche und inhaltliche
 Korrektheit jedoch selbst unter hohem Zeitdruck nicht verhandelbar sind
 (Bluhm \& Schäfer 2023, S. 35). Die Operationalisierung beider
 Dimensionen wird in Kapitel 1.3 methodisch vorbereitet und in Kapitel 6
-vollständig durchgeführt.
+vollständig durchgeführt. Der \texttt{auto}-Modus wird dabei als
+Kontrollbedingung evaluiert, die den Maximalgewinn an Geschwindigkeit
+ohne redaktionelles Korrektiv abbildet; der primäre
+Evaluationsvergleich gilt dem hybriden \texttt{coop}-Modus als dem für
+den Produktivbetrieb intendierten Modus.
 
 
 
@@ -139,14 +146,13 @@ Spielereignis und Veröffentlichung des Ticker-Eintrags erfasst. Die
 Skalen Korrektheit, Tonalität und Verständlichkeit operationalisiert,
 ergänzt durch ein \textbf{strukturiertes Experteninterview} mit einem
 professionellen Sportredakteur zur Validierung der Systemeignung im
-redaktionellen Arbeitskontext. Für den statistischen Vergleich stehen
+redaktionellen Arbeitskontext. Für den statistischen Vergleich bei größeren Stichproben stünden
 nicht-parametrische Verfahren (Cliff's Delta,
-Bootstrap-Konfidenzintervalle) bereit; aufgrund der Stichprobengröße (n
-= 16) kommen diese im vorliegenden Evaluationsdesign nicht zur
-Anwendung, stehen jedoch für eine Folgestudie mit größerer Datenbasis
-zur Verfügung.
+Bootstrap-Konfidenzintervalle) bereit; aufgrund der Stichprobengröße
+von $n = 16$ wird auf deren Einsatz im vorliegenden Evaluationsdesign
+verzichtet.
 
-\subsection{Abgrenzung}\label{abgrenzung}
+\section{Abgrenzung}\label{abgrenzung}
 
 Das System geht bewusst über den Umfang eines typischen akademischen
 Projekts hinaus und zielt auf Produktionsfähigkeit: Eine umfassende
@@ -164,9 +170,11 @@ Projekt zwei unabhängige Zielsysteme über nahezu identische Workflows
 bedient. Die technischen Details der Architektur und Implementierung
 werden in Kapitel 4 und 5 beschrieben.
 
-Dennoch bestehen Einschränkungen hinsichtlich Authentifizierung,
-Evaluationsunabhängigkeit und thematischer Reichweite, die in Kapitel 7
-kritisch reflektiert werden.
+Dennoch bestehen Einschränkungen hinsichtlich der Authentifizierung
+(kein vollständiges Rollenmodell implementiert), der
+Evaluationsunabhängigkeit (der Autor ist gleichzeitig Entwickler und
+Bewerter) sowie der thematischen Reichweite (ausschließlich
+Fußball-Liveticker), die in Kapitel~7 kritisch reflektiert werden.
 
 
 

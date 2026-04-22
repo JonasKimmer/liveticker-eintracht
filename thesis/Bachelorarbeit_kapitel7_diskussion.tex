@@ -45,7 +45,7 @@ Die eingeschränkte Stichprobengröße (vgl. Kapitel 6.7, „Eingeschränkte
 Stichprobengröße'') relativiert die Generalisierbarkeit der
 quantitativen Ergebnisse. Insbesondere Randsituationen --- torloses
 Unentschieden, Elfmeterschießen, Spielabbrüche --- sind in der
-Datenbasis vermutlich unterrepräsentiert. Die
+Datenbasis strukturell unterrepräsentiert. Die
 Bulk-Evaluationsinfrastruktur ermöglicht jedoch eine systematische
 Erweiterung der Datenbasis ohne Codeänderung.
 
@@ -87,7 +87,7 @@ Skalierungsstufe.
 
 Die in Kapitel 2.5 hergeleiteten linguistischen Anforderungen an
 Liveticker --- Ellipsen, konzeptionelle Mündlichkeit, Graphostilistik
-(z. B. „TOOOOR!{\kern0pt}``) --- stellen besondere Anforderungen an die
+(z. B. „TOOOOR!{\kern0pt}'') --- stellen besondere Anforderungen an die
 Prompt-Gestaltung. Die Evaluation zeigt, dass LLMs dazu neigen, in einem
 formelleren Register zu schreiben, als es das Genre Liveticker erfordert (vgl. Abschnitt~6.3.4).
 Die Few-Shot-Referenzen aus der \texttt{style\_references}-Tabelle sind
@@ -108,7 +108,7 @@ Der in Kapitel 3.1 beschriebene Halluzinationseffekt ist im Kontext von
 Livetickern besonders kritisch, da fehlerhafte Fakten (falscher
 Torschütze, falsches Ergebnis) unmittelbar die Glaubwürdigkeit
 zerstören. Die explizite Schutzregel für Pre-Match-Prompts und die
-niedrige Temperatur (vgl. Abschnitt~7.4) sind Gegenmaßnahmen, deren
+niedrige Temperatur (vgl. Abschnitt~5.1) sind Gegenmaßnahmen, deren
 Wirksamkeit jedoch nur im \texttt{coop}-Modus durch die redaktionelle
 Kontrolle vollständig abgesichert ist. Im \texttt{auto}-Modus verbleibt
 ein Restrisiko fehlerhafter Veröffentlichungen.
@@ -125,7 +125,7 @@ praktischen Einsatz diskutiert.
 Kontrolle}\label{auto-modus-geschwindigkeit-auf-kosten-der-kontrolle}
 
 Die Stärke des \texttt{auto}-Modus liegt in der Geschwindigkeit (vgl.
-Latenzpotenzial-Abschätzung in Abschnitt 6.4.2). Das Risiko besteht in unkontrollierten
+Latenzpotenzial-Abschätzung in Abschnitt~6.4). Das Risiko besteht in unkontrollierten
 Halluzinationen, die ohne redaktionelle Prüfung veröffentlicht werden.
 Im journalistischen Kontext, in dem Glaubwürdigkeit eine zentrale
 Ressource darstellt (Beils 2023, S. 57), ist dieser Modus daher nur für
@@ -140,7 +140,11 @@ zurückgezogen. Dies deutet darauf hin, dass die redaktionelle Prüfung als
 Qualitätsschicht greift; ob Entwürfe vor der Freigabe inhaltlich editiert
 wurden, wurde jedoch nicht systematisch erfasst (vgl. Abschnitt~6.7),
 weshalb eine abschließende Bewertung der Filterleistung des
-\texttt{coop}-Modus einer Folgestudie vorbehalten bleibt. Die
+\texttt{coop}-Modus einer Folgestudie vorbehalten bleibt. Das
+Experteninterview (vgl. Abschnitt~6.3.4) bestätigt diese
+Einschätzung: Der befragte Sportredakteur bewertete den
+\texttt{coop}-Modus als den praktisch relevantesten Betriebsmodus, da
+er Geschwindigkeit mit redaktioneller Kontrolle verbindet. Die
 TAB/ESC-Tastatursteuerung erweist sich als zentrales Mittel, um den
 Entscheidungsdurchsatz zu sichern, ohne den Redakteur visuell zu
 überlasten.
@@ -244,12 +248,29 @@ EU-KI-Verordnung (AI Act, EU 2024/1689), deren Transparenzpflichten für
 KI-generierte Texte (Art. 50 Abs. 4) gemäß Art. 113 ab August 2026
 gelten.
 
+Darüber hinaus berührt der Einsatz automatisierter Textgenerierung drei
+weitere ethische Dimensionen, die im Rahmen dieser Arbeit nicht
+abschließend bewertet werden, jedoch für eine Produktiveinführung
+relevant sind: \textbf{Arbeitsmarktimplikationen} --- die in
+Abschnitt~7.5.1 diskutierte Neukalibrierung der Redakteursrolle birgt
+langfristig auch das Risiko eines Stellenabbaus, da geringere manuelle
+Produktionsleistung erforderlich wird (vgl. Bluhm \& Schäfer 2023,
+S.~35). \textbf{Datenschutz} --- Spieler- und Vereinsdaten werden zur
+Textgenerierung an externe LLM-Provider übermittelt; eine
+DSGVO-konforme Datenverarbeitungsvereinbarung mit den verwendeten
+Providern ist für den Produktivbetrieb zwingend erforderlich.
+\textbf{Haftung} --- im \texttt{auto}-Modus werden faktisch fehlerhafte
+Einträge (z.~B. falsche Torschützen) ohne menschliche Prüfung
+publiziert; die publizistische Verantwortung und eventuelle rechtliche
+Haftung verbleiben beim Betreiber des Systems, nicht beim LLM-Provider.
+
 
 \section{Synthese}\label{synthese}
 
-Die Diskussion der Evaluationsergebnisse entlang der vier Dimensionen
+Die Diskussion der Evaluationsergebnisse entlang fünf Dimensionen
 --- Abgrenzung zum Stand der Technik, methodische und technische
-Limitationen, Betriebsmodi und Prompt-Architektur --- ergibt ein
+Limitationen, Betriebsmodi, Prompt-Architektur sowie Implikationen für
+den Sportjournalismus --- ergibt ein
 konsistentes Gesamtbild: Das System löst die in Kapitel 1.1
 identifizierten drei Problemdimensionen (Zeitdruck, Mehrsprachigkeit,
 White-Label-Bedarf) durch technisch nachweisbare Mechanismen; die

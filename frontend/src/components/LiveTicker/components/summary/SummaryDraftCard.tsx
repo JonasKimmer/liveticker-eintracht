@@ -77,7 +77,7 @@ export function SummaryDraftCard({
     [handleAccept],
   );
 
-  // Edit mode: full editor view, no draft frame
+  // Edit mode: full editor view
   if (editing) {
     return (
       <div className="lt-summary-editor" style={{ marginBottom: "0.5rem" }}>
@@ -109,7 +109,10 @@ export function SummaryDraftCard({
           }}
         />
         <div className="lt-entry__edit-actions" style={{ marginTop: "0.5rem" }}>
-          <button className="lt-btn lt-btn--primary lt-btn--sm" onClick={handleAccept}>
+          <button
+            className="lt-btn lt-btn--primary lt-btn--sm"
+            onClick={handleAccept}
+          >
             Annehmen <kbd className="lt-btn__kbd">⌘↵</kbd>
           </button>
           <button
@@ -133,6 +136,30 @@ export function SummaryDraftCard({
         <span style={{ fontSize: "0.9rem" }}>{draft.icon ?? "✦"}</span>
         <span className="lt-draft__label">{label}</span>
       </div>
+
+      {/* --- VIDEO PLAYER SECTION --- */}
+      {draft.video_url && (
+        <div
+          className="lt-draft__video-container"
+          style={{
+            marginTop: "0.5rem",
+            marginBottom: "0.75rem",
+            borderRadius: "6px",
+            overflow: "hidden",
+            border: "1px solid rgba(255,255,255,0.1)",
+            background: "#000",
+          }}
+        >
+          <video
+            src={draft.video_url}
+            controls
+            playsInline
+            style={{ width: "100%", display: "block", maxHeight: "300px" }}
+          />
+        </div>
+      )}
+      {/* ---------------------------- */}
+
       <div className="lt-draft__text-wrap">
         <p
           className="lt-draft__text"
@@ -143,6 +170,7 @@ export function SummaryDraftCard({
           {text || "Generiere Text…"}
         </p>
       </div>
+
       <div className="lt-draft__actions">
         <button
           className="lt-btn lt-btn--primary lt-btn--sm"
