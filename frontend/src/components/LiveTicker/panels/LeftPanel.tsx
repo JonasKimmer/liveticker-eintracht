@@ -32,16 +32,16 @@ export const LeftPanel = memo(function LeftPanel() {
     );
     const latestByEventId = new Map();
     for (const t of publishedAll) {
-      if (!t.event_id) continue;
+      if (!t.event_id || t.video_url) continue; // Video-Einträge nicht deduplizieren
       const prev = latestByEventId.get(t.event_id);
       if (!prev || t.id > prev.id) latestByEventId.set(t.event_id, t);
     }
     const publishedTexts = publishedAll.filter(
-      (t) => !t.event_id || latestByEventId.get(t.event_id)?.id === t.id,
+      (t) => !t.event_id || !!t.video_url || latestByEventId.get(t.event_id)?.id === t.id,
     );
 
     const manualEntries = publishedTexts
-      .filter((t) => !t.event_id)
+      .filter((t) => !t.event_id || !!t.video_url) // Video-Einträge als manual rendern
       .map((t) => ({
         key: `man-${t.id}`,
         minute: sortMinute(t),
@@ -50,7 +50,7 @@ export const LeftPanel = memo(function LeftPanel() {
       }));
 
     const eventEntries: PublishedEntryItem[] = events.flatMap((ev) => {
-      const tt = publishedTexts.find((t) => t.event_id === ev.id);
+      const tt = publishedTexts.find((t) => t.event_id === ev.id && !t.video_url);
       if (!tt) return [];
       return [
         {
