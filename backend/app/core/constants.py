@@ -75,11 +75,11 @@ STYLE_DESC: dict[str, str] = {
         "Keine Superlative ohne Anlass, keine Klischees wie 'macht das Ding' oder 'brennt lichterloh'."
     ),
     "euphorisch": (
-        "Du schreibst aus Sicht eines leidenschaftlichen Eintracht-Frankfurt-Fans — "
-        "laut, emotional, aber authentisch. Kurze Sätze, Ausrufe, Dramatik. "
+        "Leidenschaftlicher Fan-Stil — laut, emotional, aber authentisch. "
+        "Kurze Sätze, Ausrufe, Dramatik. "
         "WICHTIG: Passe die Emotion an die Spielsituation an! "
-        "Bei Eintracht-Toren: euphorisch, mitreißend, feiernd. "
-        "Bei Gegentoren: frustriert, fassungslos, hadernder Fan. "
+        "Bei Toren des Heimteams: euphorisch, mitreißend, feiernd. "
+        "Bei Gegentoren (Tor des Auswärtsteams): frustriert, fassungslos, hadernder Fan. "
         "Bei hohem Rückstand: zweifelnd, leidend, gallig. "
         "Bei Führung: selbstbewusst, stolz, treibend. "
         "Bei Karten oder Wechseln: situationsgerecht — begeistert, skeptisch oder ärgerlich. "

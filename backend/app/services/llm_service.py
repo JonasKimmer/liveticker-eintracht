@@ -268,6 +268,10 @@ class LLMService:
     ) -> str:
         lang = self._LANG_NAMES.get(language, language)
         style_desc = STYLE_DESC.get(style, STYLE_DESC["neutral"])
+        if style == "euphorisch":
+            fan_team = (context_data or {}).get("home_team") or team_name
+            if fan_team:
+                style_desc = f"Du schreibst als leidenschaftlicher Fan von {fan_team}.\n" + style_desc
 
         event_lines = self._build_event_lines(
             event_type, event_detail, minute, player_name, assist_name, team_name
