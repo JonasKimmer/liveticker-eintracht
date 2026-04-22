@@ -259,25 +259,20 @@ export const CenterPanel = memo<CenterPanelProps>(function CenterPanel({
                     if (item.kind === "video") {
                       const vd = item.vd;
                       return (
-                        <div key={`video-${vd.id}`} style={{ display: "flex", alignItems: "flex-start", gap: "0.5rem" }}>
-                          <span style={{ minWidth: "2.5rem", textAlign: "right", color: "#facc15", fontWeight: 600, fontSize: "0.85rem", paddingTop: "0.75rem" }}>
-                            {vd.minute ? `${vd.minute}'` : ""}
-                          </span>
-                          <div style={{ flex: 1 }}>
-                            <SummaryDraftCard
-                              draft={vd}
-                              label="Torjubel-Video"
-                              onPublish={() => {
-                                api.updateTicker(vd.id, { status: "published" }).then(() => {
-                                  reload.loadTickerTexts();
-                                  onPublished(vd.id, "");
-                                });
-                              }}
-                              onReject={() =>
-                                api.deleteTicker(vd.id).then(reload.loadTickerTexts)
-                              }
-                            />
-                          </div>
+                        <div key={`video-${vd.id}`}>
+                          <SummaryDraftCard
+                            draft={vd}
+                            label={vd.minute != null ? `${vd.minute}' · Torjubel-Video` : "Torjubel-Video"}
+                            onPublish={() => {
+                              api.updateTicker(vd.id, { status: "published" }).then(() => {
+                                reload.loadTickerTexts();
+                                onPublished(vd.id, "");
+                              });
+                            }}
+                            onReject={() =>
+                              api.deleteTicker(vd.id).then(reload.loadTickerTexts)
+                            }
+                          />
                         </div>
                       );
                     }
