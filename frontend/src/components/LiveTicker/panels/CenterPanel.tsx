@@ -96,8 +96,6 @@ export const CenterPanel = memo<CenterPanelProps>(function CenterPanel({
 
   const {
     pendingEvents,
-    selectedEvent,
-    setSelectedEventId,
     editorValue,
     setEditorValue,
     handleDismissEvent,
@@ -200,9 +198,7 @@ export const CenterPanel = memo<CenterPanelProps>(function CenterPanel({
               <CollapsibleSection
                 title="Events"
                 count={pendingEvents.length}
-                onToggle={(open) => {
-                  if (!open) setSelectedEventId(null);
-                }}
+                onToggle={() => {}}
                 actions={
                   pendingEvents.length > 1 ? (
                     <div style={{ display: "flex", gap: "0.4rem" }}>
@@ -243,19 +239,16 @@ export const CenterPanel = memo<CenterPanelProps>(function CenterPanel({
                   .map((ev) => {
                   const draft = tickerTexts.find((t) => t.event_id === ev.id && t.status !== "deleted" && !t.video_url);
                   const videoDraft = tickerTexts.find((t) => t.event_id === ev.id && t.status !== "deleted" && !!t.video_url);
-                  const isSelected = selectedEvent?.id === ev.id;
                   return (
                     <div key={ev.id}>
                       <EventCard
                         event={ev}
                         draft={draft}
-                        isSelected={isSelected}
-                        onSelect={() => {
-                          setSelectedEventId(ev.id);
-                        }}
+                        isSelected={false}
+                        onSelect={() => {}}
                         onDismiss={() => handleDismissEvent(ev, draft)}
                       />
-                      {isSelected && draft && (
+                      {draft && (
                         <SummaryDraftCard
                           draft={draft}
                           label={ev.liveTickerEventType}
@@ -272,7 +265,7 @@ export const CenterPanel = memo<CenterPanelProps>(function CenterPanel({
                           generatingId={generatingId}
                         />
                       )}
-                      {isSelected && videoDraft && (
+                      {videoDraft && (
                         <SummaryDraftCard
                           draft={videoDraft}
                           label="Torjubel-Video"
@@ -287,12 +280,12 @@ export const CenterPanel = memo<CenterPanelProps>(function CenterPanel({
                           }
                         />
                       )}
-                      {isSelected && !draft && !videoDraft && (
+                      {!draft && !videoDraft && (
                         <SummaryDraftCard
                           draft={{ id: -1, text: "", status: "draft" as const, event_id: ev.id } as any}
                           label={ev.liveTickerEventType}
                           onPublish={() => {}}
-                          onReject={() => setSelectedEventId(null)}
+                          onReject={() => {}}
                           onGenerate={(_, style) => handleRegenerateEventDraft(ev.id, style)}
                           generatingId={generatingId}
                         />
