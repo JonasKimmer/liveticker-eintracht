@@ -378,7 +378,11 @@ export function getEventMeta(
   )
     return { icon: "📣", cssClass: "" };
   if (t === "match_penalties") return { icon: "🥅", cssClass: "" };
-  if (t === "comment" || t === "var") return { icon: "📢", cssClass: "" };
+  if (t === "penalty_won") return { icon: "🎯", cssClass: "" };
+  if (t === "penalty_cancelled") return { icon: "❌", cssClass: "" };
+  if (t === "goal_cancelled") return { icon: "🚫", cssClass: "" };
+  if (t === "var_red_card") return { icon: "📺🟥", cssClass: "card" };
+  if (t === "comment" || t === "var") return { icon: "💬", cssClass: "" };
   if (t === "pre_match" || t === "post_match")
     return { icon: "📣", cssClass: "" };
   if (eventType === "Goal") return { icon: "⚽", cssClass: "goal" };
