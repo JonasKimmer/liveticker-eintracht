@@ -5,10 +5,15 @@ Registriert alle Router, Middleware (CORS) und Static Files.
 Die OpenAPI-Dokumentation ist unter /api/docs erreichbar.
 """
 
+from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 import os
+import subprocess
+import logging
+
+logger = logging.getLogger(__name__)
 
 from app.api.v1 import (
     countries,
@@ -44,12 +49,25 @@ from app.models import (  # noqa: F401
     media_clip,
 )
 
-Base.metadata.create_all(bind=engine)
-
 STATIC_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "static")
 os.makedirs(os.path.join(STATIC_DIR, "thumbnails"), exist_ok=True)
 
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    try:
+        result = subprocess.run(["alembic", "upgrade", "head"], capture_output=True, text=True, timeout=60)
+        if result.returncode != 0:
+            logger.error("Alembic migration failed: %s", result.stderr)
+        else:
+            logger.info("Alembic migrations applied")
+    except Exception as e:
+        logger.error("Alembic error: %s", e)
+    yield
+
+
 app = FastAPI(
+    lifespan=lifespan,
     title="Liveticker AI Backend",
     description="KI-gestütztes Redaktionssystem für automatisierte Liveticker-Generierung",
     version="0.3.0",
