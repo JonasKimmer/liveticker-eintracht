@@ -97,7 +97,7 @@ export const PREMATCH_PHASES = new Set(["Before", "PreMatch"]);
 // null = Phase bekannt, aber Minutenspalte bleibt leer.
 export const PHASE_SHORT_LABEL: Partial<Record<string, string | null>> = {
   Before: "i",
-  FirstHalfBreak: "i",
+  FirstHalfBreak: "",
   Halftime: "i",
   FullTime: "",
   After: "i",
