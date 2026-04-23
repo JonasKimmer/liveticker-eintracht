@@ -28,7 +28,9 @@ export const EventCard = memo(function EventCard({
       tabIndex={onSelect ? 0 : undefined}
     >
       <div className="lt-event-card__row">
-        <span className="lt-event-card__minute">{event.time}'</span>
+        <span className="lt-event-card__minute">
+          {event.time}{event.timeAdditional ? `+${event.timeAdditional}` : ""}'
+        </span>
         <span className="lt-event-card__icon">{icon}</span>
         <span className="lt-event-card__raw">
           {draft?.text ?? getRawEventText(event)}

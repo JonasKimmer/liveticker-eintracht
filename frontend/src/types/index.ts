@@ -82,6 +82,7 @@ export interface MatchEvent {
   /** @deprecated use event_type */
   eventType?: string;
   time?: number | null;
+  timeAdditional?: number | null;
   minute?: number | null;
   phase?: MatchPhase | null;
   team_id?: number | null;
