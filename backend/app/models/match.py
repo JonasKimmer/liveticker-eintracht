@@ -53,7 +53,8 @@ class Match(Base):
     match_phase = Column(
         String(30), nullable=True
     )  # Undefined|PreMatch|FullTime|PostPoned|FirstHalf|SecondHalf
-    minute = Column(Integer, nullable=True)  # current live minute
+    minute = Column(Integer, nullable=True)
+    minute_extra = Column(Integer, nullable=True)  # stoppage time (Nachspielzeit)
     ticker_mode = Column(String(10), nullable=False, default="coop")  # auto | coop | manual
     is_scheduled = Column(Boolean, nullable=False, default=False)
     is_kickoff_confirmed = Column(Boolean, nullable=False, default=False)

@@ -111,6 +111,7 @@ class MatchUpdate(BaseModel):
     is_scheduled: Optional[bool] = None
     is_kickoff_confirmed: Optional[bool] = None
     minute: Optional[int] = Field(None, ge=0, le=120)
+    minute_extra: Optional[int] = Field(None, ge=0, le=30)
     number_of_goal_scorers: Optional[int] = Field(None, ge=0)
     number_of_viewers: Optional[int] = Field(None, ge=0)
     team_home_jersey: Optional[JerseyInfo] = None
@@ -181,6 +182,7 @@ class MatchResponse(BaseModel):
     number_of_viewers: Optional[int] = None
     match_state: Optional[str] = None
     minute: Optional[int] = None
+    minute_extra: Optional[int] = None
     ends_at: Optional[datetime] = None
     ticker_mode: str = "coop"
     home_team: Optional[MatchTeamInfo] = None

@@ -72,7 +72,9 @@ export const MatchHeader = memo(function MatchHeader({
                 )
                 ? "HZ"
                 : liveMinute > 0
-                  ? `${liveMinute}'`
+                  ? match.minuteExtra
+                    ? `${liveMinute}+${match.minuteExtra}'`
+                    : `${liveMinute}'`
                   : match.matchState
               : match.matchState}
           </span>

@@ -69,6 +69,7 @@ export interface Match {
   matchState?: string | null;
   matchPhase?: MatchPhase | null;
   minute?: number | null;
+  minuteExtra?: number | null;
   matchday?: number | null;
   startsAt?: string | null;
   kickoff?: string | null;
