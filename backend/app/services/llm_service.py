@@ -294,6 +294,7 @@ class LLMService:
             f"### REGELN\n"
             f"{prematch_rule}"
             f"- Nur der fertige Ticker-Text, keine Erklärungen\n"
+            f"- Nenne KEINE Minute im Text – sie wird separat links angezeigt\n"
             f"- Ellipsen und kurze Hauptsätze bevorzugen\n"
             f"- Präsens für laufende Szene, Perfekt für abgeschlossene Aktion\n"
             f"- Bei Vorbericht/Spielvorschau/Direktvergleich/Verletzungsbericht/Teamstatistik: kompakten Analyse-Text schreiben (2–3 Sätze), KEIN Live-Kommentar\n"
