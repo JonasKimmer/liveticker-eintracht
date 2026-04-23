@@ -34,7 +34,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const fixture = $json.response?.[0];\nif (!fixture) return [];\n\nconst phaseMap = {\n  '1H': 'FirstHalf',\n  'HT': 'FirstHalfBreak',\n  '2H': 'SecondHalf',\n  'ET': 'ExtraFirstHalf',\n  'BT': 'ExtraBreak',\n  'P':  'PenaltyShootout',\n  'FT': 'FullTime',\n  'AET': 'ExtraSecondHalf',\n  'PEN': 'PenaltyShootout',\n};\n\nconst stateMap = {\n  '1H': 'Live', 'HT': 'Live', '2H': 'Live',\n  'ET': 'Live', 'BT': 'Live', 'P': 'Live',\n  'FT': 'FullTime', 'AET': 'FullTime', 'PEN': 'FullTime',\n};\n\nconst statusShort = fixture.fixture.status.short;\nconst newPhase = phaseMap[statusShort];\nif (!newPhase) return []; // NS, TBD, CANC etc. — nichts tun\n\nreturn [{\n  json: {\n    fixture_id: fixture.fixture.id,\n    status_short: statusShort,\n    new_minute: fixture.fixture.status.elapsed ?? null,\n    new_phase: newPhase,\n    new_state: stateMap[statusShort] ?? null,\n  }\n}];"
+        "jsCode": "const fixture = $json.response?.[0];\nif (!fixture) return [];\n\nconst phaseMap = {\n  '1H': 'FirstHalf',\n  'HT': 'FirstHalfBreak',\n  '2H': 'SecondHalf',\n  'ET': 'ExtraFirstHalf',\n  'BT': 'ExtraBreak',\n  'P':  'PenaltyShootout',\n  'FT': 'FullTime',\n  'AET': 'ExtraSecondHalf',\n  'PEN': 'PenaltyShootout',\n};\n\nconst stateMap = {\n  '1H': 'Live', 'HT': 'Live', '2H': 'Live',\n  'ET': 'Live', 'BT': 'Live', 'P': 'Live',\n  'FT': 'FullTime', 'AET': 'FullTime', 'PEN': 'FullTime',\n};\n\nconst statusShort = fixture.fixture.status.short;\nconst newPhase = phaseMap[statusShort];\nif (!newPhase) return []; // NS, TBD, CANC etc. — nichts tun\n\nreturn [{\n  json: {\n    fixture_id: fixture.fixture.id,\n    status_short: statusShort,\n    new_minute: fixture.fixture.status.elapsed ?? null,\n    new_minute_extra: fixture.fixture.status.extra ?? null,\n    new_phase: newPhase,\n    new_state: stateMap[statusShort] ?? null,\n  }\n}];"
       },
       "id": "7743c380-84fd-4a3d-9ed2-b03d13bb2cdd",
       "name": "Fixture aufbereiten1",
@@ -64,7 +64,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const db = $json;\nconst fixture = $('Fixture aufbereiten1').item.json;\n\nconst phaseChanged = fixture.new_phase !== db.match_phase;\n\nreturn [{\n  json: {\n    match_id: db.id,\n    fixture_id: fixture.fixture_id,\n    new_minute: fixture.new_minute,\n    new_phase: fixture.new_phase,\n    new_state: fixture.new_state ?? db.match_state,\n    status_short: fixture.status_short,\n    old_phase: db.match_phase,\n    match_state: db.match_state,\n    ticker_mode: db.ticker_mode ?? 'coop',\n    phase_changed: phaseChanged,\n  }\n}];"
+        "jsCode": "const db = $json;\nconst fixture = $('Fixture aufbereiten1').item.json;\n\nconst phaseChanged = fixture.new_phase !== db.match_phase;\n\nreturn [{\n  json: {\n    match_id: db.id,\n    fixture_id: fixture.fixture_id,\n    new_minute: fixture.new_minute,\n    new_minute_extra: fixture.new_minute_extra,\n    new_phase: fixture.new_phase,\n    new_state: fixture.new_state ?? db.match_state,\n    status_short: fixture.status_short,\n    old_phase: db.match_phase,\n    match_state: db.match_state,\n    ticker_mode: db.ticker_mode ?? 'coop',\n    phase_changed: phaseChanged,\n  }\n}];"
       },
       "id": "a3103e86-1149-4601-902b-2ec9dbfaf3a6",
       "name": "Vergleichen1",
@@ -75,9 +75,9 @@
     {
       "parameters": {
         "operation": "executeQuery",
-        "query": "UPDATE matches SET minute = $1, match_phase = $2, match_state = $3 WHERE id = $4",
+        "query": "UPDATE matches SET minute = $1, minute_extra = $2, match_phase = $3, match_state = $4 WHERE id = $5",
         "options": {
-          "queryReplacement": "={{ [$json.new_minute, $json.new_phase, $json.new_state, $json.match_id] }}"
+          "queryReplacement": "={{ [$json.new_minute, $json.new_minute_extra, $json.new_phase, $json.new_state, $json.match_id] }}"
         }
       },
       "id": "9c6ff6f4-92d4-4ee0-91fd-d7b3c6b7d6b7",
