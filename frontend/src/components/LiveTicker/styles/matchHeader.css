@@ -89,6 +89,13 @@
   font-size: 2.5rem;
   color: var(--lt-text-faint);
 }
+.lt-match-header__extra-time,
+.lt-match-header__penalty {
+  font-size: 0.8rem;
+  color: var(--lt-text-faint);
+  text-align: center;
+  margin-top: 0.1rem;
+}
 .lt-match-header__meta {
   display: flex;
   justify-content: center;
