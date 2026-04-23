@@ -131,7 +131,6 @@ export const PublishedEntry = memo(function PublishedEntry({
 
   if (isManual) {
     const phase = tickerText?.phase;
-    const phaseShort = phase != null ? PHASE_SHORT_LABEL[phase] : undefined;
     const phaseIcon = PHASE_DEFAULT_ICON[tickerText?.phase] ?? null;
     // Dedup-Keys (z.B. "pass_h_90") sind kein Emoji → Fallback auf 📊
     // "•" gilt als kein Icon (Legacy-Wert aus alten Einträgen)
@@ -140,7 +139,9 @@ export const PublishedEntry = memo(function PublishedEntry({
     const displayIcon = isCodeKey ? "📊" : (rawIcon ?? phaseIcon);
     // Priorität: festes Phase-Label (z.B. "i") → echte Minute → Fallback-Minute aus PHASE_MINUTE_DEFAULT → "–"
     const resolvedMinute = tickerText?.minute ?? (phase != null ? PHASE_MINUTE_DEFAULT[phase] : undefined);
-    const minuteDisplay = phaseShort ?? (resolvedMinute != null ? `${resolvedMinute}'` : "–");
+    const minuteDisplay = (phase != null && phase in PHASE_SHORT_LABEL)
+      ? (PHASE_SHORT_LABEL[phase] ?? "–")
+      : (resolvedMinute != null ? `${resolvedMinute}'` : "–");
     return (
       <div className="lt-entry lt-entry--manual">
         {onEdit && minuteEditing ? minuteInputEl : (
@@ -198,6 +199,10 @@ export const PublishedEntry = memo(function PublishedEntry({
   if (!tickerText) return null;
 
   const eventMinute = tickerText.minute ?? entry?.time ?? entry?.minute;
+  const eventMinuteExtra = entry?.timeAdditional;
+  const eventMinuteDisplay = eventMinute != null
+    ? `${eventMinute}${eventMinuteExtra ? `+${eventMinuteExtra}` : ""}'`
+    : "–";
   return (
     <div className={`lt-entry${cssClass ? ` lt-entry--${cssClass}` : ""}`}>
       {onEdit && minuteEditing ? minuteInputEl : (
@@ -207,7 +212,7 @@ export const PublishedEntry = memo(function PublishedEntry({
           title={onEdit ? "Minute bearbeiten" : undefined}
           style={onEdit ? { cursor: "text" } : undefined}
         >
-          {eventMinute != null ? `${eventMinute}'` : "–"}
+          {eventMinuteDisplay}
         </span>
       )}
       <span className="lt-entry__icon">{icon}</span>

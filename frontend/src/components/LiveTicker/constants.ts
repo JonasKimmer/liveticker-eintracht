@@ -95,10 +95,13 @@ export const PREMATCH_PHASES = new Set(["Before", "PreMatch"]);
 // ── Kurzbezeichnungen für Phasen (Minuten-Spalte im Ticker) ──
 // Kurze Anzeige-Labels z.B. "HZ", "FT" — getrennt von PHASE_LABEL (vollständige Namen).
 // null = Phase bekannt, aber Minutenspalte bleibt leer.
-export const PHASE_SHORT_LABEL: Partial<Record<string, string>> = {
+export const PHASE_SHORT_LABEL: Partial<Record<string, string | null>> = {
   Before: "i",
   Halftime: "i",
   After: "i",
+  FirstHalf: null,
+  SecondHalf: null,
+  FullTime: null,
   SecondHalfBreak: "Pause",
   ExtraBreak: "VZ·P",
   ExtraSecondHalfBreak: "Elfm.P",
