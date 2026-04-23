@@ -21,8 +21,8 @@ class Settings(BaseSettings):
 
     # Database
     DATABASE_URL: str
-    DB_POOL_SIZE: int = 20
-    DB_MAX_OVERFLOW: int = 30
+    DB_POOL_SIZE: int = 5
+    DB_MAX_OVERFLOW: int = 10
 
     # API Keys
     API_FOOTBALL_KEY: Optional[str] = None
