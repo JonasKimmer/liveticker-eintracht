@@ -547,7 +547,7 @@
         "operation": "executeQuery",
         "query": "SELECT m.match_phase, m.external_id,\n  (SELECT COUNT(*) FROM ticker_entries\n   WHERE match_id = m.id AND phase = 'PenaltyShootout' AND source = 'manual') AS has_penalty_ticker\nFROM matches WHERE id = $1",
         "options": {
-          "queryReplacement": "={{ [$('DB: Match-Instanz1').first().json.match_id] }}"
+          "queryReplacement": "={{ [$('DB: Match-Instanz7').first().json.match_id] }}"
         }
       },
       "id": "pen09-sql-check",
@@ -555,8 +555,8 @@
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.6,
       "position": [
-        896,
-        1200
+        1392,
+        9600
       ],
       "credentials": {
         "postgres": {
@@ -603,8 +603,8 @@
       "type": "n8n-nodes-base.filter",
       "typeVersion": 2.2,
       "position": [
-        1120,
-        1200
+        1616,
+        9600
       ]
     },
     {
@@ -619,8 +619,8 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        1344,
-        1200
+        1840,
+        9600
       ],
       "credentials": {
         "httpHeaderAuth": {
@@ -631,15 +631,15 @@
     },
     {
       "parameters": {
-        "jsCode": "const fixture = $json.response?.[0];\nif (!fixture) return [];\n\nconst penHome = fixture.score?.penalty?.home ?? null;\nconst penAway = fixture.score?.penalty?.away ?? null;\nif (penHome === null || penAway === null) return [];\n\nconst matchId = $('DB: Match-Instanz1').first().json.match_id;\nconst instance = $('DB: Match-Instanz1').first().json.instance || 'generic';\nconst tickerMode = $('DB: Match-Instanz1').first().json.ticker_mode ?? 'coop';\nconst homeTeamName = fixture.teams?.home?.name ?? 'Heim';\nconst awayTeamName = fixture.teams?.away?.name ?? 'Gast';\nconst winner = penHome > penAway ? homeTeamName : awayTeamName;\n\nreturn [{ json: {\n  match_id: matchId,\n  penalty_home: penHome,\n  penalty_away: penAway,\n  instance,\n  ticker_mode: tickerMode,\n  text: `🥅 Elferschießen: ${winner} gewinnt ${penHome}:${penAway} n.E.`\n} }];"
+        "jsCode": "const fixture = $json.response?.[0];\nif (!fixture) return [];\n\nconst penHome = fixture.score?.penalty?.home ?? null;\nconst penAway = fixture.score?.penalty?.away ?? null;\nif (penHome === null || penAway === null) return [];\n\nconst matchId = $('DB: Match-Instanz7').first().json.match_id;\nconst instance = $('DB: Match-Instanz7').first().json.instance || 'generic';\nconst tickerMode = $('DB: Match-Instanz7').first().json.ticker_mode ?? 'coop';\nconst homeTeamName = fixture.teams?.home?.name ?? 'Heim';\nconst awayTeamName = fixture.teams?.away?.name ?? 'Gast';\nconst winner = penHome > penAway ? homeTeamName : awayTeamName;\n\nreturn [{ json: {\n  match_id: matchId,\n  penalty_home: penHome,\n  penalty_away: penAway,\n  instance,\n  ticker_mode: tickerMode,\n  text: `🥅 Elferschießen: ${winner} gewinnt ${penHome}:${penAway} n.E.`\n} }];"
       },
       "id": "pen09-code",
       "name": "Penalty-Daten aufbereiten9",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        1568,
-        1200
+        2064,
+        9600
       ]
     },
     {
@@ -655,8 +655,8 @@
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.6,
       "position": [
-        1792,
-        1200
+        2288,
+        9600
       ],
       "credentials": {
         "postgres": {
@@ -681,8 +681,8 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        2016,
-        1200
+        2512,
+        9600
       ],
       "credentials": {
         "httpHeaderAuth": {
@@ -796,11 +796,6 @@
           },
           {
             "node": "Update Match Score",
-            "type": "main",
-            "index": 0
-          },
-          {
-            "node": "SQL: Penalty prüfen",
             "type": "main",
             "index": 0
           }
