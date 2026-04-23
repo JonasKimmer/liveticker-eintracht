@@ -2,95 +2,30 @@
   "nodes": [
     {
       "parameters": {
-        "url": "https://profis.eintracht.de/page-data/kader/page-data.json",
-        "options": {}
-      },
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4.2,
-      "position": [
-        0,
-        0
-      ],
-      "id": "fc82cfd7-c90e-4c2e-9ce1-2c02f2fe8ef9",
-      "name": "Fetch Kader page-data"
-    },
-    {
-      "parameters": {
-        "jsCode": "const players = $input.first().json?.result?.data?.squad?.data?.players;\n\nif (!players?.length) {\n  throw new Error('Keine Spieler gefunden');\n}\n\nreturn players.map(p => {\n  const id = p.person?.id;\n  const lastName = p.person?.last_name;\n  const firstName = p.person?.first_name;\n  const jerseyNumber = p.person?.jersey_number;\n  const slug = p.person?.slug;\n\n  if (!id) return null;\n\n  // ID → S3-Pfad: '492931' → '000/492/931'\n  const padded = id.padStart(9, '0');\n  const s3path = `${padded.slice(0,3)}/${padded.slice(3,6)}/${padded.slice(6,9)}`;\n\n  // Avatar: Originalname mit Umlaut, URL-encoded (Götze → G%C3%B6tze)\n  const avatarName = encodeURIComponent(lastName.split(/[\\s-]/)[0]);\n\n  // Video: Normalisierter Name ohne Umlaut (Götze → Gotze, Chaïbi → Chaibi)\n  const videoName = lastName\n    .normalize('NFD')\n    .replace(/[\\u0300-\\u036f]/g, '')\n    .split(/[\\s-]/)[0];\n\n  const avatarUrl = `https://liveticker-eintracht-de.s3.eu-central-1.amazonaws.com/people/liveticker_avatars/${s3path}/large/${avatarName}.png`;\n\n  const videoUrl = jerseyNumber\n    ? `https://liveticker-eintracht-de.s3.eu-central-1.amazonaws.com/people/liveticker_videos/${s3path}/original/Torschuetze_${String(jerseyNumber).padStart(2, '0')}_${videoName}_HD_1.mp4`\n    : null;\n\n  return {\n    json: {\n      id,\n      slug,\n      first_name: firstName,\n      last_name: lastName,\n      jersey_number: jerseyNumber,\n      position: p.person?.position,\n      avatar_url: avatarUrl,\n      video_url: videoUrl\n    }\n  };\n}).filter(Boolean);"
-      },
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
-      "position": [
-        256,
-        0
-      ],
-      "id": "59e074bb-8bf9-4b29-bc99-9dbe7c807cf0",
-      "name": "Spieler + URLs extrahieren"
-    },
-    {
-      "parameters": {
-        "jsCode": "// Für jeden Spieler: SQL-Upsert generieren\n// Matched über last_name + jersey_number (kein external_id von EF-Website)\nfunction esc(val) {\n  if (val === null || val === undefined) return 'NULL';\n  return `'${String(val).replace(/'/g, \"''\")}'`;\n}\nfunction num(val) {\n  return (val === null || val === undefined) ? 'NULL' : val;\n}\n\nreturn $input.all().map(item => {\n  const p = item.json;\n  const query = `\n    UPDATE players\n    SET\n      image_url  = ${esc(p.avatar_url)},\n      video_url  = ${esc(p.video_url)},\n      updated_at = NOW()\n    WHERE\n      jersey_number = ${num(p.jersey_number)}\n      AND team_id IN (\n        SELECT id FROM teams WHERE name ILIKE '%Frankfurt%'\n      )\n    RETURNING id, display_name, jersey_number, video_url\n  `.trim();\n  return { json: { query, player: p.last_name } };\n});"
-      },
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
-      "position": [
-        512,
-        0
-      ],
-      "id": "e4dc3ba9-7d2d-4cbf-bd10-5dda69e261d4",
-      "name": "Upsert-Query bauen"
-    },
-    {
-      "parameters": {
-        "operation": "executeQuery",
-        "query": "={{ $json.query }}",
-        "options": {}
-      },
-      "type": "n8n-nodes-base.postgres",
-      "typeVersion": 2.6,
-      "position": [
-        768,
-        0
-      ],
-      "id": "8c816809-e591-4605-a9df-abba48bc2fd7",
-      "name": "DB: Spieler updaten",
-      "credentials": {
-        "postgres": {
-          "id": "5VeE2cikA9rLeOKz",
-          "name": "Postgres account 2"
-        }
-      }
-    },
-    {
-      "parameters": {
         "httpMethod": "POST",
         "path": "Events",
         "options": {}
       },
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2.1,
-      "position": [
-        -496,
-        688
-      ],
-      "id": "8ee6d58a-061a-4d4a-a0cc-6db7aafbce18",
-      "name": "Webhook Events2",
+      "position": [208, 8928],
+      "id": "6195805f-8c6b-4a2b-8063-0df7a1401c3e",
+      "name": "Webhook Events8",
       "webhookId": "6188adc1-362c-45e1-9e8a-abd1889bbe3b"
     },
     {
       "parameters": {
         "operation": "executeQuery",
-        "query": "SELECT\n  CASE WHEN (ht.name ILIKE '%Frankfurt%' OR at.name ILIKE '%Frankfurt%')\n       THEN 'ef_whitelabel' ELSE 'generic' END AS instance,\n  CASE WHEN (ht.name ILIKE '%Frankfurt%' OR at.name ILIKE '%Frankfurt%')\n       THEN 'euphorisch' ELSE 'neutral' END AS style,\n  m.id AS match_id,\n  m.ticker_mode\nFROM matches m\nJOIN teams ht ON ht.id = m.home_team_id\nJOIN teams at ON at.id = m.away_team_id\nWHERE m.external_id = {{ $json.body.fixture_id }}::integer\nLIMIT 1",
-        "options": {}
+        "query": "SELECT\n  m.id AS match_id,\n  COALESCE($2, m.ticker_mode) AS ticker_mode,\n  CASE WHEN (ht.name ILIKE '%Frankfurt%' OR at.name ILIKE '%Frankfurt%')\n       THEN 'ef_whitelabel' ELSE 'generic' END AS instance,\n  CASE WHEN (ht.name ILIKE '%Frankfurt%' OR at.name ILIKE '%Frankfurt%')\n       THEN 'euphorisch' ELSE 'neutral' END AS style,\n  CASE WHEN ht.name ILIKE '%Frankfurt%' THEN ht.name\n       WHEN at.name ILIKE '%Frankfurt%' THEN at.name\n       ELSE NULL END AS fan_team\nFROM matches m\nJOIN teams ht ON ht.id = m.home_team_id\nJOIN teams at ON at.id = m.away_team_id\nWHERE m.external_id = $1\nLIMIT 1\n",
+        "options": {
+          "queryReplacement": "={{ $json.body.fixture_id + ',' + ($json.body.ticker_mode ?? '') }}"
+        }
       },
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.6,
-      "position": [
-        -240,
-        688
-      ],
-      "id": "9a6364a6-d789-4bfa-abd1-5096eaebee97",
-      "name": "DB: Match-Instanz1",
+      "position": [464, 8928],
+      "id": "5b970751-3f43-43d8-9754-7cfde23f3906",
+      "name": "DB: Match-Instanz7",
       "credentials": {
         "postgres": {
           "id": "5VeE2cikA9rLeOKz",
@@ -108,7 +43,7 @@
           "parameters": [
             {
               "name": "fixture",
-              "value": "={{ $('Webhook Events2').first().json.body.fixture_id }}"
+              "value": "={{ $('Webhook Events8').first().json.body.fixture_id }}"
             }
           ]
         },
@@ -116,12 +51,9 @@
       },
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [
-        16,
-        688
-      ],
-      "id": "af4cd463-6470-4413-81f6-86e783c04fa7",
-      "name": "API: Events abrufen3",
+      "position": [720, 8928],
+      "id": "74243257-59aa-4a40-8b56-6df1e80c3ccd",
+      "name": "API: Events abrufen9",
       "credentials": {
         "httpHeaderAuth": {
           "id": "nw1wvLZ4u2BCZRVl",
@@ -131,29 +63,23 @@
     },
     {
       "parameters": {
-        "jsCode": "const items = $input.all();\n\nreturn items.flatMap(item => {\n  if (!item.json.response) return [];\n  const fixtureId = item.json.parameters?.fixture;\n\n  return item.json.response.map(event => ({\n    json: {\n      fixture_id:       fixtureId,\n      minute:           event.time.elapsed,\n      extra_time:       event.time.extra || null,\n      team_external_id: event.team.id,\n      team_name:        event.team?.name || null,\n      player_id:        event.player?.id || null,\n      player_name:      event.player?.name || null,\n      assist_id:        event.assist?.id || null,\n      assist_name:      event.assist?.name || null,\n      type:             event.type,\n      detail:           event.detail,\n      comments:         event.comments || null\n    }\n  }));\n});"
+        "jsCode": "const items = $input.all();\n\nreturn items.flatMap(item => {\n  if (!item.json.response) return [];\n  const fixtureId = item.json.parameters?.fixture;\n\n  return item.json.response\n    .filter(event => (event.time?.elapsed ?? 0) >= 0)\n    .map(event => ({\n      json: {\n        fixture_id:       fixtureId,\n        minute:           event.time.elapsed,\n        extra_time:       event.time.extra || null,\n        team_external_id: event.team.id,\n        team_name:        event.team?.name || null,\n        player_id:        event.player?.id || null,\n        player_name:      event.player?.name || null,\n        assist_id:        event.assist?.id || null,\n        assist_name:      event.assist?.name || null,\n        type:             event.type,\n        detail:           event.detail,\n        comments:         event.comments || null\n      }\n    }));\n});"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [
-        336,
-        688
-      ],
-      "id": "6fcf67aa-622f-4dcb-bb84-15aac8dd88d9",
-      "name": "Events extrahieren2"
+      "position": [944, 8928],
+      "id": "88e997da-f159-42e1-b529-83e5c31be470",
+      "name": "Events extrahieren8"
     },
     {
       "parameters": {
-        "jsCode": "const TYPE_MAP = {\n  'Goal':  'goal',\n  'Card':  'yellow_card',\n  'subst': 'substitution',\n  'Var':   'comment',\n  'Miss':  'missed_penalty',\n};\n\nfunction normalizeType(type, detail) {\n  if (type === 'Card') {\n    const d = (detail || '').toLowerCase();\n    if (d.includes('red')) return 'red_card';\n    return 'yellow_card';\n  }\n  if (type === 'Goal') {\n    const d = (detail || '').toLowerCase();\n    if (d.includes('own')) return 'own_goal';\n    return 'goal';\n  }\n  return TYPE_MAP[type] || 'comment';\n}\n\nfunction esc(val) {\n  if (val === null || val === undefined) return 'NULL';\n  return `'${String(val).replace(/'/g, \"''\")}'`;\n}\n\nfunction num(val) {\n  return (val === null || val === undefined) ? 'NULL' : val;\n}\n\nreturn $input.all().map(item => {\n  const e = item.json;\n  const eventType = normalizeType(e.type, e.detail);\n  const sourceId = `apifootball_${e.fixture_id}_${e.minute}_${e.type}_${e.player_id ?? 'x'}`;\n  const description = JSON.stringify({\n    player_id:   e.player_id,\n    player_name: e.player_name,\n    assist_id:   e.assist_id,\n    assist_name: e.assist_name,\n    team_id:     e.team_external_id,\n    team_name:   e.team_name,\n    type:        e.type,\n    detail:      e.detail,\n    comments:    e.comments,\n  });\n  const query = `\n    INSERT INTO events (\n      match_id, time, time_additional,\n      event_type, description, source, source_id, position\n    )\n    VALUES (\n      (SELECT id FROM matches WHERE external_id = ${num(e.fixture_id)}::integer),\n      ${num(e.minute)},\n      ${num(e.extra_time)},\n      ${esc(eventType)},\n      ${esc(description)},\n      'api_football',\n      ${esc(sourceId)},\n      ${num(e.minute)}\n    )\n    ON CONFLICT (source_id) WHERE source_id IS NOT NULL\n    DO NOTHING\n    RETURNING id, event_type, time, description\n  `.trim();\n  return { json: { query, fixture_id: e.fixture_id } };\n});"
+        "jsCode": "// ── Hilfsfunktionen ─────────────────────────────────────\nfunction esc(val) {\n  if (val === null || val === undefined) return 'NULL';\n  return `'${String(val).replace(/'/g, \"''\")}'`;\n}\nfunction num(val) {\n  return (val === null || val === undefined) ? 'NULL' : val;\n}\nfunction getIcon(eventType) {\n  const icons = {\n    'goal':             '⚽',\n    'own_goal':         '🙈',\n    'yellow_card':      '🟨',\n    'red_card':         '🟥',\n    'yellow_red_card':  '🟨🟥',\n    'substitution':     '🔄',\n    'penalty_won':      '🎯',\n    'penalty_cancelled':'❌',\n    'goal_cancelled':   '🚫',\n    'var_red_card':     '📺🟥',\n    'missed_penalty':   '❌',\n    'comment':          '💬',\n  };\n  return icons[eventType] || '📋';\n}\nfunction normalizeType(type, detail) {\n  if (type === 'Card') {\n    const d = (detail || '').toLowerCase();\n    if (d.includes('red')) return 'red_card';\n    return 'yellow_card';\n  }\n  if (type === 'Goal') {\n    const d = (detail || '').toLowerCase();\n    if (d.includes('own')) return 'own_goal';\n    return 'goal';\n  }\n  if (type === 'Var') {\n    const d = (detail || '').toLowerCase();\n    if (d.includes('penalty confirmed'))  return 'penalty_won';\n    if (d.includes('penalty cancelled')) return 'penalty_cancelled';\n    if (d.includes('goal cancelled'))    return 'goal_cancelled';\n    if (d.includes('red card'))          return 'var_red_card';\n    return 'comment';\n  }\n  const TYPE_MAP = { 'subst': 'substitution', 'Miss': 'missed_penalty' };\n  return TYPE_MAP[type] || 'comment';\n}\n\n// ── Schritt 1: Gelb-Rot erkennen ────────────────────────\nconst cardGroups = new Map();\nconst allItems = $input.all();\n\nallItems.forEach((item, idx) => {\n  const e = item.json;\n  if (e.type !== 'Card') return;\n  const key = `${e.fixture_id}_${e.minute}_${e.player_id ?? 'x'}`;\n  if (!cardGroups.has(key)) cardGroups.set(key, []);\n  cardGroups.get(key).push({ ...e, _idx: idx });\n});\n\nconst yellowRedKeys = new Set();\nconst skipIdxs = new Set();\n\nfor (const [key, events] of cardGroups) {\n  const hasYellow = events.some(e => (e.detail || '').toLowerCase().includes('yellow'));\n  const hasRed    = events.some(e => (e.detail || '').toLowerCase().includes('red'));\n  if (hasYellow && hasRed) {\n    yellowRedKeys.add(key);\n    events.forEach(e => skipIdxs.add(e._idx));\n  }\n}\n\n// ── Schritt 2: Normale Events ────────────────────────────\nconst result = [];\n\nallItems.forEach((item, idx) => {\n  const e = item.json;\n  if (skipIdxs.has(idx)) return;\n\n  const eventType = normalizeType(e.type, e.detail);\n  const sourceId  = `apifootball_${e.fixture_id}_${e.minute}_${e.type}_${(e.detail||'').replace(/\\s+/g,'_')}_${e.player_id ?? 'x'}`;\n  const description = JSON.stringify({\n    player_id:   e.player_id,\n    player_name: e.player_name,\n    assist_id:   e.assist_id,\n    assist_name: e.assist_name,\n    team_id:     e.team_external_id,\n    team_name:   e.team_name,\n    type:        e.type,\n    detail:      e.detail,\n    comments:    e.comments,\n    icon:        getIcon(eventType),\n  });\n\n  const query = `\n    INSERT INTO events (\n      match_id, time, time_additional,\n      event_type, description, source, source_id, position\n    )\n    VALUES (\n      (SELECT id FROM matches WHERE external_id = ${num(e.fixture_id)}::integer),\n      ${num(e.minute)},\n      ${num(e.extra_time)},\n      ${esc(eventType)},\n      ${esc(description)},\n      'api_football',\n      ${esc(sourceId)},\n      ${num(e.minute)}\n    )\n    ON CONFLICT (source_id) WHERE source_id IS NOT NULL\n    DO UPDATE SET source = EXCLUDED.source\n    RETURNING id, event_type, time, description, (xmax = 0) AS is_new\n  `.trim();\n\n  result.push({ json: { query, fixture_id: e.fixture_id } });\n});\n\n// ── Schritt 3: Gelb-Rot-Events ───────────────────────────\nfor (const [key, events] of cardGroups) {\n  if (!yellowRedKeys.has(key)) continue;\n\n  const base = events[0];\n  const sourceId = `apifootball_${base.fixture_id}_${base.minute}_yellowred_${base.player_id ?? 'x'}`;\n  const description = JSON.stringify({\n    player_id:   base.player_id,\n    player_name: base.player_name,\n    assist_id:   null,\n    assist_name: null,\n    team_id:     base.team_external_id,\n    team_name:   base.team_name,\n    type:        'Card',\n    detail:      'Yellow Red Card',\n    comments:    base.comments,\n    icon:        '🟨🟥',\n  });\n\n  const query = `\n    WITH cleanup AS (\n      DELETE FROM events\n      WHERE match_id = (SELECT id FROM matches WHERE external_id = ${num(base.fixture_id)}::integer)\n        AND source = 'api_football'\n        AND time = ${num(base.minute)}\n        AND event_type IN ('yellow_card', 'red_card')\n        AND (description::jsonb->>'player_id')::integer = ${num(base.player_id)}\n    )\n    INSERT INTO events (\n      match_id, time, time_additional,\n      event_type, description, source, source_id, position\n    )\n    VALUES (\n      (SELECT id FROM matches WHERE external_id = ${num(base.fixture_id)}::integer),\n      ${num(base.minute)},\n      ${num(base.extra_time)},\n      'yellow_red_card',\n      ${esc(description)},\n      'api_football',\n      ${esc(sourceId)},\n      ${num(base.minute)}\n    )\n    ON CONFLICT (source_id) WHERE source_id IS NOT NULL\n    DO UPDATE SET source = EXCLUDED.source\n    RETURNING id, event_type, time, description, (xmax = 0) AS is_new\n  `.trim();\n\n  result.push({ json: { query, fixture_id: base.fixture_id } });\n}\n\nreturn result;"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [
-        544,
-        688
-      ],
-      "id": "887202e2-7bc2-48f5-b08a-002ae50ff022",
-      "name": "Events Insert - Code Node2"
+      "position": [1168, 8928],
+      "id": "35a32c50-d2d4-4f8e-ba99-303777e0aa15",
+      "name": "Events Insert - Code Node7"
     },
     {
       "parameters": {
@@ -163,12 +89,9 @@
       },
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.6,
-      "position": [
-        896,
-        688
-      ],
-      "id": "6805bfd4-e000-4872-9344-61683d658c02",
-      "name": "Insert Events3",
+      "position": [1392, 8928],
+      "id": "87c321de-9c93-44d0-8223-4720450e6445",
+      "name": "Insert Events9",
       "credentials": {
         "postgres": {
           "id": "5VeE2cikA9rLeOKz",
@@ -187,13 +110,22 @@
           },
           "conditions": [
             {
-              "id": "63a0b1bf-cb83-4e1c-9b3a-e1e1a15e9da9",
+              "id": "filter5-id-exists",
               "leftValue": "={{ $json.id }}",
               "rightValue": "",
               "operator": {
-                "type": "string",
+                "type": "number",
                 "operation": "exists",
                 "singleValue": true
+              }
+            },
+            {
+              "id": "filter5-is-new",
+              "leftValue": "={{ $json.is_new }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
               }
             }
           ],
@@ -203,12 +135,9 @@
       },
       "type": "n8n-nodes-base.filter",
       "typeVersion": 2.2,
-      "position": [
-        1232,
-        688
-      ],
-      "id": "fb1757a2-24f4-4824-bb5d-9bac4b09acdc",
-      "name": "Filter2"
+      "position": [1808, 8608],
+      "id": "b2a7a648-28e3-4693-aa19-a3b36c179664",
+      "name": "Filter7"
     },
     {
       "parameters": {
@@ -218,17 +147,14 @@
         "genericAuthType": "httpHeaderAuth",
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={\n  \"style\": \"{{ $('DB: Match-Instanz1').first().json.style || 'neutral' }}\",\n  \"instance\": \"{{ $('DB: Match-Instanz1').first().json.instance || 'generic' }}\",\n  \"language\": \"{{ $('Webhook Events2').first().json.body.language || 'de' }}\",\n  \"auto_publish\": {{ $('DB: Match-Instanz1').first().json.ticker_mode === 'auto' }}\n}\n",
+        "jsonBody": "={\n  \"style\": \"{{ $('DB: Match-Instanz7').first().json.style || 'neutral' }}\",\n  \"instance\": \"{{ $('DB: Match-Instanz7').first().json.instance || 'generic' }}\",\n  \"language\": \"{{ $('Webhook Events8').first().json.body.language || 'de' }}\",\n  \"auto_publish\": {{ $('DB: Match-Instanz7').first().json.ticker_mode === 'auto' }},\n  \"fan_team\": \"{{ $('DB: Match-Instanz7').first().json.fan_team || '' }}\"\n}\n",
         "options": {}
       },
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [
-        1424,
-        688
-      ],
-      "id": "a07d784c-6dbc-4210-8682-57051577a0ae",
-      "name": "LLM Trigger Node2",
+      "position": [2144, 8592],
+      "id": "1dcc8aa2-1b7c-492e-a90b-d2e9f0419caf",
+      "name": "LLM Trigger Node8",
       "credentials": {
         "httpHeaderAuth": {
           "id": "nw1wvLZ4u2BCZRVl",
@@ -238,14 +164,87 @@
     },
     {
       "parameters": {
+        "url": "https://v3.football.api-sports.io/fixtures",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "id",
+              "value": "={{ $('Webhook Events8').first().json.body.fixture_id }}"
+            }
+          ]
+        },
+        "options": {
+          "batching": {
+            "batch": {
+              "batchSize": 1
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1776, 8384],
+      "id": "1ab1db0f-49c8-45c6-bdda-7b712f49821f",
+      "name": "API: Score abrufen1",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "nw1wvLZ4u2BCZRVl",
+          "name": "Header Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE matches SET\n  home_score = $2,\n  away_score = $3\nWHERE id = $1\nRETURNING id, home_score, away_score",
+        "options": {
+          "queryReplacement": "={{ $('DB: Match-Instanz7').first().json.match_id + ',' + ($json.response[0].goals.home ?? 0) + ',' + ($json.response[0].goals.away ?? 0) }}"
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [2032, 8368],
+      "id": "e2b78eb4-a9df-49db-b5a0-1137c66b5d21",
+      "name": "Update Match Score2",
+      "credentials": {
+        "postgres": {
+          "id": "5VeE2cikA9rLeOKz",
+          "name": "Postgres account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
         "conditions": {
           "options": {
-            "caseSensitive": false,
+            "caseSensitive": true,
             "leftValue": "",
             "typeValidation": "loose",
             "version": 2
           },
           "conditions": [
+            {
+              "id": "ef-tor-id-exists",
+              "leftValue": "={{ $json.id }}",
+              "rightValue": "",
+              "operator": {
+                "type": "number",
+                "operation": "exists",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "ef-tor-is-new",
+              "leftValue": "={{ $json.is_new }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            },
             {
               "id": "aa000001-0000-0000-0000-000000000001",
               "leftValue": "={{ $json.event_type }}",
@@ -257,7 +256,7 @@
             },
             {
               "id": "aa000001-0000-0000-0000-000000000002",
-              "leftValue": "={{ $('DB: Match-Instanz1').first().json.instance }}",
+              "leftValue": "={{ $('DB: Match-Instanz7').first().json.instance }}",
               "rightValue": "ef_whitelabel",
               "operator": {
                 "type": "string",
@@ -271,12 +270,9 @@
       },
       "type": "n8n-nodes-base.filter",
       "typeVersion": 2.2,
-      "position": [
-        1232,
-        928
-      ],
-      "id": "f1eb0520-c0fd-4b10-86ba-1f7efb073bf3",
-      "name": "Nur EF-Tore"
+      "position": [1728, 9216],
+      "id": "8addff39-1b1d-4933-b232-602bb0bb3649",
+      "name": "Nur EF-Tore6"
     },
     {
       "parameters": {
@@ -284,12 +280,9 @@
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [
-        1488,
-        928
-      ],
-      "id": "fe70e3cf-f2df-444a-b94c-62f6bcd235f1",
-      "name": "Video-Query bauen"
+      "position": [1952, 9216],
+      "id": "9dd8fef1-c2a5-4247-8196-4e6f4ed2331a",
+      "name": "Video-Query bauen6"
     },
     {
       "parameters": {
@@ -299,12 +292,9 @@
       },
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.6,
-      "position": [
-        1744,
-        928
-      ],
-      "id": "41d027bc-8585-4de6-8a18-65115210d5d8",
-      "name": "DB: Torschützen-Video",
+      "position": [2176, 9216],
+      "id": "613bd381-9c31-4854-a73f-22482700e124",
+      "name": "DB: Torschützen-Video6",
       "credentials": {
         "postgres": {
           "id": "5VeE2cikA9rLeOKz",
@@ -339,12 +329,9 @@
       },
       "type": "n8n-nodes-base.filter",
       "typeVersion": 2.2,
-      "position": [
-        2000,
-        928
-      ],
-      "id": "1938393b-31b0-4fba-808b-970cfe584918",
-      "name": "Hat Video?"
+      "position": [2400, 9216],
+      "id": "a0c55c85-b820-4df8-b231-1e94793818db",
+      "name": "Hat Video?6"
     },
     {
       "parameters": {
@@ -354,24 +341,20 @@
         "genericAuthType": "httpHeaderAuth",
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={\n  \"match_id\": {{ $('DB: Match-Instanz1').first().json.match_id }},\n  \"text\": \"\",\n  \"icon\": \"🎬\",\n  \"minute\": {{ $json.event_time ?? 'null' }},\n  \"video_url\": \"{{ $json.video_url }}\"\n}",
+        "jsonBody": "={\n  \"match_id\": {{ $('DB: Match-Instanz7').first().json.match_id }},\n  \"event_id\": {{ $('Video-Query bauen6').item.json.event_id }},\n  \"text\": \"\",\n  \"icon\": \"🎬\",\n  \"minute\": {{ $('Video-Query bauen6').item.json.event_time ?? 'null' }},\n  \"video_url\": \"{{ $('Hat Video?6').item.json.video_url }}\",\n  \"instance\": \"{{ $('DB: Match-Instanz7').first().json.instance }}\",\n  \"status\": \"{{ $('DB: Match-Instanz7').first().json.ticker_mode === 'auto' ? 'published' : 'draft' }}\"\n}\n",
         "options": {}
       },
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [
-        2256,
-        928
-      ],
-      "id": "c1009dfc-11d8-4b6a-843d-12aa303b15ea",
-      "name": "Torjubel-Ticker posten",
+      "position": [2720, 9216],
+      "id": "6ae189bf-e143-4766-8ab7-c1aff3c26f13",
+      "name": "Torjubel-Ticker posten11",
       "credentials": {
         "httpHeaderAuth": {
           "id": "nw1wvLZ4u2BCZRVl",
           "name": "Header Auth account"
         }
-      },
-      "disabled": true
+      }
     },
     {
       "parameters": {
@@ -379,74 +362,13 @@
           "options": {
             "caseSensitive": true,
             "leftValue": "",
-            "typeValidation": "loose",
-            "version": 2
-          },
-          "conditions": [
-            {
-              "id": "video-coop-001",
-              "leftValue": "={{ $('DB: Match-Instanz1').first().json.ticker_mode }}",
-              "rightValue": "auto",
-              "operator": {
-                "type": "string",
-                "operation": "notEquals"
-              }
-            }
-          ],
-          "combinator": "and"
-        },
-        "options": {}
-      },
-      "type": "n8n-nodes-base.filter",
-      "typeVersion": 2.2,
-      "position": [
-        2480,
-        928
-      ],
-      "id": "3f96f417-efe1-4b30-9385-4a966e3617b3",
-      "name": "Video CO-OP?",
-      "disabled": true
-    },
-    {
-      "parameters": {
-        "method": "PATCH",
-        "url": "=https://liveticker-backend.onrender.com/api/v1/ticker/{{ $('Torjubel-Ticker posten').first().json.id }}",
-        "authentication": "genericCredentialType",
-        "genericAuthType": "httpHeaderAuth",
-        "sendBody": true,
-        "specifyBody": "json",
-        "jsonBody": "={ \"status\": \"draft\" }",
-        "options": {}
-      },
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4.2,
-      "position": [
-        2704,
-        928
-      ],
-      "id": "db7b611b-7533-48bc-b596-1dc4f0f3f025",
-      "name": "Set Video Draft",
-      "credentials": {
-        "httpHeaderAuth": {
-          "id": "nw1wvLZ4u2BCZRVl",
-          "name": "Header Auth account"
-        }
-      },
-      "disabled": true
-    },
-    {
-      "parameters": {
-        "conditions": {
-          "options": {
-            "caseSensitive": true,
-            "leftValue": "",
-            "typeValidation": "loose",
+            "typeValidation": "strict",
             "version": 2
           },
           "conditions": [
             {
               "id": "video-auto-001",
-              "leftValue": "={{ $('DB: Match-Instanz1').first().json.ticker_mode }}",
+              "leftValue": "={{ $('DB: Match-Instanz7').first().json.ticker_mode }}",
               "rightValue": "auto",
               "operator": {
                 "type": "string",
@@ -460,58 +382,27 @@
       },
       "type": "n8n-nodes-base.filter",
       "typeVersion": 2.2,
-      "position": [
-        2496,
-        1072
-      ],
-      "id": "e15e958b-7371-4bad-906d-aeded4b4014b",
-      "name": "Video AUTO?"
+      "position": [2928, 9216],
+      "id": "1b3a432f-10bc-4c73-a4a9-3c029d1e9b24",
+      "name": "Video AUTO?6",
+      "disabled": true
     },
     {
       "parameters": {
         "method": "PATCH",
-        "url": "=https://liveticker-backend.onrender.com/api/v1/ticker/{{ $('Torjubel-Ticker posten1').first().json.id }}",
+        "url": "=https://liveticker-backend.onrender.com/api/v1/ticker/{{ $json.id }}",
         "authentication": "genericCredentialType",
         "genericAuthType": "httpHeaderAuth",
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={ \"status\": \"published\" }",
+        "jsonBody": "={ \n  \"status\": \"{{ $('DB: Match-Instanz7').first().json.ticker_mode === 'auto' ? 'published' : 'draft' }}\",\n  \"video_url\": \"{{ $('Hat Video?6').item.json.video_url }}\",\n  \"icon\": \"🎬\",\n}",
         "options": {}
       },
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [
-        2720,
-        1072
-      ],
-      "id": "03a2961d-5d6f-4994-b5d5-62dfe34ec2fb",
-      "name": "Video AUTO publishen",
-      "credentials": {
-        "httpHeaderAuth": {
-          "id": "nw1wvLZ4u2BCZRVl",
-          "name": "Header Auth account"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "method": "POST",
-        "url": "https://liveticker-backend.onrender.com/api/v1/ticker/manual",
-        "authentication": "genericCredentialType",
-        "genericAuthType": "httpHeaderAuth",
-        "sendBody": true,
-        "specifyBody": "json",
-        "jsonBody": "={\n  \"match_id\": {{ $('DB: Match-Instanz1').first().json.match_id }},\n  \"text\": \"\",\n  \"icon\": \"🎬\",\n  \"minute\": {{ $json.event_time ?? 'null' }},\n  \"video_url\": \"{{ $json.video_url }}\",\n  \"status\": \"draft\"\n}",
-        "options": {}
-      },
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4.2,
-      "position": [
-        2272,
-        1072
-      ],
-      "id": "196683e4-2ed2-4930-aae8-172dab31889f",
-      "name": "Torjubel-Ticker posten1",
+      "position": [3072, 9216],
+      "id": "af24e86b-7baf-4f18-8ece-9ea3d11123ce",
+      "name": "Video AUTO publishen6",
       "credentials": {
         "httpHeaderAuth": {
           "id": "nw1wvLZ4u2BCZRVl",
@@ -522,19 +413,14 @@
     {
       "parameters": {
         "operation": "executeQuery",
-        "query": "WITH match_teams AS (\n  SELECT m.id, m.home_team_id, m.away_team_id,\n    ht.external_id AS home_ext,\n    at.external_id AS away_ext\n  FROM matches m\n  JOIN teams ht ON ht.id = m.home_team_id\n  JOIN teams at ON at.id = m.away_team_id\n  WHERE m.id = $1\n),\nscores AS (\n  SELECT\n    COALESCE(SUM(CASE\n      WHEN (e.event_type = 'goal' OR e.event_type = 'own_goal')\n           AND (e.description::jsonb->>'team_id')::integer = mt.home_ext THEN 1\n      ELSE 0 END), 0) AS home_score,\n    COALESCE(SUM(CASE\n      WHEN (e.event_type = 'goal' OR e.event_type = 'own_goal')\n           AND (e.description::jsonb->>'team_id')::integer = mt.away_ext THEN 1\n      ELSE 0 END), 0) AS away_score\n  FROM events e, match_teams mt\n  WHERE e.match_id = mt.id\n    AND e.event_type IN ('goal', 'own_goal')\n)\nUPDATE matches SET\n  home_score = (SELECT home_score FROM scores),\n  away_score = (SELECT away_score FROM scores)\nWHERE id = $1\nRETURNING id, home_score, away_score",
-        "options": {
-          "queryReplacement": "={{ [$('DB: Match-Instanz1').first().json.match_id] }}"
-        }
+        "query": "SELECT id \nFROM ticker_entries \nWHERE event_id = {{ $('Video-Query bauen6').item.json.event_id }} \nORDER BY created_at DESC \nLIMIT 1;",
+        "options": {}
       },
       "type": "n8n-nodes-base.postgres",
-      "typeVersion": 2.5,
-      "position": [
-        896,
-        480
-      ],
-      "id": "b2c4e6f8-a1d3-4c5e-8b7a-9f0e1d2c3b4a",
-      "name": "Update Match Score",
+      "typeVersion": 2.6,
+      "position": [2560, 9392],
+      "id": "154e76ae-2fe7-4884-bdf2-b503b293455e",
+      "name": "DB: Torschützen-Video8",
       "credentials": {
         "postgres": {
           "id": "5VeE2cikA9rLeOKz",
@@ -554,10 +440,7 @@
       "name": "SQL: Penalty prüfen",
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.6,
-      "position": [
-        1392,
-        9600
-      ],
+      "position": [1616, 9600],
       "credentials": {
         "postgres": {
           "id": "5VeE2cikA9rLeOKz",
@@ -602,10 +485,7 @@
       "name": "Filter: Penalty fehlt noch?",
       "type": "n8n-nodes-base.filter",
       "typeVersion": 2.2,
-      "position": [
-        1616,
-        9600
-      ]
+      "position": [1840, 9600]
     },
     {
       "parameters": {
@@ -618,10 +498,7 @@
       "name": "API: Penalty-Score9",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [
-        1840,
-        9600
-      ],
+      "position": [2064, 9600],
       "credentials": {
         "httpHeaderAuth": {
           "id": "nw1wvLZ4u2BCZRVl",
@@ -637,10 +514,7 @@
       "name": "Penalty-Daten aufbereiten9",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [
-        2064,
-        9600
-      ]
+      "position": [2288, 9600]
     },
     {
       "parameters": {
@@ -654,10 +528,7 @@
       "name": "SQL: Penalty-Score updaten9",
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.6,
-      "position": [
-        2288,
-        9600
-      ],
+      "position": [2512, 9600],
       "credentials": {
         "postgres": {
           "id": "5VeE2cikA9rLeOKz",
@@ -680,10 +551,7 @@
       "name": "Penalty-Ticker posten9",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [
-        2512,
-        9600
-      ],
+      "position": [2736, 9600],
       "credentials": {
         "httpHeaderAuth": {
           "id": "nw1wvLZ4u2BCZRVl",
@@ -693,208 +561,180 @@
     }
   ],
   "connections": {
-    "Fetch Kader page-data": {
+    "Webhook Events8": {
       "main": [
         [
           {
-            "node": "Spieler + URLs extrahieren",
+            "node": "DB: Match-Instanz7",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Spieler + URLs extrahieren": {
+    "DB: Match-Instanz7": {
       "main": [
         [
           {
-            "node": "Upsert-Query bauen",
+            "node": "API: Events abrufen9",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Upsert-Query bauen": {
+    "API: Events abrufen9": {
       "main": [
         [
           {
-            "node": "DB: Spieler updaten",
+            "node": "Events extrahieren8",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Webhook Events2": {
+    "Events extrahieren8": {
       "main": [
         [
           {
-            "node": "DB: Match-Instanz1",
+            "node": "Events Insert - Code Node7",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "DB: Match-Instanz1": {
+    "Events Insert - Code Node7": {
       "main": [
         [
           {
-            "node": "API: Events abrufen3",
+            "node": "Insert Events9",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "API: Events abrufen3": {
+    "Insert Events9": {
       "main": [
         [
           {
-            "node": "Events extrahieren2",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Events extrahieren2": {
-      "main": [
-        [
-          {
-            "node": "Events Insert - Code Node2",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Events Insert - Code Node2": {
-      "main": [
-        [
-          {
-            "node": "Insert Events3",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Insert Events3": {
-      "main": [
-        [
-          {
-            "node": "Filter2",
+            "node": "Filter7",
             "type": "main",
             "index": 0
           },
           {
-            "node": "Nur EF-Tore",
+            "node": "API: Score abrufen1",
             "type": "main",
             "index": 0
           },
           {
-            "node": "Update Match Score",
+            "node": "Nur EF-Tore6",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "SQL: Penalty prüfen",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Filter2": {
+    "Filter7": {
       "main": [
         [
           {
-            "node": "LLM Trigger Node2",
+            "node": "LLM Trigger Node8",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Nur EF-Tore": {
+    "API: Score abrufen1": {
       "main": [
         [
           {
-            "node": "Video-Query bauen",
+            "node": "Update Match Score2",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Video-Query bauen": {
+    "Nur EF-Tore6": {
       "main": [
         [
           {
-            "node": "DB: Torschützen-Video",
+            "node": "Video-Query bauen6",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "DB: Torschützen-Video": {
+    "Video-Query bauen6": {
       "main": [
         [
           {
-            "node": "Hat Video?",
+            "node": "DB: Torschützen-Video6",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Hat Video?": {
+    "DB: Torschützen-Video6": {
       "main": [
         [
           {
-            "node": "Torjubel-Ticker posten1",
+            "node": "Hat Video?6",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Torjubel-Ticker posten": {
+    "Hat Video?6": {
       "main": [
         [
           {
-            "node": "Video CO-OP?",
+            "node": "DB: Torschützen-Video8",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Video CO-OP?": {
+    "DB: Torschützen-Video8": {
       "main": [
         [
           {
-            "node": "Set Video Draft",
+            "node": "Torjubel-Ticker posten11",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Video AUTO?": {
+    "Torjubel-Ticker posten11": {
       "main": [
         [
           {
-            "node": "Video AUTO publishen",
+            "node": "Video AUTO?6",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Torjubel-Ticker posten1": {
+    "Video AUTO?6": {
       "main": [
         [
           {
-            "node": "Video AUTO?",
+            "node": "Video AUTO publishen6",
             "type": "main",
             "index": 0
           }
