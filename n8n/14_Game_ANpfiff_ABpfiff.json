@@ -10,7 +10,10 @@
       "name": "Webhook match-status",
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2.1,
-      "position": [32, -192],
+      "position": [
+        32,
+        -192
+      ],
       "webhookId": "ede969f8-7c48-4c87-9c39-777b941d2901"
     },
     {
@@ -25,7 +28,10 @@
       "name": "SQL: Match laden",
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.6,
-      "position": [272, -192],
+      "position": [
+        272,
+        -192
+      ],
       "credentials": {
         "postgres": {
           "id": "5VeE2cikA9rLeOKz",
@@ -35,13 +41,16 @@
     },
     {
       "parameters": {
-        "jsCode": "const match = $input.first().json;\nconst body = $('Webhook match-status').first().json.body;\n\nconst newStatus = body.status;\nconst oldMatchState = match.match_state;\n\nconst typeMap = {\n  '1H':  'match_kickoff',\n  'HT':  'match_halftime',\n  '2H':  'match_second_half',\n  'FT':  'match_fulltime',\n  'ET':  'match_extra_kickoff',\n  'BT':  'match_extra_halftime',\n  'P':   'match_penalties',\n  'AET': 'match_fulltime_aet',\n  'PEN': 'match_fulltime_pen'\n};\n\nconst newMatchStateMap = {\n  '1H':  'Live',\n  'HT':  'Live',\n  '2H':  'Live',\n  'FT':  'FullTime',\n  'ET':  'Live',\n  'BT':  'Live',\n  'P':   'Live',\n  'AET': 'FullTime',\n  'PEN': 'FullTime'\n};\n\nconst matchPhaseMap = {\n  '1H':  'FirstHalf',\n  'HT':  'FirstHalfBreak',\n  '2H':  'SecondHalf',\n  'FT':  'FullTime',\n  'ET':  'SecondHalf',\n  'BT':  'FirstHalfBreak',\n  'P':   'SecondHalf',\n  'AET': 'FullTime',\n  'PEN': 'FullTime'\n};\n\nconst validFromStates = {\n  '1H':  ['PreMatch', 'ToBeConfirmed', null],\n  'HT':  ['Live'],\n  '2H':  ['Live'],\n  'FT':  ['Live', 'FullTime'],\n  'ET':  ['Live', 'FullTime'],\n  'BT':  ['Live'],\n  'P':   ['Live'],\n  'AET': ['Live', 'FullTime'],\n  'PEN': ['Live', 'FullTime']\n};\n\nconst allowedStates = validFromStates[newStatus] ?? [];\nconst isValid = !!typeMap[newStatus] && (\n  allowedStates.includes(oldMatchState) || allowedStates.includes(null)\n);\n\nif (!isValid) {\n  return [{ json: { is_valid_transition: false } }];\n}\n\nconst ticker_mode = body.ticker_mode ?? match.ticker_mode ?? 'coop';\n\nconst base = {\n  match_id: match.id,\n  fixture_id: match.external_id,\n  new_match_state: newMatchStateMap[newStatus] ?? oldMatchState,\n  new_match_phase: matchPhaseMap[newStatus] ?? null,\n  minute: body.minute ?? null,\n  ticker_mode,\n  is_valid_transition: true,\n};\n\nconst isFulltime = ['FT', 'AET', 'PEN'].includes(newStatus);\n\nif (isFulltime) {\n  const phases = [\n    { event_type: 'match_kickoff',     minute: 1  },\n    { event_type: 'match_halftime',    minute: 45 },\n    { event_type: 'match_second_half', minute: 46 },\n    { event_type: typeMap[newStatus],  minute: body.minute ?? 90 },\n  ];\n  if (newStatus === 'AET') {\n    phases.splice(3, 0,\n      { event_type: 'match_extra_kickoff',  minute: 91  },\n      { event_type: 'match_extra_halftime', minute: 105 }\n    );\n  }\n  if (newStatus === 'PEN') {\n    phases.splice(3, 0,\n      { event_type: 'match_extra_kickoff',  minute: 91  },\n      { event_type: 'match_extra_halftime', minute: 105 },\n      { event_type: 'match_fulltime_aet',   minute: 120 },\n      { event_type: 'match_penalties',      minute: 121 }\n    );\n  }\n  return phases.map(p => ({ json: { ...base, ...p } }));\n}\n\nreturn [{ json: { ...base, event_type: typeMap[newStatus] } }];"
+        "jsCode": "const match = $input.first().json;\nconst body = $('Webhook match-status').first().json.body;\n\nconst newStatus = body.status;\nconst oldMatchState = match.match_state;\n\nconst typeMap = {\n  '1H':  'match_kickoff',\n  'HT':  'match_halftime',\n  '2H':  'match_second_half',\n  'FT':  'match_fulltime',\n  'ET':  'match_extra_kickoff',\n  'BT':  'match_extra_halftime',\n  'P':   'match_penalties',\n  'AET': 'match_fulltime_aet',\n  'PEN': 'match_fulltime_pen'\n};\n\nconst newMatchStateMap = {\n  '1H':  'Live',\n  'HT':  'Live',\n  '2H':  'Live',\n  'FT':  'FullTime',\n  'ET':  'Live',\n  'BT':  'Live',\n  'P':   'Live',\n  'AET': 'FullTime',\n  'PEN': 'FullTime'\n};\n\nconst matchPhaseMap = {\n  '1H':  'FirstHalf',\n  'HT':  'FirstHalfBreak',\n  '2H':  'SecondHalf',\n  'FT':  'FullTime',\n  'ET':  'ExtraFirstHalf',\n  'BT':  'ExtraBreak',\n  'P':   'PenaltyShootout',\n  'AET': 'ExtraSecondHalf',\n  'PEN': 'PenaltyShootout'\n};\n\nconst validFromStates = {\n  '1H':  ['PreMatch', 'ToBeConfirmed', null],\n  'HT':  ['Live'],\n  '2H':  ['Live'],\n  'FT':  ['Live', 'FullTime'],\n  'ET':  ['Live', 'FullTime'],\n  'BT':  ['Live'],\n  'P':   ['Live'],\n  'AET': ['Live', 'FullTime'],\n  'PEN': ['Live', 'FullTime']\n};\n\nconst allowedStates = validFromStates[newStatus] ?? [];\nconst isValid = !!typeMap[newStatus] && (\n  allowedStates.includes(oldMatchState) || allowedStates.includes(null)\n);\n\nif (!isValid) {\n  return [{ json: { is_valid_transition: false } }];\n}\n\nconst ticker_mode = body.ticker_mode ?? match.ticker_mode ?? 'coop';\n\nconst base = {\n  match_id: match.id,\n  fixture_id: match.external_id,\n  new_match_state: newMatchStateMap[newStatus] ?? oldMatchState,\n  new_match_phase: matchPhaseMap[newStatus] ?? null,\n  minute: body.minute ?? null,\n  ticker_mode,\n  is_valid_transition: true,\n};\n\nconst isFulltime = ['FT', 'AET', 'PEN'].includes(newStatus);\n\nif (isFulltime) {\n  const phases = [\n    { event_type: 'match_kickoff',     minute: 1  },\n    { event_type: 'match_halftime',    minute: 45 },\n    { event_type: 'match_second_half', minute: 46 },\n    { event_type: typeMap[newStatus],  minute: body.minute ?? 90 },\n  ];\n  if (newStatus === 'AET') {\n    phases.splice(3, 0,\n      { event_type: 'match_extra_kickoff',    minute: 91  },\n      { event_type: 'match_extra_halftime',   minute: 105 },\n      { event_type: 'match_extra_second_half', minute: 106 }\n    );\n  }\n  if (newStatus === 'PEN') {\n    phases.splice(3, 0,\n      { event_type: 'match_extra_kickoff',  minute: 91  },\n      { event_type: 'match_extra_halftime', minute: 105 },\n      { event_type: 'match_fulltime_aet',   minute: 120 },\n      { event_type: 'match_penalties',      minute: 121 }\n    );\n  }\n  return phases.map(p => ({ json: { ...base, ...p } }));\n}\n\nreturn [{ json: { ...base, event_type: typeMap[newStatus] } }];"
       },
       "id": "ea18b887-28a8-4956-b5ab-05d91039a005",
       "name": "Transition prüfen",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [512, -192]
+      "position": [
+        512,
+        -192
+      ]
     },
     {
       "parameters": {
@@ -71,7 +80,10 @@
       "name": "Filter: Gültige Transition",
       "type": "n8n-nodes-base.filter",
       "typeVersion": 2.2,
-      "position": [752, -192]
+      "position": [
+        752,
+        -192
+      ]
     },
     {
       "parameters": {
@@ -85,7 +97,10 @@
       "name": "SQL: Update + Insert2",
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.6,
-      "position": [992, -192],
+      "position": [
+        992,
+        -192
+      ],
       "credentials": {
         "postgres": {
           "id": "5VeE2cikA9rLeOKz",
@@ -122,7 +137,10 @@
       "name": "Filter: Ticker fehlt noch1",
       "type": "n8n-nodes-base.filter",
       "typeVersion": 2.2,
-      "position": [1232, -192]
+      "position": [
+        1232,
+        -192
+      ]
     },
     {
       "parameters": {
@@ -132,7 +150,10 @@
       "name": "Style wählen",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [1472, -192]
+      "position": [
+        1472,
+        -192
+      ]
     },
     {
       "parameters": {
@@ -149,7 +170,10 @@
       "name": "LLM Trigger",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [1712, -192],
+      "position": [
+        1712,
+        -192
+      ],
       "credentials": {
         "httpHeaderAuth": {
           "id": "o9sSk9ZOxtD4rV7z",
@@ -165,7 +189,10 @@
       "name": "Summary Branch",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [992, -368]
+      "position": [
+        992,
+        -368
+      ]
     },
     {
       "parameters": {
@@ -180,7 +207,10 @@
       "name": "HTTP: match-summary",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [1232, -368]
+      "position": [
+        1232,
+        -368
+      ]
     }
   ],
   "connections": {

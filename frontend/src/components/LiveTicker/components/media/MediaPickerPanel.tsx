@@ -83,7 +83,9 @@ export function MediaPickerPanel({
   const [open, setOpen] = useState(defaultOpen);
   const [images, setImages] = useState<MediaQueueItem[]>([]);
   const [modalImage, setModalImage] = useState<MediaQueueItem | null>(null);
-  const [selectedPlayer, setSelectedPlayer] = useState<LineupPlayer | null>(null);
+  const [selectedPlayer, setSelectedPlayer] = useState<LineupPlayer | null>(
+    null,
+  );
   const [playerQuery, setPlayerQuery] = useState("");
   const [loadingTrigger, setLoadingTrigger] = useState(false);
 
@@ -128,10 +130,16 @@ export function MediaPickerPanel({
     );
   }, []);
 
-  const { activeIdx, onKeyDown: listKeyDown } = useListKeyboard(playerSuggestions, {
-    onSelect: selectSuggestion,
-    onClose: () => { setPlayerQuery(""); setSelectedPlayer(null); },
-  });
+  const { activeIdx, onKeyDown: listKeyDown } = useListKeyboard(
+    playerSuggestions,
+    {
+      onSelect: selectSuggestion,
+      onClose: () => {
+        setPlayerQuery("");
+        setSelectedPlayer(null);
+      },
+    },
+  );
 
   useEffect(() => {
     if (!open) return;
@@ -186,14 +194,21 @@ export function MediaPickerPanel({
     }
   }, []);
 
-  const handleInputKeyDown = useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter" && selectedPlayer && playerSuggestions.length === 0) {
-      e.preventDefault();
-      handleLoadImages();
-      return;
-    }
-    listKeyDown(e);
-  }, [selectedPlayer, playerSuggestions.length, listKeyDown, handleLoadImages]);
+  const handleInputKeyDown = useCallback(
+    (e: React.KeyboardEvent<HTMLInputElement>) => {
+      if (
+        e.key === "Enter" &&
+        selectedPlayer &&
+        playerSuggestions.length === 0
+      ) {
+        e.preventDefault();
+        handleLoadImages();
+        return;
+      }
+      listKeyDown(e);
+    },
+    [selectedPlayer, playerSuggestions.length, listKeyDown, handleLoadImages],
+  );
 
   const handlePublished = useCallback((mediaId) => {
     setImages((prev) => prev.filter((img) => img.media_id !== mediaId));
@@ -254,7 +269,7 @@ export function MediaPickerPanel({
               <input
                 type="text"
                 className="lt-entry-editor__input"
-                placeholder="# oder Name suchen…"
+                placeholder="Rückennummer oder Name suchen…"
                 value={playerQuery}
                 onChange={(e) => {
                   setPlayerQuery(e.target.value);
@@ -272,24 +287,39 @@ export function MediaPickerPanel({
               />
               {selectedPlayer ? (
                 <button
-                  onClick={() => { setSelectedPlayer(null); setPlayerQuery(""); }}
+                  onClick={() => {
+                    setSelectedPlayer(null);
+                    setPlayerQuery("");
+                  }}
                   style={{
-                    position: "absolute", right: 6, top: "50%",
-                    transform: "translateY(-50%)", background: "none",
-                    border: "none", cursor: "pointer",
-                    color: "var(--lt-text-muted)", fontSize: "0.7rem",
-                    padding: 0, lineHeight: 1,
+                    position: "absolute",
+                    right: 6,
+                    top: "50%",
+                    transform: "translateY(-50%)",
+                    background: "none",
+                    border: "none",
+                    cursor: "pointer",
+                    color: "var(--lt-text-muted)",
+                    fontSize: "0.7rem",
+                    padding: 0,
+                    lineHeight: 1,
                   }}
                 >
                   ✕
                 </button>
               ) : (
                 playerQuery && (
-                  <span style={{
-                    position: "absolute", right: 8, top: "50%",
-                    transform: "translateY(-50%)", color: "var(--lt-text-faint)",
-                    fontSize: "0.65rem", pointerEvents: "none",
-                  }}>
+                  <span
+                    style={{
+                      position: "absolute",
+                      right: 8,
+                      top: "50%",
+                      transform: "translateY(-50%)",
+                      color: "var(--lt-text-faint)",
+                      fontSize: "0.65rem",
+                      pointerEvents: "none",
+                    }}
+                  >
                     ↵
                   </span>
                 )
@@ -298,20 +328,52 @@ export function MediaPickerPanel({
 
             {/* Vorschläge */}
             {playerSuggestions.length > 0 && (
-              <div className="lt-cmd-palette" style={{ position: "absolute", top: "calc(100% + 4px)", left: 0, right: 0, width: "100%", zIndex: 50, background: "var(--lt-bg-card)", border: "1px solid var(--lt-border)" }}>
+              <div
+                className="lt-cmd-palette"
+                style={{
+                  position: "absolute",
+                  top: "calc(100% + 4px)",
+                  left: 0,
+                  right: 0,
+                  width: "100%",
+                  zIndex: 50,
+                  background: "var(--lt-bg-card)",
+                  border: "1px solid var(--lt-border)",
+                }}
+              >
                 {playerSuggestions.map((p, i) => (
                   <button
                     key={p.playerId ?? p.jerseyNumber}
                     className={`lt-cmd-palette__item${i === activeIdx ? " lt-cmd-palette__item--active" : ""}`}
-                    onMouseDown={(e) => { e.preventDefault(); selectSuggestion(p); }}
-                    style={{ background: i === activeIdx ? "var(--lt-bg-hover)" : "transparent", width: "100%" }}
+                    onMouseDown={(e) => {
+                      e.preventDefault();
+                      selectSuggestion(p);
+                    }}
+                    style={{
+                      background:
+                        i === activeIdx ? "var(--lt-bg-hover)" : "transparent",
+                      width: "100%",
+                    }}
                   >
                     {p.jerseyNumber != null && (
-                      <span className="lt-cmd-palette__icon" style={{ fontWeight: 700, color: "var(--lt-text-muted)", minWidth: 22, textAlign: "right" }}>
+                      <span
+                        className="lt-cmd-palette__icon"
+                        style={{
+                          fontWeight: 700,
+                          color: "var(--lt-text-muted)",
+                          minWidth: 22,
+                          textAlign: "right",
+                        }}
+                      >
                         {p.jerseyNumber}
                       </span>
                     )}
-                    <span className="lt-cmd-palette__cmd" style={{ color: "var(--lt-text)" }}>{p.playerName}</span>
+                    <span
+                      className="lt-cmd-palette__cmd"
+                      style={{ color: "var(--lt-text)" }}
+                    >
+                      {p.playerName}
+                    </span>
                   </button>
                 ))}
               </div>

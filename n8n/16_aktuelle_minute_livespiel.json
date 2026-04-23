@@ -34,7 +34,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const fixture = $json.response?.[0];\nif (!fixture) return [];\n\nconst phaseMap = {\n  '1H': 'FirstHalf',\n  'HT': 'FirstHalfBreak',\n  '2H': 'SecondHalf',\n  'ET': 'SecondHalf',\n  'BT': 'FirstHalfBreak',\n  'P':  'SecondHalf',\n  'FT': 'FullTime',\n  'AET': 'FullTime',\n  'PEN': 'FullTime',\n};\n\nconst stateMap = {\n  '1H': 'Live', 'HT': 'Live', '2H': 'Live',\n  'ET': 'Live', 'BT': 'Live', 'P': 'Live',\n  'FT': 'FullTime', 'AET': 'FullTime', 'PEN': 'FullTime',\n};\n\nconst statusShort = fixture.fixture.status.short;\nconst newPhase = phaseMap[statusShort];\nif (!newPhase) return []; // NS, TBD, CANC etc. — nichts tun\n\nreturn [{\n  json: {\n    fixture_id: fixture.fixture.id,\n    status_short: statusShort,\n    new_minute: fixture.fixture.status.elapsed ?? null,\n    new_phase: newPhase,\n    new_state: stateMap[statusShort] ?? null,\n  }\n}];"
+        "jsCode": "const fixture = $json.response?.[0];\nif (!fixture) return [];\n\nconst phaseMap = {\n  '1H': 'FirstHalf',\n  'HT': 'FirstHalfBreak',\n  '2H': 'SecondHalf',\n  'ET': 'ExtraFirstHalf',\n  'BT': 'ExtraBreak',\n  'P':  'PenaltyShootout',\n  'FT': 'FullTime',\n  'AET': 'ExtraSecondHalf',\n  'PEN': 'PenaltyShootout',\n};\n\nconst stateMap = {\n  '1H': 'Live', 'HT': 'Live', '2H': 'Live',\n  'ET': 'Live', 'BT': 'Live', 'P': 'Live',\n  'FT': 'FullTime', 'AET': 'FullTime', 'PEN': 'FullTime',\n};\n\nconst statusShort = fixture.fixture.status.short;\nconst newPhase = phaseMap[statusShort];\nif (!newPhase) return []; // NS, TBD, CANC etc. — nichts tun\n\nreturn [{\n  json: {\n    fixture_id: fixture.fixture.id,\n    status_short: statusShort,\n    new_minute: fixture.fixture.status.elapsed ?? null,\n    new_phase: newPhase,\n    new_state: stateMap[statusShort] ?? null,\n  }\n}];"
       },
       "id": "7743c380-84fd-4a3d-9ed2-b03d13bb2cdd",
       "name": "Fixture aufbereiten1",
@@ -127,7 +127,7 @@
         "url": "http://localhost:5678/webhook/match-status",
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={{ JSON.stringify({ fixture_id: $('Vergleichen1').item.json.fixture_id, status: $('Vergleichen1').item.json.status_short, minute: $('Vergleichen1').item.json.new_minute, ticker_mode: $('Vergleichen1').item.json.ticker_mode }) }}",
+        "jsonBody": "={{ JSON.stringify({ fixture_id: $('Vergleichen1').item.json.fixture_id, status: $('Vergleichen1').item.json.status_short, minute: $('Vergleichen1').item.json.new_minute, ticker_mode: $('Vergleichen1').item.json.ticker_mode, new_phase: $('Vergleichen1').item.json.new_phase }) }}",
         "options": {}
       },
       "id": "efdb2444-8de4-4ab8-9867-83e1f87feb1f",

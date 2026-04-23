@@ -19,7 +19,7 @@ from typing import Optional
 from fastapi import APIRouter, Body, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
-from app.core.constants import resolve_phase, STANDARD_PHASES
+from app.core.constants import resolve_phase, STANDARD_PHASES, EXTRA_PHASES, PENALTY_PHASES, EXTRA_TIME_PHASES
 from app.core.database import get_db
 from app.utils.http_errors import require_or_404
 from app.repositories.event_repository import EventRepository
@@ -335,8 +335,18 @@ async def generate_match_phases(
     failed: list[tuple[str, str]] = []
 
     is_live = match.match_state == "Live"
+    match_phase = match.match_phase or ""
 
-    for event_type, phase, default_minute in STANDARD_PHASES:
+    has_extra_time = match_phase in EXTRA_TIME_PHASES
+    has_penalties = match_phase == "PenaltyShootout"
+
+    phases_to_generate = list(STANDARD_PHASES)
+    if has_extra_time:
+        phases_to_generate += EXTRA_PHASES
+    if has_penalties:
+        phases_to_generate += PENALTY_PHASES
+
+    for event_type, phase, default_minute in phases_to_generate:
         # Bei laufendem Spiel FullTime nicht vorab erstellen
         if is_live and phase == "FullTime":
             continue
@@ -369,7 +379,7 @@ async def generate_match_phases(
             "generate-match-phases match_id=%s: %d/%d phases failed: %s",
             match_id,
             len(failed),
-            len(STANDARD_PHASES),
+            len(phases_to_generate),
             failed,
         )
 

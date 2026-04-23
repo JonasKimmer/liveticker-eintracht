@@ -15,6 +15,7 @@ SYNTHETIC_EVENT_PHASE_MAP: dict[str, str] = {
     "match_fulltime": "FullTime",
     "match_extra_kickoff": "ExtraFirstHalf",
     "match_extra_halftime": "ExtraBreak",
+    "match_extra_second_half": "ExtraSecondHalf",
     "match_penalties": "PenaltyShootout",
     "match_fulltime_aet": "FullTime",
     "match_fulltime_pen": "FullTime",
@@ -114,6 +115,24 @@ STANDARD_PHASES: list[tuple[str, str, int]] = [
     ("match_second_half", "SecondHalf", 46),
     ("match_fulltime", "FullTime", 90),
 ]
+
+# Verlängerung-Phasen (AET)
+EXTRA_PHASES: list[tuple[str, str, int]] = [
+    ("match_extra_kickoff", "ExtraFirstHalf", 91),
+    ("match_extra_halftime", "ExtraBreak", 105),
+    ("match_extra_second_half", "ExtraSecondHalf", 106),
+]
+
+# Elferschießen-Phase
+PENALTY_PHASES: list[tuple[str, str, int]] = [
+    ("match_penalties", "PenaltyShootout", 121),
+]
+
+# Match-Phasen die Verlängerung anzeigen
+EXTRA_TIME_PHASES = frozenset({
+    "ExtraFirstHalf", "ExtraBreak", "ExtraSecondHalf",
+    "ExtraSecondHalfBreak", "PenaltyShootout",
+})
 
 
 # ── Phasen-Sortierung (Backend DB-Reihenfolge) ───────────────
