@@ -541,6 +541,155 @@
           "name": "Postgres account 2"
         }
       }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT m.match_phase, m.external_id,\n  (SELECT COUNT(*) FROM ticker_entries\n   WHERE match_id = m.id AND phase = 'PenaltyShootout' AND source = 'manual') AS has_penalty_ticker\nFROM matches WHERE id = $1",
+        "options": {
+          "queryReplacement": "={{ [$('DB: Match-Instanz1').first().json.match_id] }}"
+        }
+      },
+      "id": "pen09-sql-check",
+      "name": "SQL: Penalty prüfen",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        896,
+        1200
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "5VeE2cikA9rLeOKz",
+          "name": "Postgres account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "pen09-phase-check",
+              "leftValue": "={{ $json.match_phase }}",
+              "rightValue": "PenaltyShootout",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            },
+            {
+              "id": "pen09-no-ticker",
+              "leftValue": "={{ $json.has_penalty_ticker }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "number",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "pen09-filter",
+      "name": "Filter: Penalty fehlt noch?",
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.2,
+      "position": [
+        1120,
+        1200
+      ]
+    },
+    {
+      "parameters": {
+        "url": "=https://v3.football.api-sports.io/fixtures?id={{ $json.external_id }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {}
+      },
+      "id": "pen09-api",
+      "name": "API: Penalty-Score9",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1344,
+        1200
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "nw1wvLZ4u2BCZRVl",
+          "name": "Header Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const fixture = $json.response?.[0];\nif (!fixture) return [];\n\nconst penHome = fixture.score?.penalty?.home ?? null;\nconst penAway = fixture.score?.penalty?.away ?? null;\nif (penHome === null || penAway === null) return [];\n\nconst matchId = $('DB: Match-Instanz1').first().json.match_id;\nconst instance = $('DB: Match-Instanz1').first().json.instance || 'generic';\nconst tickerMode = $('DB: Match-Instanz1').first().json.ticker_mode ?? 'coop';\nconst homeTeamName = fixture.teams?.home?.name ?? 'Heim';\nconst awayTeamName = fixture.teams?.away?.name ?? 'Gast';\nconst winner = penHome > penAway ? homeTeamName : awayTeamName;\n\nreturn [{ json: {\n  match_id: matchId,\n  penalty_home: penHome,\n  penalty_away: penAway,\n  instance,\n  ticker_mode: tickerMode,\n  text: `🥅 Elferschießen: ${winner} gewinnt ${penHome}:${penAway} n.E.`\n} }];"
+      },
+      "id": "pen09-code",
+      "name": "Penalty-Daten aufbereiten9",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1568,
+        1200
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE matches SET penalty_home_score = $1, penalty_away_score = $2 WHERE id = $3",
+        "options": {
+          "queryReplacement": "={{ [$json.penalty_home, $json.penalty_away, $json.match_id] }}"
+        }
+      },
+      "id": "pen09-sql-update",
+      "name": "SQL: Penalty-Score updaten9",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        1792,
+        1200
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "5VeE2cikA9rLeOKz",
+          "name": "Postgres account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://liveticker-backend.onrender.com/api/v1/ticker/manual",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"match_id\": {{ $('Penalty-Daten aufbereiten9').first().json.match_id }},\n  \"text\": \"{{ $('Penalty-Daten aufbereiten9').first().json.text }}\",\n  \"icon\": \"🥅\",\n  \"minute\": 121,\n  \"phase\": \"PenaltyShootout\",\n  \"instance\": \"{{ $('Penalty-Daten aufbereiten9').first().json.instance }}\",\n  \"status\": \"{{ $('Penalty-Daten aufbereiten9').first().json.ticker_mode === 'auto' ? 'published' : 'draft' }}\"\n}",
+        "options": {}
+      },
+      "id": "pen09-http",
+      "name": "Penalty-Ticker posten9",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2016,
+        1200
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "nw1wvLZ4u2BCZRVl",
+          "name": "Header Auth account"
+        }
+      }
     }
   ],
   "connections": {
@@ -649,6 +798,11 @@
             "node": "Update Match Score",
             "type": "main",
             "index": 0
+          },
+          {
+            "node": "SQL: Penalty prüfen",
+            "type": "main",
+            "index": 0
           }
         ]
       ]
@@ -746,6 +900,61 @@
         [
           {
             "node": "Video AUTO?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "SQL: Penalty prüfen": {
+      "main": [
+        [
+          {
+            "node": "Filter: Penalty fehlt noch?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter: Penalty fehlt noch?": {
+      "main": [
+        [
+          {
+            "node": "API: Penalty-Score9",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "API: Penalty-Score9": {
+      "main": [
+        [
+          {
+            "node": "Penalty-Daten aufbereiten9",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Penalty-Daten aufbereiten9": {
+      "main": [
+        [
+          {
+            "node": "SQL: Penalty-Score updaten9",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "SQL: Penalty-Score updaten9": {
+      "main": [
+        [
+          {
+            "node": "Penalty-Ticker posten9",
             "type": "main",
             "index": 0
           }
