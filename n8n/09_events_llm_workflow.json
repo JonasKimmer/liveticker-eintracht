@@ -431,7 +431,7 @@
     {
       "parameters": {
         "operation": "executeQuery",
-        "query": "SELECT m.match_phase, m.external_id,\n  (SELECT COUNT(*) FROM ticker_entries\n   WHERE match_id = m.id AND phase = 'PenaltyShootout' AND source = 'manual') AS has_penalty_ticker\nFROM matches WHERE id = $1",
+        "query": "SELECT m.match_phase, m.external_id,\n  (SELECT COUNT(*) FROM ticker_entries\n   WHERE match_id = m.id AND phase = 'PenaltyShootout' AND source = 'manual') AS has_penalty_ticker\nFROM matches AS m WHERE m.id = $1",
         "options": {
           "queryReplacement": "={{ [$('DB: Match-Instanz7').first().json.match_id] }}"
         }
