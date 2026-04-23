@@ -18,4 +18,4 @@ COPY . .
 # Static-Verzeichnis sicherstellen
 RUN mkdir -p static/thumbnails
 
-CMD uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8001}
+CMD alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8001}
