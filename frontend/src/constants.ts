@@ -32,6 +32,6 @@ export const LIVE_STATUSES = ["1H", "2H", "HT", "ET", "live"];
 export const FINISHED_STATUSES = ["FT", "AET", "PEN", "finished", "FullTime"];
 
 // ── Polling-Intervalle (ms) ──────────────────────────────────
-export const POLL_EVENTS_MS = 5000;
-export const POLL_MATCH_REFRESH_MS = 15000;
-export const POLL_PREMATCH_MS = 5000;
+export const POLL_EVENTS_MS = 15000;
+export const POLL_MATCH_REFRESH_MS = 30000;
+export const POLL_PREMATCH_MS = 20000;
