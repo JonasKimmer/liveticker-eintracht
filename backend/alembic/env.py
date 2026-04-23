@@ -16,10 +16,11 @@ config = context.config
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
-# Override with DATABASE_URL env var if set (e.g. on Render/production)
-database_url = os.environ.get("DATABASE_URL")
-if database_url:
-    config.set_main_option("sqlalchemy.url", database_url)
+# DIRECT_URL for migrations (bypasses pgbouncer connection limits)
+# Falls back to DATABASE_URL if DIRECT_URL is not set
+migration_url = os.environ.get("DIRECT_URL") or os.environ.get("DATABASE_URL")
+if migration_url:
+    config.set_main_option("sqlalchemy.url", migration_url)
 
 target_metadata = Base.metadata
 
