@@ -100,7 +100,6 @@ export const PHASE_SHORT_LABEL: Partial<Record<string, string | null>> = {
   Halftime: "i",
   After: "i",
   FirstHalf: null,
-  SecondHalf: null,
   FullTime: null,
   SecondHalfBreak: "Pause",
   ExtraBreak: "VZ·P",
