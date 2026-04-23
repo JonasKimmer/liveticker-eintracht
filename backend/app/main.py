@@ -91,6 +91,11 @@ def read_root() -> dict:
 
 @app.get("/health", tags=["Meta"])
 def health_check() -> dict:
+    return {"status": "healthy"}
+
+
+@app.get("/health/db", tags=["Meta"])
+def health_check_db() -> dict:
     db_ok = check_database_connection()
     return {
         "status": "healthy" if db_ok else "degraded",
