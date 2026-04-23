@@ -168,6 +168,8 @@ class MatchResponse(BaseModel):
     away_team_id: Optional[int] = Field(None, serialization_alias="teamAwayId")
     home_score: Optional[int] = Field(None, serialization_alias="teamHomeScore")
     away_score: Optional[int] = Field(None, serialization_alias="teamAwayScore")
+    penalty_home_score: Optional[int] = Field(None, serialization_alias="penaltyHomeScore")
+    penalty_away_score: Optional[int] = Field(None, serialization_alias="penaltyAwayScore")
     matchday: Optional[int] = None
     venue: Optional[str] = None
     city: Optional[str] = None

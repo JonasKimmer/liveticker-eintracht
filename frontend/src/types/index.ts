@@ -64,6 +64,8 @@ export interface Match {
   /** from single-match endpoint (explicit serialization_alias) */
   teamHomeScore?: number | null;
   teamAwayScore?: number | null;
+  penaltyHomeScore?: number | null;
+  penaltyAwayScore?: number | null;
   matchState?: string | null;
   matchPhase?: MatchPhase | null;
   minute?: number | null;

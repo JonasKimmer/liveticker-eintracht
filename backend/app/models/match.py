@@ -35,6 +35,8 @@ class Match(Base):
     )
     home_score = Column(Integer, nullable=True)
     away_score = Column(Integer, nullable=True)
+    penalty_home_score = Column(Integer, nullable=True)
+    penalty_away_score = Column(Integer, nullable=True)
     matchday = Column(Integer, nullable=True)
     matchday_title = Column(
         JSONB, nullable=True

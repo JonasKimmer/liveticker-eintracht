@@ -85,6 +85,11 @@ export const MatchHeader = memo(function MatchHeader({
               {match.teamAwayScore}
             </span>
           </div>
+          {match.penaltyHomeScore != null && match.penaltyAwayScore != null && (
+            <div className="lt-match-header__penalty">
+              ({match.penaltyHomeScore}:{match.penaltyAwayScore} n.E.)
+            </div>
+          )}
         </div>
 
         {/* Away */}
