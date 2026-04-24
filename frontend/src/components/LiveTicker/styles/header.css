@@ -260,8 +260,6 @@
   }
 }
 .lt-breadcrumb:hover {
-  border-color: var(--lt-border);
-  background: var(--lt-bg-hover);
 }
 .lt-breadcrumb__sep {
   color: var(--lt-text-faint);
