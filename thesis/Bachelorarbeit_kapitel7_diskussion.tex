@@ -116,60 +116,7 @@ ein Restrisiko fehlerhafter Veröffentlichungen.
 
 \section{Diskussion der Betriebsmodi}\label{diskussion-der-betriebsmodi}
 
-Die drei Betriebsmodi (\texttt{auto}, \texttt{coop}, \texttt{manual})
-wurden in Kapitel 4.3.3 konzipiert und in Kapitel 6.4 evaluiert. Im
-Folgenden werden die Implikationen der Evaluationsergebnisse für den
-praktischen Einsatz diskutiert.
-
-\subsection{Auto-Modus: Geschwindigkeit auf Kosten der
-Kontrolle}\label{auto-modus-geschwindigkeit-auf-kosten-der-kontrolle}
-
-Die Stärke des \texttt{auto}-Modus liegt in der Geschwindigkeit (vgl.
-Latenzpotenzial-Abschätzung in Abschnitt~6.4). Das Risiko besteht in unkontrollierten
-Halluzinationen, die ohne redaktionelle Prüfung veröffentlicht werden.
-Im journalistischen Kontext, in dem Glaubwürdigkeit eine zentrale
-Ressource darstellt (Beils 2023, S. 57), ist dieser Modus daher nur für
-unkritische Event-Typen (z. B. Phasenwechsel wie „Anpfiff'' oder
-„Halbzeit'') vertretbar.
-
-\subsection{Coop-Modus: Der intendierte
-Produktivbetrieb}\label{coop-modus-der-intendierte-produktivbetrieb}
-
-Im Evaluationszeitraum wurden im Coop-Modus keine Einträge nach Freigabe
-zurückgezogen. Dies deutet darauf hin, dass die redaktionelle Prüfung als
-Qualitätsschicht greift; ob Entwürfe vor der Freigabe inhaltlich editiert
-wurden, wurde jedoch nicht systematisch erfasst (vgl. Abschnitt~6.7),
-weshalb eine abschließende Bewertung der Filterleistung des
-\texttt{coop}-Modus einer Folgestudie vorbehalten bleibt. Das
-Experteninterview (vgl. Abschnitt~6.3.4) bestätigt diese
-Einschätzung: Der befragte Sportredakteur bewertete den
-\texttt{coop}-Modus als den praktisch relevantesten Betriebsmodus, da
-er Geschwindigkeit mit redaktioneller Kontrolle verbindet. Die
-TAB/ESC-Tastatursteuerung erweist sich als zentrales Mittel, um den
-Entscheidungsdurchsatz zu sichern, ohne den Redakteur visuell zu
-überlasten.
-
-\subsection{Manual-Modus: Status quo als
-Vergleichsbasis}\label{manual-modus-status-quo-als-vergleichsbasis}
-
-Der \texttt{manual}-Modus dient als Vergleichsbasis und Rückfalloption
---- etwa bei hochkritischen Ereignissen oder bei Redakteuren, die
-zunächst Vertrauen in das System aufbauen möchten. Die
-Laufzeit-Umschaltbarkeit per API-Call stellt sicher, dass der Wechsel
-ohne Systemunterbrechung möglich ist.
-
-\subsection{Implikationen für die
-Praxis}\label{implikationen-fuxfcr-die-praxis}
-
-Die Koexistenz aller drei Modi in einem System --- umschaltbar zur
-Laufzeit per API-Call --- könnte eine schrittweise Einführung in
-Redaktionen unterstützen: Neue Nutzer könnten im \texttt{manual}-Modus
-beginnen, über den \texttt{coop}-Modus Vertrauen in die KI-Qualität
-aufbauen und für unkritische Standardereignisse schließlich den
-\texttt{auto}-Modus aktivieren. Ob diese Graduierung in der Praxis so
-durchlaufen wird, ist empirisch nicht belegt; sie würde jedoch den
-in Kapitel 2.1 beschriebenen Akzeptanzbedarf bei der Einführung
-KI-gestützter Werkzeuge in redaktionelle Workflows adressieren.
+Die drei Betriebsmodi (\texttt{auto}, \texttt{coop}, \texttt{manual}) wurden in Kapitel 4.3.3 konzipiert und in Kapitel 6.4 evaluiert. Ihre komparative Bewertung ergibt eine klare Hierarchie: Der \texttt{auto}-Modus maximiert das Latenzpotenzial (TTP~$\approx$~3--6\,s), trägt jedoch ein unkontrolliertes Halluzinationsrisiko (Stil-Inkonsistenz 19\,\%, Halluzinationsrate 6\,\%), das im journalistischen Kontext die Glaubwürdigkeit gefährden kann (Beils 2023, S.~57) --- er ist daher nur für unkritische Event-Typen wie Phasenwechsel vertretbar. Der \texttt{manual}-Modus dient als Vergleichsbasis und Rückfalloption für Redakteure, die zunächst Vertrauen in das System aufbauen möchten. \textbf{Der \texttt{coop}-Modus ist der intendierte Produktivbetrieb}: Die KI liefert Entwürfe, die redaktionelle Freigabe via TAB/ESC-Steuerung sichert Qualität ohne merkliche Latenzzunahme. Das Experteninterview (vgl. Abschnitt~6.3.5) bestätigt diese Einschätzung. Die Laufzeit-Umschaltbarkeit ermöglicht dabei eine schrittweise Einführung von \texttt{manual} über \texttt{coop} bis \texttt{auto} --- eine Adoption, die den in Kapitel 2.1 beschriebenen Akzeptanzbedarf adressiert. Die modus-spezifische Gesamtbewertung mit Empfehlung findet sich in Abschnitt~8.2.1.
 
 
 \section{Diskussion der
@@ -262,33 +209,4 @@ Haftung verbleiben beim Betreiber des Systems, nicht beim LLM-Provider.
 
 \section{Synthese}\label{synthese}
 
-Die Diskussion der Evaluationsergebnisse entlang fünf Dimensionen
---- Abgrenzung zum Stand der Technik, methodische und technische
-Limitationen, Betriebsmodi, Prompt-Architektur sowie Implikationen für
-den Sportjournalismus --- ergibt ein
-konsistentes Gesamtbild: Das System löst die in Kapitel 1.1
-identifizierten drei Problemdimensionen (Zeitdruck, Mehrsprachigkeit,
-White-Label-Bedarf) durch technisch nachweisbare Mechanismen; die
-verbleibenden Schwächen (Stil-Inkonsistenz, fehlende Authentifizierung,
-eingeschränkte Stichprobengröße) sind klar lokalisiert und lösbar.
-
-Die Dimension der Prompt-Architektur (Kapitel 7.4) verdeutlicht dabei,
-dass die Textqualität nicht primär vom Modell abhängt, sondern von der
-Qualität der Kontextübergabe: Few-Shot-Referenzen konditionieren Format
-und Tonalität zuverlässig, während Score-Halluzinationen durch präzisere
-Kontextstrukturierung weiter reduziert werden können.
-
-Die zentrale Designentscheidung --- der \texttt{coop}-Modus als primärer
-Betriebsmodus --- erweist sich aus dieser Diskussion heraus als
-strukturell richtig: Er balanciert die Effizienzgewinne der KI mit der
-publizistischen Verantwortung des Redakteurs und adressiert damit den in
-Kapitel 1.2 formulierten Zielkonflikt zwischen Geschwindigkeit und
-Qualität. Die Verschiebung der Redakteursrolle von der Textproduktion
-zur Textkuration ist keine Umgehung journalistischer Sorgfalt, sondern
-ihre Neukalibrierung unter den Bedingungen der
-Echtzeit-Berichterstattung.
-
-Die offenen Punkte --- externe Nutzerstudie, Authentifizierungsschicht,
-A/B-Vergleich Few-Shot vs.~ohne --- definieren den nächsten
-Entwicklungsschritt, der in Kapitel 8.3 als konkreter Ausblick
-formuliert wird.
+Die Diskussion entlang der fünf Dimensionen --- Abgrenzung zum Stand der Technik, Limitationen, Betriebsmodi, Prompt-Architektur und Implikationen --- ergibt ein konsistentes Gesamtbild: Das System adressiert die identifizierten Problemdimensionen durch nachweisbare Mechanismen; verbleibende Schwächen (Stil-Inkonsistenz, fehlende Authentifizierung, eingeschränkte Stichprobengröße) sind klar lokalisiert. Die Beantwortung der Forschungsfrage und die modus-spezifische Gesamtempfehlung erfolgen in Kapitel~8.2; der konkrete Erweiterungsausblick in Kapitel~8.3.

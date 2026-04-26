@@ -355,12 +355,18 @@ auf eine stilprofilabhängige Variation in der Spielstand-Interpretation hin;
 für eine belastbare Aussage wäre eine systematische Erhebung über
 mehrere Events erforderlich. Die Prompt-Architektur bindet bis zu drei Stilreferenzen aus der \texttt{style\_references}-Tabelle als Few-Shot-Beispiele ein; qualitativ zeigt sich, dass die \texttt{ef\_whitelabel}-Instanz dadurch konsistente Formatierungsmuster (Minutenformat, TOOOOR-Konvention) etabliert. Ein kontrollierter A/B-Test zur Few-Shot-Wirksamkeit war im Evaluationszeitraum nicht durchführbar.
 
-\subsection{Qualitative Analyse der generierten
-Texte}\label{qualitative-analyse-der-generierten-texte}
+\begin{figure}[H]
+\centering
+\DiagramQualitaetStilprofil
+\caption{Qualitätsbewertung nach Stilprofil -- synthetische Evaluation (N~=~9; Bewertungsskala 1--5). Datengrundlage: Abschnitt~6.3.4, synthetischer Kontext.}
+\label{fig:qualitaet-stilprofil}
+\end{figure}
+
+\subsection{Qualitative Textbewertung}\label{qualitative-analyse-der-generierten-texte}
 
 Für die qualitative Analyse wurden \textbf{16 KI-generierte Ticker-Einträge} (Modell: \texttt{google/gemini-2.0-flash-lite-001}, Sprache: Deutsch) aus \textbf{9 Bundesliga-Spielen} der Saison 2024/25 manuell auf drei Dimensionen bewertet. \textbf{Korrektheit} prüft, ob alle Fakten (Spieler, Team, Minute, Ergebnis) korrekt wiedergegeben sind und der Text keine Halluzinationen enthält. \textbf{Tonalität} bewertet, ob der Stil dem gewählten Profil (neutral/euphorisch/kritisch) entspricht. \textbf{Verständlichkeit} beurteilt, ob der Text sprachlich flüssig, grammatikalisch korrekt und dem Genre „Liveticker'' angemessen ist. Jede Dimension wurde auf einer Skala von 1 (ungenügend) bis 5 (exzellent) bewertet. Die Bewertung erfolgte durch den Entwickler; ein
 zweiter Rater stand nicht zur Verfügung, sodass kein Cohen's Kappa
-berechnet wurde. Die Selbstevaluationsproblematik wird in Abschnitt~6.3.5
+berechnet wurde. Die Selbstevaluationsproblematik wird in Abschnitt~6.3.6
 durch ein LLM-as-Judge-Verfahren (unabhängiges Modell als Bewerter) abgemildert;
 das strukturierte Experteninterview ergänzt die externe qualitative Validierung.
 
@@ -622,6 +628,8 @@ vollständige Faktendarstellung, die der manuelle Eintrag nicht enthielt.
 Ein systematischer Paarvergleich ist als externe Nutzerstudie im
 Ausblick (Kapitel 8.3.2) vorgesehen.
 
+\subsection{Experteninterview-Auswertung}\label{experteninterview-auswertung}
+
 Zur Validierung der Systemeignung im operativen redaktionellen Kontext wurde ein \textbf{strukturiertes Experteninterview} mit einem professionellen Sportredakteur von Eintracht Frankfurt durchgeführt. Das Interview ergänzt die quantitative Evaluation um die Perspektive der primären Zielnutzergruppe und adressiert drei Kernfragen: die \textbf{Praxistauglichkeit} (inwiefern die generierten Texte den redaktionellen Standards entsprechen), die \textbf{Workflow-Integration} (welche Auswirkungen das System auf bestehende Abläufe hätte) sowie die \textbf{Qualitätswahrnehmung} (wie Fachexperten die KI-generierten Texte im Vergleich zu manuell verfassten beurteilen). Die Leitfragen IF10--IF15 adressieren Textqualität, Tonalität, Moduswahl, Realisierbarkeit des Coop-Flows, fehlende Features und Markenwiedererkennung (vgl. Interviewleitfaden, Kap.~2.4).
 
 \paragraph{Methodik}
@@ -844,6 +852,13 @@ Produktivbetrieb ohne externen Monitoring-Aufwand möglich. Im Kontext
 des \texttt{coop}-Modus ist die gemessene P95-Latenz von 2,1 s (2.047
 ms) unproblematisch.
 
+\begin{figure}[H]
+\centering
+\DiagramLatenzenHistogram
+\caption{Verteilung der 25 LLM-Latenzmessungen (Render-Deployment): bimodal mit Cache-Treffer-Cluster ($<$300\,ms, N\,=\,11) und Kaltgenerierungs-Cluster (800--2\,200\,ms, N\,=\,14). Median: 859\,ms, P95: 2\,047\,ms.}
+\label{fig:latenzen-histogram}
+\end{figure}
+
 \subsection{Frontend-Polling}\label{frontend-polling}
 
 Das Frontend fragt den Backend-Status über drei Polling-Intervalle ab:
@@ -942,7 +957,7 @@ Compiler-Fehler) mit vollständiger Erfüllung aller 23 definierten
 Anforderungen. Die KI-generierten Texte erreichen in der Hauptevaluation
 (N = 16, Selbstbewertung) einen Gesamtdurchschnitt von \textbf{4,3 / 5};
 die ergänzende LLM-as-Judge-Evaluation (N = 20, Claude Sonnet 4.6 als
-unabhängiger Bewerter, Abschnitt~6.3.5) bestätigt diesen Befund mit
+unabhängiger Bewerter, Abschnitt~6.3.6) bestätigt diesen Befund mit
 \textbf{4,5 / 5}. Die LLM-Latenz beträgt im Median 859 ms, woraus sich
 im \texttt{auto}-Modus ein geschätztes TTP-Potenzial von 3,4--5,9 s
 ergibt. Konsistente Fehlerklassen in beiden Evaluationsrunden sind der

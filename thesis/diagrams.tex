@@ -279,3 +279,133 @@
   \draw[arr] (rp) -- (verletzt);
 \end{tikzpicture}%
 }
+
+%% ─── DIAGRAM 11: Backend-Schichtenarchitektur ─────────────────────────────
+\newcommand{\DiagramBackendSchichten}{%
+\begin{tikzpicture}[
+  layer/.style={draw, rounded corners=3pt,
+                minimum width=9cm, minimum height=0.9cm,
+                align=center, font=\small},
+  arr/.style={->, thick, gray!70}
+]
+  \node[layer, fill=blue!30] (router) at (0,0)
+        {\textbf{Router / API} \quad {\footnotesize HTTP-Endpunkte (FastAPI, 11 Router)}};
+  \node[layer, fill=blue!20] (service) at (0,-1.4)
+        {\textbf{Service} \quad {\footnotesize Fachlogik (\texttt{ticker\_service}, \texttt{llm\_service})}};
+  \node[layer, fill=blue!10] (repo) at (0,-2.8)
+        {\textbf{Repository} \quad {\footnotesize Datenbankzugriff (SQLAlchemy ORM, 17 Modelle)}};
+  \node[layer, fill=blue!5] (db) at (0,-4.2)
+        {\textbf{PostgreSQL 15} \quad {\footnotesize Persistenzschicht (Render Managed DB)}};
+  \draw[arr] (router) -- (service);
+  \draw[arr] (service) -- (repo);
+  \draw[arr] (repo) -- (db);
+\end{tikzpicture}%
+}
+
+%% ─── DIAGRAM 12: Betriebsmodi-Übersicht ──────────────────────────────────
+\newcommand{\DiagramBetriebsmodi}{%
+\begin{tikzpicture}[
+  box/.style={draw, rounded corners=3pt,
+              minimum width=2.5cm, minimum height=0.7cm,
+              align=center, font=\footnotesize},
+  event/.style={box, fill=gray!20},
+  llm/.style={box, fill=blue!20},
+  draft/.style={box, fill=yellow!25},
+  human/.style={box, fill=orange!20},
+  pub/.style={box, fill=green!20},
+  arr/.style={->, thick},
+  title/.style={font=\small\bfseries}
+]
+  \node[title]  at (0,   0.7) {\texttt{auto}};
+  \node[event]  (ae) at (0,   0)   {Event};
+  \node[llm]    (al) at (0,  -1.2) {LLM};
+  \node[pub]    (ap) at (0,  -2.4) {Publiziert};
+  \draw[arr] (ae)--(al); \draw[arr] (al)--(ap);
+
+  \node[title]  at (4.5, 0.7) {\texttt{coop}};
+  \node[event]  (ce) at (4.5,  0)   {Event};
+  \node[llm]    (cl) at (4.5, -1.2) {LLM};
+  \node[draft]  (cd) at (4.5, -2.4) {Entwurf};
+  \node[human]  (cr) at (4.5, -3.6) {Redakteur};
+  \node[pub]    (cp) at (4.5, -4.8) {Publiziert};
+  \draw[arr] (ce)--(cl); \draw[arr] (cl)--(cd);
+  \draw[arr] (cd)--(cr); \draw[arr] (cr)--(cp);
+
+  \node[title]  at (9,   0.7) {\texttt{manual}};
+  \node[event]  (me) at (9,   0)   {Event};
+  \node[human]  (mr) at (9,  -1.2) {Redakteur};
+  \node[pub]    (mp) at (9,  -2.4) {Publiziert};
+  \draw[arr] (me)--(mr); \draw[arr] (mr)--(mp);
+\end{tikzpicture}%
+}
+
+%% ─── DIAGRAM 13: Qualitätsbewertung nach Stilprofil (pgfplots) ───────────
+\newcommand{\DiagramQualitaetStilprofil}{%
+\begin{tikzpicture}
+\begin{axis}[
+  ybar, bar width=0.35cm,
+  width=10cm, height=6.5cm,
+  ymin=3.5, ymax=5.4,
+  ytick={3.5,4.0,4.5,5.0},
+  ylabel={Bewertung (1\,--\,5)},
+  symbolic x coords={euphorisch, neutral, kritisch},
+  xtick=data,
+  xticklabels={euphorisch\\{\scriptsize (N\,=\,6)},
+               neutral\\{\scriptsize (N\,=\,2)},
+               kritisch\\{\scriptsize (N\,=\,1)}},
+  xticklabel style={align=center},
+  legend style={at={(0.5,1.03)}, anchor=south, legend columns=3,
+                font=\footnotesize},
+  enlarge x limits=0.35,
+  nodes near coords,
+  nodes near coords style={font=\tiny, /pgf/number format/fixed,
+                            /pgf/number format/precision=2},
+  every axis/.append style={font=\small},
+]
+\addplot+[fill=blue!40, draw=blue!70] coordinates {
+  (euphorisch,4.33) (neutral,4.50) (kritisch,5.00)
+};
+\addplot+[fill=red!40, draw=red!70] coordinates {
+  (euphorisch,5.00) (neutral,4.50) (kritisch,4.00)
+};
+\addplot+[fill=green!40, draw=green!70] coordinates {
+  (euphorisch,4.83) (neutral,5.00) (kritisch,5.00)
+};
+\legend{Korrektheit, Tonalit\"at, Verst\"andlichkeit}
+\end{axis}
+\end{tikzpicture}%
+}
+
+%% ─── DIAGRAM 14: LLM-Latenz Histogramm (pgfplots) ────────────────────────
+\newcommand{\DiagramLatenzenHistogram}{%
+\begin{tikzpicture}
+\begin{axis}[
+  ybar,
+  bar width=28pt,
+  width=11cm, height=6.5cm,
+  xlabel={Latenz-Intervall (ms)},
+  ylabel={Messungen (N)},
+  ymin=0, ymax=14,
+  ytick={0,2,4,6,8,10,12},
+  xtick={1,2,3,4,5,6},
+  xticklabels={{\scriptsize $<$\,300},
+               {\scriptsize 300\,--\,800},
+               {\scriptsize 800\,--\,1\,100},
+               {\scriptsize 1\,100\,--\,1\,400},
+               {\scriptsize 1\,400\,--\,1\,800},
+               {\scriptsize 1\,800\,--\,2\,200}},
+  xticklabel style={rotate=30, anchor=east, font=\scriptsize},
+  ymajorgrids=true,
+  nodes near coords,
+  nodes near coords style={font=\scriptsize},
+  enlarge x limits=0.15,
+  every axis/.append style={font=\small},
+  title={\small Bimodale Verteilung: Cache-Treffer ($<$300\,ms) vs.\ Kaltgenerierung},
+  title style={font=\small},
+]
+\addplot+[fill=blue!30, draw=blue!60] coordinates {
+  (1,11) (2,0) (3,6) (4,4) (5,3) (6,1)
+};
+\end{axis}
+\end{tikzpicture}%
+}

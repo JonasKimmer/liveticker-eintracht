@@ -111,54 +111,7 @@ Kapitel~4.5.2 beschrieben.
 \section{Natural Language Generation im
 Sportjournalismus}\label{natural-language-generation-im-sportjournalismus}
 
-Die automatisierte Erzeugung natürlichsprachlicher Texte aus
-strukturierten Daten (Data-to-Text Generation) bildet die technische
-Grundlage für KI-gestützte Berichterstattungssysteme. Im Sportkontext
-bedeutet dies die Überführung von Spielereignissen und Statistiken in
-journalistisch verwertbare Texte (Puduppully \& Lapata 2021, S. 510).
-
-Der Sportjournalismus bietet für NLG-Systeme besonders günstige
-Voraussetzungen: Spielereignisse folgen standardisierten Mustern (Tore,
-Karten, Auswechslungen), liegen bereits in strukturierter Form vor und
-erfordern eine zeitnahe Verarbeitung. Diese Kombination aus
-strukturierten Eingabedaten und Echtzeitanforderung macht Sport zu einer
-der erfolgreichsten Anwendungsdomänen für Data-to-Text-Systeme
-(Puduppully \& Lapata 2021, S. 510). Für kleinere Vereine und
-Medienunternehmen ermöglicht automatisierte Textgenerierung zudem eine
-skalierbare Berichterstattung, die mit rein manueller Redaktion nicht
-wirtschaftlich darstellbar wäre.
-
-Historische NLG-Systeme basierten überwiegend auf \textbf{regelbasierten
-Template-Architekturen} (vgl. Puduppully \& Lapata 2021, S. 520). Diese
-Systeme nutzen vordefinierte Satzmuster, in die Ereignisdaten eingesetzt
-werden (z. B. „{[}Spieler{]} erzielt in der {[}Minute{]} Minute das
-{[}Tor-Nr.{]} für {[}Team{]}``). Der Vorteil liegt in vorhersagbarer
-Qualität und vollständiger Kontrolle über die Ausgabe; der Nachteil ist
-stilistische Monotonie und begrenzte sprachliche Variabilität ---
-insbesondere bei komplexeren narrativen Anforderungen (Puduppully \&
-Lapata 2021, S. 520).
-
-Moderne \textbf{neuronale End-to-End-Ansätze} überwinden diese Grenzen
-durch datengetriebenes Lernen sprachlicher Muster. Statt starrer Regeln
-trainieren diese Modelle auf großen Textkorpora und erzeugen flüssigere,
-natürlichere Formulierungen. Im professionellen Roboterjournalismus
-erzeugt beispielsweise „Die Welt'' bereits automatisierte Spielberichte
-via Retresco (Beils 2023, S. 207). Solche Systeme stoßen jedoch bei
-unvorhergesehenen Ereignissen, unsauberer Datenlage oder der
-Notwendigkeit emotionaler Tonalität an Grenzen --- insbesondere die
-Neigung zu Halluzinationen (vgl. Kap. 3.1) bleibt eine systemische
-Herausforderung für den journalistischen Einsatz.
-
-Die Kombination beider Ansätze in einem \textbf{hybriden System}
-verbindet die Stärken: LLMs übernehmen die flexible, stilistisch
-variable Textgenerierung, während menschliche Redakteure die faktische
-Korrektheit absichern und editoriale Entscheidungen treffen. Dieser
-\textbf{Human-in-the-Loop-Ansatz} bildet die konzeptionelle Grundlage
-des vorliegenden Systems: Er adressiert die Qualitätsanforderungen des
-Journalismus durch redaktionelle Kontrolle und ermöglicht gleichzeitig
---- durch die Entlastung von der Texterstellung --- eine Skalierung, die
-den in Kapitel 2.1 beschriebenen Ressourcenbeschränkungen kleinerer
-Redaktionen Rechnung trägt.
+Die automatisierte Erzeugung natürlichsprachlicher Texte aus strukturierten Daten (Data-to-Text Generation) bildet die technische Grundlage für KI-gestützte Berichterstattungssysteme (Puduppully \& Lapata 2021, S. 510). Historische Ansätze basierten auf regelbasierten Template-Architekturen mit vorhersagbarer Ausgabe, aber stilistischer Monotonie; neuronale End-to-End-Systeme verbesserten die sprachliche Natürlichkeit auf Kosten erhöhter Halluzinationsanfälligkeit (Puduppully \& Lapata 2021, S. 520; vgl. Beils 2023, S. 207). Klassische NLG-Architekturen werden durch Large Language Models (Kapitel~3.1--3.2) für die meisten Anwendungsfälle weitgehend ersetzt --- für diese Arbeit ist ausschließlich der LLM-basierte Ansatz relevant: Das vorliegende System nutzt Few-Shot-Prompting (Kapitel~3.2) zur stilkontrollierten Textgenerierung; Halluzinationsrisiken werden durch das Human-in-the-Loop-Design des \texttt{coop}-Modus (Kapitel~4.3.3) abgefangen.
 
 
 

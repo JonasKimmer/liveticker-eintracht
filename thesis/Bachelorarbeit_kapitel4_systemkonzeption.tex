@@ -342,6 +342,13 @@ Der Moduswechsel ist als Laufzeitparameter auf Datenbankebene
 abgebildet; der Statusfluss ist im State-Diagramm in Abschnitt 4.3.2
 dargestellt.
 
+\begin{figure}[H]
+\centering
+\DiagramBetriebsmodi
+\caption{Die drei Betriebsmodi im Überblick: Automatisierungsgrad und Entscheidungshoheit je Modus}
+\label{fig:betriebsmodi}
+\end{figure}
+
 
 
 \subsection{Integrität, Idempotenz und
@@ -592,15 +599,7 @@ Neue Ereignistypen können ohne Datenbankschema-Änderungen ergänzt werden: Die
 
 \subsection{Deployment-Architektur}\label{deployment-architektur}
 
-Das System wird auf der Cloud-Plattform Render betrieben und gliedert sich in drei Deployment-Einheiten. Das Backend läuft als Docker-Container (\texttt{python:3.12-slim}) als Render Web Service; beim Start werden automatisch Datenbankmigrationen ausgeführt, bevor der Uvicorn-Server Anfragen entgegennimmt. Das Frontend ist ein statisches Build-Artefakt (Create React App), das als Render Static Site ausgeliefert wird und zur Buildzeit über Umgebungsvariablen konfiguriert wird. PostgreSQL ist als Render Managed Database die zentrale Persistenzschicht, auf die sowohl Backend als auch n8n zugreifen.
-
-n8n wird als separater Self-Hosting-Dienst betrieben und kommuniziert
-ausschließlich über HTTP-Endpunkte mit dem Backend. Die n8n-Instanz wird
-im Entwicklungs- und Evaluationsbetrieb lokal betrieben und via
-ngrok-Tunnel für externe Webhooks erreichbar gemacht. Diese
-Containerisierung gewährleistet Reproduzierbarkeit zwischen
-Entwicklungs- und Produktionsumgebung und ermöglicht eine unabhängige
-Skalierung der einzelnen Dienste.
+Das System ist auf der Cloud-Plattform Render deployt und gliedert sich in drei unabhängige Deployment-Einheiten: FastAPI-Backend (Docker-Container), React-Frontend (Static Site) und PostgreSQL (Managed Database). n8n wird für den Evaluationsbetrieb lokal betrieben und ist über einen ngrok-Tunnel für externe Webhooks erreichbar. Die vollständigen Deployment-Details, Konfiguration und Free-Tier-Implikationen werden in Abschnitt~5.6 beschrieben.
 
 
 
