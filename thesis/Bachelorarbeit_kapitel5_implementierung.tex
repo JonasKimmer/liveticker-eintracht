@@ -650,16 +650,15 @@ inkrementelle Migration ohne blockierende Fehlereskalation zu erlauben.
 \end{Highlighting}
 \end{Shaded}
 
-Nach der Migration erzielt das Projekt 0 TypeScript-Compilerfehler und eine type-coverage von 95,84\,\%
-(gemessen mit \texttt{type-coverage\ -\/-strict}); die detaillierte
-Auswertung folgt in Abschnitt~6.2.5.
+Nach der Migration erzielt das Projekt 0 TypeScript-Compilerfehler; die detaillierte
+Auswertung der type-coverage folgt in Abschnitt~6.2.5.
 
 
 \section{n8n
 Workflow-Implementierung}\label{n8n-workflow-implementierung}
 
 Die n8n-Workflows bilden die Orchestrierungsschicht zwischen externen
-Datenquellen, dem FastAPI-Backend und dem LLM-Dienst. Alle 16
+Datenquellen, dem FastAPI-Backend und dem LLM-Dienst. Alle 17
 Workflow-Dateien liegen als versionierte JSON-Exporte unter \texttt{n8n/}
 vor. Die Workflows gliedern sich funktional in sechs Gruppen: Workflows
 \texttt{01}--\texttt{04} laden Stammdaten (Länder, Teams, Wettbewerbe,
@@ -675,7 +674,10 @@ dienen. Die KI-Generierungs-Workflows (\texttt{09}, \texttt{13},
 Textgenerierung an das Backend; Zusammenfassungen für Halbzeit und Abpfiff
 rufen den LLM-Provider direkt auf. Medien- und Social-Media-Workflows
 (\texttt{08}, \texttt{10}--\texttt{12}) dienen der Ingestion von
-Bildern, YouTube-Clips und Social-Media-Inhalten. Workflow \texttt{15}
+Medieninhalten: Workflow \texttt{10} importiert Twitter/X-Posts, Workflow
+\texttt{11} YouTube-Clips und Workflow \texttt{12} Instagram-Beiträge,
+jeweils über plattformspezifische API-Abfragen und persistiert die URLs
+im Backend. Workflow \texttt{15}
 überwacht laufende Spiele und aktualisiert Live-Statistiken per
 Backend-Endpunkt; Workflow \texttt{16} empfängt minutengenaue
 Statusupdates, aktualisiert \texttt{minute}, \texttt{match\_phase} und
@@ -715,7 +717,7 @@ Dieser Workflow sucht Medien-Assets bei ScorePlay für Spieler eines Torereignis
 Tests}\label{qualituxe4tssicherung-und-tests}
 
 Die Qualitätssicherung folgt dem Testpyramiden-Modell nach Cohn (2009).
-Die Testsuite umfasst 352 Tests (168 Frontend, 178 Backend, 6
+Die Testsuite umfasst 371 Tests (187 Frontend, 178 Backend, 6
 E2E), die alle grün durchlaufen. Das Frontend setzt auf Jest mit
 \texttt{@testing-library/react}; besonders umfangreich ist der
 \texttt{parseCommand}-Parser mit 29 Testfällen, da er die kritische

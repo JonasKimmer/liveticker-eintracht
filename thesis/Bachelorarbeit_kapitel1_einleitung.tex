@@ -79,28 +79,27 @@ Aus der in Abschnitt~1.1 entwickelten Zielsetzung ergibt sich folgende
 Forschungsfrage, die der vorliegenden Arbeit zugrunde liegt:
 
 \begin{quote}
-Inwiefern reduziert ein hybrides KI-gestütztes Redaktionssystem die
-Time-to-Publish bei der Liveticker-Erstellung im Profifußball im
-Vergleich zur rein manuellen Erstellung, ohne die journalistische
-Qualität hinsichtlich Korrektheit, Tonalität und Verständlichkeit zu
-beeinträchtigen?
+Wie lässt sich ein hybrides KI-gestütztes Redaktionssystem für die
+Liveticker-Erstellung im Profifußball konzipieren und prototypisch
+implementieren --- und inwiefern erfüllt das System die definierten
+journalistischen Qualitätsanforderungen hinsichtlich Korrektheit,
+Tonalität und Verständlichkeit?
 \end{quote}
 
-Die Frage ist bewusst zweiteilig formuliert: Sie erfasst einerseits eine
-\textbf{zeitliche Dimension} --- die Reduktion der Publikationslatenz
---- und andererseits eine \textbf{qualitative Dimension}, die
-sicherstellt, dass Geschwindigkeit nicht auf Kosten journalistischer
-Standards erzielt wird. Beide Dimensionen sind für die Praxis
-gleichermaßen relevant, da Schnelligkeit zwar als oberstes
-Qualitätskriterium gilt (Beils 2023, S. 57), sprachliche und inhaltliche
-Korrektheit jedoch selbst unter hohem Zeitdruck nicht verhandelbar sind
-(Bluhm \& Schäfer 2023, S. 35). Die Operationalisierung beider
-Dimensionen wird in Kapitel 1.3 methodisch vorbereitet und in Kapitel 6
-vollständig durchgeführt. Der \texttt{auto}-Modus wird dabei als
-Kontrollbedingung evaluiert, die den Maximalgewinn an Geschwindigkeit
-ohne redaktionelles Korrektiv abbildet; der primäre
-Evaluationsvergleich gilt dem hybriden \texttt{coop}-Modus als dem für
-den Produktivbetrieb intendierten Modus.
+Die Frage ist konstruktiv-evaluativ angelegt: Der erste Teil adressiert
+die \textbf{Gestaltungs- und Implementierungsdimension} im Sinne des
+Design Science Research (Hevner et al.~2004) --- Konzeption,
+Architekturentscheid und prototypische Realisierung eines
+produktionsfähigen Systems. Der zweite Teil adressiert die
+\textbf{Qualitätsdimension} --- die empirische Prüfung, ob das
+System journalistische Mindestanforderungen an Korrektheit, Tonalität
+und Verständlichkeit erfüllt. Als ergänzenden Befund wird untersucht,
+welches Potenzial zur Reduktion der Publikationslatenz sich aus den
+gemessenen Systemlatenzen und der Systemarchitektur ableiten lässt;
+da ein kontrollierter Feldvergleich nicht durchführbar war, ist dieser
+Befund nicht als primäres Evaluationsziel zu verstehen. Die
+Operationalisierung erfolgt in Kapitel 1.3 methodisch und in Kapitel 6
+vollständig.
 
 
 
@@ -146,11 +145,7 @@ Spielereignis und Veröffentlichung des Ticker-Eintrags erfasst. Die
 Skalen Korrektheit, Tonalität und Verständlichkeit operationalisiert,
 ergänzt durch ein \textbf{strukturiertes Experteninterview} mit einem
 professionellen Sportredakteur zur Validierung der Systemeignung im
-redaktionellen Arbeitskontext. Für den statistischen Vergleich bei größeren Stichproben stünden
-nicht-parametrische Verfahren (Cliff's Delta,
-Bootstrap-Konfidenzintervalle) bereit; aufgrund der Stichprobengröße
-von $n = 16$ wird auf deren Einsatz im vorliegenden Evaluationsdesign
-verzichtet.
+redaktionellen Arbeitskontext.
 
 \section{Abgrenzung}\label{abgrenzung}
 

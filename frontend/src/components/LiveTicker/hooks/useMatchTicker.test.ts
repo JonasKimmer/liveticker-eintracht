@@ -43,7 +43,7 @@ describe("useMatchTicker", () => {
     expect(result.current.tickerTexts).toHaveLength(1);
 
     api.fetchTickerTexts.mockResolvedValue({ data: [] });
-    rerender({ id: 2 });
+    act(() => { rerender({ id: 2 }); });
     expect(result.current.tickerTexts).toEqual([]);
   });
 

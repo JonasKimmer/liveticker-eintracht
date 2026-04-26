@@ -125,7 +125,7 @@ describe("PublishedEntry — Manueller Eintrag", () => {
     expect(
       screen.getByText("Tor! Müller trifft ins Glück."),
     ).toBeInTheDocument();
-    expect(screen.getByText(/manuell/)).toBeInTheDocument();
+    expect(screen.getByText("neutral · mock")).toBeInTheDocument();
   });
 
   test("zeigt Minute", () => {

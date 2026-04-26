@@ -46,17 +46,17 @@ describe("EntryEditor — Grundstruktur", () => {
 
   test("zeigt Veröffentlichen-Button", () => {
     renderEditor();
-    expect(screen.getByText("Veröffentlichen")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Annehmen/ })).toBeInTheDocument();
   });
 
   test("Veröffentlichen deaktiviert bei leerem Wert", () => {
     renderEditor({ value: "" });
-    expect(screen.getByText("Veröffentlichen")).toBeDisabled();
+    expect(screen.getByRole("button", { name: /Annehmen/ })).toBeDisabled();
   });
 
   test("Veröffentlichen aktiv bei gesetztem Wert", () => {
     renderEditor({ value: "Eintrag" });
-    expect(screen.getByText("Veröffentlichen")).not.toBeDisabled();
+    expect(screen.getByRole("button", { name: /Annehmen/ })).not.toBeDisabled();
   });
 
   test("zeigt Abbrechen-Button wenn onCancel übergeben", () => {
@@ -71,7 +71,7 @@ describe("EntryEditor — Grundstruktur", () => {
 
   test("zeigt Label 'Manueller Eintrag' im MANUAL-Modus", () => {
     renderEditor({ mode: MODES.MANUAL });
-    expect(screen.getByText("Manueller Eintrag")).toBeInTheDocument();
+    expect(screen.getByText(/Manueller Eintrag/)).toBeInTheDocument();
   });
 
   test("zeigt Hint-Text bei leerem Eingabefeld", () => {
@@ -173,7 +173,7 @@ describe("EntryEditor — Publish", () => {
     const onPublish = jest.fn();
     const onChange = jest.fn();
     renderEditor({ value: "Freier Text", onPublish, onChange });
-    fireEvent.click(screen.getByText("Veröffentlichen"));
+    fireEvent.click(screen.getByRole("button", { name: /Annehmen/ }));
     expect(onPublish).toHaveBeenCalledWith(
       expect.objectContaining({ text: "Freier Text" }),
     );
@@ -188,7 +188,7 @@ describe("EntryEditor — Publish", () => {
       onPublish,
       onChange,
     });
-    fireEvent.click(screen.getByText("Veröffentlichen"));
+    fireEvent.click(screen.getByRole("button", { name: /Annehmen/ }));
     expect(onPublish).toHaveBeenCalledWith(
       expect.objectContaining({ icon: "🟨" }),
     );

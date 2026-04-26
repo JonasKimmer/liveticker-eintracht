@@ -48,7 +48,7 @@ describe("useMatchEvents", () => {
     expect(result.current.events).toHaveLength(1);
 
     api.fetchEvents.mockResolvedValue({ data: { items: [] } });
-    rerender({ id: 2 });
+    act(() => { rerender({ id: 2 }); });
     expect(result.current.events).toEqual([]);
   });
 

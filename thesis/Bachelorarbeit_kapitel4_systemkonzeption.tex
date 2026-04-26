@@ -199,8 +199,8 @@ gleichzeitiger LLM-Aufrufe begrenzt ein konfigurierbarer
 Lastspitzen und Rate-Limit-Probleme reduziert. Ergänzend greift ein
 \textbf{Retry-Mechanismus mit Backoff}: Bei Rate-Limit-Fehlern folgen
 automatische Wiederholungsversuche mit linearem Backoff (3 Versuche,
-30~s / 60~s / 90~s); bei sonstigen transienten Fehlern exponentielles
-Backoff (1~s / 2~s / 4~s). Nicht alle Endpunkte sind vollständig
+Wartezeiten 30~s / 60~s); bei sonstigen transienten Fehlern exponentielles
+Backoff (1~s / 2~s). Nicht alle Endpunkte sind vollständig
 asynchronisiert; langlaufende Integrationslogik ist in n8n ausgelagert,
 wodurch der API-Server als transaktionaler Kern entlastet wird. Für den
 Live-Betrieb ist das Backend auf kontrollierte Degradation ausgelegt:
@@ -255,34 +255,12 @@ nachvollziehbaren Redaktionsentscheidungen ausgelegt.
 Die folgende Abbildung zeigt die zentralen Entitäten und ihre
 Beziehungen:
 
-\begin{Shaded}
-\begin{Highlighting}[]
-\NormalTok{erDiagram}
-\NormalTok{    countries ||{-}{-}o\{ teams : "hat Teams"}
-\NormalTok{    teams ||{-}{-}o\{ competition\_teams : "spielt in"}
-\NormalTok{    competitions ||{-}{-}o\{ competition\_teams : "hat Teams"}
-\NormalTok{    competitions ||{-}{-}o\{ matches : "umfasst"}
-\NormalTok{    seasons ||{-}{-}o\{ matches : "enthält"}
-\NormalTok{    teams ||{-}{-}o\{ matches : "home\_team"}
-\NormalTok{    teams ||{-}{-}o\{ matches : "away\_team"}
-
-\NormalTok{    matches ||{-}{-}o\{ events : "hat Events"}
-\NormalTok{    matches ||{-}{-}o\{ synthetic\_events : "hat synth. Events"}
-\NormalTok{    matches ||{-}{-}o\{ ticker\_entries : "hat Ticker"}
-\NormalTok{    matches ||{-}{-}o\{ lineups : "hat Lineup"}
-\NormalTok{    matches ||{-}{-}o\{ match\_statistics : "hat Statistiken"}
-
-\NormalTok{    events ||{-}{-}o\{ ticker\_entries : "event\_id (nullable)"}
-\NormalTok{    synthetic\_events |o{-}{-}o\{ ticker\_entries : "synthetic\_event\_id (nullable)"}
-
-\NormalTok{    players ||{-}{-}o\{ lineups : "spielt"}
-\NormalTok{    players ||{-}{-}o\{ player\_statistics : "hat Statistiken"}
-
-\NormalTok{    seasons ||{-}{-}o\{ standings : "hat Standings"}
-\NormalTok{    competitions ||{-}{-}o\{ standings : "hat Standings"}
-\NormalTok{    teams ||{-}{-}o\{ standings : "Rang"}
-\end{Highlighting}
-\end{Shaded}
+\begin{figure}[H]
+  \centering
+  \DiagramDataModel
+  \caption{Vereinfachtes ER-Diagramm der zentralen Systemtabellen (konzeptionell)}
+  \label{fig:er-diagramm}
+\end{figure}
 
 \begin{quote}
 \textbf{Hinweis:} Die Tabellen \texttt{media\_queue},
@@ -584,9 +562,7 @@ Das Frontend ist als React-Client mit TypeScript und klarer Trennung zwischen UI
 
 Die White-Label-Fähigkeit ist über eine Konfigurationsschicht (\texttt{config/whitelabel.ts}) realisiert (u.\,a. Farben, Team-Keyword, API-Base-URLs). Die Oberfläche unterstützt alle drei Betriebsmodi (\texttt{auto}, \texttt{coop}, \texttt{manual}) inklusive Laufzeitumschaltung über den \texttt{ModeSelector} und Synchronisierung mit dem Backend.
 
-Die Zustands- und Interaktionslogik ist in wiederverwendbare Custom Hooks aufgeteilt --- ein Entwurfsmuster, das React seit Version 16.8 als Alternative zu Klassenkomponenten eingeführt hat. Das Frontend umfasst 26 spezialisierte Hooks in fünf funktionalen Kategorien: Navigation und Datenauswahl steuern die hierarchische Auswahlkette und lösen bei leerem Datenbestand bedarfsgesteuert n8n-Importtrigger aus; Datenabfrage und Polling laden Match-, Event- und Tickerdaten periodisch über koordinierte Abfragezyklen; Echtzeitkommunikation stellt eine WebSocket-Verbindung für den Medien-Feed bereit.
-
-Redaktionsinteraktion umfasst Modusverwaltung, Draft-Bestätigung und -Ablehnung, Tastatursteuerung sowie automatische Publikation im Vollautomatik-Modus. UI-Steuerung deckt Panel-Größenanpassung, Spielminuten-Berechnung, Spielernamen-Autovervollständigung und Systemstatus-Überwachung ab.
+Die Zustands- und Interaktionslogik ist in wiederverwendbare Custom Hooks aufgeteilt --- ein Entwurfsmuster, das React seit Version 16.8 als Alternative zu Klassenkomponenten eingeführt hat. Die funktionalen Kategorien umfassen: Navigation und Datenauswahl (lösen bei leerem Datenbestand bedarfsgesteuert n8n-Importtrigger aus), Datenabfrage und Polling (laden Match-, Event- und Tickerdaten periodisch über koordinierte Abfragezyklen), Echtzeitkommunikation (WebSocket-Verbindung für den Medien-Feed), Redaktionsinteraktion (Modusverwaltung, Draft-Bestätigung und -Ablehnung, Tastatursteuerung) sowie UI-Steuerung (Panel-Größenanpassung, Spielminuten-Berechnung, Autovervollständigung). Die konkreten Implementierungen sind in Kapitel~5.4.3--5.4.5 dokumentiert.
 
 
 
