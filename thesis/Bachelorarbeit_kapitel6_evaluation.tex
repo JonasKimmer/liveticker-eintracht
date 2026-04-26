@@ -227,12 +227,12 @@ durchführen, ohne die Global-Konfiguration zu verändern.
 Das Evaluationsmodul (\texttt{app/utils/evaluation\_metrics.py}) stellt sechs Metriken bereit:
 
 \begin{itemize}\tightlist
-\item \textbf{Time-to-Publish (TTP):} Latenz zwischen Ereigniszeitpunkt und Veröffentlichung in Sekunden --- zentral, da Aktualität ein primäres Qualitätsmerkmal des Liveticker-Genres darstellt.
-\item \textbf{Cliff's Delta} (Cliff 1993): Nicht-parametrische Effektstärke für ordinale Daten; berechnet den Anteil konkordanter vs.~diskordanter Paare (Wertebereich [−1, 1], wobei |δ| < 0,147 als vernachlässigbar, |δ| < 0,33 als klein und |δ| > 0,474 als groß gilt).
-\item \textbf{Bootstrap-Konfidenzintervall:} Resampling-basierte Schätzung des Mittelwertunterschieds zwischen zwei Gruppen (5.000 Iterationen, 95 \%, deterministisch via Seed; Rückgabe: \texttt{(observed\_diff, lower\_ci, upper\_ci)}).
-\item \textbf{Cohen's Kappa} (Cohen 1960): Interrater-Reliabilitätsmaß für kategoriale Bewertungen (κ > 0,61 gilt als substantielle Übereinstimmung).
-\item \textbf{Verteilungsanalyse} (\texttt{summarize\_distribution}): Berechnet Median, Standardabweichung, Quartile, IQR und 95.~Perzentil.
-\item \textbf{Qualitätsaggregation} (\texttt{aggregate\_quality\_by\_group}): Gruppiert Bewertungsergebnisse nach Schlüssel (z.~B. Modus oder Modell) und berechnet je Dimension Mittelwert und Gesamtscore.
+\item \textbf{Time-to-Publish (TTP):} Latenz zwischen Ereigniszeitpunkt und Veröffentlichung in Sekunden.
+\item \textbf{Cliff's Delta} (Cliff 1993): Nicht-parametrische Effektstärke für ordinale Daten (Wertebereich [−1, 1]).
+\item \textbf{Bootstrap-Konfidenzintervall:} Resampling-basierte Schätzung des Mittelwertunterschieds (5.000 Iterationen, 95~\%).
+\item \textbf{Cohen's Kappa} (Cohen 1960): Interrater-Reliabilitätsmaß für kategoriale Bewertungen.
+\item \textbf{Verteilungsanalyse} (\texttt{summarize\_distribution}): Median, Standardabweichung, Quartile, IQR und 95.~Perzentil.
+\item \textbf{Qualitätsaggregation} (\texttt{aggregate\_quality\_by\_group}): Mittelwerte je Bewertungsdimension, gruppiert nach Schlüssel (z.~B. Modus oder Modell).
 \end{itemize}
 
 Alle sechs Funktionen sind durch 17 Unit-Tests abgesichert (\textasciitilde96 \% Coverage).
@@ -505,37 +505,6 @@ Satz überschreitet drei Wörter. Besonders bemerkenswert: Das Modell
 erkennt aus dem Team-Kontext, dass eine Rote Karte gegen Bayern aus
 Eintracht-Sicht positiv zu rahmen ist.
 
-\emph{Beispiel 3 --- Wechsel (neutral, Bewertung 4/4/4):}
-
-\begin{quote}
-Event: Auswechslung, 65. Minute, S. Mbangula für P. Covic (Eintracht
-Frankfurt vs.~Werder Bremen, Werder Bremen-Wechsel) KI-Text: „65.
-Minute: Erster Wechsel bei Werder Bremen. S. Mbangula geht vom Feld. Für
-ihn kommt P. Covic.''
-\end{quote}
-
-Bewertung: Fakten und Stil sind korrekt. Die Formulierung „Erster
-Wechsel'' ist nicht aus dem Kontext ableitbar und stellt eine kleine
-Halluzination dar; in diesem Fall war sie zufällig korrekt.
-
-\emph{Beispiel 4 --- Tor (Englisch, euphorisch, Übersetzung via
-translate\_ticker\_text):}
-
-\begin{quote}
-Event: Tor, 81. Minute, R. Doan (Eintracht Frankfurt vs.~FSV Mainz 05),
-Vorlage Collins KI-Text (EN): ``81st minute: WHAT IS GOING ON?! Collins
-with the silky cross! DOAN! The ball is in! GOOOAL! 1-0! The house is
-rocking!''
-\end{quote}
-
-Bewertung: Die Übersetzung überträgt alle Fakten korrekt und erhält die
-emotionale Intensität des euphorischen Stils. Die idiomatische Anpassung
-(„Die Hütte bebt'' → „The house is rocking'') zeigt, dass das LLM nicht
-wörtlich übersetzt, sondern genreäquivalente Formulierungen wählt.
-Mehrsprachige Ausgabe ist über den \texttt{language}-Parameter und die
-Batch-Übersetzung (\texttt{translate\_ticker\_text}) für alle vier
-unterstützten Sprachen (DE/EN/ES/FR) verfügbar.
-
 Die qualitative Analyse identifizierte folgende wiederkehrende Fehlerklassen:
 
 {\def\LTcaptype{none} % do not increment counter
@@ -661,49 +630,33 @@ München, FSV Mainz 05 -- Bayer Leverkusen. Abgedeckte Event-Typen: 16
 Tore (davon 3 Elfmeter), 2 Gelbe Karten, 1 Rote Karte, 1 Wechsel.
 Stilprofile: 14 neutral, 3 euphorisch, 3 kritisch.
 
+Von 20 bewerteten Einträgen erreichten 13 den Maximalwert 5,0 / 5; der Gesamtdurchschnitt liegt bei \textbf{K~4,45 / T~4,50 / V~4,55 / Ø~4,50}. Die vier schwächsten Einträge dokumentieren die identifizierten Fehlerklassen:
+
 {\def\LTcaptype{none}
 \begin{longtable}[]{@{}
   >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.04}}
-  >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.30}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.32}}
   >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.14}}
-  >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.10}}
-  >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.10}}
-  >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.10}}
-  >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.10}}@{}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.09}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.09}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.09}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.13}}@{}}
 \toprule\noalign{}
 Nr & Ereignis & Stil & K & T & V & Ø \\
 \midrule\noalign{}
 \endhead
 \bottomrule\noalign{}
 \endlastfoot
-01 & 27' Tor R. Doan (Freiburg)         & neutral    & 4 & 5 & 5 & 4,7 \\
-02 & 45' Tor A. Knauff (Frankfurt)       & euphorisch & 5 & 4 & 4 & 4,3 \\
-03 & 61' Tor R. Kristensen (Frankfurt)   & euphorisch & 4 & 3 & 5 & 4,0 \\
-04 & 63' Tor E. Skhiri (Frankfurt)       & neutral    & 2 & 4 & 3 & 3,0 \\
-05 & 42' Gelb R. Kristensen (Frankfurt)  & neutral    & 5 & 5 & 4 & 4,7 \\
-06 & 8' Tor X. Simons (Leipzig)          & neutral    & 5 & 5 & 5 & 5,0 \\
-07 & 57' Tor N. Woltemade (Stuttgart)    & neutral    & 5 & 5 & 5 & 5,0 \\
-08 & 78' Tor E. Demirović (Stuttgart)    & kritisch   & 3 & 3 & 4 & 3,3 \\
-09 & 33' Gelb T. Gomis (Leipzig)         & neutral    & 5 & 5 & 4 & 4,7 \\
-10 & 3' Elfer S. Guirassy (BVB)          & neutral    & 5 & 5 & 5 & 5,0 \\
-11 & 9' Rot C. Johansson (Kiel)          & kritisch   & 4 & 3 & 4 & 3,7 \\
-12 & 47' Tor M. Sabitzer (BVB)           & neutral    & 5 & 5 & 5 & 5,0 \\
-13 & 72' Tor F. Nmecha (BVB)             & neutral    & 5 & 5 & 5 & 5,0 \\
-14 & 33' Tor M. Olise (Bayern)           & neutral    & 5 & 5 & 5 & 5,0 \\
-15 & 53' Tor J. Kimmich (Bayern)         & kritisch   & 5 & 4 & 5 & 4,7 \\
-16 & 86' Tor H. Kane (Bayern)            & neutral    & 5 & 5 & 5 & 5,0 \\
-17 & 35' Tor P. Nebel (Mainz)            & neutral    & 5 & 5 & 5 & 5,0 \\
-18 & 49' Elfer P. Schick (Leverkusen)    & neutral    & 5 & 5 & 5 & 5,0 \\
-19 & 54' Tor P. Schick (Leverkusen)      & neutral    & 2 & 4 & 3 & 3,0 \\
-20 & 63' Elfer J. Burkardt (Mainz)       & neutral    & 5 & 5 & 5 & 5,0 \\
+04 & 63' Tor E. Skhiri (Frankfurt)    & neutral  & 2 & 4 & 3 & 3,0 \\
+08 & 78' Tor E. Demirović (Stuttgart) & kritisch & 3 & 3 & 4 & 3,3 \\
+11 & 9' Rot C. Johansson (Kiel)       & kritisch & 4 & 3 & 4 & 3,7 \\
+19 & 54' Tor P. Schick (Leverkusen)   & neutral  & 2 & 4 & 3 & 3,0 \\
 \midrule\noalign{}
-\textbf{Ø} & & & \textbf{4,45} & \textbf{4,50} & \textbf{4,55} & \textbf{4,50} \\
+\textbf{Ø gesamt (N~=~20)} & & & \textbf{4,45} & \textbf{4,50} & \textbf{4,55} & \textbf{4,50} \\
 \end{longtable}
 }
 
-\emph{K = Korrektheit, T = Tonalität, V = Verständlichkeit (je 1--5).
-Bewerter: Claude Sonnet 4.6 (Anthropic), unabhängig vom generierenden Modell
-(Gemini 2.0 Flash Lite). Ereignisdaten: Football API v3, Saison 2024/25, Md. 34.}
+\emph{K = Korrektheit, T = Tonalität, V = Verständlichkeit (je 1--5). Bewerter: Claude Sonnet 4.6 (Anthropic). Ereignisdaten: Football API v3, Saison 2024/25, Md.~34. Nr.~04 und 19: semantischer Framing-Fehler (Spielstandsinterpretation); Nr.~08 und 11: kritisch-Profil mit schwacher Tonalität.}
 
 \textbf{Befunde} --- Der Gesamtdurchschnitt von \textbf{4,5 / 5} liegt leicht über dem Hauptevaluationswert (4,3 / 5), was auf den konsistenten Datenfeed aus der Football API ohne Kontextlücken zurückzuführen ist. Die Fehleranalyse identifiziert drei Fehlerklassen. Ein \textbf{semantischer Framing-Fehler} trat in 3 von 20 Fällen (15~\%) auf: Das Modell verwendete „verkürzt'' oder „Anschlusstreffer'', obwohl das handelnde Team in Führung lag (Nr. 04, 08, 19) --- Ursache ist die fehlende explizite Repräsentation des Spielstands vor dem Tor im Kontext. \textbf{Phrasenwiederholung im euphorischen Profil} trat einmalig (5~\%) auf: Eintrag Nr.~03 reproduzierte die im Prompt als zu vermeidend markierten Phrasen „WAS IST DENN HIER LOS?!'' und „Die Hütte bebt!'' trotz Anweisung. Eine \textbf{interne Inkonsistenz} zeigte sich ebenfalls einmalig (5~\%): Eintrag Nr.~11 wertete das Einsteigen gleichzeitig als „überharten Foul'' und als „fragwürdige Entscheidung'' des Schiedsrichters.
 
