@@ -94,9 +94,10 @@ Kernfelder
 \texttt{StyleReference} & \texttt{style\_references} &
 \texttt{event\_type}, \texttt{instance}, \texttt{league}, \texttt{text}
 (Few-Shot) \\
-\texttt{Country}, \texttt{Team}, \texttt{Competition}, \texttt{Lineup}, \texttt{MatchStatistic}, \texttt{PlayerStatistic}, \texttt{MediaQueue}, \texttt{MediaClip} & Stammdaten, Statistiken, Medien & Standardfelder; vollständige Felddefinition in \texttt{app/models/} \\
 \end{longtable}
 }
+
+Weitere Stammdaten-Modelle (Country, Team, Competition, Lineup, MatchStatistic, PlayerStatistic, MediaQueue, MediaClip) folgen dem gleichen Grundmuster und sind vollständig in \texttt{app/models/} dokumentiert.
 
 Das \texttt{TickerEntry}-Modell hat besondere Bedeutung im Lifecycle des
 Systems: Es verknüpft über \texttt{event\_id} (FK auf \texttt{events})
@@ -287,15 +288,7 @@ Der Prompt wird in vier modularen Methoden aufgebaut.
 Parameter wird nur dann eingebunden, wenn er vorhanden ist, und
 Ereignisbezeichnungen werden aus \texttt{EVENT\_TYPE\_LABEL} in lesbares
 Deutsch übersetzt (z.\,B. \texttt{"goal"} → \texttt{"Tor"}).
-\texttt{\_build\_few\_shot\_block()} formatiert die Stilreferenzen als
-nummerierte Beispiele:
-
-\begin{verbatim}
-### STILREFERENZEN
-Schreibe in exakt diesem Stil (Rhythmus, Wortwahl, Emotionalität):
-- "Mustermann trifft mit einem satten Rechtsschuss – 1:0!"
-- "Eintracht schlägt zu – der erste Treffer des Abends!"
-\end{verbatim}
+\texttt{\_build\_few\_shot\_block()} formatiert die Stilreferenzen als nummerierte Beispiele im Prompt (vgl.\ Abschnitt~4.5.2).
 
 Der vollständig zusammengesetzte System-Prompt folgt der in Abschnitt
 4.5.2 beschriebenen modularen Struktur aus sechs Bausteinen
@@ -497,50 +490,25 @@ Die wichtigsten Hooks und ihre Verantwortlichkeiten:
 
 {\def\LTcaptype{none} % do not increment counter
 \begin{longtable}[]{@{}
-  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.2043}}
-  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.0968}}
-  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.6989}}@{}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.22}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.10}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.68}}@{}}
 \toprule\noalign{}
-\begin{minipage}[b]{\linewidth}\raggedright
-Hook
-\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
-Paket
-\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
-Verantwortlichkeit
-\end{minipage} \\
+Hook & Paket & Verantwortlichkeit \\
 \midrule\noalign{}
 \endhead
 \bottomrule\noalign{}
 \endlastfoot
-\texttt{useNavigation} & hooks/ & Land→Team→Wettbewerb→Spieltag→Spiel
-Navigationskette \\
-\texttt{useMatchData} & hooks/ & Aggregiert Polling-Hooks, koordiniert
-Reload-Zyklen, steuert Polling-Intervall \\
-\texttt{useMatchCore} & hooks/ & Polling der Match-Metadaten (Teams,
-Status, Spielstand, Minute) \\
-\texttt{useMatchEvents} & hooks/ & Polling der Spielereignisse (Tore,
-Karten, Auswechslungen) \\
-\texttt{useTickerMode} & hooks/ & \texttt{mode}-State, PATCH zum
-Backend, Keyboard-Shortcuts \\
-\texttt{useMatchTicker} & LT/hooks/ & Polling der Ticker-Einträge
-(5-Sekunden-Zyklus) \\
-\texttt{useTicker} & LT/hooks/ & Ticker-Actions, Draft-Queue,
-Publish-Toast (Undo) \\
-\texttt{useEventDraft} & LT/hooks/ & Entwurfsansicht,
-Accept/Reject-Logik \\
-\texttt{useAutoPublisher} & LT/hooks/ & Automatisches Publizieren im
-Auto-Modus \\
+\texttt{useNavigation} & hooks/ & Land→Team→Wettbewerb→Spieltag→Spiel Navigationskette \\
+\texttt{useMatchData} & hooks/ & Aggregiert Polling-Hooks, koordiniert Reload-Zyklen \\
+\texttt{useTickerMode} & hooks/ & \texttt{mode}-State, PATCH zum Backend, Keyboard-Shortcuts \\
+\texttt{useTicker} & LT/hooks/ & Ticker-Actions, Draft-Queue, Publish-Toast (Undo) \\
+\texttt{useEventDraft} & LT/hooks/ & Entwurfsansicht, Accept/Reject-Logik \\
+\texttt{useAutoPublisher} & LT/hooks/ & Automatisches Publizieren im Auto-Modus \\
 \end{longtable}
 }
 
-\texttt{useMatchCore}, \texttt{useMatchEvents} und
-\texttt{useMatchTicker} betreiben jeweils einen eigenen
-\texttt{setInterval}-Zyklus (5 Sekunden), der bei Mount startet und bei
-Unmount gestoppt wird. Die HTTP-Kommunikation erfolgt über
-\texttt{axios}. \texttt{useMatchData} aggregiert die Polling-Hooks und
-stellt die Daten über \texttt{TickerDataContext} bereit; das
-Polling-Intervall ist als Erweiterungspunkt für zustandsabhängige
-Frequenzen (Live vs. Prematch) konzipiert.
+Die Polling-Hooks \texttt{useMatchCore}, \texttt{useMatchEvents} und \texttt{useMatchTicker} betreiben je einen eigenen 5-Sekunden-\texttt{setInterval}-Zyklus; \texttt{useMatchData} aggregiert sie und stellt die Daten über \texttt{TickerDataContext} bereit.
 
 
 \subsection{\texorpdfstring{Slash-Command-Parser
@@ -662,25 +630,19 @@ inkrementelle Migration ohne blockierende Fehlereskalation zu erlauben.
 
 \begin{Shaded}
 \begin{Highlighting}[]
-\ImportTok{export type}\NormalTok{ TickerMode }\OperatorTok{=} \StringTok{"auto"} \OperatorTok{|} \StringTok{"coop"} \OperatorTok{|} \StringTok{"manual"}\OperatorTok{;}
+\ImportTok{export type}\NormalTok{ TickerMode  }\OperatorTok{=} \StringTok{"auto"} \OperatorTok{|} \StringTok{"coop"} \OperatorTok{|} \StringTok{"manual"}\OperatorTok{;}
 \ImportTok{export type}\NormalTok{ TickerStyle }\OperatorTok{=} \StringTok{"neutral"} \OperatorTok{|} \StringTok{"euphorisch"} \OperatorTok{|} \StringTok{"kritisch"}\OperatorTok{;}
-\ImportTok{export type}\NormalTok{ MatchPhase }\OperatorTok{=} \StringTok{"Before"} \OperatorTok{|} \StringTok{"FirstHalf"} \OperatorTok{|} \StringTok{"FirstHalfBreak"} \OperatorTok{|} \StringTok{"SecondHalf"} \OperatorTok{|} \OperatorTok{...;}
+\ImportTok{export type}\NormalTok{ MatchPhase  }\OperatorTok{=} \StringTok{"Before"} \OperatorTok{|} \StringTok{"FirstHalf"} \OperatorTok{|} \StringTok{"FirstHalfBreak"} \OperatorTok{|} \StringTok{"SecondHalf"} \OperatorTok{|} \OperatorTok{...;}
 
 \ImportTok{export} \KeywordTok{interface}\NormalTok{ TickerEntry \{}
 \NormalTok{  id}\OperatorTok{:} \DataTypeTok{number}\OperatorTok{;}
-\NormalTok{  match\_id}\OperatorTok{:} \DataTypeTok{number}\OperatorTok{;}
-\NormalTok{  event\_id}\OperatorTok{?:} \DataTypeTok{number} \OperatorTok{|} \DataTypeTok{null}\OperatorTok{;}
 \NormalTok{  text}\OperatorTok{:} \DataTypeTok{string}\OperatorTok{;}
-\NormalTok{  style}\OperatorTok{?:} \DataTypeTok{string} \OperatorTok{|} \DataTypeTok{null}\OperatorTok{;}
 \NormalTok{  status}\OperatorTok{:} \StringTok{"draft"} \OperatorTok{|} \StringTok{"published"} \OperatorTok{|} \StringTok{"rejected"}\OperatorTok{;}
 \NormalTok{  source}\OperatorTok{?:} \StringTok{"ai"} \OperatorTok{|} \StringTok{"manual"}\OperatorTok{;}
 \NormalTok{  minute}\OperatorTok{?:} \DataTypeTok{number} \OperatorTok{|} \DataTypeTok{null}\OperatorTok{;}
-\NormalTok{  phase}\OperatorTok{?:} \DataTypeTok{string} \OperatorTok{|} \DataTypeTok{null}\OperatorTok{;}
+\NormalTok{  style}\OperatorTok{?:} \DataTypeTok{string} \OperatorTok{|} \DataTypeTok{null}\OperatorTok{;}
 \NormalTok{  icon}\OperatorTok{?:} \DataTypeTok{string} \OperatorTok{|} \DataTypeTok{null}\OperatorTok{;}
-\NormalTok{  image\_url}\OperatorTok{?:} \DataTypeTok{string} \OperatorTok{|} \DataTypeTok{null}\OperatorTok{;}
-\NormalTok{  video\_url}\OperatorTok{?:} \DataTypeTok{string} \OperatorTok{|} \DataTypeTok{null}\OperatorTok{;}
-\NormalTok{  llm\_model}\OperatorTok{?:} \DataTypeTok{string} \OperatorTok{|} \DataTypeTok{null}\OperatorTok{;}
-\NormalTok{\}}
+\NormalTok{  \}\textit{ // weitere Felder: event\_id, phase, image\_url, video\_url, llm\_model}}
 \end{Highlighting}
 \end{Shaded}
 
