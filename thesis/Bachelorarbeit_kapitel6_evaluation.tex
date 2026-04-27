@@ -10,7 +10,7 @@ Das Ziel der Evaluation ist es, das implementierte System auf mehreren Ebenen na
 Qualitätssicherung}\label{technische-qualituxe4tssicherung}
 
 Die technische Qualitätssicherung umfasst die vollständige Testsuite
-(Frontend, Backend, End-to-End) sowie die statische
+(Frontend, Backend, Browser-Smoke-Tests) sowie die statische
 Typsicherheitsanalyse.
 
 \subsection{Teststrategie und
@@ -25,7 +25,7 @@ vollständigen Redaktionsworkflow im Browser simulieren.
 
 \begin{verbatim}
           ┌──────────┐
-          │  E2E (6) │   Playwright — Browser-Workflow
+          │ Smoke (6) │   Playwright — Browser-Workflow
          ┌┴──────────┴┐
          │  API-Tests  │  FastAPI TestClient + PostgreSQL
         ┌┴────────────┴┐
@@ -148,7 +148,7 @@ Overlay-Schließen \\
 \end{longtable}
 }
 
-Die E2E-Tests decken absichtlich den \emph{stabilen Kern} der UI ab ---
+Die Browser-Smoke-Tests decken absichtlich den \emph{stabilen Kern} der UI ab ---
 das initiale Rendern, die Fehlerfreiheit beim Laden und grundlegende
 Interaktionspunkte. Sie dienen primär als Regression-Schutz: Bricht eine
 zentrale Komponente (z. B. durch einen fehlerhaften Import), schlagen
@@ -894,11 +894,11 @@ A5 & White-Label-Fähigkeit & Instanz-spezifische Kontextaufbereitung und Few-Sh
 \item \textbf{Eingeschränkte Stichprobengröße.} 9 Spiele und 16 Events bilden die Datenbasis der qualitativen Evaluation. Für eine statistisch belastbare Aussage wäre eine größere Stichprobe über verschiedene Wettbewerbe, Ligen und Spielsituationen erforderlich.
 \item \textbf{Kein Langzeitbetrieb.} Das System wurde nicht über einen längeren Zeitraum (z. B. eine vollständige Saison) im Produktivbetrieb evaluiert. Aspekte wie API-Kosten, Rate-Limit-Häufigkeit im Regelbetrieb und Drift der Textqualität über die Zeit sind daher nicht erfasst.
 \item \textbf{Keine Authentifizierung.} Das System verzichtet bewusst auf eine Authentifizierungsschicht (vgl. Kapitel 4.2.6). Für einen produktiven Einsatz ist die Absicherung der API-Endpunkte --- insbesondere der schreibenden Operationen (Publish, Reject, Retract, Mode-Wechsel) --- zwingend erforderlich.
-\item \textbf{Eingeschränkte E2E-Testabdeckung.} Die 6 Playwright-Tests decken den stabilen Kern der UI ab, testen aber nicht den vollständigen Redaktionsworkflow mit Backend-Anbindung (Spiel auswählen → Events empfangen → Ticker-Einträge bearbeiten → Freigeben). Ein vollständiger E2E-Test mit laufendem Backend und Testdatenbank wäre wünschenswert, wurde aber aufgrund der Komplexität des Setups nicht umgesetzt.
+\item \textbf{Eingeschränkte Browser-Smoke-Testabdeckung.} Die 6 Playwright-Tests decken den stabilen Kern der UI ab, testen aber nicht den vollständigen Redaktionsworkflow mit Backend-Anbindung (Spiel auswählen → Events empfangen → Ticker-Einträge bearbeiten → Freigeben). Ein vollständiger Browser-Test mit laufendem Backend und Testdatenbank wäre wünschenswert, wurde aber aufgrund der Komplexität des Setups nicht umgesetzt.
 \item \textbf{Polling statt Push.} Die Frontend-Datenaktualisierung basiert auf Polling (5-Sekunden-Intervall). In einem produktiven Szenario mit vielen gleichzeitigen Nutzern wäre Server-Sent Events (SSE) oder WebSocket für die Ticker-Updates effizienter. Die WebSocket-Infrastruktur existiert bereits für den Media-Kanal (Clip-Import), wurde aber nicht auf den Ticker-Datenfluss ausgeweitet.
 \item \textbf{Few-Shot-Reichweite.} Die Few-Shot-Infrastruktur wirkt nur bei Generierung über den Backend-LLM-Service. Die n8n-Workflows für Halbzeit- und Abpfiff-Zusammenfassungen rufen OpenRouter direkt auf und erhalten daher keine stilistischen Stilreferenzen. Zudem fällt der Liga-Filter bei zu wenigen liga-spezifischen Einträgen in der \texttt{style\_references}-Tabelle auf eine liga-agnostische Suche zurück (der Filter selbst ist case-insensitiv über \texttt{func.lower()} implementiert). Das Few-Shot-System funktioniert damit grundsätzlich, liefert aber noch keine konsequent liga-spezifische Stilkonditionierung.
 \item \textbf{Batch-Übersetzung schließt manuelle Einträge ein.} Der Endpunkt \texttt{POST\ /api/v1/ticker/translate-batch/\{match\_id\}} übersetzt alle publizierten Einträge eines Spiels --- unabhängig vom \texttt{source}-Feld. Das bedeutet, dass auch manuell verfasste Einträge übersetzt werden, obwohl diese bereits in der Zielsprache vorliegen könnten. Die Einschränkung liegt in einer fehlenden Filterung nach \texttt{source="ai"} im Batch-Endpunkt. Für eine präzise Mehrsprachigkeitsstrategie wäre eine separate Behandlung manueller Einträge sinnvoll.
-\item \textbf{Keine Tests für n8n-Workflows.} Die 16 n8n-Workflows (vgl. Kapitel 5.5) verfügen über keine automatisierten Tests. Ihre Korrektheit wurde ausschließlich durch manuelle Ausführung und Inspektion der Datenbank-Ergebnisse verifiziert. Eine testgetriebene Absicherung wäre über n8n-Workflow-Mocks oder Integrationstests gegen eine Staging-Datenbank möglich, wurde aber aufgrund der visuellen Natur der n8n-Entwicklungsumgebung nicht umgesetzt.
+\item \textbf{Keine Tests für n8n-Workflows.} Die 17 n8n-Workflows (vgl. Kapitel 5.5) verfügen über keine automatisierten Tests. Ihre Korrektheit wurde ausschließlich durch manuelle Ausführung und Inspektion der Datenbank-Ergebnisse verifiziert. Eine testgetriebene Absicherung wäre über n8n-Workflow-Mocks oder Integrationstests gegen eine Staging-Datenbank möglich, wurde aber aufgrund der visuellen Natur der n8n-Entwicklungsumgebung nicht umgesetzt.
 \end{itemize}
 
 
