@@ -65,7 +65,7 @@ Netzwerkabsicherung aus. Die Architektur ist durch die saubere
 Middleware-Schichtung (FastAPI Dependencies) für eine nachträgliche
 JWT-Integration vorbereitet.
 
-Die 16 n8n-Workflows (vgl. Kapitel 6.7, „Keine Tests für
+Die 17 n8n-Workflows (vgl. Kapitel 6.7, „Keine Tests für
 n8n-Workflows'') stellen den größten nicht automatisiert getesteten
 Systemteil dar. Da sie die gesamte Datenversorgung des Systems
 verantworten, wäre eine Absicherung durch Integrationstests gegen eine
@@ -174,7 +174,7 @@ ohne separate Codebases zu erfordern. Für Vereine mit begrenzten
 Redaktionsressourcen senkt dies die Einstiegshürde in eine
 professionelle Liveticker-Berichterstattung.
 
-Die Zukunftsperspektive wird im Experteninterview (vgl.~Interviewleitfaden, Block~4, Fragen IF16--IF18) adressiert. Aus Sicht des Experten sind insbesondere die Konfigurierbarkeit des Stils und die Möglichkeit der Laufzeitumschaltung zwischen den Modi praxisrelevante Stärken. Technische Voraussetzung für eine echte Multi-Vereins-Skalierung ist die Mandantenfähigkeit auf Datenbankebene, da die aktuelle Architektur beide Instanzen (\texttt{ef\_whitelabel}, \texttt{generic}) in einem Schema hält. Die Skalierbarkeits- und White-Label-Bewertung stützt sich auf die in Kapitel~5 dokumentierte Systemarchitektur und die Deployment-Erfahrung mit der bestehenden \texttt{ef\_whitelabel}-Instanz. Konkrete Erweiterungsszenarien --- mehrsprachige Ausgabe, Erweiterung der Datenbasis, Nutzerstudie mit Redakteuren --- sind in Abschnitt~8.3 beschrieben.
+Die Zukunftsperspektive wird im Experteninterview (vgl.~Interviewleitfaden, Block~4, Fragen IF16--IF18) adressiert. \textbf{[INTERVIEW-ERGEBNISSE ERGÄNZEN: Expertenbewertung Konfigurierbarkeit und Modi-Umschaltung]} Technische Voraussetzung für eine echte Multi-Vereins-Skalierung ist die Mandantenfähigkeit auf Datenbankebene, da die aktuelle Architektur beide Instanzen (\texttt{ef\_whitelabel}, \texttt{generic}) in einem Schema hält. Die Skalierbarkeits- und White-Label-Bewertung stützt sich auf die in Kapitel~5 dokumentierte Systemarchitektur und die Deployment-Erfahrung mit der bestehenden \texttt{ef\_whitelabel}-Instanz. Konkrete Erweiterungsszenarien --- mehrsprachige Ausgabe, Erweiterung der Datenbasis, Nutzerstudie mit Redakteuren --- sind in Abschnitt~8.3 beschrieben.
 
 \subsection{Ethische Überlegungen}\label{ethische-uxfcberlegungen}
 
