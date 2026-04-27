@@ -42,7 +42,7 @@ Das System realisiert die in Kapitel 4 konzipierte dreischichtige
 Architektur vollständig (Datenschicht via n8n-ETL, Anwendungsschicht via
 FastAPI/PostgreSQL, Präsentationsschicht via React/TypeScript). Die
 \textbf{White-Label-Architektur} und die \textbf{drei Betriebsmodi}
-bilden die Kernbeiträge des Systemdesigns (vgl. Kap. 4.3.3, 5.3.3).
+bilden die Kernbeiträge des Systemdesigns (vgl. Kap. 4.3.3, 5.3.5).
 
 
 
@@ -54,9 +54,10 @@ Die in Kapitel 1.2 formulierte Forschungsfrage lautet:
 \begin{quote}
 \emph{Wie lässt sich ein hybrides KI-gestütztes Redaktionssystem für die
 Liveticker-Erstellung im Profifußball konzipieren und prototypisch
-implementieren --- und inwiefern erfüllt das System die definierten
-journalistischen Qualitätsanforderungen hinsichtlich Korrektheit,
-Tonalität und Verständlichkeit?}
+implementieren, das journalistische Qualitätsanforderungen hinsichtlich
+Korrektheit, Tonalität und Verständlichkeit erfüllt --- und welches
+Potenzial zur Reduktion der Publikationslatenz lässt sich auf Basis der
+Systemarchitektur und gemessener Latenzdaten belegen?}
 \end{quote}
 
 Die Beantwortung erfolgt entlang der beiden Teile der Forschungsfrage; ein ergänzender Sekundärbefund adressiert das Latenzpotenzial.
@@ -99,7 +100,7 @@ Erweiterungen}\label{kurzfristige-erweiterungen}
 \item \textbf{Authentifizierung und Rollensystem:} Die Integration eines JWT- oder OAuth-2.0-basierten Authentifizierungsframeworks ist die wichtigste Voraussetzung für einen Mehrbenutzerbetrieb. Ein rollenbasiertes Zugriffskonzept (Redakteur, Chefredakteur, Administrator) würde die Freigabe-Workflows im \texttt{coop}-Modus um eine Vier-Augen-Prüfung erweitern.
 \item \textbf{Server-Sent Events für Ticker-Updates:} Die Ablösung des 5-Sekunden-Pollings durch SSE für den Ticker-Datenfluss würde die End-to-End-Latenz im \texttt{coop}-Modus weiter reduzieren und die Serverlast bei vielen gleichzeitigen Nutzern senken.
 \item \textbf{Erweiterte E2E-Tests:} Die Ausweitung der Playwright-Tests auf den vollständigen Redaktionsworkflow mit laufendem Backend und Testdatenbank (Spiel auswählen, Events empfangen, Ticker-Einträge bearbeiten, Freigeben) würde die Regressionssicherheit erhöhen.
-\item \textbf{n8n-Workflow-Tests:} Die 16 n8n-Workflows (vgl. Kapitel 6.7) sind derzeit ausschließlich manuell verifiziert. Integrationstests gegen eine Staging-Datenbank würden die Zuverlässigkeit der Datenversorgungspipeline absichern.
+\item \textbf{n8n-Workflow-Tests:} Die 17 n8n-Workflows (vgl. Kapitel 6.7) sind derzeit ausschließlich manuell verifiziert. Integrationstests gegen eine Staging-Datenbank würden die Zuverlässigkeit der Datenversorgungspipeline absichern.
 \item \textbf{Few-Shot-Kontextualisierung in n8n-Workflows:} Die n8n-Workflows für Halbzeit- und Abpfiff-Zusammenfassungen (Workflow 13) rufen OpenRouter direkt auf, ohne Stilreferenzen aus der \texttt{style\_references}-Tabelle einzubinden. Eine Erweiterung dieser Workflows um einen SQL-Schritt zur Referenzabfrage würde die stilistische Kohärenz zwischen Backend-generierten und n8n-generierten Einträgen herstellen.
 \item \textbf{Größere Evaluationsstichprobe:} Die Hauptevaluation umfasst 16 Einträge aus 9 Spielen --- eine für explorative Erkenntnisse ausreichende, für statistisch belastbare Aussagen jedoch zu kleine Datenbasis. Eine Folgestudie mit ≥ 100 Einträgen aus verschiedenen Wettbewerben, Ligen und Spielsituationen würde die Generalisierbarkeit der Ergebnisse stärken und den Einsatz der implementierten nicht-parametrischen Verfahren (Cliff's Delta, Bootstrap-CI) rechtfertigen.
 \item \textbf{Langzeitbetrieb:} Das System wurde nicht über einen längeren Zeitraum evaluiert. Aspekte wie Drift der Textqualität über die Zeit, kumulative API-Kosten im Saison-Betrieb und Rate-Limit-Häufigkeit unter realer Dauerlast sind nicht erfasst. Eine Saisonbegleitung über mindestens 34 Bundesliga-Spieltage würde hier belastbare Betriebsdaten liefern.
