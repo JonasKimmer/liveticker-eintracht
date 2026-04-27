@@ -97,26 +97,7 @@ Live-Prozesse.
 \subsection{Partner-Team-Konzept und
 White-Label-Steuerung}\label{partner-team-konzept-und-white-label-steuerung}
 
-Das System unterscheidet zwischen dem \textbf{Partner-Team} --- dem
-Verein, für den die White-Label-Instanz konfiguriert ist --- und den
-jeweiligen Gegnern. Diese Unterscheidung wird über ein konfigurierbares
-Team-Keyword umgesetzt, das sowohl in den n8n-Workflows als auch im
-Frontend gegen den Teamnamen abgeglichen wird.
-
-Auf Basis dieser Erkennung werden zwei Verarbeitungspfade gesteuert:
-Partner-Team-Spiele verwenden den \texttt{ef\_whitelabel}-Instanzpfad mit
-euphorischem Stil, alle anderen Spiele den \texttt{generic}-Pfad mit
-neutralem Stil. Das Frontend blendet vereinsspezifische Bereiche
-(Social-Media-Panels, Torjubel-Videos) ausschließlich bei erkannten
-Partner-Team-Spielen ein. Für Tormomente des Partner-Teams werden
-zusätzlich Spielerdaten und Torjubel-Video-URLs aus einer externen
-Vereinsquelle in den Prompt-Kontext eingebettet.
-
-Das Datenbankschema enthält ergänzend ein
-\texttt{is\_partner\_team}-Flag, das für zukünftige Erweiterungen
-vorgesehen ist. Die konkreten Implementierungen sind in Kapitel 5.2.2
-(Datenbankmodell, \texttt{is\_partner\_team}-Flag) und Kapitel 5.4.6
-(Frontend-Moduslogik, \texttt{isOurTeam}-Erkennung) dokumentiert.
+Das System unterscheidet zwischen dem \textbf{Partner-Team} --- dem Verein, für den die White-Label-Instanz konfiguriert ist --- und den jeweiligen Gegnern. Die Erkennung erfolgt über ein konfigurierbares Team-Keyword, das in n8n-Workflows und Frontend gegen den Teamnamen abgeglichen wird. Partner-Team-Spiele verwenden den \texttt{ef\_whitelabel}-Instanzpfad mit euphorischem Stil und aktivieren vereinsspezifische UI-Bereiche (Social-Media-Panels, Torjubel-Videos); alle anderen Spiele durchlaufen den \texttt{generic}-Pfad mit neutralem Stil. Die Implementierungsdetails sind in Kapitel~5 dokumentiert.
 
 
 
@@ -193,14 +174,7 @@ Robustheit}\label{asynchronituxe4t-nebenluxe4ufigkeit-und-performance}
 Die Laufzeitkonzeption setzt Asynchronität gezielt auf I/O-intensiven
 Pfaden ein --- insbesondere bei LLM-Generierungsrouten, Media-Verarbeitung
 und WebSocket-Kommunikation --- um die Reaktionsfähigkeit unter paralleler
-Last zu erhöhen, ohne Worker dauerhaft zu blockieren. Die Anzahl
-gleichzeitiger LLM-Aufrufe begrenzt ein konfigurierbarer
-\textbf{Semaphore-Mechanismus} (Standard: 8 parallele Anfragen), der
-Lastspitzen und Rate-Limit-Probleme reduziert. Ergänzend greift ein
-\textbf{Retry-Mechanismus mit Backoff}: Bei Rate-Limit-Fehlern folgen
-automatische Wiederholungsversuche mit linearem Backoff (3 Versuche,
-Wartezeiten 30~s / 60~s); bei sonstigen transienten Fehlern exponentielles
-Backoff (1~s / 2~s). Nicht alle Endpunkte sind vollständig
+Last zu erhöhen, ohne Worker dauerhaft zu blockieren. Die Anzahl gleichzeitiger LLM-Aufrufe begrenzt ein konfigurierbarer \textbf{Semaphore-Mechanismus}, der Lastspitzen und Rate-Limit-Probleme reduziert. Ergänzend greift ein \textbf{Retry-Mechanismus mit gestuftem Backoff} bei transienten Fehlern und Rate-Limit-Antworten; die konkreten Wartezeiten sind in Abschnitt~5.1.5 dokumentiert. Nicht alle Endpunkte sind vollständig
 asynchronisiert; langlaufende Integrationslogik ist in n8n ausgelagert,
 wodurch der API-Server als transaktionaler Kern entlastet wird. Für den
 Live-Betrieb ist das Backend auf kontrollierte Degradation ausgelegt:
@@ -495,27 +469,7 @@ LLM-Aufruf erzeugt. Diese Architektur stellt sicher, dass das System
 auch ohne LLM-Anbindung lauffähig bleibt --- etwa für Entwicklung und
 Tests.
 
-Standardmodelle der Provider sind:
-
-{\def\LTcaptype{none} % do not increment counter
-\begin{longtable}[]{@{}ll@{}}
-\toprule\noalign{}
-Provider & Standardmodell \\
-\midrule\noalign{}
-\endhead
-\bottomrule\noalign{}
-\endlastfoot
-OpenRouter & \texttt{google/gemini-2.0-flash-lite-001} \\
-Gemini & \texttt{gemini-2.0-flash-lite-001} \\
-OpenAI & \texttt{gpt-4o-mini} \\
-Anthropic & \texttt{claude-haiku-4-5-20251001} \\
-\end{longtable}
-}
-
-Zusätzlich kann die Auswahl in Generierungsrouten pro Request über
-\texttt{provider} und \texttt{model} überschrieben werden, was
-insbesondere für Evaluationsvergleiche zwischen Modellen genutzt wird
-(vgl. Abschnitt 6.3.3).
+Zusätzlich kann die Auswahl in Generierungsrouten pro Request über \texttt{provider} und \texttt{model} überschrieben werden, was insbesondere für Evaluationsvergleiche genutzt wird. Die Standardmodelle der Provider sowie die Evaluationsergebnisse sind in Abschnitt~6.3.2 dokumentiert.
 
 
 
@@ -569,7 +523,7 @@ Das Frontend ist als React-Client mit TypeScript und klarer Trennung zwischen UI
 
 Die White-Label-Fähigkeit ist über eine Konfigurationsschicht (\texttt{config/whitelabel.ts}) realisiert (u.\,a. Farben, Team-Keyword, API-Base-URLs). Die Oberfläche unterstützt alle drei Betriebsmodi (\texttt{auto}, \texttt{coop}, \texttt{manual}) inklusive Laufzeitumschaltung über den \texttt{ModeSelector} und Synchronisierung mit dem Backend.
 
-Die Zustands- und Interaktionslogik ist in wiederverwendbare Custom Hooks aufgeteilt --- ein Entwurfsmuster, das React seit Version 16.8 als Alternative zu Klassenkomponenten eingeführt hat. Die funktionalen Kategorien umfassen: Navigation und Datenauswahl (lösen bei leerem Datenbestand bedarfsgesteuert n8n-Importtrigger aus), Datenabfrage und Polling (laden Match-, Event- und Tickerdaten periodisch über koordinierte Abfragezyklen), Echtzeitkommunikation (WebSocket-Verbindung für den Medien-Feed), Redaktionsinteraktion (Modusverwaltung, Draft-Bestätigung und -Ablehnung, Tastatursteuerung) sowie UI-Steuerung (Panel-Größenanpassung, Spielminuten-Berechnung, Autovervollständigung). Die konkreten Implementierungen sind in Kapitel~5.4.3--5.4.5 dokumentiert.
+Die Zustands- und Interaktionslogik ist in wiederverwendbare Custom Hooks aufgeteilt, die Navigation, Polling, Echtzeitkommunikation, Redaktionsinteraktion und UI-Steuerung abdecken. Die konkreten Hook-Implementierungen sind in Kapitel~5.3.3 dokumentiert.
 
 
 
