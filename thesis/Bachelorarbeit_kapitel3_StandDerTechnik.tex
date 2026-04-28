@@ -1,12 +1,12 @@
 \chapter{Stand der Technik}\label{stand-der-technik}
 
 Dieses Kapitel legt die technologischen Grundlagen für das vorliegende
-System. Es gliedert sich in neun Bereiche: KI-gestützte Textgenerierung
+System. Es gliedert sich in sieben Bereiche: KI-gestützte Textgenerierung
 mit Large Language Models und Prompt Engineering (Kap.~3.1--3.2),
 automatisierte Sprachgenerierung im Sportjournalismus (Kap.~3.3),
 Echtzeit-Kommunikationsmuster (Kap.~3.4), ETL-Workflows und
 Automatisierungsplattformen (Kap.~3.5) sowie die eingesetzten Backend-,
-Frontend- und Deployment-Technologien (Kap.~3.6--3.8). Kapitel~3.9
+Frontend- und Deployment-Technologien (Kap.~3.6). Kapitel~3.7
 synthetisiert die Erkenntnisse und leitet daraus die
 Technologieentscheidungen für das Systemdesign ab.
 
@@ -111,7 +111,7 @@ Kapitel~4.5.2 beschrieben.
 \section{Natural Language Generation im
 Sportjournalismus}\label{natural-language-generation-im-sportjournalismus}
 
-Die automatisierte Erzeugung natürlichsprachlicher Texte aus strukturierten Daten (Data-to-Text Generation) bildet die technische Grundlage für KI-gestützte Berichterstattungssysteme (Puduppully \& Lapata 2021, S. 510). Historische Ansätze basierten auf regelbasierten Template-Architekturen mit vorhersagbarer Ausgabe, aber stilistischer Monotonie; neuronale End-to-End-Systeme verbesserten die sprachliche Natürlichkeit auf Kosten erhöhter Halluzinationsanfälligkeit (Puduppully \& Lapata 2021, S. 520; vgl. Beils 2023, S. 207). Klassische NLG-Architekturen werden durch Large Language Models (Kapitel~3.1--3.2) für die meisten Anwendungsfälle weitgehend ersetzt --- für diese Arbeit ist ausschließlich der LLM-basierte Ansatz relevant: Das vorliegende System nutzt Few-Shot-Prompting (Kapitel~3.2) zur stilkontrollierten Textgenerierung; Halluzinationsrisiken werden durch das Human-in-the-Loop-Design des \texttt{coop}-Modus (Kapitel~4.3.3) abgefangen.
+Die automatisierte Erzeugung natürlichsprachlicher Texte aus strukturierten Daten (Data-to-Text Generation) bildet die technische Grundlage für KI-gestützte Berichterstattungssysteme (Puduppully \& Lapata 2021, S. 510). Historische Ansätze basierten auf regelbasierten Template-Architekturen mit vorhersagbarer Ausgabe, aber stilistischer Monotonie; neuronale End-to-End-Systeme verbesserten die sprachliche Natürlichkeit auf Kosten erhöhter Halluzinationsanfälligkeit (Puduppully \& Lapata 2021, S. 520; vgl. Beils 2023, S. 207). Im professionellen Roboterjournalismus erzeugt beispielsweise \emph{Die Welt} bereits automatisierte Spielberichte via Retresco (Beils 2023, S.~207) --- ein templatebasierter Ansatz, der deterministische, aber stilistisch begrenzte Texte liefert. Klassische NLG-Architekturen werden durch Large Language Models (Kapitel~3.1--3.2) für die meisten Anwendungsfälle weitgehend ersetzt --- für diese Arbeit ist ausschließlich der LLM-basierte Ansatz relevant: Das vorliegende System nutzt Few-Shot-Prompting (Kapitel~3.2) zur stilkontrollierten Textgenerierung; Halluzinationsrisiken werden durch das Human-in-the-Loop-Design des \texttt{coop}-Modus (Kapitel~4.3.3) abgefangen.
 
 
 
@@ -137,7 +137,7 @@ Kommunikation. Hybridansätze nutzen verschiedene Muster für
 unterschiedliche Datenströme innerhalb derselben Anwendung, um
 Trade-offs gezielt zu optimieren.
 
-Die konkrete Umsetzung im vorliegenden System wird in Kapitel 4.6.5
+Die konkrete Umsetzung im vorliegenden System wird in Kapitel~4.1.1
 beschrieben.
 
 
@@ -203,27 +203,19 @@ in Kapitel~4.4 beschrieben.
 
 
 
-\section{Backend-Technologien}\label{backend-technologien}
+\section{Backend-, Frontend- und Deployment-Technologien}\label{backend-frontend-und-deployment-technologien}
 
 Python hat sich als Standard für datenintensive Webanwendungen und KI-Systeme etabliert (Stack Overflow Developer Survey 2024). Pythons \texttt{asyncio}-Eventloop ermöglicht über \textbf{ASGI}-Frameworks wie \texttt{FastAPI} nicht-blockierende Verarbeitung: Während eine Anfrage auf einen LLM-Aufruf oder eine Datenbankabfrage wartet, können andere Anfragen parallel bearbeitet werden (Grigorev 2019). \texttt{FastAPI} generiert aus \texttt{Pydantic}-Schemata automatisch eine OpenAPI-konforme Dokumentation, die gleichzeitig als maschinenlesbarer Vertrag für Frontend und n8n-Workflows dient. Das \textbf{Repository Pattern} (Fowler 2002, S.~322) kapselt den Datenzugriff und entkoppelt die Service-Schicht von der Persistenzschicht --- eine Voraussetzung für transaktionale Testbarkeit. \texttt{SQLAlchemy} implementiert dieses Muster als typsichere ORM-Schicht über PostgreSQL, das mit vollständigen ACID-Garantien referenzielle Integrität erzwingt und über native JSONB-Spalten auch semistrukturierte Daten verwaltet. Die konkrete Backend-Architektur wird in Kapitel~4.2 beschrieben.
 
-
-
-\section{Frontend-Technologien}\label{frontend-technologien}
-
 TypeScript erweitert JavaScript um ein statisches Typsystem, das Typfehler zur Entwicklungszeit erkennt und Schnittstellenänderungen sofort an allen Aufrufstellen als Compilerfehler sichtbar macht (Microsoft 2012). React zerlegt die Benutzeroberfläche in isolierte, wiederverwendbare Komponenten; Zustand und Seiteneffekte werden über React Hooks verwaltet, während die \texttt{Context API} global geteilten Zustand bereitstellt, ohne ihn über Prop-Ketten durchzureichen. Als \textbf{Single-Page Application (SPA)} aktualisiert das Frontend die Darstellung dynamisch ohne vollständige Seitenneuladen --- geeignet für interaktive Werkzeuge mit häufigen Zustandsänderungen. Die konkrete Frontend-Architektur wird in Kapitel~4.6 beschrieben.
 
-
-
-\section{Deployment und Containerisierung}\label{deployment-und-containerisierung}
-
-Docker (Merkel 2014) paketiert die Anwendung mitsamt Laufzeitumgebung in reproduzierbare Container; \texttt{Docker Compose} koordiniert mehrere Dienste über eine deklarative Konfigurationsdatei. \textbf{Platform-as-a-Service (PaaS)}-Anbieter wie Render abstrahieren die Infrastrukturverwaltung und ermöglichen Deployments direkt aus Git-Branches. PaaS setzt ein \textbf{Stateless-Design} voraus: Persistente Daten werden in externe Dienste ausgelagert, sodass zusätzliche Instanzen ohne Zustandskonsistenzprobleme gestartet werden können. Die konkrete Deployment-Architektur wird in Kapitel~4.7.4 beschrieben.
+Docker (Merkel 2014) paketiert die Anwendung mitsamt Laufzeitumgebung in reproduzierbare Container; \texttt{Docker Compose} koordiniert mehrere Dienste über eine deklarative Konfigurationsdatei. \textbf{Platform-as-a-Service (PaaS)}-Anbieter wie Render abstrahieren die Infrastrukturverwaltung und ermöglichen Deployments direkt aus Git-Branches. PaaS setzt ein \textbf{Stateless-Design} voraus: Persistente Daten werden in externe Dienste ausgelagert, sodass zusätzliche Instanzen ohne Zustandskonsistenzprobleme gestartet werden können. Die konkrete Deployment-Architektur wird in Kapitel~4.7.2 beschrieben.
 
 
 
 \section{Synthese: Technologische Konsequenzen für das
 Systemdesign}\label{synthese-technologische-konsequenzen-fuxfcr-das-systemdesign}
 
-Der Stand der Technik zeigt, dass für das vorliegende System kein einzelnes Werkzeug ausreicht, sondern ein abgestimmtes Zusammenspiel mehrerer Technologieschichten notwendig ist. Kompakte Sprachmodelle mit Few-Shot-Prompting (Kap.~3.1--3.2) liefern die erforderliche Textqualität bei vertretbarer Latenz und ohne ressourcenintensives Fine-tuning. Der hybride NLG-Ansatz mit menschlicher Kontrollinstanz (Kap.~3.3) adressiert das systemimmanente Halluzinationsproblem von LLMs im journalistischen Kontext und entspricht der in Kap.~2.1 beschriebenen Anforderung, redaktionellen Aufwand zu reduzieren, ohne editoriale Kontrolle aufzugeben. Das vorliegende System nutzt HTTP-Polling für Ticker- und Ereignisdaten sowie WebSocket für Medienupdates; die Begründung dieser Hybridwahl erfolgt in Kapitel~4.6.5. n8n als Low-Code-Orchestrierungsplattform (Kap.~3.5) entkoppelt die ETL-Komplexität vom Anwendungskern und ermöglicht eine schnelle Anpassung von Datenquellen unabhängig von Backend-Deployment-Zyklen.
+Der Stand der Technik zeigt, dass für das vorliegende System kein einzelnes Werkzeug ausreicht, sondern ein abgestimmtes Zusammenspiel mehrerer Technologieschichten notwendig ist. Kompakte Sprachmodelle mit Few-Shot-Prompting (Kap.~3.1--3.2) liefern die erforderliche Textqualität bei vertretbarer Latenz und ohne ressourcenintensives Fine-tuning. Der hybride NLG-Ansatz mit menschlicher Kontrollinstanz (Kap.~3.3) adressiert das systemimmanente Halluzinationsproblem von LLMs im journalistischen Kontext und entspricht der in Kap.~2.1 beschriebenen Anforderung, redaktionellen Aufwand zu reduzieren, ohne editoriale Kontrolle aufzugeben. Das vorliegende System nutzt HTTP-Polling für Ticker- und Ereignisdaten sowie WebSocket für Medienupdates; die Begründung dieser Hybridwahl erfolgt in Kapitel~4.1.1. n8n als Low-Code-Orchestrierungsplattform (Kap.~3.5) entkoppelt die ETL-Komplexität vom Anwendungskern und ermöglicht eine schnelle Anpassung von Datenquellen unabhängig von Backend-Deployment-Zyklen.
 
 Die Anforderungen aus Kapitel~2 begründen konkret folgende Technologieentscheidungen: Die Datenschutz- und Betriebsanforderung aus Kap.~2.3 motiviert die Wahl von n8n gegenüber cloud-basierten iPaaS-Diensten; die Kostenrestriktion und Latenzanforderung aus Kap.~2.1 den Einsatz kompakter Sprachmodelle; die stark verknüpften Spielentitäten eine relationale Datenbankstruktur gegenüber dokumentbasierten Alternativen. Diese technologischen Grundlagen münden in die Systemkonzeption (Kapitel~4) und deren Implementierung (Kapitel~5).

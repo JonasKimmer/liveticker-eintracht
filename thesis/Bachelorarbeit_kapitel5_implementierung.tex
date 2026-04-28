@@ -2,7 +2,7 @@
 
 Dieses Kapitel dokumentiert die konkrete Umsetzung des in Kapitel~4 konzipierten Systems. Im Fokus stehen die technischen Entscheidungen auf Code-Ebene: die interne Struktur des FastAPI-Backends mit seinen Schichten aus Modellen, Repositories, Services und Routern; die KI-Generierungspipeline von der Ereigniserkennung bis zum publizierten Ticker-Eintrag; die Frontend-Implementierung mit React, Context-basiertem Zustandsmanagement und dem slash-command-getriebenen Eingabesystem; sowie die n8n-Workflow-Implementierung der zentralen Automatisierungsworkflows. Ergänzend werden die TypeScript-Migration und die Testabdeckung als Qualitätsmerkmale des Entwicklungsprozesses dokumentiert.
 
-Die Implementierung folgt dem Grundsatz „so einfach wie nötig, so modular wie sinnvoll": Standardpfade (CRUD, Listabfragen) sind bewusst direkt gehalten (Router → Repository), während die LLM-Generierung mit ihren Retry-, Semaphore- und Few-Shot-Mechanismen in einen dedizierten Service extrahiert ist. Die n8n-Workflows (Abschnitt~5.5) werden nach der Frontend-Implementierung beschrieben, da sie auf Backend-Endpunkten aufbauen, die bis dahin vollständig dokumentiert sind.
+Die Implementierung folgt dem Grundsatz „so einfach wie nötig, so modular wie sinnvoll": Standardpfade (CRUD, Listabfragen) sind bewusst direkt gehalten (Router → Repository), während die LLM-Generierung mit ihren Retry-, Semaphore- und Few-Shot-Mechanismen in einen dedizierten Service extrahiert ist. Die n8n-Workflows (Abschnitt~5.4) werden nach der Frontend-Implementierung beschrieben, da sie auf Backend-Endpunkten aufbauen, die bis dahin vollständig dokumentiert sind.
 
 
 \section{Backend-Implementierung}\label{backend-implementierung}
@@ -113,18 +113,7 @@ Deduplizierungs-Check per Event. Das Status-Enum wird als nicht-nativ
 gespeichert (\texttt{native\_enum=False}), damit Migrationen ohne
 Enum-Typ-Änderungen in PostgreSQL auskommen.
 
-Für jeden Router gibt es eigenständige Pydantic-Schemas für Create-, Update- und
-Response-Strukturen. Alle Schemas nutzen
-\texttt{alias\_generator=to\_camel} aus
-\texttt{pydantic.alias\_generators}, damit JSON-Payloads in camelCase
-kommuniziert werden, während Python-intern snake\_case gilt.
-
-Felder, die Spielstandwerte aus der Partner-API widerspiegeln, erhalten
-explizite \texttt{serialization\_alias}-Werte mit Partner-Konvention
-(\texttt{teamHomeScore}); Standard-Beziehungsfelder erhalten durch den
-globalen \texttt{alias\_generator=to\_camel} automatisch kanonisches
-camelCase. Für Ticker-Einträge steuert ein separates PATCH-Schema den
-Status, um versehentliche Massenänderungen zu vermeiden.
+Für jeden Router gibt es eigenständige Pydantic-Schemas für Create-, Update- und Response-Strukturen; alle nutzen \texttt{alias\_generator=to\_camel} für konsistente camelCase-API-Verträge bei Python-internem snake\_case.
 
 Jede Entität hat ein dediziertes Repository, das alle SQL-Operationen
 kapselt. Alle Repositories erben von
@@ -173,13 +162,6 @@ Diese Aufteilung verhindert, dass eine einzelne Routerdatei durch die
 Kombination aus CRUD-, Generierungs- und Batch-Endpunkten
 unübersichtlich wird.
 
-Ein kapselndes Hilfsmuster zieht sich durch alle Router:
-\texttt{require\_or\_404(value,\ message)} --- eine schmale
-Utility-Funktion in \texttt{utils/http\_errors.py}, die
-\texttt{None}-Rückgaben aus Repository-Aufrufen direkt in eine
-\texttt{HTTPException(404)} überführt. Das eliminiert das repetitive
-\texttt{if\ obj\ is\ None:\ raise\ HTTPException(404,\ ...)} in Routern
-und stellt sicher, dass alle 404-Antworten einheitlich formuliert sind.
 Der Batch-Endpunkt
 \texttt{POST\ /api/v1/ticker/translate-batch/\{match\_id\}} ruft für
 alle publizierten KI-Einträge eines Spiels den LLM-Service mit
@@ -277,30 +259,7 @@ Das Dispatch-Pattern erlaubt das einfache Hinzufügen neuer Provider:
 Implementierung einer Methode \texttt{\_generate\_X\_text()} und ein
 Eintrag im Dictionary.
 
-Vorab normalisiert \texttt{\_normalize\_event\_type()} den Ereignistyp:
-Die \texttt{EVENT\_TYPE\_MAP} übersetzt externe Strings beider APIs
-(z.\,B. \texttt{PartnerGoal} bzw. \texttt{Goal}) auf einheitliche
-interne Bezeichner (\texttt{goal}); unbekannte Typen fallen auf
-\texttt{"comment"} zurück.
-
-Der Prompt wird in vier modularen Methoden aufgebaut.
-\texttt{\_build\_event\_lines()} erzeugt die Fakten-Sektion; jeder
-Parameter wird nur dann eingebunden, wenn er vorhanden ist, und
-Ereignisbezeichnungen werden aus \texttt{EVENT\_TYPE\_LABEL} in lesbares
-Deutsch übersetzt (z.\,B. \texttt{"goal"} → \texttt{"Tor"}).
-\texttt{\_build\_few\_shot\_block()} formatiert die Stilreferenzen als nummerierte Beispiele im Prompt (vgl.\ Abschnitt~4.5.2).
-
-Der vollständig zusammengesetzte System-Prompt folgt der in Abschnitt
-4.5.2 beschriebenen modularen Struktur aus sechs Bausteinen
-(Rolleninstruktion, Stilinstruktion, Faktenblock, Match-Kontext,
-Few-Shot-Block, Regelblock). Für Pre-Match-Typen fügt
-\texttt{\_build\_prematch\_parts()} eine zusätzliche harte Schutzregel
-ein, die das Modell auf Vorschau- und Analyseinhalte beschränkt und das
-Erfinden von Live-Szenen verhindert. Die vier
-\texttt{\_build\_*}-Methoden erzeugen die Bausteine unabhängig
-voneinander, sodass fehlende Informationen (z.~B. kein Spieler bei
-Phasenereignissen) den Prompt nicht invalidieren, sondern den
-entsprechenden Block auslassen.
+Vorab normalisiert eine \texttt{EVENT\_TYPE\_MAP} externe API-Strings auf einheitliche interne Bezeichner (\texttt{goal}, \texttt{card} etc.); unbekannte Typen fallen auf \texttt{"comment"} zurück. Der Prompt wird in vier modularen Methoden aufgebaut --- Faktenblock, Few-Shot-Block, Pre-Match-Schutzregel und Regelblock --- die fehlende Parameter auslassen, statt den Prompt zu invalidieren (vgl.\ Abschnitt~4.5.2).
 
 LLM-Parameter: \texttt{temperature=0.3} für konsistente Ausgaben,
 \texttt{max\_tokens} aus \texttt{LLM\_MAX\_TOKENS} (konfigurierbar). Bei
@@ -407,9 +366,7 @@ verfasst hat und keine weitere Freigabe erforderlich ist.
 
 Im \texttt{coop}-Modus liegt die gesamte UX-Last auf der Draft-Queue:
 Das Frontend zeigt neue \texttt{draft}-Einträge mit
-\texttt{TAB}/\texttt{ESC}-Shortcuts an (vgl. Abschnitt 5.4.6), und die
-Entscheidungs-Latenz beträgt je nach Komplexität des Entwurfs 15--30
-Sekunden. Dieses Design stellt sicher, dass keine KI-generierten Texte
+\texttt{TAB}/\texttt{ESC}-Shortcuts an (vgl. Abschnitt 5.3.5). Dieses Design stellt sicher, dass keine KI-generierten Texte
 ohne menschliche Prüfung publiziert werden --- eine Entscheidung, die
 direkt aus dem journalistischen Qualitätsanspruch in Kapitel 2.1 folgt.
 
@@ -519,26 +476,7 @@ Maus-Interaktion. Er übersetzt kurze Kommandos in formatierte
 Ticker-Texte und liefert Metadaten (Icon, Phase, Minute) für die
 Publikation.
 
-Die Funktion \texttt{parseCommand(input,\ currentMinute)} gibt ein
-typisiertes \texttt{ParseResult} zurück:
-
-\begin{Shaded}
-\begin{Highlighting}[]
-\ImportTok{export} \KeywordTok{interface}\NormalTok{ ParseResult \{}
-\NormalTok{  type}\OperatorTok{:} \DataTypeTok{string}\OperatorTok{;}
-\NormalTok{  formatted}\OperatorTok{:} \DataTypeTok{string}\OperatorTok{;}
-\NormalTok{  warnings}\OperatorTok{:} \DataTypeTok{string}\NormalTok{[]}\OperatorTok{;}
-\NormalTok{  isValid}\OperatorTok{:} \DataTypeTok{boolean}\OperatorTok{;}
-\NormalTok{  meta}\OperatorTok{:}\NormalTok{ \{}
-\NormalTok{    icon}\OperatorTok{:} \DataTypeTok{string}\OperatorTok{;}
-\NormalTok{    phase}\OperatorTok{:} \DataTypeTok{string} \OperatorTok{|} \DataTypeTok{null}\OperatorTok{;}
-\NormalTok{    minute}\OperatorTok{:} \DataTypeTok{number} \OperatorTok{|} \DataTypeTok{null}\OperatorTok{;}
-\NormalTok{  \}}\OperatorTok{;}
-\NormalTok{\}}
-\end{Highlighting}
-\end{Shaded}
-
-Die Kommandos gliedern sich in zwei Typen:
+Die Funktion \texttt{parseCommand(input,\ currentMinute)} gibt ein typisiertes Ergebnisobjekt zurück (\texttt{type}, \texttt{formatted}, \texttt{warnings}, \texttt{isValid}, Metadaten zu Icon, Phase und Minute). Die Kommandos gliedern sich in zwei Typen:
 
 \begin{itemize}\tightlist
 \item \textbf{Phasen-Commands} (11 Einträge in \texttt{PHASE\_CMDS}) erzeugen vordefinierte Texte mit optionaler Minutenangabe. Die folgende Tabelle zeigt eine Auswahl (7 von 11):
@@ -589,7 +527,7 @@ statt einen Laufzeitfehler zu werfen.
 Frontend}\label{modusimplementierung-im-frontend}
 
 Der aktive Modus (\texttt{auto} / \texttt{coop} / \texttt{manual})
-steuert das Verhalten mehrerer Frontend-Komponenten (vgl. Kap.~4.6.4).
+steuert das Verhalten mehrerer Frontend-Komponenten (vgl. Kap.~4.6.2).
 \texttt{useTickerMode} initialisiert den Modus lokal mit \texttt{coop}
 als Standardwert, überschreibt diesen beim Laden eines Spiels mit dem in
 der Datenbank gespeicherten \texttt{ticker\_mode} und schreibt
@@ -714,10 +652,11 @@ Tests}\label{qualituxe4tssicherung-und-tests}
 
 Die Qualitätssicherung folgt dem Testpyramiden-Modell nach Cohn (2009).
 Die Testsuite umfasst 371 Tests (187 Frontend, 178 Backend, 6
-E2E), die alle grün durchlaufen. Das Frontend setzt auf Jest mit
+Browser-Smoke-Tests), die alle grün durchlaufen. Das Frontend setzt auf Jest mit
 \texttt{@testing-library/react}; besonders umfangreich ist der
-\texttt{parseCommand}-Parser mit 29 Testfällen, da er die kritische
-manuelle Eingabeschicht bildet. Das Backend nutzt pytest mit FastAPI
+\texttt{parseCommand}-Parser mit 45 Testfällen (davon 16 über
+\texttt{test.each}-Expansionen), da er die kritische manuelle
+Eingabeschicht bildet. Das Backend nutzt pytest mit FastAPI
 \texttt{TestClient} und transaktionalem Rollback; API-Integrationstests
 prüfen Endpunkte gegen eine echte PostgreSQL-Testinstanz, Unit-Tests
 decken Services und Repositories ab. Sechs Playwright-E2E-Tests

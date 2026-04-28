@@ -5,7 +5,7 @@ Basis der in Kapitel 2 hergeleiteten Anforderungen und der in Kapitel 3
 aufgearbeiteten technologischen Grundlagen. Es gliedert sich in acht
 Bereiche: das Schichtenmodell und die Kommunikationsarchitektur
 (Kap.~4.1), die Backend-Konzeption mit API-Design und
-Sicherheitskonzept (Kap.~4.2), die Datenbankkonzeption mit
+Robustheit (Kap.~4.2), die Datenbankkonzeption mit
 Ticker-Lifecycle und Betriebsmodi (Kap.~4.3), die
 Workflow-Konzeption in n8n (Kap.~4.4), die KI-Komponente mit
 Multi-Provider-Architektur und Prompt-Design (Kap.~4.5), die
@@ -104,7 +104,7 @@ Das System unterscheidet zwischen dem \textbf{Partner-Team} --- dem Verein, für
 \section{Backend-Konzeption}\label{backend-konzeption}
 
 Die Backend-Konzeption umfasst die Wahl des Frameworks, die interne
-Schichtstruktur, das API-Design sowie das Sicherheitskonzept. Alle
+Schichtstruktur, das API-Design sowie die Laufzeitrobustheit. Alle
 Entscheidungen orientieren sich an den Anforderungen aus Kap.~2.6 und
 den technologischen Grundlagen aus Kap.~3.6.
 
@@ -182,29 +182,10 @@ Fehler werden über konsistente HTTP-Antworten strukturiert zurückgegeben;
 bei Teilausfällen externer Dienste bleiben bereits persistierte Daten
 verfügbar und redaktionelle Kernprozesse können fortgeführt werden. Die
 Datenpersistenz ist auf \textbf{idempotente Verarbeitung} ausgelegt
-(vgl. Kap.~4.3.4).
-
-
-
-\subsection{Sicherheitskonzept}\label{sicherheitskonzept}
-
-Das System adressiert Sicherheit auf drei Ebenen, wobei der
-Projektrahmen einer Bachelorarbeit eine bewusste Priorisierung
-erfordert:
-
-Die gesamte Kommunikation erfolgt über HTTPS; die Render-Plattform
-übernimmt TLS-Terminierung und Zertifikatsverwaltung automatisch. Der
-Backend-Server konfiguriert eine \textbf{CORS-Whitelist}, die Anfragen
-ausschließlich von autorisierten Frontend-Ursprüngen akzeptiert; API-Schlüssel
-werden über Umgebungsvariablen injiziert und sind weder im Quellcode noch
-im Frontend exponiert. Die Pydantic-basierte Eingabevalidierung schützt
-vor Injection-Angriffen, da sämtliche Request-Payloads gegen typisierte
-Schemas geprüft werden, bevor sie die Geschäftslogik erreichen. Eine
-feingranulare Benutzerauthentifizierung ist im aktuellen Stand
-\textbf{nicht implementiert}; das System setzt als internes
-Redaktionswerkzeug auf Netzwerksegmentierung. Für produktiven
-Mehrbenutzerbetrieb wäre ein Authentifizierungsframework (z.\,B. OAuth 2.0
-oder JWT) erforderlich --- dies wird in Kapitel~7 eingeordnet.
+(vgl. Kap.~4.3.4). Transportschicht-Sicherheit (HTTPS via Render),
+CORS-Whitelisting und Pydantic-basierte Eingabevalidierung sind als
+Basismaßnahmen implementiert; eine Benutzerauthentifizierung wurde
+bewusst ausgeklammert (vgl. Kap.~1.4).
 
 
 
@@ -275,7 +256,7 @@ erhalten).
 
 Eine Rückstufung von \texttt{published} auf \texttt{draft} ist über
 \texttt{PATCH\ status=draft} möglich und wird insbesondere bei
-Re-Triggern von Matchphasen-Workflows genutzt (vgl. Kap. 5.5.3).
+Re-Triggern von Matchphasen-Workflows genutzt (vgl. Abschnitt~5.4).
 \texttt{rejected} ist ein terminaler Zustand --- ein verworfener Eintrag
 kann nicht reaktiviert werden. \texttt{deleted} kennzeichnet weich
 gelöschte Einträge: Sie bleiben in der Datenbank erhalten, werden aber
@@ -285,15 +266,6 @@ allen regulären Listenabfragen ausgeschlossen.
 Ergänzend markiert das Feld \texttt{source} die Herkunft (\texttt{ai}
 vs.~\texttt{manual}) und erlaubt eine saubere Trennung für Evaluationen
 (z. B. ausschließlich KI-generierte Einträge).
-
-\begin{quote}
-\textbf{Hinweis für die Methodik}: Im aktuellen Schema ist kein
-separates \texttt{published\_at}-Feld vorhanden. Persistiert wird
-\texttt{created\_at} des jeweiligen Ticker-Eintrags. Für sekundengenaue
-Time-to-Publish-Analysen sind daher zusätzliche Messzeitpunkte im
-Evaluationsdatensatz bzw. in der Messlogik erforderlich, statt sich
-allein auf den Tabellenzustand zu stützen.
-\end{quote}
 
 
 
@@ -402,7 +374,7 @@ Anpfiff/Abpfiff & Modus- und Event-gesteuert \\
 
 Diese Trennung reduziert Kopplung, erleichtert Fehlersuche und erlaubt
 es, einzelne Teilprozesse unabhängig anzupassen. Die konkreten
-Workflow-Dateinamen und Implementierungsdetails sind in Kapitel 5.5
+Workflow-Dateinamen und Implementierungsdetails sind in Kapitel~5.4
 dokumentiert.
 
 
@@ -410,7 +382,7 @@ dokumentiert.
 \subsection{Workflow-Grenzen und projektspezifische
 Besonderheiten}\label{workflow-grenzen-und-projektspezifische-besonderheiten}
 
-Die Workflow-Landschaft ist funktional umfassend, enthält aber bewusst pragmatische Projektentscheidungen. In einzelnen Flows ist die Saisonlogik auf 2025 begrenzt (teilweise saisonspezifische Fixierung). Nicht alle Datenpfade sind eventgetrieben --- ein Teil wird durch Polling und bedarfsgesteuerte Trigger ergänzt (hybride Aktualisierungslogik). Einige LLM- und Medienprozesse enthalten EF-spezifische Logik, die für eine vollständig generalisierte White-Label-Fähigkeit noch parametrisiert werden müsste (instanzspezifische Spezialpfade).
+Die Workflow-Landschaft ist funktional umfassend, enthält aber bewusst pragmatische Projektentscheidungen. In einzelnen Flows ist die Saisonlogik auf 2025 begrenzt (teilweise saisonspezifische Fixierung); für den nächsten Saisonbetrieb wäre eine Parametrisierung dieser Werte erforderlich (vgl. Kap.~6.7). Nicht alle Datenpfade sind eventgetrieben --- ein Teil wird durch Polling und bedarfsgesteuerte Trigger ergänzt (hybride Aktualisierungslogik). Einige LLM- und Medienprozesse enthalten EF-spezifische Logik, die für eine vollständig generalisierte White-Label-Fähigkeit noch parametrisiert werden müsste (instanzspezifische Spezialpfade).
 
 In Summe bildet n8n eine tragfähige Orchestrierungsschicht, die externe
 Datenquellen, interne Persistenz und KI-generierte Inhalte in einem
@@ -441,13 +413,12 @@ einem einzelnen API-Schlüssel verschiedene Sprachmodelle unterschiedlicher
 Anbieter angesprochen werden können. Der Wechsel zwischen Modellen erfordert
 lediglich eine Änderung der Umgebungsvariable \texttt{OPENROUTER\_MODEL};
 verschiedene Modelle können auf demselben Prompt evaluiert werden
-(vgl. Abschnitt~6.3.3); und das jeweils kostengünstigste Modell lässt sich
+(vgl. Abschnitt~6.3.2); und das jeweils kostengünstigste Modell lässt sich
 ohne Codeanpassung wählen --- ein entscheidender Faktor für
 Vereinsredaktionen mit begrenztem Budget.
 
-Im produktiven Einsatz wird aktuell Gemini 2.0 Flash Lite
-(Modell-ID \texttt{google/gemini-2.0-flash-lite-001}) über OpenRouter
-genutzt. Die Wahl dieses kompakten Modells begründet sich durch die
+Als Standardmodell im Deployment wurde Gemini 2.0 Flash Lite
+(Modell-ID \texttt{google/gemini-2.0-flash-lite-001}) über OpenRouter gewählt. Die Wahl dieses kompakten Modells begründet sich durch die
 Aufgabencharakteristik (vgl. Kap.~3.1): Liveticker-Texte sind kurz und
 faktenbasiert --- eine Aufgabe, für die kompakte Modelle eine
 vergleichbare Qualität bei deutlich niedrigerer Latenz erzielen.
@@ -532,7 +503,7 @@ Kommunikation}\label{dreispalten-layout-und-redaktionsfluss}
 
 Die Hauptansicht folgt einem responsiven Dreispalten-Ansatz mit klarer Aufgabenverteilung. Das linke Panel übernimmt die Veröffentlichungsperspektive: Es listet publizierte Ticker-Einträge als chronologischen Feed, dedupliziert nach \texttt{event\_id} und sortiert nach Spielminute. Das mittlere Panel bildet die redaktionelle Kernarbeit ab: Event-Verarbeitung in Abhängigkeit vom Modus, Draft-Prüfung und Freigabe/Ablehnung, manuelle Eingabe mit Command-Parser (\texttt{/g}, \texttt{/gelb}, \texttt{/rot}, \texttt{/s}) sowie integrierte Media- und Social-Panels, die ausschließlich bei erkannten EF-Spielen eingeblendet werden. Das rechte Panel liefert Kontext- und Analyseinformationen: Matchstatistiken, Aufstellungen sowie spielerbezogene Leistungsdaten.
 
-Die Modusumschaltung (vgl. Kap.~4.3.3) erfolgt über einen dedizierten \texttt{ModeSelector} mit Portal-basiertem Bestätigungsdialog, visueller Toast-Rückmeldung (2200~ms) und Tastatur-Shortcuts (\texttt{Ctrl+1} / \texttt{Ctrl+2} / \texttt{Ctrl+3}). Im kooperativen Modus sind zusätzliche Tastatur-Interaktionen für den Accept-/Reject-Flow (\texttt{TAB} / \texttt{ESC}) eingebunden. Das Frontend setzt die hybride Triggerarchitektur mit REST-Polling (5-Sekunden-Intervall) für Kerndaten, Webhook-Trigger für bedarfsgesteuerte n8n-Importe sowie WebSocket (\texttt{/ws/media}) mit Exponential-Backoff-Reconnect für latenzkritische Medieninhalte um. Die konkreten Hook-Implementierungen sind in Kapitel~5.4.3--5.4.5 dokumentiert.
+Die Modusumschaltung (vgl. Kap.~4.3.3) erfolgt über einen dedizierten \texttt{ModeSelector} mit Portal-basiertem Bestätigungsdialog, visueller Toast-Rückmeldung (2200~ms) und Tastatur-Shortcuts (\texttt{Ctrl+1} / \texttt{Ctrl+2} / \texttt{Ctrl+3}). Im kooperativen Modus sind zusätzliche Tastatur-Interaktionen für den Accept-/Reject-Flow (\texttt{TAB} / \texttt{ESC}) eingebunden. Das Frontend setzt die hybride Triggerarchitektur mit REST-Polling (5-Sekunden-Intervall) für Kerndaten, Webhook-Trigger für bedarfsgesteuerte n8n-Importe sowie WebSocket (\texttt{/ws/media}) mit Exponential-Backoff-Reconnect für latenzkritische Medieninhalte um. Die konkreten Hook-Implementierungen sind in Kapitel~5.3.3--5.3.5 dokumentiert.
 
 
 
@@ -547,7 +518,7 @@ Anforderungen.
 \subsection{Skalierung, Erweiterbarkeit und
 Deployment}\label{horizontale-skalierung-des-backends}
 
-Die Anwendungsschicht ist zustandslos konzipiert und kann horizontal skaliert werden, indem zusätzliche Uvicorn-Prozesse hinter einem Load-Balancer gestartet werden. Der gemeinsame PostgreSQL-Connection-Pool (\texttt{QueuePool} mit \texttt{pool\_size=20}, \texttt{max\_overflow=30}) stellt sicher, dass mehrere Backend-Instanzen dieselbe Datenbankverbindungskapazität teilen. Der in-Memory-\texttt{MediaConnectionManager} für WebSocket-Verbindungen funktioniert hingegen nicht über Prozessgrenzen hinweg und müsste bei Multi-Prozess-Deployment durch ein verteiltes Pub/Sub-System (z.~B. Redis) ergänzt werden.
+Die Anwendungsschicht ist zustandslos konzipiert und kann horizontal skaliert werden, indem zusätzliche Uvicorn-Prozesse hinter einem Load-Balancer gestartet werden. Ein gemeinsamer PostgreSQL-Connection-Pool sichert die Datenbankverbindungskapazität über mehrere Backend-Instanzen.
 
 Neue Ereignistypen können ohne Datenbankschema-Änderungen ergänzt werden: Die \texttt{events}-Tabelle verfügt über ein generisches \texttt{description}-Feld, und die \texttt{synthetic\_events}-Tabelle nutzt JSONB für vollständig flexible Payloads. Die Übersetzung von Football-API-Codes auf interne Typbezeichnungen ist in einer zentralen \texttt{EVENT\_TYPE\_MAP}-Konfiguration hinterlegt; neue Typen erfordern ausschließlich einen zusätzlichen Eintrag dort sowie in \texttt{getEventMeta()} im Frontend. Der LLM-Dienst lässt sich um neue Anbieter erweitern, indem eine providerabhängige Handler-Methode implementiert und im zentralen dispatch-Dictionary registriert wird, ohne bestehenden Code zu berühren.
 

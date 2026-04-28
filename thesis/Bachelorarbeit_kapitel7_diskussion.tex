@@ -58,6 +58,8 @@ Serverlast führen. Die bestehende WebSocket-Infrastruktur für den
 Media-Kanal zeigt, dass eine Umstellung auf Server-Sent Events für den
 Ticker-Datenfluss technisch machbar ist.
 
+Die in Abschnitt~6.5.1 dokumentierte \textbf{bimodale Latenzverteilung} (Cache-Treffer-Cluster unter 300~ms vs.\ Kaltgenerierungs-Cluster von 800--2\,200~ms) hat eine praktische Konsequenz für den Produktivbetrieb: Wird das System längere Zeit nicht genutzt (z.\,B. zwischen zwei Spielen), ist mit erhöhter Erstlatenz beim nächsten LLM-Aufruf zu rechnen, da Render-seitige und Gemini-seitige Caches abgelaufen sein können. Ein periodisches Warm-up-Request vor Spielbeginn (z.\,B. automatisch beim Laden des Spiels) könnte diese Kaltstart-Latenz zuverlässig reduzieren.
+
 Die fehlende Authentifizierung (vgl. Kapitel 6.7, „Keine
 Authentifizierung'') ist im Kontext eines internen Redaktionswerkzeugs
 vertretbar, schließt aber einen offenen Mehrbenutzerbetrieb ohne
@@ -70,12 +72,6 @@ n8n-Workflows'') stellen den größten nicht automatisiert getesteten
 Systemteil dar. Da sie die gesamte Datenversorgung des Systems
 verantworten, wäre eine Absicherung durch Integrationstests gegen eine
 Staging-Datenbank für den Produktivbetrieb prioritär.
-
-Die Provider-Auswahl im LLM-Service ist als schlüsselbasierte
-Priorisierung implementiert, nicht als konfigurierbare
-Laufzeit-Strategie. Für einen Produktivbetrieb mit mehreren
-gleichzeitigen Spielen wäre ein expliziter Konfigurationsmechanismus pro
-Spiel (z. B. ein Datenbankfeld) robuster.
 
 Die WebSocket-Verbindung existiert als In-Memory-Singleton pro Prozess.
 Bei einem Multi-Prozess-Deployment (mehrere Uvicorn-Worker hinter einem
@@ -131,80 +127,36 @@ Die dynamische Einbindung von bis zu drei Stilreferenzen aus der \texttt{style\_
 \subsection{Temperaturparameter und
 Context-Builder}\label{temperatur-context}
 
-Die gewählte Temperatur von 0,3 für die Textgenerierung und 0,1 für Übersetzungen ist ein Kompromiss zwischen sprachlicher Varianz und Vorhersagbarkeit. Eine niedrigere Temperatur würde die Halluzinationsrate weiter senken, aber die Texte formelhafter machen --- ein Zielkonflikt, der im Genre Liveticker (das von Überraschung und sprachlicher Kreativität lebt) besonders relevant ist. Die sieben spezialisierten Context-Builder (vgl. Abschnitt~5.1) strukturieren die Fakten vor der Übergabe an das LLM und reduzieren damit die Wahrscheinlichkeit von Halluzinationen, da das Modell bereits aufbereitete Faktenblöcke erhält statt unstrukturierte Rohdaten. Die Wirksamkeit zeigt sich insbesondere bei Pre-Match-Einträgen, wo die Faktengrundlage (z.~B. Verletzungslisten, H2H-Statistiken) klar abgegrenzt ist.
+Die gewählte Temperatur von 0,3 für die Textgenerierung und 0,1 für Übersetzungen ist ein Kompromiss zwischen sprachlicher Varianz und Vorhersagbarkeit. Es ist anzunehmen, dass eine niedrigere Temperatur die Halluzinationsrate weiter senken würde, aber die Texte formelhafter machen könnte --- ein Zielkonflikt, der im Genre Liveticker (das von Überraschung und sprachlicher Kreativität lebt) besonders relevant ist; ein kontrollierter A/B-Test verschiedener Temperature-Werte war im Evaluationszeitraum nicht durchführbar. Die sieben spezialisierten Context-Builder (vgl. Abschnitt~5.1) strukturieren die Fakten vor der Übergabe an das LLM und reduzieren damit die Wahrscheinlichkeit von Halluzinationen, da das Modell bereits aufbereitete Faktenblöcke erhält statt unstrukturierte Rohdaten. Die Wirksamkeit zeigt sich insbesondere bei Pre-Match-Einträgen, wo die Faktengrundlage (z.~B. Verletzungslisten, H2H-Statistiken) klar abgegrenzt ist.
 
 
 \section{Implikationen für den
 Sportjournalismus}\label{implikationen-fuxfcr-den-sportjournalismus}
 
-\subsection{Veränderung der
-Redakteursrolle}\label{veruxe4nderung-der-redakteursrolle}
-
 Das hybride System verschiebt die Rolle des Liveticker-Redakteurs von
-der Textproduktion zur Textredaktion: Statt unter
-Zeitdruck zu formulieren, prüft, editiert und kuratiert der Redakteur
-KI-generierte Vorschläge. Diese Verschiebung entspricht dem von Bluhm
-und Schäfer (2023, S. 35) beschriebenen Wandel hin zu einer „augmented
-authorship'', bei der menschliche Expertise und maschinelle Effizienz
-komplementär zusammenwirken.
+der Textproduktion zur Textredaktion: Statt unter Zeitdruck zu
+formulieren, prüft, editiert und kuratiert der Redakteur KI-generierte
+Vorschläge. Diese Verschiebung entspricht dem von Bluhm und Schäfer
+(2023, S. 35) beschriebenen Wandel hin zu einer „augmented authorship'',
+bei der menschliche Expertise und maschinelle Effizienz komplementär
+zusammenwirken. Der kognitive Engpass der Liveticker-Produktion --- die
+simultane Beobachtung des Spielgeschehens, Relevanzbewertung und
+Texterstellung unter extremem Zeitdruck (vgl. Kapitel 2.1) --- wird
+dadurch aufgelöst. Die originäre Kompetenz verlagert sich: Sprachliche
+Formulierungsfähigkeit tritt in den Hintergrund, evaluative Kompetenz
+--- das schnelle Erkennen von Stilbrüchen, Faktenfehlern und
+Tonalitätsabweichungen --- wird zur Kernkompetenz. Die publizistische
+Verantwortung verbleibt vollständig beim Menschen.
 
-Praktisch bedeutet dies, dass der kognitive Engpass der
-Liveticker-Produktion --- die simultane Beobachtung des Spielgeschehens,
-Relevanzbewertung und Texterstellung unter extremem Zeitdruck (vgl.
-Kapitel 2.1) --- durch das System aufgelöst wird. Die originäre
-Kompetenz des Redakteurs verlagert sich: Sprachliche
-Formulierungsfähigkeit tritt in den Hintergrund, während evaluative
-Kompetenz --- das schnelle Erkennen von Stilbrüchen, Faktenfehlern und
-Tonalitätsabweichungen --- zur Kernkompetenz wird. Dies stellt keine
-Dequalifizierung dar, sondern eine Neukalibrierung: Genre-Expertise und
-Faktensicherheit bleiben unabdingbar, da ohne sie eine valide Bewertung
-der KI-Entwürfe nicht möglich ist. Die publizistische Verantwortung ---
-welcher Eintrag veröffentlicht wird --- verbleibt vollständig beim
-Menschen.
-
-\subsection{Skalierbarkeit und
-White-Label}\label{skalierbarkeit-und-white-label}
-
-Die White-Label-Architektur (\texttt{ef\_whitelabel}
-vs.~\texttt{generic}) adressiert den in Kapitel 2.3 beschriebenen
-strukturellen Wandel der Vereine zu eigenständigen Medienproduzenten.
-Ein einzelnes System kann --- durch Instanzkonfiguration, Stilprofile
-und Few-Shot-Referenzen --- verschiedene redaktionelle Stimmen bedienen,
-ohne separate Codebases zu erfordern. Für Vereine mit begrenzten
-Redaktionsressourcen senkt dies die Einstiegshürde in eine
-professionelle Liveticker-Berichterstattung.
-
-Die Zukunftsperspektive wird im Experteninterview (vgl.~Interviewleitfaden, Block~4, Fragen IF16--IF18) adressiert. \textbf{[INTERVIEW-ERGEBNISSE ERGÄNZEN: Expertenbewertung Konfigurierbarkeit und Modi-Umschaltung]} Technische Voraussetzung für eine echte Multi-Vereins-Skalierung ist die Mandantenfähigkeit auf Datenbankebene, da die aktuelle Architektur beide Instanzen (\texttt{ef\_whitelabel}, \texttt{generic}) in einem Schema hält. Die Skalierbarkeits- und White-Label-Bewertung stützt sich auf die in Kapitel~5 dokumentierte Systemarchitektur und die Deployment-Erfahrung mit der bestehenden \texttt{ef\_whitelabel}-Instanz. Konkrete Erweiterungsszenarien --- mehrsprachige Ausgabe, Erweiterung der Datenbasis, Nutzerstudie mit Redakteuren --- sind in Abschnitt~8.3 beschrieben.
-
-\subsection{Ethische Überlegungen}\label{ethische-uxfcberlegungen}
-
-Die automatisierte Generierung journalistischer Texte wirft die Frage
-der Transparenz auf: Sollten Leser wissen, ob ein Ticker-Eintrag von
-einem Menschen oder einer KI verfasst wurde? Das System speichert die
-Herkunft jedes Eintrags im Feld \texttt{source} (\texttt{"ai"},
-\texttt{"manual"}), legt die Kennzeichnung gegenüber dem Endnutzer aber
-nicht offen. Für einen produktiven Einsatz wäre eine
-Kennzeichnungspflicht --- etwa durch ein dezentes Label wie
-„KI-unterstützt'' --- zu diskutieren, insbesondere im Kontext der
-EU-KI-Verordnung (AI Act, EU 2024/1689), deren Transparenzpflichten für
-KI-generierte Texte (Art. 50 Abs. 4) gemäß Art. 113 ab August 2026
-gelten.
-
-Darüber hinaus berührt der Einsatz automatisierter Textgenerierung drei
-weitere ethische Dimensionen, die im Rahmen dieser Arbeit nicht
-abschließend bewertet werden, jedoch für eine Produktiveinführung
-relevant sind: \textbf{Arbeitsmarktimplikationen} --- die in
-Abschnitt~7.5.1 diskutierte Neukalibrierung der Redakteursrolle birgt
-langfristig auch das Risiko eines Stellenabbaus, da geringere manuelle
-Produktionsleistung erforderlich wird (vgl. Bluhm \& Schäfer 2023,
-S.~35). \textbf{Datenschutz} --- Spieler- und Vereinsdaten werden zur
-Textgenerierung an externe LLM-Provider übermittelt; eine
-DSGVO-konforme Datenverarbeitungsvereinbarung mit den verwendeten
-Providern ist für den Produktivbetrieb zwingend erforderlich.
-\textbf{Haftung} --- im \texttt{auto}-Modus werden faktisch fehlerhafte
-Einträge (z.~B. falsche Torschützen) ohne menschliche Prüfung
-publiziert; die publizistische Verantwortung und eventuelle rechtliche
-Haftung verbleiben beim Betreiber des Systems, nicht beim LLM-Provider.
+Die White-Label-Architektur (\texttt{ef\_whitelabel} vs.~\texttt{generic})
+adressiert den strukturellen Wandel der Vereine zu eigenständigen
+Medienproduzenten (vgl. Kap.~2.3). Ein einzelnes System kann --- durch
+Instanzkonfiguration, Stilprofile und Few-Shot-Referenzen ---
+verschiedene redaktionelle Stimmen bedienen, ohne separate Codebases zu
+erfordern. Technische Voraussetzung für eine echte Multi-Vereins-Skalierung
+ist Mandantenfähigkeit auf Datenbankebene; die aktuelle Architektur hält
+beide Instanzen in einem Schema. Konkrete Erweiterungsszenarien sind in
+Abschnitt~8.3 beschrieben.
 
 
 \section{Synthese}\label{synthese}
