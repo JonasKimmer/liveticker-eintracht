@@ -343,16 +343,16 @@
 \newcommand{\DiagramQualitaetStilprofil}{%
 \begin{tikzpicture}
 \begin{axis}[
-  ybar, bar width=0.35cm,
+  ybar, bar width=0.45cm,
   width=10cm, height=6.5cm,
-  ymin=3.5, ymax=5.4,
-  ytick={3.5,4.0,4.5,5.0},
+  ymin=1.5, ymax=5.4,
+  ytick={2.0,2.5,3.0,3.5,4.0,4.5,5.0},
   ylabel={Bewertung (1\,--\,5)},
   symbolic x coords={euphorisch, neutral, kritisch},
   xtick=data,
-  xticklabels={euphorisch\\{\scriptsize (N\,=\,6)},
-               neutral\\{\scriptsize (N\,=\,2)},
-               kritisch\\{\scriptsize (N\,=\,1)}},
+  xticklabels={euphorisch\\{\scriptsize (n\,=\,27)},
+               neutral\\{\scriptsize (n\,=\,27)},
+               kritisch\\{\scriptsize (n\,=\,26)}},
   xticklabel style={align=center},
   legend style={at={(0.5,1.03)}, anchor=south, legend columns=3,
                 font=\footnotesize},
@@ -363,13 +363,13 @@
   every axis/.append style={font=\small},
 ]
 \addplot+[fill=blue!40, draw=blue!70] coordinates {
-  (euphorisch,4.33) (neutral,4.50) (kritisch,5.00)
+  (euphorisch,3.22) (neutral,4.81) (kritisch,4.35)
 };
 \addplot+[fill=red!40, draw=red!70] coordinates {
-  (euphorisch,5.00) (neutral,4.50) (kritisch,4.00)
+  (euphorisch,2.93) (neutral,4.81) (kritisch,4.04)
 };
 \addplot+[fill=green!40, draw=green!70] coordinates {
-  (euphorisch,4.83) (neutral,5.00) (kritisch,5.00)
+  (euphorisch,3.67) (neutral,4.81) (kritisch,4.58)
 };
 \legend{Korrektheit, Tonalit\"at, Verst\"andlichkeit}
 \end{axis}
