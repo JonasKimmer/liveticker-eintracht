@@ -20,7 +20,7 @@ Die Teststrategie folgt dem klassischen Pyramiden-Modell nach Cohn
 (2009): Eine breite Basis schneller, isolierter Unit-Tests wird durch
 eine mittlere Schicht von Integrations-Tests ergänzt, die reale
 HTTP-Endpunkte gegen eine transaktionale Testdatenbank prüfen. An der
-Spitze stehen Playwright-basierte End-to-End-Tests, die den
+Spitze stehen Playwright-basierte Browser-Smoke-Tests, die den
 vollständigen Redaktionsworkflow im Browser simulieren.
 
 \begin{verbatim}
@@ -43,7 +43,7 @@ Fehlermeldungen erzeugen.
 \subsection{Frontend-Unit-Tests (Jest + React Testing
 Library)}\label{frontend-unit-tests-jest-react-testing-library}
 
-Das Frontend verfügt über 168 Unit-Tests in 15 Testdateien, aufgeteilt in drei Kategorien:
+Das Frontend verfügt über 187 Unit-Tests in 15 Testdateien, aufgeteilt in drei Kategorien:
 
 {\def\LTcaptype{none} % do not increment counter
 \begin{longtable}[]{@{}lll@{}}
@@ -53,14 +53,14 @@ Kategorie & Tests & Schwerpunkte \\
 \endhead
 \bottomrule\noalign{}
 \endlastfoot
-Utilities & 51 & \texttt{parseCommand} (29), \texttt{roundLabel} (16), \texttt{resolvePollingInterval} (6) \\
-Hooks & 55 & \texttt{useLiveMinute} (10), \texttt{useSearchableDropdown} (10), \texttt{useListKeyboard} (9), \ldots{} \\
-Komponenten & 62 & \texttt{EntryEditor} (19), \texttt{RightPanelComponents} (18), \texttt{PublishedEntry} (14), \ldots{} \\
-\textbf{Gesamt} & \textbf{168} & \\
+Utilities & 67 & \texttt{parseCommand} (45), \texttt{roundLabel} (16), \texttt{resolvePollingInterval} (6) \\
+Hooks & 55 & \texttt{useLiveMinute} (10), \texttt{useSearchableDropdown} (10), \texttt{useMatchEvents} (6), \texttt{useMatchTicker} (5), \ldots{} \\
+Komponenten & 65 & \texttt{EntryEditor} (19), \texttt{RightPanelComponents} (18), \texttt{PublishedEntry} (17), \ldots{} \\
+\textbf{Gesamt} & \textbf{187} & \\
 \end{longtable}
 }
 
-Der \texttt{parseCommand}-Utility ist die komplexeste Einheit der Geschäftslogik im Frontend; er transformiert Slash-Commands (z.\,B. \texttt{/g\ Müller\ SGE}) in strukturierte Ticker-Einträge. Die 29 Tests decken alle Command-Typen sowie Fehlerfälle ab: Jeder Test prüft \texttt{isValid}, \texttt{type}, \texttt{formatted}, \texttt{meta.icon} und \texttt{warnings} --- unvollständige Eingaben liefern gezielte Hinweise (\texttt{"Fehlend:\ Spieler"}) statt Laufzeitfehler.
+Der \texttt{parseCommand}-Utility ist die komplexeste Einheit der Geschäftslogik im Frontend; er transformiert Slash-Commands (z.\,B. \texttt{/g\ Müller\ SGE}) in strukturierte Ticker-Einträge. Die 45 Tests decken alle Command-Typen sowie Fehlerfälle ab: Jeder Test prüft \texttt{isValid}, \texttt{type}, \texttt{formatted}, \texttt{meta.icon} und \texttt{warnings} --- unvollständige Eingaben liefern gezielte Hinweise (\texttt{"Fehlend:\ Spieler"}) statt Laufzeitfehler.
 
 \subsection{Backend-Unit-Tests
 (pytest)}\label{backend-unit-tests-pytest}
@@ -904,7 +904,7 @@ A5 & White-Label-Fähigkeit & Instanz-spezifische Kontextaufbereitung und Few-Sh
 
 \section{Zusammenfassung}\label{zusammenfassung}
 
-Die Evaluation belegt eine technisch reife Codebasis (352 Tests, 75 \%
+Die Evaluation belegt eine technisch reife Codebasis (371 Tests, 75 \%
 Python-Backend-Coverage, 97,44 \% TypeScript-Typsicherheit, 0
 Compiler-Fehler) mit vollständiger Erfüllung aller 23 definierten
 Anforderungen. Die KI-generierten Texte erreichen in der Hauptevaluation
