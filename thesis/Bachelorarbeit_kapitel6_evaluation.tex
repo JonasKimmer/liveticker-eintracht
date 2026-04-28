@@ -352,64 +352,7 @@ Pre-Match (Kontext) & 1 & 3,0 & 5,0 & 4,0 & 4,0 \\
 \end{longtable}
 }
 
-\emph{Anmerkung: Rote Karten kamen in den 9 analysierten Spielen nicht
-vor. Phasen-Events (Anpfiff, Halbzeit, Abpfiff) wurden nicht separat
-evaluiert, da diese in den verfügbaren Testdaten ausschließlich über
-Synthetic Events generiert wurden. Pre-Match-Kategorie enthält eine
-Stichprobe aus der \texttt{ef\_whitelabel}-Instanz.}
-
-\textbf{Ergänzende Evaluation (N = 9, synthetischer Kontext):} Zur
-Abdeckung der in der Hauptevaluation fehlenden Event-Typen (Rote Karte,
-Phasen-Events) wurde eine ergänzende Messung mit synthetischem
-Match-Kontext (Eintracht Frankfurt vs.~FC Bayern München, 1:2, 2.
-Halbzeit) durchgeführt. Die Ergebnisse bestätigen die Hauptevaluation
-und liefern zusätzliche Erkenntnisse:
-
-{\def\LTcaptype{none} % do not increment counter
-\begin{longtable}[]{@{}
-  >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1719}}
-  >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1562}}
-  >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1719}}
-  >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1406}}
-  >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.2500}}
-  >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1094}}@{}}
-\toprule\noalign{}
-\begin{minipage}[b]{\linewidth}\raggedright
-Event-Typ
-\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
-Stil
-\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
-Korrektheit
-\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
-Tonalität
-\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
-Verständlichkeit
-\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
-Gesamt
-\end{minipage} \\
-\midrule\noalign{}
-\endhead
-\bottomrule\noalign{}
-\endlastfoot
-Tor & euphorisch & 4 & 5 & 5 & 4,7 \\
-Tor & neutral & 4 & 4 & 5 & 4,3 \\
-Tor & kritisch & 5 & 4 & 5 & 4,7 \\
-Gelbe Karte & euphorisch & 5 & 5 & 5 & 5,0 \\
-Gelbe Karte & neutral & 5 & 5 & 5 & 5,0 \\
-Rote Karte & euphorisch & 5 & 5 & 5 & 5,0 \\
-Anpfiff & euphorisch & 5 & 5 & 5 & 5,0 \\
-Halbzeit & euphorisch & 5 & 5 & 5 & 5,0 \\
-Abpfiff & euphorisch & 2 & 5 & 4 & 3,7 \\
-\textbf{Gesamt} & & \textbf{4,4} & \textbf{4,8} & \textbf{4,9} &
-\textbf{4,7} \\
-\end{longtable}
-}
-
-Die niedrige Korrektheitsbewertung des Abpfiff-Eintrags (2/5) ist auf
-eine Score-Halluzination zurückzuführen: Das Modell generierte
-„Eintracht schlägt die Bayern!'' trotz eines Spielstands von 1:2
-(Niederlage) im Match-Kontext. Diese Fehlerklasse ist nachfolgend
-dokumentiert.
+\emph{Anmerkung: Rote Karten kamen in den 9 analysierten Spielen nicht vor. Pre-Match-Kategorie enthält eine Stichprobe aus der \texttt{ef\_whitelabel}-Instanz.}
 
 Die folgenden Beispiele illustrieren die typischen Stärken der generierten Texte.
 
@@ -475,10 +418,6 @@ neutral)} \\
 Details, die nicht im Kontext stehen & Pre-Match-Text erfand eine
 Wettempfehlung: „Wir tippen auf Double Chance: Sieg \ldots{} oder
 Remis.'' \\
-\textbf{Score-Halluzination} & 1 / 9 (11 \%) & Spielstand aus
-Match-Kontext wird ignoriert, fiktiver Ausgang erzeugt & Abpfiff-Text
-„Eintracht schlägt die Bayern!'' bei übergebenem Spielstand 1:2
-(Niederlage) \\
 \textbf{Team-Verwechslung} & 0 / 16 (0 \%) & Tor wird dem falschen Team
 zugeordnet & Nicht aufgetreten \\
 \textbf{Wiederholung} & 2 / 16 (13 \%) & Aufeinanderfolgende Texte
@@ -496,18 +435,8 @@ aus den euphorischen Few-Shot-Referenzen der
 Stilparameter übergeben wird. Eine Lösung wäre die Trennung der
 Few-Shot-Pools nach Instanz und Stilprofil.
 
-Das \textbf{kritische Stilprofil} erweist sich in beiden Evaluationsrunden als schwächste Dimension (Tonalität 3,6 in der Hauptevaluation; 3,3 beim LLM-as-Judge-Verfahren für Nr.~08 und 11). Die Ursache liegt in einer konzeptuellen Ambiguität des Profils: Während \texttt{euphorisch} und \texttt{neutral} klare emotionale Pole beschreiben, bleibt \texttt{kritisch} semantisch vielschichtig --- das LLM kann den Stil als kritisch-analytisch (sachlich-distanziert), kritisch-konfrontativ (negativ gegenüber der eigenen Mannschaft) oder kritisch-fordernd (appellierend an mehr Leistung) interpretieren. Ohne explizitere Stilinstruktion --- etwa durch zielgerichtete Few-Shot-Beispiele mit klar analytisch-einordnendem Ton oder durch eine präzisierte Prompt-Formulierung --- tendiert das Modell dazu, das kritische Profil dem neutralen anzunähern. Eine differenziertere Beschreibung des \texttt{kritisch}-Profils im Prompt (z.\,B. „analysierend und einordnend, ohne emotionale Färbung'') sowie dedizierte Few-Shot-Referenzen für dieses Profil wären die naheliegenden Verbesserungsmaßnahmen (vgl. Abschnitt~8.3).
+Das \textbf{kritische Stilprofil} erweist sich in der Hauptevaluation und der LLM-as-Judge-Evaluation als schwächste Dimension (Tonalität 3,6 in der Hauptevaluation; 4,04 im LLM-as-Judge-Verfahren). Die Ursache liegt in einer konzeptuellen Ambiguität des Profils: Während \texttt{euphorisch} und \texttt{neutral} klare emotionale Pole beschreiben, bleibt \texttt{kritisch} semantisch vielschichtig --- das LLM kann den Stil als kritisch-analytisch (sachlich-distanziert), kritisch-konfrontativ (negativ gegenüber der eigenen Mannschaft) oder kritisch-fordernd (appellierend an mehr Leistung) interpretieren. Ohne explizitere Stilinstruktion --- etwa durch zielgerichtete Few-Shot-Beispiele mit klar analytisch-einordnendem Ton oder durch eine präzisierte Prompt-Formulierung --- tendiert das Modell dazu, das kritische Profil dem neutralen anzunähern. Eine differenziertere Beschreibung des \texttt{kritisch}-Profils im Prompt (z.\,B. „analysierend und einordnend, ohne emotionale Färbung'') sowie dedizierte Few-Shot-Referenzen für dieses Profil wären die naheliegenden Verbesserungsmaßnahmen (vgl. Abschnitt~8.3).
 
-Die \textbf{Score-Halluzination} ist qualitativ schwerwiegender: Im
-ergänzenden Eval-Lauf (N = 9) generierte das Modell für den
-Abpfiff-Event den Text „Eintracht schlägt die Bayern!'' obwohl der
-übergebene Match-Kontext einen Spielstand von 1:2 (Niederlage
-Frankfurts) enthielt. Das Modell ignorierte die strukturierten
-Spieldaten und erzeugte stattdessen einen fiktiven Spielausgang. Dieser
-Fehlertyp ist im \texttt{auto}-Modus ohne redaktionelle Filterung
-kritisch, da er faktisch falsche Informationen publiziert. Im
-\texttt{coop}-Modus würde ein solcher Eintrag durch die redaktionelle
-Prüfung vor Publikation abgefangen.
 
 Die Pre-Match-Prompts enthalten eine explizite Schutzregel gegen
 Halluzinationen:
@@ -557,59 +486,11 @@ Das Interview wurde durchgeführt. Die Erkenntnisse bestätigten die grundsätzl
 
 Zur Erweiterung der Evaluationsbasis über N = 16 hinaus und zur
 Adressierung der Selbstevaluationsproblematik (vgl. Abschnitt 6.7) wurde
-eine ergänzende automatisierte Evaluation durchgeführt. Die Methode folgt
+eine automatisierte Evaluation mit N\,=\,80 Einträgen durchgeführt. Die Methode folgt
 dem \textbf{LLM-as-Judge}-Ansatz (Zheng et al.~2023), bei dem ein
-unabhängiges Sprachmodell als Bewerter fungiert. Bewertendes Modell:
-\textbf{Claude Sonnet 4.6} (Anthropic) --- ein anderes Modell als das
-generierende (Gemini 2.0 Flash Lite), was Selbstreferenzialität vermeidet.
+unabhängiges Sprachmodell als Bewerter fungiert.
 
-\textbf{Datenbasis} --- 20 Ticker-Einträge, generiert über die
-OpenRouter-API des Systems (Gemini 2.0 Flash Lite, Temperatur 0{,}3) auf
-Basis realer Ereignisdaten aus 5 Bundesliga-Spielen des 34. Spieltags
-2024/25 (Mai 2025): SC Freiburg -- Eintracht Frankfurt, RB Leipzig -- VfB
-Stuttgart, Borussia Dortmund -- Holstein Kiel, 1899 Hoffenheim -- Bayern
-München, FSV Mainz 05 -- Bayer Leverkusen. Abgedeckte Event-Typen: 16
-Tore (davon 3 Elfmeter), 2 Gelbe Karten, 1 Rote Karte, 1 Wechsel.
-Stilprofile: 14 neutral, 3 euphorisch, 3 kritisch.
-
-Von 20 bewerteten Einträgen erreichten 13 den Maximalwert 5,0 / 5; der Gesamtdurchschnitt liegt bei \textbf{K~4,45 / T~4,50 / V~4,55 / Ø~4,50}. Die vier schwächsten Einträge dokumentieren die identifizierten Fehlerklassen:
-
-{\def\LTcaptype{none}
-\begin{longtable}[]{@{}
-  >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.04}}
-  >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.32}}
-  >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.14}}
-  >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.09}}
-  >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.09}}
-  >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.09}}
-  >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.13}}@{}}
-\toprule\noalign{}
-Nr & Ereignis & Stil & K & T & V & Ø \\
-\midrule\noalign{}
-\endhead
-\bottomrule\noalign{}
-\endlastfoot
-04 & 63' Tor E. Skhiri (Frankfurt)    & neutral  & 2 & 4 & 3 & 3,0 \\
-08 & 78' Tor E. Demirović (Stuttgart) & kritisch & 3 & 3 & 4 & 3,3 \\
-11 & 9' Rot C. Johansson (Kiel)       & kritisch & 4 & 3 & 4 & 3,7 \\
-19 & 54' Tor P. Schick (Leverkusen)   & neutral  & 2 & 4 & 3 & 3,0 \\
-\midrule\noalign{}
-\textbf{Ø gesamt (N~=~20)} & & & \textbf{4,45} & \textbf{4,50} & \textbf{4,55} & \textbf{4,50} \\
-\end{longtable}
-}
-
-\emph{K = Korrektheit, T = Tonalität, V = Verständlichkeit (je 1--5). Bewerter: Claude Sonnet 4.6 (Anthropic). Ereignisdaten: Football API v3, Saison 2024/25, Md.~34. Nr.~04 und 19: semantischer Framing-Fehler (Spielstandsinterpretation); Nr.~08 und 11: kritisch-Profil mit schwacher Tonalität.}
-
-\textbf{Befunde} --- Der Gesamtdurchschnitt von \textbf{4,5 / 5} liegt leicht über dem Hauptevaluationswert (4,3 / 5), was auf den konsistenten Datenfeed aus der Football API ohne Kontextlücken zurückzuführen ist. Die Fehleranalyse identifiziert drei Fehlerklassen. Ein \textbf{semantischer Framing-Fehler} trat in 3 von 20 Fällen (15~\%) auf: Das Modell verwendete „verkürzt'' oder „Anschlusstreffer'', obwohl das handelnde Team in Führung lag (Nr. 04, 08, 19) --- Ursache ist die fehlende explizite Repräsentation des Spielstands vor dem Tor im Kontext. \textbf{Phrasenwiederholung im euphorischen Profil} trat einmalig (5~\%) auf: Eintrag Nr.~03 reproduzierte die im Prompt als zu vermeidend markierten Phrasen „WAS IST DENN HIER LOS?!'' und „Die Hütte bebt!'' trotz Anweisung. Eine \textbf{interne Inkonsistenz} zeigte sich ebenfalls einmalig (5~\%): Eintrag Nr.~11 wertete das Einsteigen gleichzeitig als „überharten Foul'' und als „fragwürdige Entscheidung'' des Schiedsrichters.
-
-Diese Fehlerklassen stimmen qualitativ mit den Befunden der Hauptevaluation
-(Abschnitt~6.3.4) überein und bestätigen damit deren Repräsentativität.
-Die Methode des LLM-as-Judge ist als Ergänzung zur menschlichen Bewertung
-etabliert (Zheng et al.~2023), ersetzt diese jedoch nicht vollständig;
-eine externe Nutzerstudie bleibt als Folgeschritt vorgesehen (Abschnitt
-8.3.2).
-
-\textbf{Erweiterte Messserie (N\,=\,80):} Zur weiteren Steigerung der statistischen Aussagekraft wurde eine erweiterte Evaluation mit N\,=\,80 Einträgen durchgeführt. Die Datenbasis umfasst reale Ereignisse aus 30 Bundesliga-Spielen der Saison~2025/26 (u.\,a. Borussia~Dortmund -- SC~Freiburg, FSV~Mainz~05 -- FC~Bayern~München, FC~Augsburg -- Eintracht~Frankfurt, 1.~FC~Köln -- Bayer~Leverkusen), abgefragt über die Football~API~v3. Generierungsmodell: \texttt{google/gemini-2.0-flash-lite-001} (identisch zur Hauptevaluation, Temperatur~0{,}3). Bewertendes Modell: \texttt{anthropic/claude-sonnet-4-5} via OpenRouter --- ein anderes Modell als das generierende, unabhängig von der ersten Messserie. Abgedeckte Event-Typen: 25~Tore, 25~Gelbe Karten, 4~Rote Karten, 25~Wechsel, 1~Eigentor; je 27 bzw.\ 26~Einträge pro Stilprofil.
+\textbf{Datenbasis} --- Die Datenbasis umfasst reale Ereignisse aus 30 Bundesliga-Spielen der Saison~2025/26 (u.\,a. Borussia~Dortmund -- SC~Freiburg, FSV~Mainz~05 -- FC~Bayern~München, FC~Augsburg -- Eintracht~Frankfurt, 1.~FC~Köln -- Bayer~Leverkusen), abgefragt über die Football~API~v3. Generierungsmodell: \texttt{google/gemini-2.0-flash-lite-001} (identisch zur Hauptevaluation, Temperatur~0{,}3). Bewertendes Modell: \texttt{anthropic/claude-sonnet-4-5} via OpenRouter --- ein anderes Modell als das generierende, was Selbstreferenzialität vermeidet. Abgedeckte Event-Typen: 25~Tore, 25~Gelbe Karten, 4~Rote Karten, 25~Wechsel, 1~Eigentor; je 27 bzw.\ 26~Einträge pro Stilprofil.
 
 {\def\LTcaptype{none} % do not increment counter
 \begin{longtable}[]{@{}
@@ -634,7 +515,7 @@ euphorisch  & 27 & 3,22 & 2,93 & 3,67 & 3,27 \\
 
 \emph{K = Korrektheit, T = Tonalität, V = Verständlichkeit (je 1--5). Bewerter: Claude Sonnet~4.5 via OpenRouter. Datenbasis: Football API~v3, Bundesliga Saison 2025/26, 30~Spiele.}
 
-Die erweiterte Messserie bestätigt Korrektheit (4,12) und Verständlichkeit (4,35) auf einem mit der ersten Messserie konsistenten Niveau. Das \textbf{neutrale Stilprofil} erzielt den höchsten Gesamtwert (4,82) und zeigt damit die stärkste Prompt-Kopplung. Das \textbf{kritische Profil} liegt mit 4,32 im soliden Bereich; das \textbf{euphorische Profil} bleibt mit 3,27 deutlich schwächer --- insbesondere beim Tonalitätswert (2,93). Die Ursache liegt im Event-Mix: Wechsel-Einträge (n\,=\,25) erzielen die schwächste Korrektheit (2,92) und den niedrigsten Gesamtwert (3,21), da das Modell taktische Begründungen erfindet, die nicht im übergebenen Kontext stehen. Im euphorischen Profil produziert das Modell bei Wechseln und Gelben Karten wiederholt formelharte Phrasen wie „Na, ob das was wird?'' oder „Hoffentlich bringt er frischen Wind'' ohne authentische Situationsdifferenzierung. Tore (Ø~4,33) und Rote Karten (Ø~4,75) erreichen hingegen konsistent hohe Werte. Diese Befunde replizieren die Fehlerklassen der Hauptevaluation und der ersten Messserie: Die euphorische Tonalitätsschwäche bei ereignisarmen Event-Typen ist die konsistenteste Schwäche des aktuellen Prompt-Designs.
+Die LLM-as-Judge-Evaluation bestätigt Korrektheit (4,12) und Verständlichkeit (4,35) auf einem mit der Hauptevaluation konsistenten Niveau. Das \textbf{neutrale Stilprofil} erzielt den höchsten Gesamtwert (4,82) und zeigt damit die stärkste Prompt-Kopplung. Das \textbf{kritische Profil} liegt mit 4,32 im soliden Bereich; das \textbf{euphorische Profil} bleibt mit 3,27 deutlich schwächer --- insbesondere beim Tonalitätswert (2,93). Die Ursache liegt im Event-Mix: Wechsel-Einträge (n\,=\,25) erzielen die schwächste Korrektheit (2,92) und den niedrigsten Gesamtwert (3,21), da das Modell taktische Begründungen erfindet, die nicht im übergebenen Kontext stehen. Im euphorischen Profil produziert das Modell bei Wechseln und Gelben Karten wiederholt formelharte Phrasen wie „Na, ob das was wird?'' oder „Hoffentlich bringt er frischen Wind'' ohne authentische Situationsdifferenzierung. Tore (Ø~4,33) und Rote Karten (Ø~4,75) erreichen hingegen konsistent hohe Werte. Diese Befunde replizieren die Fehlerklassen der Hauptevaluation: Die euphorische Tonalitätsschwäche bei ereignisarmen Event-Typen ist die konsistenteste Schwäche des aktuellen Prompt-Designs. Die Methode des LLM-as-Judge ist als Ergänzung zur menschlichen Bewertung etabliert (Zheng et al.~2023), ersetzt diese jedoch nicht vollständig; eine externe Nutzerstudie bleibt als Folgeschritt vorgesehen (Abschnitt~8.3.2).
 
 
 \section{Latenzpotenzial der Betriebsmodi}\label{evaluation-der-betriebsmodi}
@@ -703,7 +584,7 @@ Mock & --- & regelbasiert (Templates) & 7 & \textless{} 10 & \textless{}
 Die Latenzmessungen für OpenRouter deuten auf eine rechtsschiefe Antwortzeit-Verteilung hin: Render-Messserie zeigt 44 \%
 der Messungen unter 310 ms (mutmaßlich Gemini-seitige Cache-Treffer) und
 56 \% zwischen 859 ms und 2.128 ms (Kaltgenerierung), Standardabweichung
-695 ms. Die direkte Messserie (N = 9) liegt enger zusammen (695--1.348
+695 ms. Die direkte Messserie (lokal, n\,=\,9) liegt enger zusammen (695--1.348
 ms), was auf fehlende Cache-Treffer ohne Render-Warm-up hindeutet. Ab
 Version \texttt{0005} der Datenbank-Migration wird jeder produktive
 KI-Aufruf mit dem Feld \texttt{generation\_ms} persistiert, das die
@@ -818,10 +699,9 @@ Python-Backend-Coverage, 97,44 \% TypeScript-Typsicherheit, 0
 Compiler-Fehler) mit vollständiger Erfüllung aller 23 definierten
 Anforderungen. Die KI-generierten Texte erreichen in der Hauptevaluation
 (N = 16, Selbstbewertung) einen Gesamtdurchschnitt von \textbf{4,3 / 5};
-zwei LLM-as-Judge-Evaluationsrunden (N\,=\,20: Ø~4,5\,/\,5; N\,=\,80: Ø~4,1\,/\,5, vgl.\ Abschnitt~6.3.6) bestätigen Korrektheit und Verständlichkeit und replizieren die stilprofilabhängige Tonalitätsschwäche als konsistente Fehlerklasse. Die LLM-Latenz beträgt im Median 859 ms, woraus sich
+die LLM-as-Judge-Evaluation (N\,=\,80, Bundesliga 2025/26: Ø~4,1\,/\,5, vgl.\ Abschnitt~6.3.6) bestätigt Korrektheit und Verständlichkeit und repliziert die stilprofilabhängige Tonalitätsschwäche als konsistente Fehlerklasse. Die LLM-Latenz beträgt im Median 859 ms, woraus sich
 im \texttt{auto}-Modus ein geschätztes TTP-Potenzial von 3,4--5,9 s
-ergibt. Konsistente Fehlerklassen über alle drei Evaluationsrunden sind der
-semantische Framing-Fehler (Spielstandsinterpretation), Phrasenwiederholung im euphorischen Profil sowie Tonalitätsinkonsistenz bei ereignisarmen Event-Typen (Wechsel, Gelbe Karten) im euphorischen Profil. Die strukturellen Grenzen ---
+ergibt. Konsistente Fehlerklassen über beide Evaluationsrunden sind Phrasenwiederholung im euphorischen Profil sowie Tonalitätsinkonsistenz bei ereignisarmen Event-Typen (Wechsel, Gelbe Karten) im euphorischen Profil. Die strukturellen Grenzen ---
 insbesondere die fehlende externe Nutzerstudie mit professionellen
 Redakteuren --- sind in Kapitel 6.7 dokumentiert. Die Evaluation liefert
 die empirische Grundlage für die kritische Einordnung in Kapitel 7 und
