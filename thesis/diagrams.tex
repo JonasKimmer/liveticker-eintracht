@@ -26,8 +26,10 @@
   % Connections
   \draw[arrow] (fapi) -- (n8n);
   \draw[arrow] (llm) -- (n8n);
+  \draw[arrow] (llm) -- (api);
   \draw[arrow] (sp) -- (n8n);
   \draw[arrow] (n8n) -- (api);
+  \draw[arrow] (n8n) -- (db);
   \draw[arrow] (api) -- (db);
   \draw[arrow] (api) -- (fe);
   \draw[arrow] (fe) -- (api);
@@ -60,19 +62,28 @@
 
 %% DIAGRAM 3: Ticker State Transitions
 \newcommand{\DiagramTickerStates}{%
-\begin{tikzpicture}[node distance=2.5cm, auto]
-  \tikzset{state/.style={circle, draw, fill=blue!15, text width=1.2cm, text centered, minimum size=1.5cm}}
-  
-  \node[state] (draft) {draft};
-  \node[state, right of=draft] (published) {published};
-  \node[state, right of=published] (rejected) {rejected};
-  \node[state, below of=draft] (archived) {archived};
-  
-  \draw[arrow] (draft) -- node[above] {publish} (published);
-  \draw[arrow] (draft) -- node[left] {reject} (rejected);
-  \draw[arrow] (published) -- node[right] {archive} (archived);
-  \draw[arrow] (rejected) -- node[below] {retry} (draft);
-  \draw[arrow] (published) -- node[pos=0.5, right] {edit} (draft);
+\begin{tikzpicture}[node distance=2.8cm, auto]
+  \tikzset{
+    active/.style={circle, draw, fill=blue!15, text width=1.2cm,
+                   text centered, minimum size=1.5cm, font=\small},
+    terminal/.style={circle, draw=gray!60, fill=gray!15, text width=1.2cm,
+                     text centered, minimum size=1.5cm, font=\small},
+  }
+
+  % Active states (top row)
+  \node[active] (draft)     {draft};
+  \node[active, right of=draft, xshift=1.5cm] (published) {published};
+
+  % Terminal states (bottom row)
+  \node[terminal, below of=draft]     (rejected) {rejected};
+  \node[terminal, below of=published] (deleted)  {deleted};
+
+  % Transitions — no crossing arrows
+  \draw[arrow] (draft)     -- node[above]{\footnotesize publish}   (published);
+  \draw[arrow] (draft)     -- node[left] {\footnotesize reject}    (rejected);
+  \draw[arrow] (published) -- node[right]{\footnotesize löschen}   (deleted);
+  \draw[arrow, bend left=25] (published) to
+        node[above, pos=0.45]{\footnotesize re-draft} (draft);
 \end{tikzpicture}%
 }
 
@@ -124,10 +135,10 @@
   \node[actor, right of=fe] (be) {FastAPI\\Backend};
   \node[actor, right of=be] (n8n) {n8n\\Workflow};
   \node[actor, right of=n8n] (api) {Football\\API};
-  
+
   % Flows
-  \draw[arrow] (fe) -- node[above, font=\tiny] {GET /teams} (be);
-  \draw[arrow] (be) -- node[above, font=\tiny] {Webhook trigger} (n8n);
+  \draw[arrow] (fe) -- node[above, font=\tiny] {GET /matches} (be);
+  \draw[arrow] (fe) -- node[above, font=\tiny, pos=0.6] {POST Webhook} (n8n);
   \draw[arrow] (n8n) -- node[above, font=\tiny] {HTTP request} (api);
   \draw[arrow, bend right=30] (api) -- node[below, font=\tiny] {JSON response} (n8n);
   \draw[arrow] (n8n) -- node[below, font=\tiny] {POST /api/v1} (be);
@@ -295,7 +306,7 @@
   \node[layer, fill=blue!10] (repo) at (0,-2.8)
         {\textbf{Repository} \quad {\footnotesize Datenbankzugriff (SQLAlchemy ORM, 17 Modelle)}};
   \node[layer, fill=blue!5] (db) at (0,-4.2)
-        {\textbf{PostgreSQL 15} \quad {\footnotesize Persistenzschicht (Render Managed DB)}};
+        {\textbf{PostgreSQL 15} \quad {\footnotesize Persistenzschicht (Supabase Managed DB)}};
   \draw[arr] (router) -- (service);
   \draw[arr] (service) -- (repo);
   \draw[arr] (repo) -- (db);

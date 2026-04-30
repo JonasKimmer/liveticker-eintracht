@@ -65,12 +65,21 @@ und Kommunikationspfaden:
 \subsection{Kommunikations- und
 Triggerarchitektur}\label{kommunikations--und-triggerarchitektur}
 
-Der Kommunikationsfluss folgt dem Entwurfsprinzip \textbf{„read first,
+Der Kommunikationsfluss kombiniert zwei komplementäre Muster. Beim
+initialen Match-Load folgt das Frontend dem Prinzip \textbf{„read first,
 trigger if missing''} --- strukturell verwandt mit dem Cache-Aside
-Pattern (vgl. Fowler 2002): Das Frontend liest zunächst den vorhandenen
-Datenbestand über REST; nur bei fehlenden Daten wird ein passender
-n8n-Webhook ausgelöst. Dadurch werden externe API-Aufrufe minimiert und
-redundante Importe vermieden.
+Pattern (vgl. Fowler 2002): Für Stammdaten wie Aufstellungen und Events
+wird n8n nur dann angestoßen, wenn die REST-Abfrage einen leeren
+Datenbestand zurückgibt. Im \textbf{Live-Betrieb} hingegen triggert das
+Frontend Events, Spielstatistiken und Minutenupdates bedingungslos im
+60-Sekunden-Takt, da die Daten kontinuierlich aktualisiert werden müssen;
+die zugehörigen n8n-Workflows führen dabei serverseitig Upserts mit
+Konfliktbehandlung durch. Das Backend empfängt Aufrufe \emph{von} n8n,
+löst jedoch selbst keine n8n-Workflows aus. Einzelne Workflows rufen
+zudem intern weitere Workflows auf: Der Minuten-Update-Workflow löst bei
+erkanntem Spielstandswechsel den Anpfiff/Abpfiff-Workflow aus, der
+seinerseits den Halbzeit-Zusammenfassungs-Workflow anstößt --- das
+Frontend ist an dieser Kette nicht beteiligt.
 
 \begin{figure}[H]
 \centering
@@ -81,14 +90,15 @@ redundante Importe vermieden.
 Die Systemkopplung erfolgt über drei klar getrennte Schnittstellentypen.
 Die \textbf{REST-API} bildet den stabilen Kern für alle Lese- und
 Schreiboperationen: Navigation, Ticker-CRUD, Statusübergänge und manuelle
-Eingaben. \textbf{n8n-Webhooks} werden bedarfsgesteuert in drei Klassen
-eingesetzt: Initialisierungs-Trigger bauen fehlende Stammdaten auf;
-Match-Kontext-Trigger lösen spielbezogene Importe nach Matchauswahl aus;
-Generierungs-Trigger stoßen KI-Textprozesse für Events, Matchphasen und
-Zusammenfassungen an. Der \textbf{WebSocket-Kanal \texttt{/ws/media}}
-übernimmt den Echtzeit-Push für latenzkritische Medieninhalte; Ticker- und
-Matchdaten verbleiben bewusst im stabileren Polling-Modell. Diese hybride
-Triggerarchitektur unterstützt sowohl redaktionelle Kontrolle im Sinne des
+Eingaben. \textbf{n8n-Webhooks} werden vom Frontend in drei Klassen
+eingesetzt: Initialisierungs-Trigger bauen Stammdaten beim ersten
+Systemstart auf; Match-Kontext-Trigger laden spielbezogene Daten nach
+Matchauswahl und im Live-Takt nach; Generierungs-Trigger stoßen
+KI-Textprozesse für Events, Matchphasen und Zusammenfassungen an. Der
+\textbf{WebSocket-Kanal \texttt{/ws/media}} übernimmt den Echtzeit-Push
+für latenzkritische Medieninhalte; Ticker- und Matchdaten verbleiben
+bewusst im stabileren Polling-Modell. Diese hybride Triggerarchitektur
+unterstützt sowohl redaktionelle Kontrolle im Sinne des
 \textbf{Human-in-the-Loop}-Ansatzes als auch weitgehend automatisierte
 Live-Prozesse.
 
@@ -97,7 +107,7 @@ Live-Prozesse.
 \subsection{Partner-Team-Konzept und
 White-Label-Steuerung}\label{partner-team-konzept-und-white-label-steuerung}
 
-Das System unterscheidet zwischen dem \textbf{Partner-Team} --- dem Verein, für den die White-Label-Instanz konfiguriert ist --- und den jeweiligen Gegnern. Die Erkennung erfolgt über ein konfigurierbares Team-Keyword, das in n8n-Workflows und Frontend gegen den Teamnamen abgeglichen wird. Partner-Team-Spiele verwenden den \texttt{ef\_whitelabel}-Instanzpfad mit euphorischem Stil und aktivieren vereinsspezifische UI-Bereiche (Social-Media-Panels, Torjubel-Videos); alle anderen Spiele durchlaufen den \texttt{generic}-Pfad mit neutralem Stil. Die Implementierungsdetails sind in Kapitel~5 dokumentiert.
+Das System unterscheidet zwischen dem \textbf{Partner-Team} --- dem Verein, für den die White-Label-Instanz konfiguriert ist --- und den jeweiligen Gegnern. Die Erkennung erfolgt über ein konfigurierbares Team-Keyword, das in n8n-Workflows und Frontend gegen den Teamnamen abgeglichen wird. Partner-Team-Spiele verwenden den \texttt{ef\_whitelabel}-Instanzpfad mit euphorischem Stil und blenden vereinsspezifische UI-Bereiche ein (Social-Media-Panels für YouTube, X und Instagram sowie die ScorePlay-Mediensuche für Bildmaterial); alle anderen Spiele durchlaufen den \texttt{generic}-Pfad mit neutralem Stil. Die Implementierungsdetails sind in Kapitel~5 dokumentiert.
 
 
 
@@ -114,12 +124,18 @@ Datenzugriff}\label{interne-struktur-und-datenzugriff}
 Als Backend-Framework wurde FastAPI gewählt (vgl. Abschnitt~3.6 für
 die technische Einordnung). Die Entscheidung begründet sich durch drei
 systemspezifische Anforderungen: Die parallele Verarbeitung von
-LLM-Aufrufen, externen API-Abfragen und Medienverarbeitung erfordert
-native Unterstützung für asynchrone I/O; die automatisch generierte
-OpenAPI-Spezifikation vereinfacht die Integration mit n8n-Workflows
-erheblich; und die enge Pydantic-Integration reduziert
+LLM-Aufrufen, externen API-Abfragen und Medienverarbeitung profitiert
+von nativer Unterstützung für asynchrone I/O, die FastAPI über
+Pythons \texttt{asyncio}-Event-Loop bereitstellt; die automatisch
+generierte OpenAPI-Spezifikation vereinfacht die Integration mit
+n8n-Workflows erheblich; und die enge Pydantic-Integration reduziert
 Schnittstellenfehler zwischen Frontend, Backend und n8n, indem alle
-Eingaben gegen typisierte Schemas validiert werden.
+Eingaben gegen typisierte Schemas validiert werden. Die
+Datenbankschicht setzt bewusst auf synchrones SQLAlchemy, da die
+Transaktionskomplexität und der eingeschränkte Betriebsumfang keinen
+Mehraufwand einer vollasynchronen Datenbankanbindung rechtfertigen;
+Datenbankzugriffe werden dabei synchron ausgeführt, was beim vorliegenden
+Nutzungsumfang keinen messbaren Nachteil darstellt.
 
 Die interne Struktur folgt einer klaren Trennung aus API-Routern,
 Repository-Schicht (vgl. Kap.~3.6) sowie SQLAlchemy-ORM-Modellen
@@ -230,9 +246,9 @@ LLM-Promptgenerierung; \texttt{media\_queue} wird applikationsseitig
 Das Schema folgt einem hybriden Entwurfsansatz aus strukturierter Normalisierung und gezielter Schemaflexibilität:
 
 \begin{itemize}\tightlist
-\item \textbf{Normalisierte Kernentitäten:} Zentrale Domänenobjekte wie \texttt{teams}, \texttt{matches}, \texttt{events}, \texttt{ticker\_entries}, \texttt{players}, \texttt{competitions} und Zuordnungstabellen sind in dritter Normalform modelliert (Codd 1970), sodass Beziehungen, Integrität und Auswertbarkeit im Live-Betrieb stabil bleiben.
+\item \textbf{Normalisierte Kernentitäten:} Zentrale Domänenobjekte wie \texttt{teams}, \texttt{matches}, \texttt{events}, \texttt{ticker\_entries}, \texttt{players}, \texttt{competitions} und Zuordnungstabellen sind konsequent normalisiert modelliert (vgl. Codd 1970), sodass Redundanzen minimiert sowie Beziehungen, Integrität und Auswertbarkeit im Live-Betrieb stabil bleiben.
 \item \textbf{Gezielter JSONB-Einsatz:} JSONB-Felder werden bewusst nur dort verwendet, wo sich Strukturen dynamisch ändern oder kontextabhängig sind (z.~B. \texttt{synthetic\_events.data} sowie Kontextfelder in \texttt{matches}). Die Statistiktabellen sind dagegen stark typisiert über explizite Spalten modelliert, um konsistente Abfragen und robuste Aggregationen zu ermöglichen.
-\item \textbf{Schlüsselstrategie:} Numerische Primärschlüssel (\texttt{id}) für performante Joins werden mit einem eindeutigen \texttt{uid}-Feld (UUID) als stabilem externen Referenzschlüssel kombiniert --- kein reines UUID-Schema, sondern eine kombinierte Strategie.
+\item \textbf{Schlüsselstrategie:} Bei zentralen Stammdaten-Entitäten (Teams, Wettbewerbe, Spielpläne) werden numerische Primärschlüssel (\texttt{id}) für performante Joins mit einem eindeutigen \texttt{uid}-Feld (UUID) als stabilem externen Referenzschlüssel kombiniert. Transaktions- und Ereignisentitäten (Events, Spieler) verwenden stattdessen den Integer-\texttt{external\_id} der Football-API als externen Verweis.
 \end{itemize}
 
 
@@ -273,7 +289,7 @@ vs.~\texttt{manual}) und erlaubt eine saubere Trennung für Evaluationen
 
 Das Feld \texttt{ticker\_mode} in \texttt{matches} steuert das Verhalten
 der Generierungspipeline pro Spiel und ist zur Laufzeit umschaltbar über
-\texttt{PATCH\ /api/v1/matches/\{id\}/ticker-mode}. Es sind drei Modi implementiert. Im Modus \textbf{\texttt{auto}}
+\texttt{PATCH\ /api/v1/matches/\{matchId\}/ticker-mode}. Es sind drei Modi implementiert. Im Modus \textbf{\texttt{auto}}
 (vollautomatisch) läuft die Triggerkette ohne redaktionellen Eingriff;
 KI-Ergebnisse werden direkt veröffentlicht. Im Modus
 \textbf{\texttt{coop}} (kooperativ / Human-in-the-Loop) erzeugt die KI
@@ -323,21 +339,31 @@ cron-basierten Skripten gewählt, weil es Workflow-Logik ohne
 Codeänderungen am Backend anpassbar macht, eine visuelle
 Debugging-Oberfläche bietet und HTTP-Trigger sowie Webhook-Empfang ohne
 zusätzliche Infrastruktur unterstützt. n8n übernimmt dabei API-Aufrufe,
-Transformation, Persistenzvorbereitung und Triggersteuerung, während das
-FastAPI-Backend als transaktionaler Kern und Integrationspunkt für
-Frontend und KI-Generierung fungiert.
+Transformation, direkte Datenpersistenz per SQL-Upsert und
+Triggersteuerung. Das FastAPI-Backend fungiert als transaktionaler Kern
+für Frontend-Interaktion und den Großteil der KI-Generierung; einzelne
+Zusammenfassungs- und Monitoring-Workflows rufen den LLM-Dienst jedoch
+direkt auf, ohne den FastAPI-Endpunkt zu durchlaufen.
 
 \subsection{Workflow-Klassen und
 Verantwortlichkeiten}\label{workflow-klassen-und-verantwortlichkeiten}
 
-Alle Generierungs-Workflows folgen einem konsistenten Vier-Phasen-Muster, das Idempotenz garantiert: Mehrfachaufrufe desselben Events erzeugen weder Datenduplikate noch redundante LLM-Aufrufe.
+Die event-basierten Generierungs-Workflows (09, 14) folgen einem
+konsistenten Vier-Phasen-Muster, das Idempotenz garantiert:
+Mehrfachaufrufe desselben Events erzeugen weder Datenduplikate noch
+redundante LLM-Aufrufe.
 
 \begin{enumerate}\tightlist
-\item \textbf{Webhook-Trigger:} Ein HTTP-Aufruf löst den Workflow aus.
-\item \textbf{SQL-Operation:} Ein Upsert-Statement persistiert die Daten mit Konfliktbehandlung (\texttt{ON CONFLICT}).
-\item \textbf{Filter-Knoten:} Nur neue, noch nicht vorhandene Zeilen (erkennbar an der zurückgegebenen Datenbank-\texttt{id}) passieren weiter.
-\item \textbf{Backend-Call:} Der entsprechende FastAPI-Endpunkt wird pro neuer Zeile aufgerufen; bei Generierungsworkflows dient er als LLM-Trigger.
+\item \textbf{Webhook-Trigger:} Ein HTTP-Aufruf vom Frontend löst den Workflow aus.
+\item \textbf{SQL-Upsert:} Ein Upsert-Statement persistiert die Ereignisdaten direkt in der Datenbank mit Konfliktbehandlung (\texttt{ON CONFLICT}).
+\item \textbf{Filter-Knoten:} Nur neu eingefügte Zeilen (erkennbar an der zurückgegebenen Datenbank-\texttt{id}) passieren weiter.
+\item \textbf{Backend-Call:} Der FastAPI-Generierungsendpunkt wird pro neuer Zeile aufgerufen und triggert die LLM-Pipeline.
 \end{enumerate}
+
+Die Zusammenfassungs- und Monitoring-Workflows (13, 15) folgen einem
+abweichenden Muster: Sie rufen den LLM-Dienst (OpenRouter) direkt auf,
+ohne SQL-Upsert oder Filter-Schritt, und schreiben das Ergebnis
+anschließend über einen FastAPI-Endpunkt in die Datenbank.
 
 Die n8n-Landschaft gliedert sich in sechs funktionale Klassen. Die
 folgende Übersicht zeigt alle 17 Workflows und ihren Auslöser:
@@ -362,7 +388,7 @@ Trigger
 \textbf{A) Stammdaten} & 01--04: Countries, Teams, Competitions, Matches
 & Bei leeren Daten \\
 \textbf{B) Matchdaten} & 04--07: Lineups, Match-/Player-Statistics,
-Prematch & Nach Matchauswahl \\
+Prematch & Nach Matchauswahl; Statistiken periodisch im Live-Betrieb \\
 \textbf{C) KI-Generierung} & 09 Events-LLM, 13 Halftime/Aftertime, 14
 Anpfiff/Abpfiff & Modus- und Event-gesteuert \\
 \textbf{D) Medien \& Social} & 08 ScorePlay, 10 Twitter/X, 11 YouTube,
@@ -382,7 +408,7 @@ dokumentiert.
 \subsection{Workflow-Grenzen und projektspezifische
 Besonderheiten}\label{workflow-grenzen-und-projektspezifische-besonderheiten}
 
-Die Workflow-Landschaft ist funktional umfassend, enthält aber bewusst pragmatische Projektentscheidungen. In einzelnen Flows ist die Saisonlogik auf 2025 begrenzt (teilweise saisonspezifische Fixierung); für den nächsten Saisonbetrieb wäre eine Parametrisierung dieser Werte erforderlich (vgl. Kap.~6.7). Nicht alle Datenpfade sind eventgetrieben --- ein Teil wird durch Polling und bedarfsgesteuerte Trigger ergänzt (hybride Aktualisierungslogik). Einige LLM- und Medienprozesse enthalten EF-spezifische Logik, die für eine vollständig generalisierte White-Label-Fähigkeit noch parametrisiert werden müsste (instanzspezifische Spezialpfade).
+Die Workflow-Landschaft ist funktional umfassend, enthält aber bewusst pragmatische Projektentscheidungen. In einzelnen Flows ist die Saisonlogik auf die Saison 2025/26 begrenzt (teilweise saisonspezifische Fixierung); für den nächsten Saisonbetrieb wäre eine Parametrisierung dieser Werte erforderlich (vgl. Kap.~6.7). Nicht alle Datenpfade sind eventgetrieben --- ein Teil wird durch Polling und bedarfsgesteuerte Trigger ergänzt (hybride Aktualisierungslogik). Einige LLM- und Medienprozesse enthalten EF-spezifische Logik, die für eine vollständig generalisierte White-Label-Fähigkeit noch parametrisiert werden müsste (instanzspezifische Spezialpfade).
 
 In Summe bildet n8n eine tragfähige Orchestrierungsschicht, die externe
 Datenquellen, interne Persistenz und KI-generierte Inhalte in einem
@@ -396,8 +422,11 @@ Die KI-Komponente bildet das Herzstück des Systems: Sie übersetzt
 strukturierte Spielereignisse in natürlichsprachliche Ticker-Texte und
 verbindet dabei die LLM-Pipeline mit dem Betriebsmodus, der
 Stilkonfiguration und dem Mehrsprachigkeitsparameter. Dieser Abschnitt
-beschreibt die Multi-Provider-Architektur, die Prompt-Konzeption, die
-Concurrency-Steuerung sowie die Mehrsprachigkeitsstrategie.
+beschreibt die Multi-Provider-Architektur sowie die
+Prompt-Engineering-Strategie einschließlich Stilprofilierung,
+Few-Shot-Selektion und Mehrsprachigkeitssteuerung. Die
+Concurrency-Steuerung (Semaphore-Mechanismus) ist in Abschnitt~4.2.3
+beschrieben.
 
 \subsection{Multi-Provider-Architektur}\label{multi-provider-architektur}
 
@@ -472,10 +501,10 @@ zusätzliche harte Restriktionen, um Live-Szenen-Halluzinationen zu
 vermeiden und die Ausgabe auf Vorschau- und Analyseinhalte zu begrenzen.
 
 Der Inferenzparameter Temperature wird für die Textgenerierung
-auf \texttt{0.3} festgelegt, um die faktische Korrektheit gegenüber
-kreativer Varianz zu priorisieren. Für Übersetzungsaufgaben wird ein
-noch niedrigerer Wert von \texttt{0.1} verwendet, um semantische
-Abweichungen vom Originaltext zu minimieren.
+auf \texttt{0.5} festgelegt, um eine ausgewogene Balance zwischen
+faktischer Korrektheit und stilistischer Variation zu erzielen. Für
+Übersetzungsaufgaben wird ein niedrigerer Wert von \texttt{0.1}
+verwendet, um semantische Abweichungen vom Originaltext zu minimieren.
 
 
 
@@ -501,9 +530,9 @@ Die Zustands- und Interaktionslogik ist in wiederverwendbare Custom Hooks aufget
 \subsection{Layout, Moduslogik und
 Kommunikation}\label{dreispalten-layout-und-redaktionsfluss}
 
-Die Hauptansicht folgt einem responsiven Dreispalten-Ansatz mit klarer Aufgabenverteilung. Das linke Panel übernimmt die Veröffentlichungsperspektive: Es listet publizierte Ticker-Einträge als chronologischen Feed, dedupliziert nach \texttt{event\_id} und sortiert nach Spielminute. Das mittlere Panel bildet die redaktionelle Kernarbeit ab: Event-Verarbeitung in Abhängigkeit vom Modus, Draft-Prüfung und Freigabe/Ablehnung, manuelle Eingabe mit Command-Parser (\texttt{/g}, \texttt{/gelb}, \texttt{/rot}, \texttt{/s}) sowie integrierte Media- und Social-Panels, die ausschließlich bei erkannten EF-Spielen eingeblendet werden. Das rechte Panel liefert Kontext- und Analyseinformationen: Matchstatistiken, Aufstellungen sowie spielerbezogene Leistungsdaten.
+Die Hauptansicht folgt einem responsiven Dreispalten-Ansatz mit klarer Aufgabenverteilung. Das linke Panel übernimmt die Veröffentlichungsperspektive: Es listet publizierte Ticker-Einträge als chronologischen Feed, dedupliziert nach \texttt{event\_id} und sortiert nach Spielminute. Das mittlere Panel bildet die redaktionelle Kernarbeit ab: Event-Verarbeitung in Abhängigkeit vom Modus, Draft-Prüfung und Freigabe/Ablehnung, manuelle Eingabe mit Command-Parser (\texttt{/g}, \texttt{/gelb}, \texttt{/gelbrot}, \texttt{/rot}, \texttt{/s}) sowie integrierte Media- und Social-Panels, die ausschließlich bei erkannten EF-Spielen eingeblendet werden. Das rechte Panel liefert Kontext- und Analyseinformationen: Matchstatistiken, Aufstellungen sowie spielerbezogene Leistungsdaten.
 
-Die Modusumschaltung (vgl. Kap.~4.3.3) erfolgt über einen dedizierten \texttt{ModeSelector} mit Portal-basiertem Bestätigungsdialog, visueller Toast-Rückmeldung (2200~ms) und Tastatur-Shortcuts (\texttt{Ctrl+1} / \texttt{Ctrl+2} / \texttt{Ctrl+3}). Im kooperativen Modus sind zusätzliche Tastatur-Interaktionen für den Accept-/Reject-Flow (\texttt{TAB} / \texttt{ESC}) eingebunden. Das Frontend setzt die hybride Triggerarchitektur mit REST-Polling (5-Sekunden-Intervall) für Kerndaten, Webhook-Trigger für bedarfsgesteuerte n8n-Importe sowie WebSocket (\texttt{/ws/media}) mit Exponential-Backoff-Reconnect für latenzkritische Medieninhalte um. Die konkreten Hook-Implementierungen sind in Kapitel~5.3.3--5.3.5 dokumentiert.
+Die Modusumschaltung (vgl. Kap.~4.3.3) erfolgt über einen dedizierten \texttt{ModeSelector} mit Portal-basiertem Bestätigungsdialog, visueller Toast-Rückmeldung (2200~ms) und Tastatur-Shortcuts (\texttt{Ctrl+1} / \texttt{Ctrl+2} / \texttt{Ctrl+3}). Im kooperativen Modus sind zusätzliche Tastatur-Interaktionen für den Accept-/Reject-Flow (\texttt{TAB} / \texttt{ESC}) eingebunden. Das Frontend setzt die hybride Triggerarchitektur mit REST-Polling (15-Sekunden-Intervall im Live-Betrieb, 20-Sekunden-Intervall im PreMatch-Betrieb) für Kerndaten, Webhook-Trigger für bedarfsgesteuerte n8n-Importe sowie WebSocket (\texttt{/ws/media}) mit Exponential-Backoff-Reconnect für latenzkritische Medieninhalte um. Die konkreten Hook-Implementierungen sind in Kapitel~5.3.3--5.3.5 dokumentiert.
 
 
 
@@ -524,7 +553,7 @@ Neue Ereignistypen können ohne Datenbankschema-Änderungen ergänzt werden: Die
 
 \subsection{Deployment-Architektur}\label{deployment-architektur}
 
-Das System ist auf der Cloud-Plattform Render deployt und gliedert sich in drei unabhängige Deployment-Einheiten: FastAPI-Backend (Docker-Container), React-Frontend (Static Site) und PostgreSQL (Managed Database). n8n wird für den Evaluationsbetrieb lokal betrieben und ist über einen ngrok-Tunnel für externe Webhooks erreichbar. Die vollständigen Deployment-Details, Konfiguration und Free-Tier-Implikationen werden in Abschnitt~5.6 beschrieben.
+Das System ist auf der Cloud-Plattform Render deployt und gliedert sich in drei unabhängige Deployment-Einheiten: FastAPI-Backend (Docker-Container), React-Frontend (Static Site) und PostgreSQL (Supabase Managed Database, extern eingebunden). n8n wird für den Evaluationsbetrieb lokal betrieben und ist über einen ngrok-Tunnel für externe Webhooks erreichbar. Die vollständigen Deployment-Details, Konfiguration und Free-Tier-Implikationen werden in Abschnitt~5.6 beschrieben.
 
 
 

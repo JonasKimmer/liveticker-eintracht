@@ -671,9 +671,10 @@ Coverage-Verteilungen folgt in Abschnitt~6.2.
 
 Das System ist auf Render.com (Region: Oregon, US West)
 deployt. Das FastAPI-Backend läuft als Docker-Container (Free-Tier Web
-Service), die PostgreSQL-15-Datenbank als Managed-Dienst im privaten
-Render-Netzwerk; das React-Frontend wird als statische Seite über das
-Render-CDN ausgeliefert. Alle drei Dienste werden aus demselben
+Service); das React-Frontend wird als statische Seite über das
+Render-CDN ausgeliefert. Die PostgreSQL-15-Datenbank wird als
+Managed-Dienst über \textbf{Supabase} betrieben und ist über eine
+externe Connection-URL eingebunden. Alle drei Dienste werden aus demselben
 Repository-Branch (\texttt{deploy/render-v2}) deployt; Konfiguration
 und Zugangsdaten werden als Umgebungsvariablen injiziert. Die n8n-Instanz
 läuft lokal und ist über einen \texttt{ngrok}-Tunnel für externe
