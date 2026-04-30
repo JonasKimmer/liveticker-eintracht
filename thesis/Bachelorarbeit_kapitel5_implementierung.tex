@@ -259,7 +259,7 @@ Das Dispatch-Pattern erlaubt das einfache Hinzufügen neuer Provider:
 Implementierung einer Methode \texttt{\_generate\_X\_text()} und ein
 Eintrag im Dictionary.
 
-Vorab normalisiert eine \texttt{EVENT\_TYPE\_MAP} externe API-Strings auf einheitliche interne Bezeichner (\texttt{goal}, \texttt{card} etc.); unbekannte Typen fallen auf \texttt{"comment"} zurück. Der Prompt wird in vier modularen Methoden aufgebaut --- Faktenblock, Few-Shot-Block, Pre-Match-Schutzregel und Regelblock --- die fehlende Parameter auslassen, statt den Prompt zu invalidieren (vgl.\ Abschnitt~4.5.2).
+Vorab normalisiert eine \texttt{EVENT\_TYPE\_MAP} externe API-Strings auf einheitliche interne Bezeichner (\texttt{goal}, \texttt{card} etc.); unbekannte Typen fallen auf \texttt{"comment"} zurück. Der Prompt wird über vier modulare Hilfsmethoden (\texttt{\_build\_event\_lines}, \texttt{\_build\_context\_str}, \texttt{\_build\_few\_shot\_block}, \texttt{\_build\_prematch\_parts}) zusammengesetzt, die fehlende Parameter auslassen, statt den Prompt zu invalidieren; der Regelblock (\texttt{\#\#\# REGELN}) ist direkt in \texttt{\_build\_prompt} eingebettet (vgl.\ Abschnitt~4.5.2).
 
 LLM-Parameter: \texttt{temperature=0.5} für ausgewogene Textvariation,
 \texttt{max\_tokens} aus \texttt{LLM\_MAX\_TOKENS} (konfigurierbar). Bei
