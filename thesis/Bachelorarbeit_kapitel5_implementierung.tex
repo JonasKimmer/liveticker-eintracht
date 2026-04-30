@@ -183,7 +183,7 @@ Endpunkt & Funktion \\
 \endlastfoot
 \texttt{POST /api/v1/events} & Importiert ein Live-Ereignis (n8n-Webhook); löst die LLM-Pipeline aus \\
 \texttt{POST /api/v1/ticker/generate/\{event\_id\}} & Generiert einen KI-Ticker-Eintrag für ein konkretes Ereignis \\
-\texttt{PATCH /api/v1/ticker/\{id\}/status} & Setzt Status (\texttt{draft}/\texttt{published}/\texttt{rejected}); steuert Coop-Freigabe \\
+\texttt{PATCH /api/v1/ticker/\{id\}} & Generisches Update (Text, Status, Stil); dedizierte Shortcuts \texttt{/publish}, \texttt{/reject} für Coop-Flow \\
 \texttt{POST /api/v1/ticker/manual} & Erstellt einen manuellen Eintrag ohne LLM-Aufruf \\
 \texttt{POST /api/v1/match-status} & Aktualisiert Spielzustand und Phase; triggert Phasen-Events \\
 \end{longtable}
@@ -261,10 +261,10 @@ Eintrag im Dictionary.
 
 Vorab normalisiert eine \texttt{EVENT\_TYPE\_MAP} externe API-Strings auf einheitliche interne Bezeichner (\texttt{goal}, \texttt{card} etc.); unbekannte Typen fallen auf \texttt{"comment"} zurück. Der Prompt wird in vier modularen Methoden aufgebaut --- Faktenblock, Few-Shot-Block, Pre-Match-Schutzregel und Regelblock --- die fehlende Parameter auslassen, statt den Prompt zu invalidieren (vgl.\ Abschnitt~4.5.2).
 
-LLM-Parameter: \texttt{temperature=0.3} für konsistente Ausgaben,
+LLM-Parameter: \texttt{temperature=0.5} für ausgewogene Textvariation,
 \texttt{max\_tokens} aus \texttt{LLM\_MAX\_TOKENS} (konfigurierbar). Bei
 Rate-Limit-Fehlern werden bis zu \texttt{LLM\_RETRY\_ATTEMPTS} (3)
-Versuche mit linearem Backoff (\texttt{30\ s\ /\ 60\ s\ /\ 90\ s})
+Versuche mit linearem Backoff (\texttt{30\ s\ /\ 60\ s})
 unternommen; bei sonstigen transienten Fehlern greift exponentielles
 Backoff (\texttt{1\ s\ /\ 2\ s}).
 
@@ -432,7 +432,7 @@ Die Trennung von Daten- und Aktions-Context hat einen konkreten
 Performance-Vorteil: Komponenten, die nur Actions konsumieren (z.\,B.
 \texttt{EntryEditor}), re-rendern nicht bei Änderungen an
 \texttt{tickerTexts} --- relevant bei einem Live-Ticker mit
-5-Sekunden-Polling. Alle Contexts exportieren einen typsicheren
+15-Sekunden-Polling. Alle Contexts exportieren einen typsicheren
 Zugriffs-Hook, der bei Verwendung außerhalb des Providers einen klaren
 Fehler wirft.
 
@@ -465,7 +465,7 @@ Hook & Paket & Verantwortlichkeit \\
 \end{longtable}
 }
 
-Die Polling-Hooks \texttt{useMatchCore}, \texttt{useMatchEvents} und \texttt{useMatchTicker} betreiben je einen eigenen 5-Sekunden-\texttt{setInterval}-Zyklus; \texttt{useMatchData} aggregiert sie und stellt die Daten über \texttt{TickerDataContext} bereit.
+Die Polling-Hooks \texttt{useMatchCore}, \texttt{useMatchEvents} und \texttt{useMatchTicker} betreiben je einen eigenen \texttt{setInterval}-Zyklus; das Intervall wird über \texttt{resolvePollingInterval(matchState)} zustandsabhängig gesetzt: 15 Sekunden im Live- und FullTime-Betrieb, 20 Sekunden in allen anderen Zuständen (PreMatch, Cancelled u.\,a.). \texttt{useMatchData} aggregiert die drei Hooks und stellt die Daten über \texttt{TickerDataContext} bereit.
 
 
 \subsection{\texorpdfstring{Slash-Command-Parser
@@ -501,7 +501,7 @@ Command & Ausgabe & Phase & Icon \\
 \end{longtable}
 }
 
-\item \textbf{Event-Commands} (14 Einträge in \texttt{CMD\_MAP}, 8 Typen nach Expansion) erzeugen strukturierte Texte mit Validierungshinweisen:
+\item \textbf{Event-Commands} (14 Einträge in \texttt{CMD\_MAP}, 9 Typen nach Expansion) erzeugen strukturierte Texte mit Validierungshinweisen:
 
 \begin{verbatim}
 /g Mustermann EF  → "TOR — Mustermann (EF)"          + icon [Tor]
@@ -622,7 +622,7 @@ Die folgenden Abschnitte beschreiben die Implementierungsdetails der systemkriti
 
 
 \paragraph{Events-LLM-Workflow (09)}
-Dieser Workflow ist der kritischste im System. Er importiert Live-Ereignisse via Webhook (\texttt{POST /Events}) und persistiert sie per UPSERT (\texttt{ON CONFLICT (source\_id) DO NOTHING}). Eine initiale SQL-Abfrage bestimmt anhand der Teamzugehörigkeit, ob die Instanz \texttt{ef\_whitelabel} oder \texttt{generic} sowie den Stil; \texttt{auto\_publish} wird direkt aus \texttt{ticker\_mode} des Spiels gesetzt. Nur Events mit erfolgreicher Datenbankzeile passieren den Filter-Knoten. Ein EF-spezifischer Zweig liest Spielerdaten von \texttt{profis.eintracht.de}, baut S3-Video-URLs auf und persistiert Torjubel-Videos als Ticker-Einträge.
+Dieser Workflow ist der kritischste im System. Er importiert Live-Ereignisse via Webhook (\texttt{POST /Events}) und persistiert sie per UPSERT (\texttt{ON CONFLICT (source\_id) DO NOTHING}). Eine initiale SQL-Abfrage bestimmt anhand der Teamzugehörigkeit, ob die Instanz \texttt{ef\_whitelabel} oder \texttt{generic} sowie den Stil; \texttt{auto\_publish} wird direkt aus \texttt{ticker\_mode} des Spiels gesetzt. Nur Events mit erfolgreicher Datenbankzeile passieren den Filter-Knoten. Ein EF-spezifischer Zweig sucht per SQL-Abfrage in der \texttt{players}-Tabelle nach hinterlegter \texttt{video\_url} des Torschützen und persistiert den Video-Link als Ticker-Eintrag (Icon~\texttt{🎬}).
 
 \paragraph{Prematch-Import-Workflow (07)}
 Dieser Workflow baut den Vorberichtskontext aus fünf parallelen Football-API-Abfragen auf (Verletzungen, Head-to-Head, Teamstatistiken Heim/Gast, Tabellenstand) und persistiert die Ergebnisse als \texttt{synthetic\_events} mit idempotenter \texttt{ON CONFLICT (match\_id, type) DO UPDATE}-Strategie. Ein LLM-Trigger wird nur ausgelöst, wenn noch kein nicht-verworfener Ticker-Eintrag für das jeweilige synthetische Event existiert (\texttt{WHERE te.id IS NULL}).
@@ -640,7 +640,7 @@ Dieser Workflow sucht Medien-Assets bei ScorePlay für Spieler eines Torereignis
 
 \begin{itemize}\tightlist
 \item \textbf{UPSERT-Strategien:} Alle Insert-Operationen verwenden \texttt{ON CONFLICT DO UPDATE/DO NOTHING} für Idempotenz.
-\item \textbf{Filter-Knoten:} Vor jedem LLM-Trigger steht ein Filterknoten, der nur Rows mit einer \texttt{id} (erfolgreicher DB-Insert) durchlässt.
+\item \textbf{Filter-Knoten:} Vor event-basierten LLM-Triggern (09, 14) steht ein Filterknoten, der nur Rows mit einer \texttt{id} (erfolgreicher DB-Insert) durchlässt; Zusammenfassungs-Workflows (13, 15) rufen den LLM-Provider direkt auf und benötigen keinen solchen Filter.
 \item \textbf{Statusbasierte Filterung:} Bestehende nicht-verworfene Ticker-Einträge verhindern redundante Generierungen.
 \item \textbf{Mode-Propagation:} \texttt{ticker\_mode} wird als \texttt{auto\_publish}-Flag an das Backend weitergegeben.
 \item \textbf{Instanz-Routing:} Die Unterscheidung zwischen \texttt{ef\_whitelabel} und \texttt{generic} erfolgt per \texttt{ILIKE '\%Frankfurt\%'}-Abfrage.
