@@ -103,7 +103,7 @@ Das \texttt{TickerEntry}-Modell hat besondere Bedeutung im Lifecycle des
 Systems: Es verknüpft über \texttt{event\_id} (FK auf \texttt{events})
 und \texttt{synthetic\_event\_id} (FK auf \texttt{synthetic\_events})
 den generierten Text mit seinem Auslöser. Die Felder \texttt{status}
-(\texttt{draft}/\texttt{published}/\texttt{rejected}) und
+(\texttt{draft}/\texttt{published}/\texttt{rejected}/\texttt{deleted}) und
 \texttt{source} (\texttt{ai}/\texttt{manual}) bilden den
 Ticker-Lifecycle ab (vgl. Kap. 4.3.2). Drei zusammengesetzte Indizes
 (\texttt{ix\_ticker\_match\_status}, \texttt{ix\_ticker\_match\_phase},
@@ -612,8 +612,7 @@ Medieninhalten: Workflow \texttt{10} importiert Twitter/X-Posts, Workflow
 \texttt{11} YouTube-Clips und Workflow \texttt{12} Instagram-Beiträge,
 jeweils über plattformspezifische API-Abfragen und persistiert die URLs
 im Backend. Workflow \texttt{15}
-überwacht laufende Spiele und aktualisiert Live-Statistiken per
-Backend-Endpunkt; Workflow \texttt{16} empfängt minutengenaue
+empfängt einen Webhook-Trigger, lädt Spielstatistiken von der Football-API, prüft per Code-Knoten ob neue Fakten vorliegen, generiert bei Änderungen einen KI-Text via OpenRouter und postet ihn als Ticker-Eintrag an \texttt{POST /api/v1/ticker/manual}; Workflow \texttt{16} empfängt minutengenaue
 Statusupdates, aktualisiert \texttt{minute}, \texttt{match\_phase} und
 \texttt{match\_state} und triggert bei Phasenwechsel automatisch den
 \texttt{match-status}-Webhook.
