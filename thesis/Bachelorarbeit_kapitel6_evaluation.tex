@@ -204,10 +204,10 @@ Temperatur
 \endhead
 \bottomrule\noalign{}
 \endlastfoot
-1 & OpenRouter & \texttt{google/gemini-2.0-flash-lite-001} & 0,3 \\
-2 & Gemini & \texttt{gemini-2.0-flash-lite-001} & 0,3 \\
-3 & OpenAI & \texttt{gpt-4o-mini} & 0,3 \\
-4 & Anthropic & \texttt{claude-haiku-4-5-20251001} & 0,3 \\
+1 & OpenRouter & \texttt{google/gemini-2.0-flash-lite-001} & 0,5 \\
+2 & Gemini & \texttt{gemini-2.0-flash-lite-001} & 0,5 \\
+3 & OpenAI & \texttt{gpt-4o-mini} & 0,5 \\
+4 & Anthropic & \texttt{claude-haiku-4-5-20251001} & 0,5 \\
 5 & Mock & --- (regelbasierte Templates) & --- \\
 \end{longtable}
 }
@@ -490,7 +490,7 @@ eine automatisierte Evaluation mit N\,=\,80 Einträgen durchgeführt. Die Method
 dem \textbf{LLM-as-Judge}-Ansatz (Zheng et al.~2023), bei dem ein
 unabhängiges Sprachmodell als Bewerter fungiert.
 
-\textbf{Datenbasis} --- Die Datenbasis umfasst reale Ereignisse aus 30 Bundesliga-Spielen der Saison~2025/26 (u.\,a. Borussia~Dortmund -- SC~Freiburg, FSV~Mainz~05 -- FC~Bayern~München, FC~Augsburg -- Eintracht~Frankfurt, 1.~FC~Köln -- Bayer~Leverkusen), abgefragt über die Football~API~v3. Generierungsmodell: \texttt{google/gemini-2.0-flash-lite-001} (identisch zur Hauptevaluation, Temperatur~0{,}3). Bewertendes Modell: \texttt{anthropic/claude-sonnet-4-5} via OpenRouter --- ein anderes Modell als das generierende, was Selbstreferenzialität vermeidet. Abgedeckte Event-Typen: 25~Tore, 25~Gelbe Karten, 4~Rote Karten, 25~Wechsel, 1~Eigentor; je 27 bzw.\ 26~Einträge pro Stilprofil.
+\textbf{Datenbasis} --- Die Datenbasis umfasst reale Ereignisse aus 30 Bundesliga-Spielen der Saison~2025/26 (u.\,a. Borussia~Dortmund -- SC~Freiburg, FSV~Mainz~05 -- FC~Bayern~München, FC~Augsburg -- Eintracht~Frankfurt, 1.~FC~Köln -- Bayer~Leverkusen), abgefragt über die Football~API~v3. Generierungsmodell: \texttt{google/gemini-2.0-flash-lite-001} (identisch zur Hauptevaluation, Temperatur~0{,}5). Bewertendes Modell: \texttt{anthropic/claude-sonnet-4-5} via OpenRouter --- ein anderes Modell als das generierende, was Selbstreferenzialität vermeidet. Abgedeckte Event-Typen: 25~Tore, 25~Gelbe Karten, 4~Rote Karten, 25~Wechsel, 1~Eigentor; je 27 bzw.\ 26~Einträge pro Stilprofil.
 
 {\def\LTcaptype{none} % do not increment counter
 \begin{longtable}[]{@{}
@@ -520,7 +520,7 @@ Die LLM-as-Judge-Evaluation bestätigt Korrektheit (4,12) und Verständlichkeit 
 
 \section{Latenzpotenzial der Betriebsmodi}\label{evaluation-der-betriebsmodi}
 
-Die drei Betriebsmodi unterscheiden sich strukturell in ihrer erreichbaren Publikationslatenz. Auf Basis der gemessenen LLM-Latenzen (Median 859~ms, P95 2.047~ms, vgl. Abschnitt~6.5.1) und des 5-Sekunden-Polling-Intervalls (vgl. Abschnitt~6.5.2) lässt sich für den \texttt{auto}-Modus eine architekturbasierte Time-to-Publish von ≈ 3--6~s abschätzen --- verglichen mit der manuellen Baseline von 30--120~s (Kapitel~2.1). Da ein kontrolliertes Feldexperiment mit echten Redakteuren nicht durchführbar war, handelt es sich um eine Potenzialabschätzung, keine empirisch gemessene Größe; ein Feldtest bleibt als Folgestudie vorgesehen (vgl. Abschnitt~8.3.2).
+Die drei Betriebsmodi unterscheiden sich strukturell in ihrer erreichbaren Publikationslatenz. Auf Basis der gemessenen LLM-Latenzen (Median 859~ms, P95 2.047~ms, vgl. Abschnitt~6.5.1) und des 15-Sekunden-Polling-Intervalls im Live-Modus (vgl. Abschnitt~6.5.2) lässt sich für den \texttt{auto}-Modus eine architekturbasierte Time-to-Publish von ≈ 2--17~s abschätzen (LLM-Generierung: 1--2~s; Frontend-Polling: bis zu 15~s) --- verglichen mit der manuellen Baseline von 30--120~s (Kapitel~2.1). Da ein kontrolliertes Feldexperiment mit echten Redakteuren nicht durchführbar war, handelt es sich um eine Potenzialabschätzung, keine empirisch gemessene Größe; ein Feldtest bleibt als Folgestudie vorgesehen (vgl. Abschnitt~8.3.2).
 
 
 \section{Performance und
@@ -613,19 +613,14 @@ Ressource & Intervall & Bedingung \\
 \endhead
 \bottomrule\noalign{}
 \endlastfoot
-Events \& Ticker & 5.000 ms & Alle Spielstatus \\
-Match-Refresh & 15.000 ms & Immer \\
+Events \& Ticker & 15.000 ms & Live, Halbzeit, Abpfiff (\texttt{resolvePollingInterval}) \\
+Events \& Ticker & 20.000 ms & Alle anderen Spielstatus (PreMatch, Pause) \\
+Match-Refresh & 30.000 ms & Immer \\
 Match-Sync & 60.000 ms & Immer \\
 \end{longtable}
 }
 
-Die \texttt{resolvePollingInterval}-Utility ist als Extension Point
-implementiert: Die Infrastruktur für differenzierte Intervalle je
-Spielstatus (Live vs.~PreMatch) ist vorhanden, aktuell sind beide Werte
-auf 5.000 ms vereinheitlicht. Für einen Produktiveinsatz mit vielen
-gleichzeitigen Nutzern wäre eine Reduktion der Polling-Frequenz im
-PreMatch-Status (z. B. auf 30.000 ms) sinnvoll, um die Serverlast zu
-senken.
+Die \texttt{resolvePollingInterval}-Utility differenziert das Polling-Intervall je nach Spielstatus: Im Live-Modus (sowie bei Halbzeit und Abpfiff) beträgt das Intervall 15.000\,ms, in allen anderen Zuständen (PreMatch, Pause u.\,a.) 20.000\,ms. Für einen Produktiveinsatz mit vielen gleichzeitigen Nutzern könnte das PreMatch-Intervall weiter auf 30.000\,ms oder mehr erhöht werden, um die Serverlast außerhalb der Spielphasen zu senken.
 
 
 \section{Anforderungsabgleich
@@ -660,7 +655,7 @@ F12 & Live-Statistik-Updates & \texttt{ctx\_live\_stats()} mit automatischen Zwi
 \midrule\noalign{}
 \multicolumn{3}{l}{\emph{Nicht-funktionale Anforderungen}} \\
 N1 & Concurrency-Begrenzung LLM & \texttt{asyncio.Semaphore(8)} in \texttt{ticker\_service.py} \\
-N2 & Retry mit Rate-Limit-Erkennung & 3 Versuche; 30\,s/60\,s/90\,s bei Rate-Limit; 1\,s/2\,s sonst \\
+N2 & Retry mit Rate-Limit-Erkennung & 3 Versuche; 30\,s/60\,s bei Rate-Limit; 1\,s/2\,s sonst \\
 N3 & Transaktionale Testisolierung & Rollback-Fixtures; keine persistenten Testdaten \\
 N4 & TypeScript-Typsicherheit & 97,44\,\% type-coverage; 0 Compiler-Fehler \\
 N5 & Responsive UI & Playwright-Test 375×812 (iPhone SE); Mobile Tab Bar \\
@@ -684,7 +679,7 @@ A5 & White-Label-Fähigkeit & Instanz-spezifische Kontextaufbereitung und Few-Sh
 \item \textbf{Kein Langzeitbetrieb.} Das System wurde nicht über einen längeren Zeitraum (z. B. eine vollständige Saison) im Produktivbetrieb evaluiert. Aspekte wie API-Kosten, Rate-Limit-Häufigkeit im Regelbetrieb und Drift der Textqualität über die Zeit sind daher nicht erfasst.
 \item \textbf{Keine Authentifizierung.} Das System verzichtet bewusst auf eine Authentifizierungsschicht (vgl. Kap.~1.4). Für einen produktiven Einsatz ist die Absicherung der API-Endpunkte --- insbesondere der schreibenden Operationen (Publish, Reject, Retract, Mode-Wechsel) --- zwingend erforderlich.
 \item \textbf{Eingeschränkte Browser-Smoke-Testabdeckung.} Die 6 Playwright-Tests decken den stabilen Kern der UI ab, testen aber nicht den vollständigen Redaktionsworkflow mit Backend-Anbindung (Spiel auswählen → Events empfangen → Ticker-Einträge bearbeiten → Freigeben). Ein vollständiger Browser-Test mit laufendem Backend und Testdatenbank wäre wünschenswert, wurde aber aufgrund der Komplexität des Setups nicht umgesetzt.
-\item \textbf{Polling statt Push.} Die Frontend-Datenaktualisierung basiert auf Polling (5-Sekunden-Intervall). In einem produktiven Szenario mit vielen gleichzeitigen Nutzern wäre Server-Sent Events (SSE) oder WebSocket für die Ticker-Updates effizienter. Die WebSocket-Infrastruktur existiert bereits für den Media-Kanal (Clip-Import), wurde aber nicht auf den Ticker-Datenfluss ausgeweitet.
+\item \textbf{Polling statt Push.} Die Frontend-Datenaktualisierung basiert auf Polling (15~s im Live-Modus, 20~s im PreMatch-Modus). In einem produktiven Szenario mit vielen gleichzeitigen Nutzern wäre Server-Sent Events (SSE) oder WebSocket für die Ticker-Updates effizienter. Die WebSocket-Infrastruktur existiert bereits für den Media-Kanal (Clip-Import), wurde aber nicht auf den Ticker-Datenfluss ausgeweitet.
 \item \textbf{Few-Shot-Reichweite.} Die Few-Shot-Infrastruktur wirkt nur bei Generierung über den Backend-LLM-Service. Die n8n-Workflows für Halbzeit- und Abpfiff-Zusammenfassungen rufen OpenRouter direkt auf und erhalten daher keine stilistischen Stilreferenzen. Zudem fällt der Liga-Filter bei zu wenigen liga-spezifischen Einträgen in der \texttt{style\_references}-Tabelle auf eine liga-agnostische Suche zurück (der Filter selbst ist case-insensitiv über \texttt{func.lower()} implementiert). Das Few-Shot-System funktioniert damit grundsätzlich, liefert aber noch keine konsequent liga-spezifische Stilkonditionierung.
 \item \textbf{Batch-Übersetzung schließt manuelle Einträge ein.} Der Endpunkt \texttt{POST\ /api/v1/ticker/translate-batch/\{match\_id\}} übersetzt alle publizierten Einträge eines Spiels --- unabhängig vom \texttt{source}-Feld. Das bedeutet, dass auch manuell verfasste Einträge übersetzt werden, obwohl diese bereits in der Zielsprache vorliegen könnten. Die Einschränkung liegt in einer fehlenden Filterung nach \texttt{source="ai"} im Batch-Endpunkt. Für eine präzise Mehrsprachigkeitsstrategie wäre eine separate Behandlung manueller Einträge sinnvoll.
 \item \textbf{Keine Tests für n8n-Workflows.} Die 17 n8n-Workflows (vgl. Kapitel~5.4) verfügen über keine automatisierten Tests. Ihre Korrektheit wurde ausschließlich durch manuelle Ausführung und Inspektion der Datenbank-Ergebnisse verifiziert. Eine testgetriebene Absicherung wäre über n8n-Workflow-Mocks oder Integrationstests gegen eine Staging-Datenbank möglich, wurde aber aufgrund der visuellen Natur der n8n-Entwicklungsumgebung nicht umgesetzt.
