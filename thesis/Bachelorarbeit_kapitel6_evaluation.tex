@@ -144,11 +144,11 @@ Migrationsbeginn & 78,33 \% & 885 \\
 Nach Grundmigration & \textasciitilde84 \% & 0 \\
 Nach Interface-Ausbau (Hooks, Panels) & \textasciitilde89 \% & 0 \\
 \textbf{Endstand (nach \texttt{parseCommand}-Typisierung)} &
-\textbf{97,44 \%} & \textbf{0} \\
+\textbf{98,02 \%} & \textbf{0} \\
 \end{longtable}
 }
 
-Der Wert von 97,44 \% bedeutet: Von 18.813 gemessenen Typausdrücken sind 18.344 explizit getypt. Die verbleibenden \textasciitilde2,6 \% verteilen sich auf wenige, bewusst offen gelassene Stellen. \texttt{MatchSelectorModal.tsx} ist ein großes Modal mit komplexem internen State, dessen Typisierung stark von einer kommenden API-Stabilisierung abhängt. Die Media-Panels \texttt{MediaPickerPanel.tsx} und \texttt{YouTubePanel.tsx} verarbeiten externe API-Responses (ScorePlay, YouTube), deren Typen nicht vollständig spezifiziert sind. Die Barrel-Exports in \texttt{components/index.ts} (\texttt{export \{ X \}}) fehlen explizite Typ-Annotationen --- sie sind technisch korrekt, werden von \texttt{type-coverage} jedoch als untypiert gezählt.
+Der Wert von 98,02 \% bedeutet: Von 19.041 gemessenen Typausdrücken sind 18.665 explizit getypt. Die verbleibenden \textasciitilde2 \% verteilen sich auf wenige, bewusst offen gelassene Stellen. \texttt{MatchSelectorModal.tsx} ist ein großes Modal mit komplexem internen State, dessen Typisierung stark von einer kommenden API-Stabilisierung abhängt. Die Media-Panels \texttt{MediaPickerPanel.tsx} und \texttt{YouTubePanel.tsx} verarbeiten externe API-Responses (ScorePlay, YouTube), deren Typen nicht vollständig spezifiziert sind. Die Barrel-Exports in \texttt{components/index.ts} (\texttt{export \{ X \}}) fehlen explizite Typ-Annotationen --- sie sind technisch korrekt, werden von \texttt{type-coverage} jedoch als untypiert gezählt.
 
 Nutzen im Entwicklungsprozess: Die TypeScript-Migration hat im Verlauf der Implementierung mehrere Fehler früh aufgedeckt, die sonst erst zur Laufzeit sichtbar geworden wären. So war \texttt{Country} zunächst als Objekt-Interface typisiert, obwohl die API \texttt{string[]} liefert --- TypeScript erzwang die Korrektur. \texttt{parseInt(v)} erhielt ein \texttt{string | number}-Argument, was ohne Typisierung still übergangen worden wäre. Und \texttt{e.target.closest(...)} erforderte \texttt{as Element | null}, um einen Null-Zugriff zur Laufzeit zu verhindern.
 
@@ -669,7 +669,7 @@ F12 & Live-Statistik-Updates & \texttt{ctx\_live\_stats()} mit automatischen Zwi
 N1 & Concurrency-Begrenzung LLM & \texttt{asyncio.Semaphore(8)} in \texttt{ticker\_service.py} \\
 N2 & Retry mit Rate-Limit-Erkennung & 3 Versuche; 30\,s/60\,s bei Rate-Limit; 1\,s/2\,s sonst \\
 N3 & Transaktionale Testisolierung & Rollback-Fixtures; keine persistenten Testdaten \\
-N4 & TypeScript-Typsicherheit & 97,44\,\% type-coverage; 0 Compiler-Fehler \\
+N4 & TypeScript-Typsicherheit & 98,02\,\% type-coverage; 0 Compiler-Fehler \\
 N5 & Responsive UI & Playwright-Test 375×812 (iPhone SE); Mobile Tab Bar \\
 N6 & Fehlerresistenz Frontend & \texttt{ErrorBoundary} mit Fallback-UI; 4 Tests \\
 \midrule\noalign{}
@@ -702,7 +702,7 @@ A5 & White-Label-Fähigkeit & Instanz-spezifische Kontextaufbereitung und Few-Sh
 \section{Zusammenfassung}\label{zusammenfassung}
 
 Die Evaluation belegt eine technisch reife Codebasis (371 Tests, 75 \%
-Python-Backend-Coverage, 97,44 \% TypeScript-Typsicherheit, 0
+Python-Backend-Coverage, 98,02 \% TypeScript-Typsicherheit, 0
 Compiler-Fehler) mit vollständiger Erfüllung aller 23 definierten
 Anforderungen. Die KI-generierten Texte erreichen in der Hauptevaluation
 (N = 16, Selbstbewertung) einen Gesamtdurchschnitt von \textbf{4,3 / 5};
