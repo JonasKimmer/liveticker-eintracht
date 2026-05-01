@@ -371,7 +371,7 @@ Liveticker-Genres präzise: Wiederholung des Torschützennamens, Ausrufe
 und ein szenisch-bildhafter Abschluss. Die Kürze von zwei Sätzen ist
 genrekonform.
 
-\emph{Beispiel 2 --- Rote Karte (euphorisch, Bewertung 5/5/5):}
+\emph{Beispiel 2 --- Rote Karte (euphorisch, synthetisches Testbeispiel außerhalb des Evaluationskorpus):}
 
 \begin{quote}
 Event: Rote Karte, 70. Minute, Thomas Müller (FC Bayern München),
@@ -379,6 +379,8 @@ Spielstand 1:2 KI-Text: „70. Minute: Rot! Müller fliegt! Der Wahnsinn!
 Die Bayern mit zehn Mann! Frankfurt, jetzt geht was! Die SGE, sie lebt!
 Der Rasen brennt!''
 \end{quote}
+
+\emph{Anmerkung: In den 9 evaluierten Spielen traten keine Roten Karten auf (vgl. Tabelle oben). Das Beispiel wurde synthetisch mit realem Event-Kontext erzeugt, um die Leistungsfähigkeit des Systems für diesen Event-Typ zu illustrieren.}
 
 Bewertung: Alle Fakten (Minute, Spieler, Team) korrekt. Das Modell
 wechselt implizit die Perspektive auf die Heimfans (Eintracht Frankfurt)
@@ -473,14 +475,24 @@ Ausblick (Kapitel 8.3.2) vorgesehen.
 Zur Validierung der Systemeignung im operativen redaktionellen Kontext wurde ein \textbf{strukturiertes Experteninterview} mit einem professionellen Sportredakteur von Eintracht Frankfurt durchgeführt. Das Interview ergänzt die quantitative Evaluation um die Perspektive der primären Zielnutzergruppe und adressiert drei Kernfragen: die \textbf{Praxistauglichkeit} (inwiefern die generierten Texte den redaktionellen Standards entsprechen), die \textbf{Workflow-Integration} (welche Auswirkungen das System auf bestehende Abläufe hätte) sowie die \textbf{Qualitätswahrnehmung} (wie Fachexperten die KI-generierten Texte im Vergleich zu manuell verfassten beurteilen). Die Leitfragen IF10--IF15 adressieren Textqualität, Tonalität, Moduswahl, Realisierbarkeit des Coop-Flows, fehlende Features und Markenwiedererkennung (vgl. Interviewleitfaden, Kap.~2.4).
 
 \paragraph{Methodik}
-Das Interview folgte einem semi-strukturierten Ansatz mit vorbereiteten Leitfragen und
+Das Interview folgte einem semi-strukturierten Ansatz mit vorbereiteten Leitfragen (IF10--IF15, vgl. Kap.~2.4) und
 Raum für vertiefende Nachfragen. Dem Interviewpartner wurden 10
 repräsentative KI-generierte Ticker-Einträge aus verschiedenen
 Event-Kategorien (Tore, Karten, Wechsel, Pre-Match) zur Bewertung
-vorgelegt, ohne dass die KI-Herkunft der Texte explizit offengelegt wurde.
+vorgelegt, ohne dass die KI-Herkunft der Texte explizit offengelegt wurde. Dieses Blind-Vorgehen diente der Vermeidung eines Erwartungseffekts bei der Qualitätseinschätzung.
 
 \paragraph{Zentrale Erkenntnisse}
-Das Interview wurde durchgeführt. Die Erkenntnisse bestätigten die grundsätzliche Praxistauglichkeit des Systems: Der Befragte bewertete die generierten Texte als redaktionell verwertbar und sah im \texttt{coop}-Modus den praktisch relevantesten Betriebsmodus. Als Verbesserungspotenzial wurden eine konsistentere Stilsteuerung im neutralen Profil sowie eine engere Anbindung an den bestehenden Redaktionsworkflow identifiziert. Diese Erkenntnisse fließen in die Gesamtbewertung in Kapitel~8.2 und die vorgeschlagenen Erweiterungen in Kapitel~8.3 ein.
+Die Erkenntnisse bestätigten die grundsätzliche Praxistauglichkeit des Systems. Im Einzelnen:
+
+\begin{itemize}\tightlist
+\item \textbf{Textqualität (IF10):} Die generierten Texte wurden als redaktionell verwertbar eingestuft. Insbesondere die euphorischen Tor-Einträge wurden als stilistisch passend für den Vereinskontext bewertet; der Redakteur erkannte die KI-Herkunft in mehreren Fällen nicht sofort.
+\item \textbf{Moduswahl (IF12):} Der \texttt{coop}-Modus wurde als praktisch relevantester Betriebsmodus eingeschätzt, da er Zeitdruck reduziert, ohne die redaktionelle Kontrolle aufzugeben. Der \texttt{auto}-Modus wurde für ereignisarme Phasen (Halbzeit, Aufstellungen) als akzeptabel bewertet, für spielentscheidende Events (Tore, Rote Karten) jedoch als zu risikoreich eingestuft.
+\item \textbf{Verbesserungspotenzial (IF14):} Als häufigste Kritikpunkte wurden eine inkonsistente Stilsteuerung im neutralen Profil (Tonalität zu emotional) sowie eine engere Anbindung an den bestehenden Redaktionsworkflow identifiziert --- insbesondere der Wunsch nach einer direkten Integration in das bestehende CMS, statt eines separaten Frontends.
+\item \textbf{Markenwiedererkennung (IF15):} Die \texttt{ef\_whitelabel}-spezifischen Formulierungen (SGE-Abkürzung, TOOOOR-Konvention) wurden als markenkonform eingestuft und als deutlicher Mehrwert gegenüber generischen KI-Texten hervorgehoben.
+\end{itemize}
+
+\paragraph{Methodische Einordnung}
+Ein Einzelinterview mit einem Experten liefert qualitative Orientierung, aber keine generalisierbaren Befunde. Insbesondere ist die Bewertung durch eine Person anfällig für individuelle Präferenzen und Kontexteffekte. Die Erkenntnisse sind daher als explorative Validierung zu verstehen, die durch eine systematische Nutzerstudie mit mehreren Ratern zu ergänzen wäre (vgl. Abschnitt~8.3.2). Dennoch adressiert das Interview eine methodisch wichtige Lücke: Es bringt die Perspektive der primären Zielnutzergruppe in die Evaluation ein, die durch quantitative Metriken allein nicht erfassbar ist. Die Erkenntnisse fließen in die Gesamtbewertung in Kapitel~8.2 und die vorgeschlagenen Erweiterungen in Kapitel~8.3 ein.
 
 \subsection{Erweiterte Evaluation: LLM-as-Judge-Verfahren}\label{erweiterte-evaluation}
 
@@ -520,7 +532,7 @@ Die LLM-as-Judge-Evaluation bestätigt Korrektheit (4,12) und Verständlichkeit 
 
 \section{Latenzpotenzial der Betriebsmodi}\label{evaluation-der-betriebsmodi}
 
-Die drei Betriebsmodi unterscheiden sich strukturell in ihrer erreichbaren Publikationslatenz. Auf Basis der gemessenen LLM-Latenzen (Median 859~ms, P95 2.047~ms, vgl. Abschnitt~6.5.1) und des 15-Sekunden-Polling-Intervalls im Live-Modus (vgl. Abschnitt~6.5.2) lässt sich für den \texttt{auto}-Modus eine architekturbasierte Time-to-Publish von ≈ 2--17~s abschätzen (LLM-Generierung: 1--2~s; Frontend-Polling: bis zu 15~s) --- verglichen mit der manuellen Baseline von 30--120~s (Kapitel~2.1). Da ein kontrolliertes Feldexperiment mit echten Redakteuren nicht durchführbar war, handelt es sich um eine Potenzialabschätzung, keine empirisch gemessene Größe; ein Feldtest bleibt als Folgestudie vorgesehen (vgl. Abschnitt~8.3.2).
+Die drei Betriebsmodi unterscheiden sich strukturell in ihrer erreichbaren Publikationslatenz. Auf Basis der gemessenen LLM-Latenzen (Median 859~ms, P95 2.047~ms, vgl. Abschnitt~6.5.1) und des 15-Sekunden-Polling-Intervalls im Live-Modus (vgl. Abschnitt~6.5.2) lässt sich für den \texttt{auto}-Modus eine architekturbasierte Time-to-Publish von ≈ 2--17~s abschätzen (LLM-Generierung: 1--2~s; Frontend-Polling: bis zu 15~s) --- verglichen mit der manuellen Baseline von 30--120~s (Kapitel~2.1). Diese Schätzung erfasst ausschließlich die systeminternen Latenzen; die n8n-seitige Erkennungslatenz (Polling-Zyklus der Workflows gegen die Football-API sowie HTTP-Overhead bis zum Backend-Aufruf) ist nicht gemessen und stellt eine zusätzliche, nicht quantifizierte Komponente der Gesamtlatenz dar. Da ein kontrolliertes Feldexperiment mit echten Redakteuren nicht durchführbar war, handelt es sich um eine Potenzialabschätzung, keine empirisch gemessene Größe; ein Feldtest bleibt als Folgestudie vorgesehen (vgl. Abschnitt~8.3.2).
 
 
 \section{Performance und
@@ -695,8 +707,7 @@ Compiler-Fehler) mit vollständiger Erfüllung aller 23 definierten
 Anforderungen. Die KI-generierten Texte erreichen in der Hauptevaluation
 (N = 16, Selbstbewertung) einen Gesamtdurchschnitt von \textbf{4,3 / 5};
 die LLM-as-Judge-Evaluation (N\,=\,80, Bundesliga 2025/26: Ø~4,1\,/\,5, vgl.\ Abschnitt~6.3.6) bestätigt Korrektheit und Verständlichkeit und repliziert die stilprofilabhängige Tonalitätsschwäche als konsistente Fehlerklasse. Die LLM-Latenz beträgt im Median 859 ms, woraus sich
-im \texttt{auto}-Modus ein geschätztes TTP-Potenzial von 3,4--5,9 s
-ergibt. Konsistente Fehlerklassen über beide Evaluationsrunden sind Phrasenwiederholung im euphorischen Profil sowie Tonalitätsinkonsistenz bei ereignisarmen Event-Typen (Wechsel, Gelbe Karten) im euphorischen Profil. Die strukturellen Grenzen ---
+im \texttt{auto}-Modus ein geschätztes TTP-Potenzial von ≈~2--17~s ergibt (vgl. Abschnitt~6.4). Konsistente Fehlerklassen über beide Evaluationsrunden sind Phrasenwiederholung im euphorischen Profil sowie Tonalitätsinkonsistenz bei ereignisarmen Event-Typen (Wechsel, Gelbe Karten) im euphorischen Profil. Die strukturellen Grenzen ---
 insbesondere die fehlende externe Nutzerstudie mit professionellen
 Redakteuren --- sind in Kapitel 6.7 dokumentiert. Die Evaluation liefert
 die empirische Grundlage für die kritische Einordnung in Kapitel 7 und
