@@ -75,9 +75,10 @@ class TestScoreAtEvent:
         result = score_at_event(event_repo, event, match)
         assert result == "1:0"
 
-    def test_own_goal_counted_for_opponent(self):
+    def test_own_goal_counted_for_team_that_benefits(self):
         event_repo = MagicMock()
-        # Eigentor von home_team → zählt für away
+        # API-Football: team_id = Nutznießer des Eigentors (nicht Verursacher)
+        # team_id=1 (home) profitiert → Score 1:0
         og_event = MagicMock()
         og_event.event_type = "own_goal"
         og_event.id = 11
@@ -90,7 +91,7 @@ class TestScoreAtEvent:
         event = _make_event(event_type="own_goal")
 
         result = score_at_event(event_repo, event, match)
-        assert result == "0:1"
+        assert result == "1:0"
 
 
 # ── build_match_context ───────────────────────────────────────────────────────

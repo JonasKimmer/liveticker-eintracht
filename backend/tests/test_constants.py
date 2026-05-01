@@ -20,12 +20,12 @@ class TestResolvePhaseSyntheticEvents:
             ("match_kickoff",        "FirstHalf"),
             ("match_halftime",       "FirstHalfBreak"),
             ("match_second_half",    "SecondHalf"),
-            ("match_fulltime",       "After"),
+            ("match_fulltime",       "FullTime"),
             ("match_extra_kickoff",  "ExtraFirstHalf"),
             ("match_extra_halftime", "ExtraBreak"),
             ("match_penalties",      "PenaltyShootout"),
-            ("match_fulltime_aet",   "After"),
-            ("match_fulltime_pen",   "After"),
+            ("match_fulltime_aet",   "FullTime"),
+            ("match_fulltime_pen",   "FullTime"),
         ],
     )
     def test_known_event_types_resolve_correctly(

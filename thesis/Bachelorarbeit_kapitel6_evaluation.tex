@@ -65,9 +65,9 @@ Der \texttt{parseCommand}-Utility ist die komplexeste Einheit der Geschäftslogi
 \subsection{Backend-Unit-Tests
 (pytest)}\label{backend-unit-tests-pytest}
 
-Das Backend verfügt über 190 Tests in 12 Dateien (82 API-Integrationstests, 48 Service/Repository-Tests, 60 Utility-Tests) mit einer Gesamt-Coverage von 77 \%. Die API-Tests prüfen Endpunkte gegen eine transaktional isolierte PostgreSQL-Testinstanz mit automatischem Rollback nach jedem Test.
+Das Backend verfügt über 246 Tests in 14 Dateien (95 API-Integrationstests, 82 Service/Repository-Tests, 69 Utility-Tests) mit einer Gesamt-Coverage von 79 \%. Die API-Tests prüfen Endpunkte gegen eine transaktional isolierte PostgreSQL-Testinstanz mit automatischem Rollback nach jedem Test.
 
-Die 77 \%-Gesamtcoverage verteilt sich bewusst priorisiert über die Systemschichten:
+Die 79 \%-Gesamtcoverage verteilt sich bewusst priorisiert über die Systemschichten:
 
 {\def\LTcaptype{none} % do not increment counter
 \begin{longtable}[]{@{}
@@ -700,7 +700,7 @@ A5 & White-Label-Fähigkeit & Instanz-spezifische Kontextaufbereitung und Few-Sh
 
 \section{Zusammenfassung}\label{zusammenfassung}
 
-Die Evaluation belegt eine technisch reife Codebasis (383 Tests, 77 \%
+Die Evaluation belegt eine technisch reife Codebasis (439 Tests, 79 \%
 Python-Backend-Coverage, 98,02 \% TypeScript-Typsicherheit, 0
 Compiler-Fehler) mit vollständiger Erfüllung aller 23 definierten
 Anforderungen. Die KI-generierten Texte erreichen in der Hauptevaluation

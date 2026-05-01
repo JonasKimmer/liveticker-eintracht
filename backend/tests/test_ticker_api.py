@@ -83,9 +83,10 @@ class TestDeleteTickerEntry:
         response = client.delete(f"/api/v1/ticker/{sample_ticker_entry.id}")
         assert response.status_code == 204
 
-        # Verify deletion
+        # Soft-delete: Eintrag bleibt abrufbar, Status wechselt auf "deleted"
         get_response = client.get(f"/api/v1/ticker/{sample_ticker_entry.id}")
-        assert get_response.status_code == 404
+        assert get_response.status_code == 200
+        assert get_response.json()["status"] == "deleted"
 
     def test_returns_404_when_deleting_nonexistent(self, client):
         response = client.delete("/api/v1/ticker/999999")
