@@ -49,7 +49,7 @@ Auswahl, Sichtung, Bearbeitung und Publikation ab und bleibt dabei
 mandantenfähig konfigurierbar (z. B. Instanz, Stil, Sprache, Branding).
 Technisch kombiniert das Frontend REST-basiertes Polling für Ticker- und
 Spieldaten mit einem dedizierten WebSocket-Kanal für
-Echtzeit-Medienupdates.
+Echtzeit-Medienupdates. Ticker- und Matchdaten bleiben bewusst im Polling-Modell: Sie tolerieren eine Latenz im 15--20-Sekunden-Bereich, sind einfacher zu debuggen und benötigen keine persistente Serververbindung --- ein günstiger Kompromiss gegenüber dem höheren Infrastrukturaufwand von SSE oder WebSocket für diese Datenklasse.
 
 Die folgende Abbildung zeigt die drei Schichten mit ihren Technologien
 und Kommunikationspfaden:
@@ -487,7 +487,7 @@ und inhaltlichen Einschränkungen.
 \begin{figure}[H]
 \centering
 \DiagramPromptPipeline
-\caption{Prompt-Aufbau: Eingaben, System-Prompt, LLM-Aufruf und Ticker-Text}
+\caption{Prompt-Aufbau: Eingaben, Prompt-Bausteine, LLM-Aufruf und Ticker-Text}
 \end{figure}
 
 Der Few-Shot-Block wird aus der Tabelle \texttt{style\_references}
@@ -547,7 +547,7 @@ Anforderungen.
 \subsection{Skalierung, Erweiterbarkeit und
 Deployment}\label{horizontale-skalierung-des-backends}
 
-Die Anwendungsschicht ist zustandslos konzipiert und kann horizontal skaliert werden, indem zusätzliche Uvicorn-Prozesse hinter einem Load-Balancer gestartet werden. Ein gemeinsamer PostgreSQL-Connection-Pool sichert die Datenbankverbindungskapazität über mehrere Backend-Instanzen.
+Die Anwendungsschicht ist für HTTP-Routen zustandslos konzipiert und kann horizontal skaliert werden, indem zusätzliche Uvicorn-Prozesse hinter einem Load-Balancer gestartet werden. Ein gemeinsamer PostgreSQL-Connection-Pool sichert die Datenbankverbindungskapazität über mehrere Backend-Instanzen. Eine Einschränkung bildet der WebSocket-Kanal \texttt{/ws/media}: Der zugehörige ConnectionManager ist als In-Memory-Singleton pro Prozess implementiert. Bei einem Multi-Prozess-Deployment würden Medien-Updates nur Clients des jeweiligen Workers erreichen --- eine Skalierungsstufe, die eine Redis-Pub/Sub-Erweiterung erfordern würde (vgl. Kap.~7.2.2).
 
 Neue Ereignistypen können ohne Datenbankschema-Änderungen ergänzt werden: Die \texttt{events}-Tabelle verfügt über ein generisches \texttt{description}-Feld, und die \texttt{synthetic\_events}-Tabelle nutzt JSONB für vollständig flexible Payloads. Die Übersetzung von Football-API-Codes auf interne Typbezeichnungen ist in einer zentralen \texttt{EVENT\_TYPE\_MAP}-Konfiguration hinterlegt; neue Typen erfordern ausschließlich einen zusätzlichen Eintrag dort sowie in \texttt{getEventMeta()} im Frontend. Der LLM-Dienst lässt sich um neue Anbieter erweitern, indem eine providerabhängige Handler-Methode implementiert und im zentralen dispatch-Dictionary registriert wird, ohne bestehenden Code zu berühren.
 
