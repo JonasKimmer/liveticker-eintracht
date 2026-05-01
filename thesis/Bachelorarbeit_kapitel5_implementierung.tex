@@ -262,7 +262,7 @@ Eintrag im Dictionary.
 Vorab normalisiert eine \texttt{EVENT\_TYPE\_MAP} externe API-Strings auf einheitliche interne Bezeichner (\texttt{goal}, \texttt{card} etc.); unbekannte Typen fallen auf \texttt{"comment"} zurück. Der Prompt wird über vier modulare Hilfsmethoden (\texttt{\_build\_event\_lines}, \texttt{\_build\_context\_str}, \texttt{\_build\_few\_shot\_block}, \texttt{\_build\_prematch\_parts}) zusammengesetzt, die fehlende Parameter auslassen, statt den Prompt zu invalidieren; der Regelblock (\texttt{\#\#\# REGELN}) ist direkt in \texttt{\_build\_prompt} eingebettet (vgl.\ Abschnitt~4.5.2).
 
 LLM-Parameter: \texttt{temperature=0.5} für ausgewogene Textvariation,
-\texttt{max\_tokens} aus \texttt{LLM\_MAX\_TOKENS} (konfigurierbar). Bei
+\texttt{max\_tokens} aus \texttt{LLM\_MAX\_TOKENS} (konfigurierbar). Alle Prompts werden als einzelne User-Nachricht übermittelt --- ohne separaten System-Prompt-Slot (\texttt{[\{"role":\ "user",\ "content":\ prompt\}]}). Diese Entscheidung vereinheitlicht das Format über alle Provider hinweg, da die Interpretation eines System-Prompt-Feldes providerabhängig variiert; der Rollenkontext (Journalisten-Anweisung, Stilprofil) ist stattdessen in den Prompttext selbst eingebettet. Bei
 Rate-Limit-Fehlern werden bis zu \texttt{LLM\_RETRY\_ATTEMPTS} (3)
 Versuche mit linearem Backoff (\texttt{30\ s\ /\ 60\ s})
 unternommen; bei sonstigen transienten Fehlern greift exponentielles
@@ -536,10 +536,7 @@ Backend zurück; Optimistic-Updates vermeiden wahrnehmbare Latenz beim
 Umschalten. Im Co-op-Modus registriert derselbe Hook die Shortcuts
 \texttt{TAB} (acceptDraft) und \texttt{ESC} (rejectDraft) als
 Keyboard-Event-Listener, die bei Moduswechsel automatisch aktualisiert
-werden. Im Auto-Modus übernimmt \texttt{useAutoPublisher} die
-automatische Publikation neu eintreffender Draft-Einträge als Frontend-Fallback
-für den Fall, dass n8n-Webhooks verzögert eintreffen oder ein Spiel direkt im
-Frontend auf Auto-Modus umgeschaltet wird, ohne n8n-Neustart.
+werden. Im Auto-Modus existieren zwei parallele Automatisierungspfade: Der primäre Pfad verläuft über n8n, das \texttt{auto\_publish=True} an den Backend-Endpunkt übergibt, woraufhin der Eintrag direkt mit \texttt{status=published} angelegt wird. Der sekundäre Pfad ist \texttt{useAutoPublisher} im Frontend: Dieser Hook pollt die Draft-Queue und publiziert neu eintreffende Draft-Einträge unmittelbar --- als Fallback für den Fall, dass n8n-Webhooks verzögert eintreffen oder ein Spiel direkt im Frontend auf Auto-Modus umgeschaltet wird, ohne n8n-Neustart. Beide Pfade führen zum selben Ergebnis (publizierter Eintrag), die Deduplizierungsprüfung per \texttt{event\_id} verhindert dabei Doppelveröffentlichungen.
 
 % TODO: Screenshot einfügen, wenn verfügbar
 % \begin{figure}[H]
@@ -575,7 +572,7 @@ inkrementelle Migration ohne blockierende Fehlereskalation zu erlauben.
 \ImportTok{export} \KeywordTok{interface}\NormalTok{ TickerEntry \{}
 \NormalTok{  id}\OperatorTok{:} \DataTypeTok{number}\OperatorTok{;}
 \NormalTok{  text}\OperatorTok{:} \DataTypeTok{string}\OperatorTok{;}
-\NormalTok{  status}\OperatorTok{:} \StringTok{"draft"} \OperatorTok{|} \StringTok{"published"} \OperatorTok{|} \StringTok{"rejected"}\OperatorTok{;}
+\NormalTok{  status}\OperatorTok{:} \StringTok{"draft"} \OperatorTok{|} \StringTok{"published"} \OperatorTok{|} \StringTok{"rejected"} \OperatorTok{|} \StringTok{"deleted"}\OperatorTok{;}
 \NormalTok{  source}\OperatorTok{?:} \StringTok{"ai"} \OperatorTok{|} \StringTok{"manual"}\OperatorTok{;}
 \NormalTok{  minute}\OperatorTok{?:} \DataTypeTok{number} \OperatorTok{|} \DataTypeTok{null}\OperatorTok{;}
 \NormalTok{  style}\OperatorTok{?:} \DataTypeTok{string} \OperatorTok{|} \DataTypeTok{null}\OperatorTok{;}
@@ -677,8 +674,7 @@ externe Connection-URL eingebunden. Alle drei Dienste werden aus demselben
 Repository-Branch (\texttt{deploy/render-v2}) deployt; Konfiguration
 und Zugangsdaten werden als Umgebungsvariablen injiziert. Die n8n-Instanz
 läuft lokal und ist über einen \texttt{ngrok}-Tunnel für externe
-Webhooks erreichbar --- für den Evaluationsbetrieb ausreichend; ein
-Produktivbetrieb würde eine persistente n8n-Instanz erfordern.
+Webhooks erreichbar. Dieses Setup ist für den Evaluationsbetrieb ausreichend, bringt aber drei Einschränkungen mit sich: Erstens ist die Verfügbarkeit an die Laufzeit des lokalen Rechners gebunden; bei Systemabschalten sind keine eingehenden Webhooks möglich. Zweitens wird bei jedem ngrok-Neustart eine neue öffentliche URL generiert, was eine manuelle Aktualisierung der Webhook-Konfiguration in der Football-API erfordert. Drittens bietet ngrok keine Persistenz-Garantien für Livetraffic. Für einen Produktivbetrieb wäre eine dedizierte, persistente n8n-Instanz --- etwa als Cloud-Deployment auf Railway oder als selbst-gehostete Instanz --- zwingend erforderlich.
 
 Die vier Komponenten bilden die drei Systemschichten aus Abschnitt~4.1:
 n8n die Datenbeschaffung, Backend und Datenbank die Anwendungs- und
