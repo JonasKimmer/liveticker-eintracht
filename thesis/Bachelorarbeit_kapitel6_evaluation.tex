@@ -65,9 +65,9 @@ Der \texttt{parseCommand}-Utility ist die komplexeste Einheit der Geschäftslogi
 \subsection{Backend-Unit-Tests
 (pytest)}\label{backend-unit-tests-pytest}
 
-Das Backend verfügt über 178 Tests in 11 Dateien (82 API-Integrationstests, 36 Service/Repository-Tests, 60 Utility-Tests) mit einer Gesamt-Coverage von 75 \%. Die API-Tests prüfen Endpunkte gegen eine transaktional isolierte PostgreSQL-Testinstanz mit automatischem Rollback nach jedem Test.
+Das Backend verfügt über 178 Tests in 11 Dateien (82 API-Integrationstests, 36 Service/Repository-Tests, 60 Utility-Tests) mit einer Gesamt-Coverage von 65 \%. Die API-Tests prüfen Endpunkte gegen eine transaktional isolierte PostgreSQL-Testinstanz mit automatischem Rollback nach jedem Test.
 
-Die 75 \%-Gesamtcoverage verteilt sich bewusst priorisiert über die Systemschichten:
+Die 65 \%-Gesamtcoverage verteilt sich bewusst priorisiert über die Systemschichten:
 
 {\def\LTcaptype{none} % do not increment counter
 \begin{longtable}[]{@{}
@@ -89,17 +89,17 @@ Anmerkung
 \endhead
 \bottomrule\noalign{}
 \endlastfoot
-\textbf{Modelle} (\texttt{app/models/}) & 17 & 100 \% & Vollständig
-abgedeckt \\
-\textbf{Schemas} (\texttt{app/schemas/}) & 11 & \textasciitilde95 \% &
-Pydantic-Validierung vollständig getestet \\
-\textbf{Utilities} (\texttt{app/utils/}) & 5 & \textasciitilde80 \% &
+\textbf{Modelle} (\texttt{app/models/}) & 17 & \textasciitilde96 \% & Nahezu vollständig;
+\texttt{ticker\_entry.py} teilweise offen \\
+\textbf{Schemas} (\texttt{app/schemas/}) & 11 & \textasciitilde81 \% &
+Pydantic-Validierung überwiegend getestet; Season/Team offen \\
+\textbf{Utilities} (\texttt{app/utils/}) & 5 & \textasciitilde92 \% &
 Evaluation-Metriken, HTTP-Fehler, Context-Builder \\
-\textbf{API-Endpunkte} (\texttt{app/api/v1/}) & 14 & \textasciitilde55
-\% & Kern-Routes getestet; Clip/Media/Teams noch offen \\
-\textbf{Repositories} & 12 & \textasciitilde55 \% & Ticker/Event/Match
+\textbf{API-Endpunkte} (\texttt{app/api/v1/}) & 14 & \textasciitilde51
+\% & Kern-Routes getestet; Clip/Media/Generate noch offen \\
+\textbf{Repositories} & 12 & \textasciitilde46 \% & Ticker/Event/Match
 gut; Clip/Season/Style offen \\
-\textbf{Services} & 2 & \textasciitilde50 \% & LLM-Service (Mocking),
+\textbf{Services} & 2 & \textasciitilde47 \% & LLM-Service (Mocking),
 Ticker-Service \\
 \end{longtable}
 }
@@ -701,7 +701,7 @@ A5 & White-Label-Fähigkeit & Instanz-spezifische Kontextaufbereitung und Few-Sh
 
 \section{Zusammenfassung}\label{zusammenfassung}
 
-Die Evaluation belegt eine technisch reife Codebasis (371 Tests, 75 \%
+Die Evaluation belegt eine technisch reife Codebasis (371 Tests, 65 \%
 Python-Backend-Coverage, 98,02 \% TypeScript-Typsicherheit, 0
 Compiler-Fehler) mit vollständiger Erfüllung aller 23 definierten
 Anforderungen. Die KI-generierten Texte erreichen in der Hauptevaluation
