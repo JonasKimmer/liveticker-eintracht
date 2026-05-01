@@ -23,7 +23,13 @@ bestehenden Ansätzen der automatisierten Sportberichterstattung (Kapitel
 
 \subsection{Beitrag zur Forschung}\label{beitrag-zur-forschung}
 
-Die Arbeit leistet drei Beiträge zum aktuellen Forschungsstand. Als architektonischen Beitrag demonstriert sie eine produktionsnahe Referenzarchitektur für KI-gestützte Echtzeit-Textgenerierung mit modularer Provider-Abstraktion, Few-Shot-Prompting aus einer kuratierten Stilreferenz-Datenbank und dreistufigem Betriebsmodus-Konzept. Als methodischen Beitrag stellt die Evaluationsinfrastruktur mit Bulk-Generierungsendpunkt und Provider-Override systematische und reproduzierbare Modellvergleiche bereit. Als praktischen Beitrag adressiert die White-Label-Architektur mit instanzspezifischer Stilsteuerung den in Kapitel 2.3 beschriebenen Bedarf von Vereinen als eigenständige Medienproduzenten.
+Die Arbeit leistet drei Beiträge zum aktuellen Forschungsstand.
+
+Als \textbf{architektonischen Beitrag} demonstriert sie eine produktionsnahe Referenzarchitektur für KI-gestützte Echtzeit-Textgenerierung: Die modulare Provider-Abstraktion mit Prioritätskette, das Few-Shot-Prompting aus einer kuratierten Stilreferenz-Datenbank und das dreistufige Betriebsmodus-Konzept bilden zusammen ein generisch übertragbares Muster für domänenspezifische LLM-Redaktionssysteme. Vergleichbare Architekturen in der Literatur (z.\,B. Graefe 2016; Clerwall 2014) beschreiben überwiegend templatebasierte NLG-Systeme ohne adaptive Stilsteuerung; ein LLM-basierter Ansatz mit konfigurierbarer Few-Shot-Stilkonditionierung und Human-in-the-Loop-Kontrolle für Liveticker stellt eine eigenständige Erweiterung dar.
+
+Als \textbf{methodischen Beitrag} stellt die Evaluationsinfrastruktur mit Bulk-Generierungsendpunkt, Provider-Override und LLM-as-Judge-Pipeline systematische und reproduzierbare Modellvergleiche bereit --- ohne manuelle Einzelbewertung für jede Konfigurationsänderung. Dies adressiert ein verbreitetes Problem der NLG-Evaluation: die hohe Aufwand-Nutzen-Ratio manueller Bewertungen bei sich ändernden Modellen und Prompts (vgl. Gatt \& Krahmer 2018).
+
+Als \textbf{praktischen Beitrag} adressiert die White-Label-Architektur mit instanzspezifischer Stilsteuerung den in Kapitel 2.3 beschriebenen Bedarf von Vereinen als eigenständige Medienproduzenten. Die Trennung von generischer Instanz (\texttt{generic}) und vereinsspezifischer Ausprägung (\texttt{ef\_whitelabel}) auf Datenbank- und Prompt-Ebene zeigt, dass ein einziges System mehrere redaktionelle Stimmen bedienen kann --- ein Skalierungsmuster, das über den Fußball hinaus anwendbar ist.
 
 
 \section{Kritische Reflexion}\label{kritische-reflexion}
@@ -38,8 +44,7 @@ Textqualität (vgl. Kapitel 6.7, „Keine externe Nutzerstudie''). Im
 Design Science Research ist die Evaluation durch den Entwickler ein
 verbreitetes Vorgehen bei initialen Artefaktiterationen (Hevner et
 al.~2004), begrenzt jedoch die externe Validität der qualitativen
-Ergebnisse. Die implementierte Cohen's-Kappa-Metrik ist bewusst als
-Infrastruktur für eine Folgestudie mit externen Ratern angelegt.
+Ergebnisse. Dieser Einschränkung begegnet die Arbeit auf zwei Ebenen: methodisch durch das LLM-as-Judge-Verfahren (N~=~80, Abschnitt~6.3.6), bei dem ein unabhängiges Modell (\texttt{anthropic/claude-sonnet-4-5}) als Bewerter fungiert und die Selbstreferenzialität systematisch aufbricht; infrastrukturell durch die implementierte Cohen's-Kappa-Metrik als Vorbereitung für eine Folgestudie mit externen Ratern. Da das LLM-as-Judge-Verfahren seinerseits modellspezifische Bewertungstendenzen einbringen kann (vgl. Zheng et al.~2023), ersetzt es die externe Nutzerstudie nicht vollständig, erhöht jedoch die Belastbarkeit der Befunde deutlich über eine reine Selbstbewertung hinaus.
 
 Die eingeschränkte Stichprobengröße (vgl. Kapitel 6.7, „Eingeschränkte
 Stichprobengröße'') relativiert die Generalisierbarkeit der
@@ -104,7 +109,7 @@ Der in Kapitel 3.1 beschriebene Halluzinationseffekt ist im Kontext von
 Livetickern besonders kritisch, da fehlerhafte Fakten (falscher
 Torschütze, falsches Ergebnis) unmittelbar die Glaubwürdigkeit
 zerstören. Die explizite Schutzregel für Pre-Match-Prompts und die
-niedrige Temperatur (vgl. Abschnitt~5.1) sind Gegenmaßnahmen, deren
+moderat gewählte Temperatur (0,5; vgl. Abschnitt~5.1) sind Gegenmaßnahmen, deren
 Wirksamkeit jedoch nur im \texttt{coop}-Modus durch die redaktionelle
 Kontrolle vollständig abgesichert ist. Im \texttt{auto}-Modus verbleibt
 ein Restrisiko fehlerhafter Veröffentlichungen.
@@ -112,7 +117,13 @@ ein Restrisiko fehlerhafter Veröffentlichungen.
 
 \section{Diskussion der Betriebsmodi}\label{diskussion-der-betriebsmodi}
 
-Die drei Betriebsmodi (\texttt{auto}, \texttt{coop}, \texttt{manual}) wurden in Kapitel 4.3.3 konzipiert und in Kapitel 6.4 evaluiert. Ihre komparative Bewertung ergibt eine klare Hierarchie: Der \texttt{auto}-Modus maximiert das Latenzpotenzial (TTP~$\approx$~2--17\,s), trägt jedoch ein unkontrolliertes Halluzinationsrisiko (Stil-Inkonsistenz 19\,\%, Halluzinationsrate 6\,\%), das im journalistischen Kontext die Glaubwürdigkeit gefährden kann (Beils 2023, S.~57) --- er ist daher nur für unkritische Event-Typen wie Phasenwechsel vertretbar. Der \texttt{manual}-Modus dient als Vergleichsbasis und Rückfalloption für Redakteure, die zunächst Vertrauen in das System aufbauen möchten. \textbf{Der \texttt{coop}-Modus ist der intendierte Produktivbetrieb}: Die KI liefert Entwürfe, die redaktionelle Freigabe via TAB/ESC-Steuerung sichert Qualität ohne merkliche Latenzzunahme. Das Experteninterview (vgl. Abschnitt~6.3.5) bestätigt diese Einschätzung. Die Laufzeit-Umschaltbarkeit ermöglicht dabei eine schrittweise Einführung von \texttt{manual} über \texttt{coop} bis \texttt{auto} --- eine Adoption, die den in Kapitel 2.1 beschriebenen Akzeptanzbedarf adressiert. Die modus-spezifische Gesamtbewertung mit Empfehlung findet sich in Abschnitt~8.2.1.
+Die drei Betriebsmodi (\texttt{auto}, \texttt{coop}, \texttt{manual}) wurden in Kapitel 4.3.3 konzipiert und in Kapitel 6.4 evaluiert. Ihre komparative Bewertung ergibt eine klare Hierarchie:
+
+Der \textbf{\texttt{auto}-Modus} maximiert das Latenzpotenzial (TTP~$\approx$~2--17\,s), trägt jedoch ein unkontrolliertes Halluzinationsrisiko (Stil-Inkonsistenz 19\,\%, Halluzinationsrate 6\,\%), das im journalistischen Kontext die Glaubwürdigkeit gefährden kann (Beils 2023, S.~57). Er ist daher nur für unkritische Event-Typen wie Phasenwechsel vertretbar, bei denen eine fehlerhafte Formulierung keine Falschinformation über Spielergebnisse oder Akteure erzeugt.
+
+Der \textbf{\texttt{manual}-Modus} entspricht dem Status quo der manuellen Liveticker-Erstellung und dient im System als Vergleichsbasis sowie als strategische Einstiegsstufe. Er ist für Redaktionen sinnvoll, die das System zunächst parallel zum bestehenden Workflow evaluieren möchten, ohne KI-Inhalte zu publizieren. Darüber hinaus bleibt er als Rückfalloption in Situationen relevant, in denen die LLM-Verfügbarkeit eingeschränkt ist oder das Halluzinationsrisiko für ein spezifisches Spielereignis (z.\,B. strittiger Elfmeter, VAR-Entscheidung) eine vollständig manuelle Einordnung erfordert.
+
+\textbf{Der \texttt{coop}-Modus ist der intendierte Produktivbetrieb}: Die KI liefert Entwürfe, die redaktionelle Freigabe via TAB/ESC-Steuerung sichert Qualität ohne merkliche Latenzzunahme. Das Experteninterview (vgl. Abschnitt~6.3.5) bestätigt diese Einschätzung. Die Laufzeit-Umschaltbarkeit ermöglicht dabei eine schrittweise Einführung von \texttt{manual} über \texttt{coop} bis \texttt{auto} --- eine Adoptionsstrategie, die den in Kapitel 2.1 beschriebenen Akzeptanzbedarf adressiert. Die modus-spezifische Gesamtbewertung mit Empfehlung findet sich in Abschnitt~8.2.1.
 
 
 \section{Diskussion der
@@ -159,6 +170,20 @@ beide Instanzen in einem Schema. Konkrete Erweiterungsszenarien sind in
 Abschnitt~8.3 beschrieben.
 
 
+\section{Ethische und regulatorische Einordnung}\label{ethik}
+
+Der Einsatz KI-generierter Texte im Sportjournalismus berührt normative Fragen, die über die technische Systemgestaltung hinausgehen.
+
+\paragraph{Transparenz gegenüber Lesern.}
+Die Veröffentlichung KI-generierter Liveticker-Einträge ohne Kennzeichnung ist ethisch problematisch: Leser können nicht zwischen redaktionell verantworteten und automatisch generierten Texten unterscheiden. Der \texttt{auto}-Modus verstärkt dieses Risiko, da Halluzinationen (Tonalitätsinkonsistenz 19\,\%, Faktenerfindungen 6\,\%) ohne menschliche Prüfung publiziert werden können. Aus journalistischer Sicht entspräche eine transparente Kennzeichnung KI-generierter Inhalte dem Gebot der Quellentransparenz (vgl. Bluhm \& Schäfer 2023, S.~57). Technisch wäre eine solche Kennzeichnung über das bestehende \texttt{source}-Feld im Ticker-Datenmodell (\texttt{ai} vs.~\texttt{manual}) ohne Codeänderung realisierbar.
+
+\paragraph{Regulatorischer Rahmen.}
+Ab August 2026 verpflichtet Art.~50 Abs.~4 des EU AI Act zur Kennzeichnung KI-generierter Texte, wenn diese nicht trivial erkennbar automatisiert sind. Liveticker-Einträge fallen unter diesen Anwendungsbereich. Ein produktiver Betrieb des Systems erfordert damit eine explizite Kennzeichnungsstrategie sowie datenschutzkonforme Verarbeitungsvereinbarungen mit den LLM-Providern (insbesondere OpenRouter als Intermediär). Diese regulatorischen Anforderungen lagen außerhalb des Projektumfangs, sind aber für eine Produktiveinführung zwingend zu adressieren.
+
+\paragraph{Publizistische Verantwortung.}
+Das Human-in-the-Loop-Design des \texttt{coop}-Modus beantwortet die Verantwortungsfrage konstruktiv: Die redaktionelle Freigabe stellt sicher, dass ein Mensch die publizistische Verantwortung für jeden veröffentlichten Eintrag trägt. Im \texttt{auto}-Modus ist diese Verantwortungslinie unterbrochen --- eine Einschränkung, die über die technische Halluzinationsrate hinaus eine normative Systementscheidung darstellt.
+
+
 \section{Synthese}\label{synthese}
 
-Die Diskussion entlang der fünf Dimensionen --- Abgrenzung zum Stand der Technik, Limitationen, Betriebsmodi, Prompt-Architektur und Implikationen --- ergibt ein konsistentes Gesamtbild: Das System adressiert die identifizierten Problemdimensionen durch nachweisbare Mechanismen; verbleibende Schwächen (Stil-Inkonsistenz, fehlende Authentifizierung, eingeschränkte Stichprobengröße) sind klar lokalisiert. Die Beantwortung der Forschungsfrage und die modus-spezifische Gesamtempfehlung erfolgen in Kapitel~8.2; der konkrete Erweiterungsausblick in Kapitel~8.3.
+Die Diskussion entlang der sechs Dimensionen --- Abgrenzung zum Stand der Technik, Limitationen, Betriebsmodi, Prompt-Architektur und Implikationen --- ergibt ein konsistentes Gesamtbild: Das System adressiert die identifizierten Problemdimensionen durch nachweisbare Mechanismen; verbleibende Schwächen (Stil-Inkonsistenz, fehlende Authentifizierung, eingeschränkte Stichprobengröße) sind klar lokalisiert. Die Beantwortung der Forschungsfrage und die modus-spezifische Gesamtempfehlung erfolgen in Kapitel~8.2; der konkrete Erweiterungsausblick in Kapitel~8.3.
