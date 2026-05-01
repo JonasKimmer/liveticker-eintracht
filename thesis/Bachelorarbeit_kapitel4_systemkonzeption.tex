@@ -208,9 +208,9 @@ bewusst ausgeklammert (vgl. Kap.~1.4).
 \section{Datenbankkonzeption}\label{datenbankkonzeption}
 
 Die Persistenzschicht basiert auf PostgreSQL und umfasst in der
-aktuellen Fassung \textbf{18 Tabellen} (17 ORM-Modelle sowie eine
-schlüsselwertbasierte \texttt{settings}-Tabelle, die ausschließlich über
-eine Alembic-Migration verwaltet wird). Die Wahl eines relationalen
+aktuellen Fassung \textbf{17 Tabellen} (17 ORM-Modelle, vollständig via
+SQLAlchemy \texttt{create\_all} verwaltet; eine SQL-Migration ergänzt
+nachträglich eine Spalte in \texttt{ticker\_entries}). Die Wahl eines relationalen
 Systems gegenüber dokumentenorientierten Ansätzen (z. B. MongoDB)
 begründet sich durch die stark strukturierten Domänendaten:
 FK-Beziehungen zwischen Teams, Wettbewerben, Spielen, Events und
