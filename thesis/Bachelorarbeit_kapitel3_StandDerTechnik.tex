@@ -87,20 +87,20 @@ wenigen kuratierten Beispielen auskommen.
 Innerhalb des Prompting-Paradigmas lassen sich zwei wesentliche Techniken unterscheiden. Beim \textbf{Zero-Shot Prompting} erhält das Modell ausschließlich eine Aufgabenbeschreibung ohne Demonstrationsbeispiele (Brown et al.~2020, S.~13); dieser Ansatz maximiert Flexibilität und eignet sich für generische Anwendungsfälle ohne spezifische Stilerwartungen. Beim \textbf{Few-Shot Prompting} werden dem Modell neben der Aufgabenbeschreibung zusätzlich wenige Beispiele (typischerweise 1--5) als Stilreferenz bereitgestellt, die das Modell auf eine gewünschte Tonalität konditionieren, ohne dass modellseitiges Fine-tuning erforderlich ist (Brown et al.~2020, S.~14).
 
 Moderne Chat-Modelle unterscheiden strukturell zwischen zwei
-Prompt-Rollen \textbf{(Quelle fehlt)}: Der \textbf{System Prompt} legt die übergeordnete Persona
+Prompt-Rollen (OpenAI 2024; Anthropic 2024): Der \textbf{System Prompt} legt die übergeordnete Persona
 und Constraints des Modells fest (z.\,B. Stilanforderungen, inhaltliche
 Grenzen, Ausgabeformat), während der \textbf{User Prompt} die konkrete
 Aufgabe mit aufgabenspezifischen Daten enthält. Diese Trennung erlaubt
 es, allgemeine Verhaltensregeln einmalig im System Prompt zu definieren
-und den User Prompt auf die jeweilige Aufgabe zu beschränken.
+und den User Prompt auf die jeweilige Aufgabe zu beschränken. In der Praxis interpretieren jedoch verschiedene Provider-APIs das System-Prompt-Feld unterschiedlich; das vorliegende System wählt daher einen provider-agnostischen Ansatz und kombiniert Rolleninstruktion, Stilanforderungen und Aufgabe in einer einzigen User-Nachricht (vgl. Kap.~5.1.5).
 
 Ein weiterer zentraler Steuerungsparameter ist die \textbf{Temperature},
 die die Wahrscheinlichkeitsverteilung der Token-Auswahl beeinflusst
-(Brown et al.~2020, S. 24). Niedrige Werte (z. B. 0,0--0,3) führen zu
-deterministischeren, faktentreueren Ausgaben; höhere Werte (z. B.
-0,7--1,0) erhöhen die kreative Varianz. Für journalistische Anwendungen,
-bei denen faktische Korrektheit priorisiert wird, sind niedrige
-Temperature-Werte vorzuziehen.
+(Brown et al.~2020, S. 24). Niedrige Werte (z.\,B. 0,0--0,3) führen zu
+deterministischeren, faktentreueren Ausgaben; höhere Werte (z.\,B.
+0,7--1,0) erhöhen die kreative Varianz. Für strikt faktenbasierte journalistische Texte sprechen niedrige Werte; für Genres, die stilistische Variation explizit erfordern --- wie Liveticker, bei denen formelhaft wirkende Wiederholungen die Leserbindung senken --- kann ein mittlerer Wert (z.\,B. 0,5) eine produktive Balance aus Faktentreue und sprachlicher Lebendigkeit darstellen. Ein separater, niedrigerer Wert (z.\,B. 0,1) ist für Übersetzungsaufgaben sinnvoll, bei denen semantische Abweichungen vom Originaltext minimiert werden sollen.
+
+Ein weiterer praktischer Constraint ist das \textbf{Kontextfenster} (Context Window): Jedes LLM kann nur eine begrenzte Token-Anzahl pro Aufruf verarbeiten --- typisch 8\,000--200\,000 Token je nach Modell. Da jeder Few-Shot-Beispielblock, jeder Kontextbaustein und die Aufgabenbeschreibung Token verbrauchen, begrenzt das Kontextfenster die Anzahl sinnvoll einzubettender Stilreferenzen; für das vorliegende System wurden drei Few-Shot-Beispiele als pragmatisches Maximum gewählt (vgl. Kap.~4.5.2).
 
 Die konkrete Prompt-Struktur, Few-Shot-Beispiele und
 Temperature-Konfiguration des vorliegenden Systems werden in
@@ -111,7 +111,11 @@ Kapitel~4.5.2 beschrieben.
 \section{Natural Language Generation im
 Sportjournalismus}\label{natural-language-generation-im-sportjournalismus}
 
-Die automatisierte Erzeugung natürlichsprachlicher Texte aus strukturierten Daten (Data-to-Text Generation) bildet die technische Grundlage für KI-gestützte Berichterstattungssysteme (Puduppully \& Lapata 2021, S. 510). Historische Ansätze basierten auf regelbasierten Template-Architekturen mit vorhersagbarer Ausgabe, aber stilistischer Monotonie; neuronale End-to-End-Systeme verbesserten die sprachliche Natürlichkeit auf Kosten erhöhter Halluzinationsanfälligkeit (Puduppully \& Lapata 2021, S. 520; vgl. Beils 2023, S. 207). Im professionellen Roboterjournalismus erzeugt beispielsweise \emph{Die Welt} bereits automatisierte Spielberichte via Retresco (Beils 2023, S.~207) --- ein templatebasierter Ansatz, der deterministische, aber stilistisch begrenzte Texte liefert. Klassische NLG-Architekturen werden durch Large Language Models (Kapitel~3.1--3.2) für die meisten Anwendungsfälle weitgehend ersetzt --- für diese Arbeit ist ausschließlich der LLM-basierte Ansatz relevant: Das vorliegende System nutzt Few-Shot-Prompting (Kapitel~3.2) zur stilkontrollierten Textgenerierung; Halluzinationsrisiken werden durch das Human-in-the-Loop-Design des \texttt{coop}-Modus (Kapitel~4.3.3) abgefangen.
+Die automatisierte Erzeugung natürlichsprachlicher Texte aus strukturierten Daten (Data-to-Text Generation) bildet die technische Grundlage für KI-gestützte Berichterstattungssysteme (Puduppully \& Lapata 2021, S. 510). Historische Ansätze basierten auf regelbasierten Template-Architekturen mit vorhersagbarer Ausgabe, aber stilistischer Monotonie; neuronale End-to-End-Systeme verbesserten die sprachliche Natürlichkeit auf Kosten erhöhter Halluzinationsanfälligkeit (Puduppully \& Lapata 2021, S. 520; vgl. Beils 2023, S. 207). Im professionellen Roboterjournalismus erzeugt beispielsweise \emph{Die Welt} bereits automatisierte Spielberichte via Retresco (Beils 2023, S.~207) --- ein templatebasierter Ansatz, der deterministische, aber stilistisch begrenzte Texte liefert.
+
+Empirische Befunde zur automatisierten Sportberichterstattung zeigen, dass Leser KI-generierte Sporttexte in Lesbarkeit und Vertrauenswürdigkeit ähnlich wie menschlich verfasste Texte bewerten, diese jedoch in wahrgenommener Expertise und Stilqualität schlechter einschätzen (Clerwall 2014, S.~529). Für das Genre Liveticker --- das von sprachlicher Lebendigkeit, Ellipsen und situativer Einordnung lebt (vgl. Kap.~2.5) --- ist dieser Stilnachteil besonders relevant: Formelhaft wirkende, templatebasierte Texte verstoßen gegen Genrekonventionen und senken die Leserbindung. LLM-basierte Systeme können diesem Problem durch variable Formulierung begegnen, erkaufen dies aber mit erhöhtem Halluzinationsrisiko (vgl. Kap.~3.1). Eine Qualitätssteigerung lässt sich durch Few-Shot-Prompting mit kuratierten Beispieltexten aus dem Vereinskontext erzielen, die das Modell auf vereinsspezifische Ausdrucksweise konditionieren (vgl. Kap.~3.2). Diese Erkenntnisse motivieren unmittelbar das \texttt{coop}-Modus-Design und die Few-Shot-Architektur des vorliegenden Systems.
+
+Klassische NLG-Architekturen werden durch Large Language Models (Kapitel~3.1--3.2) für die meisten Anwendungsfälle weitgehend ersetzt --- für diese Arbeit ist ausschließlich der LLM-basierte Ansatz relevant: Das vorliegende System nutzt Few-Shot-Prompting (Kapitel~3.2) zur stilkontrollierten Textgenerierung; Halluzinationsrisiken werden durch das Human-in-the-Loop-Design des \texttt{coop}-Modus (Kapitel~4.3.3) abgefangen.
 
 Zur automatisierten Qualitätsbewertung generierter Texte hat sich der \textbf{LLM-as-Judge}-Ansatz etabliert (Zheng et al.~2023): Ein unabhängiges Sprachmodell bewertet die Ausgaben des generierenden Modells anhand definierter Kriterien --- in der Regel Korrektheit, Kohärenz und Relevanz. Voraussetzung für valide Ergebnisse ist, dass bewertendes und generierendes Modell verschieden sind, um Selbstreferenzialität zu vermeiden. Die Methode ergänzt menschliche Evaluation, ersetzt sie jedoch nicht vollständig (Zheng et al.~2023). Sie wird in Kapitel~6.3.6 für die Qualitätsevaluation der generierten Ticker-Einträge eingesetzt.
 
