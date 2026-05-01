@@ -651,11 +651,11 @@ Nr. & Anforderung & Nachweis \\
 \bottomrule\noalign{}
 \endlastfoot
 \multicolumn{3}{l}{\emph{Funktionale Anforderungen}} \\
-F1 & Drei Betriebsmodi (auto, coop, manual) & \texttt{PATCH /matches/\{id\}/ticker-mode}; 2 API-Tests \\
+F1 & Drei Betriebsmodi (auto, coop, manual) & \texttt{PATCH /matches/\{id\}/ticker-mode}; 5 API-Tests \\
 F2 & KI-Generierung für alle Event-Typen & 24 Typen in \texttt{EVENT\_TYPE\_LABEL}; Bulk-Endpoint \\
 F3 & Drei Stilprofile & \texttt{STYLE\_DESC} im Prompt; per Match konfigurierbar \\
 F4 & Few-Shot-Prompting mit Stilreferenzen & Bis zu 3 Referenzen aus \texttt{style\_references}; nach Event-Typ gefiltert \\
-F5 & Ticker-Lifecycle (draft → published / rejected) & State-Machine mit publish/reject/retract; 20 API-Tests \\
+F5 & Ticker-Lifecycle (draft → published / rejected) & State-Machine mit publish/reject/retract; 21 API-Tests \\
 F6 & Slash-Command-Parser & 11 Phasen- und 14 Event-Commands (in \texttt{CMD\_MAP}); 45 Unit-Tests \\
 F7 & Mehrsprachige Textgenerierung & \texttt{translate\_text()} mit Temperatur 0,1; Batch-Endpoint \\
 F8 & Idempotenter n8n-Import & UPSERT-Strategien für Events, Spieler, Teams \\
@@ -675,7 +675,7 @@ N6 & Fehlerresistenz Frontend & \texttt{ErrorBoundary} mit Fallback-UI; 4 Tests 
 \multicolumn{3}{l}{\emph{Architektur-Anforderungen}} \\
 A1 & Drei-Schichten-Architektur & n8n (Daten), FastAPI/PostgreSQL (Anwendung), React (Präsentation) \\
 A2 & Repository-Pattern & 13 Repository-Klassen \\
-A3 & 70+ API-Endpunkte unter \texttt{/api/v1} & 14 Router-Dateien; 82 API-Tests \\
+A3 & 70+ API-Endpunkte unter \texttt{/api/v1} & 13 Router-Dateien; 82 API-Tests \\
 A4 & 17 ORM-Modelle / 17 Datenbanktabellen & 100\,\% Model-Coverage \\
 A5 & White-Label-Fähigkeit & Instanz-spezifische Kontextaufbereitung und Few-Shot-Filterung \\
 \end{longtable}
