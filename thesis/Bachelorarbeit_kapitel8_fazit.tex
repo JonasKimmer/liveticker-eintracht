@@ -30,9 +30,13 @@ Systembeschränkung dokumentiert (vgl. Kapitel 6.7).
 Die Multi-Provider-Architektur mit Prioritätskette gewährleistet eine
 hohe Verfügbarkeit der Textgenerierung. Die qualitative Bewertung
 (Abschnitt~6.3.4) zeigt durchgängig gute Ergebnisse über alle drei
-Qualitätsdimensionen; die stärkste Einschränkung liegt in der
-Stil-Inkonsistenz des neutralen Profils. Die quantitativen Einzelwerte
-und Latenzmetriken sind in Kapitel 6.3--6.5 vollständig dokumentiert.
+Qualitätsdimensionen; das neutrale Profil zeigt in der Hauptevaluation eine
+Inkonsistenz zur euphorischen Tonalität. Die LLM-as-Judge-Evaluation
+(Abschnitt~6.3.6) revidiert diesen Befund: Das neutrale Profil erzielt
+dort den höchsten Gesamtwert (4,82/5), während das euphorische Profil ---
+insbesondere bei Wechsel- und Karten-Events --- die konsistenteste Schwäche
+darstellt (Ø~3,27/5, Tonalität~2,93/5). Die quantitativen Einzelwerte
+und Latenzmetriken sind in Kapitel~6.3--6.5 vollständig dokumentiert.
 
 \subsection{Systemarchitektur und
 Designentscheide}\label{systemarchitektur-und-designentscheide}
@@ -53,8 +57,9 @@ Die in Kapitel 1.2 formulierte Forschungsfrage lautet:
 \begin{quote}
 \emph{Wie lässt sich ein hybrides KI-gestütztes Redaktionssystem für die
 Liveticker-Erstellung im Profifußball konzipieren und prototypisch
-implementieren, das journalistische Qualitätsanforderungen hinsichtlich
-Korrektheit, Tonalität und Verständlichkeit erfüllt?}
+implementieren --- und inwiefern erfüllt das System die definierten
+journalistischen Qualitätsanforderungen hinsichtlich Korrektheit,
+Tonalität und Verständlichkeit?}
 \end{quote}
 
 Die Beantwortung gliedert sich in Konzeption und Implementierung sowie journalistische Qualität.
@@ -66,9 +71,15 @@ Die Beantwortung gliedert sich in Konzeption und Implementierung sowie journalis
 \subsection{Synthese}\label{synthese}
 
 Die Forschungsfrage ist positiv zu beantworten: Das System ist
-realisierbar und wurde vollständig implementiert; die Textqualität
-erfüllt die definierten journalistischen Anforderungen in allen drei
-Dimensionen. Als technischer Zusatzbefund zeigen die gemessenen
+realisierbar und wurde vollständig implementiert. Die Textqualität
+erfüllt die journalistischen Anforderungen in den Dimensionen
+Korrektheit (Ø~4,6/5) und Verständlichkeit (Ø~4,3/5) zuverlässig.
+Bei der Tonalität ist das Bild differenziert: Während neutrale und
+kritische Stilprofile stabile Werte erzielen, zeigt das euphorische
+Profil eine systematische Schwäche bei ereignisarmen Event-Typen
+(LLM-as-Judge Tonalität~2,93/5), die als priorisierter
+Verbesserungsbedarf im Prompt-Design identifiziert ist
+(vgl.\ Abschnitt~8.3). Als technischer Zusatzbefund zeigen die gemessenen
 Systemlatenzen (Median 859~ms, P95 2.047~ms, vgl. Abschnitt~6.5.1) ein
 architekturbasiertes Latenzpotenzial --- ein kontrollierter Feldvergleich
 bleibt als Folgestudie vorgesehen (vgl. Abschnitt~8.3.2).
