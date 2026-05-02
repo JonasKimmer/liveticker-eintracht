@@ -222,4 +222,27 @@ Docker (Merkel 2014) paketiert die Anwendung mitsamt Laufzeitumgebung in reprodu
 \section{Synthese: Technologische Konsequenzen für das
 Systemdesign}\label{synthese-technologische-konsequenzen-fuxfcr-das-systemdesign}
 
-Der Stand der Technik zeigt, dass die drei Problemdimensionen aus Kapitel~2 jeweils konkrete Technologieentscheidungen nach sich ziehen. Der \textbf{operative Zeitdruck} (Kap.~2.1) erfordert kompakte Sprachmodelle mit Few-Shot-Prompting (Kap.~3.1--3.2), die Ticker-Einträge bei vertretbarer Latenz ohne ressourcenintensives Fine-tuning generieren, sowie einen hybriden NLG-Ansatz mit menschlicher Kontrollinstanz (Kap.~3.3), der das Halluzinationsproblem von LLMs ohne vollständigen Qualitätsverlust adressiert. Die \textbf{Mehrsprachigkeit} (Kap.~2.2) wird durch die native Mehrsprachfähigkeit großer Sprachmodelle abgedeckt (Kap.~3.1), ohne proportionalen Personalaufwand. Der \textbf{White-Label-Bedarf} (Kap.~2.3) erfordert eine selbst-hostbare Orchestrierungsplattform mit direktem Datenbankzugriff: n8n (Kap.~3.5) entkoppelt die ETL-Komplexität vom Anwendungskern und erlaubt mandantenspezifische Konfiguration unabhängig von Backend-Deployment-Zyklen. Für die Echtzeitkommunikation zwischen Frontend und Backend stehen je nach Anforderung Polling, SSE oder WebSocket zur Verfügung (Kap.~3.4); die systemspezifische Wahl wird in Kapitel~4.1.1 begründet. Die stark verknüpften Spielentitäten motivieren schließlich eine relationale Datenbankstruktur gegenüber dokumentbasierten Alternativen. Diese technologischen Grundlagen münden in die Systemkonzeption (Kapitel~4) und deren Implementierung (Kapitel~5).
+Der Stand der Technik zeigt, dass die drei Problemdimensionen aus Kapitel~2 jeweils konkrete Technologieentscheidungen nach sich ziehen. Tabelle~\ref{tab:technik-mapping} fasst diese Zuordnung kompakt zusammen.
+
+\begin{table}[h]
+\centering
+\caption{Mapping: Problemdimension → Technologieentscheidung → Systemkomponente}
+\label{tab:technik-mapping}
+\begin{tabular}{p{3.2cm}p{5.2cm}p{4.8cm}}
+\toprule
+\textbf{Problemdimension} & \textbf{Technologieentscheidung} & \textbf{Systemkomponente} \\
+\midrule
+Operativer Zeitdruck (Kap.~2.1) & Kompaktes LLM + Few-Shot-Prompting (Kap.~3.1--3.2); hybrides NLG-Design mit menschlicher Kontrollinstanz (Kap.~3.3) & LLM-Pipeline mit \texttt{coop}-Modus (Kap.~4.3.3, 4.5) \\
+\addlinespace
+Mehrsprachigkeit (Kap.~2.2) & Native LLM-Mehrsprachfähigkeit ohne proportionalen Personalaufwand (Kap.~3.1) & LLM-Übersetzungsfunktion (Kap.~4.5.2) \\
+\addlinespace
+White-Label-Bedarf (Kap.~2.3) & Self-hostbare Workflow-Plattform mit direktem Datenbankzugriff (Kap.~3.5) & n8n-ETL-Workflows (Kap.~4.4) \\
+\addlinespace
+Echtzeit-Datenabruf & Polling/SSE/WebSocket je nach Latenzanforderung (Kap.~3.4) & WebSocket-Architektur (Kap.~4.1.1) \\
+\addlinespace
+Verknüpfte Spielentitäten & Relationale DB mit ACID-Garantien (Kap.~3.6) & PostgreSQL-Datenmodell (Kap.~4.2) \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Der \textbf{operative Zeitdruck} (Kap.~2.1) erfordert kompakte Sprachmodelle mit Few-Shot-Prompting (Kap.~3.1--3.2), die Ticker-Einträge bei vertretbarer Latenz ohne ressourcenintensives Fine-tuning generieren, sowie einen hybriden NLG-Ansatz mit menschlicher Kontrollinstanz (Kap.~3.3), der das Halluzinationsproblem von LLMs ohne vollständigen Qualitätsverlust adressiert. Die \textbf{Mehrsprachigkeit} (Kap.~2.2) wird durch die native Mehrsprachfähigkeit großer Sprachmodelle abgedeckt (Kap.~3.1), ohne proportionalen Personalaufwand. Der \textbf{White-Label-Bedarf} (Kap.~2.3) erfordert eine selbst-hostbare Orchestrierungsplattform mit direktem Datenbankzugriff: n8n (Kap.~3.5) entkoppelt die ETL-Komplexität vom Anwendungskern und erlaubt mandantenspezifische Konfiguration unabhängig von Backend-Deployment-Zyklen. Für die Echtzeitkommunikation zwischen Frontend und Backend stehen je nach Anforderung Polling, SSE oder WebSocket zur Verfügung (Kap.~3.4); die systemspezifische Wahl wird in Kapitel~4.1.1 begründet. Die stark verknüpften Spielentitäten motivieren schließlich eine relationale Datenbankstruktur gegenüber dokumentbasierten Alternativen. Diese technologischen Grundlagen münden in die Systemkonzeption (Kapitel~4) und deren Implementierung (Kapitel~5).
