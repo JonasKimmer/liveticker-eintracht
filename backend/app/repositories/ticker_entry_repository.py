@@ -13,7 +13,7 @@ Sortierung:
 import logging
 from typing import Optional
 
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 
 from app.core.constants import PHASE_SORT_ORDER, PHASE_START_SET
 from app.models.ticker_entry import TickerEntry
@@ -39,11 +39,16 @@ class TickerEntryRepository:
             # damit Frontend-Guards (alreadyPublished) greifen können.
             # Gelöschte sind im UI unsichtbar (kein Code rendert status="deleted").
             pass  # Kein Filter: deleted wird mitgeliefert
-        entries = q.order_by(TickerEntry.created_at.desc()).all()
+        entries = (
+            q.options(joinedload(TickerEntry.event))
+            .order_by(TickerEntry.created_at.desc())
+            .all()
+        )
         entries.sort(
             key=lambda e: (
                 PHASE_SORT_ORDER.get(e.phase, 5) if e.phase else 5,
                 e.minute if e.minute is not None else 999,
+                (e.event.time_additional or 0) if e.event else 0,
                 0 if (e.synthetic_event_id is not None and e.phase in PHASE_START_SET) else 1,
                 e.created_at,
             )
