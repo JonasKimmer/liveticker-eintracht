@@ -38,7 +38,7 @@ Die Systemanalyse zeigt sechs strukturelle Defizite, die den Handlungsbedarf fü
 \item \textbf{Kein automatischer Datenabruf:} Die Aufstellungsanzeige (Abbildung~\ref{fig:altsystem}, rechts) zeigt lediglich „Reservebank'' ohne geladene Spielerdaten --- ein Hinweis darauf, dass Stammdaten manuell eingepflegt oder gar nicht verfügbar sind.
 \end{itemize}
 
-Diese Defizite spiegeln die drei in Kapitel~1.1 identifizierten Problemdimensionen direkt wider: operativer Zeitdruck durch vollständig manuelle Produktion, fehlende Mehrsprachigkeit und eingeschränkte White-Label-Fähigkeit. Das in dieser Arbeit entwickelte System adressiert alle sechs Punkte explizit (vgl. Kap.~4 und~5).
+Diese Defizite spiegeln die drei in Kapitel~1.1 identifizierten Problemdimensionen direkt wider: operativer Zeitdruck durch vollständig manuelle Produktion, fehlende Mehrsprachigkeit und eingeschränkte White-Label-Fähigkeit. Das in dieser Arbeit entwickelte System adressiert alle sechs Punkte explizit: Die fehlende KI-Unterstützung und Stilinkonsistenz werden durch die LLM-Pipeline mit konfigurierbaren Stilprofilen behoben (vgl.\ Kap.~4.5); die manuelle Score-Pflege und der fehlende Datenabruf durch automatisierte n8n-ETL-Workflows (vgl.\ Kap.~4.4); die fehlende Medienintegration durch die MediaQueue-Architektur (vgl.\ Kap.~5.4); das Mehrsprachdefizit durch die native LLM-Übersetzungsfunktion (vgl.\ Kap.~4.5.2).
 
 \subsection{Zeitdruck, Fehleranfälligkeit und Skalierungsgrenzen}\label{zeitdruck-und-fehleranfaelligkeit}
 
@@ -117,9 +117,7 @@ Liga längst bedeutender als der heimische englische (Beils 2023, S.
 221). Dies betrifft zunehmend auch Bundesliga-Vereine mit zweistelligen
 Millionen-Reichweiten auf globalen Plattformen (vgl. Beils 2023, S.
 200). Am Beispiel von Eintracht Frankfurt zeigt sich dies konkret: Durch
-Spieler wie Makoto Hasebe und Daichi Kamada verfügte der Verein in
-zurückliegenden Spielzeiten über eine beachtliche internationale
-Anhängerschaft, insbesondere in Japan --- erkennbar an den fremdsprachigen
+Spieler wie Makoto Hasebe und Daichi Kamada in zurückliegenden Spielzeiten sowie kontinuierliche internationale Transferaktivitäten verfügt der Verein über eine beachtliche Anhängerschaft außerhalb des deutschsprachigen Raums, insbesondere in Japan und dem angloamerikanischen Markt --- erkennbar an den fremdsprachigen
 Interaktionen auf den offiziellen Social-Media-Kanälen des Vereins,
 die im Rahmen der Projektbeobachtung dokumentiert wurden. Eine rein deutschsprachige
 Berichterstattung wird dieser Reichweite nicht mehr gerecht.
@@ -174,7 +172,7 @@ erfordert die fanbezogene Perspektive einen dritten Tonfall: Bei
 anhaltenden Rückständen oder schwachen Leistungen des eigenen Teams
 kann ein kritisch-analysierender Stil angemessener sein als
 unkritische Euphorie. Daraus resultieren drei funktional
-unterschiedliche Stilprofile: neutral, euphorisch und kritisch. Die in Kapitel 2.1
+unterschiedliche Stilprofile: \textbf{neutral}, \textbf{euphorisch} und \textbf{kritisch}. Diese Stilprofile sind orthogonal zu den in Kapitel~1.1 genannten Betriebsmodi (\texttt{auto}, \texttt{coop}, \texttt{manual}): Während die Modi den Autonomiegrad der KI-Generierung steuern, bestimmt das Stilprofil die Texttonalität --- beide Dimensionen sind unabhängig voneinander konfigurierbar. Die in Kapitel 2.1
 beschriebene personelle Fluktuation verschärft das Problem zusätzlich:
 Eine konsistente Markenstimme ist mit wechselndem Personal manuell kaum
 zu gewährleisten. Eine technologische Lösung muss daher auch die
