@@ -16,6 +16,32 @@ Anforderungen in einem formalen Pflichtenheft zusammen.
 \section{Redaktioneller Aufwand bei
 Livetickern}\label{redaktioneller-aufwand-bei-livetickern}
 
+\subsection{Ist-Zustand: Bestehendes Redaktionssystem}\label{ist-zustand-bestehendes-system}
+
+Bevor die strukturellen Problemdimensionen der manuellen Liveticker-Produktion herausgearbeitet werden, illustriert Abbildung~\ref{fig:altsystem} den konkreten Ist-Zustand anhand des im Projektzeitraum eingesetzten Redaktionssystems bei Eintracht Frankfurt. Das System repräsentiert den typischen Stand eines über viele Jahre gewachsenen, rein manuellen Werkzeugs ohne KI-Integration.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.95\textwidth]{altsystem_eintracht.png}
+\caption{Bestehendes Liveticker-Redaktionssystem bei Eintracht Frankfurt (Stand: Saison 2024/25). Links: Ticker-Editor mit manueller Score-Pflege. Mitte: Feed bereits erstellter Meldungen. Rechts: Aufstellungs-Panel ohne automatischen Datenabruf.}
+\label{fig:altsystem}
+\end{figure}
+
+Die Systemanalyse zeigt sechs strukturelle Defizite, die den Handlungsbedarf für das in dieser Arbeit entwickelte System begründen:
+
+\begin{itemize}\tightlist
+\item \textbf{Kein KI-Vorschlag, kein Stilprofil:} Der Ticker-Editor ist ein reines Freitextfeld ohne jegliche KI-Unterstützung, Stilsteuerung oder Vorschlagsfunktion. Jeder Eintrag wird vollständig manuell formuliert.
+\item \textbf{Manuelle Score-Pflege:} Der Spielstand wird über numerische Eingabefelder manuell gepflegt (Abbildung~\ref{fig:altsystem}, links unten). Eine automatische Synchronisation mit einem Live-Datenfeed existiert nicht, was zu Verzögerungen und Flüchtigkeitsfehlern führt.
+\item \textbf{Keine Medienintegration:} Das System bietet lediglich einen einfachen „Bild auswählen''-Button ohne strukturierte Social-Media-Anbindung, Galeriefunktion oder automatischen Medien-Import (z.\,B. ScorePlay, YouTube, Instagram).
+\item \textbf{Stilinkonsistenz im Feed:} Die bestehenden Ticker-Einträge (Abbildung~\ref{fig:altsystem}, Mitte) zeigen stark variierende Qualität und Länge --- von einwortigen Kommentaren („drin!'') bis zu vollständigen Sätzen --- ohne einheitliches Stilprofil oder Qualitätssicherung.
+\item \textbf{Fehlender Mehrsprachen-Support:} Das System ist ausschließlich deutschsprachig ausgelegt. Eine Übersetzungsfunktion oder mehrsprachige Textgenerierung ist nicht vorgesehen.
+\item \textbf{Kein automatischer Datenabruf:} Die Aufstellungsanzeige (Abbildung~\ref{fig:altsystem}, rechts) zeigt lediglich „Reservebank'' ohne geladene Spielerdaten --- ein Hinweis darauf, dass Stammdaten manuell eingepflegt oder gar nicht verfügbar sind.
+\end{itemize}
+
+Diese Defizite spiegeln die drei in Kapitel~1.1 identifizierten Problemdimensionen direkt wider: operativer Zeitdruck durch vollständig manuelle Produktion, fehlende Mehrsprachigkeit und eingeschränkte White-Label-Fähigkeit. Das in dieser Arbeit entwickelte System adressiert alle sechs Punkte explizit (vgl. Kap.~4 und~5).
+
+\subsection{Zeitdruck, Fehleranfälligkeit und Skalierungsgrenzen}\label{zeitdruck-und-fehleranfaelligkeit}
+
 Die manuelle Erstellung von Livetickern zählt zu den kognitiv
 anspruchsvollsten Tätigkeiten im Journalismus (Beils 2023, S. 10). Was
 von außen wie eine schlichte Abfolge kurzer Texteinheiten wirkt, erweist

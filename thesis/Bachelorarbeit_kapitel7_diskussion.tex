@@ -109,7 +109,7 @@ Der in Kapitel 3.1 beschriebene Halluzinationseffekt ist im Kontext von
 Livetickern besonders kritisch, da fehlerhafte Fakten (falscher
 Torschütze, falsches Ergebnis) unmittelbar die Glaubwürdigkeit
 zerstören. Die explizite Schutzregel für Pre-Match-Prompts und die
-moderat gewählte Temperatur (0,5; vgl. Abschnitt~5.1) sind Gegenmaßnahmen, deren
+moderat gewählte Temperatur (0,5; vgl. Abschnitt~5.1.5) sind Gegenmaßnahmen, deren
 Wirksamkeit jedoch nur im \texttt{coop}-Modus durch die redaktionelle
 Kontrolle vollständig abgesichert ist. Im \texttt{auto}-Modus verbleibt
 ein Restrisiko fehlerhafter Veröffentlichungen.
@@ -138,7 +138,7 @@ Die dynamische Einbindung von bis zu drei Stilreferenzen aus der \texttt{style\_
 \subsection{Temperaturparameter und
 Context-Builder}\label{temperatur-context}
 
-Die gewählte Temperatur von 0,5 für die Textgenerierung und 0,1 für Übersetzungen ist ein Kompromiss zwischen sprachlicher Varianz und Vorhersagbarkeit. Es ist anzunehmen, dass eine niedrigere Temperatur die Halluzinationsrate weiter senken würde, aber die Texte formelhafter machen könnte --- ein Zielkonflikt, der im Genre Liveticker (das von Überraschung und sprachlicher Kreativität lebt) besonders relevant ist; ein kontrollierter A/B-Test verschiedener Temperature-Werte war im Evaluationszeitraum nicht durchführbar. Die sieben spezialisierten Context-Builder (vgl. Abschnitt~5.1) strukturieren die Fakten vor der Übergabe an das LLM und reduzieren damit die Wahrscheinlichkeit von Halluzinationen, da das Modell bereits aufbereitete Faktenblöcke erhält statt unstrukturierte Rohdaten. Die Wirksamkeit zeigt sich insbesondere bei Pre-Match-Einträgen, wo die Faktengrundlage (z.~B. Verletzungslisten, H2H-Statistiken) klar abgegrenzt ist.
+Die gewählte Temperatur von 0,5 für die Textgenerierung und 0,1 für Übersetzungen ist ein Kompromiss zwischen sprachlicher Varianz und Vorhersagbarkeit. Es ist anzunehmen, dass eine niedrigere Temperatur die Halluzinationsrate weiter senken würde, aber die Texte formelhafter machen könnte --- ein Zielkonflikt, der im Genre Liveticker (das von Überraschung und sprachlicher Kreativität lebt) besonders relevant ist; ein kontrollierter A/B-Test verschiedener Temperature-Werte war im Evaluationszeitraum nicht durchführbar. Die sieben spezialisierten Context-Builder (vgl. Abschnitt~4.5.2) strukturieren die Fakten vor der Übergabe an das LLM und reduzieren damit die Wahrscheinlichkeit von Halluzinationen, da das Modell bereits aufbereitete Faktenblöcke erhält statt unstrukturierte Rohdaten. Die Wirksamkeit zeigt sich insbesondere bei Pre-Match-Einträgen, wo die Faktengrundlage (z.~B. Verletzungslisten, H2H-Statistiken) klar abgegrenzt ist.
 
 
 \section{Implikationen für den
