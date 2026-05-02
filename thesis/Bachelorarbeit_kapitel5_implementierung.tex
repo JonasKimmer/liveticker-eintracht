@@ -37,7 +37,7 @@ Repositories oder externe Aufrufe koordiniert.
 \end{figure}
 
 \texttt{app/main.py} ist der einzige Einstiegspunkt. Er registriert elf Router unter dem Pfad-Prefix \texttt{/api/v1} sowie
-den WebSocket-Router \texttt{/ws/media} ohne API-Prefix (insgesamt 13 Router-Dateien in \texttt{api/v1/}, da der Ticker-Bereich auf drei Dateien aufgeteilt ist, vgl. Abschnitt~5.1.3), konfiguriert
+den WebSocket-Router \texttt{/ws/media} ohne API-Prefix (insgesamt 13 Router-Dateien in \texttt{api/v1/}, da der Ticker-Bereich auf vier Dateien aufgeteilt ist, vgl. Abschnitt~5.1.3), konfiguriert
 CORS-Middleware und bindet statische Dateien (Thumbnail-Cache) ein. Beim Start führt
 \texttt{Base.metadata.create\_all(bind=engine)} ein idempotentes
 Schema-Bootstrapping durch, das bei erstmaliger Inbetriebnahme alle
@@ -120,7 +120,7 @@ kapselt. Alle Repositories erben von
 \texttt{BaseRepository{[}T{]}}, die \texttt{exists()} generisch
 bereitstellt; jede Instanz erhält eine \texttt{Session} im Konstruktor.
 Diese Kapselung hält Router frei von ORM-Details und erlaubt
-Integrationstests direkt gegen echte Datenbanken --- ohne Mock-Schichten.
+Integrationstests direkt gegen echte Datenbanken, ohne Mock-Schichten.
 Das \texttt{MatchRepository} lädt Heim- und Auswärtsteam, Wettbewerb und
 Saison per \texttt{joinedload} in einer einzigen Abfrage vor, da die
 KI-Generierungsroute vollständige Kontext-Daten benötigt.
@@ -166,7 +166,7 @@ Der Batch-Endpunkt
 \texttt{POST\ /api/v1/ticker/translate-batch/\{match\_id\}} ruft für
 alle publizierten KI-Einträge eines Spiels den LLM-Service mit
 reduzierter Temperatur (\texttt{0.1}) auf, um sprachlich
-deterministische Übersetzungen zu erzeugen --- eine gegenüber der
+deterministische Übersetzungen zu erzeugen, eine gegenüber der
 Originalgenerierung bewusst andere Parametrisierung.
 
 Die fünf systemkritischen Endpunkte des Ticker-Lifecycles sind:
@@ -262,7 +262,7 @@ Eintrag im Dictionary.
 Vorab normalisiert eine \texttt{EVENT\_TYPE\_MAP} externe API-Strings auf einheitliche interne Bezeichner (\texttt{goal}, \texttt{card} etc.); unbekannte Typen fallen auf \texttt{"comment"} zurück. Der Prompt wird über vier modulare Hilfsmethoden (\texttt{\_build\_event\_lines}, \texttt{\_build\_context\_str}, \texttt{\_build\_few\_shot\_block}, \texttt{\_build\_prematch\_parts}) zusammengesetzt, die fehlende Parameter auslassen, statt den Prompt zu invalidieren; der Regelblock (\texttt{\#\#\# REGELN}) ist direkt in \texttt{\_build\_prompt} eingebettet (vgl.\ Abschnitt~4.5.2).
 
 LLM-Parameter: \texttt{temperature=0.5} für ausgewogene Textvariation,
-\texttt{max\_tokens} aus \texttt{LLM\_MAX\_TOKENS} (konfigurierbar). Alle Prompts werden als einzelne User-Nachricht übermittelt --- ohne separaten System-Prompt-Slot (\texttt{[\{"role":\ "user",\ "content":\ prompt\}]}). Diese Entscheidung vereinheitlicht das Format über alle Provider hinweg, da die Interpretation eines System-Prompt-Feldes providerabhängig variiert; der Rollenkontext (Journalisten-Anweisung, Stilprofil) ist stattdessen in den Prompttext selbst eingebettet. Bei
+\texttt{max\_tokens} aus \texttt{LLM\_MAX\_TOKENS} (konfigurierbar). Alle Prompts werden als einzelne User-Nachricht übermittelt, ohne separaten System-Prompt-Slot (\texttt{[\{"role":\ "user",\ "content":\ prompt\}]}). Diese Entscheidung vereinheitlicht das Format über alle Provider hinweg, da die Interpretation eines System-Prompt-Feldes providerabhängig variiert; der Rollenkontext (Journalisten-Anweisung, Stilprofil) ist stattdessen in den Prompttext selbst eingebettet. Bei
 Rate-Limit-Fehlern werden bis zu \texttt{LLM\_RETRY\_ATTEMPTS} (3)
 Versuche mit linearem Backoff (\texttt{30\ s\ /\ 60\ s})
 unternommen; bei sonstigen transienten Fehlern greift exponentielles
@@ -301,12 +301,12 @@ Ticker-Eintrag für die \texttt{event\_id} existiert:
 \end{Shaded}
 
 Dies macht den Endpunkt für Standardfälle idempotent gegenüber
-Mehrfachaufrufen --- ein wichtiges Merkmal, da n8n-Workflows bei
+Mehrfachaufrufen, ein wichtiges Merkmal, da n8n-Workflows bei
 Fehlern automatisch wiederholen. Ohne diese Prüfung würde jeder Retry
 einen zusätzlichen Ticker-Eintrag mit unterschiedlichem
 (nicht-deterministischem) Text erzeugen. Wird ein abweichendes
 Stilprofil (\texttt{data.style}) übergeben, wird der bestehende Eintrag
-gelöscht und neu generiert --- der idempotente Pfad gilt damit nur für
+gelöscht und neu generiert; der idempotente Pfad gilt damit nur für
 Aufrufe mit identischem Stil.
 
 Der initiale Status des erzeugten Ticker-Eintrags wird über den
@@ -320,8 +320,8 @@ konzeptionelle Beschreibung der drei Betriebsmodi):
 \end{Highlighting}
 \end{Shaded}
 
-Damit wird die Modus-Logik zu einem reinen Aufrufparameter des Backends
---- die Entscheidungsinstanz ist n8n auf Basis des in der Datenbank
+Damit wird die Modus-Logik zu einem reinen Aufrufparameter des Backends;
+die Entscheidungsinstanz ist n8n auf Basis des in der Datenbank
 gespeicherten \texttt{ticker\_mode}. Das Backend selbst ist
 modus-agnostisch: Es erhält einen Booleschen Wert und setzt den Status
 entsprechend.
@@ -367,7 +367,7 @@ verfasst hat und keine weitere Freigabe erforderlich ist.
 Im \texttt{coop}-Modus liegt die gesamte UX-Last auf der Draft-Queue:
 Das Frontend zeigt neue \texttt{draft}-Einträge mit
 \texttt{TAB}/\texttt{ESC}-Shortcuts an (vgl. Abschnitt 5.3.5). Dieses Design stellt sicher, dass keine KI-generierten Texte
-ohne menschliche Prüfung publiziert werden --- eine Entscheidung, die
+ohne menschliche Prüfung publiziert werden, eine Entscheidung, die
 direkt aus dem journalistischen Qualitätsanspruch in Kapitel 2.1 folgt.
 
 Das konzeptionelle Statusmodell (\texttt{draft} → \texttt{published} /
@@ -376,15 +376,15 @@ vollständig in Abschnitt 4.3.2 beschrieben. Implementierungsseitig sind
 zwei Details hervorzuheben:
 
 Der Übergang \texttt{published\ →\ draft} (Undo) ist im Frontend als
-\textbf{Toast-Aktion} realisiert: Nach jeder Publikation erscheint für 5
+Toast-Aktion realisiert: Nach jeder Publikation erscheint für 5
 Sekunden ein Widerruf-Button. Über \texttt{PATCH\ /api/v1/ticker/\{id\}}
 mit \texttt{\{\ "status":\ "draft"\ \}} wird der Eintrag zurückgesetzt
 und steht erneut zur Bearbeitung bereit.
 
 \texttt{rejected}-Einträge werden nicht aus der Datenbank gelöscht,
 sondern behalten ihren Status. Diese Entscheidung sichert die
-Reproduzierbarkeit der Evaluation: Alle je generierten Einträge --- auch
-verworfene --- sind für spätere Qualitätsanalysen auswertbar.
+Reproduzierbarkeit der Evaluation: Alle je generierten Einträge (auch
+verworfene) sind für spätere Qualitätsanalysen auswertbar.
 
 
 \section{Frontend-Implementierung}\label{frontend-implementierung}
@@ -414,7 +414,7 @@ App
 \end{verbatim}
 
 Die drei Panels sind physisch getrennte React-Komponenten, kommunizieren
-aber ausschließlich über Context-Provider --- kein Prop-Drilling über
+aber ausschließlich über Context-Provider, kein Prop-Drilling über
 Komponentengrenzen hinweg.
 
 
@@ -431,7 +431,7 @@ redaktionelle Aktionen wie Generierung, Publikation und Bearbeitung.
 Die Trennung von Daten- und Aktions-Context hat einen konkreten
 Performance-Vorteil: Komponenten, die nur Actions konsumieren (z.\,B.
 \texttt{EntryEditor}), re-rendern nicht bei Änderungen an
-\texttt{tickerTexts} --- relevant bei einem Live-Ticker mit
+\texttt{tickerTexts}, relevant bei einem Live-Ticker mit
 15-Sekunden-Polling. Alle Contexts exportieren einen typsicheren
 Zugriffs-Hook, der bei Verwendung außerhalb des Providers einen klaren
 Fehler wirft.
@@ -536,7 +536,7 @@ Backend zurück; Optimistic-Updates vermeiden wahrnehmbare Latenz beim
 Umschalten. Im Co-op-Modus registriert derselbe Hook die Shortcuts
 \texttt{TAB} (acceptDraft) und \texttt{ESC} (rejectDraft) als
 Keyboard-Event-Listener, die bei Moduswechsel automatisch aktualisiert
-werden. Im Auto-Modus existieren zwei parallele Automatisierungspfade: Der primäre Pfad verläuft über n8n, das \texttt{auto\_publish=True} an den Backend-Endpunkt übergibt, woraufhin der Eintrag direkt mit \texttt{status=published} angelegt wird. Der sekundäre Pfad ist \texttt{useAutoPublisher} im Frontend: Dieser Hook pollt die Draft-Queue und publiziert neu eintreffende Draft-Einträge unmittelbar --- als Fallback für den Fall, dass n8n-Webhooks verzögert eintreffen oder ein Spiel direkt im Frontend auf Auto-Modus umgeschaltet wird, ohne n8n-Neustart. Beide Pfade führen zum selben Ergebnis (publizierter Eintrag), die Deduplizierungsprüfung per \texttt{event\_id} verhindert dabei Doppelveröffentlichungen.
+werden. Im Auto-Modus existieren zwei parallele Automatisierungspfade: Der primäre Pfad verläuft über n8n, das \texttt{auto\_publish=True} an den Backend-Endpunkt übergibt, woraufhin der Eintrag direkt mit \texttt{status=published} angelegt wird. Der sekundäre Pfad ist \texttt{useAutoPublisher} im Frontend: Dieser Hook pollt die Draft-Queue und publiziert neu eintreffende Draft-Einträge unmittelbar, als Fallback für den Fall, dass n8n-Webhooks verzögert eintreffen oder ein Spiel direkt im Frontend auf Auto-Modus umgeschaltet wird, ohne n8n-Neustart. Beide Pfade führen zum selben Ergebnis (publizierter Eintrag), die Deduplizierungsprüfung per \texttt{event\_id} verhindert dabei Doppelveröffentlichungen.
 
 % TODO: Screenshot einfügen, wenn verfügbar
 % \begin{figure}[H]
@@ -557,7 +557,7 @@ systemkritischen Pfade mit messbaren Qualitätskennzahlen.
 Die Migration folgte einem schrittweisen Ansatz: Zunächst wurden alle
 \texttt{.js}/\texttt{.jsx}-Dateien umbenannt und die
 \texttt{tsconfig.json} konfiguriert; anschließend wurden
-TypeScript-Fehler von innen nach außen behoben --- beginnend mit dem
+TypeScript-Fehler von innen nach außen behoben, beginnend mit dem
 Typ-System (\texttt{src/types/index.ts}) über Contexts bis zu den
 Komponenten. Der \texttt{strict}-Modus ist bewusst deaktiviert, um
 inkrementelle Migration ohne blockierende Fehlereskalation zu erlauben.
@@ -593,7 +593,7 @@ Datenquellen, dem FastAPI-Backend und dem LLM-Dienst. Alle 17
 Workflow-Dateien liegen als versionierte JSON-Exporte unter \texttt{n8n/}
 vor. Die Workflows gliedern sich funktional in sechs Gruppen: Workflows
 \texttt{01}--\texttt{04} laden Stammdaten (Länder, Teams, Wettbewerbe,
-Spielpläne) via Upsert aus API-Football --- da zwei parallele
+Spielpläne) via Upsert aus API-Football; da zwei parallele
 \texttt{04}-Workflows existieren (\texttt{04\_import\_matches} und
 \texttt{04\_import\_lineups}), überlappt die Nummerierung an dieser Stelle.
 Workflows \texttt{04}--\texttt{07}
@@ -674,7 +674,7 @@ externe Connection-URL eingebunden. Alle drei Dienste werden aus demselben
 Repository-Branch (\texttt{deploy/render-v2}) deployt; Konfiguration
 und Zugangsdaten werden als Umgebungsvariablen injiziert. Die n8n-Instanz
 läuft lokal und ist über einen \texttt{ngrok}-Tunnel für externe
-Webhooks erreichbar. Dieses Setup ist für den Evaluationsbetrieb ausreichend, bringt aber drei Einschränkungen mit sich: Erstens ist die Verfügbarkeit an die Laufzeit des lokalen Rechners gebunden; bei Systemabschalten sind keine eingehenden Webhooks möglich. Zweitens wird bei jedem ngrok-Neustart eine neue öffentliche URL generiert, was eine manuelle Aktualisierung der Webhook-Konfiguration in der Football-API erfordert. Drittens bietet ngrok keine Persistenz-Garantien für Livetraffic. Für einen Produktivbetrieb wäre eine dedizierte, persistente n8n-Instanz --- etwa als Cloud-Deployment auf Railway oder als selbst-gehostete Instanz --- zwingend erforderlich.
+Webhooks erreichbar. Dieses Setup ist für den Evaluationsbetrieb ausreichend, bringt aber drei Einschränkungen mit sich: Erstens ist die Verfügbarkeit an die Laufzeit des lokalen Rechners gebunden; bei Systemabschalten sind keine eingehenden Webhooks möglich. Zweitens wird bei jedem ngrok-Neustart eine neue öffentliche URL generiert, was eine manuelle Aktualisierung der Webhook-Konfiguration in der Football-API erfordert. Drittens bietet ngrok keine Persistenz-Garantien für Livetraffic. Für einen Produktivbetrieb wäre eine dedizierte, persistente n8n-Instanz (etwa als Cloud-Deployment auf Railway oder als selbst-gehostete Instanz) zwingend erforderlich.
 
 Die vier Komponenten bilden die drei Systemschichten aus Abschnitt~4.1:
 n8n die Datenbeschaffung, Backend und Datenbank die Anwendungs- und

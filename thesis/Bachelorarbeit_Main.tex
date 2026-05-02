@@ -160,12 +160,34 @@ IT-Bereich, Eintracht Frankfurt\\[3cm]
 April 2026
 \end{titlepage}
 
+% SPERRVERMERK
+\chapter*{Sperrvermerk}
+\thispagestyle{empty}
+
+Die vorliegende Bachelorarbeit wurde in Kooperation mit der Stackwork GmbH, IT-Bereich Eintracht Frankfurt, erstellt und enthält vertrauliche Informationen.
+
+Die Arbeit darf Dritten ohne ausdrückliche Genehmigung der Stackwork GmbH sowie der Hochschule RheinMain weder vollständig noch auszugsweise zugänglich gemacht, vervielfältigt oder veröffentlicht werden. Dieser Vorbehalt gilt nicht für die Prüfungskommission sowie für die zugelassenen Prüfer der Hochschule RheinMain.
+
+\vspace{3cm}
+
+\noindent Wiesbaden, April 2026
+
+\vspace{2cm}
+
+\noindent
+\begin{tabular}{p{7cm}p{6cm}}
+\rule{6cm}{0.4pt} & \rule{5.5cm}{0.4pt} \\[0.3em]
+Jonas Kimmer & Stackwork GmbH
+\end{tabular}
+
+\newpage
+
 % ABSTRACT
 \chapter*{Abstract}
 
-Die manuelle Erstellung von Liveticker-Einträgen im Profifußball ist ein kognitiv anspruchsvoller, zeitkritischer Prozess: Redakteure müssen Spielereignisse in Echtzeit beobachten, einordnen und in kurze, stilistisch kohärente Texte überführen — typischerweise innerhalb von 30 bis 120 Sekunden pro Eintrag. Diese Arbeit konzipiert und implementiert ein hybrides KI-gestütztes Redaktionssystem für die Liveticker-Erstellung im Profifußball und untersucht, welche journalistische Textqualität dabei erreichbar ist und welches Potenzial zur Reduktion der Publikationslatenz sich auf Basis gemessener Systemlatenzen belegen lässt.
+Die manuelle Erstellung von Liveticker-Einträgen im Profifußball ist ein kognitiv anspruchsvoller, zeitkritischer Prozess: Redakteure müssen Spielereignisse in Echtzeit beobachten, einordnen und in kurze, stilistisch kohärente Texte überführen, typischerweise innerhalb von 30 bis 120 Sekunden pro Eintrag. Diese Arbeit konzipiert und implementiert ein hybrides KI-gestütztes Redaktionssystem für die Liveticker-Erstellung im Profifußball und untersucht, welche journalistische Textqualität dabei erreichbar ist und welches Potenzial zur Reduktion der Publikationslatenz sich auf Basis gemessener Systemlatenzen belegen lässt.
 
-Das entwickelte System kombiniert eine FastAPI/PostgreSQL-Backend-Architektur mit einer mehrsprachigen LLM-Pipeline (Gemini 2.0 Flash Lite via OpenRouter) und einem React/TypeScript-Frontend. Drei Betriebsmodi — \textit{auto} (vollautomatisch), \textit{coop} (Human-in-the-Loop) und \textit{manual} (klassisch) — ermöglichen einen graduellen Übergang zwischen autonomer KI-Generierung und redaktioneller Kontrolle. n8n-Workflows übernehmen die automatisierte Datenversorgung aus externen Sportdaten-APIs. Das System wurde als generische und als White-Label-Instanz (Eintracht Frankfurt) realisiert.
+Das entwickelte System kombiniert eine FastAPI/PostgreSQL-Backend-Architektur mit einer mehrsprachigen LLM-Pipeline (Gemini 2.0 Flash Lite via OpenRouter) und einem React/TypeScript-Frontend. Die drei Betriebsmodi \textit{auto} (vollautomatisch), \textit{coop} (Human-in-the-Loop) und \textit{manual} (klassisch) ermöglichen einen graduellen Übergang zwischen autonomer KI-Generierung und redaktioneller Kontrolle. n8n-Workflows übernehmen die automatisierte Datenversorgung aus externen Sportdaten-APIs. Das System wurde als generische und als White-Label-Instanz (Eintracht Frankfurt) realisiert.
 
 Die Evaluation umfasst 439 automatisierte Tests, eine TypeScript-Typenabdeckung von 98,02 \% sowie eine qualitative Bewertung von 16 KI-generierten Ticker-Einträgen. Die KI-generierten Texte erzielen einen Gesamtdurchschnitt von 4,3 / 5 Punkten (Korrektheit 4,6, Tonalität 4,1, Verständlichkeit 4,3). Auf Basis gemessener LLM-Latenzen (Median 859 ms) ergibt sich ein geschätztes TTP-Potenzial von ≈ 2–17 Sekunden im \textit{auto}-Modus gegenüber 30–120 Sekunden bei manueller Produktion. Alle 23 definierten funktionalen, nicht-funktionalen und architektonischen Anforderungen werden erfüllt.
 
@@ -175,6 +197,38 @@ Die Arbeit zeigt, dass eine produktionstaugliche KI-Assistenz bei der Liveticker
 
 % TABLE OF CONTENTS
 \tableofcontents
+
+% ABKÜRZUNGSVERZEICHNIS
+\chapter*{Abkürzungsverzeichnis}
+\addcontentsline{toc}{chapter}{Abkürzungsverzeichnis}
+\begin{tabbing}
+\hspace{3.5cm} \= \kill
+API       \> Application Programming Interface \\
+ASGI      \> Asynchronous Server Gateway Interface \\
+CI        \> Corporate Identity \\
+CRUD      \> Create, Read, Update, Delete \\
+DSR       \> Design Science Research \\
+DSGVO     \> Datenschutz-Grundverordnung \\
+E2E       \> End-to-End \\
+ETL       \> Extract, Transform, Load \\
+EU        \> Europäische Union \\
+H2H       \> Head-to-Head \\
+HTTP      \> Hypertext Transfer Protocol \\
+JSON      \> JavaScript Object Notation \\
+JWT       \> JSON Web Token \\
+KI        \> Künstliche Intelligenz \\
+LLM       \> Large Language Model \\
+NLG       \> Natural Language Generation \\
+OAuth     \> Open Authorization \\
+ORM       \> Object-Relational Mapping \\
+REST      \> Representational State Transfer \\
+SGE       \> Sportgemeinschaft Eintracht Frankfurt e.\,V. \\
+SQL       \> Structured Query Language \\
+SSE       \> Server-Sent Events \\
+TTP       \> Time-to-Publish \\
+URL       \> Uniform Resource Locator \\
+VAR       \> Video Assistant Referee \\
+\end{tabbing}
 
 % CHAPTER 1: EINLEITUNG
 \input{Bachelorarbeit_Kapitel1}
@@ -203,5 +257,23 @@ Die Arbeit zeigt, dass eine produktionstaugliche KI-Assistenz bei der Liveticker
 % APPENDIX: INTERVIEWLEITFADEN
 \appendix
 \input{Bachelorarbeit_Appendix}
+
+% SELBSTSTÄNDIGKEITSERKLÄRUNG
+\chapter*{Selbstständigkeitserklärung}
+\addcontentsline{toc}{chapter}{Selbstständigkeitserklärung}
+
+Ich versichere, dass ich die vorliegende Bachelorarbeit selbstständig und ohne Benutzung anderer als der angegebenen Hilfsmittel angefertigt habe. Alle Stellen, die wörtlich oder sinngemäß aus veröffentlichten oder nicht veröffentlichten Schriften entnommen wurden, sind als solche kenntlich gemacht. Dies gilt auch für Inhalte, die mithilfe von KI-basierten Werkzeugen (insbesondere Large Language Models) erstellt oder überarbeitet wurden und entsprechend als solche ausgewiesen sind.
+
+Die Arbeit hat in gleicher oder ähnlicher Form noch keiner anderen Prüfungsbehörde vorgelegen.
+
+\vspace{3cm}
+
+\noindent Wiesbaden, April 2026
+
+\vspace{2cm}
+
+\noindent
+\rule{7cm}{0.4pt}\\[0.3em]
+Jonas Kimmer
 
 \end{document}

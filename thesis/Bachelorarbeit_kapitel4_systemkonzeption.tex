@@ -18,8 +18,8 @@ Fazit der Systemkonzeption (Kap.~4.8).
 \section{Überblick und
 Schichtenmodell}\label{uxfcberblick-und-schichtenmodell}
 
-Das System ist als \textbf{eigenständiger Cloud-Service} konzipiert, der
-alle Spiele der konfigurierten Wettbewerbe automatisch verarbeitet ---
+Das System ist als eigenständiger Cloud-Service konzipiert, der
+alle Spiele der konfigurierten Wettbewerbe automatisch verarbeitet,
 von der Datenimportierung über die KI-Textgenerierung bis zur
 Publikation. Es ist eine serviceorientierte, dreischichtige Architektur,
 die Datenbeschaffung, Anwendungslogik und Präsentation klar voneinander
@@ -49,7 +49,7 @@ Auswahl, Sichtung, Bearbeitung und Publikation ab und bleibt dabei
 mandantenfähig konfigurierbar (z. B. Instanz, Stil, Sprache, Branding).
 Technisch kombiniert das Frontend REST-basiertes Polling für Ticker- und
 Spieldaten mit einem dedizierten WebSocket-Kanal für
-Echtzeit-Medienupdates. Ticker- und Matchdaten bleiben bewusst im Polling-Modell: Sie tolerieren eine Latenz im 15--20-Sekunden-Bereich, sind einfacher zu debuggen und benötigen keine persistente Serververbindung --- ein günstiger Kompromiss gegenüber dem höheren Infrastrukturaufwand von SSE oder WebSocket für diese Datenklasse.
+Echtzeit-Medienupdates. Ticker- und Matchdaten bleiben bewusst im Polling-Modell: Sie tolerieren eine Latenz im 15--20-Sekunden-Bereich, sind einfacher zu debuggen und benötigen keine persistente Serververbindung, ein günstiger Kompromiss gegenüber dem höheren Infrastrukturaufwand von SSE oder WebSocket für diese Datenklasse.
 
 Die folgende Abbildung zeigt die drei Schichten mit ihren Technologien
 und Kommunikationspfaden:
@@ -67,7 +67,7 @@ Triggerarchitektur}\label{kommunikations--und-triggerarchitektur}
 
 Der Kommunikationsfluss kombiniert zwei komplementäre Muster. Beim
 initialen Match-Load folgt das Frontend dem Prinzip \textbf{„read first,
-trigger if missing''} --- strukturell verwandt mit dem Cache-Aside
+trigger if missing''}, strukturell verwandt mit dem Cache-Aside
 Pattern (vgl. Fowler 2002): Für Stammdaten wie Aufstellungen und Events
 wird n8n nur dann angestoßen, wenn die REST-Abfrage einen leeren
 Datenbestand zurückgibt. Im \textbf{Live-Betrieb} hingegen triggert das
@@ -78,7 +78,7 @@ Konfliktbehandlung durch. Das Backend empfängt Aufrufe \emph{von} n8n,
 löst jedoch selbst keine n8n-Workflows aus. Einzelne Workflows rufen
 zudem intern weitere Workflows auf: Der Minuten-Update-Workflow löst bei
 erkanntem Spielstandswechsel den Anpfiff/Abpfiff-Workflow aus, der
-seinerseits den Halbzeit-Zusammenfassungs-Workflow anstößt --- das
+seinerseits den Halbzeit-Zusammenfassungs-Workflow anstößt; das
 Frontend ist an dieser Kette nicht beteiligt.
 
 \begin{figure}[H]
@@ -107,7 +107,7 @@ Live-Prozesse.
 \subsection{Partner-Team-Konzept und
 White-Label-Steuerung}\label{partner-team-konzept-und-white-label-steuerung}
 
-Das System unterscheidet zwischen dem \textbf{Partner-Team} --- dem Verein, für den die White-Label-Instanz konfiguriert ist --- und den jeweiligen Gegnern. Die Erkennung erfolgt über ein konfigurierbares Team-Keyword, das in n8n-Workflows und Frontend gegen den Teamnamen abgeglichen wird. Partner-Team-Spiele verwenden den \texttt{ef\_whitelabel}-Instanzpfad mit euphorischem Stil und blenden vereinsspezifische UI-Bereiche ein (Social-Media-Panels für YouTube, X und Instagram sowie die ScorePlay-Mediensuche für Bildmaterial); alle anderen Spiele durchlaufen den \texttt{generic}-Pfad mit neutralem Stil. Die Implementierungsdetails sind in Kapitel~5 dokumentiert.
+Das System unterscheidet zwischen dem \textbf{Partner-Team} (dem Verein, für den die White-Label-Instanz konfiguriert ist) und den jeweiligen Gegnern. Die Erkennung erfolgt über ein konfigurierbares Team-Keyword, das in n8n-Workflows und Frontend gegen den Teamnamen abgeglichen wird. Partner-Team-Spiele verwenden den \texttt{ef\_whitelabel}-Instanzpfad mit euphorischem Stil und blenden vereinsspezifische UI-Bereiche ein (Social-Media-Panels für YouTube, X und Instagram sowie die ScorePlay-Mediensuche für Bildmaterial); alle anderen Spiele durchlaufen den \texttt{generic}-Pfad mit neutralem Stil. Die Implementierungsdetails sind in Kapitel~5 dokumentiert.
 
 
 
@@ -188,8 +188,8 @@ Frontend und n8n-Workflows deterministisch reagieren können.
 Robustheit}\label{asynchronituxe4t-nebenluxe4ufigkeit-und-performance}
 
 Die Laufzeitkonzeption setzt Asynchronität gezielt auf I/O-intensiven
-Pfaden ein --- insbesondere bei LLM-Generierungsrouten, Media-Verarbeitung
-und WebSocket-Kommunikation --- um die Reaktionsfähigkeit unter paralleler
+Pfaden ein, insbesondere bei LLM-Generierungsrouten, Media-Verarbeitung
+und WebSocket-Kommunikation, um die Reaktionsfähigkeit unter paralleler
 Last zu erhöhen, ohne Worker dauerhaft zu blockieren. Die Anzahl gleichzeitiger LLM-Aufrufe begrenzt ein konfigurierbarer \textbf{Semaphore-Mechanismus}, der Lastspitzen und Rate-Limit-Probleme reduziert. Ergänzend greift ein \textbf{Retry-Mechanismus mit gestuftem Backoff} bei transienten Fehlern und Rate-Limit-Antworten; die konkreten Wartezeiten sind in Abschnitt~5.1.5 dokumentiert. Nicht alle Endpunkte sind vollständig
 asynchronisiert; langlaufende Integrationslogik ist in n8n ausgelagert,
 wodurch der API-Server als transaktionaler Kern entlastet wird. Für den
@@ -208,7 +208,7 @@ bewusst ausgeklammert (vgl. Kap.~1.4).
 \section{Datenbankkonzeption}\label{datenbankkonzeption}
 
 Die Persistenzschicht basiert auf PostgreSQL und umfasst in der
-aktuellen Fassung \textbf{17 Tabellen} (17 ORM-Modelle, vollständig via
+aktuellen Fassung 17 Tabellen (17 ORM-Modelle, vollständig via
 SQLAlchemy \texttt{create\_all} verwaltet; eine SQL-Migration ergänzt
 nachträglich eine Spalte in \texttt{ticker\_entries}). Die Wahl eines relationalen
 Systems gegenüber dokumentenorientierten Ansätzen (z. B. MongoDB)
@@ -273,7 +273,7 @@ erhalten).
 Eine Rückstufung von \texttt{published} auf \texttt{draft} ist über
 \texttt{PATCH\ status=draft} möglich und wird insbesondere bei
 Re-Triggern von Matchphasen-Workflows genutzt (vgl. Abschnitt~5.4).
-\texttt{rejected} ist ein terminaler Zustand --- ein verworfener Eintrag
+\texttt{rejected} ist ein terminaler Zustand; ein verworfener Eintrag
 kann nicht reaktiviert werden. \texttt{deleted} kennzeichnet weich
 gelöschte Einträge: Sie bleiben in der Datenbank erhalten, werden aber
 durch ein explizites Filter-Prädikat (\texttt{status\ !=\ deleted}) aus
@@ -294,7 +294,7 @@ der Generierungspipeline pro Spiel und ist zur Laufzeit umschaltbar über
 KI-Ergebnisse werden direkt veröffentlicht. Im Modus
 \textbf{\texttt{coop}} (kooperativ / Human-in-the-Loop) erzeugt die KI
 Entwürfe (\texttt{draft}), über deren Veröffentlichung oder Ablehnung die
-Redaktion entscheidet --- dieser Modus bildet das primäre Zielbild des
+Redaktion entscheidet; dieser Modus bildet das primäre Zielbild des
 Systems. Im Modus \textbf{\texttt{manual}} (rein redaktionell) werden
 Einträge ausschließlich manuell erstellt; eingehende Events lösen nur die
 Datenpersistenz aus, nicht die LLM-Pipeline. Dieser Modus dient als
@@ -408,7 +408,7 @@ dokumentiert.
 \subsection{Workflow-Grenzen und projektspezifische
 Besonderheiten}\label{workflow-grenzen-und-projektspezifische-besonderheiten}
 
-Die Workflow-Landschaft ist funktional umfassend, enthält aber bewusst pragmatische Projektentscheidungen. In einzelnen Flows ist die Saisonlogik auf die Saison 2025/26 begrenzt (teilweise saisonspezifische Fixierung); für den nächsten Saisonbetrieb wäre eine Parametrisierung dieser Werte erforderlich (vgl. Kap.~6.7). Nicht alle Datenpfade sind eventgetrieben --- ein Teil wird durch Polling und bedarfsgesteuerte Trigger ergänzt (hybride Aktualisierungslogik). Einige LLM- und Medienprozesse enthalten EF-spezifische Logik, die für eine vollständig generalisierte White-Label-Fähigkeit noch parametrisiert werden müsste (instanzspezifische Spezialpfade).
+Die Workflow-Landschaft ist funktional umfassend, enthält aber bewusst pragmatische Projektentscheidungen. In einzelnen Flows ist die Saisonlogik auf die Saison 2025/26 begrenzt (teilweise saisonspezifische Fixierung); für den nächsten Saisonbetrieb wäre eine Parametrisierung dieser Werte erforderlich (vgl. Kap.~6.7). Nicht alle Datenpfade sind eventgetrieben; ein Teil wird durch Polling und bedarfsgesteuerte Trigger ergänzt (hybride Aktualisierungslogik). Einige LLM- und Medienprozesse enthalten EF-spezifische Logik, die für eine vollständig generalisierte White-Label-Fähigkeit noch parametrisiert werden müsste (instanzspezifische Spezialpfade).
 
 In Summe bildet n8n eine tragfähige Orchestrierungsschicht, die externe
 Datenquellen, interne Persistenz und KI-generierte Inhalte in einem
@@ -443,11 +443,11 @@ Anbieter angesprochen werden können. Der Wechsel zwischen Modellen erfordert
 lediglich eine Änderung der Umgebungsvariable \texttt{OPENROUTER\_MODEL};
 verschiedene Modelle können auf demselben Prompt evaluiert werden
 (vgl. Abschnitt~6.3.2); und das jeweils kostengünstigste Modell lässt sich
-ohne Codeanpassung wählen --- ein entscheidender Faktor für
+ohne Codeanpassung wählen, ein entscheidender Faktor für
 Vereinsredaktionen mit begrenztem Budget.
 
 Als Standardmodell im Deployment wurde Gemini 2.0 Flash Lite
-(Modell-ID \texttt{google/gemini-2.0-flash-lite-001}) über OpenRouter gewählt. Die Entscheidung für dieses Modell stützt sich auf drei Faktoren: \textbf{Aufgabencharakteristik} (vgl. Kap.~3.1): Liveticker-Texte sind kurz und faktenbasiert --- eine Aufgabe, für die kompakte Modelle eine vergleichbare Qualität bei deutlich niedrigerer Latenz erzielen, was durch die gemessene Medianlatenz von 859~ms (vgl. Abschnitt~6.5.1) empirisch bestätigt wird. \textbf{Kosteneffizienz}: Gemini 2.0 Flash Lite zählt zu den kostengünstigsten kommerziell verfügbaren Modellen, was den Dauerbetrieb über eine Saison für ressourcenbegrenzte Vereinsredaktionen wirtschaftlich darstellbar macht (vgl. Kap.~2.1). Bei durchschnittlich 30~Einträgen pro Spiel und einem Prompt-Umfang von rund 1.000~Token je Eintrag liegt der geschätzte Inferenzkostenaufwand in der Größenordnung von unter 0{,}01~USD pro Spiel (basierend auf den zum Zeitpunkt des Deployments geltenden Listenpreisen von OpenRouter für \texttt{google/gemini-2.0-flash-lite-001}; Preise können sich ändern) --- selbst bei vollständiger Saison-Abdeckung (60~Pflichtspiele) unter 1~USD für die reine Textgenerierung. \textbf{Kontextfenster}: Das Modell unterstützt ein Kontextfenster von bis zu 1~Million~Token, sodass umfangreiche Pre-Match-Kontextinformationen (sieben Context-Builder, vgl. Kap.~4.5.2) und mehrere Few-Shot-Referenzen ohne Abschneidung eingebunden werden können.
+(Modell-ID \texttt{google/gemini-2.0-flash-lite-001}) über OpenRouter gewählt. Die Entscheidung für dieses Modell stützt sich auf drei Faktoren: \textbf{Aufgabencharakteristik} (vgl. Kap.~3.1): Liveticker-Texte sind kurz und faktenbasiert, eine Aufgabe, für die kompakte Modelle eine vergleichbare Qualität bei deutlich niedrigerer Latenz erzielen, was durch die gemessene Medianlatenz von 859~ms (vgl. Abschnitt~6.5.1) empirisch bestätigt wird. \textbf{Kosteneffizienz}: Gemini 2.0 Flash Lite zählt zu den kostengünstigsten kommerziell verfügbaren Modellen, was den Dauerbetrieb über eine Saison für ressourcenbegrenzte Vereinsredaktionen wirtschaftlich darstellbar macht (vgl. Kap.~2.1). Bei durchschnittlich 30~Einträgen pro Spiel und einem Prompt-Umfang von rund 1.000~Token je Eintrag liegt der geschätzte Inferenzkostenaufwand in der Größenordnung von unter 0{,}01~USD pro Spiel (basierend auf den zum Zeitpunkt des Deployments geltenden Listenpreisen von OpenRouter für \texttt{google/gemini-2.0-flash-lite-001}; Preise können sich ändern), selbst bei vollständiger Saison-Abdeckung (60~Pflichtspiele) unter 1~USD für die reine Textgenerierung. \textbf{Kontextfenster}: Das Modell unterstützt ein Kontextfenster von bis zu 1~Million~Token, sodass umfangreiche Pre-Match-Kontextinformationen (sieben Context-Builder, vgl. Kap.~4.5.2) und mehrere Few-Shot-Referenzen ohne Abschneidung eingebunden werden können.
 
 Ergänzend implementiert das Backend eine \textbf{Fallback-Kette} für den
 Fall, dass OpenRouter nicht konfiguriert ist. Das System prüft zur
@@ -463,7 +463,7 @@ Singleton:
 Ist kein Schlüssel konfiguriert, wird auf einen regelbasierten
 \textbf{Mock-Provider} zurückgefallen, der Template-basierte Texte ohne
 LLM-Aufruf erzeugt. Diese Architektur stellt sicher, dass das System
-auch ohne LLM-Anbindung lauffähig bleibt --- etwa für Entwicklung und
+auch ohne LLM-Anbindung lauffähig bleibt, etwa für Entwicklung und
 Tests.
 
 Zusätzlich kann die Auswahl in Generierungsrouten pro Request über \texttt{provider} und \texttt{model} überschrieben werden, was insbesondere für Evaluationsvergleiche genutzt wird. Die Standardmodelle der Provider sowie die Evaluationsergebnisse sind in Abschnitt~6.3.2 dokumentiert.
@@ -544,7 +544,7 @@ Anforderungen.
 \subsection{Skalierung, Erweiterbarkeit und
 Deployment}\label{horizontale-skalierung-des-backends}
 
-Die Anwendungsschicht ist für HTTP-Routen zustandslos konzipiert und kann horizontal skaliert werden, indem zusätzliche Uvicorn-Prozesse hinter einem Load-Balancer gestartet werden. Ein gemeinsamer PostgreSQL-Connection-Pool sichert die Datenbankverbindungskapazität über mehrere Backend-Instanzen. Eine Einschränkung bildet der WebSocket-Kanal \texttt{/ws/media}: Der zugehörige ConnectionManager ist als In-Memory-Singleton pro Prozess implementiert. Bei einem Multi-Prozess-Deployment würden Medien-Updates nur Clients des jeweiligen Workers erreichen --- eine Skalierungsstufe, die eine Redis-Pub/Sub-Erweiterung erfordern würde (vgl. Kap.~7.2.2).
+Die Anwendungsschicht ist für HTTP-Routen zustandslos konzipiert und kann horizontal skaliert werden, indem zusätzliche Uvicorn-Prozesse hinter einem Load-Balancer gestartet werden. Ein gemeinsamer PostgreSQL-Connection-Pool sichert die Datenbankverbindungskapazität über mehrere Backend-Instanzen. Eine Einschränkung bildet der WebSocket-Kanal \texttt{/ws/media}: Der zugehörige ConnectionManager ist als In-Memory-Singleton pro Prozess implementiert. Bei einem Multi-Prozess-Deployment würden Medien-Updates nur Clients des jeweiligen Workers erreichen, eine Skalierungsstufe, die eine Redis-Pub/Sub-Erweiterung erfordern würde (vgl. Kap.~7.2.2).
 
 Neue Ereignistypen können ohne Datenbankschema-Änderungen ergänzt werden: Die \texttt{events}-Tabelle verfügt über ein generisches \texttt{description}-Feld, und die \texttt{synthetic\_events}-Tabelle nutzt JSONB für vollständig flexible Payloads. Die Übersetzung von Football-API-Codes auf interne Typbezeichnungen ist in einer zentralen \texttt{EVENT\_TYPE\_MAP}-Konfiguration hinterlegt; neue Typen erfordern ausschließlich einen zusätzlichen Eintrag dort sowie in \texttt{getEventMeta()} im Frontend. Der LLM-Dienst lässt sich um neue Anbieter erweitern, indem eine providerabhängige Handler-Methode implementiert und im zentralen dispatch-Dictionary registriert wird, ohne bestehenden Code zu berühren.
 

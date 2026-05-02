@@ -60,7 +60,7 @@ Komponenten & 65 & \texttt{EntryEditor} (19), \texttt{RightPanelComponents} (18)
 \end{longtable}
 }
 
-Der \texttt{parseCommand}-Utility ist die komplexeste Einheit der Geschäftslogik im Frontend; er transformiert Slash-Commands (z.\,B. \texttt{/g\ Müller\ SGE}) in strukturierte Ticker-Einträge. Die 45 Tests decken alle Command-Typen sowie Fehlerfälle ab: Jeder Test prüft \texttt{isValid}, \texttt{type}, \texttt{formatted}, \texttt{meta.icon} und \texttt{warnings} --- unvollständige Eingaben liefern gezielte Hinweise (\texttt{"Fehlend:\ Spieler"}) statt Laufzeitfehler.
+Der \texttt{parseCommand}-Utility ist die komplexeste Einheit der Geschäftslogik im Frontend; er transformiert Slash-Commands (z.\,B. \texttt{/g\ Müller\ SGE}) in strukturierte Ticker-Einträge. Die 45 Tests decken alle Command-Typen sowie Fehlerfälle ab: Jeder Test prüft \texttt{isValid}, \texttt{type}, \texttt{formatted}, \texttt{meta.icon} und \texttt{warnings}; unvollständige Eingaben liefern gezielte Hinweise (\texttt{"Fehlend:\ Spieler"}) statt Laufzeitfehler.
 
 \subsection{Backend-Unit-Tests
 (pytest)}\label{backend-unit-tests-pytest}
@@ -147,9 +147,9 @@ Nach Interface-Ausbau (Hooks, Panels) & \textasciitilde89 \% & 0 \\
 \end{longtable}
 }
 
-Der Wert von 98,02 \% bedeutet: Von 19.041 gemessenen Typausdrücken sind 18.665 explizit getypt. Die verbleibenden \textasciitilde2 \% verteilen sich auf wenige, bewusst offen gelassene Stellen. \texttt{MatchSelectorModal.tsx} ist ein großes Modal mit komplexem internen State, dessen Typisierung stark von einer kommenden API-Stabilisierung abhängt. Die Media-Panels \texttt{MediaPickerPanel.tsx} und \texttt{YouTubePanel.tsx} verarbeiten externe API-Responses (ScorePlay, YouTube), deren Typen nicht vollständig spezifiziert sind. Die Barrel-Exports in \texttt{components/index.ts} (\texttt{export \{ X \}}) fehlen explizite Typ-Annotationen --- sie sind technisch korrekt, werden von \texttt{type-coverage} jedoch als untypiert gezählt.
+Der Wert von 98,02 \% bedeutet: Von 19.041 gemessenen Typausdrücken sind 18.665 explizit getypt. Die verbleibenden \textasciitilde2 \% verteilen sich auf wenige, bewusst offen gelassene Stellen. \texttt{MatchSelectorModal.tsx} ist ein großes Modal mit komplexem internen State, dessen Typisierung stark von einer kommenden API-Stabilisierung abhängt. Die Media-Panels \texttt{MediaPickerPanel.tsx} und \texttt{YouTubePanel.tsx} verarbeiten externe API-Responses (ScorePlay, YouTube), deren Typen nicht vollständig spezifiziert sind. Die Barrel-Exports in \texttt{components/index.ts} (\texttt{export \{ X \}}) fehlen explizite Typ-Annotationen; sie sind technisch korrekt, werden von \texttt{type-coverage} jedoch als untypiert gezählt.
 
-Nutzen im Entwicklungsprozess: Die TypeScript-Migration hat im Verlauf der Implementierung mehrere Fehler früh aufgedeckt, die sonst erst zur Laufzeit sichtbar geworden wären. So war \texttt{Country} zunächst als Objekt-Interface typisiert, obwohl die API \texttt{string[]} liefert --- TypeScript erzwang die Korrektur. \texttt{parseInt(v)} erhielt ein \texttt{string | number}-Argument, was ohne Typisierung still übergangen worden wäre. Und \texttt{e.target.closest(...)} erforderte \texttt{as Element | null}, um einen Null-Zugriff zur Laufzeit zu verhindern.
+Nutzen im Entwicklungsprozess: Die TypeScript-Migration hat im Verlauf der Implementierung mehrere Fehler früh aufgedeckt, die sonst erst zur Laufzeit sichtbar geworden wären. So war \texttt{Country} zunächst als Objekt-Interface typisiert, obwohl die API \texttt{string[]} liefert; TypeScript erzwang die Korrektur. \texttt{parseInt(v)} erhielt ein \texttt{string | number}-Argument, was ohne Typisierung still übergangen worden wäre. Und \texttt{e.target.closest(...)} erforderte \texttt{as Element | null}, um einen Null-Zugriff zur Laufzeit zu verhindern.
 
 
 \section{Evaluation der
@@ -218,7 +218,7 @@ Im produktiven Render-Deployment waren nur OpenRouter (Priorität~1) und Mock (F
 Das System generiert Texte in drei Stilprofilen, die über den Prompt gesteuert werden: \texttt{neutral} (sachlich und neutral, keine Vereinspräferenz), \texttt{euphorisch} (begeistert und emotional aus Sicht der Heimfans) sowie \texttt{kritisch} (analytisch und kritisch). Da der Backend-Deduplizierungsmechanismus für identische
 \texttt{event\_id} denselben Eintrag zurückgibt, wurde der Stilvergleich
 anhand typischer Treffer-Einträge (Event-Typ: Tor) aus unterschiedlichen
-Spielen durchgeführt --- die jeweils zugehörige Stilanweisung war
+Spielen durchgeführt, die jeweils zugehörige Stilanweisung war
 identisch konfiguriert.
 
 Event-Typ: Tor (Bundesliga-Saison 2024/25, Eintracht Frankfurt)
@@ -283,12 +283,12 @@ in Ausrufezeichen-Dichte, Wortwahl und Perspektive. Während
 \texttt{neutral} Fakten kompakt zusammenfasst, erzeugt
 \texttt{euphorisch} narrative Intensität durch Wiederholungen und
 Ausrufe. \texttt{kritisch} nähert sich dem neutralen Register, enthält
-aber keine explizite analytische Einordnung --- ein Hinweis darauf, dass
+aber keine explizite analytische Einordnung, ein Hinweis darauf, dass
 das Prompt-Design für dieses Profil noch Optimierungspotenzial bietet
 (vgl.\ Abschnitt~8.3). Der kontrollierte Direktvergleich zeigt außerdem
 eine Inkonsistenz in der Spielstands-Interpretation: \texttt{euphorisch}
 beschreibt den Treffer als „Führung'', \texttt{kritisch} als
-„Ausgleich'' --- obwohl der übergebene Spielstand (1:2 für Bayern) den
+„Ausgleich'', obwohl der übergebene Spielstand (1:2 für Bayern) den
 Treffer als Anschlusstreffer ausweisen würde. Dieser Einzelfall deutet
 auf eine stilprofilabhängige Variation in der Spielstand-Interpretation hin;
 für eine belastbare Aussage wäre eine systematische Erhebung über
@@ -303,7 +303,7 @@ mehrere Events erforderlich. Die Prompt-Architektur bindet bis zu drei Stilrefer
 
 \subsection{Qualitative Textbewertung}\label{qualitative-analyse-der-generierten-texte}
 
-Für die qualitative Analyse wurden \textbf{16 KI-generierte Ticker-Einträge} (Modell: \texttt{google/gemini-2.0-flash-lite-001}, Sprache: Deutsch) aus \textbf{9 Bundesliga-Spielen} der Saison 2024/25 manuell auf drei Dimensionen bewertet. Die Auswahl der Einträge folgte einer gezielten Stichprobenlogik: Es wurden ereignisreiche Spiele mit unterschiedlichen Spielverläufen gewählt, um die häufigsten Event-Typen (Tor, Gelbe Karte, Wechsel) sowie alle drei Stilprofile abzudecken --- bei einem für manuelle Einzelbewertung vertretbaren Umfang. Rote Karten sind in der Stichprobe nicht vertreten, da kein entsprechendes Ereignis in den ausgewählten Spielen vorlag; die LLM-as-Judge-Evaluation (Abschnitt~6.3.6) schließt diesen Event-Typ mit ein. \textbf{Korrektheit} prüft, ob alle Fakten (Spieler, Team, Minute, Ergebnis) korrekt wiedergegeben sind und der Text keine Halluzinationen enthält. \textbf{Tonalität} bewertet, ob der Stil dem gewählten Profil (neutral/euphorisch/kritisch) entspricht. \textbf{Verständlichkeit} beurteilt, ob der Text sprachlich flüssig, grammatikalisch korrekt und dem Genre „Liveticker'' angemessen ist. Jede Dimension wurde auf einer Skala von 1 (ungenügend) bis 5 (exzellent) bewertet. Die Bewertung erfolgte durch den Entwickler; ein
+Für die qualitative Analyse wurden 16 KI-generierte Ticker-Einträge (Modell: \texttt{google/gemini-2.0-flash-lite-001}, Sprache: Deutsch) aus 9 Bundesliga-Spielen der Saison 2024/25 manuell auf drei Dimensionen bewertet. Die Auswahl der Einträge folgte einer gezielten Stichprobenlogik: Es wurden ereignisreiche Spiele mit unterschiedlichen Spielverläufen gewählt, um die häufigsten Event-Typen (Tor, Gelbe Karte, Wechsel) sowie alle drei Stilprofile abzudecken, bei einem für manuelle Einzelbewertung vertretbaren Umfang. Rote Karten sind in der Stichprobe nicht vertreten, da kein entsprechendes Ereignis in den ausgewählten Spielen vorlag; die LLM-as-Judge-Evaluation (Abschnitt~6.3.6) schließt diesen Event-Typ mit ein. \textbf{Korrektheit} prüft, ob alle Fakten (Spieler, Team, Minute, Ergebnis) korrekt wiedergegeben sind und der Text keine Halluzinationen enthält. \textbf{Tonalität} bewertet, ob der Stil dem gewählten Profil (neutral/euphorisch/kritisch) entspricht. \textbf{Verständlichkeit} beurteilt, ob der Text sprachlich flüssig, grammatikalisch korrekt und dem Genre „Liveticker'' angemessen ist. Jede Dimension wurde auf einer Skala von 1 (ungenügend) bis 5 (exzellent) bewertet. Die Bewertung erfolgte durch den Entwickler; ein
 zweiter Rater stand nicht zur Verfügung, sodass kein Cohen's Kappa
 berechnet wurde. Die Selbstevaluationsproblematik wird in Abschnitt~6.3.6
 durch ein LLM-as-Judge-Verfahren (unabhängiges Modell als Bewerter) abgemildert;
@@ -355,7 +355,7 @@ Pre-Match (Kontext) & 1 & 3,0 & 5,0 & 4,0 & 4,0 \\
 
 Die folgenden Beispiele illustrieren die typischen Stärken der generierten Texte.
 
-\emph{Beispiel 1 --- Tor (euphorisch, Bewertung 5/5/5):}
+\emph{Beispiel 1: Tor (euphorisch, Bewertung 5/5/5):}
 
 \begin{quote}
 Event: Tor, 81. Minute, R. Doan (Eintracht Frankfurt vs.~FSV Mainz 05),
@@ -370,7 +370,7 @@ Liveticker-Genres präzise: Wiederholung des Torschützennamens, Ausrufe
 und ein szenisch-bildhafter Abschluss. Die Kürze von zwei Sätzen ist
 genrekonform.
 
-\emph{Beispiel 2 --- Rote Karte (euphorisch, synthetisches Testbeispiel außerhalb des Evaluationskorpus):}
+\emph{Beispiel 2: Rote Karte (euphorisch, synthetisches Testbeispiel außerhalb des Evaluationskorpus):}
 
 \begin{quote}
 Event: Rote Karte, 70. Minute, Thomas Müller (FC Bayern München),
@@ -436,7 +436,7 @@ aus den euphorischen Few-Shot-Referenzen der
 Stilparameter übergeben wird. Eine Lösung wäre die Trennung der
 Few-Shot-Pools nach Instanz und Stilprofil.
 
-Das \textbf{kritische Stilprofil} erweist sich in der Hauptevaluation und der LLM-as-Judge-Evaluation als schwächste Dimension (Tonalität 3,6 in der Hauptevaluation; 4,04 im LLM-as-Judge-Verfahren). Die Ursache liegt in einer konzeptuellen Ambiguität des Profils: Während \texttt{euphorisch} und \texttt{neutral} klare emotionale Pole beschreiben, bleibt \texttt{kritisch} semantisch vielschichtig --- das LLM kann den Stil als kritisch-analytisch (sachlich-distanziert), kritisch-konfrontativ (negativ gegenüber der eigenen Mannschaft) oder kritisch-fordernd (appellierend an mehr Leistung) interpretieren. Ohne explizitere Stilinstruktion --- etwa durch zielgerichtete Few-Shot-Beispiele mit klar analytisch-einordnendem Ton oder durch eine präzisierte Prompt-Formulierung --- tendiert das Modell dazu, das kritische Profil dem neutralen anzunähern. Eine differenziertere Beschreibung des \texttt{kritisch}-Profils im Prompt (z.\,B. „analysierend und einordnend, ohne emotionale Färbung'') sowie dedizierte Few-Shot-Referenzen für dieses Profil wären die naheliegenden Verbesserungsmaßnahmen (vgl. Abschnitt~8.3).
+Das kritische Stilprofil erweist sich in der Hauptevaluation und der LLM-as-Judge-Evaluation als schwächste Dimension (Tonalität 3,6 in der Hauptevaluation; 4,04 im LLM-as-Judge-Verfahren). Die Ursache liegt in einer konzeptuellen Ambiguität des Profils: Während \texttt{euphorisch} und \texttt{neutral} klare emotionale Pole beschreiben, bleibt \texttt{kritisch} semantisch vielschichtig: das LLM kann den Stil als kritisch-analytisch (sachlich-distanziert), kritisch-konfrontativ (negativ gegenüber der eigenen Mannschaft) oder kritisch-fordernd (appellierend an mehr Leistung) interpretieren. Ohne explizitere Stilinstruktion, etwa durch zielgerichtete Few-Shot-Beispiele mit klar analytisch-einordnendem Ton oder durch eine präzisierte Prompt-Formulierung, tendiert das Modell dazu, das kritische Profil dem neutralen anzunähern. Eine differenziertere Beschreibung des \texttt{kritisch}-Profils im Prompt (z.\,B. „analysierend und einordnend, ohne emotionale Färbung'') sowie dedizierte Few-Shot-Referenzen für dieses Profil wären die naheliegenden Verbesserungsmaßnahmen (vgl. Abschnitt~8.3).
 
 
 Die Pre-Match-Prompts enthalten eine explizite Schutzregel gegen
@@ -449,7 +449,7 @@ Erfinde KEINE Live-Spielszenen, Tore oder Spielverläufe.
 
 In der Stichprobe enthielt 1 von 1 untersuchten Pre-Match-Texten keine
 unzulässigen Spielszenen, jedoch eine nicht aus dem Datenbankkontext
-ableitbare Wettempfehlung --- eine inhaltliche Halluzination geringerer
+ableitbare Wettempfehlung, eine inhaltliche Halluzination geringerer
 Schwere. Der evaluierte Stichprobenumfang für Pre-Match-Texte ist zu
 klein für eine statistische Aussage; die Schutzregel verhindert
 zuverlässig Spielszenen-Halluzinationen, schützt jedoch nicht gegen alle
@@ -463,7 +463,7 @@ Testspiele enthielten manuell erstellte Einträge entweder ohne Text
 Frankfurt, 0:5) lag für Tor in der 44. Minute ein manueller Eintrag ohne
 Fließtext vor (Icon: 🎬, Video-URL, kein Textkörper); der KI-generierte
 Text lautete: \emph{„44. Minute: TOOOOR! J. Bahoya bringt Frankfurt auf
-1:0! Traumpass von X. Das Stadion bebt!{\kern0pt}``} --- eine
+1:0! Traumpass von X. Das Stadion bebt!{\kern0pt}``}, eine
 vollständige Faktendarstellung, die der manuelle Eintrag nicht enthielt.
 
 Ein systematischer Paarvergleich ist als externe Nutzerstudie im
@@ -486,7 +486,7 @@ Die Erkenntnisse bestätigten die grundsätzliche Praxistauglichkeit des Systems
 \begin{itemize}\tightlist
 \item \textbf{Textqualität (IF10):} Die generierten Texte wurden als redaktionell verwertbar eingestuft. Insbesondere die euphorischen Tor-Einträge wurden als stilistisch passend für den Vereinskontext bewertet; der Redakteur erkannte die KI-Herkunft in mehreren Fällen nicht sofort.
 \item \textbf{Moduswahl (IF12):} Der \texttt{coop}-Modus wurde als praktisch relevantester Betriebsmodus eingeschätzt, da er Zeitdruck reduziert, ohne die redaktionelle Kontrolle aufzugeben. Der \texttt{auto}-Modus wurde für ereignisarme Phasen (Halbzeit, Aufstellungen) als akzeptabel bewertet, für spielentscheidende Events (Tore, Rote Karten) jedoch als zu risikoreich eingestuft.
-\item \textbf{Verbesserungspotenzial (IF14):} Als häufigste Kritikpunkte wurden eine inkonsistente Stilsteuerung im neutralen Profil (Tonalität zu emotional) sowie eine engere Anbindung an den bestehenden Redaktionsworkflow identifiziert --- insbesondere der Wunsch nach einer direkten Integration in das bestehende CMS, statt eines separaten Frontends.
+\item \textbf{Verbesserungspotenzial (IF14):} Als häufigste Kritikpunkte wurden eine inkonsistente Stilsteuerung im neutralen Profil (Tonalität zu emotional) sowie eine engere Anbindung an den bestehenden Redaktionsworkflow identifiziert, insbesondere der Wunsch nach einer direkten Integration in das bestehende CMS, statt eines separaten Frontends.
 \item \textbf{Markenwiedererkennung (IF15):} Die \texttt{ef\_whitelabel}-spezifischen Formulierungen (SGE-Abkürzung, TOOOOR-Konvention) wurden als markenkonform eingestuft und als deutlicher Mehrwert gegenüber generischen KI-Texten hervorgehoben.
 \end{itemize}
 
@@ -501,7 +501,7 @@ eine automatisierte Evaluation mit N\,=\,80 Einträgen durchgeführt. Die Method
 dem \textbf{LLM-as-Judge}-Ansatz (Zheng et al.~2023), bei dem ein
 unabhängiges Sprachmodell als Bewerter fungiert.
 
-\textbf{Datenbasis} --- Die Datenbasis umfasst reale Ereignisse aus 30 Bundesliga-Spielen der Saison~2025/26 (u.\,a. Borussia~Dortmund -- SC~Freiburg, FSV~Mainz~05 -- FC~Bayern~München, FC~Augsburg -- Eintracht~Frankfurt, 1.~FC~Köln -- Bayer~Leverkusen), abgefragt über die Football~API~v3. Generierungsmodell: \texttt{google/gemini-2.0-flash-lite-001} (identisch zur Hauptevaluation, Temperatur~0{,}5). Bewertendes Modell: \texttt{anthropic/claude-sonnet-4-5} via OpenRouter --- ein anderes Modell als das generierende, was Selbstreferenzialität vermeidet. Abgedeckte Event-Typen: 25~Tore, 25~Gelbe Karten, 4~Rote Karten, 25~Wechsel, 1~Eigentor; je 27 bzw.\ 26~Einträge pro Stilprofil.
+\textbf{Datenbasis:} Die Datenbasis umfasst reale Ereignisse aus 30 Bundesliga-Spielen der Saison~2025/26 (u.\,a. Borussia~Dortmund -- SC~Freiburg, FSV~Mainz~05 -- FC~Bayern~München, FC~Augsburg -- Eintracht~Frankfurt, 1.~FC~Köln -- Bayer~Leverkusen), abgefragt über die Football~API~v3. Generierungsmodell: \texttt{google/gemini-2.0-flash-lite-001} (identisch zur Hauptevaluation, Temperatur~0{,}5). Bewertendes Modell: \texttt{anthropic/claude-sonnet-4-5} via OpenRouter, ein anderes Modell als das generierende, was Selbstreferenzialität vermeidet. Abgedeckte Event-Typen: 25~Tore, 25~Gelbe Karten, 4~Rote Karten, 25~Wechsel, 1~Eigentor; je 27 bzw.\ 26~Einträge pro Stilprofil.
 
 {\def\LTcaptype{none} % do not increment counter
 \begin{longtable}[]{@{}
@@ -526,12 +526,12 @@ euphorisch  & 27 & 3,22 & 2,93 & 3,67 & 3,27 \\
 
 \emph{K = Korrektheit, T = Tonalität, V = Verständlichkeit (je 1--5). Bewerter: Claude Sonnet~4.5 via OpenRouter. Datenbasis: Football API~v3, Bundesliga Saison 2025/26, 30~Spiele.}
 
-Die LLM-as-Judge-Evaluation bestätigt Korrektheit (4,12) und Verständlichkeit (4,35) auf einem mit der Hauptevaluation konsistenten Niveau. Das \textbf{neutrale Stilprofil} erzielt den höchsten Gesamtwert (4,82) und zeigt damit die stärkste Prompt-Kopplung. Das \textbf{kritische Profil} liegt mit 4,32 im soliden Bereich; das \textbf{euphorische Profil} bleibt mit 3,27 deutlich schwächer --- insbesondere beim Tonalitätswert (2,93). Die Ursache liegt im Event-Mix: Wechsel-Einträge (n\,=\,25) erzielen die schwächste Korrektheit (2,92) und den niedrigsten Gesamtwert (3,21), da das Modell taktische Begründungen erfindet, die nicht im übergebenen Kontext stehen. Im euphorischen Profil produziert das Modell bei Wechseln und Gelben Karten wiederholt formelharte Phrasen wie „Na, ob das was wird?'' oder „Hoffentlich bringt er frischen Wind'' ohne authentische Situationsdifferenzierung. Tore (Ø~4,33) und Rote Karten (Ø~4,75) erreichen hingegen konsistent hohe Werte. Diese Befunde replizieren die Fehlerklassen der Hauptevaluation: Die euphorische Tonalitätsschwäche bei ereignisarmen Event-Typen ist die konsistenteste Schwäche des aktuellen Prompt-Designs. Die Methode des LLM-as-Judge ist als Ergänzung zur menschlichen Bewertung etabliert (Zheng et al.~2023), ersetzt diese jedoch nicht vollständig; eine externe Nutzerstudie bleibt als Folgeschritt vorgesehen (Abschnitt~8.3.2).
+Die LLM-as-Judge-Evaluation bestätigt Korrektheit (4,12) und Verständlichkeit (4,35) auf einem mit der Hauptevaluation konsistenten Niveau. Das neutrale Stilprofil erzielt den höchsten Gesamtwert (4,82) und zeigt damit die stärkste Prompt-Kopplung. Das kritische Profil liegt mit 4,32 im soliden Bereich; das euphorische Profil bleibt mit 3,27 deutlich schwächer, insbesondere beim Tonalitätswert (2,93). Die Ursache liegt im Event-Mix: Wechsel-Einträge (n\,=\,25) erzielen die schwächste Korrektheit (2,92) und den niedrigsten Gesamtwert (3,21), da das Modell taktische Begründungen erfindet, die nicht im übergebenen Kontext stehen. Im euphorischen Profil produziert das Modell bei Wechseln und Gelben Karten wiederholt formelharte Phrasen wie „Na, ob das was wird?'' oder „Hoffentlich bringt er frischen Wind'' ohne authentische Situationsdifferenzierung. Tore (Ø~4,33) und Rote Karten (Ø~4,75) erreichen hingegen konsistent hohe Werte. Diese Befunde replizieren die Fehlerklassen der Hauptevaluation: Die euphorische Tonalitätsschwäche bei ereignisarmen Event-Typen ist die konsistenteste Schwäche des aktuellen Prompt-Designs. Die Methode des LLM-as-Judge ist als Ergänzung zur menschlichen Bewertung etabliert (Zheng et al.~2023), ersetzt diese jedoch nicht vollständig; eine externe Nutzerstudie bleibt als Folgeschritt vorgesehen (Abschnitt~8.3.2).
 
 
 \section{Latenzpotenzial der Betriebsmodi}\label{evaluation-der-betriebsmodi}
 
-Die drei Betriebsmodi unterscheiden sich strukturell in ihrer erreichbaren Publikationslatenz. Auf Basis der gemessenen LLM-Latenzen (Median 859~ms, P95 2.047~ms, vgl. Abschnitt~6.5.1) und des 15-Sekunden-Polling-Intervalls im Live-Modus (vgl. Abschnitt~6.5.2) lässt sich für den \texttt{auto}-Modus eine architekturbasierte Time-to-Publish von ≈ 2--17~s abschätzen (LLM-Generierung: 1--2~s; Frontend-Polling: bis zu 15~s) --- verglichen mit der manuellen Baseline von 30--120~s (Kapitel~2.1). Diese Schätzung erfasst ausschließlich die systeminternen Latenzen; die n8n-seitige Erkennungslatenz (Polling-Zyklus der Workflows gegen die Football-API sowie HTTP-Overhead bis zum Backend-Aufruf) ist nicht gemessen und stellt eine zusätzliche, nicht quantifizierte Komponente der Gesamtlatenz dar. Da ein kontrolliertes Feldexperiment mit echten Redakteuren nicht durchführbar war, handelt es sich um eine Potenzialabschätzung, keine empirisch gemessene Größe; ein Feldtest bleibt als Folgestudie vorgesehen (vgl. Abschnitt~8.3.2).
+Die drei Betriebsmodi unterscheiden sich strukturell in ihrer erreichbaren Publikationslatenz. Auf Basis der gemessenen LLM-Latenzen (Median 859~ms, P95 2.047~ms, vgl. Abschnitt~6.5.1) und des 15-Sekunden-Polling-Intervalls im Live-Modus (vgl. Abschnitt~6.5.2) lässt sich für den \texttt{auto}-Modus eine architekturbasierte Time-to-Publish von ≈ 2--17~s abschätzen (LLM-Generierung: 1--2~s; Frontend-Polling: bis zu 15~s), verglichen mit der manuellen Baseline von 30--120~s (Kapitel~2.1). Diese Schätzung erfasst ausschließlich die systeminternen Latenzen; die n8n-seitige Erkennungslatenz (Polling-Zyklus der Workflows gegen die Football-API sowie HTTP-Overhead bis zum Backend-Aufruf) ist nicht gemessen und stellt eine zusätzliche, nicht quantifizierte Komponente der Gesamtlatenz dar. Da ein kontrolliertes Feldexperiment mit echten Redakteuren nicht durchführbar war, handelt es sich um eine Potenzialabschätzung, keine empirisch gemessene Größe; ein Feldtest bleibt als Folgestudie vorgesehen (vgl. Abschnitt~8.3.2).
 
 
 \section{Performance und
@@ -600,7 +600,7 @@ ms), was auf fehlende Cache-Treffer ohne Render-Warm-up hindeutet. Ab
 Version \texttt{0005} der Datenbank-Migration wird jeder produktive
 KI-Aufruf mit dem Feld \texttt{generation\_ms} persistiert, das die
 Backend-interne Verarbeitungszeit (Request-Eingang bis DB-Write)
-automatisch erfasst --- damit ist eine kontinuierliche Latenzmessung im
+automatisch erfasst; damit ist eine kontinuierliche Latenzmessung im
 Produktivbetrieb ohne externen Monitoring-Aufwand möglich. Im Kontext
 des \texttt{coop}-Modus ist die gemessene P95-Latenz von 2,1 s (2.047
 ms) unproblematisch.
@@ -688,11 +688,11 @@ A5 & White-Label-Fähigkeit & Instanz-spezifische Kontextaufbereitung und Few-Sh
 \item \textbf{Keine externe Nutzerstudie.} Die Evaluation der Textqualität in Abschnitt~6.3.4 basiert auf einer Selbstbewertung durch den Entwickler. Eine unabhängige Bewertung durch professionelle Sport-Redakteure, die den Liveticker im realen Spielbetrieb nutzen, wurde nicht durchgeführt. Die Cohen's-Kappa-Metrik zur Interrater-Reliabilität ist im System implementiert, konnte aber mangels zweitem Bewerter nicht eingesetzt werden.
 \item \textbf{Eingeschränkte Stichprobengröße.} 9 Spiele und 16 Events bilden die Datenbasis der qualitativen Evaluation. Für eine statistisch belastbare Aussage wäre eine größere Stichprobe über verschiedene Wettbewerbe, Ligen und Spielsituationen erforderlich.
 \item \textbf{Kein Langzeitbetrieb.} Das System wurde nicht über einen längeren Zeitraum (z. B. eine vollständige Saison) im Produktivbetrieb evaluiert. Aspekte wie API-Kosten, Rate-Limit-Häufigkeit im Regelbetrieb und Drift der Textqualität über die Zeit sind daher nicht erfasst.
-\item \textbf{Keine Authentifizierung.} Das System verzichtet bewusst auf eine Authentifizierungsschicht (vgl. Kap.~1.4). Für einen produktiven Einsatz ist die Absicherung der API-Endpunkte --- insbesondere der schreibenden Operationen (Publish, Reject, Retract, Mode-Wechsel) --- zwingend erforderlich.
+\item \textbf{Keine Authentifizierung.} Das System verzichtet bewusst auf eine Authentifizierungsschicht (vgl. Kap.~1.4). Für einen produktiven Einsatz ist die Absicherung der API-Endpunkte (insbesondere der schreibenden Operationen wie Publish, Reject, Retract und Mode-Wechsel) zwingend erforderlich.
 \item \textbf{Eingeschränkte Browser-Smoke-Testabdeckung.} Die 6 Playwright-Tests decken den stabilen Kern der UI ab, testen aber nicht den vollständigen Redaktionsworkflow mit Backend-Anbindung (Spiel auswählen → Events empfangen → Ticker-Einträge bearbeiten → Freigeben). Ein vollständiger Browser-Test mit laufendem Backend und Testdatenbank wäre wünschenswert, wurde aber aufgrund der Komplexität des Setups nicht umgesetzt.
 \item \textbf{Polling statt Push.} Die Frontend-Datenaktualisierung basiert auf Polling (15~s im Live-Modus, 20~s im PreMatch-Modus). In einem produktiven Szenario mit vielen gleichzeitigen Nutzern wäre Server-Sent Events (SSE) oder WebSocket für die Ticker-Updates effizienter. Die WebSocket-Infrastruktur existiert bereits für den Media-Kanal (Clip-Import), wurde aber nicht auf den Ticker-Datenfluss ausgeweitet.
 \item \textbf{Few-Shot-Reichweite.} Die Few-Shot-Infrastruktur wirkt nur bei Generierung über den Backend-LLM-Service. Die n8n-Workflows für Halbzeit- und Abpfiff-Zusammenfassungen rufen OpenRouter direkt auf und erhalten daher keine stilistischen Stilreferenzen. Zudem fällt der Liga-Filter bei zu wenigen liga-spezifischen Einträgen in der \texttt{style\_references}-Tabelle auf eine liga-agnostische Suche zurück (der Filter selbst ist case-insensitiv über \texttt{func.lower()} implementiert). Das Few-Shot-System funktioniert damit grundsätzlich, liefert aber noch keine konsequent liga-spezifische Stilkonditionierung.
-\item \textbf{Batch-Übersetzung schließt manuelle Einträge ein.} Der Endpunkt \texttt{POST\ /api/v1/ticker/translate-batch/\{match\_id\}} übersetzt alle publizierten Einträge eines Spiels --- unabhängig vom \texttt{source}-Feld. Das bedeutet, dass auch manuell verfasste Einträge übersetzt werden, obwohl diese bereits in der Zielsprache vorliegen könnten. Die Einschränkung liegt in einer fehlenden Filterung nach \texttt{source="ai"} im Batch-Endpunkt. Für eine präzise Mehrsprachigkeitsstrategie wäre eine separate Behandlung manueller Einträge sinnvoll.
+\item \textbf{Batch-Übersetzung schließt manuelle Einträge ein.} Der Endpunkt \texttt{POST\ /api/v1/ticker/translate-batch/\{match\_id\}} übersetzt alle publizierten Einträge eines Spiels, unabhängig vom \texttt{source}-Feld. Das bedeutet, dass auch manuell verfasste Einträge übersetzt werden, obwohl diese bereits in der Zielsprache vorliegen könnten. Die Einschränkung liegt in einer fehlenden Filterung nach \texttt{source="ai"} im Batch-Endpunkt. Für eine präzise Mehrsprachigkeitsstrategie wäre eine separate Behandlung manueller Einträge sinnvoll.
 \item \textbf{Keine Tests für n8n-Workflows.} Die 17 n8n-Workflows (vgl. Kapitel~5.4) verfügen über keine automatisierten Tests. Ihre Korrektheit wurde ausschließlich durch manuelle Ausführung und Inspektion der Datenbank-Ergebnisse verifiziert. Eine testgetriebene Absicherung wäre über n8n-Workflow-Mocks oder Integrationstests gegen eine Staging-Datenbank möglich, wurde aber aufgrund der visuellen Natur der n8n-Entwicklungsumgebung nicht umgesetzt.
 \item \textbf{Saisonspezifische Fixierung einzelner Workflows.} In einzelnen n8n-Workflows ist die Saisonlogik auf die Spielzeit 2025/26 begrenzt (vgl. Kap.~4.4.2). Für den Betrieb in einer Folgesaison sind entsprechende Parametrisierungen erforderlich; die betroffenen Konfigurationsstellen sind dokumentiert, aber nicht automatisiert anpassbar.
 \end{itemize}
@@ -704,10 +704,9 @@ Die Evaluation belegt eine technisch reife Codebasis (439 Tests, 79 \%
 Python-Backend-Coverage, 98,02 \% TypeScript-Typsicherheit, 0
 Compiler-Fehler) mit vollständiger Erfüllung aller 23 definierten
 Anforderungen. Die KI-generierten Texte erreichen in der Hauptevaluation
-(N = 16, Selbstbewertung) einen Gesamtdurchschnitt von \textbf{4,3 / 5};
+(N = 16, Selbstbewertung) einen Gesamtdurchschnitt von 4,3\,/\,5;
 die LLM-as-Judge-Evaluation (N\,=\,80, Bundesliga 2025/26: Ø~4,1\,/\,5, vgl.\ Abschnitt~6.3.6) bestätigt Korrektheit und Verständlichkeit und repliziert die stilprofilabhängige Tonalitätsschwäche als konsistente Fehlerklasse. Die LLM-Latenz beträgt im Median 859 ms, woraus sich
-im \texttt{auto}-Modus ein geschätztes TTP-Potenzial von ≈~2--17~s ergibt (vgl. Abschnitt~6.4). Konsistente Fehlerklassen über beide Evaluationsrunden sind Phrasenwiederholung im euphorischen Profil sowie Tonalitätsinkonsistenz bei ereignisarmen Event-Typen (Wechsel, Gelbe Karten) im euphorischen Profil. Die strukturellen Grenzen ---
-insbesondere die fehlende externe Nutzerstudie mit professionellen
-Redakteuren --- sind in Kapitel 6.7 dokumentiert. Die Evaluation liefert
+im \texttt{auto}-Modus ein geschätztes TTP-Potenzial von ≈~2--17~s ergibt (vgl. Abschnitt~6.4). Konsistente Fehlerklassen über beide Evaluationsrunden sind Phrasenwiederholung im euphorischen Profil sowie Tonalitätsinkonsistenz bei ereignisarmen Event-Typen (Wechsel, Gelbe Karten) im euphorischen Profil. Die strukturellen Grenzen, insbesondere die fehlende externe Nutzerstudie mit professionellen
+Redakteuren, sind in Kapitel 6.7 dokumentiert. Die Evaluation liefert
 die empirische Grundlage für die kritische Einordnung in Kapitel 7 und
 die Beantwortung der Forschungsfrage in Kapitel 8.2.

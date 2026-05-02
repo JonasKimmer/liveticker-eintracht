@@ -33,9 +33,9 @@ Die Systemanalyse zeigt sechs strukturelle Defizite, die den Handlungsbedarf fü
 \item \textbf{Kein KI-Vorschlag, kein Stilprofil:} Der Ticker-Editor ist ein reines Freitextfeld ohne jegliche KI-Unterstützung, Stilsteuerung oder Vorschlagsfunktion. Jeder Eintrag wird vollständig manuell formuliert.
 \item \textbf{Manuelle Score-Pflege:} Der Spielstand wird über numerische Eingabefelder manuell gepflegt (Abbildung~\ref{fig:altsystem}, links unten). Eine automatische Synchronisation mit einem Live-Datenfeed existiert nicht, was zu Verzögerungen und Flüchtigkeitsfehlern führt.
 \item \textbf{Keine Medienintegration:} Das System bietet lediglich einen einfachen „Bild auswählen''-Button ohne strukturierte Social-Media-Anbindung, Galeriefunktion oder automatischen Medien-Import (z.\,B. ScorePlay, YouTube, Instagram).
-\item \textbf{Stilinkonsistenz im Feed:} Die bestehenden Ticker-Einträge (Abbildung~\ref{fig:altsystem}, Mitte) zeigen stark variierende Qualität und Länge --- von einwortigen Kommentaren („drin!'') bis zu vollständigen Sätzen --- ohne einheitliches Stilprofil oder Qualitätssicherung.
+\item \textbf{Stilinkonsistenz im Feed:} Die bestehenden Ticker-Einträge (Abbildung~\ref{fig:altsystem}, Mitte) zeigen stark variierende Qualität und Länge (von einwortigen Kommentaren wie „drin!'' bis zu vollständigen Sätzen) ohne einheitliches Stilprofil oder Qualitätssicherung.
 \item \textbf{Fehlender Mehrsprachen-Support:} Das System ist ausschließlich deutschsprachig ausgelegt. Eine Übersetzungsfunktion oder mehrsprachige Textgenerierung ist nicht vorgesehen.
-\item \textbf{Kein automatischer Datenabruf:} Die Aufstellungsanzeige (Abbildung~\ref{fig:altsystem}, rechts) zeigt lediglich „Reservebank'' ohne geladene Spielerdaten --- ein Hinweis darauf, dass Stammdaten manuell eingepflegt oder gar nicht verfügbar sind.
+\item \textbf{Kein automatischer Datenabruf:} Die Aufstellungsanzeige (Abbildung~\ref{fig:altsystem}, rechts) zeigt lediglich „Reservebank'' ohne geladene Spielerdaten, ein Hinweis darauf, dass Stammdaten manuell eingepflegt oder gar nicht verfügbar sind.
 \end{itemize}
 
 Diese Defizite spiegeln die drei in Kapitel~1.1 identifizierten Problemdimensionen direkt wider: operativer Zeitdruck durch vollständig manuelle Produktion, fehlende Mehrsprachigkeit und eingeschränkte White-Label-Fähigkeit. Das in dieser Arbeit entwickelte System adressiert alle sechs Punkte explizit: Die fehlende KI-Unterstützung und Stilinkonsistenz werden durch die LLM-Pipeline mit konfigurierbaren Stilprofilen behoben (vgl.\ Kap.~4.5); die manuelle Score-Pflege und der fehlende Datenabruf durch automatisierte n8n-ETL-Workflows (vgl.\ Kap.~4.4); die fehlende Medienintegration durch die MediaQueue-Architektur (vgl.\ Kap.~5.4); das Mehrsprachdefizit durch die native LLM-Übersetzungsfunktion (vgl.\ Kap.~4.5.2).
@@ -49,7 +49,7 @@ sich bei näherer Betrachtung als hochkomplexer Produktionsprozess, der
 mehrere journalistische Kompetenzen simultan abverlangt. Bluhm und Schäfer (2023, S. 27) beschreiben unter Rückgriff auf Ojomo und Olomojobi (2021) die strukturelle Komposition von Liveticker-Einträgen als einen Vierschritt: \textbf{Narration} (Beschreibung von Aktionen), \textbf{Evaluation} (Äußerung von Meinungen über Szenen), \textbf{Elaboration} (Vermittlung von Hintergrundinformationen) und \textbf{Zusammenfassung} (Erstellung eines Überblicks über den Wettbewerbsverlauf).
 
 Aus diesen vier Dimensionen ergibt sich folgender konkreter Workflow, der in Abständen von einer bis drei Minuten wiederholt wird (Hauser 2008, S.~3--4; Bluhm \& Schäfer 2023, S.~32):
-Ein Ereignis findet auf dem Spielfeld statt --- etwa ein Tor, eine
+Ein Ereignis findet auf dem Spielfeld statt, etwa ein Tor, eine
 Auswechslung oder ein Foul. Die Autorin oder der Autor muss das
 Geschehen in Sekundenbruchteilen wahrnehmen und die journalistische
 Relevanz bewerten (vgl. Bluhm \& Schäfer 2023, S. 27; Walter 2020,
@@ -69,7 +69,7 @@ spannend-unterhaltsam zu beschreiben (Meier 2018, zitiert nach Bluhm \&
 Schäfer 2023, S. 27). Da zum Gegenlesen keine Zeit bleibt, müssen
 Verfassen und Redigieren in einem einzigen Prozess erfolgen (Walter
 2020, S. 29). Verschärft wird die Situation dadurch, dass Ticker-Autoren
-häufig parallel weitere Aufgaben übernehmen müssen --- wie etwa die
+häufig parallel weitere Aufgaben übernehmen müssen, wie etwa die
 Erstellung des abschließenden Spielberichts (Bluhm \& Schäfer 2023, S.
 35). Die Fehleranfälligkeit unter diesen Bedingungen ist systemimmanent:
 Zahlendreher bei Spielminuten, falsch zugeordnete Spielernamen oder
@@ -82,7 +82,7 @@ erheblich. An einem typischen Bundesliga-Samstag finden bis zu sechs
 Partien zeitgleich statt (vgl. DFL 2024, Rahmenspielplan Bundesliga).
 Redaktionen, die für mehrere Spiele Ticker anbieten, müssen entweder
 entsprechend viele Autoren gleichzeitig einsetzen oder einzelne Autoren
-mehrere Ticker parallel betreuen lassen --- mit absehbaren
+mehrere Ticker parallel betreuen lassen, mit absehbaren
 Qualitätseinbußen (vgl. Bluhm \& Schäfer 2023, S. 32, 35). Für
 Vereinsredaktionen, die zusätzlich zu Pflichtspielen auch Jugend-,
 Frauen- oder Freundschaftsspiele abdecken wollen, ist eine rein manuelle
@@ -94,7 +94,7 @@ studentischen Hilfskräften besetzt, die teils räumlich isoliert arbeiten
 (Bluhm \& Schäfer 2023, S. 32). Der Aufwand bleibt hoch, die Ressourcen
 begrenzt, und die Qualität unterliegt einer strukturellen Inkonsistenz:
 Wechselndes Personal, unterschiedliche Erfahrungsstufen und variierende
-Arbeitsbedingungen --- Stadion, Pressebereich oder Home-Office ---
+Arbeitsbedingungen (Stadion, Pressebereich oder Home-Office)
 führen dazu, dass Tonalität und sprachliches Niveau von Spiel zu Spiel
 schwanken. Diese Inkonsistenz ist kein individuelles Versagen, sondern
 eine systemische Folge des manuellen Produktionsprozesses (vgl. Bluhm \&
@@ -117,7 +117,7 @@ Liga längst bedeutender als der heimische englische (Beils 2023, S.
 221). Dies betrifft zunehmend auch Bundesliga-Vereine mit zweistelligen
 Millionen-Reichweiten auf globalen Plattformen (vgl. Beils 2023, S.
 200). Am Beispiel von Eintracht Frankfurt zeigt sich dies konkret: Durch
-Spieler wie Makoto Hasebe und Daichi Kamada in zurückliegenden Spielzeiten sowie kontinuierliche internationale Transferaktivitäten verfügt der Verein über eine beachtliche Anhängerschaft außerhalb des deutschsprachigen Raums, insbesondere in Japan und dem angloamerikanischen Markt --- erkennbar an den fremdsprachigen
+Spieler wie Makoto Hasebe und Daichi Kamada in zurückliegenden Spielzeiten sowie kontinuierliche internationale Transferaktivitäten verfügt der Verein über eine beachtliche Anhängerschaft außerhalb des deutschsprachigen Raums, insbesondere in Japan und dem angloamerikanischen Markt, erkennbar an den fremdsprachigen
 Interaktionen auf den offiziellen Social-Media-Kanälen des Vereins,
 die im Rahmen der Projektbeobachtung dokumentiert wurden. Eine rein deutschsprachige
 Berichterstattung wird dieser Reichweite nicht mehr gerecht.
@@ -142,7 +142,7 @@ S. 32). Eine manuelle Skalierung auf mehrere Sprachen ist wirtschaftlich
 und personell für die meisten Vereinsredaktionen nicht darstellbar.
 Moderne Large Language Models eröffnen hier eine neue Perspektive: Sie
 können Texte nicht nur übersetzen, sondern direkt in der Zielsprache
-generieren --- unter Berücksichtigung von Stil, Tonalität und
+generieren, unter Berücksichtigung von Stil, Tonalität und
 kulturellem Kontext (vgl. OpenAI 2023, S. 1; Kap. 3.1). Diese Fähigkeit
 macht eine mehrsprachige Liveticker-Produktion erstmals ohne
 proportionalen Personalaufwand denkbar.
@@ -172,7 +172,7 @@ erfordert die fanbezogene Perspektive einen dritten Tonfall: Bei
 anhaltenden Rückständen oder schwachen Leistungen des eigenen Teams
 kann ein kritisch-analysierender Stil angemessener sein als
 unkritische Euphorie. Daraus resultieren drei funktional
-unterschiedliche Stilprofile: \textbf{neutral}, \textbf{euphorisch} und \textbf{kritisch}. Diese Stilprofile sind orthogonal zu den in Kapitel~1.1 genannten Betriebsmodi (\texttt{auto}, \texttt{coop}, \texttt{manual}): Während die Modi den Autonomiegrad der KI-Generierung steuern, bestimmt das Stilprofil die Texttonalität --- beide Dimensionen sind unabhängig voneinander konfigurierbar. Die in Kapitel 2.1
+unterschiedliche Stilprofile: \textbf{neutral}, \textbf{euphorisch} und \textbf{kritisch}. Diese Stilprofile sind orthogonal zu den in Kapitel~1.1 genannten Betriebsmodi (\texttt{auto}, \texttt{coop}, \texttt{manual}): Während die Modi den Autonomiegrad der KI-Generierung steuern, bestimmt das Stilprofil die Texttonalität; beide Dimensionen sind unabhängig voneinander konfigurierbar. Die in Kapitel 2.1
 beschriebene personelle Fluktuation verschärft das Problem zusätzlich:
 Eine konsistente Markenstimme ist mit wechselndem Personal manuell kaum
 zu gewährleisten. Eine technologische Lösung muss daher auch die
@@ -181,13 +181,13 @@ stilistische Konsistenz adressieren.
 Im Softwarekontext wird dieses Problem durch sogenannte
 White-Label-Architekturen gelöst: Ein generisches Kernsystem wird so
 konzipiert, dass es für verschiedene Abnehmer individuell konfigurierbar
-ist --- ohne den Quellcode zu ändern (vgl. Pohl et al.\ 2005, S.~12). Überträgt man dieses
+ist, ohne den Quellcode zu ändern (vgl. Pohl et al.\ 2005, S.~12). Überträgt man dieses
 Prinzip auf die Liveticker-Produktion, ergibt sich die Anforderung, dass
 ein und dasselbe System sowohl einen vereinsspezifischen Ticker mit
 emotionaler Fanbindung als auch einen neutralen, anbieterunabhängigen
-Ticker bedienen können muss. Die stilistische Differenzierung --- von
+Ticker bedienen können muss. Die stilistische Differenzierung (von
 der Wortwahl über die Tonalität bis hin zu vereinsspezifischen
-Redewendungen --- muss dabei als Konfiguration abbildbar sein, nicht als
+Redewendungen) muss dabei als Konfiguration abbildbar sein, nicht als
 separate Implementierung.
 
 Die empirische Validierung dieser Problemdimension erfolgt über das
@@ -212,7 +212,7 @@ Problemdimensionen, eine Analyse der öffentlich zugänglichen digitalen
 Kanäle des Vereins sowie ein strukturiertes Experteninterview
 mit einem professionellen Sportredakteur von Eintracht Frankfurt. Die
 theoretisch hergeleiteten Anforderungen werden dabei durch das Interview
-empirisch validiert --- insbesondere hinsichtlich des redaktionellen
+empirisch validiert, insbesondere hinsichtlich des redaktionellen
 Workflows (Kap. 2.1), des Bedarfs an mehrsprachiger Berichterstattung
 (Kap. 2.2) und der stilistischen Konsistenzanforderungen (Kap. 2.3). Das
 strukturierte Leitfadeninterview nach Kuckartz (2018) wurde gewählt,
@@ -229,10 +229,10 @@ Aus den drei Problemdimensionen ergeben sich folgende vereinsspezifische
 Anforderungen: Eintracht Frankfurt bestreitet pro Saison bis zu 60
 Pflichtspiele; pro Spiel fallen durchschnittlich 20--40 Ticker-Einträge
 an (Schätzung auf Basis öffentlich zugänglicher Vereinsticker; im
-Experteninterview bestätigt), was den \textbf{Zeitdruck} auf manuelle
+Experteninterview bestätigt), was den Zeitdruck auf manuelle
 Abdeckung mit konsistenter Qualität auf ein personell kaum
-darstellbares Niveau treibt. Die internationale Fanbasis --- insbesondere
-in Japan (vgl. Kap.~2.2) --- begründet den Bedarf an
+darstellbares Niveau treibt. Die internationale Fanbasis (insbesondere
+in Japan, vgl. Kap.~2.2) begründet den Bedarf an
 mehrsprachigen Tickern in mindestens Deutsch und Englisch,
 perspektivisch auch Japanisch. Hinsichtlich der Tonalität folgen
 vereinseigene Ticker einer emotionalen, fanbezogenen Perspektive, die
@@ -243,8 +243,8 @@ Differenzierung konfigurierbar abbilden.
 Über die in den Kapiteln 2.1--2.3 eingebetteten Validierungsfragen
 (IF1--IF9) hinaus adressiert das Experteninterview zwei weitere
 Themenblöcke, die erst nach der Systemdemonstration beantwortet werden
-können: die \textbf{Systembewertung} (IF10--IF15, eingebettet in
-Abschnitt~6.3.5) und die \textbf{Zukunftsperspektive} (IF16--IF18,
+können: die Systembewertung (IF10--IF15, eingebettet in
+Abschnitt~6.3.5) und die Zukunftsperspektive (IF16--IF18,
 adressiert in Kap.~7.5). Ein valides Systemurteil zu Block 3 und 4
 setzt die vorherige Exposition mit dem laufenden System voraus, weshalb
 diese Blöcke sequenziell nach der Systemdemonstration eingesetzt werden.
@@ -405,8 +405,8 @@ A5 & White-Label-Fähigkeit (ef\_whitelabel / generic) & Kap. 2.3, 2.4 \\
 \end{longtable}
 }
 
-Die drei Problemdimensionen --- operativer Zeitdruck, Mehrsprachigkeit
-und White-Label-Bedarf --- sind dabei keine isolierten
+Die drei Problemdimensionen (operativer Zeitdruck, Mehrsprachigkeit
+und White-Label-Bedarf) sind dabei keine isolierten
 Herausforderungen, sondern greifen strukturell ineinander: Zeitdruck
 macht menschliche Skalierung unmöglich, Mehrsprachigkeit multipliziert
 diesen Aufwand, und White-Label-Anforderungen verlangen eine

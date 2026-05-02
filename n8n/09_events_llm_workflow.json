@@ -8,9 +8,12 @@
       },
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2.1,
-      "position": [208, 8928],
-      "id": "6195805f-8c6b-4a2b-8063-0df7a1401c3e",
-      "name": "Webhook Events8",
+      "position": [
+        4256,
+        9488
+      ],
+      "id": "d97e154c-9840-4c89-8314-39d763c8da9a",
+      "name": "Webhook Events14",
       "webhookId": "6188adc1-362c-45e1-9e8a-abd1889bbe3b"
     },
     {
@@ -23,13 +26,16 @@
       },
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.6,
-      "position": [464, 8928],
-      "id": "5b970751-3f43-43d8-9754-7cfde23f3906",
-      "name": "DB: Match-Instanz7",
+      "position": [
+        4512,
+        9488
+      ],
+      "id": "2ea34b35-952b-47a4-a424-75e88f2c2ffd",
+      "name": "DB: Match-Instanz13",
       "credentials": {
         "postgres": {
-          "id": "5VeE2cikA9rLeOKz",
-          "name": "Postgres account 2"
+          "id": "WHRqubCoiFyFjqqL",
+          "name": "Postgres account 3"
         }
       }
     },
@@ -43,7 +49,7 @@
           "parameters": [
             {
               "name": "fixture",
-              "value": "={{ $('Webhook Events8').first().json.body.fixture_id }}"
+              "value": "={{ $('Webhook Events14').first().json.body.fixture_id }}"
             }
           ]
         },
@@ -51,9 +57,12 @@
       },
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [720, 8928],
-      "id": "74243257-59aa-4a40-8b56-6df1e80c3ccd",
-      "name": "API: Events abrufen9",
+      "position": [
+        4768,
+        9488
+      ],
+      "id": "1f8e37f9-ce9e-4767-a248-03f8ae8ef9c4",
+      "name": "API: Events abrufen15",
       "credentials": {
         "httpHeaderAuth": {
           "id": "nw1wvLZ4u2BCZRVl",
@@ -67,19 +76,25 @@
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [944, 8928],
-      "id": "88e997da-f159-42e1-b529-83e5c31be470",
-      "name": "Events extrahieren8"
+      "position": [
+        4992,
+        9488
+      ],
+      "id": "c3fd2468-7019-42ab-af3e-d7a887e02d22",
+      "name": "Events extrahieren14"
     },
     {
       "parameters": {
-        "jsCode": "// ── Hilfsfunktionen ─────────────────────────────────────\nfunction esc(val) {\n  if (val === null || val === undefined) return 'NULL';\n  return `'${String(val).replace(/'/g, \"''\")}'`;\n}\nfunction num(val) {\n  return (val === null || val === undefined) ? 'NULL' : val;\n}\nfunction getIcon(eventType) {\n  const icons = {\n    'goal':             '⚽',\n    'own_goal':         '🙈',\n    'yellow_card':      '🟨',\n    'red_card':         '🟥',\n    'yellow_red_card':  '🟨🟥',\n    'substitution':     '🔄',\n    'penalty_won':      '🎯',\n    'penalty_cancelled':'❌',\n    'goal_cancelled':   '🚫',\n    'var_red_card':     '📺🟥',\n    'missed_penalty':   '❌',\n    'comment':          '💬',\n  };\n  return icons[eventType] || '📋';\n}\nfunction normalizeType(type, detail) {\n  if (type === 'Card') {\n    const d = (detail || '').toLowerCase();\n    if (d.includes('red')) return 'red_card';\n    return 'yellow_card';\n  }\n  if (type === 'Goal') {\n    const d = (detail || '').toLowerCase();\n    if (d.includes('own')) return 'own_goal';\n    return 'goal';\n  }\n  if (type === 'Var') {\n    const d = (detail || '').toLowerCase();\n    if (d.includes('penalty confirmed'))  return 'penalty_won';\n    if (d.includes('penalty cancelled')) return 'penalty_cancelled';\n    if (d.includes('goal cancelled'))    return 'goal_cancelled';\n    if (d.includes('red card'))          return 'var_red_card';\n    return 'comment';\n  }\n  const TYPE_MAP = { 'subst': 'substitution', 'Miss': 'missed_penalty' };\n  return TYPE_MAP[type] || 'comment';\n}\n\n// ── Schritt 1: Gelb-Rot erkennen ────────────────────────\nconst cardGroups = new Map();\nconst allItems = $input.all();\n\nallItems.forEach((item, idx) => {\n  const e = item.json;\n  if (e.type !== 'Card') return;\n  const key = `${e.fixture_id}_${e.minute}_${e.player_id ?? 'x'}`;\n  if (!cardGroups.has(key)) cardGroups.set(key, []);\n  cardGroups.get(key).push({ ...e, _idx: idx });\n});\n\nconst yellowRedKeys = new Set();\nconst skipIdxs = new Set();\n\nfor (const [key, events] of cardGroups) {\n  const hasYellow = events.some(e => (e.detail || '').toLowerCase().includes('yellow'));\n  const hasRed    = events.some(e => (e.detail || '').toLowerCase().includes('red'));\n  if (hasYellow && hasRed) {\n    yellowRedKeys.add(key);\n    events.forEach(e => skipIdxs.add(e._idx));\n  }\n}\n\n// ── Schritt 2: Normale Events ────────────────────────────\nconst result = [];\n\nallItems.forEach((item, idx) => {\n  const e = item.json;\n  if (skipIdxs.has(idx)) return;\n\n  const eventType = normalizeType(e.type, e.detail);\n  const sourceId  = `apifootball_${e.fixture_id}_${e.minute}_${e.type}_${(e.detail||'').replace(/\\s+/g,'_')}_${e.player_id ?? 'x'}`;\n  const description = JSON.stringify({\n    player_id:   e.player_id,\n    player_name: e.player_name,\n    assist_id:   e.assist_id,\n    assist_name: e.assist_name,\n    team_id:     e.team_external_id,\n    team_name:   e.team_name,\n    type:        e.type,\n    detail:      e.detail,\n    comments:    e.comments,\n    icon:        getIcon(eventType),\n  });\n\n  const query = `\n    INSERT INTO events (\n      match_id, time, time_additional,\n      event_type, description, source, source_id, position\n    )\n    VALUES (\n      (SELECT id FROM matches WHERE external_id = ${num(e.fixture_id)}::integer),\n      ${num(e.minute)},\n      ${num(e.extra_time)},\n      ${esc(eventType)},\n      ${esc(description)},\n      'api_football',\n      ${esc(sourceId)},\n      ${num(e.minute)}\n    )\n    ON CONFLICT (source_id) WHERE source_id IS NOT NULL\n    DO UPDATE SET source = EXCLUDED.source\n    RETURNING id, event_type, time, description, (xmax = 0) AS is_new\n  `.trim();\n\n  result.push({ json: { query, fixture_id: e.fixture_id } });\n});\n\n// ── Schritt 3: Gelb-Rot-Events ───────────────────────────\nfor (const [key, events] of cardGroups) {\n  if (!yellowRedKeys.has(key)) continue;\n\n  const base = events[0];\n  const sourceId = `apifootball_${base.fixture_id}_${base.minute}_yellowred_${base.player_id ?? 'x'}`;\n  const description = JSON.stringify({\n    player_id:   base.player_id,\n    player_name: base.player_name,\n    assist_id:   null,\n    assist_name: null,\n    team_id:     base.team_external_id,\n    team_name:   base.team_name,\n    type:        'Card',\n    detail:      'Yellow Red Card',\n    comments:    base.comments,\n    icon:        '🟨🟥',\n  });\n\n  const query = `\n    WITH cleanup AS (\n      DELETE FROM events\n      WHERE match_id = (SELECT id FROM matches WHERE external_id = ${num(base.fixture_id)}::integer)\n        AND source = 'api_football'\n        AND time = ${num(base.minute)}\n        AND event_type IN ('yellow_card', 'red_card')\n        AND (description::jsonb->>'player_id')::integer = ${num(base.player_id)}\n    )\n    INSERT INTO events (\n      match_id, time, time_additional,\n      event_type, description, source, source_id, position\n    )\n    VALUES (\n      (SELECT id FROM matches WHERE external_id = ${num(base.fixture_id)}::integer),\n      ${num(base.minute)},\n      ${num(base.extra_time)},\n      'yellow_red_card',\n      ${esc(description)},\n      'api_football',\n      ${esc(sourceId)},\n      ${num(base.minute)}\n    )\n    ON CONFLICT (source_id) WHERE source_id IS NOT NULL\n    DO UPDATE SET source = EXCLUDED.source\n    RETURNING id, event_type, time, description, (xmax = 0) AS is_new\n  `.trim();\n\n  result.push({ json: { query, fixture_id: base.fixture_id } });\n}\n\nreturn result;"
+        "jsCode": "// ── Hilfsfunktionen ─────────────────────────────────────\nfunction esc(val) {\n  if (val === null || val === undefined) return 'NULL';\n  return `'${String(val).replace(/'/g, \"''\")}'`;\n}\nfunction num(val) {\n  return (val === null || val === undefined) ? 'NULL' : val;\n}\nfunction mbucket(min) {\n  return Math.floor((min ?? 0) / 3);\n}\nfunction getIcon(eventType) {\n  const icons = {\n    'goal':             '⚽',\n    'own_goal':         '🙈',\n    'yellow_card':      '🟨',\n    'red_card':         '🟥',\n    'yellow_red_card':  '🟨🟥',\n    'substitution':     '🔄',\n    'penalty_won':      '🎯',\n    'penalty_cancelled':'❌',\n    'goal_cancelled':   '🚫',\n    'var_red_card':     '📺🟥',\n    'missed_penalty':   '❌',\n    'comment':          '💬',\n  };\n  return icons[eventType] || '📋';\n}\nfunction normalizeType(type, detail) {\n  if (type === 'Card') {\n    const d = (detail || '').toLowerCase();\n    if (d.includes('red')) return 'red_card';\n    return 'yellow_card';\n  }\n  if (type === 'Goal') {\n    const d = (detail || '').toLowerCase();\n    if (d.includes('own')) return 'own_goal';\n    return 'goal';\n  }\n  if (type === 'Var') {\n    const d = (detail || '').toLowerCase();\n    if (d.includes('penalty confirmed'))  return 'penalty_won';\n    if (d.includes('penalty cancelled')) return 'penalty_cancelled';\n    if (d.includes('goal cancelled'))    return 'goal_cancelled';\n    if (d.includes('red card'))          return 'var_red_card';\n    return 'comment';\n  }\n  const TYPE_MAP = { 'subst': 'substitution', 'Miss': 'missed_penalty' };\n  return TYPE_MAP[type] || 'comment';\n}\n\n// ── Schritt 1: Gelb-Rot erkennen ────────────────────────\nconst cardGroups = new Map();\nconst allItems = $input.all();\n\nallItems.forEach((item, idx) => {\n  const e = item.json;\n  if (e.type !== 'Card') return;\n  const key = `${e.fixture_id}_b${mbucket(e.minute)}_${e.player_id ?? 'x'}`;\n  if (!cardGroups.has(key)) cardGroups.set(key, []);\n  cardGroups.get(key).push({ ...e, _idx: idx });\n});\n\nconst yellowRedKeys = new Set();\nconst skipIdxs = new Set();\n\nfor (const [key, events] of cardGroups) {\n  const hasYellow = events.some(e => (e.detail || '').toLowerCase().includes('yellow'));\n  const hasRed    = events.some(e => (e.detail || '').toLowerCase().includes('red'));\n  if (hasYellow && hasRed) {\n    yellowRedKeys.add(key);\n    events.forEach(e => skipIdxs.add(e._idx));\n  }\n}\n\n// ── Schritt 2: Normale Events ────────────────────────────\nconst result = [];\n\nallItems.forEach((item, idx) => {\n  const e = item.json;\n  if (skipIdxs.has(idx)) return;\n\n  const eventType = normalizeType(e.type, e.detail);\n  const sourceId  = `apifootball_${e.fixture_id}_b${mbucket(e.minute)}_${e.type}_${(e.detail||'').replace(/\\s+/g,'_')}_${e.player_id ?? 'x'}`;\n  const description = JSON.stringify({\n    player_id:   e.player_id,\n    player_name: e.player_name,\n    assist_id:   e.assist_id,\n    assist_name: e.assist_name,\n    team_id:     e.team_external_id,\n    team_name:   e.team_name,\n    type:        e.type,\n    detail:      e.detail,\n    comments:    e.comments,\n    icon:        getIcon(eventType),\n  });\n\n  const query = `\n    INSERT INTO events (\n      match_id, time, time_additional,\n      event_type, description, source, source_id, position\n    )\n    VALUES (\n      (SELECT id FROM matches WHERE external_id = ${num(e.fixture_id)}::integer),\n      ${num(e.minute)},\n      ${num(e.extra_time)},\n      ${esc(eventType)},\n      ${esc(description)},\n      'api_football',\n      ${esc(sourceId)},\n      ${(e.minute ?? 0) + (e.extra_time ?? 0)}\n    )\n    ON CONFLICT (source_id) WHERE source_id IS NOT NULL\n    DO UPDATE SET\n      source          = EXCLUDED.source,\n      time            = EXCLUDED.time,\n      time_additional = EXCLUDED.time_additional,\n      position        = EXCLUDED.position\n    RETURNING id, event_type, time, description, (xmax = 0) AS is_new\n  `.trim();\n\n  result.push({ json: { query, fixture_id: e.fixture_id } });\n});\n\n// ── Schritt 3: Gelb-Rot-Events ───────────────────────────\nfor (const [key, events] of cardGroups) {\n  if (!yellowRedKeys.has(key)) continue;\n\n  const base = events[0];\n  const sourceId = `apifootball_${base.fixture_id}_b${mbucket(base.minute)}_yellowred_${base.player_id ?? 'x'}`;\n  const description = JSON.stringify({\n    player_id:   base.player_id,\n    player_name: base.player_name,\n    assist_id:   null,\n    assist_name: null,\n    team_id:     base.team_external_id,\n    team_name:   base.team_name,\n    type:        'Card',\n    detail:      'Yellow Red Card',\n    comments:    base.comments,\n    icon:        '🟨🟥',\n  });\n\n  const query = `\n    WITH cleanup AS (\n      DELETE FROM events\n      WHERE match_id = (SELECT id FROM matches WHERE external_id = ${num(base.fixture_id)}::integer)\n        AND source = 'api_football'\n        AND time = ${num(base.minute)}\n        AND event_type IN ('yellow_card', 'red_card')\n        AND (description::jsonb->>'player_id')::integer = ${num(base.player_id)}\n    )\n    INSERT INTO events (\n      match_id, time, time_additional,\n      event_type, description, source, source_id, position\n    )\n    VALUES (\n      (SELECT id FROM matches WHERE external_id = ${num(base.fixture_id)}::integer),\n      ${num(base.minute)},\n      ${num(base.extra_time)},\n      'yellow_red_card',\n      ${esc(description)},\n      'api_football',\n      ${esc(sourceId)},\n      ${(base.minute ?? 0) + (base.extra_time ?? 0)}\n    )\n    ON CONFLICT (source_id) WHERE source_id IS NOT NULL\n    DO UPDATE SET\n      source          = EXCLUDED.source,\n      time            = EXCLUDED.time,\n      time_additional = EXCLUDED.time_additional,\n      position        = EXCLUDED.position\n    RETURNING id, event_type, time, description, (xmax = 0) AS is_new\n  `.trim();\n\n  result.push({ json: { query, fixture_id: base.fixture_id } });\n}\n\nreturn result;"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [1168, 8928],
-      "id": "35a32c50-d2d4-4f8e-ba99-303777e0aa15",
-      "name": "Events Insert - Code Node7"
+      "position": [
+        5216,
+        9488
+      ],
+      "id": "a724c5c1-16ef-4529-a625-d69f002f4830",
+      "name": "Events Insert - Code Node13"
     },
     {
       "parameters": {
@@ -89,13 +104,16 @@
       },
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.6,
-      "position": [1392, 8928],
-      "id": "87c321de-9c93-44d0-8223-4720450e6445",
-      "name": "Insert Events9",
+      "position": [
+        5440,
+        9488
+      ],
+      "id": "8275073d-58cf-4bcd-9bfa-70a608032545",
+      "name": "Insert Events15",
       "credentials": {
         "postgres": {
-          "id": "5VeE2cikA9rLeOKz",
-          "name": "Postgres account 2"
+          "id": "WHRqubCoiFyFjqqL",
+          "name": "Postgres account 3"
         }
       }
     },
@@ -135,26 +153,32 @@
       },
       "type": "n8n-nodes-base.filter",
       "typeVersion": 2.2,
-      "position": [1808, 8608],
-      "id": "b2a7a648-28e3-4693-aa19-a3b36c179664",
-      "name": "Filter7"
+      "position": [
+        5856,
+        9168
+      ],
+      "id": "18a028d9-728a-4beb-968f-dc01a25efc9e",
+      "name": "Filter13"
     },
     {
       "parameters": {
         "method": "POST",
-        "url": "=https://liveticker-backend.onrender.com/api/v1/ticker/generate/{{ $json.id }}",
+        "url": "=https://liveticker-backend.onrender.com/api/v1/ticker/generate/{{ $json.event_id }}",
         "authentication": "genericCredentialType",
         "genericAuthType": "httpHeaderAuth",
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={\n  \"style\": \"{{ $('DB: Match-Instanz7').first().json.style || 'neutral' }}\",\n  \"instance\": \"{{ $('DB: Match-Instanz7').first().json.instance || 'generic' }}\",\n  \"language\": \"{{ $('Webhook Events8').first().json.body.language || 'de' }}\",\n  \"auto_publish\": {{ $('DB: Match-Instanz7').first().json.ticker_mode === 'auto' }},\n  \"fan_team\": \"{{ $('DB: Match-Instanz7').first().json.fan_team || '' }}\"\n}\n",
+        "jsonBody": "={\n  \"style\": \"{{ $('DB: Match-Instanz13').first().json.style || 'neutral' }}\",\n  \"instance\": \"{{ $('DB: Match-Instanz13').first().json.instance || 'generic' }}\",\n  \"language\": \"{{ $('Webhook Events14').first().json.body.language || 'de' }}\",\n  \"auto_publish\": {{ $('DB: Match-Instanz13').first().json.ticker_mode === 'auto' }},\n  \"fan_team\": \"{{ $('DB: Match-Instanz13').first().json.fan_team || '' }}\"\n}\n",
         "options": {}
       },
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [2144, 8592],
-      "id": "1dcc8aa2-1b7c-492e-a90b-d2e9f0419caf",
-      "name": "LLM Trigger Node8",
+      "position": [
+        6192,
+        9152
+      ],
+      "id": "b9df1827-5be4-4a7f-940f-135db51c2e0f",
+      "name": "LLM Trigger Node14",
       "credentials": {
         "httpHeaderAuth": {
           "id": "nw1wvLZ4u2BCZRVl",
@@ -172,7 +196,7 @@
           "parameters": [
             {
               "name": "id",
-              "value": "={{ $('Webhook Events8').first().json.body.fixture_id }}"
+              "value": "={{ $('Webhook Events14').first().json.body.fixture_id }}"
             }
           ]
         },
@@ -186,9 +210,12 @@
       },
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [1776, 8384],
-      "id": "1ab1db0f-49c8-45c6-bdda-7b712f49821f",
-      "name": "API: Score abrufen1",
+      "position": [
+        5824,
+        8944
+      ],
+      "id": "4b97e31a-cd53-496a-9e51-4f3b2b101827",
+      "name": "API: Score abrufen3",
       "credentials": {
         "httpHeaderAuth": {
           "id": "nw1wvLZ4u2BCZRVl",
@@ -201,18 +228,21 @@
         "operation": "executeQuery",
         "query": "UPDATE matches SET\n  home_score = $2,\n  away_score = $3\nWHERE id = $1\nRETURNING id, home_score, away_score",
         "options": {
-          "queryReplacement": "={{ $('DB: Match-Instanz7').first().json.match_id + ',' + ($json.response[0].goals.home ?? 0) + ',' + ($json.response[0].goals.away ?? 0) }}"
+          "queryReplacement": "={{ $('DB: Match-Instanz13').first().json.match_id + ',' + ($json.response[0].goals.home ?? 0) + ',' + ($json.response[0].goals.away ?? 0) }}"
         }
       },
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.5,
-      "position": [2032, 8368],
-      "id": "e2b78eb4-a9df-49db-b5a0-1137c66b5d21",
-      "name": "Update Match Score2",
+      "position": [
+        6080,
+        8928
+      ],
+      "id": "5e87f6b3-16d4-4705-8be3-dac1b7b75914",
+      "name": "Update Match Score8",
       "credentials": {
         "postgres": {
-          "id": "5VeE2cikA9rLeOKz",
-          "name": "Postgres account 2"
+          "id": "WHRqubCoiFyFjqqL",
+          "name": "Postgres account 3"
         }
       }
     },
@@ -256,7 +286,7 @@
             },
             {
               "id": "aa000001-0000-0000-0000-000000000002",
-              "leftValue": "={{ $('DB: Match-Instanz7').first().json.instance }}",
+              "leftValue": "={{ $('DB: Match-Instanz13').first().json.instance }}",
               "rightValue": "ef_whitelabel",
               "operator": {
                 "type": "string",
@@ -270,9 +300,12 @@
       },
       "type": "n8n-nodes-base.filter",
       "typeVersion": 2.2,
-      "position": [1728, 9216],
-      "id": "8addff39-1b1d-4933-b232-602bb0bb3649",
-      "name": "Nur EF-Tore6"
+      "position": [
+        5776,
+        9776
+      ],
+      "id": "bb01f1a3-5cac-4ea8-bac2-1ceffe9ade11",
+      "name": "Nur EF-Tore12"
     },
     {
       "parameters": {
@@ -280,9 +313,12 @@
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [1952, 9216],
-      "id": "9dd8fef1-c2a5-4247-8196-4e6f4ed2331a",
-      "name": "Video-Query bauen6"
+      "position": [
+        6000,
+        9776
+      ],
+      "id": "64a9a1fd-3d9a-464b-b133-52c0ff2e6e5c",
+      "name": "Video-Query bauen12"
     },
     {
       "parameters": {
@@ -292,13 +328,16 @@
       },
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.6,
-      "position": [2176, 9216],
-      "id": "613bd381-9c31-4854-a73f-22482700e124",
-      "name": "DB: Torschützen-Video6",
+      "position": [
+        6224,
+        9776
+      ],
+      "id": "1121ee77-cabd-44f6-856d-8585aef6b036",
+      "name": "DB: Torschützen-Video14",
       "credentials": {
         "postgres": {
-          "id": "5VeE2cikA9rLeOKz",
-          "name": "Postgres account 2"
+          "id": "WHRqubCoiFyFjqqL",
+          "name": "Postgres account 3"
         }
       }
     },
@@ -329,9 +368,12 @@
       },
       "type": "n8n-nodes-base.filter",
       "typeVersion": 2.2,
-      "position": [2400, 9216],
-      "id": "a0c55c85-b820-4df8-b231-1e94793818db",
-      "name": "Hat Video?6"
+      "position": [
+        6448,
+        9776
+      ],
+      "id": "2314df79-a7b6-4cc0-8781-38bd36811714",
+      "name": "Hat Video?12"
     },
     {
       "parameters": {
@@ -341,14 +383,19 @@
         "genericAuthType": "httpHeaderAuth",
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={\n  \"match_id\": {{ $('DB: Match-Instanz7').first().json.match_id }},\n  \"event_id\": {{ $('Video-Query bauen6').item.json.event_id }},\n  \"text\": \"\",\n  \"icon\": \"🎬\",\n  \"minute\": {{ $('Video-Query bauen6').item.json.event_time ?? 'null' }},\n  \"video_url\": \"{{ $('Hat Video?6').item.json.video_url }}\",\n  \"instance\": \"{{ $('DB: Match-Instanz7').first().json.instance }}\",\n  \"status\": \"{{ $('DB: Match-Instanz7').first().json.ticker_mode === 'auto' ? 'published' : 'draft' }}\"\n}\n",
+        "jsonBody": "={\n  \"match_id\": {{ $('DB: Match-Instanz13').first().json.match_id }},\n  \"event_id\": {{ $('Video-Query bauen12').item.json.event_id }},\n  \"text\": \"\",\n  \"icon\": \"🎬\",\n  \"minute\": {{ $('Video-Query bauen12').item.json.event_time ?? 'null' }},\n  \"video_url\": \"{{ $('Hat Video?12').item.json.video_url }}\",\n  \"instance\": \"{{ $('DB: Match-Instanz13').first().json.instance }}\",\n  \"status\": \"{{ $('DB: Match-Instanz13').first().json.ticker_mode === 'auto' ? 'published' : 'draft' }}\"\n}\n",
         "options": {}
       },
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [2720, 9216],
-      "id": "6ae189bf-e143-4766-8ab7-c1aff3c26f13",
-      "name": "Torjubel-Ticker posten11",
+      "position": [
+        6768,
+        9776
+      ],
+      "id": "d89e6c01-d994-469c-b3a6-91fb4fcaac99",
+      "name": "Torjubel-Ticker posten21",
+      "retryOnFail": true,
+      "maxTries": 5,
       "credentials": {
         "httpHeaderAuth": {
           "id": "nw1wvLZ4u2BCZRVl",
@@ -368,7 +415,7 @@
           "conditions": [
             {
               "id": "video-auto-001",
-              "leftValue": "={{ $('DB: Match-Instanz7').first().json.ticker_mode }}",
+              "leftValue": "={{ $('DB: Match-Instanz13').first().json.ticker_mode }}",
               "rightValue": "auto",
               "operator": {
                 "type": "string",
@@ -382,9 +429,12 @@
       },
       "type": "n8n-nodes-base.filter",
       "typeVersion": 2.2,
-      "position": [2928, 9216],
-      "id": "1b3a432f-10bc-4c73-a4a9-3c029d1e9b24",
-      "name": "Video AUTO?6",
+      "position": [
+        6976,
+        9776
+      ],
+      "id": "8c294e34-ee4f-46cc-b5b6-aa15fd379ce5",
+      "name": "Video AUTO?12",
       "disabled": true
     },
     {
@@ -395,14 +445,17 @@
         "genericAuthType": "httpHeaderAuth",
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={ \n  \"status\": \"{{ $('DB: Match-Instanz7').first().json.ticker_mode === 'auto' ? 'published' : 'draft' }}\",\n  \"video_url\": \"{{ $('Hat Video?6').item.json.video_url }}\",\n  \"icon\": \"🎬\",\n}",
+        "jsonBody": "={ \n  \"status\": \"{{ $('DB: Match-Instanz13').first().json.ticker_mode === 'auto' ? 'published' : 'draft' }}\",\n  \"video_url\": \"{{ $('Hat Video?12').item.json.video_url }}\",\n  \"icon\": \"🎬\",\n}",
         "options": {}
       },
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [3072, 9216],
-      "id": "af24e86b-7baf-4f18-8ece-9ea3d11123ce",
-      "name": "Video AUTO publishen6",
+      "position": [
+        7120,
+        9776
+      ],
+      "id": "7cb1bea9-49b9-4e6a-b499-4d64db502371",
+      "name": "Video AUTO publishen12",
       "credentials": {
         "httpHeaderAuth": {
           "id": "nw1wvLZ4u2BCZRVl",
@@ -413,18 +466,21 @@
     {
       "parameters": {
         "operation": "executeQuery",
-        "query": "SELECT id \nFROM ticker_entries \nWHERE event_id = {{ $('Video-Query bauen6').item.json.event_id }} \nORDER BY created_at DESC \nLIMIT 1;",
+        "query": "SELECT id \nFROM ticker_entries \nWHERE event_id = {{ $('Video-Query bauen12').item.json.event_id }} \nORDER BY created_at DESC \nLIMIT 1;",
         "options": {}
       },
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.6,
-      "position": [2560, 9392],
-      "id": "154e76ae-2fe7-4884-bdf2-b503b293455e",
-      "name": "DB: Torschützen-Video8",
+      "position": [
+        6608,
+        9952
+      ],
+      "id": "e6af0cbd-0949-4c17-8ed9-b791ccfde82e",
+      "name": "DB: Torschützen-Video15",
       "credentials": {
         "postgres": {
-          "id": "5VeE2cikA9rLeOKz",
-          "name": "Postgres account 2"
+          "id": "WHRqubCoiFyFjqqL",
+          "name": "Postgres account 3"
         }
       }
     },
@@ -433,18 +489,21 @@
         "operation": "executeQuery",
         "query": "SELECT m.match_phase, m.external_id,\n  (SELECT COUNT(*) FROM ticker_entries\n   WHERE match_id = m.id AND phase = 'PenaltyShootout' AND source = 'manual') AS has_penalty_ticker\nFROM matches AS m WHERE m.id = $1",
         "options": {
-          "queryReplacement": "={{ [$('DB: Match-Instanz7').first().json.match_id] }}"
+          "queryReplacement": "={{ [$('DB: Match-Instanz13').first().json.match_id] }}"
         }
       },
-      "id": "pen09-sql-check",
-      "name": "SQL: Penalty prüfen",
+      "id": "73d82300-d17e-42b3-b853-372fea5cb2af",
+      "name": "SQL: Penalty prüfen1",
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.6,
-      "position": [1616, 9600],
+      "position": [
+        5664,
+        10160
+      ],
       "credentials": {
         "postgres": {
-          "id": "5VeE2cikA9rLeOKz",
-          "name": "Postgres account 2"
+          "id": "WHRqubCoiFyFjqqL",
+          "name": "Postgres account 3"
         }
       }
     },
@@ -481,11 +540,14 @@
         },
         "options": {}
       },
-      "id": "pen09-filter",
-      "name": "Filter: Penalty fehlt noch?",
+      "id": "cc4868d1-4887-43aa-b764-d6b956710292",
+      "name": "Filter: Penalty fehlt noch?1",
       "type": "n8n-nodes-base.filter",
       "typeVersion": 2.2,
-      "position": [1840, 9600]
+      "position": [
+        5888,
+        10160
+      ]
     },
     {
       "parameters": {
@@ -494,11 +556,14 @@
         "genericAuthType": "httpHeaderAuth",
         "options": {}
       },
-      "id": "pen09-api",
-      "name": "API: Penalty-Score9",
+      "id": "d8f3a231-ef8a-4856-8764-479e36718f02",
+      "name": "API: Penalty-Score",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [2064, 9600],
+      "position": [
+        6112,
+        10160
+      ],
       "credentials": {
         "httpHeaderAuth": {
           "id": "nw1wvLZ4u2BCZRVl",
@@ -508,13 +573,16 @@
     },
     {
       "parameters": {
-        "jsCode": "const fixture = $json.response?.[0];\nif (!fixture) return [];\n\nconst penHome = fixture.score?.penalty?.home ?? null;\nconst penAway = fixture.score?.penalty?.away ?? null;\nif (penHome === null || penAway === null) return [];\n\nconst matchId = $('DB: Match-Instanz7').first().json.match_id;\nconst instance = $('DB: Match-Instanz7').first().json.instance || 'generic';\nconst tickerMode = $('DB: Match-Instanz7').first().json.ticker_mode ?? 'coop';\nconst homeTeamName = fixture.teams?.home?.name ?? 'Heim';\nconst awayTeamName = fixture.teams?.away?.name ?? 'Gast';\nconst winner = penHome > penAway ? homeTeamName : awayTeamName;\n\nreturn [{ json: {\n  match_id: matchId,\n  penalty_home: penHome,\n  penalty_away: penAway,\n  instance,\n  ticker_mode: tickerMode,\n  text: `🥅 Elferschießen: ${winner} gewinnt ${penHome}:${penAway} n.E.`\n} }];"
+        "jsCode": "const fixture = $json.response?.[0];\nif (!fixture) return [];\n\nconst penHome = fixture.score?.penalty?.home ?? null;\nconst penAway = fixture.score?.penalty?.away ?? null;\nif (penHome === null || penAway === null) return [];\n\nconst matchId = $('DB: Match-Instanz13').first().json.match_id;\nconst instance = $('DB: Match-Instanz13').first().json.instance || 'generic';\nconst tickerMode = $('DB: Match-Instanz13').first().json.ticker_mode ?? 'coop';\nconst homeTeamName = fixture.teams?.home?.name ?? 'Heim';\nconst awayTeamName = fixture.teams?.away?.name ?? 'Gast';\nconst winner = penHome > penAway ? homeTeamName : awayTeamName;\n\nreturn [{ json: {\n  match_id: matchId,\n  penalty_home: penHome,\n  penalty_away: penAway,\n  instance,\n  ticker_mode: tickerMode,\n  text: `🥅 Elferschießen: ${winner} gewinnt ${penHome}:${penAway} n.E.`\n} }];"
       },
-      "id": "pen09-code",
-      "name": "Penalty-Daten aufbereiten9",
+      "id": "742fccdf-2372-445c-8fd1-869661548598",
+      "name": "Penalty-Daten aufbereiten",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [2288, 9600]
+      "position": [
+        6336,
+        10160
+      ]
     },
     {
       "parameters": {
@@ -524,15 +592,18 @@
           "queryReplacement": "={{ [$json.penalty_home, $json.penalty_away, $json.match_id] }}"
         }
       },
-      "id": "pen09-sql-update",
-      "name": "SQL: Penalty-Score updaten9",
+      "id": "5e397a3f-fdcc-46b4-9a1a-cfcaa0301ad1",
+      "name": "SQL: Penalty-Score updaten",
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.6,
-      "position": [2512, 9600],
+      "position": [
+        6560,
+        10160
+      ],
       "credentials": {
         "postgres": {
-          "id": "5VeE2cikA9rLeOKz",
-          "name": "Postgres account 2"
+          "id": "WHRqubCoiFyFjqqL",
+          "name": "Postgres account 3"
         }
       }
     },
@@ -544,252 +615,333 @@
         "genericAuthType": "httpHeaderAuth",
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={\n  \"match_id\": {{ $('Penalty-Daten aufbereiten9').first().json.match_id }},\n  \"text\": \"{{ $('Penalty-Daten aufbereiten9').first().json.text }}\",\n  \"icon\": \"🥅\",\n  \"minute\": 121,\n  \"phase\": \"PenaltyShootout\",\n  \"instance\": \"{{ $('Penalty-Daten aufbereiten9').first().json.instance }}\",\n  \"status\": \"{{ $('Penalty-Daten aufbereiten9').first().json.ticker_mode === 'auto' ? 'published' : 'draft' }}\"\n}",
+        "jsonBody": "={\n  \"match_id\": {{ $('Penalty-Daten aufbereiten').first().json.match_id }},\n  \"text\": \"{{ $('Penalty-Daten aufbereiten').first().json.text }}\",\n  \"icon\": \"🥅\",\n  \"minute\": 121,\n  \"phase\": \"PenaltyShootout\",\n  \"instance\": \"{{ $('Penalty-Daten aufbereiten').first().json.instance }}\",\n  \"status\": \"{{ $('Penalty-Daten aufbereiten').first().json.ticker_mode === 'auto' ? 'published' : 'draft' }}\"\n}",
         "options": {}
       },
-      "id": "pen09-http",
-      "name": "Penalty-Ticker posten9",
+      "id": "1950b8cd-a9f5-4481-b059-8d7f1e1d1d6a",
+      "name": "Penalty-Ticker posten",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [2736, 9600],
+      "position": [
+        6784,
+        10160
+      ],
       "credentials": {
         "httpHeaderAuth": {
           "id": "nw1wvLZ4u2BCZRVl",
           "name": "Header Auth account"
         }
       }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT COUNT(*) AS cnt, $1::integer AS event_id FROM ticker_entries WHERE event_id = $1",
+        "options": {
+          "queryReplacement": "={{ [$json.id] }}"
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        6000,
+        9152
+      ],
+      "id": "dedup-db-check-001",
+      "name": "DB: Ticker bereits vorhanden?",
+      "credentials": {
+        "postgres": {
+          "id": "WHRqubCoiFyFjqqL",
+          "name": "Postgres account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "dedup-filter-cnt",
+              "leftValue": "={{ $json.cnt }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "number",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.2,
+      "position": [
+        6096,
+        9152
+      ],
+      "id": "dedup-filter-001",
+      "name": "Filter: Noch kein Ticker?"
     }
   ],
   "connections": {
-    "Webhook Events8": {
+    "Webhook Events14": {
       "main": [
         [
           {
-            "node": "DB: Match-Instanz7",
+            "node": "DB: Match-Instanz13",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "DB: Match-Instanz7": {
+    "DB: Match-Instanz13": {
       "main": [
         [
           {
-            "node": "API: Events abrufen9",
+            "node": "API: Events abrufen15",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "API: Events abrufen9": {
+    "API: Events abrufen15": {
       "main": [
         [
           {
-            "node": "Events extrahieren8",
+            "node": "Events extrahieren14",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Events extrahieren8": {
+    "Events extrahieren14": {
       "main": [
         [
           {
-            "node": "Events Insert - Code Node7",
+            "node": "Events Insert - Code Node13",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Events Insert - Code Node7": {
+    "Events Insert - Code Node13": {
       "main": [
         [
           {
-            "node": "Insert Events9",
+            "node": "Insert Events15",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Insert Events9": {
+    "Insert Events15": {
       "main": [
         [
           {
-            "node": "Filter7",
+            "node": "Filter13",
             "type": "main",
             "index": 0
           },
           {
-            "node": "API: Score abrufen1",
+            "node": "API: Score abrufen3",
             "type": "main",
             "index": 0
           },
           {
-            "node": "Nur EF-Tore6",
+            "node": "Nur EF-Tore12",
             "type": "main",
             "index": 0
           },
           {
-            "node": "SQL: Penalty prüfen",
+            "node": "SQL: Penalty prüfen1",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Filter7": {
+    "Filter13": {
       "main": [
         [
           {
-            "node": "LLM Trigger Node8",
+            "node": "DB: Ticker bereits vorhanden?",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "API: Score abrufen1": {
+    "API: Score abrufen3": {
       "main": [
         [
           {
-            "node": "Update Match Score2",
+            "node": "Update Match Score8",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Nur EF-Tore6": {
+    "Nur EF-Tore12": {
       "main": [
         [
           {
-            "node": "Video-Query bauen6",
+            "node": "Video-Query bauen12",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Video-Query bauen6": {
+    "Video-Query bauen12": {
       "main": [
         [
           {
-            "node": "DB: Torschützen-Video6",
+            "node": "DB: Torschützen-Video14",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "DB: Torschützen-Video6": {
+    "DB: Torschützen-Video14": {
       "main": [
         [
           {
-            "node": "Hat Video?6",
+            "node": "Hat Video?12",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Hat Video?6": {
+    "Hat Video?12": {
       "main": [
         [
           {
-            "node": "DB: Torschützen-Video8",
+            "node": "DB: Torschützen-Video15",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "DB: Torschützen-Video8": {
+    "Torjubel-Ticker posten21": {
       "main": [
         [
           {
-            "node": "Torjubel-Ticker posten11",
+            "node": "Video AUTO?12",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Torjubel-Ticker posten11": {
+    "Video AUTO?12": {
       "main": [
         [
           {
-            "node": "Video AUTO?6",
+            "node": "Video AUTO publishen12",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Video AUTO?6": {
+    "DB: Torschützen-Video15": {
       "main": [
         [
           {
-            "node": "Video AUTO publishen6",
+            "node": "Torjubel-Ticker posten21",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "SQL: Penalty prüfen": {
+    "SQL: Penalty prüfen1": {
       "main": [
         [
           {
-            "node": "Filter: Penalty fehlt noch?",
+            "node": "Filter: Penalty fehlt noch?1",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Filter: Penalty fehlt noch?": {
+    "Filter: Penalty fehlt noch?1": {
       "main": [
         [
           {
-            "node": "API: Penalty-Score9",
+            "node": "API: Penalty-Score",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "API: Penalty-Score9": {
+    "API: Penalty-Score": {
       "main": [
         [
           {
-            "node": "Penalty-Daten aufbereiten9",
+            "node": "Penalty-Daten aufbereiten",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Penalty-Daten aufbereiten9": {
+    "Penalty-Daten aufbereiten": {
       "main": [
         [
           {
-            "node": "SQL: Penalty-Score updaten9",
+            "node": "SQL: Penalty-Score updaten",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "SQL: Penalty-Score updaten9": {
+    "SQL: Penalty-Score updaten": {
       "main": [
         [
           {
-            "node": "Penalty-Ticker posten9",
+            "node": "Penalty-Ticker posten",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DB: Ticker bereits vorhanden?": {
+      "main": [
+        [
+          {
+            "node": "Filter: Noch kein Ticker?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter: Noch kein Ticker?": {
+      "main": [
+        [
+          {
+            "node": "LLM Trigger Node14",
             "type": "main",
             "index": 0
           }
