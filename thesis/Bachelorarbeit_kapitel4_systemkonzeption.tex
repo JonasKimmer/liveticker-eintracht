@@ -447,7 +447,7 @@ ohne Codeanpassung wählen --- ein entscheidender Faktor für
 Vereinsredaktionen mit begrenztem Budget.
 
 Als Standardmodell im Deployment wurde Gemini 2.0 Flash Lite
-(Modell-ID \texttt{google/gemini-2.0-flash-lite-001}) über OpenRouter gewählt. Die Entscheidung für dieses Modell stützt sich auf drei Faktoren: \textbf{Aufgabencharakteristik} (vgl. Kap.~3.1): Liveticker-Texte sind kurz und faktenbasiert --- eine Aufgabe, für die kompakte Modelle eine vergleichbare Qualität bei deutlich niedrigerer Latenz erzielen, was durch die gemessene Medianlatenz von 859~ms (vgl. Abschnitt~6.5.1) empirisch bestätigt wird. \textbf{Kosteneffizienz}: Gemini 2.0 Flash Lite zählt zu den kostengünstigsten kommerziell verfügbaren Modellen, was den Dauerbetrieb über eine Saison für ressourcenbegrenzte Vereinsredaktionen wirtschaftlich darstellbar macht (vgl. Kap.~2.1). Bei durchschnittlich 30~Einträgen pro Spiel und einem Prompt-Umfang von rund 1.000~Token je Eintrag liegt der geschätzte Inferenzkostenaufwand in der Größenordnung von unter 0{,}01~USD pro Spiel --- selbst bei vollständiger Saison-Abdeckung (60~Pflichtspiele) unter 1~USD für die reine Textgenerierung. \textbf{Kontextfenster}: Das Modell unterstützt ein Kontextfenster von bis zu 1~Million~Token, sodass umfangreiche Pre-Match-Kontextinformationen (sieben Context-Builder, vgl. Kap.~4.5.2) und mehrere Few-Shot-Referenzen ohne Abschneidung eingebunden werden können.
+(Modell-ID \texttt{google/gemini-2.0-flash-lite-001}) über OpenRouter gewählt. Die Entscheidung für dieses Modell stützt sich auf drei Faktoren: \textbf{Aufgabencharakteristik} (vgl. Kap.~3.1): Liveticker-Texte sind kurz und faktenbasiert --- eine Aufgabe, für die kompakte Modelle eine vergleichbare Qualität bei deutlich niedrigerer Latenz erzielen, was durch die gemessene Medianlatenz von 859~ms (vgl. Abschnitt~6.5.1) empirisch bestätigt wird. \textbf{Kosteneffizienz}: Gemini 2.0 Flash Lite zählt zu den kostengünstigsten kommerziell verfügbaren Modellen, was den Dauerbetrieb über eine Saison für ressourcenbegrenzte Vereinsredaktionen wirtschaftlich darstellbar macht (vgl. Kap.~2.1). Bei durchschnittlich 30~Einträgen pro Spiel und einem Prompt-Umfang von rund 1.000~Token je Eintrag liegt der geschätzte Inferenzkostenaufwand in der Größenordnung von unter 0{,}01~USD pro Spiel (basierend auf den zum Zeitpunkt des Deployments geltenden Listenpreisen von OpenRouter für \texttt{google/gemini-2.0-flash-lite-001}; Preise können sich ändern) --- selbst bei vollständiger Saison-Abdeckung (60~Pflichtspiele) unter 1~USD für die reine Textgenerierung. \textbf{Kontextfenster}: Das Modell unterstützt ein Kontextfenster von bis zu 1~Million~Token, sodass umfangreiche Pre-Match-Kontextinformationen (sieben Context-Builder, vgl. Kap.~4.5.2) und mehrere Few-Shot-Referenzen ohne Abschneidung eingebunden werden können.
 
 Ergänzend implementiert das Backend eine \textbf{Fallback-Kette} für den
 Fall, dass OpenRouter nicht konfiguriert ist. Das System prüft zur
@@ -472,8 +472,8 @@ Zusätzlich kann die Auswahl in Generierungsrouten pro Request über \texttt{pro
 
 \subsection{Prompt-Engineering-Strategie}\label{prompt-engineering-strategie}
 
-Die Generierung verwendet ein template-basiertes Prompting mit sechs
-modularen Bausteinen, die dynamisch zusammengesetzt werden: einer
+Die Generierung verwendet ein modulares Few-Shot-Prompting mit sechs
+dynamisch zusammengesetzten Bausteinen: einer
 Rolleninstruktion (Persona, Aufgabe, Gattung), einer Stilinstruktion
 (neutral / euphorisch / kritisch), einem Faktenblock zum Ereignis (Typ,
 Detail, Minute, beteiligte Spieler und Team), einem dynamischen
