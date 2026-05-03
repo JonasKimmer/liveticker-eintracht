@@ -70,16 +70,11 @@ Die Beantwortung gliedert sich in Konzeption und Implementierung sowie journalis
 
 \subsection{Synthese}\label{synthese}
 
-Die Forschungsfrage ist positiv zu beantworten: Das System ist
-realisierbar und wurde vollständig implementiert. Die Textqualität
-erfüllt die journalistischen Anforderungen in den Dimensionen
-Korrektheit (Ø~4,6/5) und Verständlichkeit (Ø~4,3/5) zuverlässig.
-Bei der Tonalität ist das Bild differenziert: Während neutrale und
-kritische Stilprofile stabile Werte erzielen, zeigt das euphorische
-Profil eine systematische Schwäche bei ereignisarmen Event-Typen
-(LLM-as-Judge Tonalität~2,93/5), die als priorisierter
-Verbesserungsbedarf im Prompt-Design identifiziert ist
-(vgl.\ Abschnitt~8.3). Als technischer Zusatzbefund zeigen die gemessenen
+Die Forschungsfrage ist in beiden Teilfragen positiv zu beantworten.
+
+\textbf{Realisierbarkeit:} Das System ist vollständig implementiert und produktionsnah deployt. Alle 23 definierten Anforderungen sind erfüllt; 439 automatisierte Tests und eine TypeScript-Typenabdeckung von 98,02~\% belegen die technische Reife.
+
+\textbf{Journalistische Qualität:} Die Textqualität erfüllt die Anforderungen in den Dimensionen Korrektheit (Ø~4,6/5) und Verständlichkeit (Ø~4,3/5) zuverlässig. Bei der Tonalität ist das Bild differenziert: Neutrale und kritische Stilprofile erzielen stabile Werte; das euphorische Profil zeigt eine systematische Schwäche bei ereignisarmen Event-Typen (LLM-as-Judge Tonalität~2,93/5), die als priorisierter Verbesserungsbedarf im Prompt-Design identifiziert ist (vgl.\ Abschnitt~8.3). Als technischer Zusatzbefund zeigen die gemessenen
 Systemlatenzen (Median 859~ms, P95 2.047~ms, vgl. Abschnitt~6.5.1) ein
 architekturbasiertes Latenzpotenzial, ein kontrollierter Feldvergleich
 bleibt als Folgestudie vorgesehen (vgl. Abschnitt~8.3).
