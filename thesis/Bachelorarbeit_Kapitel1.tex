@@ -21,15 +21,9 @@ Im modernen digitalen Sportjournalismus lassen sich drei strukturelle Herausford
 Diese Dimensionen werden in Kapitel 2 wissenschaftlich fundiert und in
 konkrete Systemanforderungen überführt.
 
-Das übergeordnete Ziel der vorliegenden Arbeit ist daher die Konzeption
-und Implementierung eines produktionsfähigen Redaktionssystems, das
-diesen Konflikt durch den gezielten Einsatz von \textbf{Large Language
-Models} auflöst, während die finale Entscheidungshoheit und
-publizistische Verantwortung beim Menschen verbleiben. Das System wird dabei in zwei Ausprägungen realisiert: einer
-generischen Instanz für beliebige Vereine sowie einer
-vereinsspezifischen White-Label-Instanz am Beispiel Eintracht Frankfurt.
+Das übergeordnete Ziel ist die Konzeption und Implementierung eines produktionsfähigen Redaktionssystems, das diesen Konflikt durch den gezielten Einsatz von \textbf{Large Language Models} auflöst, während die Entscheidungshoheit und publizistische Verantwortung beim Menschen verbleiben. Das System wird in zwei Ausprägungen realisiert: einer generischen Instanz für beliebige Vereine sowie einer vereinsspezifischen White-Label-Instanz am Beispiel Eintracht Frankfurt.
 
-Um dieses Ziel zu operationalisieren, definiert und evaluiert die Arbeit drei Betriebsmodi: den \textbf{Status quo (\texttt{manual})} als vollmanuell erstellte Vergleichsbasis, den \textbf{vollautonomen Modus (\texttt{auto})} mit KI-basierter Texterstellung und Publikation ohne menschliches Korrektiv sowie den \textbf{hybriden Modus (\texttt{coop})} als Kombination aus KI-generierten Textvorschlägen mit redaktioneller Prüfung und Freigabe.
+Um das Ziel zu operationalisieren, definiert und evaluiert die Arbeit drei Betriebsmodi: (1)~\textbf{\texttt{manual}} als vollmanuell erstellte Vergleichsbasis, (2)~\textbf{\texttt{auto}} mit KI-basierter Texterstellung und Publikation ohne menschliches Korrektiv sowie (3)~\textbf{\texttt{coop}} als hybrider Modus aus KI-Vorschlag und redaktioneller Prüfung und Freigabe.
 
 
 
@@ -45,12 +39,7 @@ implementieren, das journalistische Qualitätsanforderungen hinsichtlich
 Korrektheit, Tonalität und Verständlichkeit erfüllt?
 \end{quote}
 
-Die Frage ist ein konstruktiver Beitrag im Sinne des Design
-Science Research (Hevner et al.~2004): Sie fragt, ob sich ein solches
-System realisieren lässt, das gleichzeitig Echtzeitanforderungen,
-Mehrsprachigkeit und White-Label-Betrieb abdeckt, und ob die
-generierten Texte die definierten journalistischen Qualitätskriterien
-erfüllen. Die methodische Vorbereitung erfolgt in Abschnitt~1.3; die
+Die Forschungsfrage leistet einen konstruktiven Design-Science-Beitrag (Hevner et al.~2004): Sie prüft, ob ein System realisierbar ist, das Echtzeitanforderungen, Mehrsprachigkeit und White-Label-Betrieb erfüllt und dabei journalistische Qualitätskriterien einhält. Die methodische Vorbereitung erfolgt in Abschnitt~1.3; die
 vollständige Beantwortung in Kapitel~8.
 
 
@@ -61,7 +50,7 @@ Die Arbeit folgt einem konstruktiven Forschungsansatz im Sinne des
 \textbf{Design Science Research} (Hevner et al.~2004): Ein
 softwarebasiertes Artefakt wird als Antwort auf ein identifiziertes
 Praxisproblem entworfen, implementiert und evaluiert. Der
-Erkenntnisgewinn entsteht dabei nicht nur aus der Evaluation, sondern
+Erkenntnisgewinn entsteht nicht nur aus der Evaluation, sondern
 auch aus dem Entwurfs- und Implementierungsprozess selbst.
 
 Das methodische Vorgehen gliedert sich in fünf Phasen. Die \textbf{Problemanalyse und Anforderungserhebung} vertieft literaturgestützt die Problemdimensionen und leitet funktionale sowie nicht-funktionale Anforderungen ab. Die \textbf{Technologierecherche} arbeitet den Stand der Technik in den relevanten Bereichen auf und bewertet ihn hinsichtlich der Eignung für das identifizierte Problem. Die \textbf{Systemkonzeption} entwirft eine dreischichtige Systemarchitektur mit Datenmodell, LLM-Pipeline und Prompt-Design. Die \textbf{Implementierung} setzt das System als produktionsfähige Webanwendung mit vollständiger API, browserbasiertem Frontend, automatisiertem ETL-System und Cloud-Deployment um. Die \textbf{Evaluation} umfasst technische Qualitätssicherung, Bewertung der KI-Textgenerierung sowie einen systematischen Anforderungsabgleich.

@@ -10,8 +10,7 @@ Die Implementierung folgt dem Grundsatz „so einfach wie nötig, so modular wie
 \subsection{Projektstruktur und Application Entry
 Point}\label{projektstruktur-und-application-entry-point}
 
-Das Backend ist unterhalb von \texttt{backend/app/} in sieben
-funktionale Pakete gegliedert:
+Das Backend gliedert sich unter \texttt{backend/app/} in sieben funktionale Pakete:
 
 \begin{verbatim}
 backend/app/
@@ -99,8 +98,7 @@ Kernfelder
 
 Weitere Stammdaten-Modelle (Country, Team, Competition, Lineup, MatchStatistic, PlayerStatistic, MediaQueue, MediaClip) folgen dem gleichen Grundmuster und sind vollständig in \texttt{app/models/} dokumentiert.
 
-Das \texttt{TickerEntry}-Modell hat besondere Bedeutung im Lifecycle des
-Systems: Es verknüpft über \texttt{event\_id} (FK auf \texttt{events})
+Das \texttt{TickerEntry}-Modell ist zentral für den Lifecycle des Systems: Es verknüpft über \texttt{event\_id} (FK auf \texttt{events})
 und \texttt{synthetic\_event\_id} (FK auf \texttt{synthetic\_events})
 den generierten Text mit seinem Auslöser. Die Felder \texttt{status}
 (\texttt{draft}/\texttt{published}/\texttt{rejected}/\texttt{deleted}) und
@@ -169,7 +167,7 @@ reduzierter Temperatur (\texttt{0.1}) auf, um sprachlich
 deterministische Übersetzungen zu erzeugen, eine gegenüber der
 Originalgenerierung bewusst andere Parametrisierung.
 
-Die fünf systemkritischen Endpunkte des Ticker-Lifecycles sind:
+Die fünf kritischen Lifecycle-Endpunkte sind:
 
 {\def\LTcaptype{none}
 \begin{longtable}[]{@{}
@@ -197,7 +195,7 @@ Domänenlogik}\label{ticker-service-domuxe4nenlogik}
 
 Der \texttt{ticker\_service} kapselt die Domänenlogik für KI-Einträge.
 Er koordiniert Datenbankabfragen, Kontextaufbau und den LLM-Aufruf, hält
-dabei aber die Schichten klar getrennt: \texttt{llm\_service.py} hat
+aber die Schichten klar getrennt: \texttt{llm\_service.py} hat
 keine Datenbankabhängigkeit.
 
 Der Service umfasst vier zentrale Funktionen. \texttt{score\_at\_event()}
@@ -536,7 +534,7 @@ Backend zurück; Optimistic-Updates vermeiden wahrnehmbare Latenz beim
 Umschalten. Im Co-op-Modus registriert derselbe Hook die Shortcuts
 \texttt{TAB} (acceptDraft) und \texttt{ESC} (rejectDraft) als
 Keyboard-Event-Listener, die bei Moduswechsel automatisch aktualisiert
-werden. Im Auto-Modus existieren zwei parallele Automatisierungspfade: Der primäre Pfad verläuft über n8n, das \texttt{auto\_publish=True} an den Backend-Endpunkt übergibt, woraufhin der Eintrag direkt mit \texttt{status=published} angelegt wird. Der sekundäre Pfad ist \texttt{useAutoPublisher} im Frontend: Dieser Hook pollt die Draft-Queue und publiziert neu eintreffende Draft-Einträge unmittelbar, als Fallback für den Fall, dass n8n-Webhooks verzögert eintreffen oder ein Spiel direkt im Frontend auf Auto-Modus umgeschaltet wird, ohne n8n-Neustart. Beide Pfade führen zum selben Ergebnis (publizierter Eintrag), die Deduplizierungsprüfung per \texttt{event\_id} verhindert dabei Doppelveröffentlichungen.
+werden. Im Auto-Modus existieren zwei parallele Automatisierungspfade: Der primäre Pfad verläuft über n8n, das \texttt{auto\_publish=True} an den Backend-Endpunkt übergibt, woraufhin der Eintrag direkt mit \texttt{status=published} angelegt wird. Der sekundäre Pfad ist \texttt{useAutoPublisher} im Frontend: Dieser Hook pollt die Draft-Queue und publiziert neu eintreffende Draft-Einträge unmittelbar, als Fallback für den Fall, dass n8n-Webhooks verzögert eintreffen oder ein Spiel direkt im Frontend auf Auto-Modus umgeschaltet wird, ohne n8n-Neustart. Beide Pfade führen zum selben Ergebnis (publizierter Eintrag), die Deduplizierungsprüfung per \texttt{event\_id} verhindert Doppelveröffentlichungen.
 
 % TODO: Screenshot einfügen, wenn verfügbar
 % \begin{figure}[H]

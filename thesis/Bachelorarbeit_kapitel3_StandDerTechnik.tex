@@ -12,9 +12,7 @@ Technologieentscheidungen für das Systemdesign ab.
 
 \section{Large Language Models}\label{large-language-models}
 
-Große Sprachmodelle (Large Language Models, LLMs) sind KI-Systeme, die
-auf Basis umfangreicher Textkorpora trainiert werden und natürliche
-Sprache verstehen sowie erzeugen können. Ihr Einsatz hat sich in den
+Large Language Models (LLMs, dt. Große Sprachmodelle) werden auf umfangreichen Textkorpora trainiert und können natürliche Sprache verstehen und generieren. Ihr Einsatz hat sich in den
 vergangenen Jahren von der Forschung in die industrielle Anwendung
 verbreitet, unter anderem für automatisierte Textproduktion im
 Medienbereich (vgl. Bluhm \& Schäfer 2023, S. 33).
@@ -23,19 +21,15 @@ Den technischen Ausgangspunkt bildet die \textbf{Transformer-Architektur}
 (Vaswani et al.~2017), die Text mithilfe sogenannter
 \textbf{Aufmerksamkeitsmechanismen} (Attention) verarbeitet: Das Modell
 gewichtet bei der Verarbeitung eines Wortes alle anderen Wörter im
-Kontext nach ihrer Relevanz. Dadurch kann es semantische Zusammenhänge
-auch über lange Textabschnitte hinweg erfassen. Die Textgenerierung
+Kontext nach ihrer Relevanz. Dadurch erfasst das Modell semantische Zusammenhänge über lange Sequenzen. Die Textgenerierung
 erfolgt autoregressiv; das Modell erzeugt ein Wort nach dem anderen,
 wobei jedes neue Wort auf den bereits generierten Text aufbaut.
 
-Diese Modelle werden auf umfangreichen Textkorpora vortrainiert und
-erwerben dabei ein breites Sprachverständnis. Aufgrund dieser Breite
+Durch das Vortraining auf umfangreichen Textkorpora entwickeln diese Modelle ein breites Sprachverständnis. Aufgrund dieser Breite
 können sie direkt auf neue Aufgaben angewendet werden, ohne
 aufgabenspezifisches Fine-tuning zu erfordern, eine Eigenschaft, die
 als \textbf{Zero-Shot-Generalisierung} bezeichnet wird (Brown et
-al.~2020, S. 2). Das ermöglicht den Einsatz von LLMs für spezialisierte
-Aufgaben wie die Liveticker-Generierung, ohne modellseitige Anpassungen
-vornehmen zu müssen.
+al.~2020, S. 2). Das macht den Einsatz von LLMs für spezialisierte Aufgaben wie die Liveticker-Generierung ohne Finetuning möglich.
 
 Die empirische Grundlage für das \textbf{In-Context Learning} wurde mit
 GPT-3 gelegt (Brown et al.~2020). Das Prinzip, Modelle über Beispiele
@@ -78,7 +72,7 @@ Datensätzen und ist ressourcenintensiv (Rechenzeit, Infrastruktur,
 Datenkuration). \textbf{Prompting-basierte Ansätze} hingegen nutzen das
 vortrainierte Modell direkt und steuern dessen Verhalten ausschließlich
 über die Eingabeformulierung (Brown et al.~2020, S. 1). Für
-ressourcenbeschränkte Kontexte wie den Vereinssport ist Prompting dabei
+ressourcenbeschränkte Kontexte wie den Vereinssport ist Prompting
 nicht nur kostengünstiger, sondern auch methodisch vorzuziehen: Da kein
 domänenspezifischer Trainingsdatensatz in ausreichender Größe existiert,
 würde Fine-tuning zu Overfitting neigen, während Prompting-basierte Ansätze mit
@@ -102,9 +96,7 @@ deterministischeren, faktentreueren Ausgaben; höhere Werte (z.\,B.
 
 Ein weiterer praktischer Constraint ist das \textbf{Kontextfenster} (Context Window): Jedes LLM kann nur eine begrenzte Token-Anzahl pro Aufruf verarbeiten, typisch 8\,000--200\,000 Token je nach Modell. Da jeder Few-Shot-Beispielblock, jeder Kontextbaustein und die Aufgabenbeschreibung Token verbrauchen, begrenzt das Kontextfenster die Anzahl sinnvoll einzubettender Stilreferenzen; für das vorliegende System wurden drei Few-Shot-Beispiele als pragmatisches Maximum gewählt (vgl. Kap.~4.5.2).
 
-Die konkrete Prompt-Struktur, Few-Shot-Beispiele und
-Temperature-Konfiguration des vorliegenden Systems werden in
-Kapitel~4.5.2 beschrieben.
+Kapitel~4.5.2 erläutert die konkrete Prompt-Struktur, Few-Shot-Beispiele und Temperatur-Konfiguration des vorliegenden Systems.
 
 
 

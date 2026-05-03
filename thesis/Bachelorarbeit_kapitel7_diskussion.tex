@@ -13,7 +13,7 @@ Systemen}\label{abgrenzung-zu-bestehenden-systemen}
 
 Das in dieser Arbeit entwickelte System unterscheidet sich von
 bestehenden Ansätzen der automatisierten Sportberichterstattung (Kapitel
-3.3) in mehreren Aspekten:
+3.3) auf mehreren Ebenen:
 
 \begin{itemize}\tightlist
 \item \textbf{Gegenüber templatebasierten Systemen} (z. B. Retresco, vgl. Beils 2023, S. 207) bietet der LLM-basierte Ansatz eine höhere sprachliche Varianz und Anpassungsfähigkeit an unterschiedliche Stilprofile. Templatebasierte Systeme erzeugen deterministische, aber oft formelhaft wirkende Texte; LLM-generierte Texte sind sprachlich natürlicher, dafür nicht-deterministisch.
@@ -123,7 +123,7 @@ Der \textbf{\texttt{auto}-Modus} maximiert das Latenzpotenzial (TTP~$\approx$~2-
 
 Der \textbf{\texttt{manual}-Modus} entspricht dem Status quo der manuellen Liveticker-Erstellung und dient im System als Vergleichsbasis sowie als strategische Einstiegsstufe. Er ist für Redaktionen sinnvoll, die das System zunächst parallel zum bestehenden Workflow evaluieren möchten, ohne KI-Inhalte zu publizieren. Darüber hinaus bleibt er als Rückfalloption in Situationen relevant, in denen die LLM-Verfügbarkeit eingeschränkt ist oder das Halluzinationsrisiko für ein spezifisches Spielereignis (z.\,B. strittiger Elfmeter, VAR-Entscheidung) eine vollständig manuelle Einordnung erfordert.
 
-\textbf{Der \texttt{coop}-Modus ist der intendierte Produktivbetrieb}: Die KI liefert Entwürfe, die redaktionelle Freigabe via TAB/ESC-Steuerung sichert Qualität ohne merkliche Latenzzunahme. Das Experteninterview (vgl. Abschnitt~6.3.5) bestätigt diese Einschätzung. Die Laufzeit-Umschaltbarkeit ermöglicht dabei eine schrittweise Einführung von \texttt{manual} über \texttt{coop} bis \texttt{auto}, eine Adoptionsstrategie, die den in Kapitel 2.1 beschriebenen Akzeptanzbedarf adressiert. Die modus-spezifische Gesamtbewertung mit Empfehlung findet sich in Abschnitt~8.2.1.
+\textbf{Der \texttt{coop}-Modus ist der intendierte Produktivbetrieb}: Die KI liefert Entwürfe, die redaktionelle Freigabe via TAB/ESC-Steuerung sichert Qualität ohne merkliche Latenzzunahme. Das Experteninterview (vgl. Abschnitt~6.3.5) bestätigt diese Einschätzung. Die Laufzeit-Umschaltbarkeit ermöglicht eine schrittweise Einführung von \texttt{manual} über \texttt{coop} bis \texttt{auto}, eine Adoptionsstrategie, die den in Kapitel 2.1 beschriebenen Akzeptanzbedarf adressiert. Die modus-spezifische Gesamtbewertung mit Empfehlung findet sich in Abschnitt~8.2.1.
 
 
 \section{Diskussion der
@@ -148,16 +148,15 @@ Das hybride System zielt darauf ab, die Rolle des Liveticker-Redakteurs von
 der Textproduktion zur Textredaktion zu verlagern: Statt unter Zeitdruck zu
 formulieren, prüft, editiert und kuratiert der Redakteur KI-generierte
 Vorschläge. Diese Verschiebung entspricht dem von Bluhm und Schäfer
-(2023, S. 35) beschriebenen Wandel hin zu einer „augmented authorship'',
+(2023, S. 35) beschriebenen Wandel hin zu einer „augmented authorship'' (erweiterter Autorschaft),
 bei der menschliche Expertise und maschinelle Effizienz komplementär
-zusammenwirken. Der kognitive Engpass der Liveticker-Produktion (die
-simultane Beobachtung des Spielgeschehens, Relevanzbewertung und
-Texterstellung unter extremem Zeitdruck, vgl. Kapitel 2.1) könnte
+zusammenwirken. Der kognitive Engpass – simultane Beobachtung des Spielgeschehens, Relevanzbewertung und
+Texterstellung unter extremem Zeitdruck (vgl. Kapitel 2.1) – könnte
 dadurch wesentlich reduziert werden. Ob dies in der Praxis zu messbaren
 Effizienzgewinnen führt, ist empirisch nicht belegt; das Experteninterview
 (Abschnitt~6.3.5, N~=~1) deutet auf Akzeptanz und erwarteten Nutzen hin,
 ersetzt jedoch keinen Feldtest mit echten Redakteuren unter Live-Bedingungen.
-Die originäre Kompetenz würde sich dabei verlagern: Sprachliche
+Die originäre Kompetenz würde sich verlagern: Sprachliche
 Formulierungsfähigkeit tritt in den Hintergrund, evaluative Kompetenz
 (das schnelle Erkennen von Stilbrüchen, Faktenfehlern und
 Tonalitätsabweichungen) wird zur Kernkompetenz. Die publizistische

@@ -18,38 +18,18 @@ Fazit der Systemkonzeption (Kap.~4.8).
 \section{Überblick und
 Schichtenmodell}\label{uxfcberblick-und-schichtenmodell}
 
-Das System ist als eigenständiger Cloud-Service konzipiert, der
-alle Spiele der konfigurierten Wettbewerbe automatisch verarbeitet,
-von der Datenimportierung über die KI-Textgenerierung bis zur
-Publikation. Es ist eine serviceorientierte, dreischichtige Architektur,
-die Datenbeschaffung, Anwendungslogik und Präsentation klar voneinander
-trennt. Diese Schichtentrennung folgt dem etablierten Prinzip der
+Das System ist als eigenständiger Cloud-Service konzipiert. Es verarbeitet alle Spiele der konfigurierten Wettbewerbe automatisch: von der Datenimportierung über die KI-Textgenerierung bis zur Publikation. Die serviceorientierte, dreischichtige Architektur trennt Datenbeschaffung, Anwendungslogik und Präsentation klar voneinander. Diese Schichtentrennung folgt dem etablierten Prinzip der
 \emph{Separation of Concerns} (Parnas 1972), das die unabhängige
 Weiterentwicklung einzelner Systemteile ermöglicht.
 
-Die \textbf{Datenbeschaffungs- und Automatisierungsschicht} wird über
-n8n umgesetzt. Sie integriert externe Datenquellen (insbesondere
-Football-API sowie Medienquellen wie ScorePlay und Social-Feeds),
-transformiert die Rohdaten in ein einheitliches internes Format und
-schreibt diese strukturiert in die Persistenzschicht beziehungsweise
-über definierte Backend-Endpunkte in das System ein. Die Entkopplung der
-Integrationslogik in n8n ermöglicht eine schnelle Anpassung von
-Import-Workflows, ohne den Anwendungskern ändern zu müssen.
+Die \textbf{Datenbeschaffungs- und Automatisierungsschicht} nutzt n8n. Sie integriert externe Datenquellen (Football-API, ScorePlay, Social-Feeds), normalisiert die Rohdaten und schreibt sie entweder direkt in die Datenbank oder über REST-Endpunkte in das System. Die Entkopplung der Integrationslogik in n8n ermöglicht eine schnelle Anpassung von Import-Workflows, ohne den Anwendungskern zu ändern.
 
-Die \textbf{Anwendungs- und Persistenzschicht} basiert auf FastAPI
-(Python) und PostgreSQL. Sie stellt die REST-Schnittstellen bereit,
-verwaltet den Zustandsübergang der Ticker-Einträge (z. B. draft,
-published, rejected), orchestriert KI-Generierungsschritte und übernimmt
-die konsistente Speicherung aller Domänendaten (u. a. Teams,
-Wettbewerbe, Spiele, Events, Statistiken, Ticker- und Media-Daten).
+Die \textbf{Anwendungs- und Persistenzschicht} basiert auf FastAPI (Python) und PostgreSQL. Sie erfüllt drei Aufgaben: (1) REST-Schnittstellen bereitstellen, (2) Zustandsübergänge der Ticker-Einträge verwalten (draft, published, rejected) und (3) KI-Generierungsschritte orchestrieren sowie alle Domänendaten konsistent speichern.
 
-Die \textbf{Präsentationsschicht} ist als White-Label-Frontend in React
-und TypeScript realisiert. Sie bildet den Redaktionsworkflow für
-Auswahl, Sichtung, Bearbeitung und Publikation ab und bleibt dabei
-mandantenfähig konfigurierbar (z. B. Instanz, Stil, Sprache, Branding).
+Die \textbf{Präsentationsschicht} ist als White-Label-Frontend in React und TypeScript realisiert. Sie bildet den Redaktionsworkflow für Auswahl, Sichtung, Bearbeitung und Publikation ab und ist mandantenfähig konfigurierbar (Instanz, Stil, Sprache, Branding).
 Technisch kombiniert das Frontend REST-basiertes Polling für Ticker- und
 Spieldaten mit einem dedizierten WebSocket-Kanal für
-Echtzeit-Medienupdates. Ticker- und Matchdaten bleiben bewusst im Polling-Modell: Sie tolerieren eine Latenz im 15--20-Sekunden-Bereich, sind einfacher zu debuggen und benötigen keine persistente Serververbindung, ein günstiger Kompromiss gegenüber dem höheren Infrastrukturaufwand von SSE oder WebSocket für diese Datenklasse.
+Echtzeit-Medienupdates. Ticker- und Matchdaten verbleiben im Polling-Modell: Sie tolerieren eine Latenz von 15–20~Sekunden, sind einfacher zu debuggen und benötigen keine persistente Serververbindung. Das ist einfacher als SSE oder WebSocket für diese Datenklasse.
 
 Die folgende Abbildung zeigt die drei Schichten mit ihren Technologien
 und Kommunikationspfaden:
@@ -65,17 +45,7 @@ und Kommunikationspfaden:
 \subsection{Kommunikations- und
 Triggerarchitektur}\label{kommunikations--und-triggerarchitektur}
 
-Der Kommunikationsfluss kombiniert zwei komplementäre Muster. Beim
-initialen Match-Load folgt das Frontend dem Prinzip \textbf{„read first,
-trigger if missing''}, strukturell verwandt mit dem Cache-Aside
-Pattern (vgl. Fowler 2002): Für Stammdaten wie Aufstellungen und Events
-wird n8n nur dann angestoßen, wenn die REST-Abfrage einen leeren
-Datenbestand zurückgibt. Im \textbf{Live-Betrieb} hingegen triggert das
-Frontend Events, Spielstatistiken und Minutenupdates bedingungslos im
-60-Sekunden-Takt, da die Daten kontinuierlich aktualisiert werden müssen;
-die zugehörigen n8n-Workflows führen dabei serverseitig Upserts mit
-Konfliktbehandlung durch. Das Backend empfängt Aufrufe \emph{von} n8n,
-löst jedoch selbst keine n8n-Workflows aus. Einzelne Workflows rufen
+Der Kommunikationsfluss kombiniert zwei komplementäre Muster. Beim initialen Match-Load folgt das Frontend dem Prinzip \textbf{„read first, trigger if missing''}: Für Stammdaten wie Aufstellungen und Events wird n8n nur dann angestoßen, wenn die REST-Abfrage einen leeren Datenbestand zurückgibt. Im \textbf{Live-Betrieb} triggert das Frontend Events, Spielstatistiken und Minutenupdates bedingungslos im 60-Sekunden-Takt; die zugehörigen n8n-Workflows führen serverseitig Upserts mit Konfliktbehandlung durch. Das Backend antwortet auf Aufrufe \emph{von} n8n, initiiert aber selbst keine n8n-Workflows. Einzelne Workflows rufen
 zudem intern weitere Workflows auf: Der Minuten-Update-Workflow löst bei
 erkanntem Spielstandswechsel den Anpfiff/Abpfiff-Workflow aus, der
 seinerseits den Halbzeit-Zusammenfassungs-Workflow anstößt; das
@@ -107,7 +77,7 @@ Live-Prozesse.
 \subsection{Partner-Team-Konzept und
 White-Label-Steuerung}\label{partner-team-konzept-und-white-label-steuerung}
 
-Das System unterscheidet zwischen dem \textbf{Partner-Team} (dem Verein, für den die White-Label-Instanz konfiguriert ist) und den jeweiligen Gegnern. Die Erkennung erfolgt über ein konfigurierbares Team-Keyword, das in n8n-Workflows und Frontend gegen den Teamnamen abgeglichen wird. Partner-Team-Spiele verwenden den \texttt{ef\_whitelabel}-Instanzpfad mit euphorischem Stil und blenden vereinsspezifische UI-Bereiche ein (Social-Media-Panels für YouTube, X und Instagram sowie die ScorePlay-Mediensuche für Bildmaterial); alle anderen Spiele durchlaufen den \texttt{generic}-Pfad mit neutralem Stil. Die Implementierungsdetails sind in Kapitel~5 dokumentiert.
+Das System unterscheidet zwischen dem \textbf{Partner-Team} (dem konfigurierten Heimverein) und den jeweiligen Gegnern. Die Erkennung erfolgt über ein konfigurierbares Team-Keyword, das in n8n-Workflows und Frontend gegen den Teamnamen abgeglichen wird. Partner-Team-Spiele verwenden den \texttt{ef\_whitelabel}-Instanzpfad mit euphorischem Stil und blenden vereinsspezifische UI-Bereiche ein (Social-Media-Panels für YouTube, X und Instagram sowie die ScorePlay-Mediensuche für Bildmaterial); alle anderen Spiele durchlaufen den \texttt{generic}-Pfad mit neutralem Stil. Die Implementierungsdetails sind in Kapitel~5 dokumentiert.
 
 
 
@@ -134,7 +104,7 @@ Eingaben gegen typisierte Schemas validiert werden. Die
 Datenbankschicht setzt bewusst auf synchrones SQLAlchemy, da die
 Transaktionskomplexität und der eingeschränkte Betriebsumfang keinen
 Mehraufwand einer vollasynchronen Datenbankanbindung rechtfertigen;
-Datenbankzugriffe werden dabei synchron ausgeführt, was beim vorliegenden
+Datenbankzugriffe werden synchron ausgeführt, was beim vorliegenden
 Nutzungsumfang keinen messbaren Nachteil darstellt.
 
 Die interne Struktur folgt einer klaren Trennung aus API-Routern,
@@ -148,7 +118,7 @@ wiederverwendbar gehalten wird.
 
 Für LLM-nahe Abläufe wird ergänzend eine Service-Schicht genutzt
 (insbesondere \texttt{ticker\_service} und \texttt{llm\_service}). Die
-Service-Schicht wird dabei gezielt, aber nicht flächendeckend
+Service-Schicht wird gezielt, aber nicht flächendeckend
 eingesetzt: Viele Standard-CRUD- und Listenoperationen folgen dem Muster
 Router → Repository, während komplexere Generierungs- und
 Orchestrierungspfade über Services laufen.
@@ -338,7 +308,7 @@ Alternativen wie einem Custom-Scheduler (z. B. Celery, APScheduler) oder
 cron-basierten Skripten gewählt, weil es Workflow-Logik ohne
 Codeänderungen am Backend anpassbar macht, eine visuelle
 Debugging-Oberfläche bietet und HTTP-Trigger sowie Webhook-Empfang ohne
-zusätzliche Infrastruktur unterstützt. n8n übernimmt dabei API-Aufrufe,
+zusätzliche Infrastruktur unterstützt. n8n übernimmt API-Aufrufe,
 Transformation, direkte Datenpersistenz per SQL-Upsert und
 Triggersteuerung. Das FastAPI-Backend fungiert als transaktionaler Kern
 für Frontend-Interaktion und den Großteil der KI-Generierung; einzelne
@@ -420,7 +390,7 @@ modularen, nachvollziehbaren und erweiterbaren Ablauf zusammenführt.
 
 Die KI-Komponente bildet das Herzstück des Systems: Sie übersetzt
 strukturierte Spielereignisse in natürlichsprachliche Ticker-Texte und
-verbindet dabei die LLM-Pipeline mit dem Betriebsmodus, der
+verbindet die LLM-Pipeline mit dem Betriebsmodus, der
 Stilkonfiguration und dem Mehrsprachigkeitsparameter. Dieser Abschnitt
 beschreibt die Multi-Provider-Architektur sowie die
 Prompt-Engineering-Strategie einschließlich Stilprofilierung,
