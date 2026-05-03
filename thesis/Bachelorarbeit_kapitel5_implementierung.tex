@@ -637,7 +637,7 @@ Dieser Workflow sucht Medien-Assets bei ScorePlay für Spieler eines Torereignis
 \item \textbf{Filter-Knoten:} Vor event-basierten LLM-Triggern (09, 14) steht ein Filterknoten, der nur Rows mit einer \texttt{id} (erfolgreicher DB-Insert) durchlässt; Zusammenfassungs-Workflows (13, 15) rufen den LLM-Provider direkt auf und benötigen keinen solchen Filter.
 \item \textbf{Statusbasierte Filterung:} Bestehende nicht-verworfene Ticker-Einträge verhindern redundante Generierungen.
 \item \textbf{Mode-Propagation:} \texttt{ticker\_mode} wird als \texttt{auto\_publish}-Flag an das Backend weitergegeben.
-\item \textbf{Instanz-Routing:} Die Unterscheidung zwischen \texttt{ef\_whitelabel} und \texttt{generic} erfolgt per \texttt{ILIKE '\%Frankfurt\%'}-Abfrage.
+\item \textbf{Instanz-Routing:} Das System unterscheidet \texttt{ef\_whitelabel} und \texttt{generic} per \texttt{ILIKE '\%Frankfurt\%'}-Abfrage.
 \end{itemize}
 
 

@@ -303,7 +303,7 @@ mehrere Events erforderlich. Die Prompt-Architektur bindet bis zu drei Stilrefer
 
 \subsection{Qualitative Textbewertung}\label{qualitative-analyse-der-generierten-texte}
 
-Für die qualitative Analyse wurden 16 KI-generierte Ticker-Einträge (Modell: \texttt{google/gemini-2.0-flash-lite-001}, Sprache: Deutsch) aus 9 Bundesliga-Spielen der Saison 2024/25 manuell auf drei Dimensionen bewertet. Die Auswahl der Einträge folgte einer gezielten Stichprobenlogik: Es wurden ereignisreiche Spiele mit unterschiedlichen Spielverläufen gewählt, um die häufigsten Event-Typen (Tor, Gelbe Karte, Wechsel) sowie alle drei Stilprofile abzudecken, bei einem für manuelle Einzelbewertung vertretbaren Umfang. Rote Karten sind in der Stichprobe nicht vertreten, da kein entsprechendes Ereignis in den ausgewählten Spielen vorlag; die LLM-as-Judge-Evaluation (Abschnitt~6.3.6) schließt diesen Event-Typ mit ein. \textbf{Korrektheit} prüft, ob alle Fakten (Spieler, Team, Minute, Ergebnis) korrekt wiedergegeben sind und der Text keine Halluzinationen enthält. \textbf{Tonalität} bewertet, ob der Stil dem gewählten Profil (neutral/euphorisch/kritisch) entspricht. \textbf{Verständlichkeit} beurteilt, ob der Text sprachlich flüssig, grammatikalisch korrekt und dem Genre „Liveticker'' angemessen ist. Jede Dimension wurde auf einer Skala von 1 (ungenügend) bis 5 (exzellent) bewertet. Die Bewertung erfolgte durch den Entwickler; ein
+Für die qualitative Analyse wurden 16 KI-generierte Ticker-Einträge (Modell: \texttt{google/gemini-2.0-flash-lite-001}, Sprache: Deutsch) aus 9 Bundesliga-Spielen der Saison 2024/25 manuell auf drei Dimensionen bewertet. Die Auswahl der Einträge folgte einer gezielten Stichprobenlogik: Es wurden ereignisreiche Spiele mit unterschiedlichen Spielverläufen gewählt, um die häufigsten Event-Typen (Tor, Gelbe Karte, Wechsel) sowie alle drei Stilprofile abzudecken, bei einem für manuelle Einzelbewertung vertretbaren Umfang. Rote Karten sind in der Stichprobe nicht vertreten, da kein entsprechendes Ereignis in den ausgewählten Spielen vorlag; die LLM-as-Judge-Evaluation (Abschnitt~6.3.6) schließt diesen Event-Typ mit ein. \textbf{Korrektheit} prüft, ob alle Fakten (Spieler, Team, Minute, Ergebnis) korrekt wiedergegeben sind und der Text keine Halluzinationen enthält. \textbf{Tonalität} bewertet, ob der Stil dem gewählten Profil (neutral/euphorisch/kritisch) entspricht. \textbf{Verständlichkeit} beurteilt, ob der Text sprachlich flüssig, grammatikalisch korrekt und dem Genre „Liveticker'' angemessen ist. Jede Dimension wurde auf einer Skala von 1 (ungenügend) bis 5 (exzellent) bewertet. Der Entwickler bewertete alle Einträge; ein
 zweiter Rater stand nicht zur Verfügung, sodass kein Cohen's Kappa
 berechnet wurde. Die Selbstevaluationsproblematik wird in Abschnitt~6.3.6
 durch ein LLM-as-Judge-Verfahren (unabhängiges Modell als Bewerter) abgemildert;
@@ -542,7 +542,7 @@ Dieser Abschnitt dokumentiert die gemessenen Laufzeiteigenschaften des Systems: 
 \subsection{LLM-Latenz}\label{llm-latenz}
 
 Die Concurrency- und Retry-Konfiguration der LLM-Aufrufe ist in
-Abschnitt~5.1 beschrieben. Die Messung erfolgte durch 25 sequenzielle
+Abschnitt~5.1 beschrieben. Gemessen wurden 25 sequenzielle
 HTTP-Aufrufe an das Render-Deployment
 (\texttt{/api/v1/ticker/generate/\{event\_id\}}) über 9
 Bundesliga-Spiele. Gemessen wurde die \textbf{End-to-End-Latenz} (Client

@@ -57,7 +57,7 @@ Frontend ist an dieser Kette nicht beteiligt.
 \caption{Kommunikationsfluss: Frontend, Backend, n8n und externe APIs}
 \end{figure}
 
-Die Systemkopplung erfolgt über drei klar getrennte Schnittstellentypen.
+Das System koppelt über drei klar getrennte Schnittstellentypen.
 Die \textbf{REST-API} bildet den stabilen Kern für alle Lese- und
 Schreiboperationen: Navigation, Ticker-CRUD, Statusübergänge und manuelle
 Eingaben. \textbf{n8n-Webhooks} werden vom Frontend in drei Klassen
@@ -499,7 +499,7 @@ Kommunikation}\label{dreispalten-layout-und-redaktionsfluss}
 
 Die Hauptansicht folgt einem responsiven Dreispalten-Ansatz mit klarer Aufgabenverteilung. Das linke Panel übernimmt die Veröffentlichungsperspektive: Es listet publizierte Ticker-Einträge als chronologischen Feed, dedupliziert nach \texttt{event\_id} und sortiert nach Spielminute. Das mittlere Panel bildet die redaktionelle Kernarbeit ab: Event-Verarbeitung in Abhängigkeit vom Modus, Draft-Prüfung und Freigabe/Ablehnung, manuelle Eingabe mit Command-Parser (\texttt{/g}, \texttt{/gelb}, \texttt{/gelbrot}, \texttt{/rot}, \texttt{/s}) sowie integrierte Media- und Social-Panels, die ausschließlich bei erkannten EF-Spielen eingeblendet werden. Das rechte Panel liefert Kontext- und Analyseinformationen: Matchstatistiken, Aufstellungen sowie spielerbezogene Leistungsdaten.
 
-Die Modusumschaltung (vgl. Kap.~4.3.3) erfolgt über einen dedizierten \texttt{ModeSelector} mit Portal-basiertem Bestätigungsdialog, visueller Toast-Rückmeldung (2200~ms) und Tastatur-Shortcuts (\texttt{Ctrl+1} / \texttt{Ctrl+2} / \texttt{Ctrl+3}). Im kooperativen Modus sind zusätzliche Tastatur-Interaktionen für den Accept-/Reject-Flow (\texttt{TAB} / \texttt{ESC}) eingebunden. Das Frontend setzt die hybride Triggerarchitektur mit REST-Polling (15-Sekunden-Intervall im Live-Betrieb, 20-Sekunden-Intervall im PreMatch-Betrieb) für Kerndaten, Webhook-Trigger für bedarfsgesteuerte n8n-Importe sowie WebSocket (\texttt{/ws/media}) mit Exponential-Backoff-Reconnect für latenzkritische Medieninhalte um. Die konkreten Hook-Implementierungen sind in Kapitel~5.3.3--5.3.5 dokumentiert.
+Ein dedizierter \texttt{ModeSelector} übernimmt die Modusumschaltung (vgl. Kap.~4.3.3) mit Portal-basiertem Bestätigungsdialog, visueller Toast-Rückmeldung (2200~ms) und Tastatur-Shortcuts (\texttt{Ctrl+1} / \texttt{Ctrl+2} / \texttt{Ctrl+3}). Im kooperativen Modus sind zusätzliche Tastatur-Interaktionen für den Accept-/Reject-Flow (\texttt{TAB} / \texttt{ESC}) eingebunden. Das Frontend setzt die hybride Triggerarchitektur mit REST-Polling (15-Sekunden-Intervall im Live-Betrieb, 20-Sekunden-Intervall im PreMatch-Betrieb) für Kerndaten, Webhook-Trigger für bedarfsgesteuerte n8n-Importe sowie WebSocket (\texttt{/ws/media}) mit Exponential-Backoff-Reconnect für latenzkritische Medieninhalte um. Die konkreten Hook-Implementierungen sind in Kapitel~5.3.3--5.3.5 dokumentiert.
 
 
 
