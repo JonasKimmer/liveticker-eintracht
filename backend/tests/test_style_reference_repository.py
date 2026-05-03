@@ -17,11 +17,18 @@ def repo(db):
     return StyleReferenceRepository(db)
 
 
+_ref_counter = 0
+
+
 def _ref(db, event_type: str, instance: str = "ef_whitelabel",
-         text: str = "Ein langer Beispieltext für Tests.", league: str | None = None) -> StyleReference:
+         text: str | None = None, league: str | None = None) -> StyleReference:
+    global _ref_counter
+    _ref_counter += 1
+    if text is None:
+        text = f"Beispieltext {_ref_counter} für {event_type}."
     r = StyleReference(event_type=event_type, instance=instance, text=text, league=league)
     db.add(r)
-    db.commit()
+    db.flush()
     db.refresh(r)
     return r
 
