@@ -1,0 +1,422 @@
+\tikzset{
+  block/.style={rectangle, draw, fill=blue!20, text width=2.5cm, text centered, rounded corners, minimum height=1cm},
+  db/.style={cylinder, draw, fill=green!20, text width=1.5cm, text centered, minimum height=1cm},
+  externa/.style={rectangle, draw, fill=gray!20, text width=2.5cm, text centered, rounded corners, minimum height=0.8cm},
+  arrow/.style={->, thick, >=stealth},
+}
+
+%% DIAGRAM 1: System Architecture (3-Schichten + Externe)
+\newcommand{\DiagramSystemArchitektur}{%
+\begin{tikzpicture}[node distance=2.5cm, auto]
+  % External Services
+  \node[externa] (fapi) {Football-API\\api-sports.io};
+  \node[externa, below of=fapi] (llm) {LLM Provider\\OpenRouter};
+  \node[externa, below of=llm] (sp) {ScorePlay\\Media};
+  
+  % Automation Layer
+  \node[block, right of=llm] (n8n) {n8n\\Automation};
+  
+  % Application Layer
+  \node[block, right of=n8n, xshift=1.5cm] (api) {FastAPI\\Backend};
+  \node[db, below of=api, yshift=-1cm] (db) {PostgreSQL};
+  
+  % Frontend
+  \node[block, right of=api, xshift=1.5cm] (fe) {React\\Frontend};
+  
+  % Connections
+  \draw[arrow] (fapi) -- (n8n);
+  \draw[arrow] (llm) -- (n8n);
+  \draw[arrow] (llm) -- (api);
+  \draw[arrow] (sp) -- (n8n);
+  \draw[arrow] (n8n) -- (api);
+  \draw[arrow] (n8n) -- (db);
+  \draw[arrow] (api) -- (db);
+  \draw[arrow] (api) -- (fe);
+  \draw[arrow] (fe) -- (api);
+  
+  % Labels at bottom
+  \node[below of=fapi, yshift=-3.5cm] {\small\textit{Externe Dienste}};
+  \node[below of=n8n, yshift=-3.5cm] {\small\textit{Automatisierung}};
+  \node[below of=api, yshift=-3.5cm] {\small\textit{Anwendungslogik}};
+  \node[below of=fe, yshift=-3.5cm] {\small\textit{Präsentation}};
+\end{tikzpicture}%
+}
+
+%% DIAGRAM 2: Player Statistics Pipeline
+\newcommand{\DiagramPlayerStatsPipeline}{%
+\begin{tikzpicture}[node distance=2cm, auto]
+  \node[block] (input) {Player Stats\\Input (JSON)};
+  \node[block, right of=input] (parse) {Parse \&\\Normalize};
+  \node[block, right of=parse] (rank) {Rank Stats\\(Percentile)};
+  \node[block, right of=rank] (template) {Load Template\\(Sprache)};
+  \node[block, right of=template] (fill) {Fill Variables};
+  \node[block, right of=fill] (output) {Output\\(Text)};
+  
+  \draw[arrow] (input) -- (parse);
+  \draw[arrow] (parse) -- (rank);
+  \draw[arrow] (rank) -- (template);
+  \draw[arrow] (template) -- (fill);
+  \draw[arrow] (fill) -- (output);
+\end{tikzpicture}%
+}
+
+%% DIAGRAM 3: Ticker State Transitions
+\newcommand{\DiagramTickerStates}{%
+\begin{tikzpicture}[node distance=2.8cm, auto]
+  \tikzset{
+    active/.style={circle, draw, fill=blue!15, text width=1.2cm,
+                   text centered, minimum size=1.5cm, font=\small},
+    terminal/.style={circle, draw=gray!60, fill=gray!15, text width=1.2cm,
+                     text centered, minimum size=1.5cm, font=\small},
+  }
+
+  % Active states (top row)
+  \node[active] (draft)     {draft};
+  \node[active, right of=draft, xshift=1.5cm] (published) {published};
+
+  % Terminal states (bottom row)
+  \node[terminal, below of=draft]     (rejected) {rejected};
+  \node[terminal, below of=published] (deleted)  {deleted};
+
+  % Transitions — no crossing arrows
+  \draw[arrow] (draft)     -- node[above]{\footnotesize publish}   (published);
+  \draw[arrow] (draft)     -- node[left] {\footnotesize reject}    (rejected);
+  \draw[arrow] (published) -- node[right]{\footnotesize löschen}   (deleted);
+  \draw[arrow, bend left=25] (published) to
+        node[above, pos=0.45]{\footnotesize re-draft} (draft);
+\end{tikzpicture}%
+}
+
+%% DIAGRAM 4: Event Processing Workflow
+\newcommand{\DiagramEventWorkflow}{%
+\begin{tikzpicture}[node distance=1.8cm, auto]
+  \node[block, text width=2cm] (event) {Event\\Input};
+  \node[block, right of=event, text width=2cm] (dispatch) {Dispatch\\to\\Handlers};
+  \node[block, right of=dispatch, text width=2cm] (enrich) {Enrich Data};
+  \node[block, right of=enrich, text width=2cm] (llm) {LLM Call};
+  \node[block, right of=llm, text width=2cm] (store) {Store\\Ticker};
+  
+  \draw[arrow] (event) -- (dispatch);
+  \draw[arrow] (dispatch) -- (enrich);
+  \draw[arrow] (enrich) -- (llm);
+  \draw[arrow] (llm) -- (store);
+  
+  % Feedback loop
+  \draw[arrow, bend right=45] (store) -- node[below, pos=0.5] {broadcast} (event);
+\end{tikzpicture}%
+}
+
+%% DIAGRAM 5: Logical Data Model (simplified ER)
+\newcommand{\DiagramDataModel}{%
+\begin{tikzpicture}[node distance=3cm, auto]
+  \tikzset{entity/.style={rectangle, draw, fill=green!15, text width=1.5cm, text centered, minimum height=1cm}}
+  
+  \node[entity] (match) {Match};
+  \node[entity, right of=match] (event) {Event};
+  \node[entity, right of=event] (ticker) {Ticker};
+  \node[entity, below of=match] (team) {Team};
+  \node[entity, below of=event] (player) {Player};
+  \node[entity, below of=ticker] (media) {Media};
+  
+  \draw[arrow] (match) -- node[above] {1:N} (event);
+  \draw[arrow] (event) -- node[above] {1:N} (ticker);
+  \draw[arrow] (match) -- node[left] {2:1} (team);
+  \draw[arrow] (event) -- node[right] {M:1} (player);
+  \draw[arrow] (ticker) -- node[right] {1:N} (media);
+\end{tikzpicture}%
+}
+
+%% DIAGRAM 6: Communication Flow (Sequence-like but in TikZ)
+\newcommand{\DiagramCommunicationFlow}{%
+\begin{tikzpicture}[node distance=2.5cm, auto]
+  \tikzset{actor/.style={rectangle, draw, fill=orange!15, text width=2cm, text centered, minimum height=0.8cm}}
+  
+  \node[actor] (fe) {React\\Frontend};
+  \node[actor, right of=fe] (be) {FastAPI\\Backend};
+  \node[actor, right of=be] (n8n) {n8n\\Workflow};
+  \node[actor, right of=n8n] (api) {Football\\API};
+
+  % Flows
+  \draw[arrow] (fe) -- node[above, font=\tiny] {GET /matches} (be);
+  \draw[arrow] (fe) -- node[above, font=\tiny, pos=0.6] {POST Webhook} (n8n);
+  \draw[arrow] (n8n) -- node[above, font=\tiny] {HTTP request} (api);
+  \draw[arrow, bend right=30] (api) -- node[below, font=\tiny] {JSON response} (n8n);
+  \draw[arrow] (n8n) -- node[below, font=\tiny] {POST /api/v1} (be);
+  \draw[arrow, bend right=30] (be) -- node[below, font=\tiny] {Data update} (fe);
+\end{tikzpicture}%
+}
+
+%% DIAGRAM 7: LLM Prompt Engineering Pipeline
+\newcommand{\DiagramPromptPipeline}{%
+\begin{tikzpicture}[node distance=2cm, auto]
+  \tikzset{input/.style={rectangle, draw, fill=orange!15, text width=1.5cm, text centered, minimum height=0.8cm, font=\small}}
+  \tikzset{process/.style={rectangle, draw, fill=blue!15, text width=1.5cm, text centered, minimum height=0.8cm, font=\small}}
+  
+  % Inputs
+  \node[input] (event) {Event\\Type};
+  \node[input, below of=event] (facts) {Facts\\(Player, Time)};
+  \node[input, below of=facts] (context) {Match\\Context};
+  \node[input, below of=context] (style) {Few-Shot\\Examples};
+  
+  % Process
+  \node[process, right of=facts, xshift=2cm] (prompt) {Build\\Prompt};
+  
+  % Output
+  \node[process, right of=prompt, xshift=2cm] (llm) {LLM\\Call};
+  \node[process, right of=llm] (output) {Ticker\\Text};
+  
+  % Connections
+  \draw[arrow] (event) -- (prompt);
+  \draw[arrow] (facts) -- (prompt);
+  \draw[arrow] (context) -- (prompt);
+  \draw[arrow] (style) -- (prompt);
+  \draw[arrow] (prompt) -- (llm);
+  \draw[arrow] (llm) -- (output);
+\end{tikzpicture}%
+}
+
+%% DIAGRAM 8: Match Event Processing (Simplified Sequence)
+\newcommand{\DiagramEventProcessing}{%
+\begin{tikzpicture}[node distance=2.5cm, auto]
+  \tikzset{stepbox/.style={rectangle, draw, fill=purple!15, text width=2.2cm, text centered, minimum height=0.9cm, font=\footnotesize}}
+  
+  \node[stepbox] (import) {1. Event\\Import};
+  \node[stepbox, right of=import] (check) {2. Dedup\\Check};
+  \node[stepbox, right of=check] (enrich) {3. Enrich\\Data};
+  \node[stepbox, right of=enrich] (gen) {4. LLM\\Generate};
+  \node[stepbox, below of=gen] (store) {5. Store\\Ticker};
+  
+  \draw[arrow] (import) -- (check);
+  \draw[arrow] (check) -- (enrich);
+  \draw[arrow] (enrich) -- (gen);
+  \draw[arrow] (gen) -- (store);
+  \draw[arrow, bend right=45] (store) -- node[right, font=\tiny] {broadcast} (import);
+\end{tikzpicture}%
+}
+
+%% DIAGRAM 9: Ticker Generation Flow (Sequence-style, Kapitel 5)
+\newcommand{\DiagramTickerGenerationFlow}{%
+\begin{tikzpicture}[x=2.8cm, y=-1.1cm]
+  \tikzset{
+    actor/.style={rectangle, draw, fill=orange!15, text width=1.8cm, text centered,
+                  minimum height=0.65cm, font=\footnotesize},
+    msg/.style={->, thick, >=stealth, font=\tiny},
+    retmsg/.style={->, thick, dashed, >=stealth, font=\tiny},
+    altbox/.style={draw=blue!40, fill=blue!5, rounded corners=2pt},
+  }
+  % Participants (top row)
+  \foreach \x/\lbl in {0/n8n,1/FastAPI,2/PostgreSQL,3/LLM,4/Frontend}{
+    \node[actor] at (\x,0) {\lbl};
+    \draw[gray!50, thin] (\x,0.35) -- (\x,9.5);
+  }
+  % Messages
+  \draw[msg]    (0,1)   -- node[above]{POST /events}         (1,1);
+  \draw[msg]    (1,1.8) -- node[above]{INSERT events}        (2,1.8);
+  \draw[msg]    (0,2.6) -- node[above]{POST /ticker/generate/\{id\}} (1,2.6);
+  \draw[msg]    (1,3.4) -- node[above]{SELECT (Dedup-Check)} (2,3.4);
+  % Alt box: Neues Ereignis
+  \draw[altbox] (0.05,3.9) rectangle (3.95,7.6);
+  \node[font=\tiny, text=blue!70, anchor=north west] at (0.05,3.9) {[Neues Ereignis]};
+  \draw[msg]    (1,4.4) -- node[above]{SELECT match + teams} (2,4.4);
+  \draw[msg]    (1,5.1) -- node[above]{SELECT style\_refs}   (2,5.1);
+  \draw[msg]    (1,5.8) -- node[above]{Prompt (Fakten+Kontext+Few-Shot)} (3,5.8);
+  \draw[retmsg] (3,6.5) -- node[above]{Generierter Text}     (1,6.5);
+  \draw[msg]    (1,7.2) -- node[above]{INSERT ticker\_entry (draft|published)} (2,7.2);
+  \draw[retmsg] (1,7.9) -- node[above]{201 Created}          (0,7.9);
+  % Polling
+  \draw[msg]    (4,8.6) -- node[above]{GET /ticker/\{id\} (Polling 5 s)} (1,8.6);
+  \draw[retmsg] (1,9.3) -- node[above]{TickerEntry[]}        (4,9.3);
+\end{tikzpicture}%
+}
+
+%% DIAGRAM 10: React Frontend Component Tree (Kapitel 5)
+\newcommand{\DiagramFrontendComponentTree}{%
+\begin{tikzpicture}[
+  comp/.style={rectangle, draw, fill=blue!10, rounded corners, text centered,
+               font=\small, minimum height=0.6cm, text width=2.1cm},
+  sub/.style={rectangle, draw, fill=blue!5, rounded corners, text centered,
+              font=\tiny, minimum height=0.5cm, text width=1.7cm},
+  ctx/.style={rectangle, draw=orange!60, fill=orange!10, rounded corners, text centered,
+              font=\tiny, minimum height=0.5cm, text width=2cm},
+  arr/.style={->, thick, >=stealth},
+  ctxarr/.style={->, dashed, orange!70, >=stealth},
+]
+  % Root
+  \node[comp] (app) at (5,0) {App};
+  \node[comp] (lt)  at (5,-1.4) {LiveTicker};
+  \draw[arr] (app) -- (lt);
+
+  % Context annotation
+  \node[ctx]  (ctx) at (9,-1.4) {3 Contexts:\\Mode / Data / Actions};
+  \draw[ctxarr] (ctx.west) -- (lt.east);
+
+  % Three panels
+  \node[comp] (lp) at (1.5,-3) {LeftPanel};
+  \node[comp] (cp) at (5,-3)   {CenterPanel};
+  \node[comp] (rp) at (8.5,-3) {RightPanel};
+  \draw[arr] (lt) -- (lp);
+  \draw[arr] (lt) -- (cp);
+  \draw[arr] (lt) -- (rp);
+
+  % CenterPanel children
+  \node[sub] (ec) at (3.2,-4.8) {EventCard};
+  \node[sub] (ee) at (5,-4.8)   {EntryEditor};
+  \node[sub] (ai) at (6.8,-4.8) {AIDraft};
+  \draw[arr] (cp) -- (ec);
+  \draw[arr] (cp) -- (ee);
+  \draw[arr] (cp) -- (ai);
+
+  % Context callbacks
+  \draw[ctxarr, bend right=20] (ec.north) to node[left,font=\tiny]{onGenerate} (ctx.south);
+  \draw[ctxarr, bend left=10]  (ai.north) to node[right,font=\tiny]{onPublish} (ctx.south);
+
+  % LeftPanel child
+  \node[sub] (pe) at (1.5,-4.8) {PublishedEntry};
+  \draw[arr] (lp) -- (pe);
+
+  % RightPanel children (collapsible sections)
+  \tikzset{collapsible/.style={rectangle, draw=gray!70, fill=gray!8, rounded corners,
+    text centered, font=\tiny, minimum height=0.5cm, text width=1.9cm,
+    append after command={\pgfextra{\draw[gray!50, thin]
+      ([xshift=-0.75cm,yshift=0.08cm]\tikzlastnode.north east)
+      -- ([xshift=-0.6cm,yshift=-0.05cm]\tikzlastnode.north east)
+      -- ([xshift=-0.45cm,yshift=0.08cm]\tikzlastnode.north east);}}}
+  }
+  \node[collapsible] (stat)  at (7.2,-4.8) {Statistiken\\{\tiny\textit{(\textcolor{gray}{auf-/zuklappbar})}}};
+  \node[collapsible] (auf)   at (9.2,-4.8) {Auswechselbank\\{\tiny\textit{(\textcolor{gray}{auf-/zuklappbar})}}};
+  \node[collapsible] (verletzt) at (8.2,-6.1) {Verletzt /\\Fraglich\\{\tiny\textit{(\textcolor{gray}{auf-/zuklappbar})}}};
+  \draw[arr] (rp) -- (stat);
+  \draw[arr] (rp) -- (auf);
+  \draw[arr] (rp) -- (verletzt);
+\end{tikzpicture}%
+}
+
+%% ─── DIAGRAM 11: Backend-Schichtenarchitektur ─────────────────────────────
+\newcommand{\DiagramBackendSchichten}{%
+\begin{tikzpicture}[
+  layer/.style={draw, rounded corners=3pt,
+                minimum width=9cm, minimum height=0.9cm,
+                align=center, font=\small},
+  arr/.style={->, thick, gray!70}
+]
+  \node[layer, fill=blue!30] (router) at (0,0)
+        {\textbf{Router / API} \quad {\footnotesize HTTP-Endpunkte (FastAPI, 11 Router)}};
+  \node[layer, fill=blue!20] (service) at (0,-1.4)
+        {\textbf{Service} \quad {\footnotesize Fachlogik (\texttt{ticker\_service}, \texttt{llm\_service})}};
+  \node[layer, fill=blue!10] (repo) at (0,-2.8)
+        {\textbf{Repository} \quad {\footnotesize Datenbankzugriff (SQLAlchemy ORM, 17 Modelle)}};
+  \node[layer, fill=blue!5] (db) at (0,-4.2)
+        {\textbf{PostgreSQL 15} \quad {\footnotesize Persistenzschicht (Supabase Managed DB)}};
+  \draw[arr] (router) -- (service);
+  \draw[arr] (service) -- (repo);
+  \draw[arr] (repo) -- (db);
+\end{tikzpicture}%
+}
+
+%% ─── DIAGRAM 12: Betriebsmodi-Übersicht ──────────────────────────────────
+\newcommand{\DiagramBetriebsmodi}{%
+\begin{tikzpicture}[
+  box/.style={draw, rounded corners=3pt,
+              minimum width=2.5cm, minimum height=0.7cm,
+              align=center, font=\footnotesize},
+  event/.style={box, fill=gray!20},
+  llm/.style={box, fill=blue!20},
+  draft/.style={box, fill=yellow!25},
+  human/.style={box, fill=orange!20},
+  pub/.style={box, fill=green!20},
+  arr/.style={->, thick},
+  title/.style={font=\small\bfseries}
+]
+  \node[title]  at (0,   0.7) {\texttt{auto}};
+  \node[event]  (ae) at (0,   0)   {Event};
+  \node[llm]    (al) at (0,  -1.2) {LLM};
+  \node[pub]    (ap) at (0,  -2.4) {Publiziert};
+  \draw[arr] (ae)--(al); \draw[arr] (al)--(ap);
+
+  \node[title]  at (4.5, 0.7) {\texttt{coop}};
+  \node[event]  (ce) at (4.5,  0)   {Event};
+  \node[llm]    (cl) at (4.5, -1.2) {LLM};
+  \node[draft]  (cd) at (4.5, -2.4) {Entwurf};
+  \node[human]  (cr) at (4.5, -3.6) {Redakteur};
+  \node[pub]    (cp) at (4.5, -4.8) {Publiziert};
+  \draw[arr] (ce)--(cl); \draw[arr] (cl)--(cd);
+  \draw[arr] (cd)--(cr); \draw[arr] (cr)--(cp);
+
+  \node[title]  at (9,   0.7) {\texttt{manual}};
+  \node[event]  (me) at (9,   0)   {Event};
+  \node[human]  (mr) at (9,  -1.2) {Redakteur};
+  \node[pub]    (mp) at (9,  -2.4) {Publiziert};
+  \draw[arr] (me)--(mr); \draw[arr] (mr)--(mp);
+\end{tikzpicture}%
+}
+
+%% ─── DIAGRAM 13: Qualitätsbewertung nach Stilprofil (pgfplots) ───────────
+\newcommand{\DiagramQualitaetStilprofil}{%
+\begin{tikzpicture}
+\begin{axis}[
+  ybar, bar width=0.45cm,
+  width=10cm, height=6.5cm,
+  ymin=1.5, ymax=5.4,
+  ytick={2.0,2.5,3.0,3.5,4.0,4.5,5.0},
+  ylabel={Bewertung (1\,--\,5)},
+  symbolic x coords={euphorisch, neutral, kritisch},
+  xtick=data,
+  xticklabels={euphorisch\\{\scriptsize (n\,=\,27)},
+               neutral\\{\scriptsize (n\,=\,27)},
+               kritisch\\{\scriptsize (n\,=\,26)}},
+  xticklabel style={align=center},
+  legend style={at={(0.5,1.03)}, anchor=south, legend columns=3,
+                font=\footnotesize},
+  enlarge x limits=0.35,
+  nodes near coords,
+  nodes near coords style={font=\tiny, /pgf/number format/fixed,
+                            /pgf/number format/precision=2},
+  every axis/.append style={font=\small},
+]
+\addplot+[fill=blue!40, draw=blue!70] coordinates {
+  (euphorisch,3.22) (neutral,4.81) (kritisch,4.35)
+};
+\addplot+[fill=red!40, draw=red!70] coordinates {
+  (euphorisch,2.93) (neutral,4.81) (kritisch,4.04)
+};
+\addplot+[fill=green!40, draw=green!70] coordinates {
+  (euphorisch,3.67) (neutral,4.81) (kritisch,4.58)
+};
+\legend{Korrektheit, Tonalit\"at, Verst\"andlichkeit}
+\end{axis}
+\end{tikzpicture}%
+}
+
+%% ─── DIAGRAM 14: LLM-Latenz Histogramm (pgfplots) ────────────────────────
+\newcommand{\DiagramLatenzenHistogram}{%
+\begin{tikzpicture}
+\begin{axis}[
+  ybar,
+  bar width=28pt,
+  width=11cm, height=6.5cm,
+  xlabel={Latenz-Intervall (ms)},
+  ylabel={Messungen (N)},
+  ymin=0, ymax=14,
+  ytick={0,2,4,6,8,10,12},
+  xtick={1,2,3,4,5,6},
+  xticklabels={{\scriptsize $<$\,300},
+               {\scriptsize 300\,--\,800},
+               {\scriptsize 800\,--\,1\,100},
+               {\scriptsize 1\,100\,--\,1\,400},
+               {\scriptsize 1\,400\,--\,1\,800},
+               {\scriptsize 1\,800\,--\,2\,200}},
+  xticklabel style={rotate=30, anchor=east, font=\scriptsize},
+  ymajorgrids=true,
+  nodes near coords,
+  nodes near coords style={font=\scriptsize},
+  enlarge x limits=0.15,
+  every axis/.append style={font=\small},
+  title={\small Bimodale Verteilung: Cache-Treffer ($<$300\,ms) vs.\ Kaltgenerierung},
+  title style={font=\small},
+]
+\addplot+[fill=blue!30, draw=blue!60] coordinates {
+  (1,11) (2,0) (3,6) (4,4) (5,3) (6,1)
+};
+\end{axis}
+\end{tikzpicture}%
+}

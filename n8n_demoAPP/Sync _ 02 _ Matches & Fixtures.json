@@ -1,0 +1,272 @@
+{
+  "name": "Sync | 02 | Matches & Fixtures",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## Note: Match Sync \n\n## NEU Erstellen"
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "00f2f564-9af6-47a7-9d09-09087118866d",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "d7b9c61a-1c7c-4301-b4a4-2eae7980c01d",
+              "name": "season_id",
+              "value": 2026,
+              "type": "number"
+            },
+            {
+              "id": "3deb548b-eafe-4d18-9b63-50d98cf5c942",
+              "name": "partner_team",
+              "value": 169,
+              "type": "number"
+            },
+            {
+              "id": "d82834ef-e2f2-4a6e-b822-4704168116b6",
+              "name": "season",
+              "value": 2025,
+              "type": "number"
+            },
+            {
+              "id": "1d72da8f-a2b8-4acb-bf8e-9285bda348dd",
+              "name": "comp_bundesliga",
+              "value": 3,
+              "type": "number"
+            },
+            {
+              "id": "5483af2c-1182-42af-a1e6-e9c09c52cbc6",
+              "name": "comp_dfb",
+              "value": 4,
+              "type": "number"
+            },
+            {
+              "id": "900ed4de-44a7-4d5c-ba2b-2324664390a2",
+              "name": "comp_cl",
+              "value": 5,
+              "type": "number"
+            },
+            {
+              "id": "856c72df-a480-4cfd-85ab-c9155b56d7d9",
+              "name": "comp_friendlies",
+              "value": 6,
+              "type": "number"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -1200,
+        16
+      ],
+      "id": "8028c564-3092-4124-bf3e-0c6ee2c382b4",
+      "name": "Config"
+    },
+    {
+      "parameters": {
+        "jsCode": "const c = $('Config').first().json;\nreturn [\n  { json: { league_id: 78,  team_id: c.partner_team, season: c.season } },\n  { json: { league_id: 81,  team_id: c.partner_team, season: c.season } },\n  { json: { league_id: 2,   team_id: c.partner_team, season: c.season } },\n  { json: { league_id: 667, team_id: c.partner_team, season: c.season } },\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -992,
+        16
+      ],
+      "id": "8699b25f-467d-47bb-8dfd-da3f7cf3d2ea",
+      "name": "JS: Prepare League Loop"
+    },
+    {
+      "parameters": {
+        "url": "https://v3.football.api-sports.io/fixtures",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "league",
+              "value": "={{ $json.league_id }}"
+            },
+            {
+              "name": "season",
+              "value": "={{ $json.season }}"
+            },
+            {
+              "name": "team",
+              "value": "={{ $json.team_id }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -736,
+        16
+      ],
+      "id": "4303b2ae-f976-45b7-815a-9a9047f11be5",
+      "name": "HTTP: Get Fixtures (API-Sports)",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "8TXlLPe7BeXnl0Ut",
+          "name": "Header Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const c = $('Config').first().json;\nconst competitionMap = {\n  78:  c.comp_bundesliga,\n  81:  c.comp_dfb,\n  2:   c.comp_cl,\n  667: c.comp_friendlies\n};\n\nreturn $input.all().flatMap(item => {\n  if (!item.json.response?.length) return [];\n  return item.json.response.map(f => ({\n    json: {\n      kickoff: f.fixture.date,\n      isKickOffConfirmed: true,\n      localizedTitle: null,\n      matchPhase: null,\n      title: null,\n      id: f.fixture.id,\n      sport: \"Football\",\n      seasonId: c.season_id,\n      competitionId: competitionMap[f.league.id] ?? null,\n      teamHomeId: f.teams.home.id,\n      teamAwayId: f.teams.away.id,\n      teamHomeScore: f.goals.home ?? 0,\n      teamAwayScore: f.goals.away ?? 0,\n      matchday: parseInt(f.league.round.match(/\\d+/)?.[0]) || null,\n      venue: f.fixture.venue.name ?? null,\n      city: f.fixture.venue.city ?? null,\n      matchdayTitle: null,\n      numberOfGoalScorers: null,\n      teamHomeJersey: null,\n      teamAwayJersey: null,\n      broadcasts: [],\n      numberOfViewers: null,\n      matchState: f.fixture.status.short === \"FT\" ? \"FullTime\" :\n                  f.fixture.status.short === \"1H\" || f.fixture.status.short === \"2H\" ||\n                  f.fixture.status.short === \"HT\" || f.fixture.status.short === \"ET\" ? \"Live\" :\n                  f.fixture.status.short === \"PST\" ? \"Postponed\" :\n                  f.fixture.status.short === \"CANC\" ? \"Cancelled\" :\n                  f.fixture.status.short === \"TBD\" ? \"ToBeConfirmed\" :\n                  f.fixture.status.short === \"INT\" ? \"Interrupted\" : \"PreMatch\",\n      startsAt: f.fixture.date,\n      endsAt: null,\n      isScheduled: true\n    }\n  }));\n});"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -496,
+        16
+      ],
+      "id": "969e6903-64d1-41b2-9708-a645eb51b7ed",
+      "name": "JS: Map to CMS Format"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://partner-api.stackwork-01-test.tech/cms/v1/matches",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer 52091AC14B524E59DEF531D0EA8F57EF0804D4CFADCF4A1A52CE842687D2D209-1"
+            },
+            {
+              "name": "et-partner-id",
+              "value": "4"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"kickoff\": {{ $json.kickoff ? `\"${$json.kickoff}\"` : 'null' }},\n  \"isKickOffConfirmed\": {{ $json.isKickOffConfirmed }},\n  \"localizedTitle\": null,\n  \"matchPhase\": null,\n  \"title\": null,\n  \"id\": {{ $json.id }},\n  \"sport\": \"{{ $json.sport }}\",\n  \"seasonId\": {{ $json.seasonId }},\n  \"competitionId\": {{ $json.competitionId }},\n  \"teamHomeId\": {{ $json.teamHomeId }},\n  \"teamAwayId\": {{ $json.teamAwayId }},\n  \"teamHomeScore\": {{ $json.teamHomeScore }},\n  \"teamAwayScore\": {{ $json.teamAwayScore }},\n  \"matchday\": {{ $json.matchday }},\n  \"venue\": {{ $json.venue ? `\"${$json.venue}\"` : 'null' }},\n  \"city\": {{ $json.city ? `\"${$json.city}\"` : 'null' }},\n  \"matchdayTitle\": null,\n  \"numberOfGoalScorers\": null,\n  \"teamHomeJersey\": null,\n  \"teamAwayJersey\": null,\n  \"broadcasts\": [],\n  \"numberOfViewers\": null,\n  \"matchState\": \"{{ $json.matchState }}\",\n  \"startsAt\": \"{{ $json.startsAt }}\",\n  \"endsAt\": null,\n  \"isScheduled\": {{ $json.isScheduled }}\n}",
+        "options": {}
+      },
+      "id": "cae3a6e3-8dac-4868-9b3d-1f05f267a79a",
+      "name": "HTTP: Post Matches to CMS",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        -240,
+        16
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## Note: Match Sync \n\n## Output"
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        16,
+        464
+      ],
+      "id": "c4102918-2d30-45a2-85b4-e1c021962bd7",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "url": "https://partner-api.stackwork-01-test.tech/cms/v1/matches",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer 52091AC14B524E59DEF531D0EA8F57EF0804D4CFADCF4A1A52CE842687D2D209-1"
+            },
+            {
+              "name": "et-partner-id",
+              "value": "4"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "07385c09-60db-4926-a046-488347efed46",
+      "name": "HTTP: GET Matches From CMS",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        -224,
+        480
+      ]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Config": {
+      "main": [
+        [
+          {
+            "node": "JS: Prepare League Loop",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "JS: Prepare League Loop": {
+      "main": [
+        [
+          {
+            "node": "HTTP: Get Fixtures (API-Sports)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP: Get Fixtures (API-Sports)": {
+      "main": [
+        [
+          {
+            "node": "JS: Map to CMS Format",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "JS: Map to CMS Format": {
+      "main": [
+        [
+          {
+            "node": "HTTP: Post Matches to CMS",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "b22990d4-4a5a-4d81-98df-15b4cc3e4d66",
+  "meta": {
+    "instanceId": "8f356ecf824174491100e48f7fade606f544a76873378b03e211127fbec11c97"
+  },
+  "id": "L1FvaBuHavu9r5ot",
+  "tags": []
+}

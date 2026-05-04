@@ -1,0 +1,550 @@
+/* ============================================================
+   LiveTicker – Right Panel (Stats, Lineups, Formations, Players)
+   ============================================================ */
+
+.lt-right__section {
+  border-bottom: 1px solid var(--lt-border);
+  padding: 0.875rem 1rem;
+}
+.lt-right__section-title {
+  font-family: var(--lt-font-mono);
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--lt-text-muted);
+  margin-bottom: 0.6rem;
+}
+.lt-collapsible-hd {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  color: inherit;
+}
+.lt-collapsible-hd__arrow {
+  font-size: 0.5rem;
+  margin-left: 0.4rem;
+  color: var(--lt-accent);
+  opacity: 0.75;
+}
+
+/* Stats */
+.lt-stat-teams {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.25rem;
+  margin-bottom: 0.15rem;
+}
+.lt-stat-teams__home {
+  font-family: var(--lt-font-mono);
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: var(--lt-color-home);
+  border-bottom: 1px solid var(--lt-color-home);
+  padding: 0.1rem 0;
+}
+.lt-stat-teams__away {
+  font-family: var(--lt-font-mono);
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: var(--lt-color-away);
+  text-align: right;
+  border-bottom: 1px solid var(--lt-color-away);
+  padding: 0.1rem 0;
+}
+.lt-stat-row {
+  display: grid;
+  grid-template-columns: 1fr 2fr 1fr;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.2rem 0 0;
+}
+.lt-stat-bar--inline {
+  grid-column: 1 / -1;
+  margin-bottom: 0.2rem;
+}
+.lt-stat-val {
+  font-family: var(--lt-font-mono);
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--lt-text-sec);
+}
+.lt-stat-val--home {
+  text-align: right;
+}
+.lt-stat-val--away {
+  text-align: left;
+}
+.lt-stat-lbl {
+  text-align: center;
+  font-family: var(--lt-font-mono);
+  font-size: 0.65rem;
+  color: var(--lt-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.lt-stat-bar {
+  display: flex;
+  height: 4px;
+  border-radius: 2px;
+  overflow: hidden;
+  background: var(--lt-border);
+  margin: 0.1rem 0 0.5rem;
+}
+.lt-stat-bar__home {
+  background: var(--lt-color-home);
+  height: 100%;
+}
+.lt-stat-bar__away {
+  background: var(--lt-color-away);
+  height: 100%;
+}
+
+/* Lineups */
+.lt-lineup-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+}
+.lt-lineup-team-label {
+  font-family: var(--lt-font-mono);
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  padding: 0.1rem 0;
+  margin-bottom: 0.15rem;
+  border-bottom: 1px solid;
+}
+.lt-lineup-team-label--home {
+  color: var(--lt-color-home);
+  border-color: var(--lt-color-home);
+  text-align: left;
+}
+.lt-lineup-team-label--away {
+  color: var(--lt-color-away);
+  border-color: var(--lt-color-away);
+  text-align: right;
+}
+.lt-lineup-formation {
+  font-family: var(--lt-font-mono);
+  font-size: 0.65rem;
+  color: var(--lt-text-muted);
+  text-align: center;
+  margin-bottom: 0.4rem;
+}
+.lt-lineup-list {
+  list-style: none;
+}
+.lt-lineup-list li {
+  font-family: var(--lt-font-mono);
+  font-size: 0.75rem;
+  color: var(--lt-text-sec);
+  padding: 0.2rem 0;
+  border-bottom: 1px solid var(--lt-border);
+  display: flex;
+  gap: 0.4rem;
+}
+.lt-lineup-list li:last-child {
+  border-bottom: none;
+}
+.lt-lineup-num {
+  color: var(--lt-text-faint);
+  min-width: 18px;
+}
+
+/* ── Formation-Anzeige ───────────────────────────────── */
+.lt-formation-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  margin-top: 0.3rem;
+}
+.lt-formation-row {
+  display: flex;
+  justify-content: space-around;
+  gap: 0.2rem;
+}
+.lt-formation-player {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 0;
+  flex: 1;
+}
+.lt-formation-player__num {
+  font-family: var(--lt-font-mono);
+  font-size: 0.6rem;
+  color: var(--lt-text-faint);
+  line-height: 1;
+}
+.lt-formation-player__name {
+  font-size: 0.62rem;
+  font-weight: 500;
+  color: var(--lt-text-primary);
+  text-align: center;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 52px;
+  line-height: 1.2;
+}
+
+/* Lineup Badges */
+.lt-lineup-badges {
+  display: flex;
+  gap: 1px;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-top: 1px;
+}
+.lt-lineup-badge {
+  font-size: 0.55rem;
+  line-height: 1;
+}
+.lt-lineup-badge--out {
+  font-size: 0.6rem;
+  color: #f97316;
+  font-weight: 700;
+}
+.lt-lineup-badge--in {
+  font-size: 0.6rem;
+  color: #22c55e;
+  font-weight: 700;
+}
+.lt-lineup-list li .lt-lineup-badges {
+  display: inline-flex;
+  margin-top: 0;
+  margin-left: 4px;
+  vertical-align: middle;
+}
+
+/* Top Players */
+.lt-player {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.4rem 0;
+  border-bottom: 1px solid var(--lt-border);
+}
+.lt-player:last-child {
+  border-bottom: none;
+}
+.lt-player__rank {
+  font-family: var(--lt-font-mono);
+  font-size: 1rem;
+  font-weight: 800;
+  min-width: 24px;
+  text-align: center;
+  color: var(--lt-text-faint);
+}
+.lt-player:nth-child(1) .lt-player__rank {
+  color: #ffd700;
+}
+.lt-player:nth-child(2) .lt-player__rank {
+  color: #c0c0c0;
+}
+.lt-player:nth-child(3) .lt-player__rank {
+  color: #cd7f32;
+}
+.lt-player__info {
+  flex: 1;
+  min-width: 0;
+}
+.lt-player__name {
+  font-family: var(--lt-font-mono);
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--lt-text-sec);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.lt-player__meta {
+  font-family: var(--lt-font-mono);
+  font-size: 0.65rem;
+  color: var(--lt-text-faint);
+  margin-top: 0.1rem;
+}
+
+/* ── lt-prow: merged Spieler-Ranking-Zeile ──────────────── */
+.lt-prow {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.18rem 0.4rem;
+  border-bottom: 1px solid var(--lt-border);
+}
+.lt-prow:last-of-type {
+  border-bottom: none;
+}
+.lt-prow--home {
+  border-left-color: var(--lt-color-home);
+}
+.lt-prow--away {
+  border-left-color: var(--lt-color-away);
+}
+.lt-prow__abbr {
+  font-family: var(--lt-font-mono);
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  min-width: 26px;
+  text-align: center;
+}
+.lt-prow__abbr--home {
+  color: var(--lt-color-home);
+}
+.lt-prow__abbr--away {
+  color: var(--lt-color-away);
+}
+.lt-prow__body {
+  flex: 1;
+  min-width: 0;
+}
+.lt-prow__name {
+  font-family: var(--lt-font-mono);
+  font-size: 0.76rem;
+  font-weight: 600;
+  color: var(--lt-text-sec);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: block;
+}
+.lt-prow__sub {
+  font-size: 0.6rem;
+  color: var(--lt-text-faint);
+  display: block;
+}
+.lt-prow__rating {
+  font-family: var(--lt-font-mono);
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--lt-text-sec);
+  flex-shrink: 0;
+}
+.lt-formation-player__rating {
+  font-size: 0.55rem;
+  font-weight: 700;
+  color: #f5a623;
+  text-align: center;
+  line-height: 1;
+}
+
+/* ── lt-pcat: Kategorie-Stats Tabelle ───────────────────── */
+.lt-pcat {
+  margin-top: 0.65rem;
+}
+.lt-pcat__hd-label {
+  font-family: var(--lt-font-mono);
+  font-size: 0.6rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--lt-text-muted);
+  margin-bottom: 0.3rem;
+}
+.lt-pcat__col-hd {
+  font-family: var(--lt-font-mono);
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  padding: 0.1rem 0;
+  margin-bottom: 0.15rem;
+  border-bottom: 1px solid;
+}
+.lt-pcat__col-hd--home {
+  color: var(--lt-color-home);
+  border-color: var(--lt-color-home);
+}
+.lt-pcat__col-hd--away {
+  color: var(--lt-color-away);
+  border-color: var(--lt-color-away);
+}
+.lt-pcat__cols {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.25rem 0.5rem;
+}
+.lt-pcat__row {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.12rem 0;
+}
+.lt-pcat__row--away {
+  flex-direction: row;
+}
+.lt-pcat__val {
+  font-family: var(--lt-font-mono);
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--lt-text-sec);
+  flex-shrink: 0;
+}
+.lt-pcat__name {
+  font-family: var(--lt-font-mono);
+  font-size: 0.66rem;
+  color: var(--lt-text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex: 1;
+  min-width: 0;
+}
+
+/* ── Container Query: Panel ≤ 480px → 1-spaltig ─────────── */
+@container (max-width: 480px) {
+  /* Nur Formation: eine Spalte (Auswechselbank/Verletzt bleiben 2-spaltig) */
+  .lt-lineup-grid--formation {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+
+  /* Away-Label linksbündig wenn gestapelt */
+  .lt-lineup-team-label--away {
+    text-align: left;
+    border-bottom-color: var(--lt-color-away);
+  }
+
+  /* Formation-Namen etwas breiter wenn 1-spaltig */
+  .lt-formation-player__name {
+    max-width: 64px;
+  }
+
+  /* Lineup-Schrift minimal kleiner */
+  .lt-lineup-list li {
+    font-size: 0.7rem;
+  }
+}
+
+@container (max-width: 480px) {
+  .lt-formation-column--away {
+    display: flex;
+    flex-direction: column-reverse;
+  }
+  .lt-formation-column--away .lt-formation-rows {
+    flex-direction: column-reverse;
+  }
+}
+
+/* ── Pitch Formation ─────────────────────────────────────── */
+.lt-pitch-full { display: none; }
+.lt-pitch-halves {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+  margin-top: 0.25rem;
+}
+@container (max-width: 480px) {
+  .lt-pitch-full { display: block; }
+  .lt-pitch-halves { display: none; }
+}
+
+.lt-pitch-svg { width: 100%; display: block; }
+.lt-pitch-svg--full { aspect-ratio: 100 / 160; }
+.lt-pitch-svg--half { aspect-ratio: 100 / 90; }
+
+/* Overlay layout */
+.lt-pitch-wrap {
+  position: relative;
+}
+.lt-pitch-overlay {
+  position: absolute;
+  inset: 4% 4%;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+.lt-pitch-overlay--single .lt-pitch-rows {
+  height: 100%;
+}
+.lt-pitch-half {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+.lt-pitch-half--away {
+  flex-direction: column-reverse;
+}
+.lt-pitch-label {
+  border: none !important;
+  margin-bottom: 0 !important;
+  font-size: 0.55rem;
+}
+.lt-pitch-rows {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+  flex: 1;
+}
+
+/* Pitch background & stripes */
+.lt-pitch-bg { fill: transparent; }
+.lt-pitch-stripe-a { fill: transparent; }
+.lt-pitch-stripe-b { fill: transparent; }
+
+/* Pitch lines */
+.lt-pitch-outline {
+  fill: none;
+  stroke: var(--lt-border);
+  stroke-width: 0.6;
+}
+.lt-pitch-circle {
+  fill: none;
+  stroke: var(--lt-border);
+  stroke-width: 0.5;
+}
+.lt-pitch-spot { fill: var(--lt-border); }
+.lt-pitch-area {
+  fill: none;
+  stroke: var(--lt-border);
+  stroke-width: 0.5;
+}
+.lt-pitch-midline {
+  stroke: var(--lt-border);
+  stroke-width: 0.8;
+}
+
+/* Player dots */
+.lt-pitch-dot {
+  stroke: rgba(255,255,255,0.85);
+  stroke-width: 0.6;
+}
+.lt-pitch-dot--home { fill: var(--lt-color-home); }
+.lt-pitch-dot--away { fill: var(--lt-color-away); }
+
+/* Player text */
+.lt-pitch-num {
+  font-size: 2.8px;
+  font-weight: 700;
+  fill: #fff;
+  font-family: var(--lt-font-mono, monospace);
+}
+.lt-pitch-name {
+  font-size: 2.8px;
+  fill: rgba(255,255,255,0.85);
+  font-family: var(--lt-font-mono, monospace);
+}
+.lt-pitch-rating {
+  font-size: 2.4px;
+  fill: #f5a623;
+  font-weight: 700;
+  font-family: var(--lt-font-mono, monospace);
+}
+.lt-pitch-team {
+  font-size: 3.5px;
+  font-weight: 700;
+  font-family: var(--lt-font-mono, monospace);
+}
+.lt-pitch-team--home { fill: var(--lt-color-home); }
+.lt-pitch-team--away { fill: var(--lt-color-away); }

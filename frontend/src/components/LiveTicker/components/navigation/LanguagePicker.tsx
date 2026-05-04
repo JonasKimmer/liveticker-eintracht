@@ -1,0 +1,73 @@
+// ============================================================
+// components/LanguagePicker.jsx
+// Kompaktes Sprachauswahl-Dropdown — zeigt nur aktiven Code
+// ============================================================
+import { memo, useState, useRef } from "react";
+import { useClickOutside } from "hooks/useClickOutside";
+
+const LANGUAGES = [
+  { code: "de", label: "Deutsch" },
+  { code: "en", label: "English" },
+  { code: "es", label: "Español" },
+  { code: "fr", label: "Français" },
+];
+
+interface LanguagePickerProps {
+  language: string;
+  onLanguageChange: (code: string) => void;
+}
+
+export const LanguagePicker = memo(function LanguagePicker({
+  language,
+  onLanguageChange,
+}: LanguagePickerProps) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+  useClickOutside(ref, () => setOpen(false));
+
+  return (
+    <div className="lt-lang-picker" ref={ref}>
+      <button
+        className="lt-lang-picker__trigger"
+        onClick={() => setOpen((v) => !v)}
+        title="Ausgabesprache für KI-Texte"
+      >
+        <span className="lt-lang-picker__prefix">Sprache:</span>
+        {language.toUpperCase()}
+        <svg
+          width="8"
+          height="8"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2.5"
+          style={{
+            transition: "transform 0.15s",
+            transform: open ? "rotate(180deg)" : "rotate(0deg)",
+            marginLeft: 2,
+            flexShrink: 0,
+          }}
+        >
+          <path d="M6 9l6 6 6-6" />
+        </svg>
+      </button>
+      {open && (
+        <div className="lt-lang-picker__menu">
+          {LANGUAGES.map(({ code, label }) => (
+            <button
+              key={code}
+              className={`lt-lang-picker__item${language === code ? " lt-lang-picker__item--active" : ""}`}
+              onClick={() => {
+                onLanguageChange(code);
+                setOpen(false);
+              }}
+            >
+              <span className="lt-lang-picker__code">{code.toUpperCase()}</span>
+              <span className="lt-lang-picker__label">{label}</span>
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+});

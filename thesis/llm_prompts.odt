@@ -1,0 +1,171 @@
+DOKUMENTATION DER KI-NUTZUNG
+Bachelorarbeit: „Konzeption und Implementierung eines KI-gestützten Redaktionssystems für Liveticker im Profifußball"
+Autor: Jonas Kimmer | Hochschule RheinMain Wiesbaden | Wirtschaftsinformatik | 2026
+Tools: Claude (Anthropic), ChatGPT (OpenAI)
+
+Hinweis: Die nachfolgenden Prompts dokumentieren den Einsatz von KI-Werkzeugen als Recherche-, Struktur- und Schreibhilfe im Verlauf der Bachelorarbeit. Alle wissenschaftlichen Einschätzungen, Quellenrecherchen, Argumentationen und endgültigen Textfassungen stammen vom Autor. KI-generierte Vorschläge wurden eigenständig geprüft, überarbeitet und in den Gesamttext eingearbeitet.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+EXPOSÉ / FRÜHE PLANUNGSPHASE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Prompt E.1 – Erste Gliederung
+"Ich schreibe eine Bachelorarbeit in Wirtschaftsinformatik über ein KI-gestütztes Redaktionssystem für Liveticker im Profifußball. Das System entsteht im realen Praxiskontext bei Eintracht Frankfurt. Erstelle eine sinnvolle Kapitelgliederung für ca. 60–80 Seiten. Das System beinhaltet: n8n für Datenbeschaffung, FastAPI-Backend, React-Frontend, LLM-Textgenerierung (OpenRouter/Gemini), und drei Betriebsmodi (vollautomatisch, hybrid, manuell). Orientiere dich an typischer Wirtschaftsinformatik-BA-Struktur."
+
+Prompt E.2 – Forschungsfrage formulieren
+"Mein Thema: KI-gestützte Liveticker-Erstellung mit Human-in-the-Loop. Drei Kernprobleme: Zeitdruck (~30–120 Sek. pro Event), Mehrsprachigkeit, White-Label-Bedarf. Hilf mir, daraus eine präzise Forschungsfrage zu formulieren, die ich in ca. 60 Seiten beantworten kann. Sie soll konstruktiv (nicht empirisch-erklärend) ausgerichtet sein."
+
+Prompt E.3 – DSR als Methodik
+"Was ist Design Science Research nach Hevner et al. 2004 und warum eignet es sich für eine Arbeit, die ein Softwaresystem entwirft und evaluiert? Erkläre kurz den Unterschied zu empirischer Forschung und nenne die typischen Evaluationsformen im DSR-Kontext."
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+KAPITEL 1 – EINLEITUNG
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Prompt 1.1 – Problemstellung schärfen
+"Ich habe diese Problemstellung geschrieben: [Text eingefügt]. Ist sie akademisch klar genug formuliert? Fehlt eine Überleitung von den drei Problemen zur Forschungsfrage? Gibt es umgangssprachliche Formulierungen, die ich noch ändern sollte?"
+
+Prompt 1.2 – Abgrenzungskapitel
+"Welche Punkte sollte ich im Abgrenzungskapitel einer Bachelorarbeit unbedingt erwähnen, wenn ich folgende Dinge bewusst nicht implementiert habe: Authentifizierung, externe Nutzerstudie, Vollkostenanalyse, Langzeitbetrieb, Vergleich mit kommerziellen Systemen wie Retresco?"
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+KAPITEL 2 – MOTIVATION UND ANFORDERUNGEN
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Prompt 2.1 – Zitate Liveticker-Charakteristika
+"Extrahiere aus den hochgeladenen Quellen direkte Zitate zu: (1) Zeitdruck bei Live-Berichterstattung, (2) Simultanerzählung und dynamische Textstruktur, (3) konzeptionelle Mündlichkeit / Sprache der Nähe. Nur wörtliche Zitate mit Autor, Jahr, Seite. Format: 'Zitat' (Autor Jahr, S. X). Wenn nichts vorhanden: 'NICHT VORHANDEN'."
+
+Prompt 2.2 – Zitate sprachliche Merkmale
+"Suche Zitate zu syntaktischen und typographischen Merkmalen von Livetickern: Ellipsen, Großschreibungen (z. B. TOOOOR!), Buchstabeniterationen, Parataxe, Präsensverwendung. Wichtig: Hauser (2008), Smułczyński (2020), Walter (2020). Nur Direktzitate."
+
+Prompt 2.3 – Vierschritt und Spielbericht-Abgrenzung
+"Zitate zum Vierschritt aus Narration, Evaluation, Elaboration, Zusammenfassung (Bluhm & Schäfer 2023) und zum Unterschied Liveticker vs. Spielbericht ('benefit of hindsight'). Nur Direktzitate."
+
+Prompt 2.4 – Anforderungstabelle
+"Auf Basis dieser Problemdimensionen: operativer Zeitdruck, Mehrsprachigkeit (DE/EN/JA), White-Label. Erstelle eine Anforderungstabelle mit ID, Typ (funktional / nicht-funktional / architektonisch), Beschreibung, Priorität (MUSS / SOLL / KANN). Ca. 20–25 Anforderungen."
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+KAPITEL 3 – STAND DER TECHNIK
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Prompt 3.1 – LLM-Grundlagen
+"Zitate zu: (1) Definition und Funktionsweise von LLMs, (2) Transformer-Architektur, (3) Stärken bei Mehrsprachigkeit und Stiladaption, (4) Halluzinationen als Schwäche, (5) Anwendungen in der Textgenerierung. Nur Direktzitate mit Seitenzahl."
+
+Prompt 3.2 – Prompt Engineering
+"Zitate zu Zero-Shot vs. Few-Shot Prompting: Definition, Qualitätsunterschied, In-Context Learning. Falls Chain-of-Thought vorhanden: auch das. Nur Direktzitate (Autor Jahr, S. X)."
+
+Prompt 3.3 – NLG im Sport
+"Zitate zu: automatisierter Textgenerierung aus strukturierten Daten (Data-to-Text), Roboterjournalismus im Sport (Qualität, Limitationen), Human-in-the-Loop-Ansätzen. Fokus auf Sport-spezifische NLG."
+
+Prompt 3.4 – Echtzeit-Kommunikation
+"Zitate zu: Polling-Nachteile, Server-Sent Events (Definition, Auto-Reconnect, unidirektional), WebSocket (bidirektional, persistente Verbindung), Vergleich SSE vs. WebSocket. Bei RFC/W3C: Section statt Seitenzahl."
+
+Prompt 3.5 – ETL und Workflow-Automatisierung
+"Zitate zu: ETL-Definition, Low-Code vs. Code-basierte Automatisierung (n8n vs. Airflow), wissenschaftliche Rechtfertigung von Low-Code in Forschungsprojekten. Falls nichts vorhanden: 'NICHT VORHANDEN'."
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+KAPITEL 4 – SYSTEMKONZEPTION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Prompt 4.1 – Architekturentscheidung begründen
+"Ich nutze eine dreischichtige Architektur: n8n (Datenbeschaffung), FastAPI + PostgreSQL (Anwendungslogik), React/TypeScript (Präsentation). Wie begründe ich diese Schichtentrennung akademisch? Welche Alternativen hätte es gegeben und warum wurden sie verworfen (z. B. Monolith, GraphQL)?"
+
+Prompt 4.2 – Datenmodell reviewen
+[Code-Review-Prompt]
+"Schau dir das folgende SQLAlchemy-Datenmodell an und prüfe, ob die Relationen sinnvoll sind, ob Normalisierung ausreichend ist und ob mir wichtige Felder fehlen könnten:
+[Dateiinhalt von backend/app/models/ eingefügt]
+Besonders: Brauche ich eine separate Tabelle für style_references oder reicht ein JSON-Feld in der Match-Tabelle?"
+
+Prompt 4.3 – LLM-Pipeline-Design
+"Ich implementiere eine LLM-Pipeline mit Failover: Primär Gemini 2.0 Flash Lite via OpenRouter, Fallback GPT-4o-mini, dann Claude Haiku. Wie sollte die Prioritätskette implementiert sein? Was sind Vor- und Nachteile einer Provider-agnostischen Abstraktion?"
+
+Prompt 4.4 – Prompt-Struktur für Liveticker
+"Entwirf eine Prompt-Vorlage für KI-generierte Liveticker in drei Stilen (neutral, euphorisch, kritisch) mit Few-Shot-Beispielen. Die Vorlage soll Halluzinationen minimieren durch explizite Restriktionsregeln und nur verfügbare Fakten verwenden."
+
+Prompt 4.5 – Betriebsmodi dokumentieren
+"Ich habe drei Modi: auto (KI generiert und publiziert direkt), coop (KI schlägt vor, Redakteur freigibt), manual (Redakteur schreibt selbst). Schreib einen akademischen Absatz, der die drei Modi und ihren Trade-off zwischen Geschwindigkeit und Qualitätssicherung erklärt."
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+KAPITEL 5 – IMPLEMENTIERUNG
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Prompt 5.1 – LLM-Service Code-Review
+[Code-Review-Prompt]
+"Schau dir diesen Python-Code für meinen LLM-Service an und sag mir ob die Fehlerbehandlung vollständig ist, ob der Retry-Mechanismus sinnvoll implementiert ist und ob es Verbesserungen gibt:
+[Inhalt von backend/app/services/llm_service.py eingefügt]"
+
+Prompt 5.2 – Teststrategie beschreiben
+"Ich habe 371 Tests: 187 Frontend-Unit-Tests (Jest), 178 Backend-Tests (pytest, davon 82 API-Integrationstests gegen echte PostgreSQL-Testdatenbank), 6 Browser-Smoke-Tests (Playwright). Erkläre mir, wie ich das Testpyramiden-Modell nach Cohn (2009) akademisch auf mein System anwenden kann."
+
+Prompt 5.3 – TypeScript-Abschnitt formulieren
+"Ich habe eine TypeScript-Migration durchgeführt: 0 Compiler-Fehler im strikten Modus, 97,44 % Coverage laut typescript-coverage-report. Wie formuliere ich das in einem akademischen Implementierungskapitel? Was sollte ich zur Messmethode sagen?"
+
+Prompt 5.4 – n8n-Workflows beschreiben
+[Code-Review-Prompt]
+"Ich habe 17 n8n-Workflows für verschiedene Aufgaben: Spieldaten abrufen, Events verarbeiten, Halbzeit-/Abpfiff-Zusammenfassungen generieren. Schau dir diese Workflow-Beschreibung an und sag mir, ob die Erklärung für eine Bachelorarbeit ausreichend ist oder ob technische Details fehlen:
+[Workflow-Beschreibung eingefügt]"
+
+Prompt 5.5 – Context-Builder-Logik erklären
+[Code-Review-Prompt]
+"Erkläre mir, ob dieser Context-Builder-Code für die LLM-Prompts gut strukturiert ist. Vor allem: Ist die Unterscheidung nach Event-Typ (Tor, Karte, Wechsel, PreMatch) sauber? Fehlen wichtige Event-Typen?
+[Inhalt von backend/app/utils/context_builder.py eingefügt]"
+
+Prompt 5.6 – Cloud-Deployment dokumentieren
+"Mein System läuft auf Render.com: FastAPI-Backend als Web Service, React-Build als Static Site, PostgreSQL als Managed Database, n8n als separater Container. Wie beschreibe ich das Cloud-Deployment für eine Bachelorarbeit? Welche Aspekte (Skalierung, Kosten, CI/CD) sollte ich erwähnen?"
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+KAPITEL 6 – EVALUATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Prompt 6.1 – Bewertungsrubrik erstellen
+"Erstelle eine Bewertungsrubrik (Likert 1–5) für Liveticker-Texte auf drei Dimensionen: Korrektheit (Faktentreue, keine Halluzinationen), Tonalität (Stilprofil-Konsistenz), Verständlichkeit (Genre-Konformität). Jede Stufe soll klar beschrieben sein, damit Bewertungen reproduzierbar sind."
+
+Prompt 6.2 – Selbstevaluation absichern
+"Ich evaluiere mein eigenes System – welche methodischen Schwächen hat das? Wie kann ich diese durch LLM-as-Judge und ein Experteninterview teilweise kompensieren? Wie formuliere ich das transparent in der Arbeit?"
+
+Prompt 6.3 – LLM-as-Judge erklären
+"Was ist die LLM-as-Judge-Methode nach Zheng et al. (2023)? Warum muss das bewertende Modell ein anderes sein als das generierende? Welche Limitationen hat die Methode?"
+
+Prompt 6.4 – Evaluationsskript reviewen
+[Code-Review-Prompt]
+"Schau dir dieses Python-Skript an, das Bundesliga-Ereignisse von der Football API abruft, mit Gemini Texte generiert und mit Claude Sonnet bewertet. Prüfe: Ist der Judge-Prompt valide? Werden die drei Dimensionen korrekt gemessen? Gibt es methodische Schwächen?
+[Inhalt von evaluation/standalone_eval.py eingefügt]"
+
+Prompt 6.5 – Ergebnistabelle formulieren
+"Ich habe folgende LLM-as-Judge-Ergebnisse (N=80, Bundesliga 2025/26): neutral Ø 4,82 / kritisch Ø 4,32 / euphorisch Ø 3,27. Gesamtdurchschnitt K=4,12, T=3,92, V=4,35. Formuliere einen akademischen Befund-Absatz der die Unterschiede zwischen den Stilprofilen erklärt und eine mögliche Ursache nennt."
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+KAPITEL 7 – DISKUSSION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Prompt 7.1 – Abgrenzung zu kommerziellen Systemen
+"Wie unterscheide ich mein System akademisch sauber von kommerziellen Lösungen wie Retresco und AP Automated Insights, ohne deren Produkte direkt zu bewerten (keine öffentlichen technischen Details verfügbar)?"
+
+Prompt 7.2 – Limitationen formulieren
+"Formuliere einen akademischen Limitations-Abschnitt für folgende bekannte Schwächen: N=16 Hauptevaluation durch den Entwickler selbst, keine externe Nutzerstudie, fehlende Authentifizierungsschicht, n8n-Workflows nur manuell getestet, kein Langzeitbetrieb über eine Saison. Nicht verharmlosend, aber auch nicht übertrieben selbstkritisch."
+
+Prompt 7.3 – EU AI Act Implikationen
+"Was bedeutet Art. 50 Abs. 4 EU AI Act (gültig ab August 2026) konkret für ein System, das KI-generierten Text im Sportjournalismus veröffentlicht? Gibt es Transparenzpflichten gegenüber Lesern?"
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+KAPITEL 8 – FAZIT UND AUSBLICK
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Prompt 8.1 – Forschungsfrage beantworten
+"Meine Forschungsfrage: 'Wie lässt sich ein hybrides KI-gestütztes Redaktionssystem für die Liveticker-Erstellung konzipieren und implementieren, das journalistische Qualitätsanforderungen hinsichtlich Korrektheit, Tonalität und Verständlichkeit erfüllt?' Ich habe: vollständige Implementierung, 23 Anforderungen erfüllt, K=4,12 / T=3,92 / V=4,35 (N=80). Hilf mir, die Frage strukturiert in 3 Absätzen zu beantworten (Konzeption, Implementierung, Qualität)."
+
+Prompt 8.2 – Ausblick priorisieren
+"Ich habe viele mögliche Erweiterungen: Authentifizierung, SSE statt Polling, Fine-Tuning, externe Nutzerstudie, Multimodalität, andere Sportarten. Hilf mir, diese in kurzfristig / mittelfristig / langfristig zu sortieren und akademisch zu formulieren."
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+QUERSCHNITTSTHEMEN
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Prompt Q.1 – Konsistenzprüfung
+"Prüfe: (1) Stimmen alle genannten Zahlen überein (23 Anforderungen, 371 Tests, N=80, Median 859 ms)? (2) Wird die Forschungsfrage in Kap. 1 definiert und in Kap. 8 explizit beantwortet? (3) Werden alle in Kap. 1.4 genannten Abgrenzungen in Kap. 7 aufgegriffen?"
+
+Prompt Q.2 – Akademischen Stil prüfen
+"Prüfe folgenden Textabschnitt auf: (1) umgangssprachliche Formulierungen, (2) Ich-Form wo Passiv besser wäre, (3) unbelegte Behauptungen, (4) zu lange Sätze. [Text eingefügt]"
+
+Prompt Q.3 – Zitationsformat prüfen
+"Prüfe diese Literaturangaben auf Korrektheit im deutschen Wissenschaftsstil: direkte vs. indirekte Zitation, 'vgl.' bei Paraphrasen, et al. ab 3 Autoren, Seitenzahlen bei Direktzitaten. [Zitatstellen eingefügt]"

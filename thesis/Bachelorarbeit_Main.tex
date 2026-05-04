@@ -1,0 +1,302 @@
+\documentclass[12pt,a4paper,ngerman]{report}
+
+\usepackage[ngerman]{babel}
+\usepackage{fontspec}
+\setmainfont{Latin Modern Roman}
+\setsansfont{Latin Modern Sans}
+\setmonofont{Latin Modern Mono}
+\usepackage{geometry}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{fancyhdr}
+\usepackage{setspace}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{tabularx}
+\usepackage{graphicx}
+\usepackage{listings}
+\usepackage{longtable}
+\usepackage{fvextra}
+\usepackage{framed}
+\usepackage{float}
+\usepackage{xfp}
+\usepackage{calc}
+\usepackage{tikz}
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.18}
+\usetikzlibrary{shapes,shapes.geometric,arrows,positioning,calc,fit,backgrounds}
+
+% TikZ diagram definitions
+\input{diagrams.tex}
+
+% Pandoc compatibility
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+
+\providecommand{\passthrough}[1]{#1}
+
+\lstset{
+  basicstyle=\ttfamily\small,
+  breaklines=true,
+  breakatwhitespace=true,
+  postbreak=\mbox{\textcolor{red}{$\hookrightarrow$}\space},
+  showstringspaces=false,
+}
+
+% Define Shaded and Highlighting environments for pandoc-generated code blocks
+\definecolor{shadecolor}{gray}{0.95}
+% \par ensures vertical mode (prevents LR-mode crash); shorthandoff fixes babel/ngerman conflict
+\newenvironment{Shaded}{%
+  \par
+  \shorthandoff{"}%
+  \begin{shaded}}{%
+  \end{shaded}%
+  \shorthandon{"}%
+  \par}
+
+% breaklines+breakanywhere prevent LR-mode crashes on long Mermaid lines
+\DefineVerbatimEnvironment{Highlighting}{Verbatim}{%
+  commandchars=\\\{\},
+  breaklines=true,
+  breakanywhere=true,
+  fontsize=\small}
+
+% Pandoc token commands (complete set from pandoc's default LaTeX template)
+\newcommand{\NormalTok}[1]{#1}
+\providecommand{\KeywordTok}[1]{\textcolor[rgb]{0.00,0.44,0.13}{\textbf{#1}}}
+\providecommand{\DataTypeTok}[1]{\textcolor[rgb]{0.56,0.13,0.00}{#1}}
+\providecommand{\DecValTok}[1]{\textcolor[rgb]{0.25,0.63,0.44}{#1}}
+\providecommand{\BaseNTok}[1]{\textcolor[rgb]{0.25,0.63,0.44}{#1}}
+\providecommand{\FloatTok}[1]{\textcolor[rgb]{0.25,0.63,0.44}{#1}}
+\providecommand{\CharTok}[1]{\textcolor[rgb]{0.25,0.44,0.63}{#1}}
+\providecommand{\StringTok}[1]{\textcolor[rgb]{0.25,0.44,0.63}{#1}}
+\providecommand{\CommentTok}[1]{\textcolor[rgb]{0.38,0.63,0.69}{\textit{#1}}}
+\providecommand{\OtherTok}[1]{\textcolor[rgb]{0.00,0.44,0.13}{#1}}
+\providecommand{\AlertTok}[1]{\textcolor[rgb]{1.00,0.00,0.00}{#1}}
+\providecommand{\FunctionTok}[1]{\textcolor[rgb]{0.02,0.16,0.49}{#1}}
+\providecommand{\RegionMarkerTok}[1]{#1}
+\providecommand{\ErrorTok}[1]{\textcolor[rgb]{1.00,0.00,0.00}{\textbf{#1}}}
+\providecommand{\BuiltInTok}[1]{#1}
+\providecommand{\ExtensionTok}[1]{#1}
+\providecommand{\PreprocessorTok}[1]{\textcolor[rgb]{0.56,0.13,0.00}{\textit{#1}}}
+\providecommand{\ImportTok}[1]{#1}
+\providecommand{\DocumentationTok}[1]{\textcolor[rgb]{0.38,0.63,0.69}{\textbf{\textit{#1}}}}
+\providecommand{\AnnotationTok}[1]{\textcolor[rgb]{0.38,0.63,0.69}{\textbf{\textit{#1}}}}
+\providecommand{\CommentVarTok}[1]{\textcolor[rgb]{0.38,0.63,0.69}{\textbf{\textit{#1}}}}
+\providecommand{\VariableTok}[1]{\textcolor[rgb]{0.10,0.09,0.49}{#1}}
+\providecommand{\ControlFlowTok}[1]{\textcolor[rgb]{0.00,0.44,0.13}{\textbf{#1}}}
+\providecommand{\OperatorTok}[1]{\textcolor[rgb]{0.40,0.40,0.40}{#1}}
+\providecommand{\SpecialCharTok}[1]{\textcolor[rgb]{0.25,0.44,0.63}{#1}}
+\providecommand{\SpecialStringTok}[1]{\textcolor[rgb]{0.73,0.40,0.13}{#1}}
+\providecommand{\VerbatimStringTok}[1]{\textcolor[rgb]{0.25,0.44,0.63}{#1}}
+\providecommand{\InformationTok}[1]{\textcolor[rgb]{0.38,0.63,0.69}{\textbf{\textit{#1}}}}
+\providecommand{\WarningTok}[1]{\textcolor[rgb]{0.38,0.63,0.69}{\textbf{\textit{#1}}}}
+\providecommand{\AttributeTok}[1]{\textcolor[rgb]{0.49,0.56,0.16}{#1}}
+\providecommand{\ConstantTok}[1]{\textcolor[rgb]{0.53,0.00,0.00}{#1}}
+
+% Define \real for Pandoc table calculations
+\providecommand{\real}[1]{#1}
+
+% Counter needed by Pandoc longtable output
+\newcounter{none}
+
+% Unicode character fallbacks
+\usepackage{newunicodechar}
+\newunicodechar{→}{$\rightarrow$}
+\newunicodechar{←}{$\leftarrow$}
+\newunicodechar{≈}{$\approx$}
+\newunicodechar{≥}{$\geq$}
+\newunicodechar{≤}{$\leq$}
+\newunicodechar{−}{$-$}
+\newunicodechar{δ}{$\delta$}
+\newunicodechar{κ}{$\kappa$}
+\newunicodechar{Δ}{$\Delta$}
+\newunicodechar{„}{\glqq}
+\newunicodechar{ł}{l}
+\newunicodechar{ń}{n}
+\newunicodechar{✅}{\checkmark}
+\newunicodechar{📣}{*}
+\newunicodechar{🔔}{*}
+\newunicodechar{🥅}{*}
+\newunicodechar{🎬}{*}
+% Box-drawing characters (used in directory trees / code listings)
+\newunicodechar{├}{\texttt{|--}}
+\newunicodechar{└}{\texttt{`--}}
+\newunicodechar{─}{\texttt{-}}
+\newunicodechar{│}{\texttt{|}}
+\newunicodechar{┬}{\texttt{-|-}}
+\newunicodechar{┤}{\texttt{-|}}
+\newunicodechar{┼}{\texttt{-+-}}
+\newunicodechar{╠}{\texttt{|=}}
+\newunicodechar{╔}{\texttt{.=}}
+\newunicodechar{╗}{\texttt{=.}}
+\newunicodechar{╚}{\texttt{`=}}
+\newunicodechar{╝}{\texttt{=`}}
+\newunicodechar{═}{\texttt{=}}
+\newunicodechar{║}{\texttt{||}}
+
+\geometry{left=2.5cm, right=2cm, top=2.5cm, bottom=2.5cm}
+\onehalfspacing
+\emergencystretch 3em
+
+\pagestyle{fancy}
+\fancyhf{}
+\setlength{\headheight}{14.49998pt}
+\fancyhead[L]{\nouppercase{\leftmark}}
+\fancyhead[R]{\thepage}
+\lfoot{Bachelorarbeit}
+\rfoot{Jonas Kimmer}
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    urlcolor=blue,
+    citecolor=blue
+}
+
+\title{KI-gestütztes Liveticker-Redaktionssystem für den Profifußball}
+\author{Jonas Kimmer}
+\date{April 2026}
+
+\begin{document}
+
+% TITLEPAGE
+\begin{titlepage}
+\centering
+\vspace*{2cm}
+{\Large \textbf{Bachelorarbeit}}\\[2cm]
+{\LARGE \textbf{KI-gestütztes Liveticker-Redaktionssystem für den Profifußball}}\\[0.5cm]
+{\large Automatisierte Textgenerierung für Echtzeit-Sportjournalismus mit Human-in-the-Loop-Kontrolle}\\[3cm]
+{\large \textbf{Autor}}\\
+Jonas Kimmer\\[3cm]
+{\large \textbf{Hochschule}}\\
+Hochschule RheinMain\\[0.5cm]
+Fachbereich Wirtschaftsinformatik\\[2cm]
+{\large \textbf{Betreuung}}\\
+Prof. Dr. Nikolay Tcholtchev\\[3cm]
+{\large \textbf{Firmenbetreuung}}\\
+Stackwork GmbH\\
+IT-Bereich, Eintracht Frankfurt\\[3cm]
+{\large \textbf{Datum}}\\
+April 2026
+\end{titlepage}
+
+% SPERRVERMERK
+\chapter*{Sperrvermerk}
+\thispagestyle{empty}
+
+Die vorliegende Bachelorarbeit wurde in Kooperation mit der Stackwork GmbH, IT-Bereich Eintracht Frankfurt, erstellt und enthält vertrauliche Informationen.
+
+Die Arbeit darf Dritten ohne ausdrückliche Genehmigung der Stackwork GmbH sowie der Hochschule RheinMain weder vollständig noch auszugsweise zugänglich gemacht, vervielfältigt oder veröffentlicht werden. Dieser Vorbehalt gilt nicht für die Prüfungskommission sowie für die zugelassenen Prüfer der Hochschule RheinMain.
+
+\vspace{3cm}
+
+\noindent Wiesbaden, April 2026
+
+\vspace{2cm}
+
+\noindent
+\begin{tabular}{p{7cm}p{6cm}}
+\rule{6cm}{0.4pt} & \rule{5.5cm}{0.4pt} \\[0.3em]
+Jonas Kimmer & Stackwork GmbH
+\end{tabular}
+
+\newpage
+
+% ABSTRACT
+\chapter*{Abstract}
+
+Die manuelle Erstellung von Liveticker-Einträgen im Profifußball ist ein kognitiv anspruchsvoller, zeitkritischer Prozess: Redakteure müssen Spielereignisse in Echtzeit beobachten, einordnen und in kurze, stilistisch kohärente Texte überführen, typischerweise innerhalb von 30 bis 120 Sekunden pro Eintrag. Diese Arbeit konzipiert und implementiert ein hybrides KI-gestütztes Redaktionssystem für die Liveticker-Erstellung im Profifußball und untersucht, welche journalistische Textqualität dabei erreichbar ist und welches Potenzial zur Reduktion der Publikationslatenz sich auf Basis gemessener Systemlatenzen belegen lässt.
+
+Das entwickelte System kombiniert eine FastAPI/PostgreSQL-Backend-Architektur mit einer mehrsprachigen LLM-Pipeline (Gemini 2.0 Flash Lite via OpenRouter) und einem React/TypeScript-Frontend. Die drei Betriebsmodi \textit{auto} (vollautomatisch), \textit{coop} (Human-in-the-Loop) und \textit{manual} (klassisch) ermöglichen einen graduellen Übergang zwischen autonomer KI-Generierung und redaktioneller Kontrolle. n8n-Workflows übernehmen die automatisierte Datenversorgung aus externen Sportdaten-APIs. Das System wurde als generische und als White-Label-Instanz (Eintracht Frankfurt) realisiert.
+
+Die Evaluation umfasst 439 automatisierte Tests, eine TypeScript-Typenabdeckung von 98,02 \% sowie eine qualitative Bewertung von 16 KI-generierten Ticker-Einträgen. Die KI-generierten Texte erzielen einen Gesamtdurchschnitt von 4,3 / 5 Punkten (Korrektheit 4,6, Tonalität 4,1, Verständlichkeit 4,3). Auf Basis gemessener LLM-Latenzen (Median 859 ms) ergibt sich ein geschätztes TTP-Potenzial von ≈ 2–17 Sekunden im \textit{auto}-Modus gegenüber 30–120 Sekunden bei manueller Produktion. Alle 23 definierten funktionalen, nicht-funktionalen und architektonischen Anforderungen werden erfüllt.
+
+Die Arbeit zeigt, dass eine produktionstaugliche KI-Assistenz bei der Liveticker-Erstellung mit einem kleinen Kompakt-Modell und Few-Shot-Prompting realisierbar ist. Der \textit{coop}-Modus erweist sich als optimaler Kompromiss zwischen Publikationsgeschwindigkeit und journalistischer Qualitätssicherung.
+
+\noindent\textbf{Schlüsselwörter:} Large Language Models, Liveticker, Natural Language Generation, Human-in-the-Loop, Few-Shot Prompting, Sportjournalismus, FastAPI, React, TypeScript
+
+% TABLE OF CONTENTS
+\tableofcontents
+
+% ABKÜRZUNGSVERZEICHNIS
+\chapter*{Abkürzungsverzeichnis}
+\addcontentsline{toc}{chapter}{Abkürzungsverzeichnis}
+\begin{tabbing}
+\hspace{3.5cm} \= \kill
+API       \> Application Programming Interface \\
+ASGI      \> Asynchronous Server Gateway Interface \\
+CI        \> Corporate Identity \\
+CRUD      \> Create, Read, Update, Delete \\
+DSR       \> Design Science Research \\
+DSGVO     \> Datenschutz-Grundverordnung \\
+E2E       \> End-to-End \\
+ETL       \> Extract, Transform, Load \\
+EU        \> Europäische Union \\
+H2H       \> Head-to-Head \\
+HTTP      \> Hypertext Transfer Protocol \\
+JSON      \> JavaScript Object Notation \\
+JWT       \> JSON Web Token \\
+KI        \> Künstliche Intelligenz \\
+LLM       \> Large Language Model \\
+NLG       \> Natural Language Generation \\
+OAuth     \> Open Authorization \\
+ORM       \> Object-Relational Mapping \\
+REST      \> Representational State Transfer \\
+SGE       \> Sportgemeinschaft Eintracht Frankfurt e.\,V. \\
+SQL       \> Structured Query Language \\
+SSE       \> Server-Sent Events \\
+TTP       \> Time-to-Publish \\
+URL       \> Uniform Resource Locator \\
+VAR       \> Video Assistant Referee \\
+\end{tabbing}
+
+% CHAPTER 1: EINLEITUNG
+\input{Bachelorarbeit_Kapitel1}
+
+% CHAPTER 2: MOTIVATION UND ANFORDERUNGEN
+\input{Bachelorarbeit_Kapitel2}
+
+% CHAPTER 3: STAND DER TECHNIK
+\input{Bachelorarbeit_kapitel3_StandDerTechnik}
+
+% CHAPTER 4: SYSTEMKONZEPTION
+\input{Bachelorarbeit_kapitel4_systemkonzeption}
+
+% CHAPTER 5: IMPLEMENTIERUNG
+\input{Bachelorarbeit_kapitel5_implementierung}
+
+% CHAPTER 6: EVALUATION
+\input{Bachelorarbeit_kapitel6_evaluation}
+
+% CHAPTER 7: DISKUSSION
+\input{Bachelorarbeit_kapitel7_diskussion}
+
+% CHAPTER 8: FAZIT UND AUSBLICK
+\input{Bachelorarbeit_kapitel8_fazit}
+
+% APPENDIX: INTERVIEWLEITFADEN
+\appendix
+\input{Bachelorarbeit_Appendix}
+
+% SELBSTSTÄNDIGKEITSERKLÄRUNG
+\chapter*{Selbstständigkeitserklärung}
+\addcontentsline{toc}{chapter}{Selbstständigkeitserklärung}
+
+Ich versichere, dass ich die vorliegende Bachelorarbeit selbstständig und ohne Benutzung anderer als der angegebenen Hilfsmittel angefertigt habe. Alle Stellen, die wörtlich oder sinngemäß aus veröffentlichten oder nicht veröffentlichten Schriften entnommen wurden, sind als solche kenntlich gemacht. Dies gilt auch für Inhalte, die mithilfe von KI-basierten Werkzeugen (insbesondere Large Language Models) erstellt oder überarbeitet wurden und entsprechend als solche ausgewiesen sind.
+
+Die Arbeit hat in gleicher oder ähnlicher Form noch keiner anderen Prüfungsbehörde vorgelegen.
+
+\vspace{3cm}
+
+\noindent Wiesbaden, April 2026
+
+\vspace{2cm}
+
+\noindent
+\rule{7cm}{0.4pt}\\[0.3em]
+Jonas Kimmer
+
+\end{document}

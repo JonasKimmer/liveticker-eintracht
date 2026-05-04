@@ -1,26 +1,20 @@
 {
-  "name": "06 – Player-Statistics importieren",
   "nodes": [
     {
-      "id": "a1b2c3d4-0006-0006-0006-000000000001",
-      "name": "Webhook Player-Statistics",
-      "type": "n8n-nodes-base.webhook",
-      "typeVersion": 2.1,
-      "position": [0, 0],
       "parameters": {
         "httpMethod": "POST",
         "path": "player-statistics",
         "responseMode": "responseNode",
         "options": {}
       },
+      "id": "f16dafcb-c703-4329-b260-f259df0b2668",
+      "name": "Webhook Player-Statistics1",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [-512, 256],
       "webhookId": "3a4b5c6d-0006-0006-0006-000000000001"
     },
     {
-      "id": "a1b2c3d4-0006-0006-0006-000000000002",
-      "name": "Get external_id",
-      "type": "n8n-nodes-base.postgres",
-      "typeVersion": 2.4,
-      "position": [224, 0],
       "parameters": {
         "operation": "executeQuery",
         "query": "SELECT external_id FROM matches WHERE id = $1",
@@ -28,21 +22,20 @@
           "queryReplacement": "={{ [$json.body.match_id] }}"
         }
       },
+      "id": "74d44eaa-6a75-4e92-95bf-3f146f2c7edd",
+      "name": "Get external_id",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.4,
+      "position": [-304, 256],
       "credentials": {
         "postgres": {
-          "id": "DpV9uZoIFOsBDj7t",
-          "name": "Postgres account"
+          "id": "5VeE2cikA9rLeOKz",
+          "name": "Postgres account 2"
         }
       }
     },
     {
-      "id": "a1b2c3d4-0006-0006-0006-000000000003",
-      "name": "API: Player-Statistics",
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4.2,
-      "position": [448, 0],
       "parameters": {
-        "method": "GET",
         "url": "https://v3.football.api-sports.io/fixtures/players",
         "authentication": "genericCredentialType",
         "genericAuthType": "httpHeaderAuth",
@@ -57,6 +50,11 @@
         },
         "options": {}
       },
+      "id": "20cdf144-ed18-46a9-8f3c-92df99da98be",
+      "name": "API: Player-Statistics",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [-80, 256],
       "credentials": {
         "httpHeaderAuth": {
           "id": "nw1wvLZ4u2BCZRVl",
@@ -65,90 +63,138 @@
       }
     },
     {
-      "id": "a1b2c3d4-0006-0006-0006-000000000004",
-      "name": "DELETE alte Player-Statistics",
-      "type": "n8n-nodes-base.postgres",
-      "typeVersion": 2.4,
-      "position": [672, 0],
       "parameters": {
         "operation": "executeQuery",
         "query": "DELETE FROM player_statistics WHERE match_id = $1",
         "options": {
-          "queryReplacement": "={{ [$('Webhook Player-Statistics').first().json.body.match_id] }}"
+          "queryReplacement": "={{ [$('Webhook Player-Statistics1').first().json.body.match_id] }}"
         }
       },
+      "id": "3d8358be-4cb7-43e4-8696-24e90b84f814",
+      "name": "DELETE alte Player-Statistics",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.4,
+      "position": [160, 256],
       "credentials": {
         "postgres": {
-          "id": "DpV9uZoIFOsBDj7t",
-          "name": "Postgres account"
+          "id": "5VeE2cikA9rLeOKz",
+          "name": "Postgres account 2"
         }
       }
     },
     {
-      "id": "a1b2c3d4-0006-0006-0006-000000000005",
+      "parameters": {
+        "jsCode": "const apiResponse = $('API: Player-Statistics').first().json;\nconst matchId = $('Webhook Player-Statistics1').first().json.body.match_id;\nif (!apiResponse.response || apiResponse.response.length === 0) return [];\n\nreturn apiResponse.response.flatMap(teamData => {\n  return teamData.players.map(playerData => {\n    const p = playerData.player;\n    const s = playerData.statistics[0];\n    if (!s) return null;\n    const g = s.games || {};\n    const goals = s.goals || {};\n    const passes = s.passes || {};\n    const shots = s.shots || {};\n    const tackles = s.tackles || {};\n    const dribbles = s.dribbles || {};\n    const fouls = s.fouls || {};\n    const cards = s.cards || {};\n    return {\n      json: {\n        match_id: matchId,\n        team_external_id: teamData.team.id,\n        player_external_id: p.id,\n        player_first_name: p.firstname || null,\n        player_last_name: p.lastname || null,\n        player_display_name: p.name || null,\n        player_position: g.position || null,\n        minutes: g.minutes || 0,\n        rating: g.rating ? parseFloat(g.rating) : null,\n        shots_total: shots.total ?? null,\n        shots_on_target: shots.on ?? null,\n        goals: goals.total || 0,\n        assists: goals.assists || 0,\n        passes_total: passes.total ?? null,\n        passes_key: passes.key ?? null,\n        tackles_total: tackles.total ?? null,\n        dribbles_attempts: dribbles.attempts ?? null,\n        dribbles_success: dribbles.success ?? null,\n        fouls_drawn: fouls.drawn ?? null,\n        fouls_committed: fouls.committed ?? null,\n        cards_yellow: cards.yellow || 0,\n        cards_red: cards.red || 0\n      }\n    };\n  }).filter(Boolean);\n});"
+      },
+      "id": "40971287-b3ae-4e00-a690-fd81906068b3",
       "name": "Player-Statistics extrahieren",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [896, 0],
-      "parameters": {
-        "jsCode": "const apiResponse = $('API: Player-Statistics').first().json;\nconst matchId = $('Webhook Player-Statistics').first().json.body.match_id;\nif (!apiResponse.response || apiResponse.response.length === 0) return [];\n\nreturn apiResponse.response.flatMap(teamData => {\n  return teamData.players.map(playerData => {\n    const p = playerData.player;\n    const s = playerData.statistics[0];\n    if (!s) return null;\n\n    const g = s.games || {};\n    const goals = s.goals || {};\n    const passes = s.passes || {};\n    const shots = s.shots || {};\n    const tackles = s.tackles || {};\n    const dribbles = s.dribbles || {};\n    const fouls = s.fouls || {};\n    const cards = s.cards || {};\n\n    return {\n      json: {\n        match_id: matchId,\n        team_external_id: teamData.team.id,\n        player_external_id: p.id,\n        position: g.position || null,\n        minutes: g.minutes || 0,\n        rating: g.rating ? parseFloat(g.rating) : null,\n        shots_total: shots.total ?? null,\n        shots_on_target: shots.on ?? null,\n        goals: goals.total || 0,\n        assists: goals.assists || 0,\n        passes_total: passes.total ?? null,\n        passes_key: passes.key ?? null,\n        tackles_total: tackles.total ?? null,\n        dribbles_attempts: dribbles.attempts ?? null,\n        dribbles_success: dribbles.success ?? null,\n        fouls_drawn: fouls.drawn ?? null,\n        fouls_committed: fouls.committed ?? null,\n        cards_yellow: cards.yellow || 0,\n        cards_red: cards.red || 0\n      }\n    };\n  }).filter(Boolean);\n});"
-      }
+      "position": [384, 256]
     },
     {
-      "id": "a1b2c3d4-0006-0006-0006-000000000006",
-      "name": "INSERT Player-Statistics",
-      "type": "n8n-nodes-base.postgres",
-      "typeVersion": 2.4,
-      "position": [1120, 0],
       "parameters": {
         "operation": "executeQuery",
-        "query": "INSERT INTO player_statistics (\n  match_id, team_id, player_id,\n  position, minutes, rating,\n  shots_total, shots_on_target,\n  goals, assists,\n  passes_total, passes_key,\n  tackles_total,\n  dribbles_attempts, dribbles_success,\n  fouls_drawn, fouls_committed,\n  cards_yellow, cards_red\n)\nVALUES (\n  $1,\n  (SELECT id FROM teams WHERE external_id = $2),\n  (SELECT id FROM players WHERE external_id = $3),\n  $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19\n)",
+        "query": "WITH upserted AS (\n  INSERT INTO players (external_id, first_name, last_name, display_name, position, team_id, sport)\n  VALUES ($1, $2, $3, $4, $5, (SELECT id FROM teams WHERE external_id = $6), 'Football')\n  ON CONFLICT (external_id) DO UPDATE SET\n    first_name = EXCLUDED.first_name,\n    last_name = EXCLUDED.last_name,\n    display_name = EXCLUDED.display_name,\n    position = EXCLUDED.position,\n    team_id = EXCLUDED.team_id\n  RETURNING id\n)\nINSERT INTO player_statistics (\n  match_id, team_id, player_id,\n  position, minutes, rating,\n  shots_total, shots_on_target,\n  goals, assists,\n  passes_total, passes_key,\n  tackles_total,\n  dribbles_attempts, dribbles_success,\n  fouls_drawn, fouls_committed,\n  cards_yellow, cards_red\n)\nVALUES (\n  $7,\n  (SELECT id FROM teams WHERE external_id = $6),\n  (SELECT id FROM upserted),\n  $5, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22\n)\n",
         "options": {
-          "queryReplacement": "={{ [$json.match_id, $json.team_external_id, $json.player_external_id, $json.position, $json.minutes, $json.rating, $json.shots_total, $json.shots_on_target, $json.goals, $json.assists, $json.passes_total, $json.passes_key, $json.tackles_total, $json.dribbles_attempts, $json.dribbles_success, $json.fouls_drawn, $json.fouls_committed, $json.cards_yellow, $json.cards_red] }}"
+          "queryReplacement": "={{ [$json.player_external_id, $json.player_first_name, $json.player_last_name, $json.player_display_name, $json.player_position, $json.team_external_id, $json.match_id, $json.minutes, $json.rating, $json.shots_total, $json.shots_on_target, $json.goals, $json.assists, $json.passes_total, $json.passes_key, $json.tackles_total, $json.dribbles_attempts, $json.dribbles_success, $json.fouls_drawn, $json.fouls_committed, $json.cards_yellow, $json.cards_red] }}"
         }
       },
+      "id": "335a83fc-e681-454a-81b1-c0731050a293",
+      "name": "UPSERT + INSERT Player",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.4,
+      "position": [608, 256],
       "credentials": {
         "postgres": {
-          "id": "DpV9uZoIFOsBDj7t",
-          "name": "Postgres account"
+          "id": "5VeE2cikA9rLeOKz",
+          "name": "Postgres account 2"
         }
       }
     },
     {
-      "id": "a1b2c3d4-0006-0006-0006-000000000007",
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={ \"status\": \"ok\", \"match_id\": {{ $('Webhook Player-Statistics1').first().json.body.match_id }} }",
+        "options": {}
+      },
+      "id": "84900b09-f040-4865-8199-70b4b42a69ac",
       "name": "Respond to Webhook",
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.1,
-      "position": [1344, 0],
-      "parameters": {
-        "respondWith": "json",
-        "responseBody": "={ \"status\": \"ok\", \"match_id\": {{ $('Webhook Player-Statistics').first().json.body.match_id }} }",
-        "options": {}
-      }
+      "position": [832, 256]
     }
   ],
   "connections": {
-    "Webhook Player-Statistics": {
-      "main": [[{ "node": "Get external_id", "type": "main", "index": 0 }]]
+    "Webhook Player-Statistics1": {
+      "main": [
+        [
+          {
+            "node": "Get external_id",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     },
     "Get external_id": {
-      "main": [[{ "node": "API: Player-Statistics", "type": "main", "index": 0 }]]
+      "main": [
+        [
+          {
+            "node": "API: Player-Statistics",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     },
     "API: Player-Statistics": {
-      "main": [[{ "node": "DELETE alte Player-Statistics", "type": "main", "index": 0 }]]
+      "main": [
+        [
+          {
+            "node": "DELETE alte Player-Statistics",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     },
     "DELETE alte Player-Statistics": {
-      "main": [[{ "node": "Player-Statistics extrahieren", "type": "main", "index": 0 }]]
+      "main": [
+        [
+          {
+            "node": "Player-Statistics extrahieren",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     },
     "Player-Statistics extrahieren": {
-      "main": [[{ "node": "INSERT Player-Statistics", "type": "main", "index": 0 }]]
+      "main": [
+        [
+          {
+            "node": "UPSERT + INSERT Player",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     },
-    "INSERT Player-Statistics": {
-      "main": [[{ "node": "Respond to Webhook", "type": "main", "index": 0 }]]
+    "UPSERT + INSERT Player": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "pinData": {},
   "meta": {
-    "templateCredsSetupCompleted": true
+    "instanceId": "c812d7c91145a37daf0cb923fa307183fa91637fdbe8017dda5dce71e0f572b5"
   }
 }

@@ -1,0 +1,407 @@
+{
+  "name": "Sync 11 | Spieler Saison Statistiken",
+  "nodes": [
+    {
+      "parameters": {
+        "url": "https://partner-api.stackwork-01-test.tech/cms/v1/matches",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "pageSize",
+              "value": "100"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer 52091AC14B524E59DEF531D0EA8F57EF0804D4CFADCF4A1A52CE842687D2D209-1"
+            },
+            {
+              "name": "et-partner-id",
+              "value": "4"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "cfc2904f-17b1-4183-a9b4-c698d5207945",
+      "name": "HTTP: Get Season Matches",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        -1344,
+        96
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const teamIds = new Set();\n\n// Wir gehen durch das Array von n8n (meistens ein Item, das \"items\" enthält)\n$input.all().forEach(item => {\n  const matches = item.json.items || [];\n  \n  matches.forEach(m => {\n    if (m.teamHomeId) teamIds.add(m.teamHomeId);\n    if (m.teamAwayId) teamIds.add(m.teamAwayId);\n  });\n});\n\n// Umwandlung in eine Liste für die API-Sports Squad Abfrage\nreturn Array.from(teamIds).map(id => ({\n  json: {\n    teamId: id\n  }\n}));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1072,
+        96
+      ],
+      "id": "cfb7cb0c-1cd7-4d64-a8b9-821f7c88e197",
+      "name": "JS: Extract Unique Team IDs"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -736,
+        96
+      ],
+      "id": "f7f8efe8-ea3b-461b-bcc5-0ae920dd2b0c",
+      "name": "Manual Trigger"
+    },
+    {
+      "parameters": {
+        "url": "https://v3.football.api-sports.io/players",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "team",
+              "value": "169"
+            },
+            {
+              "name": "season",
+              "value": "2025"
+            },
+            {
+              "name": "page",
+              "value": "1"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -496,
+        -64
+      ],
+      "id": "0fb3a8ad-85f5-4f93-a697-a181ff3fb0e2",
+      "name": "HTTP: Players Page 1",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "8TXlLPe7BeXnl0Ut",
+          "name": "Header Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "https://v3.football.api-sports.io/players",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "team",
+              "value": "169"
+            },
+            {
+              "name": "season",
+              "value": "2025"
+            },
+            {
+              "name": "page",
+              "value": "2"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -496,
+        96
+      ],
+      "id": "6fb5e8f4-1289-4459-9562-77da7affb644",
+      "name": "HTTP: Players Page 2",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "8TXlLPe7BeXnl0Ut",
+          "name": "Header Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "https://v3.football.api-sports.io/players",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "team",
+              "value": "169"
+            },
+            {
+              "name": "season",
+              "value": "2025"
+            },
+            {
+              "name": "page",
+              "value": "3"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -496,
+        256
+      ],
+      "id": "2123f8c1-c232-4e1d-babe-6ea7a02a1e67",
+      "name": "HTTP: Players Page 3",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "8TXlLPe7BeXnl0Ut",
+          "name": "Header Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3,
+      "position": [
+        -240,
+        96
+      ],
+      "id": "deed4ec1-e679-4543-b93d-ffe776648674",
+      "name": "Merge Pages"
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\nconst results = [];\n\nconst positionMap = {\n  \"Defender\":   \"Defender\",\n  \"Goalkeeper\": \"Goalkeeper\",\n  \"Midfielder\": \"Midfielder\",\n  \"Attacker\":   \"Forward\",\n};\n\nconst ALLOWED_LEAGUES = new Set([78, 2, 81]);\n\nfor (const item of items) {\n  const response = item.json.response ?? [];\n\n  for (const entry of response) {\n    const p = entry.player;\n\n    let agg = {\n      matchesPlayed:  0,\n      starts:         0,\n      timePlayed:     0,\n      duelsWon:       0,\n      duelsLost:      0,\n      goals:          0,\n      goalAssists:    0,\n      penaltyGoals:   0,\n      totalPasses:    0,\n      substituteOn:   0,\n      substituteOff:  0,\n      yellowCards:    0,\n      yellowRedCards: 0,\n      redCards:       0,\n    };\n\n    let position = null;\n    let jerseyNumber = null;\n\n    for (const stat of entry.statistics) {\n      if (!ALLOWED_LEAGUES.has(stat.league?.id)) continue;\n\n      const g      = stat.games       ?? {};\n      const goals  = stat.goals       ?? {};\n      const duels  = stat.duels       ?? {};\n      const passes = stat.passes      ?? {};\n      const cards  = stat.cards       ?? {};\n      const subs   = stat.substitutes ?? {};\n      const pen    = stat.penalty     ?? {};\n\n      agg.matchesPlayed  += g.appearences   ?? 0;\n      agg.starts         += g.lineups       ?? 0;\n      agg.timePlayed     += g.minutes       ?? 0;\n      agg.duelsWon       += duels.won       ?? 0;\n      agg.duelsLost      += (duels.total ?? 0) - (duels.won ?? 0);\n      agg.goals          += goals.total     ?? 0;\n      agg.goalAssists    += goals.assists   ?? 0;\n      agg.penaltyGoals   += pen.scored      ?? 0;\n      agg.totalPasses    += passes.total    ?? 0;\n      agg.substituteOn   += subs.in         ?? 0;\n      agg.substituteOff  += subs.out        ?? 0;\n      agg.yellowCards    += cards.yellow    ?? 0;\n      agg.yellowRedCards += cards.yellowred ?? 0;\n      agg.redCards       += cards.red       ?? 0;\n\n      if (!position && g.position) position = g.position;\n      if (!jerseyNumber && g.number) jerseyNumber = g.number;\n    }\n\n    results.push({\n      json: {\n        id:          p.id,\n        sport:       \"Football\",\n        firstName:   p.firstname,\n        lastName:    p.lastname,\n        shortName:   p.name ?? null,\n        displayName: p.name ?? null,\n        knownName:   null,\n        birthday:    p.birth?.date ?? null,\n        birthplace:  p.birth?.place ?? null,\n        weight:      p.weight ? parseInt(p.weight) : null,\n        height:      p.height ? parseInt(p.height) : null,\n        jerseyNumber: jerseyNumber ?? null,\n        country:     p.nationality ?? null,\n        imageUrl:    p.photo ?? null,\n        personHeroImageUrl: null,\n        profile:     null,\n        hidden:      false,\n        position:    positionMap[position] ?? null,\n        teamId:      entry.statistics[0]?.team?.id ?? null,\n        joinedOn:    null,\n        statistics: {\n          sport:          \"Football\",\n          matchesPlayed:  agg.matchesPlayed  || null,\n          starts:         agg.starts         || null,\n          timePlayed:     agg.timePlayed     || null,\n          duelsWon:       agg.duelsWon       || null,\n          duelsLost:      agg.duelsLost      || null,\n          goals:          agg.goals          || null,\n          goalAssists:    agg.goalAssists    || null,\n          penaltyGoals:   agg.penaltyGoals   || null,\n          totalPasses:    agg.totalPasses    || null,\n          substituteOn:   agg.substituteOn   || null,\n          substituteOff:  agg.substituteOff  || null,\n          yellowCards:    agg.yellowCards    || null,\n          yellowRedCards: agg.yellowRedCards || null,\n          redCards:       agg.redCards       || null,\n          rightFootGoals:                 null,\n          leftFootGoals:                  null,\n          goalsFromInsideBox:             null,\n          goalsFromOutsideBox:            null,\n          headedGoals:                    null,\n          successfulLongPasses:           null,\n          successfulShortPasses:          null,\n          touches:                        null,\n          successfulPassesOwnHalf:        null,\n          successfulPassesOppositionHalf: null,\n        }\n      }\n    });\n  }\n}\n\nreturn results;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        0,
+        96
+      ],
+      "id": "5f2ac11f-8838-4fe1-9593-b6313118730e",
+      "name": "Code: Extract & Map Players"
+    },
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "=https://partner-api.stackwork-01-test.tech/cms/v1/players/{{ $json.id }}/statistics",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer 52091AC14B524E59DEF531D0EA8F57EF0804D4CFADCF4A1A52CE842687D2D209-1"
+            },
+            {
+              "name": "et-partner-id",
+              "value": "4"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"sport\": \"Football\",\n  \"matchesPlayed\": {{ $json.statistics.matchesPlayed ?? 'null' }},\n  \"starts\": {{ $json.statistics.starts ?? 'null' }},\n  \"timePlayed\": {{ $json.statistics.timePlayed ?? 'null' }},\n  \"duelsWon\": {{ $json.statistics.duelsWon ?? 'null' }},\n  \"duelsLost\": {{ $json.statistics.duelsLost ?? 'null' }},\n  \"goals\": {{ $json.statistics.goals ?? 'null' }},\n  \"goalAssists\": {{ $json.statistics.goalAssists ?? 'null' }},\n  \"penaltyGoals\": {{ $json.statistics.penaltyGoals ?? 'null' }},\n  \"totalPasses\": {{ $json.statistics.totalPasses ?? 'null' }},\n  \"substituteOn\": {{ $json.statistics.substituteOn ?? 'null' }},\n  \"substituteOff\": {{ $json.statistics.substituteOff ?? 'null' }},\n  \"yellowCards\": {{ $json.statistics.yellowCards ?? 'null' }},\n  \"yellowRedCards\": {{ $json.statistics.yellowRedCards ?? 'null' }},\n  \"redCards\": {{ $json.statistics.redCards ?? 'null' }},\n  \"rightFootGoals\": null,\n  \"leftFootGoals\": null,\n  \"goalsFromInsideBox\": null,\n  \"goalsFromOutsideBox\": null,\n  \"headedGoals\": null,\n  \"successfulLongPasses\": null,\n  \"successfulShortPasses\": null,\n  \"touches\": null,\n  \"successfulPassesOwnHalf\": null,\n  \"successfulPassesOppositionHalf\": null\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        240,
+        96
+      ],
+      "id": "72061ae6-1d52-435f-b1bb-f8e389e9dad3",
+      "name": "HTTP: PATCH Statistics to Partner API",
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.statusCode }}",
+              "rightValue": 200,
+              "operator": {
+                "type": "number",
+                "operation": "notEquals"
+              },
+              "id": "38dceb24-46b1-4c37-9796-c77cde36d13b"
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        496,
+        96
+      ],
+      "id": "ebe4ef8e-2a83-437c-9dc3-87966c637bb6",
+      "name": "IF: Request Failed?"
+    },
+    {
+      "parameters": {
+        "jsCode": "const item = $input.first();\nconsole.error(`PATCH failed for player ${item.json.id ?? 'unknown'}: Status ${item.json.statusCode} – ${JSON.stringify(item.json.body ?? item.json)}`);\nreturn [item];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        736,
+        -16
+      ],
+      "id": "e57d5b03-7654-43e7-a890-194f5f44eb91",
+      "name": "Code: Log Error"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "HTTP: Get Season Matches": {
+      "main": [
+        [
+          {
+            "node": "JS: Extract Unique Team IDs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Manual Trigger": {
+      "main": [
+        [
+          {
+            "node": "HTTP: Players Page 1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "HTTP: Players Page 2",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "HTTP: Players Page 3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP: Players Page 1": {
+      "main": [
+        [
+          {
+            "node": "Merge Pages",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP: Players Page 2": {
+      "main": [
+        [
+          {
+            "node": "Merge Pages",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge Pages": {
+      "main": [
+        [
+          {
+            "node": "Code: Extract & Map Players",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code: Extract & Map Players": {
+      "main": [
+        [
+          {
+            "node": "HTTP: PATCH Statistics to Partner API",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP: PATCH Statistics to Partner API": {
+      "main": [
+        [
+          {
+            "node": "IF: Request Failed?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF: Request Failed?": {
+      "main": [
+        [
+          {
+            "node": "Code: Log Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP: Players Page 3": {
+      "main": [
+        [
+          {
+            "node": "Merge Pages",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "31e6265c-0a6d-4805-9ee1-aea2745a99b1",
+  "meta": {
+    "instanceId": "8f356ecf824174491100e48f7fade606f544a76873378b03e211127fbec11c97"
+  },
+  "id": "T9UOfZbYIM3CKya3",
+  "tags": []
+}

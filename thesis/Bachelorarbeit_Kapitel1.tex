@@ -1,0 +1,155 @@
+\chapter{Einleitung}\label{einleitung}
+
+Ein Liveticker ist eine Form der Echtzeit-Berichterstattung, bei der Spielereignisse eines Fußballspiels (Tore, Karten, Auswechslungen, Atmosphäre und Spielanalyse) fortlaufend als kurze Texteinträge publiziert werden. Als digitale Textgattung verbindet er Berichts-, Meinungs- und Unterhaltungselemente und hat sich im Profisport zu einer zentralen Form der synchronen medialen Spielbegleitung entwickelt (vgl. Hauser 2008, S.~1; Beils 2023, S.~56). Wie die Produktion dieser Texte unter zunehmendem Zeitdruck und wachsenden Anforderungen technologisch unterstützt werden kann, untersucht die vorliegende Arbeit.
+
+\section{Problemstellung und
+Zielsetzung}\label{problemstellung-und-zielsetzung}
+
+„Ein vernünftiger Live-Ticker ist fast unmöglich zu schreiben. Denn sein
+Konzept ist die komplette Überforderung. Des Autors. Des Schreibens. Und
+der Wirklichkeit.`` Mit diesen Worten beschreibt der Journalist
+Constantin Seibt das Grundproblem der Liveticker-Berichterstattung, eine
+Einschätzung, die im modernen digitalen Sportjournalismus bis heute
+nichts an Aktualität verloren hat (Seibt, zit. n. Beils 2023, S. 56). Der
+Liveticker hat sich zur prägenden Darstellungsform der
+Echtzeit-Berichterstattung im Profifußball entwickelt und steht dabei
+exemplarisch für einen Zielkonflikt zwischen Geschwindigkeit und
+Qualität, der mit rein manuellen Mitteln nicht auflösbar ist.
+
+Im modernen digitalen Sportjournalismus lassen sich drei strukturelle Herausforderungen identifizieren, die den Einsatz technologischer Lösungen notwendig machen. Erstens zwingt der \textbf{operative Zeitdruck} Redakteure dazu, Spielereignisse in Echtzeit zu beobachten, einzuordnen und in stilistisch kohärente Kurztexte zu überführen, typischerweise innerhalb von 30 bis 120 Sekunden pro Eintrag (vgl. Walter 2020, S.~29; Bluhm \& Schäfer 2023, S.~35). Zweitens stehen Redaktionen vor wachsenden \textbf{Internationalisierungsanforderungen}: Profifußballvereine bedienen zunehmend internationale Fanbases und müssen Inhalte parallel in mehreren Sprachen bereitstellen, ohne ausreichend mehrsprachiges Personal vorzuhalten (vgl. Beils 2023, S.~200). Drittens vollzieht sich ein \textbf{struktureller Wandel} der Vereine zu eigenständigen Medienproduzenten, die Redaktionswerkzeuge mit konfigurierbarem vereinsspezifischem Ton und CI-konformer Gestaltung benötigen (vgl. Beils 2023, S.~155).
+
+Diese Dimensionen werden in Kapitel 2 wissenschaftlich fundiert und in
+konkrete Systemanforderungen überführt.
+
+Das übergeordnete Ziel ist die Konzeption und Implementierung eines produktionsfähigen Redaktionssystems, das diesen Konflikt durch den gezielten Einsatz von \textbf{Large Language Models} auflöst, während die Entscheidungshoheit und publizistische Verantwortung beim Menschen verbleiben. Das System wird in zwei Ausprägungen realisiert: einer generischen Instanz für beliebige Vereine sowie einer vereinsspezifischen White-Label-Instanz am Beispiel Eintracht Frankfurt.
+
+Um das Ziel zu operationalisieren, definiert und evaluiert die Arbeit drei Betriebsmodi: (1)~\textbf{\texttt{manual}} als vollmanuell erstellte Vergleichsbasis, (2)~\textbf{\texttt{auto}} mit KI-basierter Texterstellung und Publikation ohne menschliches Korrektiv sowie (3)~\textbf{\texttt{coop}} als hybrider Modus aus KI-Vorschlag und redaktioneller Prüfung und Freigabe.
+
+
+
+\section{Forschungsfrage}\label{forschungsfrage}
+
+Aus der in Abschnitt 1.1 entwickelten Zielsetzung ergibt sich folgende
+Forschungsfrage, die der vorliegenden Arbeit zugrunde liegt:
+
+\begin{quote}
+Wie lässt sich ein hybrides KI-gestütztes Redaktionssystem für die
+Liveticker-Erstellung im Profifußball konzipieren und prototypisch
+implementieren, und inwiefern erfüllt das System die definierten
+journalistischen Qualitätsanforderungen hinsichtlich Korrektheit,
+Tonalität und Verständlichkeit?
+\end{quote}
+
+Die Forschungsfrage leistet einen konstruktiven Design-Science-Beitrag (Hevner et al.~2004): Sie prüft, ob ein System realisierbar ist, das Echtzeitanforderungen, Mehrsprachigkeit und White-Label-Betrieb erfüllt und dabei journalistische Qualitätskriterien einhält. Die methodische Vorbereitung erfolgt in Abschnitt~1.3; die
+vollständige Beantwortung in Kapitel~8.
+
+
+
+\section{Methodisches Vorgehen}\label{methodisches-vorgehen}
+
+Die Arbeit folgt einem konstruktiven Forschungsansatz im Sinne des
+\textbf{Design Science Research} (Hevner et al.~2004): Ein
+softwarebasiertes Artefakt wird als Antwort auf ein identifiziertes
+Praxisproblem entworfen, implementiert und evaluiert. Der
+Erkenntnisgewinn entsteht nicht nur aus der Evaluation, sondern
+auch aus dem Entwurfs- und Implementierungsprozess selbst.
+
+Das methodische Vorgehen gliedert sich in fünf Phasen. Die \textbf{Problemanalyse und Anforderungserhebung} vertieft literaturgestützt die Problemdimensionen und leitet funktionale sowie nicht-funktionale Anforderungen ab. Die \textbf{Technologierecherche} arbeitet den Stand der Technik in den relevanten Bereichen auf und bewertet ihn hinsichtlich der Eignung für das identifizierte Problem. Die \textbf{Systemkonzeption} entwirft eine dreischichtige Systemarchitektur mit Datenmodell, LLM-Pipeline und Prompt-Design. Die \textbf{Implementierung} setzt das System als produktionsfähige Webanwendung mit vollständiger API, browserbasiertem Frontend, automatisiertem ETL-System und Cloud-Deployment um. Die \textbf{Evaluation} umfasst technische Qualitätssicherung, Bewertung der KI-Textgenerierung sowie einen systematischen Anforderungsabgleich.
+
+Die Evaluationsmethodik operationalisiert die Forschungsfrage entlang
+der Qualitätsdimension: Eine manuelle Bewertung von 16
+KI-generierten Ticker-Einträgen auf den Skalen Korrektheit, Tonalität
+und Verständlichkeit (je 1--5 Punkte) bildet die Hauptevaluation.
+Ergänzend wird eine \textbf{LLM-as-Judge-Evaluation} (N~=~80 Einträge,
+Saison 2025/26) eingesetzt, bei der ein unabhängiges Sprachmodell die
+generierten Texte nach denselben drei Dimensionen bewertet. Ein
+\textbf{strukturiertes Experteninterview} mit einem professionellen
+Sportredakteur validiert die Systemeignung im redaktionellen
+Arbeitskontext. Als technischer Zusatzbefund werden die
+End-to-End-Latenzen des LLM-Service (25 Messpunkte, Render-Deployment)
+dokumentiert.
+
+\section{Abgrenzung}\label{abgrenzung}
+
+Das System geht bewusst über den Umfang eines typischen akademischen
+Projekts hinaus und zielt auf Produktionsfähigkeit: Eine umfassende
+automatisierte Testsuite, ein Cloud-Deployment und die Integration
+realer Datenquellen dokumentieren diesen Anspruch. Diese
+Praxisorientierung ist durch den beruflichen Kontext des Autors
+motiviert: Als Mitarbeiter der \textbf{Stackwork GmbH} im IT-Bereich von
+Eintracht Frankfurt entstand das System in direkter Kooperation mit den
+fachlichen Anforderungen einer professionellen Redaktion. Das Ergebnis
+ist ein vollständiges, eigenständig lauffähiges Redaktionssystem, das
+als Cloud-Service alle Spiele der konfigurierten Wettbewerbe
+verarbeitet. Die technischen Details der Architektur und Implementierung
+werden in Kapitel 4 und 5 beschrieben.
+
+Dennoch bestehen Einschränkungen, die bewusst ausgeklammert wurden und
+in Kapitel~7 kritisch reflektiert werden. Konkret nicht Gegenstand dieser
+Arbeit sind:
+
+\begin{itemize}\tightlist
+\item \textbf{Nutzerakzeptanz und UX-Evaluation:} Eine systematische
+  Nutzerstudie mit professionellen Redakteuren im realen Spielbetrieb
+  (etwa über Usability-Tests oder Fragebögen) wurde nicht durchgeführt.
+  Erkenntnisse zur Akzeptanz des Systems entstammen ausschließlich dem
+  strukturierten Experteninterview (Kap.~2.4).
+\item \textbf{Vollkostenanalyse:} Eine quantitative Kosten-Nutzen-Analyse
+  (API-Kosten, Personalkosten, Infrastrukturkosten im Vergleich zu
+  manueller Produktion) liegt außerhalb des Untersuchungsrahmens.
+\item \textbf{Vergleich mit kommerziellen Systemen:} Das System wird nicht
+  systematisch gegen bestehende kommerzielle Lösungen (z.\,B. Retresco,
+  AP Automated Insights) verglichen; die Abgrenzung erfolgt qualitativ in
+  Kapitel~7.1.
+\item \textbf{Authentifizierung und Mehrbenutzerbetrieb:} Das System
+  verzichtet bewusst auf eine Authentifizierungsschicht und ist als
+  internes Redaktionswerkzeug konzipiert. Aspekte des
+  Produktiv-Mehrbenutzerbetriebs (Rollen, Zugriffssteuerung,
+  Audit-Logging) werden nicht implementiert.
+\item \textbf{Langzeitbetrieb und Saison-Coverage:} Das System wurde
+  nicht über eine vollständige Saison im Produktivbetrieb evaluiert;
+  Textqualitätsdrift, kumulative API-Kosten und Rate-Limit-Verhalten
+  unter Dauerlast sind nicht erfasst.
+\end{itemize}
+
+
+
+\section{Aufbau der Arbeit}\label{aufbau-der-arbeit}
+
+Die vorliegende Arbeit gliedert sich in acht Kapitel:
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{Kapitel 1 -- Einleitung} \emph{(vorliegendes Kapitel)}:
+  Problemstellung und Zielsetzung, Forschungsfrage, methodisches Vorgehen und Aufbau der Arbeit.
+\item
+  \textbf{Kapitel 2 -- Motivation und Anforderungen:} Vertiefung der
+  drei Problemdimensionen (redaktioneller Aufwand, Mehrsprachigkeit,
+  White-Label-Bedarf), Ableitung der Systemanforderungen am Beispiel
+  Eintracht Frankfurt, Experteninterview-Leitfaden und formale
+  Anforderungsdefinition.
+\item
+  \textbf{Kapitel 3 -- Stand der Technik:} Large Language Models, Prompt
+  Engineering, Natural Language Generation im Sport, Echtzeit-Technologien
+  sowie Backend-, Frontend- und Deployment-Technologien.
+\item
+  \textbf{Kapitel 4 -- Systemkonzeption:} Dreischichtige Architektur,
+  Datenmodell, LLM-Pipeline und Prompt-Design.
+\item
+  \textbf{Kapitel 5 -- Implementierung:} Umsetzung als produktionsfähige
+  Webanwendung mit TypeScript-Frontend, REST-API und n8n-ETL-System;
+  ergänzt durch vollständige TypeScript-Typisierung, automatisierte
+  Testsuite und Cloud-Deployment.
+\item
+  \textbf{Kapitel 6 -- Evaluation:} Technische Qualitätssicherung
+  (Tests, Coverage, Typsicherheit), Evaluation der KI-Textgenerierung
+  und systematischer Anforderungsabgleich.
+\item
+  \textbf{Kapitel 7 -- Diskussion:} Einordnung in den Stand der Technik,
+  kritische Reflexion der Limitationen und Implikationen für den
+  Sportjournalismus.
+\item
+  \textbf{Kapitel 8 -- Fazit und Ausblick:} Zusammenfassung der
+  Erkenntnisse, Beantwortung der Forschungsfrage und Ausblick.
+\end{itemize}

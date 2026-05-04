@@ -1,0 +1,58 @@
+name: Build LaTeX to PDF
+
+on:
+  push:
+    branches: [main, deploy/render-v2]
+    paths:
+      - "thesis/Bachelorarbeit_*.tex"
+      - "docs_short/**"
+      - ".github/workflows/latex.yml"
+  pull_request:
+    branches: [main, deploy/render-v2]
+  workflow_dispatch:
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container:
+      image: texlive/texlive:latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build LaTeX to PDF (with TikZ diagrams)
+        run: |
+          cd thesis
+          xelatex -interaction=nonstopmode -shell-escape Bachelorarbeit_Main.tex || true
+          echo "First pass complete"
+          xelatex -interaction=nonstopmode -shell-escape Bachelorarbeit_Main.tex || true
+
+      - name: Check PDF was created
+        run: |
+          if [ -f "thesis/Bachelorarbeit_Main.pdf" ]; then
+            echo "✅ PDF erfolgreich generiert!"
+            ls -lh thesis/Bachelorarbeit_Main.pdf
+            exit 0
+          else
+            echo "❌ PDF Generierung fehlgeschlagen"
+            exit 1
+          fi
+
+      - name: Upload PDF as artifact
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: Bachelorarbeit_PDF
+          path: thesis/Bachelorarbeit_Main.pdf
+          retention-days: 90
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: Bachelorarbeit_Main.pdf
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, TIMESTAMP, ForeignKey, UniqueConstraint
+from sqlalchemy import Column, Integer, String, NUMERIC, TIMESTAMP, ForeignKey, UniqueConstraint
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from app.core.database import Base
@@ -14,7 +14,7 @@ class MatchStatistic(Base):
     team_id = Column(
         Integer, ForeignKey("teams.id", ondelete="CASCADE"), nullable=False
     )
-    possession_percentage = Column(String(10), nullable=True)  # "45.0"
+    possession_percentage = Column(NUMERIC(5, 1), nullable=True)
     total_pass = Column(Integer, nullable=True)
     accurate_pass = Column(Integer, nullable=True)
     duel_won = Column(Integer, nullable=True)

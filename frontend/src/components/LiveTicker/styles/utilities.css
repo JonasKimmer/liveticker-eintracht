@@ -1,0 +1,381 @@
+/* ============================================================
+   LiveTicker – Utilities (Buttons, Forms, Modals, Empty/Error)
+   ============================================================ */
+
+/* Buttons */
+.lt-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.4rem 0.9rem;
+  border-radius: var(--lt-radius);
+  border: none;
+  font-family: var(--lt-font-mono);
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+.lt-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.lt-btn--primary {
+  background: var(--lt-accent);
+  color: #000;
+}
+.lt-btn--primary:hover:not(:disabled) {
+  filter: brightness(1.1);
+}
+
+.lt-btn--ghost {
+  background: var(--lt-bg-hover);
+  color: var(--lt-text-muted);
+  border: 1px solid var(--lt-border);
+}
+.lt-btn--ghost:hover:not(:disabled) {
+  background: #3a4255;
+  color: var(--lt-text);
+}
+
+.lt-btn--danger {
+  background: rgba(239, 68, 68, 0.15);
+  color: var(--lt-color-red);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
+.lt-btn--danger:hover:not(:disabled) {
+  background: rgba(239, 68, 68, 0.25);
+}
+
+.lt-btn__kbd {
+  padding: 0.1rem 0.35rem;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 3px;
+  font-size: 0.65rem;
+  letter-spacing: 0;
+}
+.lt-btn--sm {
+  padding: 0.25rem 0.6rem;
+  font-size: 0.7rem;
+}
+
+/* ============================================================
+   EMPTY / ERROR STATES
+   ============================================================ */
+.lt-empty {
+  padding: 3rem 1rem;
+  text-align: center;
+  font-family: var(--lt-font-mono);
+  font-size: 0.85rem;
+  color: var(--lt-text-faint);
+  line-height: 1.7;
+}
+.lt-empty__icon {
+  font-size: 2rem;
+  margin-bottom: 0.5rem;
+}
+
+/* ============================================================
+   KEYBOARD HINTS MODAL
+   ============================================================ */
+.lt-kb-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.8);
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+}
+.lt-kb-modal {
+  background: var(--lt-bg-card-2);
+  border: 2px solid var(--lt-accent);
+  border-radius: var(--lt-radius-lg);
+  padding: 1.5rem;
+  max-width: 680px;
+  width: 100%;
+}
+.lt-kb-modal__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.25rem;
+}
+.lt-kb-modal__title {
+  font-family: var(--lt-font-mono);
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--lt-accent);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.lt-kb-modal__title::before {
+  content: "";
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--lt-accent);
+}
+.lt-kb-modal__close {
+  background: none;
+  border: none;
+  color: var(--lt-text-muted);
+  cursor: pointer;
+  font-size: 1.25rem;
+  line-height: 1;
+  transition: color 0.2s;
+}
+.lt-kb-modal__close:hover {
+  color: var(--lt-text);
+}
+
+.lt-kb-modal__grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.25rem;
+}
+.lt-kb-group__title {
+  font-family: var(--lt-font-mono);
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--lt-text-muted);
+  margin-bottom: 0.6rem;
+}
+.lt-kb-group__list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.lt-kb-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+.lt-kb-item__keys {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+.lt-kb-item__key {
+  font-family: var(--lt-font-mono);
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 0.2rem 0.45rem;
+  background: var(--lt-bg-card);
+  border: 1px solid var(--lt-border);
+  border-radius: 4px;
+  color: var(--lt-text-sec);
+}
+.lt-kb-item__key--accent {
+  background: var(--lt-accent);
+  color: #000;
+  border-color: var(--lt-accent);
+}
+.lt-kb-item__sep {
+  color: var(--lt-text-faint);
+  font-size: 0.65rem;
+}
+.lt-kb-item__action {
+  font-family: var(--lt-font-mono);
+  font-size: 0.75rem;
+  color: var(--lt-text-muted);
+}
+
+.lt-kb-modal__footer {
+  margin-top: 1.25rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--lt-border);
+  text-align: center;
+  font-family: var(--lt-font-mono);
+  font-size: 0.65rem;
+  color: var(--lt-text-faint);
+}
+.lt-kb-modal__footer kbd {
+  padding: 0.1rem 0.35rem;
+  background: var(--lt-bg-card);
+  border: 1px solid var(--lt-border);
+  border-radius: 3px;
+  color: var(--lt-accent);
+  font-size: 0.65rem;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   Shared Modal / Panel Utility Classes
+   ───────────────────────────────────────────────────────────────────────────── */
+
+/* Modal overlay (full-screen backdrop) */
+.lt-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+/* Modal card container */
+.lt-modal-card {
+  width: 100%;
+  max-width: 440px;
+  border-radius: 10px;
+  background: var(--lt-bg-card);
+  border: 1px solid var(--lt-border);
+  box-shadow: 0 24px 48px rgba(0, 0, 0, 0.7);
+  overflow: hidden;
+  position: relative;
+}
+
+/* Close button (top-right circle) */
+.lt-modal-close {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.5);
+  border: 1px solid var(--lt-border);
+  color: var(--lt-text-muted);
+  cursor: pointer;
+  font-size: 0.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Form input / select */
+.lt-form-input {
+  background: var(--lt-bg-input);
+  border: 1px solid var(--lt-border);
+  border-radius: 4px;
+  padding: 2px 4px;
+  font-family: var(--lt-font-mono);
+  font-size: 0.62rem;
+  color: var(--lt-text);
+  outline: none;
+}
+
+/* Form textarea */
+.lt-form-textarea {
+  width: 100%;
+  box-sizing: border-box;
+  resize: none;
+  background: var(--lt-bg-input);
+  border: 1px solid var(--lt-border);
+  border-radius: 6px;
+  padding: 0.6rem 0.75rem;
+  font-family: var(--lt-font-mono);
+  font-size: 0.82rem;
+  color: var(--lt-text);
+  line-height: 1.5;
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+/* Error message box */
+.lt-msg-error {
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  border-radius: 6px;
+  padding: 0.5rem 0.75rem;
+  font-family: var(--lt-font-mono);
+  font-size: 0.72rem;
+  color: #f87171;
+}
+
+/* Status message (error or success variant) */
+.lt-status-msg {
+  border-radius: 6px;
+  padding: 0.4rem 0.75rem;
+  font-family: var(--lt-font-mono);
+  font-size: 0.7rem;
+}
+.lt-status-msg--error {
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.25);
+  color: #f87171;
+}
+.lt-status-msg--success {
+  background: rgba(34, 197, 94, 0.1);
+  border: 1px solid rgba(34, 197, 94, 0.25);
+  color: #4ade80;
+}
+
+/* Primary action button */
+.lt-btn-primary {
+  flex: 2;
+  padding: 0.6rem;
+  border-radius: 6px;
+  border: none;
+  background: var(--lt-accent);
+  color: #0d0d0d;
+  font-family: var(--lt-font-mono);
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+.lt-btn-primary:disabled {
+  background: var(--lt-bg-card-2);
+  color: var(--lt-text-faint);
+  cursor: not-allowed;
+}
+
+/* Secondary / cancel button */
+.lt-btn-secondary {
+  flex: 1;
+  padding: 0.6rem;
+  border-radius: 6px;
+  border: 1px solid var(--lt-border);
+  background: transparent;
+  color: var(--lt-text-muted);
+  font-family: var(--lt-font-mono);
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+
+/* Flex row: space-between aligned center */
+.lt-row-between {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* 2-column grid */
+.lt-grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+}
+
+/* ── Mono-Label Utilities ─────────────────────────────── */
+.lt-mono-label {
+  font-family: var(--lt-font-mono);
+  font-size: 0.65rem;
+  color: var(--lt-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+.lt-mono-hint {
+  font-family: var(--lt-font-mono);
+  font-size: 0.6rem;
+  color: var(--lt-text-muted);
+  letter-spacing: 0.05em;
+}
+.lt-mono-value {
+  font-family: var(--lt-font-mono);
+  font-size: 0.75rem;
+  color: var(--lt-text-dim);
+}

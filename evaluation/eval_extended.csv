@@ -1,0 +1,133 @@
+﻿nr,match,event_type,minute,player,team,score,style,generated_text,latency_ms,gen_model,judge_model,korrektheit,tonalitaet,verstaendlichkeit,gesamt,begruendung
+1,SV Elversberg vs. 1. FC Heidenheim,goal,9,M. Honsak,1. FC Heidenheim,0:1,neutral,9. Minute: TOOOOR! M. Honsak bringt Heidenheim in Führung. Léo Scienza lieferte die Vorlage. 0:1.,817,google/gemini-2.0-flash-lite-001,anthropic/claude-sonnet-4-5,5,4,5,4.67,"Alle Fakten korrekt, aber 'TOOOOR!' wirkt leicht euphorisch statt neutral."
+2,SV Elversberg vs. 1. FC Heidenheim,yellow_card,43,Haktab Omar Traore,1. FC Heidenheim,1:1,euphorisch,"43. Minute:
+Traore! Gelb! Was soll das denn?! Der pfeift ja alles gegen uns! 1:1 steht's...",766,google/gemini-2.0-flash-lite-001,anthropic/claude-sonnet-4-5,5,2,4,3.67,"Fakten korrekt, aber Tonalität eher empört-kritisch statt euphorisch, Sprache umgangssprachlich aber verständlich."
+3,Borussia Dortmund vs. Holstein Kiel,red_card,9,Carl Johansson,Holstein Kiel,1:0,kritisch,"Rote Karte für Carl Johansson.
+
+Frühes Aus für den Kieler. Johansson grätscht ungestüm. Der Schiedsrichter zögert nicht. Richtige Entscheidung. Dortmund in Überzahl.",1048,google/gemini-2.0-flash-lite-001,anthropic/claude-sonnet-4-5,5,3,5,4.33,"Fakten korrekt, aber für kritischen Stil fehlt deutlichere Wertung oder Analyse der Konsequenzen."
+4,SV Elversberg vs. 1. FC Heidenheim,substitution,18,S. Şahin,SV Elversberg,0:1,neutral,"18. Minute: Şahin verlässt das Feld. Sickinger neu im Spiel.
+
+Der SV Elversberg nimmt den Wechsel vor.
+
+Der Spielstand: 0:1.",693,google/gemini-2.0-flash-lite-001,anthropic/claude-sonnet-4-5,3,5,4,4.0,"Einwechselspieler Sickinger wird nicht im Ereignis genannt, könnte Halluzination sein."
+5,VfL Wolfsburg vs. 1899 Hoffenheim,own_goal,1,L. Østigård,VfL Wolfsburg,0:1,euphorisch,**1. Minute:** WAS ZUR HÖLLE?! Eigentor! Østigård! Unglaublich! 0:1! Das darf doch nicht wahr sein!,738,google/gemini-2.0-flash-lite-001,anthropic/claude-sonnet-4-5,5,5,5,5.0,"Alle Fakten korrekt, euphorischer Stil mit Ausrufen perfekt getroffen, sprachlich dynamisch und genrekonform."
+6,SV Elversberg vs. 1. FC Heidenheim,goal,30,R. Fellhauer,SV Elversberg,1:1,kritisch,TOOOOR! Elversberg gleicht aus. Zimmerschied mit der Flanke. Fellhauer mit dem Kopf. Unbedrängt. Die Heidenheimer Abwehr unsortiert. 1:1.,844,google/gemini-2.0-flash-lite-001,anthropic/claude-sonnet-4-5,5,5,5,5.0,"Fakten korrekt, kritischer Ton durch 'unsortiert' und 'unbedrängt' getroffen, sprachlich prägnant und tickergerecht."
+7,SV Elversberg vs. 1. FC Heidenheim,yellow_card,55,Luca Kerber,1. FC Heidenheim,1:1,neutral,"55. Minute: Gelbe Karte für Luca Kerber.
+
+Der Spieler des 1. FC Heidenheim wird verwarnt.
+Der Spielstand bleibt 1:1.",733,google/gemini-2.0-flash-lite-001,anthropic/claude-sonnet-4-5,5,5,5,5.0,"Alle Fakten korrekt, sachlich-neutraler Stil perfekt umgesetzt, sprachlich einwandfrei und klar strukturiert."
+8,VfB Stuttgart vs. FC Augsburg,red_card,11,Samuel Essende,FC Augsburg,1:0,euphorisch,"**11. Minute:**
+
+WAS?! Essende fliegt! Rot! Unglaublich! Der Schiri hat doch Tomaten auf den Augen! Augsburg jetzt in Unterzahl! Hoffentlich nutzen wir das aus!",1219,google/gemini-2.0-flash-lite-001,anthropic/claude-sonnet-4-5,5,5,5,5.0,"Alle Fakten korrekt, euphorischer Stil mit Ausrufen perfekt getroffen, sprachlich dynamisch und verständlich."
+9,SV Elversberg vs. 1. FC Heidenheim,substitution,23,M. Pieringer,1. FC Heidenheim,0:1,kritisch,23. Minute: Heidenheim wechselt. Pieringer geht. Zivzivadze kommt. Eine Reaktion auf den Rückstand? Oder war Pieringer angeschlagen? Schwer zu sagen.,816,google/gemini-2.0-flash-lite-001,anthropic/claude-sonnet-4-5,2,4,4,3.33,"Heidenheim führt 1:0, liegt nicht zurück – der Text verwechselt die Spielsituation komplett."
+10,SV Elversberg vs. 1. FC Heidenheim,goal,95,Léo Scienza,1. FC Heidenheim,1:2,neutral,"95. Minute: TOOOOR! Léo Scienza trifft für Heidenheim!
+
+Der Ball landet im Netz. P. Wanner lieferte die Vorlage.
+
+1:2 der neue Spielstand.",1187,google/gemini-2.0-flash-lite-001,anthropic/claude-sonnet-4-5,5,3,5,4.33,"Der Text enthält Ausrufezeichen und 'TOOOOR!', was eher euphorisch als neutral wirkt."
+11,SV Elversberg vs. 1. FC Heidenheim,yellow_card,68,Tom Zimmerschied,SV Elversberg,1:1,euphorisch,68. Minute: Zimmerschied sieht Gelb! Na super... Ausgerechnet Tom! Jetzt bloß nicht die Nerven verlieren!,818,google/gemini-2.0-flash-lite-001,anthropic/claude-sonnet-4-5,5,2,5,4.0,"Fakten stimmen, aber Tonfall ist eher besorgt-ironisch statt euphorisch wie gefordert."
+12,SV Elversberg vs. 1. FC Heidenheim,substitution,78,L. Kerber,1. FC Heidenheim,1:1,kritisch,78. Minute: Heidenheim wechselt. Kerber geht. Dorsch kommt. Der Wechsel wirkt defensiv ausgerichtet. Kerber mit wenig Impakt.,1378,google/gemini-2.0-flash-lite-001,anthropic/claude-sonnet-4-5,3,4,4,3.67,"Einwechselspieler Dorsch wird nicht im Ereignis erwähnt, könnte Halluzination sein."
+13,1. FC Heidenheim vs. SV Elversberg,goal,18,L. Petkov,SV Elversberg,0:1,neutral,18. Minute: TOOOOR! L. Petkov bringt Elversberg in Führung. F. Asllani lieferte die Vorlage. 0:1.,639,google/gemini-2.0-flash-lite-001,anthropic/claude-sonnet-4-5,5,3,5,4.33,"Fakten korrekt, aber 'TOOOOR!' ist zu euphorisch für neutralen Stil."
+14,SV Elversberg vs. 1. FC Heidenheim,yellow_card,79,Paul Wanner,1. FC Heidenheim,1:1,euphorisch,"79. Minute:
+Wanner sieht Gelb! Dieser Heidenheimer! Frechheit! Jetzt bloß nicht die Nerven verlieren! 1:1 steht's...",758,google/gemini-2.0-flash-lite-001,anthropic/claude-sonnet-4-5,5,4,4,4.33,"Alle Fakten korrekt, euphorischer Stil mit Ausrufen gut getroffen, leichte Abzüge bei Kohärenz durch fragmentierte Satzstruktur."
+15,SV Elversberg vs. 1. FC Heidenheim,substitution,78,M. Honsak,1. FC Heidenheim,1:1,kritisch,"78. Minute: Heidenheim wechselt. Honsak geht. Wanner kommt. Ein taktischer Schachzug, der sich im aktuellen Spielverlauf nicht zwingend aufdrängt.",831,google/gemini-2.0-flash-lite-001,anthropic/claude-sonnet-4-5,4,5,5,4.67,"Wanner als eingewechselter Spieler wird nicht im Ereignis genannt, sonst faktisch und stilistisch einwandfrei kritisch formuliert."
+16,1. FC Heidenheim vs. SV Elversberg,goal,42,F. Asllani,SV Elversberg,0:2,neutral,"42. Minute: TOOOOR! F. Asllani erhöht für Elversberg!
+
+T. Zimmerschied mit der Vorlage.
+
+Der SV Elversberg baut die Führung aus. 0:2.",1290,google/gemini-2.0-flash-lite-001,anthropic/claude-sonnet-4-5,5,3,5,4.33,"Fakten korrekt, aber 'TOOOOR!' und Ausrufezeichen wirken euphorisch statt neutral."
+17,1. FC Heidenheim vs. SV Elversberg,yellow_card,26,Adrian Beck,1. FC Heidenheim,0:1,euphorisch,"26. Minute:
+Beck sieht Gelb! Ausgerechnet Beck! Der Schiri hat doch einen an der Waffel! Das darf doch nicht wahr sein! Jetzt bloß keinen Mist bauen, Adi!",1553,google/gemini-2.0-flash-lite-001,anthropic/claude-sonnet-4-5,5,5,4,4.67,"Fakten korrekt, euphorischer Stil perfekt getroffen, minimal umgangssprachlich aber genrekonform."
+18,SV Elversberg vs. 1. FC Heidenheim,substitution,86,T. Zimmerschied,SV Elversberg,1:1,kritisch,"86. Minute: Elversberg wechselt. Zimmerschied geht. Schnellbacher kommt. Ein taktischer Schachzug, der spät kommt. Ob er noch fruchtet?",902,google/gemini-2.0-flash-lite-001,anthropic/claude-sonnet-4-5,4,5,5,4.67,"Kritischer Ton perfekt getroffen, sprachlich prägnant, nur Einwechselspieler nicht explizit im Ereignis genannt."
+19,1. FC Heidenheim vs. SV Elversberg,goal,62,T. Siersleben,1. FC Heidenheim,1:2,neutral,"62. Minute: TOOOOR! T. Siersleben trifft für Heidenheim. Der Anschlusstreffer.
+Der 1. FC Heidenheim verkürzt auf 1:2.",1397,google/gemini-2.0-flash-lite-001,anthropic/claude-sonnet-4-5,5,3,5,4.33,"Fakten korrekt, aber 'TOOOOR!' und 'Anschlusstreffer' wirken leicht euphorisch statt neutral."
+20,SC Freiburg vs. Eintracht Frankfurt,yellow_card,42,Rasmus Kristensen,Eintracht Frankfurt,1:0,euphorisch,"42. Minute:
+Gelb für Kristensen! Was soll das denn?! Der rennt doch nur hinterher! Unglaublich!",1214,google/gemini-2.0-flash-lite-001,anthropic/claude-sonnet-4-5,5,2,4,3.67,"Fakten stimmen, aber euphorisch sollte positiv sein, hier klingt es eher empört-kritisch."
+21,SV Elversberg vs. 1. FC Heidenheim,substitution,97,L. Petkov,SV Elversberg,1:1,kritisch,"**97. Minute:**
+
+Elversberg wechselt. Petkov geht. Feil kommt. Eine späte Reaktion. Ob sie noch etwas bewirken kann?",965,google/gemini-2.0-flash-lite-001,anthropic/claude-sonnet-4-5,4,5,5,4.67,"Fakten stimmen (Petkov raus, späte Minute), kritischer Ton durch Skepsis perfekt getroffen, sprachlich prägnant und klar."
+22,1. FC Heidenheim vs. SV Elversberg,goal,64,M. Honsak,1. FC Heidenheim,2:2,neutral,64. Minute: TOOOOR! M. Honsak trifft für Heidenheim. Ausgleich zum 2:2!,987,google/gemini-2.0-flash-lite-001,anthropic/claude-sonnet-4-5,5,3,5,4.33,"Fakten korrekt, aber 'TOOOOR!' und Ausrufezeichen sind zu euphorisch für neutralen Stil."
+23,SC Freiburg vs. Eintracht Frankfurt,yellow_card,58,Max Rosenfelder,SC Freiburg,1:1,euphorisch,**58. Minute:** Rosenfelder! Gelb! Na super... Ausgerechnet jetzt! Der Junge muss sich zusammenreißen! 1:1 steht's...,1034,google/gemini-2.0-flash-lite-001,anthropic/claude-sonnet-4-5,5,1,4,3.33,"Alle Fakten stimmen, aber der Ton ist frustriert statt euphorisch wie gefordert."
+24,SV Elversberg vs. 1. FC Heidenheim,substitution,97,M. Damar,SV Elversberg,1:1,kritisch,"Elversberg wechselt. Damar geht. Ebnoutalib kommt.
+Der Wechsel wirkt spät. Ob er noch etwas bewirken kann?
+Der Spielstand: 1:1.",1417,google/gemini-2.0-flash-lite-001,anthropic/claude-sonnet-4-5,5,4,4,4.33,"Fakten korrekt, kritischer Ton durch Skepsis vorhanden, Stakkato-Stil etwas abgehackt aber genrekonform."
+25,SC Freiburg vs. Eintracht Frankfurt,goal,27,R. Doan,SC Freiburg,1:0,neutral,27. Minute: TOOOOR! Ritsu Doan bringt Freiburg in Führung. Nach einer präzisen Flanke von Matthias Ginter.,703,google/gemini-2.0-flash-lite-001,anthropic/claude-sonnet-4-5,5,4,5,4.67,"Alle Fakten korrekt, Text sehr verständlich, leichte euphorische Nuance durch 'TOOOOR!' statt neutralerem 'Tor'."
+26,SC Freiburg vs. Eintracht Frankfurt,yellow_card,72,Ansgar Knauff,Eintracht Frankfurt,1:3,euphorisch,"72. Minute: Knauff sieht Gelb. Na, das ist doch mal wieder typisch!",1072,google/gemini-2.0-flash-lite-001,anthropic/claude-sonnet-4-5,5,1,4,3.33,"Fakten stimmen, aber der sarkastisch-kritische Ton widerspricht komplett dem geforderten euphorischen Stil."
+27,SV Elversberg vs. 1. FC Heidenheim,substitution,97,Léo Scienza,1. FC Heidenheim,1:1,kritisch,"97. Minute: Heidenheim wechselt. Scienza geht. Gimber kommt. Ein defensiver Wechsel. Sinnvoll, angesichts des Ergebnisses.",718,google/gemini-2.0-flash-lite-001,anthropic/claude-sonnet-4-5,3,2,4,3.0,"Gimber wird nicht im Ereignis erwähnt (mögliche Halluzination), kritischer Ton kaum erkennbar, sprachlich aber klar."
+28,SC Freiburg vs. Eintracht Frankfurt,goal,49,A. Knauff,Eintracht Frankfurt,1:1,neutral,"49. Minute: TOOOOR! A. Knauff gleicht aus!
+F. Chaïbi mit der Vorlage.
+Eintracht Frankfurt jubelt.
+Der Spielstand: 1:1.",654,google/gemini-2.0-flash-lite-001,anthropic/claude-sonnet-4-5,5,3,5,4.33,"Fakten korrekt, aber 'TOOOOR!' und 'jubelt' sind für neutralen Stil zu emotional."
+29,SC Freiburg vs. Eintracht Frankfurt,yellow_card,86,Philipp Lienhart,SC Freiburg,1:3,euphorisch,"Lienhart sieht Gelb!
+Mist!
+Das darf doch nicht wahr sein!
+86. Minute.",582,google/gemini-2.0-flash-lite-001,anthropic/claude-sonnet-4-5,5,2,3,3.33,"Fakten stimmen, aber euphorischer Stil passt nicht zu einer Gelben Karte beim 1:3-Rückstand, zudem wirkt der Text fragmentiert."
+30,SV Elversberg vs. 1. FC Heidenheim,substitution,97,F. Krätzig,1. FC Heidenheim,1:1,kritisch,"97. Minute: Heidenheim wechselt. Krätzig geht. Föhrenbach kommt. Ein taktischer Schachzug, der sich spät im Spiel stellt. Ob er noch fruchtet, bleibt abzuwarten.",823,google/gemini-2.0-flash-lite-001,anthropic/claude-sonnet-4-5,3,2,4,3.0,"Krätzig wird ausgewechselt (nicht eingewechselt), Tonalität eher neutral-abwartend statt kritisch, sprachlich aber solide."
+31,SC Freiburg vs. Eintracht Frankfurt,goal,61,R. Kristensen,Eintracht Frankfurt,1:2,neutral,"61. Minute: TOOOOR! R. Kristensen bringt Eintracht Frankfurt in Führung!
+
+H. Ekitiké lieferte die Vorlage.
+
+Eintracht Frankfurt jubelt.
+
+Der Spielstand: 1:2.",712,google/gemini-2.0-flash-lite-001,anthropic/claude-sonnet-4-5,5,3,4,4.0,"Fakten korrekt, aber Ausrufe und 'jubelt' wirken euphorisch statt neutral, Text etwas fragmentiert."
+32,SC Freiburg vs. Eintracht Frankfurt,yellow_card,89,Nnamdi Collins,Eintracht Frankfurt,1:3,euphorisch,"89. Minute:
+Gelb für Collins! Na, das ist doch mal wieder typisch! Frankfurt versucht, Zeit zu schinden. Unsympathisch! Bei dem Spielstand...",1276,google/gemini-2.0-flash-lite-001,anthropic/claude-sonnet-4-5,5,1,4,3.33,"Fakten stimmen, aber der Ton ist kritisch statt euphorisch wie gefordert."
+33,1. FC Heidenheim vs. SV Elversberg,substitution,46,M. Pieringer,1. FC Heidenheim,0:2,kritisch,46. Minute: Heidenheim wechselt. Pieringer geht. Zivzivadze kommt. Ein erwartbarer Wechsel. Keine Reaktion auf den Rückstand.,802,google/gemini-2.0-flash-lite-001,anthropic/claude-sonnet-4-5,3,5,4,4.0,"Zivzivadze wird nicht im Ereignis erwähnt, könnte Halluzination sein; Tonalität perfekt kritisch-nüchtern."
+34,SC Freiburg vs. Eintracht Frankfurt,goal,63,E. Skhiri,Eintracht Frankfurt,1:3,neutral,"63. Minute: TOOOOR! E. Skhiri trifft für Eintracht Frankfurt.
+
+R. Kristensen lieferte die Vorlage.
+
+Der Spielstand: 1:3.",697,google/gemini-2.0-flash-lite-001,anthropic/claude-sonnet-4-5,5,3,5,4.33,"Alle Fakten korrekt, aber 'TOOOOR!' mit Ausrufezeichen wirkt eher euphorisch als neutral."
+35,SC Freiburg vs. Eintracht Frankfurt,yellow_card,96,Nathaniel Brown,Eintracht Frankfurt,1:3,euphorisch,**96. Minute:** Brown sieht Gelb! Dieses unsportliche Verhalten! Bei dem Spielstand... unglaublich!,1220,google/gemini-2.0-flash-lite-001,anthropic/claude-sonnet-4-5,5,2,4,3.67,"Fakten korrekt, aber Tonalität zu kritisch statt euphorisch bei klarem Frankfurter Sieg."
+36,1. FC Heidenheim vs. SV Elversberg,substitution,46,N. Dorsch,1. FC Heidenheim,0:2,kritisch,46. Minute: Heidenheim wechselt. Dorsch geht. Scienza kommt. Eine Reaktion auf den Rückstand? Fraglich. Dorsch wirkte nicht angeschlagen.,839,google/gemini-2.0-flash-lite-001,anthropic/claude-sonnet-4-5,4,5,5,4.67,"Fakten stimmen weitgehend, kritischer Ton perfekt getroffen, sprachlich prägnant und verständlich."
+37,Borussia Mönchengladbach vs. VfL Wolfsburg,goal,50,L. Nmecha,VfL Wolfsburg,0:1,neutral,"50. Minute: TOOOOR! L. Nmecha bringt Wolfsburg in Führung.
+
+M. Amoura lieferte die Vorlage.
+
+Der Ball zappelt im Netz.
+
+0:1 der Spielstand.",970,google/gemini-2.0-flash-lite-001,anthropic/claude-sonnet-4-5,5,3,4,4.0,"Fakten korrekt, aber 'TOOOOR!' und 'zappelt im Netz' sind zu emotional für neutralen Stil."
+38,FSV Mainz 05 vs. Bayer Leverkusen,yellow_card,40,Stefan Bell,FSV Mainz 05,1:0,euphorisch,"**40. Minute:**
+
+Bell! Gelb! Na super! Ausgerechnet er! Jetzt bloß nicht überdrehen, Stefan! Wir brauchen dich!",959,google/gemini-2.0-flash-lite-001,anthropic/claude-sonnet-4-5,5,5,5,5.0,"Alle Fakten korrekt, euphorischer Stil mit Ausrufen perfekt getroffen, sprachlich dynamisch und genrekonform."
+39,1. FC Heidenheim vs. SV Elversberg,substitution,46,A. Beck,1. FC Heidenheim,0:2,kritisch,"Heidenheim wechselt. Beck geht runter. Wanner kommt.
+Der Wechsel deutet auf eine Reaktion auf den Rückstand hin. Ob er fruchtet, wird sich zeigen.",1373,google/gemini-2.0-flash-lite-001,anthropic/claude-sonnet-4-5,3,2,4,3.0,"Wanner wird nicht im Ereignis erwähnt (mögliche Halluzination), kritischer Ton zu schwach ausgeprägt."
+40,FSV Mainz 05 vs. Bayer Leverkusen,goal,35,P. Nebel,FSV Mainz 05,1:0,neutral,35. Minute: TOOOOR! P. Nebel bringt Mainz in Führung. N. Amiri lieferte die Vorlage. 1:0.,851,google/gemini-2.0-flash-lite-001,anthropic/claude-sonnet-4-5,5,3,5,4.33,"Fakten korrekt, aber 'TOOOOR!' ist zu euphorisch für neutralen Stil"
+41,FSV Mainz 05 vs. Bayer Leverkusen,yellow_card,40,Exequiel Palacios,Bayer Leverkusen,1:0,euphorisch,40. Minute: Palacios sieht Gelb! Frechheit! Der pfeift doch nur für Leverkusen!,1201,google/gemini-2.0-flash-lite-001,anthropic/claude-sonnet-4-5,5,1,5,3.67,"Text ist faktisch korrekt und verständlich, aber die kritisch-vorwurfsvolle Tonalität widerspricht komplett dem geforderten euphorischen Stil."
+42,1. FC Heidenheim vs. SV Elversberg,substitution,76,M. Honsak,1. FC Heidenheim,2:2,kritisch,76. Minute: Heidenheim wechselt. Honsak geht. Conteh kommt. Ein positionsgetreuer Tausch. Ob die frischen Kräfte nun die nötige Impulse setzen können? Fraglich.,951,google/gemini-2.0-flash-lite-001,anthropic/claude-sonnet-4-5,4,5,5,4.67,"Fakten stimmen weitgehend, kritischer Ton perfekt getroffen, sprachlich prägnant und verständlich."
+43,FSV Mainz 05 vs. Bayer Leverkusen,goal,49,P. Schick,Bayer Leverkusen,1:1,neutral,49. Minute: TOOOOR! P. Schick gleicht für Bayer Leverkusen aus. Der Ball schlägt im Netz ein. 1:1.,683,google/gemini-2.0-flash-lite-001,anthropic/claude-sonnet-4-5,5,3,5,4.33,"Fakten korrekt, aber 'TOOOOR!' ist zu euphorisch für neutralen Stil"
+44,FSV Mainz 05 vs. Bayer Leverkusen,yellow_card,52,Aleix García,Bayer Leverkusen,1:0,euphorisch,"GELBE KARTE für García!
+Der kriegt die Gelbe!
+Na sowas!
+52. Minute",630,google/gemini-2.0-flash-lite-001,anthropic/claude-sonnet-4-5,5,2,3,3.33,"Fakten stimmen, aber euphorischer Stil bei gegnerischer Gelber Karte wirkt unpassend und Text ist fragmentarisch."
+45,1. FC Heidenheim vs. SV Elversberg,substitution,78,T. Zimmerschied,SV Elversberg,2:2,kritisch,"Elversberg wechselt. Zimmerschied geht. Schnellbacher kommt.
+
+Der Wechsel wirkt spät. Zimmerschied war kaum noch präsent.",669,google/gemini-2.0-flash-lite-001,anthropic/claude-sonnet-4-5,3,4,4,3.67,"Einwechslung von Schnellbacher nicht im Ereignis erwähnt, könnte Halluzination sein."
+46,FSV Mainz 05 vs. Bayer Leverkusen,goal,54,P. Schick,Bayer Leverkusen,1:2,neutral,54. Minute: TOOOOR! P. Schick bringt Leverkusen in Führung. Aleix García lieferte die Vorlage. 1:2.,1200,google/gemini-2.0-flash-lite-001,anthropic/claude-sonnet-4-5,5,4,5,4.67,"Alle Fakten korrekt, nur 'TOOOOR!' wirkt leicht euphorisch statt neutral."
+47,FSV Mainz 05 vs. Bayer Leverkusen,yellow_card,59,Piero Hincapié,Bayer Leverkusen,1:2,euphorisch,59. Minute: Hincapié sieht Gelb! Freistoß für uns! Hoffentlich nutzen wir das...,601,google/gemini-2.0-flash-lite-001,anthropic/claude-sonnet-4-5,2,3,4,3.0,"Falsche Perspektive: Gelbe Karte für Leverkusen bedeutet Freistoß für Mainz, nicht 'für uns' aus neutraler Sicht."
+48,1. FC Heidenheim vs. SV Elversberg,substitution,78,R. Fellhauer,SV Elversberg,2:2,kritisch,"78. Minute: Fellhauer geht vom Feld. Sickinger kommt. Ein Wechsel, der die Statik des SV Elversberg verändern könnte.",683,google/gemini-2.0-flash-lite-001,anthropic/claude-sonnet-4-5,4,2,5,3.67,"Fakten stimmen, aber der kritische Ton fehlt – Text ist zu neutral-analytisch statt wertend-kritisch."
+49,FSV Mainz 05 vs. Bayer Leverkusen,goal,63,J. Burkardt,FSV Mainz 05,2:2,neutral,63. Minute: TOOOOR! J. Burkardt trifft für Mainz 05. Ausgleich! 2:2.,552,google/gemini-2.0-flash-lite-001,anthropic/claude-sonnet-4-5,5,3,5,4.33,"Fakten korrekt, aber 'TOOOOR!' und Ausrufezeichen wirken zu euphorisch für neutralen Stil."
+50,FSV Mainz 05 vs. Bayer Leverkusen,yellow_card,68,Arthur,Bayer Leverkusen,2:2,euphorisch,68. Minute: Arthur sieht Gelb! Na super! Jetzt bloß nicht die Nerven verlieren!,695,google/gemini-2.0-flash-lite-001,anthropic/claude-sonnet-4-5,5,2,5,4.0,"Fakten stimmen, aber der ironisch-kritische Ton ('Na super!') passt nicht zur geforderten Euphorie."
+51,1. FC Heidenheim vs. SV Elversberg,substitution,86,L. Petkov,SV Elversberg,2:2,kritisch,"86. Minute: Elversberg wechselt. Petkov geht. Schmahl kommt. Ein taktischer Schachzug, der spät kommt. Ob er noch fruchtet, wird sich zeigen.",799,google/gemini-2.0-flash-lite-001,anthropic/claude-sonnet-4-5,4,3,4,3.67,"Fakten stimmen, aber kritischer Ton könnte schärfer sein – wirkt eher neutral-abwartend."
+52,Borussia Dortmund vs. Holstein Kiel,goal,3,S. Guirassy,Borussia Dortmund,1:0,neutral,3. Minute: TOOOOR! S. Guirassy bringt Borussia Dortmund in Führung. 1:0.,648,google/gemini-2.0-flash-lite-001,anthropic/claude-sonnet-4-5,5,4,5,4.67,"Alle Fakten korrekt, Text verständlich, aber 'TOOOOR!' wirkt leicht euphorisch statt neutral."
+53,FSV Mainz 05 vs. Bayer Leverkusen,yellow_card,81,Andreas Hanche-Olsen,FSV Mainz 05,2:2,euphorisch,"81. Minute:
+
+Hanche-Olsen sieht Gelb! Na super! Ausgerechnet jetzt... Das darf doch nicht wahr sein!",1274,google/gemini-2.0-flash-lite-001,anthropic/claude-sonnet-4-5,5,2,4,3.67,"Fakten korrekt, aber Tonalität eher frustriert statt euphorisch, Verständlichkeit gut trotz umgangssprachlicher Elemente."
+54,1. FC Heidenheim vs. SV Elversberg,substitution,89,F. Asllani,SV Elversberg,2:2,kritisch,"89. Minute: Elversberg wechselt. Asllani geht. Ebnoutalib kommt. Ein taktischer Schachzug, der spät kommt. Ob er noch etwas bewirken kann? Fraglich.",834,google/gemini-2.0-flash-lite-001,anthropic/claude-sonnet-4-5,4,5,5,4.67,"Fakten stimmen weitgehend, kritischer Ton perfekt getroffen, sprachlich prägnant und verständlich."
+55,Borussia Dortmund vs. Holstein Kiel,goal,47,M. Sabitzer,Borussia Dortmund,2:0,neutral,"47. Minute: TOOOOR! M. Sabitzer erhöht für Borussia Dortmund!
+
+J. Brandt mit der Vorlage.
+
+2:0 steht es nun.",663,google/gemini-2.0-flash-lite-001,anthropic/claude-sonnet-4-5,5,4,5,4.67,"Alle Fakten korrekt, Text verständlich, aber 'TOOOOR!' mit Ausrufezeichen wirkt leicht euphorisch statt neutral."
+56,FSV Mainz 05 vs. Bayer Leverkusen,yellow_card,83,Jonathan Tah,Bayer Leverkusen,2:2,euphorisch,"Gelbe Karte für Tah!
+Dieser Bayer-Wahnsinnige!
+83. Minute:
+Wir stehen 2:2...
+Na toll!",1664,google/gemini-2.0-flash-lite-001,anthropic/claude-sonnet-4-5,5,1,3,3.0,"Fakten stimmen, aber der sarkastisch-frustrierte Ton widerspricht komplett dem geforderten euphorischen Stil."
+57,SC Freiburg vs. Eintracht Frankfurt,substitution,66,M. Rosenfelder,SC Freiburg,1:3,kritisch,"66. Minute: Freiburg wechselt. Rosenfelder geht. Kübler kommt. Eine Reaktion. Auf was genau, bleibt abzuwarten.",726,google/gemini-2.0-flash-lite-001,anthropic/claude-sonnet-4-5,4,5,4,4.33,"Fakten stimmen, kritischer Ton perfekt getroffen, nur minimal abgehackt im Stil."
+58,Borussia Dortmund vs. Holstein Kiel,goal,72,F. Nmecha,Borussia Dortmund,3:0,neutral,72. Minute: TOOOOR! F. Nmecha erhöht für Borussia Dortmund! Nach Vorlage von D. Svensson. 3:0.,656,google/gemini-2.0-flash-lite-001,anthropic/claude-sonnet-4-5,5,4,5,4.67,"Alle Fakten korrekt, aber 'TOOOOR!' mit Ausrufezeichen wirkt leicht euphorisch statt neutral."
+59,FSV Mainz 05 vs. Bayer Leverkusen,yellow_card,87,Florian Wirtz,Bayer Leverkusen,2:2,euphorisch,"87. Minute:
+Wirtz! Gelb! Na super! Jetzt bloß nicht die Nerven verlieren! Das darf doch nicht wahr sein!",693,google/gemini-2.0-flash-lite-001,anthropic/claude-sonnet-4-5,5,2,4,3.67,"Fakten stimmen, aber Ton ist eher nervös-kritisch statt euphorisch, Sprache verständlich aber zu hektisch."
+60,SC Freiburg vs. Eintracht Frankfurt,substitution,66,F. Chaïbi,Eintracht Frankfurt,1:3,kritisch,"Eintracht Frankfurt wechselt. Chaïbi geht. Højlund kommt.
+
+Der Wechsel wirkt spät. Chaïbi war unauffällig. Højlund soll nun für mehr Torgefahr sorgen.",801,google/gemini-2.0-flash-lite-001,anthropic/claude-sonnet-4-5,2,4,4,3.33,"Spieler 'Højlund' spielt nicht für Eintracht Frankfurt – klare Halluzination, sonst passt Stil und Sprache."
