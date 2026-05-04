@@ -520,6 +520,13 @@ Nicht erkannte Commands werden mit \texttt{isValid:\ false} und einer
 Fehlermeldung zurückgegeben (\texttt{"Unbekannter\ Command:\ /xyz"}),
 statt einen Laufzeitfehler zu werfen.
 
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{frontend_slash_command.png}
+\caption{Slash-Command-Parser im Einsatz: Eingabe \texttt{/g Müller SGE} erzeugt sofort einen strukturierten Ticker-Eintrag mit Icon, Minute und formatiertem Text -- ohne Backend-Aufruf.}
+\label{fig:frontend-slash-command}
+\end{figure}
+
 
 \subsection{Modusimplementierung im
 Frontend}\label{modusimplementierung-im-frontend}
@@ -536,13 +543,12 @@ Umschalten. Im Co-op-Modus registriert derselbe Hook die Shortcuts
 Keyboard-Event-Listener, die bei Moduswechsel automatisch aktualisiert
 werden. Im Auto-Modus existieren zwei parallele Automatisierungspfade: Der primäre Pfad verläuft über n8n, das \texttt{auto\_publish=True} an den Backend-Endpunkt übergibt, woraufhin der Eintrag direkt mit \texttt{status=published} angelegt wird. Der sekundäre Pfad ist \texttt{useAutoPublisher} im Frontend: Dieser Hook pollt die Draft-Queue und publiziert neu eintreffende Draft-Einträge unmittelbar, als Fallback für den Fall, dass n8n-Webhooks verzögert eintreffen oder ein Spiel direkt im Frontend auf Auto-Modus umgeschaltet wird, ohne n8n-Neustart. Beide Pfade führen zum selben Ergebnis (publizierter Eintrag), die Deduplizierungsprüfung per \texttt{event\_id} verhindert Doppelveröffentlichungen.
 
-% TODO: Screenshot einfügen, wenn verfügbar
-% \begin{figure}[H]
-% \centering
-% \includegraphics[width=\textwidth]{frontend_coop.png}
-% \caption{LiveTicker-Editor im Coop-Modus: KI-Vorschlag (links) und Redakteurs-Draft (rechts)}
-% \label{fig:frontend-coop}
-% \end{figure}
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{frontend_coop.png}
+\caption{LiveTicker-Editor im Coop-Modus: KI-generierter Vorschlag im mittleren Panel, Freigabe per TAB oder Ablehnung per ESC. Links: bereits publizierte Einträge. Rechts: Spielstatistiken und Kontext.}
+\label{fig:frontend-coop}
+\end{figure}
 
 
 \subsection{TypeScript-Migration}\label{typescript-migration}
@@ -614,6 +620,13 @@ Statusupdates, aktualisiert \texttt{minute}, \texttt{match\_phase} und
 
 Die folgenden Abschnitte beschreiben die Implementierungsdetails der systemkritischen Workflows.
 
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{n8n_event_workflow.png}
+\caption{Events-LLM-Workflow (09) in n8n: Webhook-Eingang, UPSERT in PostgreSQL, Instanz-Routing (ef\_whitelabel / generic), LLM-Trigger und EF-spezifischer Video-Zweig.}
+\label{fig:n8n-event-workflow}
+\end{figure}
 
 \paragraph{Events-LLM-Workflow (09)}
 Dieser Workflow ist der kritischste im System. Er importiert Live-Ereignisse via Webhook (\texttt{POST /Events}) und persistiert sie per UPSERT (\texttt{ON CONFLICT (source\_id) DO NOTHING}). Eine initiale SQL-Abfrage bestimmt anhand der Teamzugehörigkeit, ob die Instanz \texttt{ef\_whitelabel} oder \texttt{generic} sowie den Stil; \texttt{auto\_publish} wird direkt aus \texttt{ticker\_mode} des Spiels gesetzt. Nur Events mit erfolgreicher Datenbankzeile passieren den Filter-Knoten. Ein EF-spezifischer Zweig sucht per SQL-Abfrage in der \texttt{players}-Tabelle nach hinterlegter \texttt{video\_url} des Torschützen und persistiert den Video-Link als Ticker-Eintrag (Icon~\texttt{🎬}).
