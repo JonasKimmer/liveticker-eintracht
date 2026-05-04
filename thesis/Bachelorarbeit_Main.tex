@@ -1,9 +1,10 @@
 \documentclass[12pt,a4paper,notitlepage,ngerman]{report}
 
-\usepackage[utf8]{inputenc}
 \usepackage[ngerman]{babel}
-\usepackage[T1]{fontenc}
-\usepackage{lmodern}
+\usepackage{fontspec}
+\setmainfont{Latin Modern Roman}
+\setsansfont{Latin Modern Sans}
+\setmonofont[Scale=0.9]{Latin Modern Mono}
 \usepackage{geometry}
 \usepackage{graphicx}
 \usepackage{hyperref}
@@ -108,6 +109,9 @@
 \geometry{left=2.5cm, right=2cm, top=2.5cm, bottom=2.5cm}
 \onehalfspacing
 \emergencystretch 3em
+
+\setlength{\headheight}{14.49998pt}
+\addtolength{\topmargin}{-2.49998pt}
 
 \pagestyle{fancy}
 \fancyhf{}
