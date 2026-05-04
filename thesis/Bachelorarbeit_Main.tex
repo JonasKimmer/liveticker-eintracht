@@ -1,68 +1,58 @@
-\documentclass[12pt,a4paper,notitlepage,ngerman]{report}
+\documentclass[12pt,a4paper,ngerman]{report}
 
 \usepackage[ngerman]{babel}
 \usepackage{fontspec}
 \setmainfont{Latin Modern Roman}
 \setsansfont{Latin Modern Sans}
-\setmonofont[Scale=0.9]{Latin Modern Mono}
+\setmonofont{Latin Modern Mono}
 \usepackage{geometry}
-\usepackage{graphicx}
 \usepackage{hyperref}
 \usepackage{xcolor}
-\usepackage{listings}
 \usepackage{fancyhdr}
 \usepackage{setspace}
 \usepackage{amsmath}
 \usepackage{amssymb}
 \usepackage{booktabs}
 \usepackage{array}
-\usepackage{float}
-\usepackage{subcaption}
-\usepackage{tikz}
-\usepackage{pgfplots}
-\pgfplotsset{compat=1.18}
+\usepackage{tabularx}
+\usepackage{graphicx}
+\usepackage{listings}
 \usepackage{longtable}
 \usepackage{fvextra}
 \usepackage{framed}
+\usepackage{float}
+\usepackage{xfp}
+\usepackage{calc}
+\usepackage{tikz}
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.18}
 \usetikzlibrary{shapes,shapes.geometric,arrows,positioning,calc,fit,backgrounds}
-\usepackage{newunicodechar}
-% Box-drawing characters (used in directory trees / code listings)
-\newunicodechar{→}{$\rightarrow$}
-\newunicodechar{←}{$\leftarrow$}
-\newunicodechar{≈}{$\approx$}
-\newunicodechar{≥}{$\geq$}
-\newunicodechar{≤}{$\leq$}
-\newunicodechar{−}{$-$}
-\newunicodechar{├}{\texttt{|--}}
-\newunicodechar{└}{\texttt{`--}}
-\newunicodechar{─}{\texttt{-}}
-\newunicodechar{│}{\texttt{|}}
-\newunicodechar{┬}{\texttt{-|-}}
-\newunicodechar{┤}{\texttt{-|}}
-\newunicodechar{┼}{\texttt{-+-}}
-\newunicodechar{╠}{\texttt{|=}}
-\newunicodechar{╔}{\texttt{.=}}
-\newunicodechar{╗}{\texttt{=.}}
-\newunicodechar{╚}{\texttt{`=}}
-\newunicodechar{╝}{\texttt{=`}}
-\newunicodechar{═}{\texttt{=}}
-\newunicodechar{║}{\texttt{||}}
 
 % TikZ diagram definitions
 \input{diagrams.tex}
 
-% Pandoc-generated content requires these definitions
-\let\tightlist\relax
-\providecommand{\tightlist}{\setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+% Pandoc compatibility
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+
+\providecommand{\passthrough}[1]{#1}
+
+\lstset{
+  basicstyle=\ttfamily\small,
+  breaklines=true,
+  breakatwhitespace=true,
+  postbreak=\mbox{\textcolor{red}{$\hookrightarrow$}\space},
+  showstringspaces=false,
+}
 
 % Define Shaded and Highlighting environments for pandoc-generated code blocks
-\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}
+\definecolor{shadecolor}{gray}{0.95}
 % \par ensures vertical mode (prevents LR-mode crash); shorthandoff fixes babel/ngerman conflict
 \newenvironment{Shaded}{%
   \par
   \shorthandoff{"}%
-  \begin{snugshade}}{%
-  \end{snugshade}%
+  \begin{shaded}}{%
+  \end{shaded}%
   \shorthandon{"}%
   \par}
 
@@ -106,15 +96,54 @@
 \providecommand{\AttributeTok}[1]{\textcolor[rgb]{0.49,0.56,0.16}{#1}}
 \providecommand{\ConstantTok}[1]{\textcolor[rgb]{0.53,0.00,0.00}{#1}}
 
+% Define \real for Pandoc table calculations
+\providecommand{\real}[1]{#1}
+
+% Counter needed by Pandoc longtable output
+\newcounter{none}
+
+% Unicode character fallbacks
+\usepackage{newunicodechar}
+\newunicodechar{→}{$\rightarrow$}
+\newunicodechar{←}{$\leftarrow$}
+\newunicodechar{≈}{$\approx$}
+\newunicodechar{≥}{$\geq$}
+\newunicodechar{≤}{$\leq$}
+\newunicodechar{−}{$-$}
+\newunicodechar{δ}{$\delta$}
+\newunicodechar{κ}{$\kappa$}
+\newunicodechar{Δ}{$\Delta$}
+\newunicodechar{„}{\glqq}
+\newunicodechar{ł}{l}
+\newunicodechar{ń}{n}
+\newunicodechar{✅}{\checkmark}
+\newunicodechar{📣}{*}
+\newunicodechar{🔔}{*}
+\newunicodechar{🥅}{*}
+\newunicodechar{🎬}{*}
+% Box-drawing characters (used in directory trees / code listings)
+\newunicodechar{├}{\texttt{|--}}
+\newunicodechar{└}{\texttt{`--}}
+\newunicodechar{─}{\texttt{-}}
+\newunicodechar{│}{\texttt{|}}
+\newunicodechar{┬}{\texttt{-|-}}
+\newunicodechar{┤}{\texttt{-|}}
+\newunicodechar{┼}{\texttt{-+-}}
+\newunicodechar{╠}{\texttt{|=}}
+\newunicodechar{╔}{\texttt{.=}}
+\newunicodechar{╗}{\texttt{=.}}
+\newunicodechar{╚}{\texttt{`=}}
+\newunicodechar{╝}{\texttt{=`}}
+\newunicodechar{═}{\texttt{=}}
+\newunicodechar{║}{\texttt{||}}
+
 \geometry{left=2.5cm, right=2cm, top=2.5cm, bottom=2.5cm}
 \onehalfspacing
 \emergencystretch 3em
 
-\setlength{\headheight}{14.49998pt}
-\addtolength{\topmargin}{-2.49998pt}
-
 \pagestyle{fancy}
 \fancyhf{}
+\setlength{\headheight}{14.49998pt}
 \fancyhead[L]{\nouppercase{\leftmark}}
 \fancyhead[R]{\thepage}
 \lfoot{Bachelorarbeit}
@@ -130,16 +159,6 @@
 \title{KI-gestütztes Liveticker-Redaktionssystem für den Profifußball}
 \author{Jonas Kimmer}
 \date{April 2026}
-
-\lstset{
-    basicstyle=\ttfamily\small,
-    breaklines=true,
-    breakatwhitespace=true,
-    postbreak=\mbox{\textcolor{red}{$\hookrightarrow$}\space},
-    language=Python,
-    showstringspaces=false,
-    extendedchars=true
-}
 
 \begin{document}
 
