@@ -119,8 +119,6 @@ Das \texttt{MatchRepository} lädt Heim- und Auswärtsteam, Wettbewerb und
 Saison per \texttt{joinedload} in einer einzigen Abfrage vor, da die
 KI-Generierungsroute vollständige Kontext-Daten benötigt.
 
-Die Wahl eines relationalen Datenbankmodells (PostgreSQL) gegenüber dokumentenorientierten Alternativen (z.\,B. MongoDB) ist durch die Domänenstruktur begründet: Entitäten wie Spiel, Event, Team, Wettbewerb und Ticker-Eintrag stehen in stabilen, mehrfach genutzten Fremdschlüsselbeziehungen. Ein dokumentenorientiertes Modell hätte diese Relationen entweder denormalisiert (mit Aktualisierungsanomalien bei Stammdatenänderungen) oder durch Referenz-IDs emuliert, ohne die Konsistenzgarantien referenzieller Integrität zu bieten. PostgreSQL stellt zudem JSONB für die semistrukturierten \texttt{SyntheticEvent.data}-Felder bereit und verbindet damit relationale Strenge mit dokumentenorientierten Flexibilitätsbedürfnissen an genau der Stelle, wo sie benötigt werden.
-
 \subsection{API-Router:
 Endpunktstruktur}\label{api-router-endpunktstruktur}
 
