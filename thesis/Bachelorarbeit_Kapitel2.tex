@@ -7,10 +7,10 @@ werden drei strukturelle Problemdimensionen der manuellen
 Liveticker-Produktion herausgearbeitet: der redaktionelle Aufwand unter
 Echtzeit-Bedingungen (Kap.~2.1), die Herausforderung der
 Mehrsprachigkeit (Kap.~2.2) sowie der White-Label-Bedarf im Profisport
-(Kap.~2.3). Kapitel 2.4 konkretisiert diese Dimensionen am Fallbeispiel
+(Kap.~2.3). Kapitel~2.4 konkretisiert diese Dimensionen am Fallbeispiel
 Eintracht Frankfurt und beschreibt das zur empirischen Validierung
-eingesetzte Experteninterview. Kapitel 2.5 ergänzt die linguistischen
-Anforderungen an die Textgenerierung. Kapitel 2.6 fasst alle
+eingesetzte Experteninterview. Kapitel~2.5 ergänzt die linguistischen
+Anforderungen an die Textgenerierung. Kapitel~2.6 fasst alle
 Anforderungen in einem formalen Pflichtenheft zusammen.
 
 \section{Redaktioneller Aufwand bei
@@ -18,7 +18,7 @@ Livetickern}\label{redaktioneller-aufwand-bei-livetickern}
 
 \subsection{Ist-Zustand: Bestehendes Redaktionssystem}\label{ist-zustand-bestehendes-system}
 
-Bevor die strukturellen Problemdimensionen der manuellen Liveticker-Produktion herausgearbeitet werden, illustriert Abbildung~\ref{fig:altsystem} den konkreten Ist-Zustand anhand des im Projektzeitraum eingesetzten Redaktionssystems bei Eintracht Frankfurt. Das System repräsentiert den typischen Stand eines über viele Jahre gewachsenen, rein manuellen Werkzeugs ohne KI-Integration.
+Als Ausgangspunkt illustriert Abbildung~\ref{fig:altsystem} den konkreten Ist-Zustand anhand des im Projektzeitraum eingesetzten Redaktionssystems bei Eintracht Frankfurt. Das System repräsentiert den typischen Stand eines über viele Jahre gewachsenen, rein manuellen Werkzeugs ohne KI-Integration.
 
 \begin{figure}[H]
 \centering
@@ -38,7 +38,7 @@ Die Systemanalyse zeigt sechs strukturelle Defizite, die den Handlungsbedarf fü
 \item \textbf{Kein automatischer Datenabruf:} Die Aufstellungsanzeige (Abbildung~\ref{fig:altsystem}, rechts) zeigt lediglich „Reservebank'' ohne geladene Spielerdaten, ein Hinweis darauf, dass Stammdaten manuell eingepflegt oder gar nicht verfügbar sind.
 \end{itemize}
 
-Diese Defizite spiegeln die drei in Kapitel~1.1 identifizierten Problemdimensionen direkt wider: operativer Zeitdruck durch vollständig manuelle Produktion, fehlende Mehrsprachigkeit und eingeschränkte White-Label-Fähigkeit. Das in dieser Arbeit entwickelte System adressiert alle sechs Punkte explizit: Die fehlende KI-Unterstützung und Stilinkonsistenz werden durch die LLM-Pipeline mit konfigurierbaren Stilprofilen behoben (vgl.\ Kap.~4.5); die manuelle Score-Pflege und der fehlende Datenabruf durch automatisierte n8n-ETL-Workflows (vgl.\ Kap.~4.4); die fehlende Medienintegration durch die MediaQueue-Architektur (vgl.\ Kap.~5.4); das Mehrsprachdefizit durch die native LLM-Übersetzungsfunktion (vgl.\ Kap.~4.5.2).
+Diese Defizite spiegeln die drei in Kapitel~1.1 identifizierten Problemdimensionen direkt wider: operativer Zeitdruck durch vollständig manuelle Produktion, fehlende Mehrsprachigkeit und eingeschränkte White-Label-Fähigkeit. Das in dieser Arbeit entwickelte System behebt alle sechs Punkte: Die fehlende KI-Unterstützung und Stilinkonsistenz werden durch die LLM-Pipeline mit konfigurierbaren Stilprofilen behoben (vgl.\ Kap.~4.5); die manuelle Score-Pflege und der fehlende Datenabruf durch automatisierte n8n-ETL-Workflows (vgl.\ Kap.~4.4); die fehlende Medienintegration durch die MediaQueue-Architektur (vgl.\ Kap.~5.4); das Mehrsprachdefizit durch die native LLM-Übersetzungsfunktion (vgl.\ Kap.~4.5.2).
 
 \subsection{Zeitdruck, Fehleranfälligkeit und Skalierungsgrenzen}\label{zeitdruck-und-fehleranfaelligkeit}
 
@@ -63,9 +63,7 @@ Erschwerend kommt der extreme Zeitdruck hinzu. Unmittelbar nach einer
 relevanten Spielszene haben die Autorinnen und Autoren nur wenige
 Augenblicke Zeit, das Geschehen konzise, anschaulich und vor allem
 spannend-unterhaltsam zu beschreiben (Meier 2018, zitiert nach Bluhm \&
-Schäfer 2023, S. 27). Da zum Gegenlesen keine Zeit bleibt, müssen
-Verfassen und Redigieren in einem einzigen Prozess erfolgen (Walter
-2020, S. 29). Verschärft wird die Situation dadurch, dass Ticker-Autoren
+Schäfer 2023, S. 27). Da zum Gegenlesen keine Zeit bleibt, fallen Verfassen und Redigieren in einem einzigen Schritt zusammen (Walter 2020, S. 29). Verschärft wird die Situation dadurch, dass Ticker-Autoren
 häufig parallel weitere Aufgaben übernehmen müssen, wie etwa die
 Erstellung des abschließenden Spielberichts (Bluhm \& Schäfer 2023, S.
 35). Die Fehleranfälligkeit unter diesen Bedingungen ist systemimmanent:
@@ -98,7 +96,7 @@ eine systemische Folge des manuellen Produktionsprozesses (vgl. Bluhm \&
 Schäfer 2023, S. 32, 35). Eine technologische Unterstützung ist daher
 keine optionale Ergänzung, sondern eine strukturelle Notwendigkeit.
 
-Das Experteninterview (Kap.~2.4) validiert diese Problemdimension empirisch über die Interviewfragen IF1--IF5 (Workflow, Personalbindung, Parallelaufgaben, Fehlerquellen, Parallelspiele).
+Das Experteninterview (Kap.~2.4) validiert diese Problemdimension empirisch über die Interviewfragen IF1--IF4c (Workflow, Arbeitsort, Personalbindung, Parallelaufgaben, Reaktionszeit, Fehlerquellen und Systemnutzung).
 
 
 
@@ -113,11 +111,7 @@ besonders deutlich illustrieren: Der internationale Markt ist für die
 Liga längst bedeutender als der heimische englische (Beils 2023, S.
 221). Dies betrifft zunehmend auch Bundesliga-Vereine mit zweistelligen
 Millionen-Reichweiten auf globalen Plattformen (vgl. Beils 2023, S.
-200). Am Beispiel von Eintracht Frankfurt zeigt sich dies konkret: Durch
-Spieler wie Makoto Hasebe und Daichi Kamada in zurückliegenden Spielzeiten sowie kontinuierliche internationale Transferaktivitäten verfügt der Verein über eine beachtliche Anhängerschaft außerhalb des deutschsprachigen Raums, insbesondere in Japan und dem angloamerikanischen Markt, erkennbar an den fremdsprachigen
-Interaktionen auf den offiziellen Social-Media-Kanälen des Vereins,
-die im Rahmen der Projektbeobachtung dokumentiert wurden. Eine rein deutschsprachige
-Berichterstattung wird dieser Reichweite nicht mehr gerecht.
+200). Am Beispiel von Eintracht Frankfurt zeigt sich dies konkret: Durch Spieler wie Makoto Hasebe und Daichi Kamada in zurückliegenden Spielzeiten sowie kontinuierliche internationale Transferaktivitäten verfügt der Verein über eine beachtliche Anhängerschaft außerhalb des deutschsprachigen Raums, insbesondere in Japan und dem angloamerikanischen Markt. Diese Reichweite ist an den fremdsprachigen Interaktionen auf den offiziellen Social-Media-Kanälen des Vereins erkennbar, die im Rahmen der Projektbeobachtung dokumentiert wurden. Eine rein deutschsprachige Berichterstattung wird ihr nicht mehr gerecht.
 
 Die Herausforderung beschränkt sich nicht auf eine reine Übersetzung existierender Inhalte. Smułczyński (2020, S. 57) zeigt am
 Beispiel der mehrsprachigen Berichterstattung von \emph{Die Zeit}, dass
@@ -130,18 +124,15 @@ stilistischen Mustern als sein englisches oder japanisches Pendant. Es
 handelt sich daher weniger um ein Übersetzungs- als um ein
 Lokalisierungsproblem.
 
-Der operative Zeitdruck verschärft sich mit jeder zusätzlichen Sprache erheblich. Jede erfordert spezialisiertes Personal für Übersetzungs- und Anpassungsprozesse, die unter Echtzeit-Bedingungen kaum zu bewältigen sind (vgl. Bluhm \& Schäfer 2023, S. 32). Eine manuelle Skalierung auf mehrere Sprachen ist wirtschaftlich und personell für die meisten Vereinsredaktionen nicht darstellbar.
+Der operative Zeitdruck verschärft sich mit jeder zusätzlichen Sprache erheblich. Jede weitere Sprache erfordert spezialisiertes Personal für Übersetzungs- und Anpassungsprozesse, die unter Echtzeit-Bedingungen kaum zu bewältigen sind (vgl. Bluhm \& Schäfer 2023, S. 32). Eine manuelle Skalierung auf mehrere Sprachen ist wirtschaftlich und personell für die meisten Vereinsredaktionen nicht darstellbar.
 Moderne Large Language Models eröffnen hier eine neue Perspektive: Sie
 können Texte nicht nur übersetzen, sondern direkt in der Zielsprache
 generieren, unter Berücksichtigung von Stil, Tonalität und
-kulturellem Kontext (vgl. OpenAI 2023, S. 1; Kap. 3.1). Diese Fähigkeit
+kulturellem Kontext (vgl. OpenAI 2023, S. 1; Kap.~3.1). Diese Fähigkeit
 macht eine mehrsprachige Liveticker-Produktion erstmals ohne
 proportionalen Personalaufwand denkbar.
 
-Die empirische Validierung dieser Problemdimension erfolgt über das
-Experteninterview (Kap.~2.4); Interview-Frage IF6 adressiert direkt,
-ob bei Eintracht Frankfurt aktuell Bedarf an mehrsprachigen Tickern
-besteht und welche Sprachen dabei relevant wären.
+Das Experteninterview (Kap.~2.4) validiert diese Problemdimension empirisch; Interview-Frage IF5 fragt direkt, ob bei Eintracht Frankfurt aktuell Bedarf an mehrsprachigen Tickern besteht und welche Sprachen dabei relevant wären.
 
 
 
@@ -163,27 +154,25 @@ erfordert die fanbezogene Perspektive einen dritten Tonfall: Bei
 anhaltenden Rückständen oder schwachen Leistungen des eigenen Teams
 kann ein kritisch-analysierender Stil angemessener sein als
 unkritische Euphorie. Daraus resultieren drei funktional
-unterschiedliche Stilprofile: \textbf{neutral}, \textbf{euphorisch} und \textbf{kritisch}. Diese Stilprofile sind orthogonal zu den in Kapitel~1.1 genannten Betriebsmodi (\texttt{auto}, \texttt{coop}, \texttt{manual}): Während die Modi den Autonomiegrad der KI-Generierung steuern, bestimmt das Stilprofil die Texttonalität; beide Dimensionen sind unabhängig voneinander konfigurierbar. Die in Kapitel 2.1
+unterschiedliche Stilprofile: \textbf{neutral}, \textbf{euphorisch} und \textbf{kritisch}. Diese Stilprofile sind orthogonal zu den in Kapitel~1.1 genannten Betriebsmodi (\texttt{auto}, \texttt{coop}, \texttt{manual}): Während die Modi den Autonomiegrad der KI-Generierung steuern, bestimmt das Stilprofil die Texttonalität; beide Dimensionen sind unabhängig voneinander konfigurierbar. Die in Kapitel~2.1
 beschriebene personelle Fluktuation verschärft das Problem zusätzlich:
 Eine konsistente Markenstimme ist mit wechselndem Personal manuell kaum
 zu gewährleisten. Eine technologische Lösung muss daher auch die
-stilistische Konsistenz adressieren.
+stilistische Konsistenz sicherstellen.
 
 Im Softwarekontext wird dieses Problem durch sogenannte
 White-Label-Architekturen gelöst: Ein generisches Kernsystem wird so
 konzipiert, dass es für verschiedene Abnehmer individuell konfigurierbar
 ist, ohne den Quellcode zu ändern (vgl. Pohl et al.\ 2005, S.~12). Überträgt man dieses
-Prinzip auf die Liveticker-Produktion, ergibt sich die Anforderung, dass
-ein und dasselbe System sowohl einen vereinsspezifischen Ticker mit
+Prinzip auf die Liveticker-Produktion, folgt die Anforderung, dass ein und dasselbe System sowohl einen vereinsspezifischen Ticker mit
 emotionaler Fanbindung als auch einen neutralen, anbieterunabhängigen
 Ticker bedienen können muss. Die stilistische Differenzierung (von der Wortwahl über die Tonalität bis hin zu vereinsspezifischen Redewendungen) muss als Konfiguration abbildbar sein, nicht als separate Implementierung.
 
-Die empirische Validierung dieser Problemdimension erfolgt über das
-Experteninterview (Kap.~2.4): IF7 fragt nach vorhandenen Styleguides
-und der aktuellen Stilkonsistenz; IF8 nach den charakteristischen
+Das Experteninterview (Kap.~2.4) validiert diese Problemdimension empirisch: IF6 fragt nach vorhandenen Styleguides
+und der aktuellen Stilkonsistenz; IF7 nach den charakteristischen
 Merkmalen des Eintracht-Ticker-Stils im Vergleich zur neutralen
-Berichterstattung; IF9 nach der Bedeutung stilistischer Konsistenz
-über Spiele hinweg.
+Berichterstattung sowie nach den verwendeten Formulierungsmustern
+(IF7a).
 
 Wie sich diese Anforderungen am konkreten Beispiel eines
 Bundesliga-Vereins ausprägen, zeigt der folgende Abschnitt.
@@ -199,19 +188,15 @@ stützt sich auf die in den vorangegangenen Abschnitten hergeleiteten
 Problemdimensionen, eine Analyse der öffentlich zugänglichen digitalen
 Kanäle des Vereins sowie ein strukturiertes Experteninterview
 mit einem professionellen Sportredakteur von Eintracht Frankfurt. Die
-theoretisch hergeleiteten Anforderungen werden dabei durch das Interview
-empirisch validiert, insbesondere hinsichtlich des redaktionellen
-Workflows (Kap. 2.1), des Bedarfs an mehrsprachiger Berichterstattung
-(Kap. 2.2) und der stilistischen Konsistenzanforderungen (Kap. 2.3). Das
+theoretisch hergeleiteten Anforderungen werden durch das Interview empirisch validiert, insbesondere hinsichtlich des redaktionellen
+Workflows (Kap.~2.1), des Bedarfs an mehrsprachiger Berichterstattung
+(Kap.~2.2) und der stilistischen Konsistenzanforderungen (Kap.~2.3). Das
 strukturierte Leitfadeninterview nach Kuckartz (2018) wurde gewählt,
 weil es bei kleiner Fallzahl eine systematische Vergleichbarkeit der
 Antworten mit den hergeleiteten Anforderungen ermöglicht. Der
 Interviewpartner ist als Experte im Sinne von Meuser und Nagel (1991)
 einzustufen, da er über mehrjährige Redaktionserfahrung im
-Vereinsmedienbereich verfügt. Die Auswahl eines Einzelfalls ist durch
-die explorative Zielsetzung der Arbeit gerechtfertigt. Die vollständige
-Auswertung des Interviews erfolgt in Abschnitt~6.3.5 mittels
-thematischer Inhaltsanalyse nach Kuckartz (2018).
+Vereinsmedienbereich verfügt. Die explorative Zielsetzung der Arbeit rechtfertigt die Auswahl eines Einzelfalls. Das Interview wird in Abschnitt~6.3.5 mittels thematischer Inhaltsanalyse nach Kuckartz (2018) ausgewertet.
 
 Aus den drei Problemdimensionen ergeben sich folgende vereinsspezifische
 Anforderungen: Eintracht Frankfurt bestreitet pro Saison bis zu 60
@@ -229,19 +214,19 @@ sich von neutraler Berichterstattung überregionaler Medien unterscheidet
 Differenzierung konfigurierbar abbilden.
 
 Über die in den Kapiteln 2.1--2.3 eingebetteten Validierungsfragen
-(IF1--IF9) hinaus adressiert das Experteninterview zwei weitere
+(IF1--IF7a) hinaus behandelt das Experteninterview zwei weitere
 Themenblöcke, die erst nach der Systemdemonstration beantwortet werden
-können: die Systembewertung (IF10--IF15, eingebettet in
-Abschnitt~6.3.5) und die Zukunftsperspektive (IF16--IF18,
-adressiert in Kap.~7.5). Ein valides Systemurteil zu Block 3 und 4
+können: die Systembewertung (IF8--IF13, eingebettet in
+Abschnitt~6.3.5) und die Zukunftsperspektive (IF14--IF15a,
+behandelt in Kap.~7.5). Ein valides Systemurteil zu Block 3 und 4
 setzt die vorherige Exposition mit dem laufenden System voraus, weshalb
 diese Blöcke sequenziell nach der Systemdemonstration eingesetzt werden.
 Das Interview bestätigte die drei Problemdimensionen in allen
 wesentlichen Punkten: den hohen manuellen Aufwand an Spieltagen, den
 Bedarf an konsistenter Stilführung sowie das Interesse an
 mehrsprachiger Berichterstattung. Die vollständige Auswertung mit
-Einzelergebnissen erfolgt in Abschnitt~6.3.5. Der vollständige
-Interviewleitfaden mit 18 Fragen ist im Anhang dieser Arbeit
+Einzelergebnissen findet sich in Abschnitt~6.3.5. Der vollständige
+Interviewleitfaden mit 31 Fragen ist im Anhang dieser Arbeit
 beigefügt.
 
 
@@ -249,9 +234,7 @@ beigefügt.
 \section{Linguistische Anforderungen an die
 Textgenerierung}\label{linguistische-anforderungen-an-die-textgenerierung}
 
-Neben den organisatorischen und stilistischen Anforderungen stellt die
-automatisierte Liveticker-Produktion auch spezifische linguistische
-Anforderungen. Liveticker stellen eine
+Neben den organisatorischen und stilistischen Aspekten stellt die automatisierte Liveticker-Produktion auch spezifische linguistische Anforderungen. Liveticker stellen eine
 linguistisch eigenständige Textgattung dar (Hauser 2008, S. 1). Hauser
 charakterisiert sie als \textbf{schriftlich-grafische
 Simultanerzählung}. Im Gegensatz zum Spielbericht fehlt der
@@ -268,12 +251,9 @@ Für das Prompt-Design sind vier linguistische Merkmale leitend:
 \end{itemize}
 
 Diese Merkmale definieren das Zielformat, auf das das LLM durch
-gezieltes Prompt Engineering konditioniert werden muss (vgl. Kap. 3.2).
-Sie bilden damit die linguistischen Anforderungen, die bei der
-Prompt-Konzeption in Kapitel 4.5.2 operationalisiert werden. Die
-linguistischen Anforderungen werden nicht separat im Interview
-validiert, sondern fließen als Operationalisierungsvorgaben in das
-Prompt Design ein (Kap. 4.5.2); ihre Wirksamkeit wird in der
+gezieltes Prompt Engineering konditioniert werden muss (vgl. Kap.~3.2).
+Die linguistischen Anforderungen werden nicht separat im Interview
+validiert, sondern werden direkt in das Prompt-Design überführt (Kap.~4.5.2); ihre Wirksamkeit wird in der
 Qualitätsevaluation (Kap.~6.3.4) anhand der Dimension Verständlichkeit
 bewertet.
 
@@ -282,8 +262,7 @@ bewertet.
 \section{Zusammenfassung der
 Systemanforderungen}\label{zusammenfassung-der-systemanforderungen}
 
-Aus den vorangegangenen Problemdimensionen und der Anforderungsanalyse
-werden im Folgenden die formalen Anforderungen an das System abgeleitet.
+Aus den vorangegangenen Problemdimensionen und der Anforderungsanalyse ergeben sich die formalen Anforderungen an das System.
 Diese gliedern sich in funktionale Anforderungen (F), nicht-funktionale
 Anforderungen (N) und architektonische Anforderungen (A). Die Evaluation
 in Kapitel~6.6 überprüft jeden einzelnen Punkt gegen den implementierten
@@ -310,21 +289,21 @@ Herleitung
 \endhead
 \bottomrule\noalign{}
 \endlastfoot
-F1 & Drei Betriebsmodi (auto, coop, manual) & Kap. 1.1, 2.1 \\
-F2 & KI-Textgenerierung für alle Event-Typen & Kap. 2.1, 2.5 \\
-F3 & Drei Stilprofile (neutral, euphorisch, kritisch) & Kap. 2.3, 2.4 \\
-F4 & Few-Shot-Prompting mit Stilreferenzen & Kap. 2.5, 3.2 \\
-F5 & Ticker-Lifecycle (draft → published / rejected / deleted) & Kap. 2.1 \\
-F6 & Slash-Command-Parser für manuellen Modus & Kap. 2.1 (Zeitdruck: auch im manuellen Modus muss die Eingabe schnell erfolgen; der Parser reduziert Tippaufwand durch strukturierte Kürzel) \\
+F1 & Drei Betriebsmodi (auto, coop, manual) & Kap.~1.1, 2.1 \\
+F2 & KI-Textgenerierung für alle Event-Typen & Kap.~2.1, 2.5 \\
+F3 & Drei Stilprofile (neutral, euphorisch, kritisch) & Kap.~2.3, 2.4 \\
+F4 & Few-Shot-Prompting mit Stilreferenzen & Kap.~2.5, 3.2 \\
+F5 & Ticker-Lifecycle (draft → published / rejected / deleted) & Kap.~2.1 \\
+F6 & Slash-Command-Parser für manuellen Modus & Kap.~2.1 (Zeitdruck: auch im manuellen Modus muss die Eingabe schnell möglich sein; der Parser reduziert Tippaufwand durch strukturierte Kürzel) \\
 F7 & Mehrsprachige Textgenerierung (Deutsch, Englisch; erweiterbar auf
-weitere Sprachen) & Kap. 2.2 \\
-F8 & Idempotenter Datenimport via n8n & Kap. 2.1 (Robustheit) \\
-F9 & Provider-Fallback-Kette & Kap. 2.1 (Verfügbarkeitsanforderung im
+weitere Sprachen) & Kap.~2.2 \\
+F8 & Idempotenter Datenimport via n8n & Kap.~2.1 (Robustheit) \\
+F9 & Provider-Fallback-Kette & Kap.~2.1 (Verfügbarkeitsanforderung im
 Echtzeit-Produktionsbetrieb) \\
-F10 & Deduplizierung von Ticker-Einträgen & Kap. 2.1 (Korrektheit) \\
-F11 & Pre-Match-Kontextgenerierung (Verletzungen, H2H, etc.) & Kap. 2.5
+F10 & Deduplizierung von Ticker-Einträgen & Kap.~2.1 (Korrektheit) \\
+F11 & Pre-Match-Kontextgenerierung (Verletzungen, H2H, etc.) & Kap.~2.5
 (Elaboration) \\
-F12 & Live-Statistik-Updates & Kap. 2.1 (Echtzeit) \\
+F12 & Live-Statistik-Updates & Kap.~2.1 (Echtzeit) \\
 \end{longtable}
 }
 
@@ -348,16 +327,16 @@ Herleitung
 \endhead
 \bottomrule\noalign{}
 \endlastfoot
-N1 & Concurrency-Begrenzung für LLM-Aufrufe & Kap. 2.1 (Zeitdruck) \\
-N2 & Retry-Logik mit Rate-Limit-Erkennung & Kap. 3.1 (Robustheit) \\
+N1 & Concurrency-Begrenzung für LLM-Aufrufe & Kap.~2.1 (Zeitdruck) \\
+N2 & Retry-Logik mit Rate-Limit-Erkennung & Kap.~3.1 (Robustheit) \\
 N3 & Transaktionale Testisolierung & Technische Qualitätssicherung
 (Echtzeit-Produktionssysteme erfordern Testisolierung aufgrund der
 Datenbankkopplung) \\
 N4 & TypeScript-Typsicherheit & Technische Qualitätssicherung
 (Wartbarkeit und Fehlervermeidung im Team) \\
-N5 & Responsive UI (Mobile-tauglich) & Kap. 2.1 (Einsatzszenarien:
+N5 & Responsive UI (Mobile-tauglich) & Kap.~2.1 (Einsatzszenarien:
 Stadion und Home-Office erfordern mobile Bedienbarkeit) \\
-N6 & Fehlerresistenz im Frontend & Kap. 2.1 (Robustheit) \\
+N6 & Fehlerresistenz im Frontend & Kap.~2.1 (Robustheit) \\
 \end{longtable}
 }
 
@@ -380,16 +359,16 @@ Herleitung
 \endhead
 \bottomrule\noalign{}
 \endlastfoot
-A1 & Drei-Schichten-Architektur & Kap. 2.1, 2.3 (Modularität) \\
+A1 & Drei-Schichten-Architektur & Kap.~2.1, 2.3 (Modularität) \\
 A2 & Isolierte Datenzugriffsschicht: Persistenzlogik muss von
 API-Logik getrennt sein, sodass Datenbankzugriffe unabhängig testbar
 und austauschbar bleiben & Wartbarkeit, Testbarkeit; Mandanten mit
 unterschiedlichen Backend-Anforderungen müssen bedienbar sein, ohne
-den Anwendungskern zu ändern (vgl. Kap. 2.3) \\
+den Anwendungskern zu ändern (vgl. Kap.~2.3) \\
 A3 & REST-API zur vollständigen Systemsteuerung und
-Mandantenkonfiguration & Kap. 2.3 (White-Label) \\
-A4 & Vollständiges Datenmodell & Kap. 2.1, 2.4 \\
-A5 & White-Label-Fähigkeit (ef\_whitelabel / generic) & Kap. 2.3, 2.4 \\
+Mandantenkonfiguration & Kap.~2.3 (White-Label) \\
+A4 & Vollständiges Datenmodell & Kap.~2.1, 2.4 \\
+A5 & White-Label-Fähigkeit (ef\_whitelabel / generic) & Kap.~2.3, 2.4 \\
 \end{longtable}
 }
 
@@ -397,14 +376,13 @@ Die drei Problemdimensionen (operativer Zeitdruck, Mehrsprachigkeit und White-La
 macht menschliche Skalierung unmöglich, Mehrsprachigkeit multipliziert
 diesen Aufwand, und White-Label-Anforderungen verlangen eine
 stilistische Konsistenz, die wechselndes Personal nicht zuverlässig
-gewährleisten kann. Dies begründet die Notwendigkeit einer integrierten
-technologischen Lösung: KI-gestützte Textgenerierung mit
+gewährleisten kann. Dies macht eine integrierte technologische Lösung notwendig: KI-gestützte Textgenerierung mit
 konfigurierbarer Stilsteuerung (F1--F4) als Antwort auf den Zeitdruck,
 mehrsprachige Generierung (F7) als Antwort auf die
 Internationalisierungsanforderung, sprachgattungskonformes Prompt Design
-(F2, F4, F11) als Antwort auf die in Kapitel 2.5 hergeleiteten
+(F2, F4, F11) als Antwort auf die in Kapitel~2.5 hergeleiteten
 linguistischen Anforderungen, und eine konfigurierbare Instanzlogik (A5)
 als Antwort auf den White-Label-Bedarf. Die vorstehenden 23 Anforderungen (F1--F12, N1--N6, A1--A5) bilden damit
-das vollständige Pflichtenheft für die Systemkonzeption in Kapitel 4; die hierfür
-notwendigen technologischen Grundlagen werden in Kapitel 3
+das vollständige Pflichtenheft für die Systemkonzeption in Kapitel~4; die hierfür
+notwendigen technologischen Grundlagen werden in Kapitel~3
 aufgearbeitet.

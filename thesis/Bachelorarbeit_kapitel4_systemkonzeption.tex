@@ -1,7 +1,7 @@
 \chapter{Systemkonzeption}\label{systemkonzeption}
 
 Dieses Kapitel beschreibt die Konzeption des Liveticker-Systems auf
-Basis der in Kapitel 2 hergeleiteten Anforderungen und der in Kapitel 3
+Basis der in Kapitel~2 hergeleiteten Anforderungen und der in Kapitel~3
 aufgearbeiteten technologischen Grundlagen. Es gliedert sich in acht
 Bereiche: das Schichtenmodell und die Kommunikationsarchitektur
 (Kap.~4.1), die Backend-Konzeption mit API-Design und
@@ -22,14 +22,14 @@ Das System ist als eigenständiger Cloud-Service konzipiert. Es verarbeitet alle
 \emph{Separation of Concerns} (Parnas 1972), das die unabhängige
 Weiterentwicklung einzelner Systemteile ermöglicht.
 
-Die \textbf{Datenbeschaffungs- und Automatisierungsschicht} nutzt n8n. Sie integriert externe Datenquellen (Football-API, ScorePlay, Social-Feeds), normalisiert die Rohdaten und schreibt sie entweder direkt in die Datenbank oder über REST-Endpunkte in das System. Die Entkopplung der Integrationslogik in n8n ermöglicht eine schnelle Anpassung von Import-Workflows, ohne den Anwendungskern zu ändern.
+Die \textbf{Datenbeschaffungs- und Automatisierungsschicht} nutzt n8n. Sie integriert externe Datenquellen (Football-API, ScorePlay, Social-Feeds), normalisiert die Rohdaten und schreibt sie entweder direkt in die Datenbank oder über REST-Endpunkte in das System. n8n kapselt die Integrationslogik und erlaubt schnelle Workflow-Anpassungen ohne Eingriff in den Anwendungskern.
 
 Die \textbf{Anwendungs- und Persistenzschicht} basiert auf FastAPI (Python) und PostgreSQL. Sie erfüllt drei Aufgaben: (1) REST-Schnittstellen bereitstellen, (2) Zustandsübergänge der Ticker-Einträge verwalten (draft, published, rejected) und (3) KI-Generierungsschritte orchestrieren sowie alle Domänendaten konsistent speichern.
 
 Die \textbf{Präsentationsschicht} ist als White-Label-Frontend in React und TypeScript realisiert. Sie bildet den Redaktionsworkflow für Auswahl, Sichtung, Bearbeitung und Publikation ab und ist mandantenfähig konfigurierbar (Instanz, Stil, Sprache, Branding).
 Technisch kombiniert das Frontend REST-basiertes Polling für Ticker- und
 Spieldaten mit einem dedizierten WebSocket-Kanal für
-Echtzeit-Medienupdates. Ticker- und Matchdaten verbleiben im Polling-Modell: Sie tolerieren eine Latenz von 15–20~Sekunden, sind einfacher zu debuggen und benötigen keine persistente Serververbindung. Das ist einfacher als SSE oder WebSocket für diese Datenklasse.
+Echtzeit-Medienupdates. Ticker- und Matchdaten verbleiben im Polling-Modell: Sie tolerieren eine Latenz von 15–20~Sekunden, sind einfacher zu debuggen und benötigen keine persistente Serververbindung. Für diese Datenklasse ist Polling damit wartungsärmer als SSE oder WebSocket.
 
 Die folgende Abbildung zeigt die drei Schichten mit ihren Technologien
 und Kommunikationspfaden:
@@ -77,7 +77,7 @@ Live-Prozesse.
 \subsection{Partner-Team-Konzept und
 White-Label-Steuerung}\label{partner-team-konzept-und-white-label-steuerung}
 
-Das System unterscheidet zwischen dem \textbf{Partner-Team} (dem konfigurierten Heimverein) und den jeweiligen Gegnern. Die Erkennung erfolgt über ein konfigurierbares Team-Keyword, das in n8n-Workflows und Frontend gegen den Teamnamen abgeglichen wird. Partner-Team-Spiele verwenden den \texttt{ef\_whitelabel}-Instanzpfad mit euphorischem Stil und blenden vereinsspezifische UI-Bereiche ein (Social-Media-Panels für YouTube, X und Instagram sowie die ScorePlay-Mediensuche für Bildmaterial); alle anderen Spiele durchlaufen den \texttt{generic}-Pfad mit neutralem Stil. Die Implementierungsdetails sind in Kapitel~5 dokumentiert.
+Das System unterscheidet zwischen dem \textbf{Partner-Team} (dem konfigurierten Heimverein) und den jeweiligen Gegnern. Das System erkennt das Partner-Team über ein konfigurierbares Keyword, das in n8n-Workflows und Frontend gegen den Teamnamen abgeglichen wird. Partner-Team-Spiele verwenden den \texttt{ef\_whitelabel}-Instanzpfad mit euphorischem Stil und blenden vereinsspezifische UI-Bereiche ein (Social-Media-Panels für YouTube, X und Instagram sowie die ScorePlay-Mediensuche für Bildmaterial); alle anderen Spiele durchlaufen den \texttt{generic}-Pfad mit neutralem Stil. Die Implementierungsdetails sind in Kapitel~5 dokumentiert.
 
 
 
@@ -92,8 +92,7 @@ den technologischen Grundlagen aus Kap.~3.6.
 Datenzugriff}\label{interne-struktur-und-datenzugriff}
 
 Als Backend-Framework wurde FastAPI gewählt (vgl. Abschnitt~3.6 für
-die technische Einordnung). Die Entscheidung begründet sich durch drei
-systemspezifische Anforderungen: Die parallele Verarbeitung von
+die technische Einordnung). Drei systemspezifische Anforderungen sprechen für FastAPI: Die parallele Verarbeitung von
 LLM-Aufrufen, externen API-Abfragen und Medienverarbeitung profitiert
 von nativer Unterstützung für asynchrone I/O, die FastAPI über
 Pythons \texttt{asyncio}-Event-Loop bereitstellt; die automatisch
@@ -135,7 +134,7 @@ Endpunktstrategie}\label{api-design-und-endpunktstrategie}
 
 Die Backend-Schnittstelle ist als versionierte REST-API unter
 \texttt{/api/v1} ausgelegt und orientiert sich am Architekturstil
-\textbf{Representational State Transfer} (Fielding 2000, Kap. 5).
+\textbf{Representational State Transfer} (Fielding 2000, Kap.~5).
 Endpunkte sind ressourcenorientiert strukturiert (z. B. \texttt{teams},
 \texttt{matches}, \texttt{ticker}, \texttt{media}, \texttt{clips}) und
 folgen konsistenten Benennungs- und Methodenregeln. \texttt{GET} dient
@@ -145,8 +144,7 @@ kontrollierten Löschoperationen. Insbesondere im Ticker-Kontext bildet
 \texttt{PATCH} den redaktionellen Lebenszyklus (\texttt{draft} →
 \texttt{published} bzw. \texttt{rejected}) explizit ab.
 
-Konzeptionell wird zwischen fachlichen Datenendpunkten und prozessualen
-Triggerendpunkten getrennt. Dadurch bleiben Leseoperationen
+Das API-Design trennt konzeptionell zwischen fachlichen Datenendpunkten und prozessualen Triggerendpunkten. Dadurch bleiben Leseoperationen
 seiteneffektfrei, während Import- und Generierungsprozesse gezielt
 ausgelöst werden können. Fehlerfälle werden konsistent über
 HTTP-Statuscodes und strukturierte Fehlermeldungen kommuniziert, sodass
@@ -180,9 +178,7 @@ bewusst ausgeklammert (vgl. Kap.~1.4).
 Die Persistenzschicht basiert auf PostgreSQL und umfasst in der
 aktuellen Fassung 17 Tabellen (17 ORM-Modelle, vollständig via
 SQLAlchemy \texttt{create\_all} verwaltet; eine SQL-Migration ergänzt
-nachträglich eine Spalte in \texttt{ticker\_entries}). Die Wahl eines relationalen
-Systems gegenüber dokumentenorientierten Ansätzen (z. B. MongoDB)
-begründet sich durch die stark strukturierten Domänendaten:
+nachträglich eine Spalte in \texttt{ticker\_entries}). Die stark strukturierten Domänendaten sprechen für ein relationales System gegenüber dokumentenorientierten Alternativen wie MongoDB:
 FK-Beziehungen zwischen Teams, Wettbewerben, Spielen, Events und
 Ticker-Einträgen sind klar definiert und referenziell integer zu halten.
 JSONB-Felder werden selektiv für semistrukturierte Daten (z. B.
@@ -271,7 +267,7 @@ Datenpersistenz aus, nicht die LLM-Pipeline. Dieser Modus dient als
 Referenz für Vergleiche in der Evaluation.
 
 Der Moduswechsel ist als Laufzeitparameter auf Datenbankebene
-abgebildet; der Statusfluss ist im State-Diagramm in Abschnitt 4.3.2
+abgebildet; der Statusfluss ist im State-Diagramm in Abschnitt~4.3.2
 dargestellt.
 
 \begin{figure}[H]
@@ -380,7 +376,7 @@ Besonderheiten}\label{workflow-grenzen-und-projektspezifische-besonderheiten}
 
 Die Workflow-Landschaft ist funktional umfassend, enthält aber bewusst pragmatische Projektentscheidungen. In einzelnen Flows ist die Saisonlogik auf die Saison 2025/26 begrenzt (teilweise saisonspezifische Fixierung); für den nächsten Saisonbetrieb wäre eine Parametrisierung dieser Werte erforderlich (vgl. Kap.~6.7). Nicht alle Datenpfade sind eventgetrieben; ein Teil wird durch Polling und bedarfsgesteuerte Trigger ergänzt (hybride Aktualisierungslogik). Einige LLM- und Medienprozesse enthalten EF-spezifische Logik, die für eine vollständig generalisierte White-Label-Fähigkeit noch parametrisiert werden müsste (instanzspezifische Spezialpfade).
 
-In Summe bildet n8n eine tragfähige Orchestrierungsschicht, die externe
+Insgesamt bildet n8n eine tragfähige Orchestrierungsschicht, die externe
 Datenquellen, interne Persistenz und KI-generierte Inhalte in einem
 modularen, nachvollziehbaren und erweiterbaren Ablauf zusammenführt.
 
@@ -417,7 +413,7 @@ ohne Codeanpassung wählen, ein entscheidender Faktor für
 Vereinsredaktionen mit begrenztem Budget.
 
 Als Standardmodell im Deployment wurde Gemini 2.0 Flash Lite
-(Modell-ID \texttt{google/gemini-2.0-flash-lite-001}) über OpenRouter gewählt. Die Entscheidung für dieses Modell stützt sich auf drei Faktoren: \textbf{Aufgabencharakteristik} (vgl. Kap.~3.1): Liveticker-Texte sind kurz und faktenbasiert, eine Aufgabe, für die kompakte Modelle eine vergleichbare Qualität bei deutlich niedrigerer Latenz erzielen, was durch die gemessene Medianlatenz von 859~ms (vgl. Abschnitt~6.5.1) empirisch bestätigt wird. \textbf{Kosteneffizienz}: Gemini 2.0 Flash Lite zählt zu den kostengünstigsten kommerziell verfügbaren Modellen, was den Dauerbetrieb über eine Saison für ressourcenbegrenzte Vereinsredaktionen wirtschaftlich darstellbar macht (vgl. Kap.~2.1). Bei durchschnittlich 30~Einträgen pro Spiel und einem Prompt-Umfang von rund 1.000~Token je Eintrag liegt der geschätzte Inferenzkostenaufwand in der Größenordnung von unter 0{,}01~USD pro Spiel (basierend auf den zum Zeitpunkt des Deployments geltenden Listenpreisen von OpenRouter für \texttt{google/gemini-2.0-flash-lite-001}; Preise können sich ändern), selbst bei vollständiger Saison-Abdeckung (60~Pflichtspiele) unter 1~USD für die reine Textgenerierung. \textbf{Kontextfenster}: Das Modell unterstützt ein Kontextfenster von bis zu 1~Million~Token, sodass umfangreiche Pre-Match-Kontextinformationen (sieben Context-Builder, vgl. Kap.~4.5.2) und mehrere Few-Shot-Referenzen ohne Abschneidung eingebunden werden können.
+(Modell-ID \texttt{google/gemini-2.0-flash-lite-001}) über OpenRouter gewählt. Die Entscheidung für dieses Modell stützt sich auf drei Faktoren: \textbf{Aufgabencharakteristik} (vgl. Kap.~3.1): Liveticker-Texte sind kurz und faktenbasiert, eine Aufgabe, für die kompakte Modelle eine vergleichbare Qualität bei deutlich niedrigerer Latenz erzielen, was durch die gemessene Medianlatenz von 859~ms (vgl. Abschnitt~6.5.1) empirisch bestätigt wird. \textbf{Kosteneffizienz}: Gemini 2.0 Flash Lite zählt zu den kostengünstigsten kommerziell verfügbaren Modellen, was den Dauerbetrieb über eine Saison für ressourcenbegrenzte Vereinsredaktionen wirtschaftlich darstellbar macht (vgl. Kap.~2.1). Bei durchschnittlich 30~Einträgen pro Spiel und einem Prompt-Umfang von rund 1.000~Token je Eintrag liegt der geschätzte Inferenzkostenaufwand unter 0{,}01~USD pro Spiel (Listenpreise OpenRouter, Stand Deployment-Zeitpunkt; Preise variabel). Bei vollständiger Saison-Abdeckung (60~Pflichtspiele) ergibt sich damit ein Gesamtaufwand von unter 1~USD für die reine Textgenerierung. \textbf{Kontextfenster}: Das Modell unterstützt ein Kontextfenster von bis zu 1~Million~Token, sodass umfangreiche Pre-Match-Kontextinformationen (sieben Context-Builder, vgl. Kap.~4.5.2) und mehrere Few-Shot-Referenzen ohne Abschneidung eingebunden werden können.
 
 Ergänzend implementiert das Backend eine \textbf{Fallback-Kette} für den
 Fall, dass OpenRouter nicht konfiguriert ist. Das System prüft zur
@@ -468,8 +464,7 @@ zusätzliche harte Restriktionen, um Live-Szenen-Halluzinationen zu
 vermeiden und die Ausgabe auf Vorschau- und Analyseinhalte zu begrenzen.
 
 Der Inferenzparameter Temperature wird für die Textgenerierung
-auf \texttt{0.5} festgelegt, um eine ausgewogene Balance zwischen
-faktischer Korrektheit und stilistischer Variation zu erzielen. Für
+auf \texttt{0.5} festgelegt, um eine Balance zwischen faktischer Korrektheit und stilistischer Variation zu erzielen. Für
 Übersetzungsaufgaben wird ein niedrigerer Wert von \texttt{0.1}
 verwendet, um semantische Abweichungen vom Originaltext zu minimieren.
 
@@ -544,6 +539,5 @@ Context-basierte Frontend-Design in Kombination mit dem
 Kontrolle ohne Latenzeinbußen und ohne Prop-Drilling über
 Komponentengrenzen.
 
-Das vorliegende Konzept ist damit als vollständige Spezifikation für die
-Implementierung formuliert, die Kapitel~5 dokumentiert; die
+Das vorliegende Konzept spezifiziert damit die Implementierung vollständig, die Kapitel~5 dokumentiert; die
 systematische Evaluation folgt in Kapitel~6.

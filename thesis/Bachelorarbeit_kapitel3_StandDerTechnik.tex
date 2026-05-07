@@ -21,15 +21,13 @@ Den technischen Ausgangspunkt bildet die \textbf{Transformer-Architektur}
 (Vaswani et al.~2017), die Text mithilfe sogenannter
 \textbf{Aufmerksamkeitsmechanismen} (Attention) verarbeitet: Das Modell
 gewichtet bei der Verarbeitung eines Wortes alle anderen Wörter im
-Kontext nach ihrer Relevanz. Dadurch erfasst das Modell semantische Zusammenhänge über lange Sequenzen. Die Textgenerierung
-erfolgt autoregressiv; das Modell erzeugt ein Wort nach dem anderen,
-wobei jedes neue Wort auf den bereits generierten Text aufbaut.
+Kontext nach ihrer Relevanz. Dadurch erfasst das Modell semantische Zusammenhänge über lange Sequenzen. Das Modell generiert Text autoregressiv: Es erzeugt ein Wort nach dem anderen, wobei jedes neue Wort auf den bereits generierten Text aufbaut.
 
 Durch das Vortraining auf umfangreichen Textkorpora entwickeln diese Modelle ein breites Sprachverständnis. Aufgrund dieser Breite
 können sie direkt auf neue Aufgaben angewendet werden, ohne
 aufgabenspezifisches Fine-tuning zu erfordern, eine Eigenschaft, die
 als \textbf{Zero-Shot-Generalisierung} bezeichnet wird (Brown et
-al.~2020, S. 2). Das macht den Einsatz von LLMs für spezialisierte Aufgaben wie die Liveticker-Generierung ohne Finetuning möglich.
+al.~2020, S. 2). Zero-Shot-Generalisierung ermöglicht den Einsatz von LLMs für spezialisierte Aufgaben wie die Liveticker-Generierung ohne Finetuning.
 
 Die empirische Grundlage für das \textbf{In-Context Learning} wurde mit
 GPT-3 gelegt (Brown et al.~2020). Das Prinzip, Modelle über Beispiele
@@ -92,9 +90,9 @@ Ein weiterer zentraler Steuerungsparameter ist die \textbf{Temperature},
 die die Wahrscheinlichkeitsverteilung der Token-Auswahl beeinflusst
 (Brown et al.~2020, S. 24). Niedrige Werte (z.\,B. 0,0--0,3) führen zu
 deterministischeren, faktentreueren Ausgaben; höhere Werte (z.\,B.
-0,7--1,0) erhöhen die kreative Varianz. Für strikt faktenbasierte journalistische Texte sprechen niedrige Werte; für Genres, die stilistische Variation explizit erfordern (wie Liveticker, bei denen formelhaft wirkende Wiederholungen die Leserbindung senken), kann ein mittlerer Wert (z.\,B. 0,5) eine produktive Balance aus Faktentreue und sprachlicher Lebendigkeit darstellen. Ein separater, niedrigerer Wert (z.\,B. 0,1) ist für Übersetzungsaufgaben sinnvoll, bei denen semantische Abweichungen vom Originaltext minimiert werden sollen.
+0,7--1,0) erhöhen die kreative Varianz. Für strikt faktenbasierte journalistische Texte sprechen niedrige Werte; für Genres, die stilistische Variation erfordern (wie Liveticker, bei denen formelhaft wirkende Wiederholungen die Leserbindung senken), kann ein mittlerer Wert (z.\,B. 0,5) eine produktive Balance aus Faktentreue und sprachlicher Lebendigkeit darstellen. Ein separater, niedrigerer Wert (z.\,B. 0,1) ist für Übersetzungsaufgaben sinnvoll, bei denen semantische Abweichungen vom Originaltext minimiert werden sollen.
 
-Ein weiterer praktischer Constraint ist das \textbf{Kontextfenster} (Context Window): Jedes LLM kann nur eine begrenzte Token-Anzahl pro Aufruf verarbeiten, typisch 8\,000--200\,000 Token je nach Modell. Da jeder Few-Shot-Beispielblock, jeder Kontextbaustein und die Aufgabenbeschreibung Token verbrauchen, begrenzt das Kontextfenster die Anzahl sinnvoll einzubettender Stilreferenzen; für das vorliegende System wurden drei Few-Shot-Beispiele als pragmatisches Maximum gewählt (vgl. Kap.~4.5.2).
+Ein weiterer praktischer Constraint ist das \textbf{Kontextfenster} (Context Window): Jedes LLM kann nur eine begrenzte Token-Anzahl pro Aufruf verarbeiten, typisch 8\,000--200\,000 Token je nach Modell. Jeder Few-Shot-Beispielblock, jeder Kontextbaustein und die Aufgabenbeschreibung verbrauchen Token und begrenzen damit die Anzahl sinnvoll einzubettender Stilreferenzen. Für das vorliegende System wurden drei Few-Shot-Beispiele als pragmatisches Maximum gewählt (vgl. Kap.~4.5.2).
 
 Kapitel~4.5.2 erläutert die konkrete Prompt-Struktur, Few-Shot-Beispiele und Temperatur-Konfiguration des vorliegenden Systems.
 
@@ -117,9 +115,9 @@ Zur automatisierten Qualitätsbewertung generierter Texte hat sich der \textbf{L
 Web}\label{echtzeit-kommunikation-im-web}
 
 Die Übertragung von Daten zwischen Frontend und Backend erfordert eine
-ausgewogene Balance zwischen Latenz, Ressourcenverbrauch und
+Balance zwischen Latenz, Ressourcenverbrauch und
 Implementierungskomplexität. Für Echtzeitanwendungen wie Liveticker
-stehen mehrere etablierte Kommunikationsmuster zur Verfügung, die sich
+existieren mehrere etablierte Kommunikationsmuster, die sich
 hinsichtlich dieser Dimensionen unterscheiden.
 
 \begin{itemize}\tightlist
@@ -228,15 +226,15 @@ Operativer Zeitdruck (Kap.~2.1) & Kompaktes LLM + Few-Shot-Prompting (Kap.~3.1--
 \addlinespace
 Mehrsprachigkeit (Kap.~2.2) & Native LLM-Mehrsprachfähigkeit ohne proportionalen Personalaufwand (Kap.~3.1) & LLM-Übersetzungsfunktion (Kap.~4.5.2) \\
 \addlinespace
-White-Label-Bedarf (Kap.~2.3) & Self-hostbare Workflow-Plattform mit direktem Datenbankzugriff (Kap.~3.5) & n8n-ETL-Workflows (Kap.~4.4) \\
+White-Label-Bedarf (Kap.~2.3) & Self-hostbare Workflow-Plattform; konfigurierbare Instanzlogik (Kap.~3.5--3.6) & n8n-ETL + White-Label-Instanzkonfiguration (Kap.~4.1.2, 4.5) \\
 \addlinespace
-Echtzeit-Datenabruf & Polling/SSE/WebSocket je nach Latenzanforderung (Kap.~3.4) & WebSocket-Architektur (Kap.~4.1.1) \\
+Echtzeit-Datenabruf & Polling/SSE/WebSocket je nach Latenzanforderung (Kap.~3.4) & Hybrides Muster: Polling für Ticker-/Matchdaten, WebSocket für Medien (Kap.~4.1.1) \\
 \addlinespace
 Verknüpfte Spielentitäten & Relationale DB mit ACID-Garantien (Kap.~3.6) & PostgreSQL-Datenmodell (Kap.~4.2) \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-Der operative Zeitdruck (Kap.~2.1) erfordert kompakte Sprachmodelle mit Few-Shot-Prompting (Kap.~3.1--3.2), die Ticker-Einträge bei vertretbarer Latenz ohne ressourcenintensives Fine-tuning generieren, sowie einen hybriden NLG-Ansatz mit menschlicher Kontrollinstanz (Kap.~3.3), der das Halluzinationsproblem von LLMs ohne vollständigen Qualitätsverlust adressiert. Die Mehrsprachigkeit (Kap.~2.2) wird durch die native Mehrsprachfähigkeit großer Sprachmodelle abgedeckt (Kap.~3.1), ohne proportionalen Personalaufwand. Der White-Label-Bedarf (Kap.~2.3) erfordert eine selbst-hostbare Orchestrierungsplattform mit direktem Datenbankzugriff: n8n (Kap.~3.5) entkoppelt die ETL-Komplexität vom Anwendungskern und erlaubt mandantenspezifische Konfiguration unabhängig von Backend-Deployment-Zyklen. Für die Echtzeitkommunikation zwischen Frontend und Backend stehen je nach Anforderung Polling, SSE oder WebSocket zur Verfügung (Kap.~3.4); die systemspezifische Wahl wird in Kapitel~4.1.1 begründet. Die stark verknüpften Spielentitäten motivieren schließlich eine relationale Datenbankstruktur gegenüber dokumentbasierten Alternativen. Die Literaturrecherche zeigt zugleich eine spezifische Forschungslücke: Bestehende Ansätze zur automatisierten Sportberichterstattung (Kap.~3.3) operieren entweder templatebasiert ohne adaptive Stilsteuerung (vgl.~Beils 2023, S.~207) oder vollständig autonom ohne redaktionelle Kontrollinstanz. Ein LLM-basiertes System, das konfigurierbares Few-Shot-Prompting, ein dreistufiges Human-in-the-Loop-Betriebsmodell und vereinsspezifische White-Label-Fähigkeit in einer produktionsreifen Architektur vereint, ist in der einschlägigen Literatur nicht dokumentiert. Die vorliegende Arbeit adressiert diese Lücke.
+Die Literaturrecherche zeigt zugleich eine spezifische Forschungslücke: Bestehende Ansätze zur automatisierten Sportberichterstattung (Kap.~3.3) operieren entweder templatebasiert ohne adaptive Stilsteuerung (vgl.~Beils 2023, S.~207) oder vollständig autonom ohne redaktionelle Kontrollinstanz. Ein LLM-basiertes System, das konfigurierbares Few-Shot-Prompting, ein dreistufiges Human-in-the-Loop-Betriebsmodell und vereinsspezifische White-Label-Fähigkeit in einer produktionsreifen Architektur vereint, ist in der einschlägigen Literatur nicht dokumentiert. Die vorliegende Arbeit schließt diese Lücke.
 
 Diese technologischen Grundlagen münden in die Systemkonzeption (Kapitel~4) und deren Implementierung (Kapitel~5).
