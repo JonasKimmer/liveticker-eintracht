@@ -161,7 +161,7 @@ dann die qualitative Analyse konkreter Textbeispiele einschließlich Expertenval
 
 \subsection{Quantitative Metriken und Evaluationsinfrastruktur}\label{quantitative-metriken}
 
-Das System stellt über den Endpunkt \texttt{POST\ /api/v1/ticker/generate-bulk/\{match\_id\}} eine Bulk-Generierungsfunktion bereit, die alle Events eines Spiels mit einem wählbaren Provider und Modell generiert. Optionale \texttt{provider}- und \texttt{model}-Parameter ermöglichen A/B-Vergleiche zwischen LLM-Konfigurationen, ohne die Produktiv-Konfiguration zu verändern.
+Das System stellt einen Bulk-Generierungsendpunkt bereit (\texttt{POST /api/v1/ticker/generate-bulk/\{match\_id\}}, vgl.\ Kap.~5.1), der alle Events eines Spiels mit einem wählbaren Provider und Modell generiert. Optionale \texttt{provider}- und \texttt{model}-Parameter ermöglichen A/B-Vergleiche zwischen LLM-Konfigurationen, ohne die Produktiv-Konfiguration zu verändern.
 
 Das Evaluationsmodul (\texttt{app/utils/evaluation\_metrics.py}) stellt sechs Metriken bereit:
 
@@ -179,9 +179,7 @@ Alle sechs Funktionen sind durch 17 Unit-Tests abgesichert (\textasciitilde96 \%
 \subsection{Modell- und
 Provider-Evaluation}\label{modell--und-provider-evaluation}
 
-Das System unterstützt fünf LLM-Provider in einer festen
-Prioritätskette, die beim Serverstart den ersten Provider mit gültigem
-API-Key als Singleton aktiviert:
+Die Multi-Provider-Architektur mit Prioritätskette ist in Kap.~4.5.1 beschrieben. Für die Evaluation relevante Provider und Konfiguration:
 
 {\def\LTcaptype{none} % do not increment counter
 \begin{longtable}[]{@{}
@@ -433,10 +431,9 @@ Die häufigste Fehlerklasse ist die \textbf{Stil-Inkonsistenz} des
 neutralen Profils: Das LLM übernimmt idiomatische Muster
 aus den euphorischen Few-Shot-Referenzen der
 \texttt{ef\_whitelabel}-Instanz auch dann, wenn \texttt{neutral} als
-Stilparameter übergeben wird. Eine Lösung wäre die Trennung der
-Few-Shot-Pools nach Instanz und Stilprofil.
+Stilparameter übergeben wird (Verbesserungsansatz: vgl.\ Abschnitt~8.3).
 
-Das kritische Stilprofil erweist sich in der Hauptevaluation und der LLM-as-Judge-Evaluation als schwächste Dimension (Tonalität 3,6 in der Hauptevaluation; 4,04 im LLM-as-Judge-Verfahren). Die Ursache liegt in einer konzeptuellen Ambiguität des Profils: Während \texttt{euphorisch} und \texttt{neutral} klare emotionale Pole beschreiben, bleibt \texttt{kritisch} semantisch vielschichtig: das LLM kann den Stil als kritisch-analytisch (sachlich-distanziert), kritisch-konfrontativ (negativ gegenüber der eigenen Mannschaft) oder kritisch-fordernd (appellierend an mehr Leistung) interpretieren. Ohne explizitere Stilinstruktion, etwa durch zielgerichtete Few-Shot-Beispiele mit klar analytisch-einordnendem Ton oder durch eine präzisierte Prompt-Formulierung, nähert das Modell das kritische Profil dem neutralen an. Eine differenziertere Beschreibung des \texttt{kritisch}-Profils im Prompt (z.\,B. „analysierend und einordnend, ohne emotionale Färbung'') sowie dedizierte Few-Shot-Referenzen für dieses Profil wären die naheliegenden Verbesserungsmaßnahmen (vgl. Abschnitt~8.3).
+Das kritische Stilprofil erweist sich in der Hauptevaluation und der LLM-as-Judge-Evaluation als schwächste Dimension (Tonalität 3,6 in der Hauptevaluation; 4,04 im LLM-as-Judge-Verfahren). Die Ursache liegt in einer konzeptuellen Ambiguität des Profils: Während \texttt{euphorisch} und \texttt{neutral} klare emotionale Pole beschreiben, bleibt \texttt{kritisch} semantisch vielschichtig: das LLM kann den Stil als kritisch-analytisch (sachlich-distanziert), kritisch-konfrontativ (negativ gegenüber der eigenen Mannschaft) oder kritisch-fordernd (appellierend an mehr Leistung) interpretieren. Ohne explizitere Stilinstruktion, etwa durch zielgerichtete Few-Shot-Beispiele mit klar analytisch-einordnendem Ton oder durch eine präzisierte Prompt-Formulierung, nähert das Modell das kritische Profil dem neutralen an. Verbesserungsansätze für das kritische Profil sind in Abschnitt~8.3 ausgewiesen.
 
 
 Die Pre-Match-Prompts enthalten eine explizite Schutzregel gegen
