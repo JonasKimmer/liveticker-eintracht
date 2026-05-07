@@ -108,6 +108,8 @@ Wirksamkeit jedoch nur im \texttt{coop}-Modus durch die redaktionelle
 Kontrolle vollständig abgesichert ist. Im \texttt{auto}-Modus verbleibt
 ein Restrisiko fehlerhafter Veröffentlichungen.
 
+Die bewusste Ausklammerung der Authentifizierungsschicht (vgl. Kap.~1.4) ist eine Scope-Entscheidung, die die Kernergebnisse dieser Arbeit nicht berührt: Die Qualität der KI-Textgenerierung, die Funktionalität der drei Betriebsmodi und die Erfüllung aller 23 Anforderungen sind unabhängig davon, ob API-Endpunkte durch JWT abgesichert sind. Die fehlende Authentifizierung schränkt lediglich den produktiven Mehrbenutzerbetrieb ein, nicht die wissenschaftliche Aussagekraft der Evaluation. Die Architektur ist durch die saubere Middleware-Schichtung (FastAPI Dependencies) für eine nachträgliche Integration vorbereitet; die Umsetzung ist eine Ingenieuraufgabe, keine offene Forschungsfrage.
+
 
 \section{Diskussion der Betriebsmodi}\label{diskussion-der-betriebsmodi}
 
