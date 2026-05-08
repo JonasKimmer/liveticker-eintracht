@@ -283,7 +283,7 @@ in Ausrufezeichen-Dichte, Wortwahl und Perspektive. Während
 Ausrufe. \texttt{kritisch} nähert sich dem neutralen Register, enthält
 aber keine explizite analytische Einordnung, ein Hinweis darauf, dass
 das Prompt-Design für dieses Profil noch Optimierungspotenzial bietet
-(vgl.\ Abschnitt~8.3). Die Prompt-Architektur bindet bis zu drei Stilreferenzen aus der \texttt{style\_references}-Tabelle als Few-Shot-Beispiele ein; qualitativ zeigt sich, dass die \texttt{ef\_whitelabel}-Instanz dadurch konsistente Formatierungsmuster (Minutenformat, TOOOOR-Konvention) etabliert. Ein kontrollierter A/B-Test zur Few-Shot-Wirksamkeit war im Evaluationszeitraum nicht durchführbar.
+(vgl.\ Abschnitt~8.3). Die Prompt-Architektur bindet bis zu drei Stilreferenzen aus der \texttt{style\_references}-Tabelle als Few-Shot-Beispiele ein; qualitativ zeigt sich, dass die \texttt{ef\_whitelabel}-Instanz dadurch konsistente Formatierungsmuster (Minutenformat, TOOOOR-Konvention) etabliert (vgl. Abb.~\ref{fig:qualitaet-stilprofil}). Ein kontrollierter A/B-Test zur Few-Shot-Wirksamkeit war im Evaluationszeitraum nicht durchführbar.
 
 \begin{figure}[H]
 \centering
@@ -332,17 +332,17 @@ Gesamt (Ø)
 \endhead
 \bottomrule\noalign{}
 \endlastfoot
-Tor & 7 & 4,7 & 3,6 & 4,7 & 4,3 \\
-Gelbe Karte & 7 & 4,9 & 4,4 & 4,0 & 4,4 \\
+Tor & 13 & 4,7 & 3,7 & 4,7 & 4,4 \\
+Gelbe Karte & 14 & 4,9 & 4,4 & 4,0 & 4,4 \\
 Rote Karte & 0 & --- & --- & --- & --- \\
-Wechsel & 1 & 4,0 & 4,0 & 4,0 & 4,0 \\
-Pre-Match (Kontext) & 1 & 3,0 & 5,0 & 4,0 & 4,0 \\
-\textbf{Gesamt} & \textbf{16} & \textbf{4,6} & \textbf{4,1} &
+Wechsel & 10 & 4,4 & 4,0 & 4,3 & 4,2 \\
+Pre-Match (Kontext) & 3 & 3,3 & 4,7 & 4,0 & 4,0 \\
+\textbf{Gesamt} & \textbf{40} & \textbf{4,6} & \textbf{4,1} &
 \textbf{4,3} & \textbf{4,3} \\
 \end{longtable}
 }
 
-\emph{Anmerkung: Rote Karten kamen in den 9 analysierten Spielen nicht vor. Pre-Match-Kategorie enthält eine Stichprobe aus der \texttt{ef\_whitelabel}-Instanz.}
+\emph{Anmerkung: Rote Karten kamen in den 15 analysierten Spielen nicht vor. Pre-Match-Kategorie enthält drei Stichproben aus der \texttt{ef\_whitelabel}-Instanz.}
 
 Die folgenden Beispiele illustrieren die typischen Stärken der generierten Texte. Abbildung~\ref{fig:frontend-published-entries} zeigt den publizierten Feed im realen System.
 
@@ -377,7 +377,7 @@ Die Bayern mit zehn Mann! Frankfurt, jetzt geht was! Die SGE, sie lebt!
 Der Rasen brennt!''
 \end{quote}
 
-\emph{Anmerkung: In den 9 evaluierten Spielen traten keine Roten Karten auf (vgl. Tabelle oben). Das Beispiel wurde synthetisch mit realem Event-Kontext erzeugt, um die Leistungsfähigkeit des Systems für diesen Event-Typ zu illustrieren.}
+\emph{Anmerkung: In den 15 analysierten Spielen traten keine Roten Karten auf (vgl. Tabelle oben). Das Beispiel wurde synthetisch mit realem Event-Kontext erzeugt, um die Leistungsfähigkeit des Systems für diesen Event-Typ zu illustrieren.}
 
 Bewertung: Alle Fakten (Minute, Spieler, Team) korrekt. Das Modell
 wechselt implizit die Perspektive auf die Heimfans (Eintracht Frankfurt)
@@ -409,26 +409,26 @@ Beispiel
 \endhead
 \bottomrule\noalign{}
 \endlastfoot
-\textbf{Stil-Inkonsistenz} & 3 / 16 (19 \%) & Neutraler Stil enthält
+\textbf{Stil-Inkonsistenz} & 8 / 40 (20 \%) & Neutraler Stil enthält
 emotionale Formulierungen & „33. Minute: Oh nein! Lienhart sieht Gelb!
 \ldots{} Aber Kopf hoch, Jungs! Kämpfen!'' \emph{(angefordert:
 neutral)} \\
-\textbf{Fakten-Halluzination} & 1 / 16 (6 \%) & Das LLM erfindet
+\textbf{Fakten-Halluzination} & 2 / 40 (5 \%) & Das LLM erfindet
 Details, die nicht im Kontext stehen & Pre-Match-Text erfand eine
 Wettempfehlung: „Wir tippen auf Double Chance: Sieg \ldots{} oder
 Remis.'' \\
-\textbf{Team-Verwechslung} & 0 / 16 (0 \%) & Tor wird dem falschen Team
+\textbf{Team-Verwechslung} & 0 / 40 (0 \%) & Tor wird dem falschen Team
 zugeordnet & Nicht aufgetreten \\
-\textbf{Wiederholung} & 2 / 16 (13 \%) & Aufeinanderfolgende Texte
+\textbf{Wiederholung} & 5 / 40 (13 \%) & Aufeinanderfolgende Texte
 ähneln sich stark im Satzbau & Mehrere Tore mit identischer Formel „X
 bringt Y in Führung! Nach Vorlage von Z. 1:0.'' \\
-\textbf{Überlänge} & 0 / 16 (0 \%) & Text überschreitet die typische
+\textbf{Überlänge} & 0 / 40 (0 \%) & Text überschreitet die typische
 Liveticker-Kürze & Nicht aufgetreten \\
 \end{longtable}
 }
 
 Die häufigste Fehlerklasse ist die \textbf{Stil-Inkonsistenz} des
-neutralen Profils: Das LLM übernimmt idiomatische Muster
+neutralen Profils (20\,\%): Das LLM übernimmt idiomatische Muster
 aus den euphorischen Few-Shot-Referenzen der
 \texttt{ef\_whitelabel}-Instanz auch dann, wenn \texttt{neutral} als
 Stilparameter übergeben wird (Verbesserungsansatz: vgl.\ Abschnitt~8.3).
@@ -464,7 +464,7 @@ Text lautete: \emph{„44. Minute: TOOOOR! J. Bahoya bringt Frankfurt auf
 vollständige Faktendarstellung, die der manuelle Eintrag nicht enthielt.
 
 Ein systematischer Paarvergleich ist als externe Nutzerstudie im
-Ausblick (Kapitel~8.3.2) vorgesehen.
+Ausblick (Abschnitt~\ref{mittelfristige-erweiterungen}) vorgesehen.
 
 \subsection{Experteninterview-Auswertung}\label{experteninterview-auswertung}
 
@@ -497,7 +497,7 @@ Adressierung der Selbstevaluationsproblematik (vgl. Abschnitt~6.7) wurden N\,=\,
 dem \textbf{LLM-as-Judge}-Ansatz (Zheng et al.~2023), bei dem ein
 unabhängiges Sprachmodell als Bewerter fungiert.
 
-\textbf{Datenbasis:} Die Datenbasis umfasst reale Ereignisse aus 30 Bundesliga-Spielen der Saison~2025/26 (u.\,a. Borussia~Dortmund -- SC~Freiburg, FSV~Mainz~05 -- FC~Bayern~München, FC~Augsburg -- Eintracht~Frankfurt, 1.~FC~Köln -- Bayer~Leverkusen), abgefragt über die Football~API~v3. Generierungsmodell: \texttt{google/gemini-2.0-flash-lite-001} (identisch zur Hauptevaluation, Temperatur~0{,}5). Bewertendes Modell: \texttt{anthropic/claude-sonnet-4-5} via OpenRouter, ein anderes Modell als das generierende, was Selbstreferenzialität vermeidet. Abgedeckte Event-Typen: 25~Tore, 25~Gelbe Karten, 4~Rote Karten, 25~Wechsel, 1~Eigentor; je 27 bzw.\ 26~Einträge pro Stilprofil.
+\textbf{Datenbasis:} Die Datenbasis umfasst reale Ereignisse aus 30 Bundesliga-Spielen der Saison~2025/26 (u.\,a. Borussia~Dortmund -- SC~Freiburg, FSV~Mainz~05 -- FC~Bayern~München, FC~Augsburg -- Eintracht~Frankfurt, 1.~FC~Köln -- Bayer~Leverkusen), abgefragt über die Football~API~v3. Die Nutzung der Saison~2025/26 – statt der in der Hauptevaluation verwendeten Saison~2024/25 – ist methodisch bewusst gewählt: Zum Zeitpunkt der LLM-as-Judge-Evaluation standen Spieltage der laufenden Saison~2025/26 als frische, vom Entwickler noch nicht manuell bewertete Daten zur Verfügung, was eine unabhängigere Datenbasis als eine Teilmenge der bereits in Abschnitt~6.3.4 verwendeten Spiele gewährleistet. Generierungsmodell: \texttt{google/gemini-2.0-flash-lite-001} (identisch zur Hauptevaluation, Temperatur~0{,}5). Bewertendes Modell: \texttt{anthropic/claude-sonnet-4-5} via OpenRouter, ein anderes Modell als das generierende, was Selbstreferenzialität vermeidet. Abgedeckte Event-Typen: 25~Tore, 25~Gelbe Karten, 4~Rote Karten, 25~Wechsel, 1~Eigentor; je 27 bzw.\ 26~Einträge pro Stilprofil.
 
 {\def\LTcaptype{none} % do not increment counter
 \begin{longtable}[]{@{}
@@ -522,12 +522,12 @@ euphorisch  & 27 & 3,22 & 2,93 & 3,67 & 3,27 \\
 
 \emph{K = Korrektheit, T = Tonalität, V = Verständlichkeit (je 1--5). Bewerter: Claude Sonnet~4.5 via OpenRouter. Datenbasis: Football API~v3, Bundesliga Saison 2025/26, 30~Spiele.}
 
-Die LLM-as-Judge-Evaluation bestätigt Korrektheit (4,12) und Verständlichkeit (4,35) auf einem mit der Hauptevaluation konsistenten Niveau. Das neutrale Stilprofil erzielt den höchsten Gesamtwert (4,82) und zeigt damit die stärkste Prompt-Kopplung. Das kritische Profil liegt mit 4,32 im soliden Bereich; das euphorische Profil bleibt mit 3,27 deutlich schwächer, insbesondere beim Tonalitätswert (2,93). Die Ursache liegt im Event-Mix: Wechsel-Einträge (n\,=\,25) erzielen die schwächste Korrektheit (2,92) und den niedrigsten Gesamtwert (3,21), da das Modell taktische Begründungen erfindet, die nicht im übergebenen Kontext stehen. Im euphorischen Profil produziert das Modell bei Wechseln und Gelben Karten wiederholt formelharte Phrasen wie „Na, ob das was wird?'' oder „Hoffentlich bringt er frischen Wind'' ohne authentische Situationsdifferenzierung. Tore (Ø~4,33) und Rote Karten (Ø~4,75) erreichen hingegen konsistent hohe Werte. Diese Befunde replizieren die Fehlerklassen der Hauptevaluation: Die euphorische Tonalitätsschwäche bei ereignisarmen Event-Typen ist die konsistenteste Schwäche des aktuellen Prompt-Designs. Die Methode des LLM-as-Judge ist als Ergänzung zur menschlichen Bewertung etabliert (Zheng et al.~2023), ersetzt diese jedoch nicht vollständig; eine externe Nutzerstudie bleibt als Folgeschritt vorgesehen (Abschnitt~8.3.2).
+Die LLM-as-Judge-Evaluation bestätigt Korrektheit (4,12) und Verständlichkeit (4,35) auf einem mit der Hauptevaluation konsistenten Niveau. Das neutrale Stilprofil erzielt den höchsten Gesamtwert (4,82) und zeigt damit die stärkste Prompt-Kopplung. Das kritische Profil liegt mit 4,32 im soliden Bereich; das euphorische Profil bleibt mit 3,27 deutlich schwächer, insbesondere beim Tonalitätswert (2,93). Die Ursache liegt im Event-Mix: Wechsel-Einträge (n\,=\,25) erzielen die schwächste Korrektheit (2,92) und den niedrigsten Gesamtwert (3,21), da das Modell taktische Begründungen erfindet, die nicht im übergebenen Kontext stehen. Im euphorischen Profil produziert das Modell bei Wechseln und Gelben Karten wiederholt formelharte Phrasen wie „Na, ob das was wird?'' oder „Hoffentlich bringt er frischen Wind'' ohne authentische Situationsdifferenzierung. Tore (Ø~4,33) und Rote Karten (Ø~4,75) erreichen hingegen konsistent hohe Werte. Diese Befunde replizieren die Fehlerklassen der Hauptevaluation: Die euphorische Tonalitätsschwäche bei ereignisarmen Event-Typen ist die konsistenteste Schwäche des aktuellen Prompt-Designs. Die Methode des LLM-as-Judge ist als Ergänzung zur menschlichen Bewertung etabliert (Zheng et al.~2023), ersetzt diese jedoch nicht vollständig; eine externe Nutzerstudie bleibt als Folgeschritt vorgesehen (Abschnitt~\ref{mittelfristige-erweiterungen}).
 
 
 \section{Latenzpotenzial der Betriebsmodi}\label{evaluation-der-betriebsmodi}
 
-Die drei Betriebsmodi unterscheiden sich strukturell in ihrer erreichbaren Publikationslatenz. Auf Basis der gemessenen LLM-Latenzen (Median 859~ms, P95 2.047~ms, vgl. Abschnitt~6.5.1) und des 15-Sekunden-Polling-Intervalls im Live-Modus (vgl. Abschnitt~6.5.2) ergibt sich für den \texttt{auto}-Modus eine architekturbasierte Time-to-Publish von ≈ 2--17~s (LLM-Generierung: 1--2~s; Frontend-Polling: bis zu 15~s), verglichen mit der manuellen Baseline von 30--120~s (Kapitel~2.1). Diese Schätzung erfasst ausschließlich die systeminternen Latenzen; die n8n-seitige Erkennungslatenz (Polling-Zyklus der Workflows gegen die Football-API sowie HTTP-Overhead bis zum Backend-Aufruf) ist nicht gemessen und ist eine zusätzliche, nicht quantifizierte Komponente der Gesamtlatenz. Da ein kontrolliertes Feldexperiment mit echten Redakteuren nicht durchführbar war, ist dies eine Potenzialabschätzung, keine empirisch gemessene Größe; ein Feldtest bleibt als Folgestudie vorgesehen (vgl. Abschnitt~8.3.2).
+Die drei Betriebsmodi unterscheiden sich strukturell in ihrer erreichbaren Publikationslatenz. Auf Basis der gemessenen LLM-Latenzen (Median 859~ms, P95 2.047~ms, vgl. Abschnitt~6.5.1) und des 15-Sekunden-Polling-Intervalls im Live-Modus (vgl. Abschnitt~6.5.2) ergibt sich für den \texttt{auto}-Modus eine architekturbasierte Time-to-Publish von ≈ 2--17~s (LLM-Generierung: 1--2~s; Frontend-Polling: bis zu 15~s), verglichen mit der manuellen Baseline von 30--120~s (Kapitel~2.1). Diese Schätzung erfasst ausschließlich die systeminternen Latenzen; die n8n-seitige Erkennungslatenz (Polling-Zyklus der Workflows gegen die Football-API sowie HTTP-Overhead bis zum Backend-Aufruf) ist nicht gemessen und ist eine zusätzliche, nicht quantifizierte Komponente der Gesamtlatenz. Da ein kontrolliertes Feldexperiment mit echten Redakteuren nicht durchführbar war, ist dies eine Potenzialabschätzung, keine empirisch gemessene Größe; ein Feldtest bleibt als Folgestudie vorgesehen (vgl. Abschnitt~\ref{mittelfristige-erweiterungen}).
 
 
 \section{Performance und
@@ -599,7 +599,7 @@ Backend-interne Verarbeitungszeit (Request-Eingang bis DB-Write)
 automatisch erfasst; damit ist eine kontinuierliche Latenzmessung im
 Produktivbetrieb ohne externen Monitoring-Aufwand möglich. Im Kontext
 des \texttt{coop}-Modus ist die gemessene P95-Latenz von 2,1 s (2.047
-ms) unproblematisch.
+ms) unproblematisch (vgl. Abb.~\ref{fig:latenzen-histogram}).
 
 \begin{figure}[H]
 \centering
@@ -682,7 +682,7 @@ A5 & White-Label-Fähigkeit & Instanz-spezifische Kontextaufbereitung und Few-Sh
 
 \begin{itemize}\tightlist
 \item \textbf{Keine externe Nutzerstudie.} Die Evaluation der Textqualität in Abschnitt~6.3.4 basiert auf einer Selbstbewertung durch den Entwickler. Eine unabhängige Bewertung durch professionelle Sport-Redakteure, die den Liveticker im realen Spielbetrieb nutzen, fehlt. Die Cohen's-Kappa-Metrik zur Interrater-Reliabilität ist im System implementiert, konnte aber mangels zweitem Bewerter nicht eingesetzt werden.
-\item \textbf{Eingeschränkte Stichprobengröße.} 9 Spiele und 16 Events bilden die Datenbasis der qualitativen Evaluation. Für eine statistisch belastbare Aussage wäre eine größere Stichprobe über verschiedene Wettbewerbe, Ligen und Spielsituationen erforderlich.
+\item \textbf{Eingeschränkte Stichprobengröße.} 15 Spiele und 40 Events bilden die Datenbasis der qualitativen Evaluation. Für eine statistisch belastbare Aussage wäre eine größere Stichprobe über verschiedene Wettbewerbe, Ligen und Spielsituationen erforderlich.
 \item \textbf{Kein Langzeitbetrieb.} Das System wurde nicht über einen längeren Zeitraum (z. B. eine vollständige Saison) im Produktivbetrieb evaluiert. Aspekte wie API-Kosten, Rate-Limit-Häufigkeit im Regelbetrieb und Drift der Textqualität über die Zeit sind daher nicht erfasst.
 \item \textbf{Keine Authentifizierung.} Das System verzichtet bewusst auf eine Authentifizierungsschicht (vgl. Kap.~1.4). Für einen produktiven Einsatz sind die API-Endpunkte (insbesondere die schreibenden Operationen wie Publish, Reject, Retract und Mode-Wechsel) zwingend abzusichern.
 \item \textbf{Eingeschränkte Browser-Smoke-Testabdeckung.} Die 6 Playwright-Tests decken den stabilen Kern der UI ab, testen aber nicht den vollständigen Redaktionsworkflow mit Backend-Anbindung (Spiel auswählen → Events empfangen → Ticker-Einträge bearbeiten → Freigeben). Ein vollständiger Browser-Test mit laufendem Backend und Testdatenbank wäre wünschenswert, scheiterte aber an der Komplexität des Setups.

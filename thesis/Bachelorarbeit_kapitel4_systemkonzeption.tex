@@ -31,13 +31,14 @@ Technisch kombiniert das Frontend REST-basiertes Polling für Ticker- und
 Spieldaten mit einem dedizierten WebSocket-Kanal für
 Echtzeit-Medienupdates. Ticker- und Matchdaten verbleiben im Polling-Modell: Sie tolerieren eine Latenz von 15–20~Sekunden, sind einfacher zu debuggen und benötigen keine persistente Serververbindung. Für diese Datenklasse ist Polling damit wartungsärmer als SSE oder WebSocket.
 
-Die folgende Abbildung zeigt die drei Schichten mit ihren Technologien
+Abbildung~\ref{fig:systemarchitektur} zeigt die drei Schichten mit ihren Technologien
 und Kommunikationspfaden:
 
 \begin{figure}[H]
 \centering
 \DiagramSystemArchitektur
 \caption{Systemarchitektur: drei Schichten und externe Dienste}
+\label{fig:systemarchitektur}
 \end{figure}
 
 
@@ -49,12 +50,13 @@ Der Kommunikationsfluss kombiniert zwei komplementäre Muster. Beim initialen Ma
 zudem intern weitere Workflows auf: Der Minuten-Update-Workflow löst bei
 erkanntem Spielstandswechsel den Anpfiff/Abpfiff-Workflow aus, der
 seinerseits den Halbzeit-Zusammenfassungs-Workflow anstößt; das
-Frontend ist an dieser Kette nicht beteiligt.
+Frontend ist an dieser Kette nicht beteiligt. Abbildung~\ref{fig:kommunikationsfluss} veranschaulicht diese Kommunikationspfade.
 
 \begin{figure}[H]
 \centering
 \DiagramCommunicationFlow
 \caption{Kommunikationsfluss: Frontend, Backend, n8n und externe APIs}
+\label{fig:kommunikationsfluss}
 \end{figure}
 
 Das System koppelt über drei klar getrennte Schnittstellentypen.
@@ -77,7 +79,7 @@ Live-Prozesse.
 \subsection{Partner-Team-Konzept und
 White-Label-Steuerung}\label{partner-team-konzept-und-white-label-steuerung}
 
-Das System unterscheidet zwischen dem \textbf{Partner-Team} (dem konfigurierten Heimverein) und den jeweiligen Gegnern. Das System erkennt das Partner-Team über ein konfigurierbares Keyword, das in n8n-Workflows und Frontend gegen den Teamnamen abgeglichen wird. Partner-Team-Spiele verwenden den \texttt{ef\_whitelabel}-Instanzpfad mit euphorischem Stil und blenden vereinsspezifische UI-Bereiche ein (Social-Media-Panels für YouTube, X und Instagram sowie die ScorePlay-Mediensuche für Bildmaterial); alle anderen Spiele durchlaufen den \texttt{generic}-Pfad mit neutralem Stil. Die Implementierungsdetails sind in Kapitel~5 dokumentiert.
+Das System unterscheidet zwischen dem \textbf{Partner-Team} (dem konfigurierten Heimverein) und den jeweiligen Gegnern. Das System erkennt das Partner-Team über ein konfigurierbares Keyword, das in n8n-Workflows und Frontend gegen den Teamnamen abgeglichen wird. Partner-Team-Spiele verwenden den \texttt{ef\_whitelabel}-Instanzpfad mit euphorischem Stil. Dabei werden vereinsspezifische UI-Bereiche eingeblendet: Social-Media-Panels für YouTube, X und Instagram sowie die ScorePlay-Mediensuche für Bildmaterial. Alle anderen Spiele durchlaufen den \texttt{generic}-Pfad mit neutralem Stil. Die Implementierungsdetails sind in Kapitel~5 dokumentiert.
 
 
 
@@ -176,9 +178,11 @@ bewusst ausgeklammert (vgl. Kap.~1.4).
 \section{Datenbankkonzeption}\label{datenbankkonzeption}
 
 Die Persistenzschicht basiert auf PostgreSQL und umfasst in der
-aktuellen Fassung 17 Tabellen (17 ORM-Modelle, vollständig via
-SQLAlchemy \texttt{create\_all} verwaltet; eine SQL-Migration ergänzt
-nachträglich eine Spalte in \texttt{ticker\_entries}). Die stark strukturierten Domänendaten sprechen für ein relationales System gegenüber dokumentenorientierten Alternativen wie MongoDB:
+aktuellen Fassung 17 ORM-Modelle (verwaltet via SQLAlchemy
+\texttt{create\_all}) sowie eine per Raw-SQL-Migration angelegte
+\texttt{settings}-Tabelle, insgesamt 18 Datenbanktabellen. Acht
+Alembic-Migrationen ergänzen schrittweise Spalten, Indizes und neue
+Entitäten. Die stark strukturierten Domänendaten sprechen für ein relationales System gegenüber dokumentenorientierten Alternativen wie MongoDB:
 FK-Beziehungen zwischen Teams, Wettbewerben, Spielen, Events und
 Ticker-Einträgen sind klar definiert und referenziell integer zu halten.
 JSONB-Felder werden selektiv für semistrukturierte Daten (z. B.
@@ -189,7 +193,7 @@ nachvollziehbaren Redaktionsentscheidungen ausgelegt.
 
 \subsection{Schemadesign-Prinzipien}\label{schemadesign-prinzipien}
 
-Die folgende Abbildung zeigt die zentralen Entitäten und ihre
+Abbildung~\ref{fig:er-diagramm} zeigt die zentralen Entitäten und ihre
 Beziehungen:
 
 \begin{figure}[H]
@@ -228,12 +232,13 @@ freigegeben), \texttt{published} (redaktionell oder automatisch
 veröffentlicht), \texttt{rejected} (verworfen, bleibt zur
 Nachvollziehbarkeit erhalten) und \texttt{deleted} (weich gelöscht;
 wird in Listenabfragen herausgefiltert, bleibt aber in der Datenbank
-erhalten).
+erhalten). Abbildung~\ref{fig:zustandsautomat} zeigt dieses Statusmodell als Zustandsdiagramm.
 
 \begin{figure}[H]
 \centering
 \DiagramTickerStates
 \caption{Zustandsautomat der Ticker-Einträge (draft, published, rejected, deleted)}
+\label{fig:zustandsautomat}
 \end{figure}
 
 Eine Rückstufung von \texttt{published} auf \texttt{draft} ist über
@@ -247,7 +252,10 @@ allen regulären Listenabfragen ausgeschlossen.
 
 Ergänzend markiert das Feld \texttt{source} die Herkunft (\texttt{ai}
 vs.~\texttt{manual}) und erlaubt eine saubere Trennung für Evaluationen
-(z. B. ausschließlich KI-generierte Einträge).
+(z. B. ausschließlich KI-generierte Einträge). Das Feld \texttt{instance}
+(\texttt{ef\_whitelabel} / \texttt{generic}) attribuiert jeden Eintrag
+seiner White-Label-Instanz und bildet die Steuerungsprimitive für
+instanzspezifische Few-Shot-Filterung und mandantenfähige Auswertung.
 
 
 
@@ -269,6 +277,8 @@ Referenz für Vergleiche in der Evaluation.
 Der Moduswechsel ist als Laufzeitparameter auf Datenbankebene
 abgebildet; der Statusfluss ist im State-Diagramm in Abschnitt~4.3.2
 dargestellt.
+
+Im \texttt{auto}-Modus existieren zwei unabhängige Generierungspfade: n8n-Workflows rufen den Generierungsendpunkt serverseitig auf, sobald neue Ereignisse erkannt werden; der Frontend-Hook \texttt{useAutoPublisher} pollt clientseitig ausstehende Events und ruft denselben Endpunkt auf. Beide Pfade prüfen vor der Generierung, ob bereits ein Ticker-Eintrag für die \texttt{event\_id} existiert, und verhindern damit doppelte Einträge. Abbildung~\ref{fig:betriebsmodi} stellt alle drei Modi vergleichend gegenüber.
 
 \begin{figure}[H]
 \centering
@@ -416,7 +426,7 @@ Als Standardmodell im Deployment wurde Gemini 2.0 Flash Lite
 (Modell-ID \texttt{google/gemini-2.0-flash-lite-001}) über OpenRouter gewählt. Die Entscheidung für dieses Modell stützt sich auf drei Faktoren: \textbf{Aufgabencharakteristik} (vgl. Kap.~3.1): Liveticker-Texte sind kurz und faktenbasiert, eine Aufgabe, für die kompakte Modelle eine vergleichbare Qualität bei deutlich niedrigerer Latenz erzielen, was durch die gemessene Medianlatenz von 859~ms (vgl. Abschnitt~6.5.1) empirisch bestätigt wird. \textbf{Kosteneffizienz}: Gemini 2.0 Flash Lite zählt zu den kostengünstigsten kommerziell verfügbaren Modellen, was den Dauerbetrieb über eine Saison für ressourcenbegrenzte Vereinsredaktionen wirtschaftlich darstellbar macht (vgl. Kap.~2.1). Bei durchschnittlich 30~Einträgen pro Spiel und einem Prompt-Umfang von rund 1.000~Token je Eintrag liegt der geschätzte Inferenzkostenaufwand unter 0{,}01~USD pro Spiel (Listenpreise OpenRouter, Stand Deployment-Zeitpunkt; Preise variabel). Bei vollständiger Saison-Abdeckung (60~Pflichtspiele) ergibt sich damit ein Gesamtaufwand von unter 1~USD für die reine Textgenerierung. \textbf{Kontextfenster}: Das Modell unterstützt ein Kontextfenster von bis zu 1~Million~Token, sodass umfangreiche Pre-Match-Kontextinformationen (sieben Context-Builder, vgl. Kap.~4.5.2) und mehrere Few-Shot-Referenzen ohne Abschneidung eingebunden werden können.
 
 Ergänzend implementiert das Backend eine \textbf{Fallback-Kette} für den
-Fall, dass OpenRouter nicht konfiguriert ist. Das System prüft zur
+Fall, dass ein Provider nicht konfiguriert ist. Das System prüft zur
 Startzeit in der festen Prioritätsreihenfolge, ob ein API-Schlüssel
 hinterlegt ist, und aktiviert den ersten verfügbaren Provider als
 Singleton:
@@ -425,6 +435,8 @@ Singleton:
 \texttt{openrouter} → \texttt{gemini} → \texttt{openai} →
 \texttt{anthropic} → \texttt{mock}
 \end{quote}
+
+Die Prioritätsreihenfolge ist nach zwei Kriterien optimiert: \textbf{Flexibilität} (OpenRouter als Aggregator ermöglicht das einfache Wechseln des Zielmodells ohne Code-Änderung, da Modell-ID und Provider-URL entkoppelt sind) und \textbf{Ausfallsicherheit} (bei OpenRouter-Ausfall greifen direkte Provider-Verbindungen, zuletzt der regelbasierte Mock, der ohne Netzwerkverbindung lauffähig ist).
 
 Ist kein Schlüssel konfiguriert, wird auf einen regelbasierten
 \textbf{Mock-Provider} zurückgefallen, der Template-basierte Texte ohne
@@ -445,12 +457,13 @@ Rolleninstruktion (Persona, Aufgabe, Gattung), einer Stilinstruktion
 Detail, Minute, beteiligte Spieler und Team), einem dynamischen
 Kontextblock mit relevanten Matchinformationen, einem optionalen
 Few-Shot-Block mit Stilbeispielen sowie einem Regelblock mit formativen
-und inhaltlichen Einschränkungen.
+und inhaltlichen Einschränkungen (vgl. Abb.~\ref{fig:prompt-aufbau}).
 
 \begin{figure}[H]
 \centering
 \DiagramPromptPipeline
 \caption{Prompt-Aufbau: Eingaben, Prompt-Bausteine, LLM-Aufruf und Ticker-Text}
+\label{fig:prompt-aufbau}
 \end{figure}
 
 Der Few-Shot-Block wird aus der Tabelle \texttt{style\_references}
@@ -538,6 +551,8 @@ Context-basierte Frontend-Design in Kombination mit dem
 \texttt{ticker\_mode}-Feld (Kap.~4.3.3) ermöglicht redaktionelle
 Kontrolle ohne Latenzeinbußen und ohne Prop-Drilling über
 Komponentengrenzen.
+
+Die konzeptionellen Entscheidungen sind darauf ausgelegt, die Anforderungen aus Kapitel~2 zu adressieren: Die Betriebsmodi F1 und die Stilprofile F3 werden in Abschnitt~4.3.3 konzipiert; die KI-Textgenerierung F2, das Few-Shot-Prompting F4 und die Pre-Match-Kontextgenerierung F11 in Abschnitt~4.5.2; der idempotente Datenimport F8 und die Provider-Fallback-Kette F9 in den Abschnitten~4.4 und~4.5.1; die Concurrency-Begrenzung N1 und die Retry-Logik N2 in Abschnitt~4.2; die White-Label-Fähigkeit A5 durch instanzspezifische Few-Shot-Filterung in Abschnitt~4.5.2. Der vollständige Soll-Ist-Abgleich aller 23 Anforderungen folgt in Abschnitt~6.5.
 
 Das vorliegende Konzept spezifiziert damit die Implementierung vollständig, die Kapitel~5 dokumentiert; die
 systematische Evaluation folgt in Kapitel~6.

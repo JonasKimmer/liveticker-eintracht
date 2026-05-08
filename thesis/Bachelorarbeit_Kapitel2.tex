@@ -33,12 +33,12 @@ Die Systemanalyse zeigt sechs strukturelle Defizite, die den Handlungsbedarf fü
 \item \textbf{Kein KI-Vorschlag, kein Stilprofil:} Der Ticker-Editor ist ein reines Freitextfeld ohne jegliche KI-Unterstützung, Stilsteuerung oder Vorschlagsfunktion. Jeder Eintrag wird vollständig manuell formuliert.
 \item \textbf{Manuelle Score-Pflege:} Der Spielstand wird über numerische Eingabefelder manuell gepflegt (Abbildung~\ref{fig:altsystem}, links unten). Eine automatische Synchronisation mit einem Live-Datenfeed existiert nicht, was zu Verzögerungen und Flüchtigkeitsfehlern führt.
 \item \textbf{Keine Medienintegration:} Das System bietet lediglich einen einfachen „Bild auswählen''-Button ohne strukturierte Social-Media-Anbindung, Galeriefunktion oder automatischen Medien-Import (z.\,B. ScorePlay, YouTube, Instagram).
-\item \textbf{Stilinkonsistenz im Feed:} Die bestehenden Ticker-Einträge (Abbildung~\ref{fig:altsystem}, Mitte) zeigen stark variierende Qualität und Länge (von einwortigen Kommentaren wie „drin!'' bis zu vollständigen Sätzen) ohne einheitliches Stilprofil oder Qualitätssicherung.
+\item \textbf{Stilinkonsistenz im Feed:} Die bestehenden Ticker-Einträge (Abbildung~\ref{fig:altsystem}, Mitte) zeigen erheblich variierende Qualität und Länge (von einwortigen Kommentaren wie „drin!'' bis zu vollständigen Sätzen) ohne einheitliches Stilprofil oder Qualitätssicherung.
 \item \textbf{Fehlender Mehrsprachen-Support:} Das System ist ausschließlich deutschsprachig ausgelegt. Eine Übersetzungsfunktion oder mehrsprachige Textgenerierung ist nicht vorgesehen.
 \item \textbf{Kein automatischer Datenabruf:} Die Aufstellungsanzeige (Abbildung~\ref{fig:altsystem}, rechts) zeigt lediglich „Reservebank'' ohne geladene Spielerdaten, ein Hinweis darauf, dass Stammdaten manuell eingepflegt oder gar nicht verfügbar sind.
 \end{itemize}
 
-Diese Defizite spiegeln die drei in Kapitel~1.1 identifizierten Problemdimensionen direkt wider: operativer Zeitdruck durch vollständig manuelle Produktion, fehlende Mehrsprachigkeit und eingeschränkte White-Label-Fähigkeit. Das in dieser Arbeit entwickelte System behebt alle sechs Punkte: Die fehlende KI-Unterstützung und Stilinkonsistenz werden durch die LLM-Pipeline mit konfigurierbaren Stilprofilen behoben (vgl.\ Kap.~4.5); die manuelle Score-Pflege und der fehlende Datenabruf durch automatisierte n8n-ETL-Workflows (vgl.\ Kap.~4.4); die fehlende Medienintegration durch die MediaQueue-Architektur (vgl.\ Kap.~5.4); das Mehrsprachdefizit durch die native LLM-Übersetzungsfunktion (vgl.\ Kap.~4.5.2).
+Diese Defizite spiegeln die drei in Kapitel~1.1 identifizierten Problemdimensionen direkt wider: operativer Zeitdruck durch vollständig manuelle Produktion, fehlende Mehrsprachigkeit und eingeschränkte White-Label-Fähigkeit. Das in dieser Arbeit entwickelte System behebt alle sechs Punkte: Die fehlende KI-Unterstützung und Stilinkonsistenz werden durch die LLM-Pipeline mit konfigurierbaren Stilprofilen adressiert (vgl.\ Kap.~4.5); die manuelle Score-Pflege und der fehlende Datenabruf durch automatisierte n8n-ETL-Workflows (vgl.\ Kap.~4.4); die fehlende Medienintegration durch die MediaQueue-Architektur (vgl.\ Kap.~5.4); das Mehrsprachdefizit durch die native LLM-Übersetzungsfunktion (vgl.\ Kap.~4.5.2).
 
 \subsection{Zeitdruck, Fehleranfälligkeit und Skalierungsgrenzen}\label{zeitdruck-und-fehleranfaelligkeit}
 
@@ -111,7 +111,7 @@ besonders deutlich illustrieren: Der internationale Markt ist für die
 Liga längst bedeutender als der heimische englische (Beils 2023, S.
 221). Dies betrifft zunehmend auch Bundesliga-Vereine mit zweistelligen
 Millionen-Reichweiten auf globalen Plattformen (vgl. Beils 2023, S.
-200). Am Beispiel von Eintracht Frankfurt zeigt sich dies konkret: Durch Spieler wie Makoto Hasebe und Daichi Kamada in zurückliegenden Spielzeiten sowie kontinuierliche internationale Transferaktivitäten verfügt der Verein über eine beachtliche Anhängerschaft außerhalb des deutschsprachigen Raums, insbesondere in Japan und dem angloamerikanischen Markt. Diese Reichweite ist an den fremdsprachigen Interaktionen auf den offiziellen Social-Media-Kanälen des Vereins erkennbar, die im Rahmen der Projektbeobachtung dokumentiert wurden. Eine rein deutschsprachige Berichterstattung wird ihr nicht mehr gerecht.
+200). Am Beispiel von Eintracht Frankfurt zeigt sich dies konkret: Durch Spieler wie Makoto Hasebe und Daichi Kamada in zurückliegenden Spielzeiten sowie kontinuierliche internationale Transferaktivitäten verfügt der Verein über eine beachtliche Anhängerschaft außerhalb des deutschsprachigen Raums, insbesondere in Japan und dem angloamerikanischen Markt. Diese Reichweite ist an den fremdsprachigen Interaktionen auf den offiziellen Social-Media-Kanälen des Vereins erkennbar, die im Rahmen der begleitenden Projektbeobachtung systematisch dokumentiert und in das Experteninterview eingeflossen sind (vgl.\ Kap.~2.4). Eine rein deutschsprachige Berichterstattung wird ihr nicht mehr gerecht.
 
 Die Herausforderung beschränkt sich nicht auf eine reine Übersetzung existierender Inhalte. Smułczyński (2020, S. 57) zeigt am
 Beispiel der mehrsprachigen Berichterstattung von \emph{Die Zeit}, dass
@@ -124,7 +124,7 @@ stilistischen Mustern als sein englisches oder japanisches Pendant. Es
 handelt sich daher weniger um ein Übersetzungs- als um ein
 Lokalisierungsproblem.
 
-Der operative Zeitdruck verschärft sich mit jeder zusätzlichen Sprache erheblich. Jede weitere Sprache erfordert spezialisiertes Personal für Übersetzungs- und Anpassungsprozesse, die unter Echtzeit-Bedingungen kaum zu bewältigen sind (vgl. Bluhm \& Schäfer 2023, S. 32). Eine manuelle Skalierung auf mehrere Sprachen ist wirtschaftlich und personell für die meisten Vereinsredaktionen nicht darstellbar.
+Der operative Zeitdruck verschärft sich mit jeder zusätzlichen Sprache erheblich. Jede weitere Sprache erfordert spezialisiertes Personal für Übersetzungs- und Anpassungsprozesse, die unter Echtzeit-Bedingungen kaum zu bewältigen sind (vgl. Bluhm \& Schäfer 2023, S. 32). Eine manuelle Skalierung auf mehrere Sprachen übersteigt die wirtschaftlichen und personellen Kapazitäten der meisten Vereinsredaktionen.
 Moderne Large Language Models eröffnen hier eine neue Perspektive: Sie
 können Texte nicht nur übersetzen, sondern direkt in der Zielsprache
 generieren, unter Berücksichtigung von Stil, Tonalität und
