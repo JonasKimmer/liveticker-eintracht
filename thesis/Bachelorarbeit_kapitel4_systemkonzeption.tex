@@ -173,6 +173,7 @@ CORS-Whitelisting und Pydantic-basierte Eingabevalidierung sind als
 Basismaßnahmen implementiert; eine Benutzerauthentifizierung wurde
 bewusst ausgeklammert (vgl. Kap.~1.4).
 
+Das System ist für den gleichzeitigen Betrieb mehrerer Spiele ausgelegt. Jede Datenbankoperation ist durch den Primärschlüssel \texttt{match\_id} partitioniert; parallele Spielverarbeitungen interferieren daher nicht auf Persistenzebene. Der globale Semaphore-Mechanismus (\texttt{asyncio.Semaphore(LLM\_CONCURRENCY)}, Standard: 8) begrenzt die Anzahl gleichzeitiger LLM-Aufrufe über alle aktiven Spiele hinweg gemeinsam und verhindert Lastspitzen bei mehreren parallel laufenden Spielen. Das Frontend zeigt jeweils ein nutzerseitig ausgewähltes Spiel an; das Backend verwaltet alle konfigurierten Spiele gleichzeitig.
 
 
 \section{Datenbankkonzeption}\label{datenbankkonzeption}
@@ -254,7 +255,7 @@ Ergänzend markiert das Feld \texttt{source} die Herkunft (\texttt{ai}
 vs.~\texttt{manual}) und erlaubt eine saubere Trennung für Evaluationen
 (z. B. ausschließlich KI-generierte Einträge). Das Feld \texttt{instance}
 (\texttt{ef\_whitelabel} / \texttt{generic}) attribuiert jeden Eintrag
-seiner White-Label-Instanz und bildet die Steuerungsprimitive für
+seiner White-Label-Instanz und bildet das zentrale Steuerungselement für
 instanzspezifische Few-Shot-Filterung und mandantenfähige Auswertung.
 
 
@@ -552,7 +553,7 @@ Context-basierte Frontend-Design in Kombination mit dem
 Kontrolle ohne Latenzeinbußen und ohne Prop-Drilling über
 Komponentengrenzen.
 
-Die konzeptionellen Entscheidungen sind darauf ausgelegt, die Anforderungen aus Kapitel~2 zu adressieren: Die Betriebsmodi F1 und die Stilprofile F3 werden in Abschnitt~4.3.3 konzipiert; die KI-Textgenerierung F2, das Few-Shot-Prompting F4 und die Pre-Match-Kontextgenerierung F11 in Abschnitt~4.5.2; der idempotente Datenimport F8 und die Provider-Fallback-Kette F9 in den Abschnitten~4.4 und~4.5.1; die Concurrency-Begrenzung N1 und die Retry-Logik N2 in Abschnitt~4.2; die White-Label-Fähigkeit A5 durch instanzspezifische Few-Shot-Filterung in Abschnitt~4.5.2. Der vollständige Soll-Ist-Abgleich aller 23 Anforderungen folgt in Abschnitt~6.5.
+Die konzeptionellen Entscheidungen greifen die Anforderungen aus Kapitel~2 gezielt auf: Die Betriebsmodi F1 und die Stilprofile F3 werden in Abschnitt~4.3.3 konzipiert; die KI-Textgenerierung F2, das Few-Shot-Prompting F4 und die Pre-Match-Kontextgenerierung F11 in Abschnitt~4.5.2; der idempotente Datenimport F8 und die Provider-Fallback-Kette F9 in den Abschnitten~4.4 und~4.5.1; die Concurrency-Begrenzung N1 und die Retry-Logik N2 in Abschnitt~4.2; die White-Label-Fähigkeit A5 durch instanzspezifische Few-Shot-Filterung in Abschnitt~4.5.2. Der vollständige Soll-Ist-Abgleich aller 23 Anforderungen folgt in Abschnitt~6.6.
 
 Das vorliegende Konzept spezifiziert damit die Implementierung vollständig, die Kapitel~5 dokumentiert; die
 systematische Evaluation folgt in Kapitel~6.

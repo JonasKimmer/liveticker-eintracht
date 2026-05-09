@@ -653,7 +653,7 @@ F3 & Drei Stilprofile & \texttt{STYLE\_DESC} im Prompt; per Match konfigurierbar
 F4 & Few-Shot-Prompting mit Stilreferenzen & Bis zu 3 Referenzen aus \texttt{style\_references}; nach Event-Typ gefiltert \\
 F5 & Ticker-Lifecycle (draft → published / rejected) & State-Machine mit publish/reject/retract; 21 API-Tests \\
 F6 & Slash-Command-Parser & 11 Phasen- und 14 Event-Commands (in \texttt{CMD\_MAP}); 45 Unit-Tests \\
-F7 & Mehrsprachige Textgenerierung & \texttt{translate\_text()} mit Temperatur 0,1; Batch-Endpoint \\
+F7 & Mehrsprachige Textgenerierung & \texttt{translate\_text()} mit Temperatur 0,1; Batch-Endpoint; funktional verifiziert (vgl. Abschnitt~6.7) \\
 F8 & Idempotenter n8n-Import & UPSERT-Strategien für Events, Spieler, Teams \\
 F9 & Provider-Fallback-Kette & 5 Provider (openrouter → gemini → openai → anthropic → mock) \\
 F10 & Deduplizierung & Prüfung auf bestehenden Eintrag per \texttt{event\_id} vor LLM-Aufruf \\
@@ -672,7 +672,7 @@ N6 & Fehlerresistenz Frontend & \texttt{ErrorBoundary} mit Fallback-UI; 4 Tests 
 A1 & Drei-Schichten-Architektur & n8n (Daten), FastAPI/PostgreSQL (Anwendung), React (Präsentation) \\
 A2 & Repository-Pattern & 13 Repository-Klassen \\
 A3 & 70+ API-Endpunkte unter \texttt{/api/v1} & 13 Router-Dateien; 82 API-Tests \\
-A4 & 17 ORM-Modelle / 17 Datenbanktabellen & 100\,\% Model-Coverage \\
+A4 & 17 ORM-Modelle / 18 Datenbanktabellen & 100\,\% Model-Coverage \\
 A5 & White-Label-Fähigkeit & Instanz-spezifische Kontextaufbereitung und Few-Shot-Filterung \\
 \end{longtable}
 }
@@ -690,6 +690,7 @@ A5 & White-Label-Fähigkeit & Instanz-spezifische Kontextaufbereitung und Few-Sh
 \item \textbf{Few-Shot-Reichweite.} Die Few-Shot-Infrastruktur wirkt nur bei Generierung über den Backend-LLM-Service. Die n8n-Workflows für Halbzeit- und Abpfiff-Zusammenfassungen rufen OpenRouter direkt auf und erhalten daher keine stilistischen Stilreferenzen. Zudem fällt der Liga-Filter bei zu wenigen liga-spezifischen Einträgen in der \texttt{style\_references}-Tabelle auf eine liga-agnostische Suche zurück (der Filter selbst ist case-insensitiv über \texttt{func.lower()} implementiert). Das Few-Shot-System funktioniert damit grundsätzlich, liefert aber noch keine konsequent liga-spezifische Stilkonditionierung.
 \item \textbf{Batch-Übersetzung schließt manuelle Einträge ein.} Der Endpunkt \texttt{POST\ /api/v1/ticker/translate-batch/\{match\_id\}} übersetzt alle publizierten Einträge eines Spiels, unabhängig vom \texttt{source}-Feld. Das bedeutet, dass auch manuell verfasste Einträge übersetzt werden, obwohl diese bereits in der Zielsprache vorliegen könnten. Die Einschränkung liegt in einer fehlenden Filterung nach \texttt{source="ai"} im Batch-Endpunkt. Für eine präzise Mehrsprachigkeitsstrategie wäre eine separate Behandlung manueller Einträge sinnvoll.
 \item \textbf{Keine Tests für n8n-Workflows.} Die 17 n8n-Workflows (vgl. Kapitel~5.4) verfügen über keine automatisierten Tests. Ihre Korrektheit wurde ausschließlich durch manuelle Ausführung und Inspektion der Datenbank-Ergebnisse verifiziert. Eine testgetriebene Absicherung wäre über n8n-Workflow-Mocks oder Integrationstests gegen eine Staging-Datenbank möglich, blieb aber aufgrund der visuellen Natur der n8n-Entwicklungsumgebung aus.
+\item \textbf{Mehrsprachigkeit ohne Qualitätsbenchmark (F7).} Die Übersetzungsfunktion wurde funktional verifiziert, aber nicht qualitativ evaluiert. Eine Bewertung durch Muttersprachler oder automatische Metriken wäre für den Einsatz in nicht-deutschsprachigen Märkten erforderlich.
 \item \textbf{Saisonspezifische Fixierung einzelner Workflows.} In einzelnen n8n-Workflows ist die Saisonlogik auf die Spielzeit 2025/26 begrenzt (vgl. Kap.~4.4.2). Für den Betrieb in einer Folgesaison sind entsprechende Parametrisierungen erforderlich; die betroffenen Konfigurationsstellen sind dokumentiert, aber nicht automatisiert anpassbar.
 \end{itemize}
 
