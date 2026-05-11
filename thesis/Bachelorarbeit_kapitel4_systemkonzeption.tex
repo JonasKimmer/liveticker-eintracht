@@ -9,18 +9,15 @@ aufgearbeiteten technologischen Grundlagen. Die Kapitelstruktur folgt dem System
 \section{Überblick und
 Schichtenmodell}\label{uxfcberblick-und-schichtenmodell}
 
-Das System ist überwiegend als Cloud-Service konzipiert: Backend und Frontend laufen als eigenständige Render-Deployments, während die n8n-Workflow-Instanz lokal betrieben wird (vgl. Kap.~4.7.2). Es verarbeitet alle Spiele der konfigurierten Wettbewerbe automatisch: von der Datenimportierung über die KI-Textgenerierung bis zur Publikation. Die dreischichtige Architektur trennt Datenbeschaffung, Anwendungslogik und Präsentation klar voneinander. Die drei Schichten sind funktional wie folgt konzipiert:
+Das System ist überwiegend als Cloud-Service konzipiert: Backend und Frontend laufen als eigenständige Render-Deployments, während die n8n-Workflow-Instanz lokal betrieben wird (vgl. Kap.~4.7.2). Es verarbeitet alle Spiele der konfigurierten Wettbewerbe automatisch: von der Datenimportierung über die KI-Textgenerierung bis zur Publikation. Die dreischichtige Architektur trennt Integrations-, Anwendungs- und Präsentationsschicht klar voneinander. Die drei Schichten sind funktional wie folgt konzipiert:
 
-Die \textbf{Datenbeschaffungs- und Automatisierungsschicht} nutzt n8n. Sie integriert externe Datenquellen (Football-API, ScorePlay, Social-Feeds), normalisiert die Rohdaten und schreibt sie entweder direkt in die Datenbank oder über REST-Endpunkte in das System. n8n kapselt die Integrationslogik und erlaubt schnelle Workflow-Anpassungen ohne Eingriff in den Anwendungskern.
+Die \textbf{Integrationsschicht} wird durch n8n realisiert und bildet die Schnittstelle zu externen Datenquellen. Sie bindet Football-API, ScorePlay und Social-Feeds an, normalisiert die Rohdaten und übergibt sie entweder direkt in die Datenbank oder über REST-Endpunkte an die Anwendungsschicht. Die Kapselung der gesamten Integrationslogik in n8n ermöglicht Workflow-Anpassungen, ohne den Anwendungskern zu verändern.
 
-Die \textbf{Anwendungs- und Persistenzschicht} basiert auf FastAPI (Python) und PostgreSQL. Sie erfüllt drei Aufgaben: (1) REST-Schnittstellen bereitstellen, (2) Zustandsübergänge der Ticker-Einträge verwalten (draft, published, rejected) und (3) KI-Generierungsschritte orchestrieren sowie alle Domänendaten konsistent speichern.
+Die \textbf{Anwendungsschicht} basiert auf FastAPI (Python) und PostgreSQL und erfüllt drei Kernaufgaben: REST-Schnittstellen bereitzustellen, Zustandsübergänge der Ticker-Einträge zu verwalten (\texttt{draft}, \texttt{published}, \texttt{rejected}) sowie den Großteil der KI-Generierungsschritte zu orchestrieren und alle Domänendaten konsistent zu speichern.
 
-Die \textbf{Präsentationsschicht} ist als White-Label-Frontend in React und TypeScript realisiert. Sie bildet den Redaktionsworkflow für Auswahl, Sichtung, Bearbeitung und Publikation ab und ist mandantenfähig konfigurierbar (Instanz, Stil, Sprache, Branding).
-Technisch kombiniert das Frontend REST-basiertes Polling für Ticker- und
-Spieldaten mit einem dedizierten WebSocket-Kanal für
-Echtzeit-Medienupdates. Ticker- und Matchdaten verbleiben im Polling-Modell: Sie tolerieren eine Latenz von 15–20~Sekunden, sind einfacher zu debuggen und benötigen keine persistente Serververbindung. Für diese Datenklasse ist Polling damit wartungsärmer als SSE oder WebSocket.
+Die \textbf{Präsentationsschicht} ist als mandantenfähiges White-Label-Frontend in React und TypeScript realisiert. Sie deckt den vollständigen Redaktionsworkflow von der Spielauswahl über Sichtung und Bearbeitung bis zur Publikation ab und ist über Instanz, Stil, Sprache und Branding konfigurierbar. Technisch kombiniert sie REST-basiertes Polling für Ticker- und Spieldaten mit einem WebSocket-Kanal für latenzkritische Medienupdates: Ticker- und Matchdaten tolerieren eine Verzögerung von 15--20~Sekunden und profitieren vom stabileren Polling-Modell, während Mediendaten den persistenten WebSocket-Kanal nutzen.
 
-Diese Schichtentrennung folgt dem von Parnas etablierten Paradigma der Modularisierung durch \emph{Information Hiding}, das die unabhängige Weiterentwicklung einzelner Systemteile ermöglicht (vgl. Parnas 1972, S.~1054 u.~1056). Abbildung~\ref{fig:systemarchitektur} zeigt die drei Schichten mit ihren Technologien und Kommunikationspfaden:
+Die Architektur orientiert sich an der klassischen Drei-Schicht-Architektur, modifiziert diese jedoch funktional: Da n8n primär der Datenbeschaffung, Transformation und Orchestrierung (ETL) dient und keine persistente Datenbasis bereitstellt, übernimmt PostgreSQL innerhalb der Anwendungsschicht die dauerhafte Speicherung. Diese funktionale Trennung setzt das Prinzip der \emph{Separation of Concerns} konsequent um (vgl. Dijkstra 1974). Abbildung~\ref{fig:systemarchitektur} zeigt die drei Schichten mit ihren Technologien und Kommunikationspfaden:
 
 \begin{figure}[H]
 \centering
@@ -34,11 +31,11 @@ Diese Schichtentrennung folgt dem von Parnas etablierten Paradigma der Modularis
 \subsection{Kommunikations- und
 Triggerarchitektur}\label{kommunikations--und-triggerarchitektur}
 
-Der Kommunikationsfluss kombiniert zwei komplementäre Muster. Beim initialen Match-Load folgt das Frontend dem Prinzip \textbf{„read first, trigger if missing''}: Für Stammdaten wie Aufstellungen und Events wird n8n nur dann angestoßen, wenn die REST-Abfrage einen leeren Datenbestand zurückgibt. Im \textbf{Live-Betrieb} triggert das Frontend Events, Spielstatistiken und Minutenupdates bedingungslos im 60-Sekunden-Takt; die zugehörigen n8n-Workflows führen serverseitig Upserts mit Konfliktbehandlung durch. Das Backend antwortet auf Aufrufe \emph{von} n8n, initiiert aber selbst keine n8n-Workflows. Einzelne Workflows rufen
+Der Kommunikationsfluss kombiniert zwei komplementäre Muster. Beim initialen Match-Load folgt das Frontend für einen Teil der Stammdaten dem Prinzip \textbf{„read first, trigger if missing''}: Aufstellungen, Events und Spielstatistiken werden nur dann per n8n nachgeladen, wenn die REST-Abfrage einen leeren Datenbestand zurückgibt. Prematch-Daten und Spieler-Statistiken hingegen werden beim ersten Öffnen eines Matches stets neu abgerufen. Im \textbf{Live-Betrieb} triggert das Frontend Events, Spielstatistiken und Minutenupdates bedingungslos im 60-Sekunden-Takt; die zugehörigen n8n-Workflows führen serverseitig Upserts mit Konfliktbehandlung durch. Das Backend antwortet auf Aufrufe \emph{von} n8n, initiiert aber selbst keine n8n-Workflows. Einzelne Workflows rufen
 zudem intern weitere Workflows auf: Der Minuten-Update-Workflow löst bei
-erkanntem Spielstandswechsel den Anpfiff/Abpfiff-Workflow aus, der
+erkannter Spielphasenänderung den Anpfiff/Abpfiff-Workflow aus, der
 seinerseits den Halbzeit-Zusammenfassungs-Workflow anstößt; das
-Frontend ist an dieser Kette nicht beteiligt. Abbildung~\ref{fig:kommunikationsfluss} veranschaulicht diese Kommunikationspfade.
+Frontend ist an dieser Kette nicht beteiligt (vgl. Abbildung~\ref{fig:kommunikationsfluss}).
 
 \begin{figure}[H]
 \centering

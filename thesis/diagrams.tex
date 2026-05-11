@@ -7,38 +7,52 @@
 
 %% DIAGRAM 1: System Architecture (3-Schichten + Externe)
 \newcommand{\DiagramSystemArchitektur}{%
-\begin{tikzpicture}[node distance=2.5cm, auto]
+\begin{tikzpicture}[node distance=1.6cm, auto]
+
   % External Services
-  \node[externa] (fapi) {Football-API\\api-sports.io};
-  \node[externa, below of=fapi] (llm) {LLM Provider\\OpenRouter};
-  \node[externa, below of=llm] (sp) {ScorePlay\\Media};
-  
-  % Automation Layer
-  \node[block, right of=llm] (n8n) {n8n\\Automation};
-  
-  % Application Layer
-  \node[block, right of=n8n, xshift=1.5cm] (api) {FastAPI\\Backend};
-  \node[db, below of=api, yshift=-1cm] (db) {PostgreSQL};
-  
-  % Frontend
-  \node[block, right of=api, xshift=1.5cm] (fe) {React\\Frontend};
-  
-  % Connections
+  \node[externa] (fapi) at (0, 2.4)  {Football-API\\api-sports.io};
+  \node[externa] (llm)  at (0, 0.4)  {LLM Provider\\OpenRouter};
+  \node[externa] (sp)   at (0, -1.6) {ScorePlay\\Media};
+
+  % Integrationsschicht
+  \node[block] (n8n) at (4, 0.4) {n8n\\Workflows};
+
+  % Anwendungsschicht
+  \node[block] (api) at (8, 1.4)  {FastAPI\\Backend};
+  \node[db]    (db)  at (8, -0.8) {PostgreSQL};
+
+  % Präsentationsschicht
+  \node[block] (fe) at (12, 0.4) {React\\Frontend};
+
+  % Layer background boxes
+  \begin{pgfonlayer}{background}
+    \node[draw=gray!50, fill=gray!8, rounded corners=4pt, inner sep=8pt,
+          fit=(fapi)(llm)(sp)] (ext_box) {};
+    \node[draw=blue!35, fill=blue!4, rounded corners=4pt, inner sep=10pt,
+          fit=(n8n)] (int_box) {};
+    \node[draw=blue!35, fill=blue!4, rounded corners=4pt, inner sep=10pt,
+          fit=(api)(db)] (app_box) {};
+    \node[draw=blue!35, fill=blue!4, rounded corners=4pt, inner sep=10pt,
+          fit=(fe)] (pres_box) {};
+  \end{pgfonlayer}
+
+  % Arrows
   \draw[arrow] (fapi) -- (n8n);
-  \draw[arrow] (llm) -- (n8n);
-  \draw[arrow] (llm) -- (api);
-  \draw[arrow] (sp) -- (n8n);
-  \draw[arrow] (n8n) -- (api);
-  \draw[arrow] (n8n) -- (db);
-  \draw[arrow] (api) -- (db);
-  \draw[arrow] (api) -- (fe);
-  \draw[arrow] (fe) -- (api);
-  
-  % Labels at bottom
-  \node[below of=fapi, yshift=-3.5cm] {\small\textit{Externe Dienste}};
-  \node[below of=n8n, yshift=-3.5cm] {\small\textit{Automatisierung}};
-  \node[below of=api, yshift=-3.5cm] {\small\textit{Anwendungslogik}};
-  \node[below of=fe, yshift=-3.5cm] {\small\textit{Präsentation}};
+  \draw[arrow] (sp)   -- (n8n);
+  \draw[arrow] (llm)  -- (n8n);
+  \draw[arrow] (llm)  -- (api);
+  \draw[arrow] (n8n)  -- (api);
+  \draw[arrow] (n8n)  -- (db);
+  \draw[arrow] (api)  -- (db);
+  \draw[arrow] (api)  -- (fe);
+  \draw[arrow] (fe)   -- (api);
+
+  % Layer labels below boxes
+  \node[below=0.25cm of ext_box,  font=\small\itshape] {Externe Dienste};
+  \node[below=0.25cm of int_box,  font=\small\itshape] {Integrationsschicht};
+  \node[below=0.25cm of app_box,  font=\small\itshape] {Anwendungsschicht};
+  \node[below=0.25cm of pres_box, font=\small\itshape] {Präsentationsschicht};
+
 \end{tikzpicture}%
 }
 
@@ -128,21 +142,32 @@
 
 %% DIAGRAM 6: Communication Flow (Sequence-like but in TikZ)
 \newcommand{\DiagramCommunicationFlow}{%
-\begin{tikzpicture}[node distance=2.5cm, auto]
-  \tikzset{actor/.style={rectangle, draw, fill=orange!15, text width=2cm, text centered, minimum height=0.8cm}}
-  
-  \node[actor] (fe) {React\\Frontend};
-  \node[actor, right of=fe] (be) {FastAPI\\Backend};
-  \node[actor, right of=be] (n8n) {n8n\\Workflow};
-  \node[actor, right of=n8n] (api) {Football\\API};
+\begin{tikzpicture}[auto]
+  \tikzset{actor/.style={rectangle, draw, fill=orange!15, text width=2.2cm,
+    text centered, minimum height=1cm, font=\small}}
 
-  % Flows
-  \draw[arrow] (fe) -- node[above, font=\tiny] {GET /matches} (be);
-  \draw[arrow] (fe) -- node[above, font=\tiny, pos=0.6] {POST Webhook} (n8n);
-  \draw[arrow] (n8n) -- node[above, font=\tiny] {HTTP request} (api);
-  \draw[arrow, bend right=30] (api) -- node[below, font=\tiny] {JSON response} (n8n);
-  \draw[arrow] (n8n) -- node[below, font=\tiny] {POST /api/v1} (be);
-  \draw[arrow, bend right=30] (be) -- node[below, font=\tiny] {Data update} (fe);
+  % Akteure in festen Abständen
+  \node[actor] (fe)  at (0,   0) {React\\Frontend};
+  \node[actor] (be)  at (4,   0) {FastAPI\\Backend};
+  \node[actor] (n8n) at (8,   0) {n8n\\Workflows};
+  \node[actor] (api) at (12,  0) {Football-API};
+
+  % Frontend ↔ Backend (REST)
+  \draw[arrow] ([yshift= 3pt]fe.east)  -- node[above, font=\scriptsize] {GET /matches}   ([yshift= 3pt]be.west);
+  \draw[arrow] ([yshift=-3pt]be.west)  -- node[below, font=\scriptsize] {JSON response}  ([yshift=-3pt]fe.east);
+
+  % Frontend → n8n (Webhook, gebogen über Backend)
+  \draw[arrow] (fe.north) to[out=60, in=120]
+    node[above, font=\scriptsize, pos=0.5] {POST Webhook} (n8n.north);
+
+  % n8n ↔ Football-API
+  \draw[arrow] ([yshift= 3pt]n8n.east) -- node[above, font=\scriptsize] {HTTP request}  ([yshift= 3pt]api.west);
+  \draw[arrow] ([yshift=-3pt]api.west) -- node[below, font=\scriptsize] {JSON response} ([yshift=-3pt]n8n.east);
+
+  % n8n → Backend
+  \draw[arrow] (n8n.south) to[out=240, in=300]
+    node[below, font=\scriptsize, pos=0.5] {POST /api/v1} (be.south);
+
 \end{tikzpicture}%
 }
 
