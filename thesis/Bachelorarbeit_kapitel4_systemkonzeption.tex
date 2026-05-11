@@ -77,83 +77,36 @@ Schichtstruktur, das API-Design sowie die Laufzeitrobustheit. Alle
 Entscheidungen orientieren sich an den Anforderungen aus Kap.~2.6 und
 den technologischen Grundlagen aus Kap.~3.6.
 
-\subsection{Framework-Wahl, interne Struktur und
-Datenzugriff}\label{interne-struktur-und-datenzugriff}
+\subsection{Framework-Wahl und
+Schichtstruktur}\label{interne-struktur-und-datenzugriff}
 
-Als Backend-Framework wurde FastAPI gewählt (vgl. Abschnitt~3.6 für
-die technische Einordnung). Drei systemspezifische Anforderungen sprechen für FastAPI: Die parallele Verarbeitung von
-LLM-Aufrufen, externen API-Abfragen und Medienverarbeitung profitiert
-von nativer Unterstützung für asynchrone I/O, die FastAPI über
-Pythons \texttt{asyncio}-Event-Loop bereitstellt; die automatisch
-generierte OpenAPI-Spezifikation vereinfacht die Integration mit
-n8n-Workflows erheblich; und die enge Pydantic-Integration reduziert
-Schnittstellenfehler zwischen Frontend, Backend und n8n, indem alle
-Eingaben gegen typisierte Schemas validiert werden. Die
-Datenbankschicht setzt bewusst auf synchrones SQLAlchemy, da die
-Transaktionskomplexität und der eingeschränkte Betriebsumfang keinen
-Mehraufwand einer vollasynchronen Datenbankanbindung rechtfertigen;
-Datenbankzugriffe werden synchron ausgeführt, was beim vorliegenden
-Nutzungsumfang keinen messbaren Nachteil darstellt.
+Als Backend-Framework wurde FastAPI gewählt (vgl. Abschnitt~3.6). Drei systemspezifische Eigenschaften sprechen dafür: Erstens ermöglicht die native Unterstützung für asynchrone I/O über Pythons \texttt{asyncio}-Event-Loop die parallele Verarbeitung von LLM-Aufrufen, externen API-Abfragen und Medienanfragen. Zweitens vereinfacht die automatisch generierte OpenAPI-Spezifikation die Integration mit n8n-Workflows erheblich. Drittens reduziert die enge Pydantic-Integration Schnittstellenfehler, indem alle Eingaben zwischen Frontend, Backend und n8n gegen typisierte Schemas validiert werden.
 
-Die interne Struktur folgt dem \textbf{Repository Pattern} (Fowler 2002, S.~322), das den Datenzugriff kapselt und die Service-Schicht von der Persistenzschicht entkoppelt — eine Voraussetzung für transaktionale Testbarkeit. Konkret gliedert sich die Schicht\-struktur in API-Router, Repository-Schicht, ORM-Modelle und Pydantic-Schemas. Die Router bilden die HTTP-Schnittstelle und übernehmen Validierung, Statuscodes sowie die Orchestrierung einzelner Use Cases. Datenbankzugriffe sind in dedizierten Repositories gekapselt. Dadurch bleibt die API-Schicht frei von SQL-Details, während Persistenzlogik zentral gebündelt und wiederverwendbar gehalten wird.
+Die Datenbankschicht setzt auf synchrones SQLAlchemy. Da Transaktionskomplexität und Betriebsumfang keinen Mehraufwand einer vollasynchronen Datenbankanbindung rechtfertigen, werden Datenbankzugriffe synchron ausgeführt, ohne messbaren Nachteil für das vorliegende Nutzungsprofil.
 
-Für LLM-nahe Abläufe wird ergänzend eine Service-Schicht genutzt
-(insbesondere \texttt{ticker\_service} und \texttt{llm\_service}). Die
-Service-Schicht wird gezielt, aber nicht flächendeckend
-eingesetzt: Viele Standard-CRUD- und Listenoperationen folgen dem Muster
-Router → Repository, während komplexere Generierungs- und
-Orchestrierungspfade über Services laufen.
+Die interne Schichtstruktur folgt dem \textbf{Repository Pattern} (Fowler 2002, S.~322): Router übernehmen Validierung und Orchestrierung einzelner Use Cases; Repositories kapseln den Datenbankzugriff; ORM-Modelle definieren die Persistenzstruktur; Pydantic-Schemas bilden die API-Verträge ab. Diese Trennung entkoppelt die Anwendungslogik von der Persistenzschicht und ist Voraussetzung für transaktionale Testbarkeit.
 
-Für die Datenrepräsentation gilt eine bewusste Trennung: ORM-Modelle
-definieren die Persistenzstruktur, Pydantic-Schemas die API-Verträge.
-Das stabilisiert die Schnittstellen gegenüber internen Refactorings und
-verbessert Wartbarkeit und Testbarkeit.
+Einfache CRUD- und Listenoperationen folgen dem Muster Router \(\rightarrow\) Repository direkt. Für LLM-nahe Abläufe ergänzt eine Service-Schicht dieses Muster: \texttt{ticker\_service} und \texttt{llm\_service} kapseln Generierungs- und Orchestrierungslogik, die für eine direkte Router-Repository-Verbindung zu komplex wäre.
 
 
 
 \subsection{API-Design und
 Endpunktstrategie}\label{api-design-und-endpunktstrategie}
 
-Die Backend-Schnittstelle ist als versionierte REST-API unter
-\texttt{/api/v1} ausgelegt und orientiert sich am Architekturstil
-\textbf{Representational State Transfer} (Fielding 2000, Kap.~5).
-Endpunkte sind ressourcenorientiert strukturiert (z. B. \texttt{teams},
-\texttt{matches}, \texttt{ticker}, \texttt{media}, \texttt{clips}) und
-folgen konsistenten Benennungs- und Methodenregeln. \texttt{GET} dient
-lesenden Abfragen, \texttt{POST} dem Erzeugen bzw. Triggern,
-\texttt{PATCH} partiellen Zustandsänderungen und \texttt{DELETE}
-kontrollierten Löschoperationen. Insbesondere im Ticker-Kontext bildet
-\texttt{PATCH} den redaktionellen Lebenszyklus (\texttt{draft} →
-\texttt{published} bzw. \texttt{rejected}) explizit ab.
+Die Backend-Schnittstelle ist als versionierte REST-API unter \texttt{/api/v1} ausgelegt (vgl. Fielding 2000, Kap.~5). Endpunkte sind ressourcenorientiert strukturiert (\texttt{teams}, \texttt{matches}, \texttt{ticker}, \texttt{media}, \texttt{clips}) und folgen konsistenten HTTP-Methodenregeln: \texttt{GET} für lesende Abfragen, \texttt{POST} für Erzeugung und Trigger, \texttt{PATCH} für partielle Zustandsänderungen, \texttt{DELETE} für kontrollierte Löschoperationen. Im Ticker-Kontext bildet \texttt{PATCH} den redaktionellen Lebenszyklus (\texttt{draft} \(\rightarrow\) \texttt{published} bzw. \texttt{rejected}) explizit ab.
 
-Das API-Design trennt konzeptionell zwischen fachlichen Datenendpunkten und prozessualen Triggerendpunkten. Dadurch bleiben Leseoperationen
-seiteneffektfrei, während Import- und Generierungsprozesse gezielt
-ausgelöst werden können. Fehlerfälle werden konsistent über
-HTTP-Statuscodes und strukturierte Fehlermeldungen kommuniziert, sodass
-Frontend und n8n-Workflows deterministisch reagieren können.
+Das Design unterscheidet zwischen fachlichen Datenendpunkten und prozessualen Triggerendpunkten: Leseoperationen bleiben seiteneffektfrei, Import- und Generierungsprozesse werden über dedizierte Endpunkte gezielt ausgelöst. Fehlerfälle werden konsistent über HTTP-Statuscodes und strukturierte Fehlermeldungen kommuniziert, sodass Frontend und n8n-Workflows deterministisch reagieren können.
 
 
 
 \subsection{Asynchronität, Fehlerbehandlung und
 Robustheit}\label{asynchronituxe4t-nebenluxe4ufigkeit-und-performance}
 
-Die Laufzeitkonzeption setzt Asynchronität gezielt auf I/O-intensiven
-Pfaden ein, insbesondere bei LLM-Generierungsrouten, Media-Verarbeitung
-und WebSocket-Kommunikation, um die Reaktionsfähigkeit unter paralleler
-Last zu erhöhen, ohne Worker dauerhaft zu blockieren. Die Anzahl gleichzeitiger LLM-Aufrufe begrenzt ein konfigurierbarer \textbf{Semaphore-Mechanismus}, der Lastspitzen und Rate-Limit-Probleme reduziert. Ergänzend greift ein \textbf{Retry-Mechanismus mit gestuftem Backoff} bei transienten Fehlern und Rate-Limit-Antworten; die konkreten Wartezeiten sind in Abschnitt~5.1.5 dokumentiert. Nicht alle Endpunkte sind vollständig
-asynchronisiert; langlaufende Integrationslogik ist in n8n ausgelagert,
-wodurch der API-Server als transaktionaler Kern entlastet wird. Für den
-Live-Betrieb ist das Backend auf kontrollierte Degradation ausgelegt:
-Fehler werden über konsistente HTTP-Antworten strukturiert zurückgegeben;
-bei Teilausfällen externer Dienste bleiben bereits persistierte Daten
-verfügbar und redaktionelle Kernprozesse können fortgeführt werden. Die
-Datenpersistenz ist auf \textbf{idempotente Verarbeitung} ausgelegt
-(vgl. Kap.~4.3.4). Transportschicht-Sicherheit (HTTPS via Render),
-CORS-Whitelisting und Pydantic-basierte Eingabevalidierung sind als
-Basismaßnahmen implementiert; eine Benutzerauthentifizierung wurde
-bewusst ausgeklammert (vgl. Kap.~1.4).
+Asynchronität wird gezielt auf I/O-intensiven Pfaden eingesetzt: LLM-Generierungsrouten, Medienverarbeitung und WebSocket-Kommunikation sind nicht-blockierend implementiert, einfache CRUD-Endpunkte bleiben synchron. Ein konfigurierbarer \textbf{Semaphore-Mechanismus} (\texttt{asyncio.Semaphore(LLM\_CONCURRENCY)}, Standard: 8) begrenzt gleichzeitige LLM-Aufrufe und verhindert Lastspitzen sowie Rate-Limit-Probleme. Ein \textbf{Retry-Mechanismus mit gestuftem Backoff} behandelt transiente Fehler; die konkreten Wartezeiten sind in Abschnitt~5.1.5 dokumentiert. Langlaufende Integrationslogik ist in n8n ausgelagert, was den API-Server als transaktionalen Kern entlastet.
 
-Das System ist für den gleichzeitigen Betrieb mehrerer Spiele ausgelegt. Jede Datenbankoperation ist durch den Primärschlüssel \texttt{match\_id} partitioniert; parallele Spielverarbeitungen interferieren daher nicht auf Persistenzebene. Der globale Semaphore-Mechanismus (\texttt{asyncio.Semaphore(LLM\_CONCURRENCY)}, Standard: 8) begrenzt die Anzahl gleichzeitiger LLM-Aufrufe über alle aktiven Spiele hinweg gemeinsam und verhindert Lastspitzen bei mehreren parallel laufenden Spielen. Das Frontend zeigt jeweils ein nutzerseitig ausgewähltes Spiel an; das Backend verwaltet alle konfigurierten Spiele gleichzeitig.
+Für den Live-Betrieb ist das Backend auf kontrollierte Degradation ausgelegt: Bei Teilausfällen externer Dienste bleiben persistierte Daten verfügbar und redaktionelle Kernprozesse können fortgeführt werden. Fehler werden konsistent als strukturierte HTTP-Antworten zurückgegeben. Als Basismaßnahmen zur Absicherung sind HTTPS via Render, CORS-Whitelisting und Pydantic-basierte Eingabevalidierung implementiert; eine Benutzerauthentifizierung wurde ausgeklammert (vgl. Kap.~1.4).
+
+Das Backend ist für den gleichzeitigen Betrieb mehrerer Spiele ausgelegt. Datenbankoperationen sind durch den Primärschlüssel \texttt{match\_id} partitioniert, sodass parallele Spielverarbeitungen nicht interferieren. Der Semaphore-Mechanismus begrenzt die LLM-Last über alle aktiven Spiele gemeinsam. Das Frontend zeigt jeweils ein Spiel an; das Backend verwaltet alle konfigurierten Spiele gleichzeitig.
 
 
 \section{Datenbankkonzeption}\label{datenbankkonzeption}
