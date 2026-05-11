@@ -26,9 +26,9 @@ jobs:
       - name: Build LaTeX to PDF (with TikZ diagrams)
         run: |
           cd thesis
-          xelatex -interaction=nonstopmode -shell-escape Bachelorarbeit_Main.tex || true
+          xelatex -interaction=nonstopmode -no-shell-escape Bachelorarbeit_Main.tex || true
           echo "First pass complete"
-          xelatex -interaction=nonstopmode -shell-escape Bachelorarbeit_Main.tex || true
+          xelatex -interaction=nonstopmode -no-shell-escape Bachelorarbeit_Main.tex || true
 
       - name: Check PDF was created
         run: |
