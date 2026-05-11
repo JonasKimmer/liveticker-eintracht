@@ -2,25 +2,14 @@
 
 Dieses Kapitel beschreibt die Konzeption des Liveticker-Systems auf
 Basis der in Kapitel~2 hergeleiteten Anforderungen und der in Kapitel~3
-aufgearbeiteten technologischen Grundlagen. Es gliedert sich in acht
-Bereiche: das Schichtenmodell und die Kommunikationsarchitektur
-(Kap.~4.1), die Backend-Konzeption mit API-Design und
-Robustheit (Kap.~4.2), die Datenbankkonzeption mit
-Ticker-Lifecycle und Betriebsmodi (Kap.~4.3), die
-Workflow-Konzeption in n8n (Kap.~4.4), die KI-Komponente mit
-Multi-Provider-Architektur und Prompt-Design (Kap.~4.5), die
-Frontend-Konzeption mit Hook- und Kontextarchitektur (Kap.~4.6),
-Skalierbarkeit und Systemgrenzen (Kap.~4.7) sowie ein abschließendes
-Fazit der Systemkonzeption (Kap.~4.8).
+aufgearbeiteten technologischen Grundlagen. Die Kapitelstruktur folgt dem Systemaufbau: Architektur und Kommunikation (Kap.~4.1--4.2), Daten und Workflows (Kap.~4.3--4.4), KI-Komponente und Frontend (Kap.~4.5--4.6) sowie Skalierbarkeit und Fazit (Kap.~4.7--4.8).
 
 
 
 \section{Überblick und
 Schichtenmodell}\label{uxfcberblick-und-schichtenmodell}
 
-Das System ist als eigenständiger Cloud-Service konzipiert. Es verarbeitet alle Spiele der konfigurierten Wettbewerbe automatisch: von der Datenimportierung über die KI-Textgenerierung bis zur Publikation. Die serviceorientierte, dreischichtige Architektur trennt Datenbeschaffung, Anwendungslogik und Präsentation klar voneinander. Diese Schichtentrennung folgt dem etablierten Prinzip der
-\emph{Separation of Concerns} (Parnas 1972), das die unabhängige
-Weiterentwicklung einzelner Systemteile ermöglicht.
+Das System ist überwiegend als Cloud-Service konzipiert: Backend und Frontend laufen als eigenständige Render-Deployments, während die n8n-Workflow-Instanz lokal betrieben wird (vgl. Kap.~4.7.2). Es verarbeitet alle Spiele der konfigurierten Wettbewerbe automatisch: von der Datenimportierung über die KI-Textgenerierung bis zur Publikation. Die dreischichtige Architektur trennt Datenbeschaffung, Anwendungslogik und Präsentation klar voneinander. Die drei Schichten sind funktional wie folgt konzipiert:
 
 Die \textbf{Datenbeschaffungs- und Automatisierungsschicht} nutzt n8n. Sie integriert externe Datenquellen (Football-API, ScorePlay, Social-Feeds), normalisiert die Rohdaten und schreibt sie entweder direkt in die Datenbank oder über REST-Endpunkte in das System. n8n kapselt die Integrationslogik und erlaubt schnelle Workflow-Anpassungen ohne Eingriff in den Anwendungskern.
 
@@ -31,8 +20,7 @@ Technisch kombiniert das Frontend REST-basiertes Polling für Ticker- und
 Spieldaten mit einem dedizierten WebSocket-Kanal für
 Echtzeit-Medienupdates. Ticker- und Matchdaten verbleiben im Polling-Modell: Sie tolerieren eine Latenz von 15–20~Sekunden, sind einfacher zu debuggen und benötigen keine persistente Serververbindung. Für diese Datenklasse ist Polling damit wartungsärmer als SSE oder WebSocket.
 
-Abbildung~\ref{fig:systemarchitektur} zeigt die drei Schichten mit ihren Technologien
-und Kommunikationspfaden:
+Diese Schichtentrennung folgt dem von Parnas etablierten Paradigma der Modularisierung durch \emph{Information Hiding}, das die unabhängige Weiterentwicklung einzelner Systemteile ermöglicht (vgl. Parnas 1972, S.~1054 u.~1056). Abbildung~\ref{fig:systemarchitektur} zeigt die drei Schichten mit ihren Technologien und Kommunikationspfaden:
 
 \begin{figure}[H]
 \centering
