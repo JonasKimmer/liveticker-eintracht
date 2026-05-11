@@ -34,13 +34,14 @@ GPT-3 gelegt (vgl. Brown et al.~2020, S.~4). Das Prinzip, Modelle über Beispiel
 im Prompt zu konditionieren, ohne ihre Gewichte anzupassen, hat sich
 seitdem als Standard für aufgabenspezifische LLM-Anpassung etabliert.
 
-Parallel zum In-Context Learning hat das \textbf{Instruction Tuning} (Ouyang et al.~2022) die praktische Nutzbarkeit von LLMs maßgeblich verbessert. Durch Feinabstimmung auf menschliches Feedback (\emph{Reinforcement Learning from Human Feedback}, RLHF) werden Modelle auf instruktionsfolgendes Verhalten ausgerichtet, sodass zuverlässige Ausgaben entstehen, ohne aufwändige Prompt-Konstruktion. Instruction-optimierte Modelle generieren damit auch bei klar strukturierten Aufgaben mit kurzem Output zuverlässig nutzbare Ergebnisse (Ouyang et al.~2022, S.~3).
+Parallel zum In-Context Learning hat das \textbf{Instruction Tuning} (Ouyang et al.~2022) die praktische Nutzbarkeit von LLMs maßgeblich verbessert. Durch Feinabstimmung auf menschliches Feedback (\emph{Reinforcement Learning from Human Feedback}, RLHF) werden Modelle auf instruktionsfolgendes Verhalten ausgerichtet, sodass zuverlässige Ausgaben entstehen, ohne aufwändige Prompt-Konstruktion. Instruction-optimierte Modelle generieren damit auch bei klar strukturierten Aufgaben mit kurzem Output zuverlässig nutzbare Ergebnisse (Ouyang et al.~2022, S.~3). Diese Technik liegt der Entwicklung von ChatGPT (GPT-3.5) zugrunde und hat sich seitdem als Industriestandard für praxistaugliche Sprachmodelle etabliert (vgl. Ouyang et al.~2022; Christiano et al.~2023).
 
 Trotz ihrer Leistungsfähigkeit weisen LLMs strukturelle Schwächen auf,
 insbesondere die Neigung zu \textbf{Halluzinationen}, also der
 Generierung von Inhalten, die sachlich unzutreffend oder erfunden sind
-(OpenAI 2023, S. 46). Im journalistischen Kontext ist dies kritisch, da
-faktische Fehler die Glaubwürdigkeit nachhaltig beschädigen (vgl. Thürbach, zit. n. Bluhm \& Schäfer 2023, S.~33). Dies erfordert Gegenmaßnahmen — etwa redaktionelle Kontrollinstanzen oder explizite Schutzregeln in der Prompt-Gestaltung (vgl. Kap.~4.5.2).
+(OpenAI 2023, S. 46). Halluzinationen lassen sich nach Typ differenzieren: \emph{Faktische} Halluzinationen erfinden Ereignisse, die nicht stattgefunden haben (z.\,B. ein nicht existentes Tor); \emph{kontextuale} Halluzinationen misinterpretieren vorhandene Eingabedaten (z.\,B. falsches Team bei korrektem Ereignis). Beide sind im journalistischen Kontext kritisch, erstere jedoch schwerer erkennbar, da kein Abgleich mit den Eingabedaten möglich ist. Im journalistischen Kontext beschädigen faktische Fehler die Glaubwürdigkeit nachhaltig (vgl. Thürbach, zit. n. Bluhm \& Schäfer 2023, S.~33). Dies erfordert Gegenmaßnahmen — etwa redaktionelle Kontrollinstanzen oder explizite Schutzregeln in der Prompt-Gestaltung (vgl. Kap.~4.5.2).
+
+Neben Halluzinationen stellt sich bei LLM-basierten Systemen die Frage von \textbf{Prompt-Injection}: Schadhafte oder unerwartete Eingaben können versuchen, das Modellverhalten zu manipulieren. Das Risiko hängt stark davon ab, ob Eingabequellen kontrolliert oder nutzerseitig offen sind; vgl. Kap.~4.2.3 für die Absicherungsmaßnahmen des vorliegenden Systems.
 
 Der Zugang zu verschiedenen LLM-Anbietern erfolgt in der Praxis zunehmend über \textbf{LLM-API-Aggregatoren} wie OpenRouter, die unter einer einheitlichen API-Schicht Modelle verschiedener Anbieter bündeln. Dies ermöglicht anbieterunabhängige Modellauswahl und vereinfacht Fallback-Strategien bei Anbieterausfällen — ein entscheidender Faktor für Produktivsysteme mit Verfügbarkeitsanforderungen (vgl.~Kap.~4.5.1).
 
@@ -61,7 +62,7 @@ Datenkuration). \textbf{Prompting-basierte Ansätze} hingegen nutzen das
 vortrainierte Modell direkt und steuern dessen Verhalten ausschließlich
 über die Eingabeformulierung (vgl. Brown et al.~2020, S.~3 u.~6). Für Domänen mit kleinen oder nicht verfügbaren Trainingsdatensätzen ist Prompting methodisch vorzuziehen: Fine-tuning neigt unter diesen Bedingungen zu Overfitting, während Prompting-basierte Ansätze mit wenigen kuratierten Beispielen auskommen (vgl. ebd.).
 
-Innerhalb des Prompting-Paradigmas lassen sich zwei wesentliche Techniken unterscheiden. Beim \textbf{Zero-Shot Prompting} erhält das Modell ausschließlich eine Aufgabenbeschreibung ohne Demonstrationsbeispiele (vgl. Brown et al.~2020, S.~7); dieser Ansatz maximiert Flexibilität und eignet sich für generische Anwendungsfälle ohne spezifische Stilerwartungen. Beim \textbf{Few-Shot Prompting} werden dem Modell neben der Aufgabenbeschreibung zusätzlich wenige Beispiele als Stilreferenz bereitgestellt (vgl. Brown et al.~2020, S.~6), die das Modell auf eine gewünschte Tonalität konditionieren, ohne dass modellseitiges Fine-tuning erforderlich ist. In der Praxis dieser Arbeit sind das typischerweise 1--5 Beispiele je Stilprofil.
+Innerhalb des Prompting-Paradigmas lassen sich zwei wesentliche Techniken unterscheiden. Beim \textbf{Zero-Shot Prompting} erhält das Modell ausschließlich eine Aufgabenbeschreibung ohne Demonstrationsbeispiele (vgl. Brown et al.~2020, S.~7); dieser Ansatz maximiert Flexibilität und eignet sich für generische Anwendungsfälle ohne spezifische Stilerwartungen. Beim \textbf{Few-Shot Prompting} werden dem Modell neben der Aufgabenbeschreibung zusätzlich wenige Beispiele als Stilreferenz bereitgestellt (vgl. Brown et al.~2020, S.~6), die das Modell auf eine gewünschte Tonalität konditionieren, ohne dass modellseitiges Fine-tuning erforderlich ist. In der Praxis dieser Arbeit sind das typischerweise 1--5 Beispiele je Stilprofil. Few-Shot-Prompting entfaltet seinen Vorteil gegenüber Fine-tuning besonders bei kleinen Beispielmengen; ab etwa 50--100 Beispielen können Fine-tuned Modelle in Stilkonsistenz und Token-Effizienz überlegen sein (vgl. Brown et al.~2020, S.~6). Für diese Arbeit, mit typisch 10--30 kuratierten Ticker-Referenzen je Stilprofil, ist Few-Shot-Prompting methodisch angemessen.
 
 Ergänzend hat sich das \textbf{Role Prompting} als eigenständige Technik etabliert: Durch die explizite Zuweisung einer Persona (z.\,B. „Du bist ein Sportredakteur von Eintracht Frankfurt'') werden Modelle auf eine konsistente sprachliche Identität verpflichtet. Rollenbasierte Instruktionen verbessern nachweislich die Ausgabekonsistenz bei stilistisch definierten Aufgaben (vgl. Shanahan et al.~2023, S.~3). Die Kombination von Role Prompting mit Few-Shot-Stilreferenzen zu einer gemeinsamen Prompt-Architektur wird in Kapitel~4.5.2 beschrieben.
 
@@ -118,9 +119,7 @@ hinsichtlich dieser Dimensionen unterscheiden.
 Die Wahl des Kommunikationsmusters hängt von den Anforderungen der
 Anwendung ab: Polling bevorzugt Einfachheit, SSE bietet effizienten
 unidirektionalen Push, WebSocket minimiert Latenz bei bidirektionaler
-Kommunikation. Hybridansätze nutzen verschiedene Muster für
-unterschiedliche Datenströme innerhalb derselben Anwendung, um
-Trade-offs gezielt zu optimieren.
+Kommunikation. Hybridansätze nutzen verschiedene Muster für unterschiedliche Datenströme innerhalb derselben Anwendung, um Trade-offs gezielt zu optimieren. Für Anwendungen mit heterogenen Latenzanforderungen bietet sich an, verschiedene Datenkategorien unterschiedlichen Mustern zuzuweisen: toleranzkritische Zustandsdaten per Polling und latenzkritische Ereignisdaten per WebSocket. Bei WebSocket-Verbindungsabbrüchen ist clientseitig ein exponentieller Backoff empfehlenswert, nach dem das System auf Polling zurückfallen kann; die konkrete Parametrierung hängt von der Anwendungsanforderung ab (vgl. Kap.~4.1.1).
 
 Die konkrete Umsetzung im vorliegenden System wird in Kapitel~4.1.1
 beschrieben.
@@ -163,6 +162,8 @@ Verarbeitung und effizienten Webhook-Mechanismen, um auf externe
 Ereignisse sofort reagieren zu können (vgl. Nakavisute \& Sincharoonsak
 2025).
 
+Workflow-Plattformen wie n8n bieten integrierte Fehlerbehandlung: Einzelne Nodes können bei Fehler einen Alternativpfad beschreiten, automatische Retry-Mechanismen behandeln transiente Netzwerkfehler. Die Zuverlässigkeit hängt dabei von der Konfigurationsqualität ab — undefinierte Fehlerpfade führen zu stillem Scheitern. Die Fehlerbehandlung der vorliegenden Workflows ist in Kap.~5.4 beschrieben.
+
 Die konkrete Umsetzung der ETL-Architektur im vorliegenden System wird
 in Kapitel~4.4 beschrieben.
 
@@ -176,7 +177,7 @@ Pythons \texttt{asyncio}-Eventloop ermöglicht über \textbf{ASGI}-Frameworks wi
 
 React realisiert das Frontend als \textbf{Single-Page Application (SPA)}, die die Darstellung dynamisch ohne vollständige Seitenneuladen aktualisiert — geeignet für interaktive Redaktionswerkzeuge mit häufigen Zustandsänderungen. React wird in Kombination mit \textbf{TypeScript} eingesetzt, das statische Typsicherheit für die Kommunikation zwischen Frontend-Komponenten und Backend-API erzwingt (vgl.~Kap.~5.3.6). Die konkrete Frontend-Architektur wird in Kapitel~4.6 beschrieben.
 
-\textbf{Platform-as-a-Service (PaaS)}-Anbieter wie Render abstrahieren die Infrastrukturverwaltung und ermöglichen Deployments direkt aus Git-Branches. PaaS setzt ein \textbf{Stateless-Design} voraus: Persistente Daten werden in externe Dienste ausgelagert, sodass zusätzliche Instanzen ohne Zustandskonsistenzprobleme gestartet werden können. Die konkrete Deployment-Architektur wird in Kapitel~4.7.2 beschrieben.
+\textbf{Platform-as-a-Service (PaaS)}-Anbieter wie Render abstrahieren die Infrastrukturverwaltung und ermöglichen Deployments direkt aus Git-Branches. PaaS setzt ein \textbf{Stateless-Design} voraus: Persistente Daten werden in externe Dienste ausgelagert, sodass zusätzliche Instanzen ohne Zustandskonsistenzprobleme gestartet werden können.
 
 
 

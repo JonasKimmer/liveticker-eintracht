@@ -3,153 +3,13 @@
 
 \section{Zielsetzung der Evaluation}\label{zielsetzung-der-evaluation}
 
-Die Evaluation bewertet das implementierte System auf mehreren Ebenen. Sie gliedert sich in drei Blöcke: Die \textbf{technische Qualitätssicherung} (Abschnitt~6.2) prüft die Korrektheit der Kernlogik über Unit-Tests, das Zusammenspiel der API-Schichten über Integrations-Tests, die Stabilität der Benutzeroberfläche über End-to-End-Tests sowie die statische Typsicherheit über TypeScript-Coverage. Die \textbf{Evaluation der KI-Textgenerierung} (Abschnitt~6.3) umfasst quantitative Metriken, eine qualitative Analyse der generierten Texte sowie ein Experteninterview und eine LLM-as-Judge-Evaluation. Die \textbf{Systembetrachtung} (Abschnitte 6.4--6.7) behandelt das Latenzpotenzial der Betriebsmodi, Performance und Laufzeitverhalten, den Anforderungsabgleich (Soll-Ist) sowie Limitationen und offene Punkte. Die Metriken dienen nicht nur der Qualitätssicherung, sondern dokumentieren auch die Reife der Codebasis für einen produktiven Einsatz und identifizieren gleichzeitig die Grenzen des aktuellen Systems.
+Die Evaluation bewertet das implementierte System auf mehreren Ebenen. Sie gliedert sich in drei Blöcke: Die \textbf{technische Qualitätssicherung} (Abschnitt~6.2) fasst die Kernkennzahlen der Testsuite und TypeScript-Typsicherheit zusammen; Implementierungsdetails sind in Kapitel~5.5 und~5.3.6 dokumentiert. Die \textbf{Evaluation der KI-Textgenerierung} (Abschnitt~6.3) umfasst quantitative Metriken, eine qualitative Analyse der generierten Texte sowie ein Experteninterview und eine LLM-as-Judge-Evaluation. Die \textbf{Systembetrachtung} (Abschnitte 6.4--6.7) behandelt das Latenzpotenzial der Betriebsmodi, Performance und Laufzeitverhalten, den Anforderungsabgleich (Soll-Ist) sowie Limitationen und offene Punkte.
 
 
 \section{Technische
 Qualitätssicherung}\label{technische-qualituxe4tssicherung}
 
-Die technische Qualitätssicherung umfasst die vollständige Testsuite
-(Frontend, Backend, Browser-Smoke-Tests) sowie die statische
-Typsicherheitsanalyse.
-
-\subsection{Teststrategie und
-Testpyramide}\label{teststrategie-und-testpyramide}
-
-Die Teststrategie folgt dem klassischen Pyramiden-Modell nach Cohn
-(2009): Eine breite Basis schneller, isolierter Unit-Tests wird durch
-eine mittlere Schicht von Integrations-Tests ergänzt, die reale
-HTTP-Endpunkte gegen eine transaktionale Testdatenbank prüfen. An der
-Spitze stehen Playwright-basierte Browser-Smoke-Tests, die den
-vollständigen Redaktionsworkflow im Browser simulieren.
-
-\begin{verbatim}
-        +-----------+
-        | Smoke (6) |  Playwright - Browser-Workflow
-       +-------------+
-       |  API-Tests  |  FastAPI TestClient + PostgreSQL
-      +---------------+
-      |  Unit-Tests   |  Jest/React Testing Library + pytest
-      +---------------+
-\end{verbatim}
-
-Diese Pyramide stellt sicher, dass die Mehrheit der Testfälle ohne
-externe Abhängigkeiten läuft und damit in CI-Pipelines schnell und
-zuverlässig ausgeführt werden kann. Die Integrations-Tests sind so
-strukturiert, dass sie bei fehlender Datenbankverbindung automatisch
-übersprungen werden (\texttt{pytest.skip}) und keine falschen
-Fehlermeldungen erzeugen.
-
-\subsection{Frontend-Unit-Tests (Jest + React Testing
-Library)}\label{frontend-unit-tests-jest-react-testing-library}
-
-Das Frontend verfügt über 187 Unit-Tests in 15 Testdateien, aufgeteilt in drei Kategorien:
-
-{\def\LTcaptype{none} % do not increment counter
-\begin{longtable}[]{@{}llp{9cm}@{}}
-\toprule\noalign{}
-Kategorie & Tests & Schwerpunkte \\
-\midrule\noalign{}
-\endhead
-\bottomrule\noalign{}
-\endlastfoot
-Utilities & 67 & \texttt{parseCommand} (45), \texttt{roundLabel} (16), \texttt{resolvePollingInterval} (6) \\
-Hooks & 55 & \texttt{useLiveMinute} (10), \texttt{useSearchableDropdown} (10), \texttt{useMatchEvents} (6), \texttt{useMatchTicker} (5), \ldots{} \\
-Komponenten & 65 & \texttt{EntryEditor} (19), \texttt{RightPanelComponents} (18), \texttt{PublishedEntry} (17), \ldots{} \\
-\textbf{Gesamt} & \textbf{187} & \\
-\end{longtable}
-}
-
-Der \texttt{parseCommand}-Utility ist die komplexeste Einheit der Geschäftslogik im Frontend; er transformiert Slash-Commands (z.\,B. \texttt{/g\ Müller\ SGE}) in strukturierte Ticker-Einträge. Die 45 Tests decken alle Command-Typen sowie Fehlerfälle ab: Jeder Test prüft \texttt{isValid}, \texttt{type}, \texttt{formatted}, \texttt{meta.icon} und \texttt{warnings}; unvollständige Eingaben liefern gezielte Hinweise (\texttt{"Fehlend:\ Spieler"}) statt Laufzeitfehler.
-
-\subsection{Backend-Unit-Tests
-(pytest)}\label{backend-unit-tests-pytest}
-
-Das Backend verfügt über 246 Tests in 14 Dateien (95 API-Integrationstests, 82 Service/Repository-Tests, 69 Utility-Tests) mit einer Gesamt-Coverage von 79 \%. Die API-Tests prüfen Endpunkte gegen eine transaktional isolierte PostgreSQL-Testinstanz mit automatischem Rollback nach jedem Test.
-
-Die 79 \%-Gesamtcoverage verteilt sich bewusst priorisiert über die Systemschichten:
-
-{\def\LTcaptype{none} % do not increment counter
-\begin{longtable}[]{@{}
-  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.3333}}
-  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.0707}}
-  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.1010}}
-  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.4949}}@{}}
-\toprule\noalign{}
-\begin{minipage}[b]{\linewidth}\raggedright
-Schicht
-\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
-Dateien
-\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
-Ø Coverage
-\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
-Anmerkung
-\end{minipage} \\
-\midrule\noalign{}
-\endhead
-\bottomrule\noalign{}
-\endlastfoot
-\textbf{Modelle} (\texttt{app/models/}) & 17 & \textasciitilde96 \% & Nahezu vollständig;
-\texttt{ticker\_entry.py} teilweise offen \\
-\textbf{Schemas} (\texttt{app/schemas/}) & 11 & \textasciitilde81 \% &
-Pydantic-Validierung überwiegend getestet; Season/Team offen \\
-\textbf{Utilities} (\texttt{app/utils/}) & 5 & \textasciitilde92 \% &
-Evaluation-Metriken, HTTP-Fehler, Context-Builder \\
-\textbf{API-Endpunkte} (\texttt{app/api/v1/}) & 14 & \textasciitilde51
-\% & Kern-Routes getestet; Clip/Media/Generate noch offen \\
-\textbf{Repositories} & 12 & \textasciitilde60 \% & Ticker/Event/Match/Style vollständig; Clip/Season/Team offen \\
-\textbf{Services} & 2 & \textasciitilde47 \% & LLM-Service (Mocking),
-Ticker-Service \\
-\end{longtable}
-}
-
-Die unbelegten Bereiche konzentrieren sich auf Nebenroutes (Clip-Import,
-Medienverwaltung, Saisonverwaltung), die außerhalb des kritischen
-Redaktionspfads liegen.
-
-\subsection{Browser-Smoke-Tests
-(Playwright)}\label{end-to-end-tests-playwright}
-
-Die 6 Playwright-Tests validieren den Browser-seitigen Workflow der Anwendung im Chromium-Browser, ohne dass ein laufendes Backend erforderlich ist. Abgedeckt sind: korrektes initiales Rendern der React-App, Interaktivität des Navigations-Dropdowns, Freiheit von JavaScript-Laufzeitfehlern, Öffnen des Keyboard-Shortcut-Modals sowie korrekte Darstellung auf mobilem Viewport (375×812, iPhone~SE). Die Tests dienen primär als Regression-Schutz: Bricht eine zentrale Komponente, schlagen sie unmittelbar an.
-
-\subsection{TypeScript-Typsicherheit}\label{typescript-typsicherheit}
-
-Die vollständige Migration von JavaScript zu TypeScript und die zentrale
-Typen-Architektur (\texttt{src/types/index.ts} mit Domain-Interfaces,
-Union-Types und \texttt{as\ const}-Konstanten) sind in Abschnitt~5.3.6
-dokumentiert.
-
-Die \texttt{type-coverage}-Metrik (Anteil explizit getypter Ausdrücke an
-allen Ausdrücken) wurde wie folgt gesteigert:
-
-{\def\LTcaptype{none} % do not increment counter
-\begin{longtable}[]{@{}
-  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.6053}}
-  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.1711}}
-  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.2237}}@{}}
-\toprule\noalign{}
-\begin{minipage}[b]{\linewidth}\raggedright
-Zeitpunkt
-\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
-type-coverage
-\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
-TypeScript-Fehler
-\end{minipage} \\
-\midrule\noalign{}
-\endhead
-\bottomrule\noalign{}
-\endlastfoot
-Migrationsbeginn & 78,33 \% & 885 \\
-Nach Grundmigration & \textasciitilde84 \% & 0 \\
-Nach Interface-Ausbau (Hooks, Panels) & \textasciitilde89 \% & 0 \\
-\textbf{Endstand (nach \texttt{parseCommand}-Typisierung)} &
-\textbf{98,02 \%} & \textbf{0} \\
-\end{longtable}
-}
-
-Der Wert von 98,02 \% bedeutet: Von 19.041 gemessenen Typausdrücken sind 18.665 explizit getypt. Die verbleibenden \textasciitilde2 \% verteilen sich auf wenige, bewusst offen gelassene Stellen. \texttt{MatchSelectorModal.tsx} ist ein großes Modal mit komplexem internen State, dessen Typisierung stark von einer kommenden API-Stabilisierung abhängt. Die Media-Panels \texttt{MediaPickerPanel.tsx} und \texttt{YouTubePanel.tsx} verarbeiten externe API-Responses (ScorePlay, YouTube), deren Typen nicht vollständig spezifiziert sind. Die Barrel-Exports in \texttt{components/index.ts} (\texttt{export \{ X \}}) fehlen explizite Typ-Annotationen; sie sind technisch korrekt, werden von \texttt{type-coverage} jedoch als untypiert gezählt.
-
-Nutzen im Entwicklungsprozess: Die TypeScript-Migration hat im Verlauf der Implementierung mehrere Fehler früh aufgedeckt, die sonst erst zur Laufzeit sichtbar geworden wären. So war \texttt{Country} zunächst als Objekt-Interface typisiert, obwohl die API \texttt{string[]} liefert; TypeScript erzwang die Korrektur. \texttt{parseInt(v)} erhielt ein \texttt{string | number}-Argument, was ohne Typisierung still übergangen worden wäre. Und \texttt{e.target.closest(...)} erforderte \texttt{as Element | null}, um einen Null-Zugriff zur Laufzeit zu verhindern.
+Die Codebasis ist durch 439 automatisierte Tests abgesichert (187 Frontend-Tests mit Jest/React Testing Library, 246 Backend-Tests mit pytest, 6 Browser-Smoke-Tests mit Playwright), die vollständig fehlerfrei durchlaufen. Die Teststrategie folgt dem Pyramiden-Modell nach Cohn (2009): Unit-Tests bilden die breite Basis, API-Integrationstests prüfen Endpunkte gegen eine transaktional isolierte PostgreSQL-Testinstanz, Playwright-Smoke-Tests validieren zentrale Browser-Workflows. Das Backend erreicht eine Gesamt-Coverage von 79\,\%; die systemkritischen Schichten Modelle ($\approx$96\,\%) und Utilities ($\approx$92\,\%) sind nahezu vollständig abgedeckt; die niedrigere Coverage bei API-Nebenrouten und Services spiegelt eine bewusste Priorisierung auf den kritischen Redaktionspfad wider. Das Frontend wurde vollständig auf TypeScript migriert und erreicht 98,02\,\% type-coverage bei 0 Compilerfehler; die verbleibenden 1,98\,\% konzentrieren sich auf API-Response-Typen externer Dienste (vgl. Abschnitt~5.3.6). Die vollständige Aufschlüsselung der Testmetriken und Migrationsschritte ist in Kapitel~5.5 und 5.3.6 dokumentiert.
 
 
 \section{Evaluation der
@@ -174,7 +34,7 @@ Das Evaluationsmodul (\texttt{app/utils/evaluation\_metrics.py}) stellt sechs Me
 \item \textbf{Qualitätsaggregation} (\texttt{aggregate\_quality\_by\_group}): Mittelwerte je Bewertungsdimension, gruppiert nach Schlüssel (z.~B. Modus oder Modell).
 \end{itemize}
 
-Alle sechs Funktionen sind durch 17 Unit-Tests abgesichert (\textasciitilde96 \% Coverage).
+Alle sechs Funktionen sind durch 17 Unit-Tests abgesichert (\textasciitilde96 \% Coverage). Das Bootstrap-Konfidenzintervall wurde in der Hauptevaluation (N~=~40) nicht eingesetzt, da N~=~40 für eine stabile Bootstrap-Schätzung je Event-Typ und Stilprofil zu klein ist; eine Folgestudie mit N~$\geq$~100 je Gruppe würde diese Methode produktiv einsetzen können.
 
 \subsection{Modell- und
 Provider-Evaluation}\label{modell--und-provider-evaluation}
@@ -285,7 +145,7 @@ in Ausrufezeichen-Dichte, Wortwahl und Perspektive. Während
 Ausrufe. \texttt{kritisch} nähert sich dem neutralen Register, enthält
 aber keine explizite analytische Einordnung, ein Hinweis darauf, dass
 das Prompt-Design für dieses Profil noch Optimierungspotenzial bietet
-(vgl.\ Abschnitt~8.3). Die Prompt-Architektur bindet bis zu drei Stilreferenzen aus der \texttt{style\_references}-Tabelle als Few-Shot-Beispiele ein; qualitativ zeigt sich, dass die \texttt{ef\_whitelabel}-Instanz dadurch konsistente Formatierungsmuster (Minutenformat, TOOOOR-Konvention) etabliert (vgl. Abb.~\ref{fig:qualitaet-stilprofil}). Ein kontrollierter A/B-Test zur Few-Shot-Wirksamkeit war im Evaluationszeitraum nicht durchführbar.
+(vgl.\ Abschnitt~8.3). Die Prompt-Architektur bindet bis zu drei Stilreferenzen aus der \texttt{style\_references}-Tabelle als Few-Shot-Beispiele ein; qualitativ zeigt sich, dass die \texttt{ef\_whitelabel}-Instanz dadurch konsistente Formatierungsmuster (Minutenformat, TOOOOR-Konvention) etabliert (vgl. Abb.~\ref{fig:qualitaet-stilprofil}). Ein kontrollierter A/B-Test zur Few-Shot-Wirksamkeit war im Evaluationszeitraum nicht durchführbar. Ein solcher Test (mit vs. ohne Stilreferenzen, über 20--30 Spiele) würde die Effektstärke der Prompt-Konditionierung quantifizieren und ist als Folgestudie vorgesehen (vgl. Abschnitt~8.3).
 
 \begin{figure}[H]
 \centering
@@ -521,12 +381,31 @@ euphorisch  & 27 & 3,22 & 2,93 & 3,67 & 3,27 \\
 
 \emph{K = Korrektheit, T = Tonalität, V = Verständlichkeit (je 1--5). Bewerter: Claude Sonnet~4.5 via OpenRouter. Datenbasis: Football API~v3, Bundesliga Saison 2025/26, 30~Spiele.}
 
-Die LLM-as-Judge-Evaluation bestätigt Korrektheit (4,12) und Verständlichkeit (4,35) auf einem mit der Hauptevaluation konsistenten Niveau. Das neutrale Stilprofil erzielt den höchsten Gesamtwert (4,82) und zeigt damit die stärkste Prompt-Kopplung. Das kritische Profil liegt mit 4,32 im soliden Bereich; das euphorische Profil bleibt mit 3,27 deutlich schwächer, insbesondere beim Tonalitätswert (2,93). Dieser Wert steht scheinbar im Widerspruch zum Gesamttonalitätswert der Hauptevaluation (4,1\,/\,5, vgl. Abschnitt~6.3.4); die Diskrepanz erklärt sich durch den Event-Mix: Die Hauptevaluation enthält überwiegend Tor-Events, bei denen das euphorische Profil stark performt (Ø~4,4). Die LLM-as-Judge-Evaluation mit 25~Wechseln und anteilig mehr Karten deckt systematisch diejenigen Event-Typen auf, die in der Hauptevaluation unterrepräsentiert waren. Für die Forschungsfrage — \emph{inwiefern erfüllt das System die journalistischen Qualitätsanforderungen hinsichtlich Tonalität?} — lautet die differenzierte Antwort: Bei Tor- und Karten-Events ist die Anforderung erfüllt; bei Wechsel-Events im euphorischen Profil besteht ein systematischer Verbesserungsbedarf, der durch Event-spezifische Stilreferenzen im Prompt-Design adressierbar ist. Die Ursache liegt im Event-Mix: Wechsel-Einträge (n\,=\,25) erzielen die schwächste Korrektheit (2,92) und den niedrigsten Gesamtwert (3,21), da das Modell taktische Begründungen erfindet, die nicht im übergebenen Kontext stehen. Im euphorischen Profil produziert das Modell bei Wechseln und Gelben Karten wiederholt formelharte Phrasen wie „Na, ob das was wird?'' oder „Hoffentlich bringt er frischen Wind'' ohne authentische Situationsdifferenzierung. Tore (Ø~4,33) und Rote Karten (Ø~4,75) erreichen hingegen konsistent hohe Werte. Diese Befunde replizieren die Fehlerklassen der Hauptevaluation: Die euphorische Tonalitätsschwäche bei ereignisarmen Event-Typen ist die konsistenteste Schwäche des aktuellen Prompt-Designs. Die Methode des LLM-as-Judge ist als Ergänzung zur menschlichen Bewertung etabliert (Zheng et al.~2023), ersetzt diese jedoch nicht vollständig; eine externe Nutzerstudie bleibt als Folgeschritt vorgesehen (Abschnitt~\ref{mittelfristige-erweiterungen}).
+Die LLM-as-Judge-Evaluation bestätigt Korrektheit (4,12) und Verständlichkeit (4,35) auf einem mit der Hauptevaluation konsistenten Niveau. Das neutrale Stilprofil erzielt den höchsten Gesamtwert (4,82) und zeigt damit die stärkste Prompt-Kopplung. Das kritische Profil liegt mit 4,32 im soliden Bereich; das euphorische Profil bleibt mit 3,27 deutlich schwächer, insbesondere beim Tonalitätswert (2,93). Dieser Wert steht scheinbar im Widerspruch zum Gesamttonalitätswert der Hauptevaluation (4,1\,/\,5, vgl. Abschnitt~6.3.4); die Diskrepanz erklärt sich durch den Event-Mix: Die Hauptevaluation enthält überwiegend Tor-Events, bei denen das euphorische Profil stark performt (Ø~4,4). Die LLM-as-Judge-Evaluation mit 25~Wechseln und anteilig mehr Karten deckt systematisch diejenigen Event-Typen auf, die in der Hauptevaluation unterrepräsentiert waren. Für die Forschungsfrage — \emph{inwiefern erfüllt das System die journalistischen Qualitätsanforderungen hinsichtlich Tonalität?} — lautet die differenzierte Antwort: Bei Tor- und Karten-Events ist die Anforderung erfüllt; bei Wechsel-Events im euphorischen Profil besteht ein systematischer Verbesserungsbedarf, der durch Event-spezifische Stilreferenzen im Prompt-Design adressierbar ist. Die Ursache liegt im Event-Mix: Wechsel-Einträge (n\,=\,25) erzielen die schwächste Korrektheit (2,92) und den niedrigsten Gesamtwert (3,21), da das Modell taktische Begründungen erfindet, die nicht im übergebenen Kontext stehen. Im euphorischen Profil produziert das Modell bei Wechseln und Gelben Karten wiederholt formelharte Phrasen wie „Na, ob das was wird?'' oder „Hoffentlich bringt er frischen Wind'' ohne authentische Situationsdifferenzierung. Tore (Ø~4,33) und Rote Karten (Ø~4,75) erreichen hingegen konsistent hohe Werte. Diese Befunde replizieren die Fehlerklassen der Hauptevaluation: Die euphorische Tonalitätsschwäche bei ereignisarmen Event-Typen ist die konsistenteste Schwäche des aktuellen Prompt-Designs. Im Vergleich zur Literatur — Clerwall (2014, S.~529) dokumentiert für KI-generierte Sporttexte Lesbarkeits- und Vertrauenswürdigkeitswerte im Bereich von $\approx$\,3,8--4,2 auf einer 5-Punkte-Skala — liegen die neutralen (4,82) und kritischen (4,32) Profile in einem publikationsreifen Bereich; das euphorische Profil (3,27) fällt hingegen unter diesen Referenzbereich. Die Methode des LLM-as-Judge ist als Ergänzung zur menschlichen Bewertung etabliert (Zheng et al.~2023), ersetzt diese jedoch nicht vollständig; eine externe Nutzerstudie bleibt als Folgeschritt vorgesehen (Abschnitt~\ref{mittelfristige-erweiterungen}).
 
 
 \section{Latenzpotenzial der Betriebsmodi}\label{evaluation-der-betriebsmodi}
 
-Die drei Betriebsmodi unterscheiden sich strukturell in ihrer erreichbaren Publikationslatenz. Auf Basis der gemessenen LLM-Latenzen (Median 859~ms, P95 2\,047~ms, vgl. Abschnitt~6.5.1) und des 15-Sekunden-Polling-Intervalls im Live-Modus (vgl. Abschnitt~6.5.2) ergibt sich für den \texttt{auto}-Modus eine architekturbasierte Time-to-Publish von ≈ 2--17~s (LLM-Generierung: 1--2~s; Frontend-Polling: bis zu 15~s), verglichen mit der manuellen Baseline von 30--120~s (Kapitel~2.1). Diese Schätzung erfasst ausschließlich die systeminternen Latenzen; die n8n-seitige Erkennungslatenz (Polling-Zyklus der Workflows gegen die Football-API sowie HTTP-Overhead bis zum Backend-Aufruf) ist nicht gemessen und ist eine zusätzliche, nicht quantifizierte Komponente der Gesamtlatenz. Da ein kontrolliertes Feldexperiment mit echten Redakteuren nicht durchführbar war, ist dies eine Potenzialabschätzung, keine empirisch gemessene Größe; ein Feldtest bleibt als Folgestudie vorgesehen (vgl. Abschnitt~\ref{mittelfristige-erweiterungen}).
+Die drei Betriebsmodi unterscheiden sich strukturell in ihrer erreichbaren Publikationslatenz. Auf Basis der gemessenen LLM-Latenzen (Median 859~ms, P95 2\,047~ms, vgl. Abschnitt~6.5.1) und des 15-Sekunden-Polling-Intervalls im Live-Modus (vgl. Abschnitt~6.5.2) ergibt sich für den \texttt{auto}-Modus eine architekturbasierte Time-to-Publish von ≈ 2--17~s (LLM-Generierung: 1--2~s; Frontend-Polling: bis zu 15~s), verglichen mit der manuellen Baseline von 30--120~s (Kapitel~2.1). Die folgende Tabelle schlüsselt die Latenzkomponenten auf:
+
+{\def\LTcaptype{none}
+\begin{longtable}[]{@{}llll@{}}
+\toprule\noalign{}
+Komponente & Gemessen? & Typischer Wert & Quelle \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+n8n-Polling (Football-API) & Nein & $\sim$5--10~s & geschätzt \\
+n8n → Backend (HTTP) & Nein & $\sim$100--200~ms & geschätzt \\
+Backend → LLM → Backend & Ja & 859~ms Median & Abschnitt~6.5.1 \\
+Backend → DB & Ja & $<$50~ms & Abschnitt~6.5.1 \\
+Frontend-Polling & Ja & bis 15~s & Abschnitt~6.5.2 \\
+\textbf{Gesamt TTP (auto)} & Nein & $\approx$\,2--17~s & Potenzialschätzung \\
+\end{longtable}
+}
+
+Die n8n-seitige Erkennungslatenz (Polling-Zyklus der Workflows gegen die Football-API sowie HTTP-Overhead bis zum Backend-Aufruf) ist nicht gemessen und ist eine zusätzliche, nicht quantifizierte Komponente der Gesamtlatenz. Da ein kontrolliertes Feldexperiment mit echten Redakteuren nicht durchführbar war, ist dies eine Potenzialabschätzung, keine empirisch gemessene Größe; ein Feldtest bleibt als Folgestudie vorgesehen (vgl. Abschnitt~\ref{mittelfristige-erweiterungen}).
 
 
 \section{Performance und
@@ -590,8 +469,7 @@ Mock & --- & regelbasiert (Templates) & 7 & \textless{} 10 & \textless{}
 Die Latenzmessungen für OpenRouter deuten auf eine rechtsschiefe Antwortzeit-Verteilung hin: Render-Messserie zeigt 44 \%
 der Messungen unter 310 ms (mutmaßlich Gemini-seitige Cache-Treffer) und
 56 \% zwischen 859 ms und 2.128 ms (Kaltgenerierung), Standardabweichung
-695 ms. Die direkte Messserie (lokal, n\,=\,9) liegt enger zusammen (695--1.348
-ms), was auf fehlende Cache-Treffer ohne Render-Warm-up hindeutet. Ab
+695 ms. Die direkte Messserie (lokal, n\,=\,9) liegt enger zusammen (695--1.348 ms), was auf fehlende Cache-Treffer ohne Render-Warm-up hindeutet. Die bimodale Verteilung ist mutmaßlich auf OpenRouter-seitiges Prompt-Caching zurückzuführen; eine tiefere Diagnose würde OpenRouter-spezifische Latenz-Metriken erfordern, die über die Standard-API nicht zugänglich sind. Ab
 Version \texttt{0005} der Datenbank-Migration wird jeder produktive
 KI-Aufruf mit dem Feld \texttt{generation\_ms} persistiert, das die
 Backend-interne Verarbeitungszeit (Request-Eingang bis DB-Write)
@@ -652,7 +530,7 @@ F3 & Drei Stilprofile & \texttt{STYLE\_DESC} im Prompt; per Match konfigurierbar
 F4 & Few-Shot-Prompting mit Stilreferenzen & Bis zu 3 Referenzen aus \texttt{style\_references}; nach Event-Typ gefiltert \\
 F5 & Ticker-Lifecycle (draft → published / rejected) & State-Machine mit publish/reject/retract; 21 API-Tests \\
 F6 & Slash-Command-Parser & 11 Phasen- und 14 Event-Commands (in \texttt{CMD\_MAP}); 45 Unit-Tests \\
-F7 & Mehrsprachige Textgenerierung & \texttt{translate\_text()} mit Temperatur 0,1; Batch-Endpoint; funktional verifiziert (vgl. Abschnitt~6.7) \\
+F7 & Mehrsprachige Textgenerierung & \texttt{translate\_text()} mit Temperatur 0,1; Batch-Endpoint; funktional verifiziert; Übersetzungsqualität qualitativ nicht benchmarkt (vgl. Abschnitt~6.7) \\
 F8 & Idempotenter n8n-Import & UPSERT-Strategien für Events, Spieler, Teams \\
 F9 & Provider-Fallback-Kette & 5 Provider (openrouter → gemini → openai → anthropic → mock) \\
 F10 & Deduplizierung & Prüfung auf bestehenden Eintrag per \texttt{event\_id} vor LLM-Aufruf \\
