@@ -1,6 +1,6 @@
 \chapter{Einleitung}\label{einleitung}
 
-Ein Liveticker ist eine Form der Echtzeit-Berichterstattung, bei der Spielereignisse eines Fußballspiels (Tore, Karten, Auswechslungen, Atmosphäre und Spielanalyse) fortlaufend als kurze Texteinträge publiziert werden. Als digitale Textgattung verbindet er Berichts-, Meinungs- und Unterhaltungselemente und hat sich im Profisport zu einer zentralen Form der synchronen medialen Spielbegleitung entwickelt (vgl. Hauser 2008, S.~1; Beils 2023, S.~56). Wie die Produktion dieser Texte unter zunehmendem Zeitdruck und wachsenden Anforderungen technologisch unterstützt werden kann, untersucht die vorliegende Arbeit.
+Ein Liveticker ist eine Form der Echtzeit-Berichterstattung, bei der Spielereignisse und redaktionelle Einordnungen eines Fußballspiels fortlaufend als kurze Texteinträge publiziert werden. Als digitale Textgattung verbindet er Berichts-, Meinungs- und Unterhaltungselemente und hat sich im Profisport zu einer zentralen Form der synchronen medialen Spielbegleitung entwickelt (vgl. Hauser 2008, S.~1; Bluhm \& Schäfer 2023, S.~24--27). Wie ein hybrides KI-gestütztes Redaktionssystem die Liveticker-Produktion unter Echtzeit- und Qualitätsanforderungen unterstützen kann, ohne publizistische Kontrolle aufzugeben, untersucht die vorliegende Arbeit.
 
 \section{Problemstellung und
 Zielsetzung}\label{problemstellung-und-zielsetzung}
@@ -15,7 +15,7 @@ Liveticker hat sich zur prägenden Darstellungsform der
 Echtzeit-Berichterstattung im Profifußball entwickelt und steht exemplarisch für einen Zielkonflikt zwischen Geschwindigkeit und
 Qualität, der mit rein manuellen Mitteln nicht auflösbar ist.
 
-Daraus lassen sich drei strukturelle Herausforderungen ableiten, die den Einsatz technologischer Lösungen notwendig machen. Erstens zwingt der \textbf{operative Zeitdruck} Redakteure dazu, Spielereignisse in Echtzeit zu beobachten, einzuordnen und in stilistisch kohärente Kurztexte zu überführen, typischerweise innerhalb von 30 bis 120 Sekunden pro Eintrag (vgl. Walter 2020, S.~29; Bluhm \& Schäfer 2023, S.~35). Zweitens stehen Redaktionen vor wachsenden \textbf{Internationalisierungsanforderungen}: Profifußballvereine bedienen zunehmend internationale Fanbases und müssen Inhalte parallel in mehreren Sprachen bereitstellen, ohne ausreichend mehrsprachiges Personal vorzuhalten (vgl. Beils 2023, S.~200). Drittens vollzieht sich ein \textbf{struktureller Wandel} der Vereine zu eigenständigen Medienproduzenten, die Redaktionswerkzeuge mit konfigurierbarem vereinsspezifischem Ton und CI-konformer Gestaltung benötigen (vgl. Beils 2023, S.~155).
+Daraus lassen sich drei strukturelle Herausforderungen ableiten, die den Einsatz technologischer Lösungen notwendig machen. Erstens zwingt der \textbf{operative Zeitdruck} Redakteure dazu, Spielereignisse in Echtzeit zu beobachten, einzuordnen und in stilistisch kohärente Kurztexte zu überführen, typischerweise in Abständen von ein bis drei Minuten (vgl. Walter 2020, S.~29; Bluhm \& Schäfer 2023, S.~27 u.~35). Zweitens stehen Redaktionen vor wachsenden \textbf{Internationalisierungsanforderungen}: Profifußballvereine bedienen zunehmend internationale Fanbases (vgl. Beils 2023, S.~219) und müssen Inhalte parallel in mehreren Sprachen bereitstellen, was in der redaktionellen Praxis ohne entsprechendes mehrsprachiges Personal kaum aufrechtzuerhalten ist. Drittens vollzieht sich ein \textbf{struktureller Wandel} der Vereine zu eigenständigen Medienproduzenten, die Redaktionswerkzeuge mit konfigurierbarem vereinsspezifischem Ton und CI-konformer Gestaltung benötigen (vgl. Beils 2023, S.~8 u.~155).
 
 Kapitel~2 vertieft diese Dimensionen literaturgestützt und leitet daraus konkrete Systemanforderungen ab.
 
@@ -38,7 +38,7 @@ journalistischen Qualitätsanforderungen hinsichtlich Korrektheit,
 Tonalität und Verständlichkeit?
 \end{quote}
 
-Die Arbeit leistet damit einen konstruktiven Design-Science-Beitrag (Hevner et al.~2004): Sie prüft, ob ein System realisierbar ist, das Echtzeitanforderungen, Mehrsprachigkeit und White-Label-Betrieb erfüllt und journalistische Qualitätskriterien einhält. Die Methodik beschreibt Abschnitt~1.3; die
+Die Arbeit leistet damit einen konstruktiven Design-Science-Beitrag (vgl. Hevner et al.~2004): Sie prüft, ob ein System realisierbar ist, das Echtzeitanforderungen, Mehrsprachigkeit und White-Label-Betrieb erfüllt und journalistische Qualitätskriterien einhält. Die Methodik beschreibt Abschnitt~1.3; die
 vollständige Beantwortung folgt in Kapitel~8.
 
 
@@ -46,7 +46,7 @@ vollständige Beantwortung folgt in Kapitel~8.
 \section{Methodisches Vorgehen}\label{methodisches-vorgehen}
 
 Die Arbeit folgt einem konstruktiven Forschungsansatz im Sinne des
-\textbf{Design Science Research} (Hevner et al.~2004): Ein
+\textbf{Design Science Research} (vgl. Hevner et al.~2004): Ein
 softwarebasiertes Artefakt wird als Antwort auf ein identifiziertes
 Praxisproblem entworfen, implementiert und evaluiert. Der
 Erkenntnisgewinn entsteht nicht nur aus der Evaluation, sondern
@@ -57,9 +57,9 @@ Das methodische Vorgehen gliedert sich in fünf Phasen. Die \textbf{Problemanaly
 Die Evaluationsmethodik operationalisiert die Forschungsfrage anhand
 der drei Qualitätsdimensionen: Eine manuelle Bewertung von 40
 KI-generierten Ticker-Einträgen auf den Skalen Korrektheit, Tonalität
-und Verständlichkeit (je 1--5 Punkte) bildet die Hauptevaluation.
+und Verständlichkeit (je 1--5 Punkte) -- abgeleitet aus den literaturgestützten Herausforderungen der Sportberichterstattung (vgl. Bluhm \& Schäfer 2023; Siehr 2016) -- bildet die Hauptevaluation.
 Ergänzend wird eine \textbf{LLM-as-Judge-Evaluation} (N~=~80 Einträge,
-Saison 2025/26) eingesetzt, bei der ein unabhängiges Sprachmodell die
+Saison 2025/26; vgl. Zheng et al.~2023) eingesetzt, bei der ein unabhängiges Sprachmodell die
 generierten Texte nach denselben drei Dimensionen bewertet. Ein
 \textbf{strukturiertes Experteninterview} mit einem professionellen
 Sportredakteur validiert die Systemeignung im redaktionellen
