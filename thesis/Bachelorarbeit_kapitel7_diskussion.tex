@@ -1,6 +1,6 @@
 \chapter{Diskussion}\label{diskussion}
 
-Dieses Kapitel ordnet die Evaluationsergebnisse in den Stand der Technik ein (Kap.~7.1), reflektiert Limitationen methodisch und technisch (Kap.~7.2), diskutiert die Implikationen der Betriebsmodi (Kap.~7.3) sowie der Prompt-Architektur (Kap.~7.4), beleuchtet die Konsequenzen für den Sportjournalismus (Kap.~7.5), ordnet das System ethisch und regulatorisch ein (Kap.~7.6) und synthetisiert die Befunde abschließend (Kap.~7.7).
+Dieses Kapitel ordnet die Evaluationsergebnisse in den Stand der Technik ein (Kap.~7.1), reflektiert Grenzen und Einschränkungen methodisch, technisch und inhaltlich (Kap.~7.2), diskutiert die Implikationen der Betriebsmodi (Kap.~7.3) sowie der Prompt-Architektur (Kap.~7.4), beleuchtet die Konsequenzen für den Sportjournalismus (Kap.~7.5), ordnet das System ethisch und regulatorisch ein (Kap.~7.6) und synthetisiert die Befunde abschließend (Kap.~7.7).
 
 
 \section{Einordnung in den Stand der
@@ -34,15 +34,14 @@ Als \textbf{praktischen Beitrag} greift die White-Label-Architektur mit instanzs
 
 \section{Kritische Reflexion}\label{kritische-reflexion}
 
-Die in Kapitel~6.7 dokumentierten Limitationen werden nachfolgend hinsichtlich ihrer Implikationen eingeordnet.
+Die nachfolgenden Abschnitte ordnen die zentralen Grenzen des Systems hinsichtlich ihrer methodischen, technischen und inhaltlichen Implikationen ein.
 
 \subsection{Methodische Einordnung}\label{methodische-einordnung}
 
 Die zentrale methodische Einschränkung betrifft die Selbstbewertung der
-Textqualität (vgl. Kapitel~6.7, „Keine externe Nutzerstudie''). In frühen DSR-Iterationszyklen, deren Ziel explorative Artefaktvalidierung ist, stellt die Entwickler-Selbstevaluation eine pragmatisch begründete Vorgehensweise dar, die mit zunehmender Artefaktreife durch externe Domänenevaluation zu ergänzen ist (vgl. Hevner et al.~2004, S.~87); sie begrenzt jedoch die externe Validität der qualitativen Ergebnisse. Dieser Einschränkung begegnet die Arbeit auf zwei Ebenen: methodisch durch das LLM-as-Judge-Verfahren (N~=~80, Abschnitt~6.3.6), bei dem ein unabhängiges Modell (\texttt{anthropic/claude-sonnet-4-5}) als Bewerter fungiert und die Selbstreferenzialität systematisch aufbricht; infrastrukturell durch die implementierte Cohen's-Kappa-Metrik als Vorbereitung für eine Folgestudie mit externen Ratern. Da das LLM-as-Judge-Verfahren seinerseits modellspezifische Bewertungstendenzen einbringen kann (vgl. Zheng et al.~2023), ersetzt es die externe Nutzerstudie nicht vollständig, erhöht jedoch die Belastbarkeit der Befunde deutlich über eine reine Selbstbewertung hinaus.
+Textqualität: Eine unabhängige Bewertung durch professionelle Sportredakteure fehlt. In frühen DSR-Iterationszyklen, deren Ziel explorative Artefaktvalidierung ist, stellt die Entwickler-Selbstevaluation eine pragmatisch begründete Vorgehensweise dar, die mit zunehmender Artefaktreife durch externe Domänenevaluation zu ergänzen ist (vgl. Hevner et al.~2004, S.~87); sie begrenzt jedoch die externe Validität der qualitativen Ergebnisse. Dieser Einschränkung begegnet die Arbeit auf zwei Ebenen: methodisch durch das LLM-as-Judge-Verfahren (N~=~80, Abschnitt~6.3.6), bei dem ein unabhängiges Modell (\texttt{anthropic/claude-sonnet-4-5}) als Bewerter fungiert und die Selbstreferenzialität systematisch aufbricht; infrastrukturell durch die implementierte Cohen's-Kappa-Metrik als Vorbereitung für eine Folgestudie mit externen Ratern. Da das LLM-as-Judge-Verfahren seinerseits modellspezifische Bewertungstendenzen einbringen kann (vgl. Zheng et al.~2023), ersetzt es die externe Nutzerstudie nicht vollständig, erhöht jedoch die Belastbarkeit der Befunde deutlich über eine reine Selbstbewertung hinaus.
 
-Die eingeschränkte Stichprobengröße (vgl. Kapitel~6.7, „Eingeschränkte
-Stichprobengröße'') relativiert die Generalisierbarkeit der
+Die eingeschränkte Stichprobengröße (15 Spiele, 40 Events) relativiert die Generalisierbarkeit der
 quantitativen Ergebnisse. Insbesondere Randsituationen (torloses
 Unentschieden, Elfmeterschießen, Spielabbrüche) sind in der
 Datenbasis strukturell unterrepräsentiert. Die
@@ -51,7 +50,7 @@ Erweiterung der Datenbasis ohne Codeänderung.
 
 \subsection{Technische Einordnung}\label{technische-einordnung}
 
-Das Polling-Modell (vgl. Kapitel~6.7, „Polling statt Push'') stellt für
+Das Polling-Modell stellt für
 den Einzelbetrieb keine Einschränkung dar, würde aber bei steigender
 Nutzerzahl (\textgreater50 gleichzeitige Clients) zu einer relevanten
 Serverlast führen. Die bestehende WebSocket-Infrastruktur für den
@@ -60,15 +59,13 @@ Ticker-Datenfluss technisch machbar ist.
 
 Die in Abschnitt~6.5.1 dokumentierte bimodale Latenzverteilung (Cache-Treffer-Cluster unter 300~ms vs.\ Kaltgenerierungs-Cluster von 800--2\,200~ms) hat eine praktische Konsequenz für den Produktivbetrieb: Wird das System längere Zeit nicht genutzt (z.\,B. zwischen zwei Spielen), ist mit erhöhter Erstlatenz beim nächsten LLM-Aufruf zu rechnen, da Render-seitige und Gemini-seitige Caches abgelaufen sein können. Ein periodischer Warm-up-Aufruf vor Spielbeginn (z.\,B. automatisch beim Laden des Spiels) könnte diese Kaltstart-Latenz zuverlässig reduzieren.
 
-Die fehlende Authentifizierung (vgl. Kapitel~6.7, „Keine
-Authentifizierung'') ist im Kontext eines internen Redaktionswerkzeugs
+Die fehlende Authentifizierung ist im Kontext eines internen Redaktionswerkzeugs
 vertretbar, schließt aber einen offenen Mehrbenutzerbetrieb ohne
 Netzwerkabsicherung aus. Die Architektur ist durch die saubere
 Middleware-Schichtung (FastAPI Dependencies) für eine nachträgliche
 JWT-Integration vorbereitet.
 
-Die 17 n8n-Workflows (vgl. Kapitel~6.7, „Keine Tests für
-n8n-Workflows'') stellen den größten nicht automatisiert getesteten
+Die 17 n8n-Workflows stellen den größten nicht automatisiert getesteten
 Systemteil dar. Da sie die gesamte Datenversorgung des Systems
 verantworten, sollten Integrationstests gegen eine Staging-Datenbank den Produktivbetrieb absichern.
 
@@ -77,6 +74,12 @@ Bei einem Multi-Prozess-Deployment (mehrere Uvicorn-Worker hinter einem
 Load-Balancer) würden Medien-Updates nur Clients des jeweiligen Workers
 erreichen; eine Redis-Pub/Sub-Erweiterung wäre die natürliche
 Skalierungsstufe.
+
+Das System wurde nicht über einen längeren Zeitraum im Produktivbetrieb evaluiert. Aspekte wie kumulierte API-Kosten, Rate-Limit-Häufigkeit im Regelbetrieb und eine mögliche Qualitätsdrift der generierten Texte über eine vollständige Spielsaison hinweg sind empirisch nicht erfasst; die Bulk-Evaluationsinfrastruktur ermöglicht jedoch eine systematische Nacherhebung.
+
+Die Übersetzungsfunktion (\texttt{translate\_text()}, vgl.\ Abschnitt~5.1.6) wurde funktional verifiziert, aber nicht qualitativ evaluiert. Eine Beurteilung durch Muttersprachler oder automatische Metriken (z.\,B. BLEU, COMET) wäre Voraussetzung für den Einsatz in nicht-deutschsprachigen Märkten; die implementierte Batch-Übersetzung übersetzt zudem alle publizierten Einträge unabhängig vom \texttt{source}-Feld, sodass auch bereits in der Zielsprache verfasste manuelle Einträge erfasst werden. Eine Filterung nach \texttt{source="ai"} wäre die naheliegende Präzisierung.
+
+In einzelnen n8n-Workflows ist die Saisonlogik auf die Spielzeit 2025/26 begrenzt (vgl.\ Kap.~4.4.2). Für den Betrieb in einer Folgesaison sind entsprechende Parametrisierungen erforderlich; die betroffenen Konfigurationsstellen sind dokumentiert, aber nicht automatisiert anpassbar.
 
 \subsection{Inhaltliche Reflexion}\label{inhaltliche-reflexion}
 
@@ -104,7 +107,7 @@ Wirksamkeit jedoch nur im \texttt{coop}-Modus durch die redaktionelle
 Kontrolle vollständig abgesichert ist. Im \texttt{auto}-Modus verbleibt
 ein Restrisiko fehlerhafter Veröffentlichungen.
 
-Die Ausklammerung der Authentifizierungsschicht (vgl. Kap.~1.4, Kap.~6.7) berührt die Kernergebnisse nicht; die FastAPI-Middleware-Schicht ist für eine nachträgliche JWT-Integration vorbereitet.
+Die Ausklammerung der Authentifizierungsschicht (vgl. Kap.~1.4) berührt die Kernergebnisse nicht; die FastAPI-Middleware-Schicht ist für eine nachträgliche JWT-Integration vorbereitet.
 
 
 \section{Diskussion der Betriebsmodi}\label{diskussion-der-betriebsmodi}

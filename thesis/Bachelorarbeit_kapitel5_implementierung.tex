@@ -568,7 +568,7 @@ inkrementelle Migration ohne blockierende Fehlereskalation zu erlauben.
 \end{Highlighting}
 \end{Shaded}
 
-Nach der Migration erzielt das Projekt 0 TypeScript-Compilerfehler. Die verbleibenden 1,98\% ungetypter Stellen konzentrieren sich auf API-Response-Strukturen externer Dienste (Football-API, OpenRouter), bei denen vollständige Typdefinitionen massiven Duplikationsaufwand bedeuten würden, sowie auf einzelne Legacy-Callbacks in älteren Komponenten. Die detaillierte Auswertung der type-coverage folgt in Abschnitt~6.2.5.
+Nach der Migration erzielt das Projekt 0 TypeScript-Compilerfehler. Die verbleibenden 1,98\% ungetypter Stellen konzentrieren sich auf API-Response-Strukturen externer Dienste (Football-API, OpenRouter), bei denen vollständige Typdefinitionen massiven Duplikationsaufwand bedeuten würden, sowie auf einzelne Legacy-Callbacks in älteren Komponenten. Die Auswertung der type-coverage ist in Abschnitt~6.2 zusammengefasst.
 
 TypeScript macht API-Verträge zwischen Frontend und Backend explizit: Jede Schema-Änderung erzeugt sofort einen Compilerfehler, bevor Laufzeitfehler in der Produktion auftreten — der Wert liegt nicht allein in der 98,02-\%-Kennzahl, sondern im frühen Feedback-System, das im Projektverlauf konkrete Laufzeitfehler vor der Produktion abgefangen hat.
 
@@ -670,7 +670,7 @@ Dieser Workflow sucht Medien-Assets bei ScorePlay für Spieler eines Torereignis
 \section{Qualitätssicherung und
 Tests}\label{qualituxe4tssicherung-und-tests}
 
-Die Qualitätssicherung folgt dem Testpyramiden-Modell nach Cohn (2009); die Schichtverteilung und Coverage-Metriken werden in Abschnitt~6.2 ausgewertet.
+Die Qualitätssicherung folgt dem Testpyramiden-Modell nach Cohn (2009).
 Die Testsuite umfasst 439 Tests (187 Frontend, 246 Backend, 6
 Browser-Smoke-Tests), die alle fehlerfrei bestehen. Das Frontend setzt auf Jest mit
 \texttt{@testing-library/react}; besonders umfangreich ist der
@@ -683,8 +683,7 @@ decken Services und Repositories ab. Sechs Playwright-E2E-Tests
 validieren grundlegende Browser-Interaktionen. Ergänzend enthält
 \texttt{evaluation\_metrics.py} statistische Hilfsfunktionen (Cliff's
 Delta, Bootstrap-KI, Cohen's Kappa u.\,a.), die als Evaluationsinfrastruktur
-für Folgestudien bereitstehen. Die detaillierte Auswertung der Testmetriken und
-Coverage-Verteilungen folgt in Abschnitt~6.2.
+für Folgestudien bereitstehen. Die Kernkennzahlen der Testmetriken und Coverage sind in Abschnitt~6.2 zusammengefasst.
 
 
 \section{Deployment}\label{deployment}

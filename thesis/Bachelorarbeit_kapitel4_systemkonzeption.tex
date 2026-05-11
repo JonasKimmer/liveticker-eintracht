@@ -37,9 +37,9 @@ Die folgende Tabelle fasst die Trigger-Muster nach Datenquelle zusammen:
 
 {\def\LTcaptype{none}
 \begin{longtable}[]{@{}
-  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.30}}
-  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.35}}
-  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.35}}@{}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.28}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.36}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.36}}@{}}
 \toprule\noalign{}
 Datenquelle & Trigger-Muster & Latenz-Anforderung \\
 \midrule\noalign{}
@@ -217,7 +217,7 @@ Diese Trennung reduziert Kopplung und erlaubt es, einzelne Teilprozesse unabhän
 \subsection{Grenzen und projektspezifische
 Besonderheiten}\label{workflow-grenzen-und-projektspezifische-besonderheiten}
 
-Die Workflow-Landschaft enthält pragmatische Projektentscheidungen, die für einen produktiven Folgebetrieb weiterzuentwickeln wären. In einzelnen Flows ist die Saisonlogik auf die Saison 2025/26 begrenzt; nicht alle Datenpfade sind eventgetrieben, sondern werden durch Polling und bedarfsgesteuerte Trigger ergänzt. Einige LLM- und Medienprozesse enthalten partnervereinsspezifische Logik, die für eine vollständig generalisierte White-Label-Fähigkeit noch zu abstrahieren wäre (vgl. Kap.~6.7).
+Die Workflow-Landschaft enthält pragmatische Projektentscheidungen, die für einen produktiven Folgebetrieb weiterzuentwickeln wären. In einzelnen Flows ist die Saisonlogik auf die Saison 2025/26 begrenzt; nicht alle Datenpfade sind eventgetrieben, sondern werden durch Polling und bedarfsgesteuerte Trigger ergänzt. Einige LLM- und Medienprozesse enthalten partnervereinsspezifische Logik, die für eine vollständig generalisierte White-Label-Fähigkeit noch zu abstrahieren wäre (vgl. Kap.~7.2.2).
 
 
 
@@ -234,7 +234,7 @@ Das System setzt primär \textbf{OpenRouter} als LLM-Gateway ein. OpenRouter fun
 Als Standardmodell im Deployment wurde \textbf{Gemini 2.0 Flash Lite} über OpenRouter gewählt. Die Entscheidung stützt sich auf drei Faktoren:
 
 \begin{itemize}\tightlist
-\item \textbf{Aufgabencharakteristik:} Liveticker-Texte sind kurz und faktenbasiert; kompakte Modelle erzielen vergleichbare Qualität bei deutlich niedrigerer Latenz, was die gemessene Medianlatenz von 859~ms (vgl. Abschnitt~6.5.1) bestätigt.
+\item \textbf{Aufgabencharakteristik:} Liveticker-Texte sind kurz und faktenbasiert; kompakte Modelle erzielen vergleichbare Qualität bei deutlich niedrigerer Latenz als große Flagship-Modelle.
 \item \textbf{Kosteneffizienz:} Das Modell zählt zu den kostengünstigsten kommerziell verfügbaren Optionen und macht den Dauerbetrieb über eine Saison für ressourcenbegrenzte Redaktionen wirtschaftlich darstellbar (vgl. Kap.~2.1).
 \item \textbf{Kontextfenster:} Das Modell unterstützt bis zu 1~Million~Token, sodass umfangreiche Pre-Match-Kontextinformationen und mehrere Few-Shot-Referenzen ohne Abschneidung eingebunden werden können.
 \end{itemize}
@@ -267,7 +267,7 @@ und inhaltlichen Einschränkungen (vgl. Abb.~\ref{fig:prompt-aufbau}).
 \label{fig:prompt-aufbau}
 \end{figure}
 
-Der Few-Shot-Block wird aus manuell kuratierten Original-Tickertexten des Partnervereins gespeist. Pro LLM-Aufruf werden bis zu drei Referenzen zufällig aus dem nach Ereignistyp, Instanz und optional Liga gefilterten Pool selektiert; die Randomisierung verhindert die monotone Reproduktion identischer Formulierungen bei gleichartigen Events, während der stilistische Korridor gewahrt bleibt. Für Pre-Match-Typen enthält der Prompt zusätzliche Restriktionen, um Halluzinationen von Live-Szenen zu vermeiden und die Ausgabe auf Vorschau- und Analyseinhalte zu begrenzen. Die konkreten Inferenzparameter sind in Abschnitt~5.1.5 dokumentiert.
+Der Few-Shot-Block wird aus manuell kuratierten Original-Tickertexten des Partnervereins gespeist. Pro LLM-Aufruf werden bis zu drei Referenzen zufällig aus dem nach Ereignistyp, Instanz und optional Liga gefilterten Pool selektiert. Die Begrenzung auf drei ergibt sich aus der Abwägung zwischen stilistischer Konditionierungsstärke und Promptlänge: Mehr Referenzen erhöhen den Kontext ohne nachweisbaren Qualitätsgewinn bei kurzen Ticker-Texten; die Randomisierung verhindert zudem die monotone Reproduktion identischer Formulierungen bei gleichartigen Events, während der stilistische Korridor gewahrt bleibt. Für Pre-Match-Typen enthält der Prompt zusätzliche Restriktionen, um Halluzinationen von Live-Szenen zu vermeiden und die Ausgabe auf Vorschau- und Analyseinhalte zu begrenzen. Die konkreten Inferenzparameter sind in Abschnitt~5.1.5 dokumentiert.
 
 
 
