@@ -182,7 +182,7 @@ Endpunkt & Funktion \\
 \end{longtable}
 }
 
-Die API umfasst insgesamt über 70 Routen in vier funktionalen Bereichen: Stammdaten, Ticker-Lifecycle, Medien/Clips und Spielkontext. Die vollständige Endpunktliste ist über die automatisch generierte OpenAPI-Dokumentation unter \texttt{/api/docs} erreichbar.
+Die API umfasst insgesamt 71 Routen (27 GET, 22 POST, 9 DELETE, 8 PATCH, 5 PUT) in vier funktionalen Bereichen: Stammdaten, Ticker-Lifecycle, Medien/Clips und Spielkontext. Die vollständige Endpunktliste ist über die automatisch generierte OpenAPI-Dokumentation unter \texttt{/api/docs} erreichbar.
 
 
 \subsection{Ticker-Service:
@@ -250,13 +250,12 @@ Dispatch-Dictionary aufruft:
 
 Das Dispatch-Pattern erlaubt das einfache Hinzufügen neuer Provider:
 Implementierung einer Methode \texttt{\_generate\_X\_text()} und ein
-Eintrag im Dictionary. Die Auswahl des aktiven Providers erfolgt zur Startzeit durch \texttt{\_build\_singleton()}, das das Dictionary \texttt{\_PROVIDER\_KEY\_MAP} (openrouter → gemini → openai → anthropic) iteriert und den ersten Eintrag mit gesetztem API-Key aktiviert. Die Insertion-Order des Dictionarys bestimmt damit die Priorität in der Konfigurationskette.
+Eintrag im Dictionary. Die Auswahl des aktiven Providers erfolgt zur Startzeit durch \texttt{\_build\_singleton()}, das das Dictionary \texttt{\_PROVIDER\_KEY\_MAP} (vgl.~Kap.~4.5.1) iteriert und den ersten Eintrag mit gesetztem API-Key aktiviert; die Insertion-Order bestimmt die Priorität in der Konfigurationskette.
 
 Vorab normalisiert eine \texttt{EVENT\_TYPE\_MAP} externe API-Strings auf einheitliche interne Bezeichner (\texttt{goal}, \texttt{card} etc.); unbekannte Typen fallen auf \texttt{"comment"} zurück. Der Prompt wird über vier modulare Hilfsmethoden (\texttt{\_build\_event\_lines}, \texttt{\_build\_context\_str}, \texttt{\_build\_few\_shot\_block}, \texttt{\_build\_prematch\_parts}) zusammengesetzt, die fehlende Parameter auslassen, statt den Prompt zu invalidieren; der Regelblock (\texttt{\#\#\# REGELN}) ist direkt in \texttt{\_build\_prompt} eingebettet (vgl.\ Abschnitt~4.5.2).
 
 LLM-Parameter: \texttt{temperature=0.5} für stilistische Textvariation,
-\texttt{max\_tokens} aus \texttt{LLM\_MAX\_TOKENS} (konfigurierbar). Alle Prompts werden als einzelne User-Nachricht übermittelt, ohne separaten System-Prompt-Slot (\texttt{[\{"role":\ "user",\ "content":\ prompt\}]}). Diese Entscheidung vereinheitlicht das Format über alle Provider hinweg, da die Interpretation eines System-Prompt-Feldes providerabhängig variiert; der Rollenkontext (Journalisten-Anweisung, Stilprofil) ist stattdessen in den Prompttext selbst eingebettet. Bei
-Rate-Limit-Fehlern wiederholt das System den Aufruf bis zu \texttt{LLM\_RETRY\_ATTEMPTS} (3) Mal mit linearem Backoff (\texttt{30\ s\ /\ 60\ s}); bei sonstigen transienten Fehlern greift exponentielles Backoff (\texttt{1\ s\ /\ 2\ s}).
+\texttt{max\_tokens} aus \texttt{LLM\_MAX\_TOKENS} (konfigurierbar). Alle Prompts werden als einzelne User-Nachricht übermittelt, ohne separaten System-Prompt-Slot (\texttt{[\{"role":\ "user",\ "content":\ prompt\}]}). Diese Entscheidung vereinheitlicht das Format über alle Provider hinweg, da die Interpretation eines System-Prompt-Feldes providerabhängig variiert; der Rollenkontext (Journalisten-Anweisung, Stilprofil) ist stattdessen in den Prompttext eingebettet. Bei Rate-Limit-Fehlern wiederholt das System den Aufruf bis zu \texttt{LLM\_RETRY\_ATTEMPTS} (3) Mal mit linearem Backoff (\texttt{30\ s\ /\ 60\ s}). Bei sonstigen transienten Fehlern greift exponentielles Backoff (\texttt{1\ s\ /\ 2\ s}).
 
 
 \section{KI-Generierungspipeline}\label{ki-generierungspipeline}
@@ -318,49 +317,7 @@ gespeicherten \texttt{ticker\_mode}. Das Backend selbst ist
 modus-agnostisch: Es erhält einen Booleschen Wert und setzt den Status
 entsprechend.
 
-Die drei Modi übersetzen sich auf Implementierungsebene in drei
-verschiedene Pfade:
-
-{\def\LTcaptype{none} % do not increment counter
-\begin{longtable}[]{@{}
-  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.1270}}
-  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.2222}}
-  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.1746}}
-  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.4762}}@{}}
-\toprule\noalign{}
-\begin{minipage}[b]{\linewidth}\raggedright
-Modus
-\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
-\texttt{auto\_publish}
-\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
-Ergebnis
-\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
-Redakteurs-Eingriff
-\end{minipage} \\
-\midrule\noalign{}
-\endhead
-\bottomrule\noalign{}
-\endlastfoot
-\texttt{auto} & \texttt{True} & \texttt{published} & --- \\
-\texttt{coop} & \texttt{False} & \texttt{draft} & TAB (accept) / ESC
-(reject) \\
-\texttt{manual} & --- & --- & Slash-Command → \texttt{POST\ /manual} \\
-\end{longtable}
-}
-
-Im \texttt{manual}-Modus wird der Generierungs-Endpunkt gar nicht
-aufgerufen: n8n importiert zwar weiterhin Ereignisse, triggert aber
-keinen LLM-Aufruf. Ticker-Einträge entstehen ausschließlich über den
-\texttt{POST\ /api/v1/ticker/manual}-Endpunkt, den das Frontend aus dem
-Slash-Command-Parser heraus bedient. Der Eintrag wird dort direkt mit
-\texttt{status=published} angelegt, da die Redakteurin den Text selbst
-verfasst hat und keine weitere Freigabe erforderlich ist.
-
-Im \texttt{coop}-Modus liegt die gesamte UX-Last auf der Draft-Queue:
-Das Frontend zeigt neue \texttt{draft}-Einträge mit
-\texttt{TAB}/\texttt{ESC}-Shortcuts an (vgl. Abschnitt~5.3.5). Dieses Design stellt sicher, dass keine KI-generierten Texte
-ohne menschliche Prüfung publiziert werden, eine Entscheidung, die
-direkt aus dem journalistischen Qualitätsanspruch in Kapitel~2.1 folgt.
+Implementierungsseitig unterscheiden sich die drei Modi in zwei konkreten Details (konzeptionelle Beschreibung vgl. Kap.~4.3.3): Im \texttt{manual}-Modus triggert n8n keinen LLM-Aufruf; Ticker-Einträge entstehen ausschließlich über \texttt{POST /api/v1/ticker/manual} mit sofortigem \texttt{status=published}. Im \texttt{coop}-Modus zeigt das Frontend \texttt{draft}-Einträge mit \texttt{TAB}/\texttt{ESC}-Shortcuts (vgl. Abschnitt~5.3.5), sodass kein KI-Text ohne menschliche Prüfung publiziert wird.
 
 Das konzeptionelle Statusmodell (\texttt{draft} → \texttt{published} /
 \texttt{rejected}, Undo-Übergang \texttt{published\ →\ draft}) ist
@@ -493,7 +450,7 @@ Command & Ausgabe & Phase & Icon \\
 \end{longtable}
 }
 
-\item \textbf{Event-Commands} (14 Einträge in \texttt{CMD\_MAP}, 9 Typen nach Expansion) erzeugen strukturierte Texte mit Validierungshinweisen:
+\item \textbf{Event-Commands} (14 Einträge in \texttt{CMD\_MAP}, die sich durch Alias-Auflösung auf 9 semantische Typen reduzieren) erzeugen strukturierte Texte mit Validierungshinweisen:
 
 \begin{verbatim}
 /g Mustermann EF  → "TOR — Mustermann (EF)"          + icon [Tor]
@@ -582,7 +539,7 @@ inkrementelle Migration ohne blockierende Fehlereskalation zu erlauben.
 Nach der Migration erzielt das Projekt 0 TypeScript-Compilerfehler; die detaillierte
 Auswertung der type-coverage folgt in Abschnitt~6.2.5.
 
-Der Mehrwert der TypeScript-Migration liegt nicht allein in der Kennzahl. Typsichere Interfaces machen API-Verträge zwischen Frontend-Komponenten und Backend-Endpunkten explizit: Jede Änderung am Response-Schema des Backends erzeugt sofort einen Compilerfehler im Frontend, bevor ein Laufzeitfehler in der Produktion auftreten kann. IDE-gestütztes Refactoring (Symbol-Rename, Find All References) skaliert damit auf die gesamte Frontend-Codebasis, nicht nur auf einzelne Dateien. Für Onboarding und Wartbarkeit bedeutet das: Neue Entwickler erhalten durch den Typen-Checker ein unmittelbares Feedback-System, das die mentale Last der Kontextrekonstruktion reduziert.
+TypeScript macht API-Verträge zwischen Frontend und Backend explizit: Jede Schema-Änderung erzeugt sofort einen Compilerfehler, bevor Laufzeitfehler in der Produktion auftreten — der Wert liegt nicht allein in der 98,02-\%-Kennzahl, sondern im frühen Feedback-System, das im Projektverlauf konkrete Laufzeitfehler vor der Produktion abgefangen hat.
 
 \section{n8n
 Workflow-Implementierung}\label{n8n-workflow-implementierung}
@@ -613,39 +570,35 @@ Statusupdates, aktualisiert \texttt{minute}, \texttt{match\_phase} und
 \texttt{match\_state} und triggert bei Phasenwechsel automatisch den
 \texttt{match-status}-Webhook.
 
-Tabelle~\ref{tab:n8n-workflows} gibt einen vollständigen Überblick aller 17 Workflows; alle sind Webhook-getriggert und liegen als versionierte JSON-Exporte unter \texttt{n8n/} vor.
+Die folgende Tabelle listet alle 17 Workflows mit ihren Dateinamen; die funktionale Beschreibung der Workflow-Klassen findet sich in Kap.~4.4.1.
 
-\begin{longtable}[]{@{}llp{6.5cm}@{}}
-\caption{Vollständiges Inventar der 17 n8n-Workflows (alle Webhook-getriggert).}
-\label{tab:n8n-workflows} \\
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}ll@{}}
 \toprule\noalign{}
-Nr. & Dateiname & Zweck \\
-\midrule\noalign{}
-\endfirsthead
-\toprule\noalign{}
-Nr. & Dateiname & Zweck \\
+Nr. & Dateiname \\
 \midrule\noalign{}
 \endhead
 \bottomrule\noalign{}
 \endlastfoot
-01  & \texttt{01\_import\_countries} & Importiert Länderdaten aus der Football-API (UPSERT) \\
-02  & \texttt{02\_import\_teams\_by\_country} & Importiert Teams je Land und Wettbewerb (UPSERT) \\
-03  & \texttt{03\_import\_competitions\_and\_matches} & UPSERT Wettbewerbe, Spielplandaten und Teamzuordnungen \\
-04a & \texttt{04\_import\_matches} & UPSERT Fixtures inkl.\ Team- und Wettbewerbsauflösung \\
-04b & \texttt{04\_import\_lineups} & Löscht alte Aufstellungen und reimportiert aktuelle Daten \\
-05  & \texttt{05\_import\_match\_statistics} & UPSERT Spielstatistiken (Ballbesitz, Schüsse) \\
-06  & \texttt{06\_import\_player\_statistics} & Löscht und reimportiert Spielerstatistiken \\
-07  & \texttt{07\_import\_prematch} & Aggregiert Pre-Match-Kontext aus fünf API-Quellen als synthetische Events \\
-08  & \texttt{08\_scoreplay\_media\_workflow} & Sucht Spielerfotos bei ScorePlay und sendet Medien-URLs ans Backend \\
-09  & \texttt{09\_events\_llm\_workflow} & UPSERT Live-Events und triggert LLM-Generierung im Backend \\
-10  & \texttt{10\_Twitter} & Importiert EF Twitter/X-Posts via RSS und cached Thumbnails \\
-11  & \texttt{11\_youtube} & Importiert EF YouTube-Clips aus dem Vereinskanal \\
-12  & \texttt{12\_insta} & Importiert EF Instagram-Beiträge via RSS \\
-13  & \texttt{13\_Halftime\_aftertime} & Generiert Halbzeit-/Abpfiff-Zusammenfassung direkt via OpenRouter \\
-14  & \texttt{14\_Game\_ANpfiff\_ABpfiff} & Verarbeitet Phasenübergänge, aktualisiert Spielstatus und triggert LLM \\
-15  & \texttt{15\_live\_stats\_monitor} & Erkennt Statistikänderungen und generiert direkt via OpenRouter \\
-16  & \texttt{16\_aktuelle\_minute\_livespiel} & Aktualisiert Spielminute/-phase; triggert bei Phasenwechsel Workflow~14 \\
+01  & \texttt{01\_import\_countries} \\
+02  & \texttt{02\_import\_teams\_by\_country} \\
+03  & \texttt{03\_import\_competitions\_and\_matches} \\
+04a & \texttt{04\_import\_matches} \\
+04b & \texttt{04\_import\_lineups} \\
+05  & \texttt{05\_import\_match\_statistics} \\
+06  & \texttt{06\_import\_player\_statistics} \\
+07  & \texttt{07\_import\_prematch} \\
+08  & \texttt{08\_scoreplay\_media\_workflow} \\
+09  & \texttt{09\_events\_llm\_workflow} \\
+10  & \texttt{10\_Twitter} \\
+11  & \texttt{11\_youtube} \\
+12  & \texttt{12\_insta} \\
+13  & \texttt{13\_Halftime\_aftertime} \\
+14  & \texttt{14\_Game\_ANpfiff\_ABpfiff} \\
+15  & \texttt{15\_live\_stats\_monitor} \\
+16  & \texttt{16\_aktuelle\_minute\_livespiel} \\
 \end{longtable}
+}
 
 Die folgenden Abschnitte beschreiben die Implementierungsdetails der systemkritischen Workflows.
 
@@ -709,12 +662,12 @@ Das System ist auf Render.com (Region: Oregon, US West)
 deployt. Das FastAPI-Backend läuft als Docker-Container (Free-Tier Web
 Service); das React-Frontend wird als statische Seite über das
 Render-CDN ausgeliefert. Die PostgreSQL-15-Datenbank wird als
-Managed-Dienst über \textbf{Supabase} betrieben und ist über eine
+Managed-Dienst über Supabase betrieben und ist über eine
 externe Connection-URL eingebunden. Alle drei Dienste werden aus demselben
 Repository-Branch (\texttt{deploy/render-v2}) deployt; Konfiguration
 und Zugangsdaten werden als Umgebungsvariablen injiziert. Die n8n-Instanz
 läuft lokal und ist über einen \texttt{ngrok}-Tunnel für externe
-Webhooks erreichbar. Dieses Setup ist für den Evaluationsbetrieb ausreichend, bringt aber drei Einschränkungen mit sich: Erstens ist die Verfügbarkeit an die Laufzeit des lokalen Rechners gebunden; bei Systemabschalten sind keine eingehenden Webhooks möglich. Zweitens wird bei jedem ngrok-Neustart eine neue öffentliche URL generiert, was eine manuelle Aktualisierung der Webhook-Konfiguration in der Football-API erfordert. Drittens bietet ngrok keine Persistenz-Garantien für Livetraffic. Für einen Produktivbetrieb wäre eine dedizierte, persistente n8n-Instanz (etwa als Cloud-Deployment auf Railway oder als selbst-gehostete Instanz) zwingend erforderlich.
+Webhooks erreichbar. Dieses Setup ist für den Evaluationsbetrieb ausreichend, bringt aber drei Einschränkungen mit sich: Erstens ist die Verfügbarkeit an die Laufzeit des lokalen Rechners gebunden; beim Systemabschalten sind keine eingehenden Webhooks möglich. Zweitens wird bei jedem ngrok-Neustart eine neue öffentliche URL generiert, was eine manuelle Aktualisierung der Webhook-Konfiguration in der Football-API erfordert. Drittens bietet ngrok keine Persistenz-Garantien für Live-Traffic. Für einen Produktivbetrieb wäre eine dedizierte, persistente n8n-Instanz (etwa als Cloud-Deployment auf Railway oder als selbst-gehostete Instanz) zwingend erforderlich.
 
 Die vier Komponenten bilden die drei Systemschichten aus Abschnitt~4.1:
 n8n die Datenbeschaffung, Backend und Datenbank die Anwendungs- und

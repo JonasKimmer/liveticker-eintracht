@@ -81,6 +81,8 @@ White-Label-Steuerung}\label{partner-team-konzept-und-white-label-steuerung}
 
 Das System unterscheidet zwischen dem \textbf{Partner-Team} (dem konfigurierten Heimverein) und den jeweiligen Gegnern. Das System erkennt das Partner-Team über ein konfigurierbares Keyword, das in n8n-Workflows und Frontend gegen den Teamnamen abgeglichen wird. Partner-Team-Spiele verwenden den \texttt{ef\_whitelabel}-Instanzpfad mit euphorischem Stil. Dabei werden vereinsspezifische UI-Bereiche eingeblendet: Social-Media-Panels für YouTube, X und Instagram sowie die ScorePlay-Mediensuche für Bildmaterial. Alle anderen Spiele durchlaufen den \texttt{generic}-Pfad mit neutralem Stil. Die Implementierungsdetails sind in Kapitel~5 dokumentiert.
 
+Für die Einrichtung einer neuen Instanz (z.\,B. für einen anderen Bundesligaverein) sind vier Konfigurationsschritte erforderlich: (1) Vereinsname, Team-Keyword, Farben und API-Endpunkte in der Frontend-Konfiguration anpassen. (2) Den Instanzbezeichner in der Backend-Konfiguration setzen. (3) In der \texttt{style\_references}-Tabelle Few-Shot-Beispieltexte mit dem neuen Instanzbezeichner anlegen, damit die instanzspezifische Stilkonditionierung greift. (4) Im n8n-Workflow~09 den SQL-Knoten zur Instanzbestimmung auf das neue Team-Keyword anpassen.
+
 
 
 \section{Backend-Konzeption}\label{backend-konzeption}
@@ -108,14 +110,7 @@ Mehraufwand einer vollasynchronen Datenbankanbindung rechtfertigen;
 Datenbankzugriffe werden synchron ausgeführt, was beim vorliegenden
 Nutzungsumfang keinen messbaren Nachteil darstellt.
 
-Die interne Struktur folgt einer klaren Trennung aus API-Routern,
-Repository-Schicht (vgl. Kap.~3.6) sowie SQLAlchemy-ORM-Modellen
-und Pydantic-Schemas. Die Router bilden die
-HTTP-Schnittstelle und übernehmen Validierung, Statuscodes sowie die
-Orchestrierung einzelner Use Cases. Datenbankzugriffe sind in
-dedizierten Repositories gekapselt. Dadurch bleibt die API-Schicht frei
-von SQL-Details, während Persistenzlogik zentral gebündelt und
-wiederverwendbar gehalten wird.
+Die interne Struktur folgt dem \textbf{Repository Pattern} (Fowler 2002, S.~322), das den Datenzugriff kapselt und die Service-Schicht von der Persistenzschicht entkoppelt — eine Voraussetzung für transaktionale Testbarkeit. Konkret gliedert sich die Schicht\-struktur in API-Router, Repository-Schicht, ORM-Modelle und Pydantic-Schemas. Die Router bilden die HTTP-Schnittstelle und übernehmen Validierung, Statuscodes sowie die Orchestrierung einzelner Use Cases. Datenbankzugriffe sind in dedizierten Repositories gekapselt. Dadurch bleibt die API-Schicht frei von SQL-Details, während Persistenzlogik zentral gebündelt und wiederverwendbar gehalten wird.
 
 Für LLM-nahe Abläufe wird ergänzend eine Service-Schicht genutzt
 (insbesondere \texttt{ticker\_service} und \texttt{llm\_service}). Die
@@ -376,7 +371,7 @@ Anpfiff/Abpfiff & Modus- und Event-gesteuert \\
 }
 
 Diese Trennung reduziert Kopplung, erleichtert Fehlersuche und erlaubt
-es, einzelne Teilprozesse unabhängig anzupassen. Die konkreten
+es, einzelne Teilprozesse unabhängig anzupassen. \emph{Hinweis: Workflow~04 existiert als zwei parallele Dateien (\texttt{04\_import\_matches} und \texttt{04\_import\_lineups}), was die Überlappung der Nummerierung in Gruppe~A und~B erklärt; vgl.~Kap.~5.4.} Die konkreten
 Workflow-Dateinamen und Implementierungsdetails sind in Kapitel~5.4
 dokumentiert.
 
@@ -395,7 +390,7 @@ modularen, nachvollziehbaren und erweiterbaren Ablauf zusammenführt.
 
 \section{KI-Komponente}\label{ki-komponente}
 
-Die KI-Komponente bildet das Herzstück des Systems: Sie übersetzt
+Die KI-Komponente ist die zentrale Verarbeitungsstufe des Systems: Sie übersetzt
 strukturierte Spielereignisse in natürlichsprachliche Ticker-Texte und
 verbindet die LLM-Pipeline mit dem Betriebsmodus, der
 Stilkonfiguration und dem Mehrsprachigkeitsparameter. Dieser Abschnitt
@@ -417,14 +412,14 @@ Das vorliegende System setzt primär \textbf{OpenRouter} als LLM-Gateway
 ein. OpenRouter fungiert als einheitliche API-Schnittstelle, über die mit
 einem einzelnen API-Schlüssel verschiedene Sprachmodelle unterschiedlicher
 Anbieter angesprochen werden können. Der Wechsel zwischen Modellen erfordert
-lediglich eine Änderung der Umgebungsvariable \texttt{OPENROUTER\_MODEL};
+lediglich eine Änderung einer Konfigurationsvariablen (vgl.~Kap.~5.6);
 verschiedene Modelle können auf demselben Prompt evaluiert werden
 (vgl. Abschnitt~6.3.2); und das jeweils kostengünstigste Modell lässt sich
 ohne Codeanpassung wählen, ein entscheidender Faktor für
 Vereinsredaktionen mit begrenztem Budget.
 
 Als Standardmodell im Deployment wurde Gemini 2.0 Flash Lite
-(Modell-ID \texttt{google/gemini-2.0-flash-lite-001}) über OpenRouter gewählt. Die Entscheidung für dieses Modell stützt sich auf drei Faktoren: \textbf{Aufgabencharakteristik} (vgl. Kap.~3.1): Liveticker-Texte sind kurz und faktenbasiert, eine Aufgabe, für die kompakte Modelle eine vergleichbare Qualität bei deutlich niedrigerer Latenz erzielen, was durch die gemessene Medianlatenz von 859~ms (vgl. Abschnitt~6.5.1) empirisch bestätigt wird. \textbf{Kosteneffizienz}: Gemini 2.0 Flash Lite zählt zu den kostengünstigsten kommerziell verfügbaren Modellen, was den Dauerbetrieb über eine Saison für ressourcenbegrenzte Vereinsredaktionen wirtschaftlich darstellbar macht (vgl. Kap.~2.1). Bei durchschnittlich 30~Einträgen pro Spiel und einem Prompt-Umfang von rund 1.000~Token je Eintrag liegt der geschätzte Inferenzkostenaufwand unter 0{,}01~USD pro Spiel (Listenpreise OpenRouter, Stand Deployment-Zeitpunkt; Preise variabel). Bei vollständiger Saison-Abdeckung (60~Pflichtspiele) ergibt sich damit ein Gesamtaufwand von unter 1~USD für die reine Textgenerierung. \textbf{Kontextfenster}: Das Modell unterstützt ein Kontextfenster von bis zu 1~Million~Token, sodass umfangreiche Pre-Match-Kontextinformationen (sieben Context-Builder, vgl. Kap.~4.5.2) und mehrere Few-Shot-Referenzen ohne Abschneidung eingebunden werden können.
+(Modell-ID \texttt{google/gemini-2.0-flash-lite-001}) über OpenRouter gewählt. Die Entscheidung für dieses Modell stützt sich auf drei Faktoren: \textbf{Aufgabencharakteristik} (vgl. Kap.~3.1): Liveticker-Texte sind kurz und faktenbasiert, eine Aufgabe, für die kompakte Modelle eine vergleichbare Qualität bei deutlich niedrigerer Latenz erzielen, was durch die gemessene Medianlatenz von 859~ms (vgl. Abschnitt~6.5.1) empirisch bestätigt wird. \textbf{Kosteneffizienz}: Gemini 2.0 Flash Lite zählt zu den kostengünstigsten kommerziell verfügbaren Modellen, was den Dauerbetrieb über eine Saison für ressourcenbegrenzte Vereinsredaktionen wirtschaftlich darstellbar macht (vgl. Kap.~2.1); die konkreten Kosten pro Spiel sind in Abschnitt~5.6 dokumentiert. \textbf{Kontextfenster}: Das Modell unterstützt ein Kontextfenster von bis zu 1~Million~Token, sodass umfangreiche Pre-Match-Kontextinformationen (sieben Context-Builder, vgl. Kap.~4.5.2) und mehrere Few-Shot-Referenzen ohne Abschneidung eingebunden werden können.
 
 Ergänzend implementiert das Backend eine \textbf{Fallback-Kette} für den
 Fall, dass ein Provider nicht konfiguriert ist. Das System prüft zur
@@ -469,11 +464,8 @@ und inhaltlichen Einschränkungen (vgl. Abb.~\ref{fig:prompt-aufbau}).
 
 Der Few-Shot-Block wird aus der Tabelle \texttt{style\_references}
 gespeist, die manuell kuratierte Original-Tickertexte von Eintracht
-Frankfurt enthält. Pro LLM-Aufruf werden bis zu drei zufällige
-Referenzen selektiert, gefiltert nach \texttt{event\_type},
-\texttt{instance} und optional \texttt{league}. Durch die Randomisierung
-wird eine monotone Reproduktion vermieden, während der stilistische
-Korridor gewahrt bleibt. Für Pre-Match-Typen enthält der Prompt
+Frankfurt enthält. Pro LLM-Aufruf werden bis zu drei Referenzen zufällig aus dem nach \texttt{event\_type},
+\texttt{instance} und optional \texttt{league} gefilterten Pool selektiert; die Randomisierung verhindert die monotone Reproduktion identischer Formulierungen bei gleichartigen Events, während der stilistische Korridor gewahrt bleibt. Für Pre-Match-Typen enthält der Prompt
 zusätzliche harte Restriktionen, um Live-Szenen-Halluzinationen zu
 vermeiden und die Ausgabe auf Vorschau- und Analyseinhalte zu begrenzen.
 
@@ -497,7 +489,7 @@ Hooks}\label{architekturprinzipien}
 
 Das Frontend ist als React-Client mit TypeScript und klarer Trennung zwischen UI-Komponenten, datenbezogenen Hooks und API-Zugriffsschicht umgesetzt. Der zentrale Anwendungszustand wird überwiegend lokal bzw. feature-nah gehalten; gemeinsamer Zustand für tief verschachtelte Komponenten wird über drei dedizierte Contexts bereitgestellt (\texttt{TickerModeContext}, \texttt{TickerDataContext}, \texttt{TickerActionsContext}), um Prop-Drilling zu vermeiden und Re-Renders zu kontrollieren.
 
-Die White-Label-Fähigkeit ist über eine Konfigurationsschicht (\texttt{config/whitelabel.ts}) realisiert (u.\,a. Farben, Team-Keyword, API-Base-URLs). Die Oberfläche unterstützt alle drei Betriebsmodi (\texttt{auto}, \texttt{coop}, \texttt{manual}) inklusive Laufzeitumschaltung über den \texttt{ModeSelector} und Synchronisierung mit dem Backend.
+Die White-Label-Fähigkeit ist über eine Konfigurationsschicht realisiert (u.\,a. Farben, Team-Keyword, API-Base-URLs; vgl.~Kap.~5.3.1). Die Oberfläche unterstützt alle drei Betriebsmodi (\texttt{auto}, \texttt{coop}, \texttt{manual}) inklusive Laufzeitumschaltung über den \texttt{ModeSelector} und Synchronisierung mit dem Backend.
 
 Die Zustands- und Interaktionslogik ist in wiederverwendbare Custom Hooks aufgeteilt, die Navigation, Polling, Echtzeitkommunikation, Redaktionsinteraktion und UI-Steuerung abdecken. Die konkreten Hook-Implementierungen sind in Kapitel~5.3.3 dokumentiert.
 
@@ -506,9 +498,9 @@ Die Zustands- und Interaktionslogik ist in wiederverwendbare Custom Hooks aufget
 \subsection{Layout, Moduslogik und
 Kommunikation}\label{dreispalten-layout-und-redaktionsfluss}
 
-Die Hauptansicht folgt einem responsiven Dreispalten-Ansatz mit klarer Aufgabenverteilung. Das linke Panel übernimmt die Veröffentlichungsperspektive: Es listet publizierte Ticker-Einträge als chronologischen Feed, dedupliziert nach \texttt{event\_id} und sortiert nach Spielminute. Das mittlere Panel bildet die redaktionelle Kernarbeit ab: Event-Verarbeitung in Abhängigkeit vom Modus, Draft-Prüfung und Freigabe/Ablehnung, manuelle Eingabe mit Command-Parser (\texttt{/g}, \texttt{/gelb}, \texttt{/gelbrot}, \texttt{/rot}, \texttt{/s}) sowie integrierte Media- und Social-Panels, die ausschließlich bei erkannten EF-Spielen eingeblendet werden. Das rechte Panel liefert Kontext- und Analyseinformationen: Matchstatistiken, Aufstellungen sowie spielerbezogene Leistungsdaten.
+Die Hauptansicht folgt einem responsiven Dreispalten-Ansatz mit klarer Aufgabenverteilung. Das linke Panel übernimmt die Veröffentlichungsperspektive: Es listet publizierte Ticker-Einträge als chronologischen Feed, dedupliziert nach \texttt{event\_id} und sortiert nach Spielminute. Das mittlere Panel bildet die redaktionelle Kernarbeit ab: Event-Verarbeitung in Abhängigkeit vom Modus, Draft-Prüfung und Freigabe/Ablehnung, manuelle Eingabe mit Command-Parser (vgl.~Abschnitt~5.3.4) sowie integrierte Media- und Social-Panels, die ausschließlich bei erkannten EF-Spielen eingeblendet werden. Das rechte Panel liefert Kontext- und Analyseinformationen: Matchstatistiken, Aufstellungen sowie spielerbezogene Leistungsdaten.
 
-Ein dedizierter \texttt{ModeSelector} übernimmt die Modusumschaltung (vgl. Kap.~4.3.3) mit Portal-basiertem Bestätigungsdialog, visueller Toast-Rückmeldung (2200~ms) und Tastatur-Shortcuts (\texttt{Ctrl+1} / \texttt{Ctrl+2} / \texttt{Ctrl+3}). Im kooperativen Modus sind zusätzliche Tastatur-Interaktionen für den Accept-/Reject-Flow (\texttt{TAB} / \texttt{ESC}) eingebunden. Das Frontend setzt die hybride Triggerarchitektur mit REST-Polling (15-Sekunden-Intervall im Live-Betrieb, 20-Sekunden-Intervall im PreMatch-Betrieb) für Kerndaten, Webhook-Trigger für bedarfsgesteuerte n8n-Importe sowie WebSocket (\texttt{/ws/media}) mit Exponential-Backoff-Reconnect für latenzkritische Medieninhalte um. Die konkreten Hook-Implementierungen sind in Kapitel~5.3.3--5.3.5 dokumentiert.
+Ein dedizierter \texttt{ModeSelector} übernimmt die Modusumschaltung (vgl. Kap.~4.3.3) mit Portal-basiertem Bestätigungsdialog, visueller Toast-Rückmeldung und Tastatur-Shortcuts (\texttt{Ctrl+1} / \texttt{Ctrl+2} / \texttt{Ctrl+3}). Im kooperativen Modus sind zusätzliche Tastatur-Interaktionen für den Accept-/Reject-Flow (\texttt{TAB} / \texttt{ESC}) eingebunden. Das Frontend setzt die hybride Triggerarchitektur mit REST-Polling (15-Sekunden-Intervall im Live-Betrieb, 20-Sekunden-Intervall im PreMatch-Betrieb) für Kerndaten, Webhook-Trigger für bedarfsgesteuerte n8n-Importe sowie WebSocket (\texttt{/ws/media}) mit Exponential-Backoff-Reconnect für latenzkritische Medieninhalte um. Die konkreten Hook-Implementierungen sind in Kapitel~5.3.3--5.3.5 dokumentiert.
 
 
 
@@ -529,7 +521,7 @@ Neue Ereignistypen können ohne Datenbankschema-Änderungen ergänzt werden: Die
 
 \subsection{Deployment-Architektur}\label{deployment-architektur}
 
-Das System ist auf der Cloud-Plattform Render deployt und gliedert sich in drei unabhängige Deployment-Einheiten: FastAPI-Backend (Docker-Container), React-Frontend (Static Site) und PostgreSQL (Supabase Managed Database, extern eingebunden). n8n wird für den Evaluationsbetrieb lokal betrieben und ist über einen ngrok-Tunnel für externe Webhooks erreichbar. Die vollständigen Deployment-Details, Konfiguration und Free-Tier-Implikationen werden in Abschnitt~5.6 beschrieben.
+Das System ist auf der Cloud-Plattform Render deployt und gliedert sich in drei unabhängige Deployment-Einheiten: FastAPI-Backend (Docker-Container), React-Frontend (Static Site) und PostgreSQL (Supabase Managed Database, extern eingebunden). n8n wird für den Evaluationsbetrieb lokal betrieben und ist über einen lokalen Tunnel für externe Webhooks erreichbar (vgl.~Abschnitt~5.6). Die vollständigen Deployment-Details, Konfiguration und Free-Tier-Implikationen werden in Abschnitt~5.6 beschrieben.
 
 
 
