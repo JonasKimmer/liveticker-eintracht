@@ -24,13 +24,13 @@ Spitze stehen Playwright-basierte Browser-Smoke-Tests, die den
 vollständigen Redaktionsworkflow im Browser simulieren.
 
 \begin{verbatim}
-          ┌──────────┐
-          │ Smoke (6) │   Playwright — Browser-Workflow
-         ┌┴──────────┴┐
-         │  API-Tests  │  FastAPI TestClient + PostgreSQL
-        ┌┴────────────┴┐
-        │  Unit-Tests   │ Jest/React Testing Library + pytest
-        └──────────────┘
+        +-----------+
+        | Smoke (6) |  Playwright - Browser-Workflow
+       +-------------+
+       |  API-Tests  |  FastAPI TestClient + PostgreSQL
+      +---------------+
+      |  Unit-Tests   |  Jest/React Testing Library + pytest
+      +---------------+
 \end{verbatim}
 
 Diese Pyramide stellt sicher, dass die Mehrheit der Testfälle ohne
@@ -46,7 +46,7 @@ Library)}\label{frontend-unit-tests-jest-react-testing-library}
 Das Frontend verfügt über 187 Unit-Tests in 15 Testdateien, aufgeteilt in drei Kategorien:
 
 {\def\LTcaptype{none} % do not increment counter
-\begin{longtable}[]{@{}lll@{}}
+\begin{longtable}[]{@{}llp{9cm}@{}}
 \toprule\noalign{}
 Kategorie & Tests & Schwerpunkte \\
 \midrule\noalign{}
@@ -612,7 +612,7 @@ ms) unproblematisch (vgl. Abb.~\ref{fig:latenzen-histogram}).
 Das Frontend fragt den Backend-Status über drei Polling-Intervalle ab:
 
 {\def\LTcaptype{none} % do not increment counter
-\begin{longtable}[]{@{}lll@{}}
+\begin{longtable}[]{@{}llp{7cm}@{}}
 \toprule\noalign{}
 Ressource & Intervall & Bedingung \\
 \midrule\noalign{}

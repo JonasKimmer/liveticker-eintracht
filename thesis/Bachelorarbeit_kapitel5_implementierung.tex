@@ -14,13 +14,13 @@ Das Backend gliedert sich unter \texttt{backend/app/} in sieben funktionale Pake
 
 \begin{verbatim}
 backend/app/
-├── api/v1/          # HTTP-Router (FastAPI)
-├── models/          # SQLAlchemy ORM-Modelle (17 Dateien)
-├── repositories/    # Datenbankzugriff (je Entität eine Klasse)
-├── schemas/         # Pydantic-Schemas (Request / Response)
-├── services/        # Fachliche Services (llm_service, ticker_service)
-├── utils/           # Hilfsmodule (llm_context_builders, evaluation_metrics)
-└── core/            # Konfiguration, Datenbankverbindung, Enums, Konstanten
+|-- api/v1/          # HTTP-Router (FastAPI)
+|-- models/          # SQLAlchemy ORM-Modelle (17 Dateien)
+|-- repositories/    # Datenbankzugriff (je Entitaet eine Klasse)
+|-- schemas/         # Pydantic-Schemas (Request / Response)
+|-- services/        # Fachliche Services (llm_service, ticker_service)
+|-- utils/           # Hilfsmodule (llm_context_builders, evaluation_metrics)
+`-- core/            # Konfiguration, Datenbankverbindung, Enums, Konstanten
 \end{verbatim}
 
 Diese Aufteilung entspricht dem klassischen
@@ -347,19 +347,19 @@ gespeist werden:
 
 \begin{verbatim}
 App
-└─ LiveTicker  [TickerModeContext | TickerDataContext | TickerActionsContext]
-   ├─ LeftPanel
-   │  └─ PublishedEntry
-   ├─ CenterPanel
-   │  ├─ EventCard          ──onGenerate──────────► TickerActionsContext
-   │  ├─ EntryEditor        ──onManualPublish──────► TickerActionsContext
-   │  ├─ AIDraft            ──onPublished/onDraft──► TickerActionsContext
-   │  ├─ SummarySection
-   │  └─ MediaPickerPanel | YouTubePanel | TwitterPanel | InstagramPanel
-   └─ RightPanel
-      ├─ Collapsible  (Statistiken, Aufstellung, Spieler)
-      ├─ FormationColumn
-      └─ StatRow
+`- LiveTicker  [TickerModeContext | TickerDataContext | TickerActionsContext]
+   |- LeftPanel
+   |  `- PublishedEntry
+   |- CenterPanel
+   |  |- EventCard       --onGenerate-----------> TickerActionsContext
+   |  |- EntryEditor     --onManualPublish-------> TickerActionsContext
+   |  |- AIDraft         --onPublished/onDraft---> TickerActionsContext
+   |  |- SummarySection
+   |  `- MediaPickerPanel | YouTubePanel | TwitterPanel | InstagramPanel
+   `- RightPanel
+      |- Collapsible  (Statistiken, Aufstellung, Spieler)
+      |- FormationColumn
+      `- StatRow
 \end{verbatim}
 
 Die drei Panels sind physisch getrennte React-Komponenten, kommunizieren
