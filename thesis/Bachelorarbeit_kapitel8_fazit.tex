@@ -19,7 +19,7 @@ PostgreSQL) und Präsentation (React, TypeScript).
 
 \textbf{Technische Ergebnisse.} Die technische Evaluation (Kapitel~6.2) belegt eine produktionsnahe Codebasis mit dreistufiger Testpyramide (Unit, Integration, E2E), hoher Typsicherheit und Erfüllung aller 23 definierten Anforderungen (vgl. Kapitel~6.6). Die bewusst ausgeklammerte Authentifizierungsschicht ist als Systembeschränkung in Kapitel~7.2 eingeordnet.
 
-\textbf{KI-Textgenerierung.} Die Multi-Provider-Architektur mit Prioritätskette gewährleistet eine hohe Verfügbarkeit der Textgenerierung. Die qualitative Bewertung (Abschnitt~6.3.4) zeigt durchgängig gute Ergebnisse über alle drei Qualitätsdimensionen; das neutrale Profil zeigt in der Hauptevaluation stilistische Inkonsistenzen (20\,\% der Einträge zu emotional formuliert). Die LLM-as-Judge-Evaluation (Abschnitt~6.3.6) nuanciert diesen Befund: Das neutrale Profil erzielt dort den höchsten Gesamtwert (4,82/5), während das euphorische Profil (insbesondere bei Wechsel- und Karten-Events) die konsistenteste Schwäche darstellt (Ø~3,27/5, Tonalität~2,93/5). Die quantitativen Einzelwerte und Latenzmetriken sind in Kapitel~6.3--6.5 vollständig dokumentiert.
+\textbf{KI-Textgenerierung.} Die Multi-Provider-Architektur mit Prioritätskette gewährleistet eine hohe Verfügbarkeit der Textgenerierung. Die qualitative Bewertung (Abschnitt~6.3.4) zeigt durchgängig gute Ergebnisse über alle drei Qualitätsdimensionen; das neutrale Profil zeigt in der Hauptevaluation stilistische Inkonsistenzen (20\,\% der Einträge zu emotional formuliert). Die LLM-as-Judge-Evaluation (Abschnitt~6.3.6) nuanciert diesen Befund: Das neutrale Profil erzielt dort den höchsten Gesamtwert (4{,}82/5), während das euphorische Profil (insbesondere bei Wechsel- und Karten-Events) die konsistenteste Schwäche darstellt (Ø~3{,}27/5, Tonalität~2{,}93/5). Die quantitativen Einzelwerte und Latenzmetriken sind in Kapitel~6.3--6.5 vollständig dokumentiert.
 
 \textbf{Systemarchitektur und Designentscheide.} Das System realisiert die in Kapitel~4 konzipierte dreischichtige Architektur vollständig (Datenschicht via n8n-ETL, Anwendungsschicht via FastAPI/PostgreSQL, Präsentationsschicht via React/TypeScript). Die White-Label-Architektur und die drei Betriebsmodi bilden die Kernbeiträge des Systemdesigns (vgl. Kap.~4.3.3, 4.1.2).
 
@@ -31,24 +31,25 @@ Forschungsfrage}\label{beantwortung-der-forschungsfrage}
 Die in Kapitel~1.2 formulierte Forschungsfrage lautet:
 
 \begin{quote}
-\emph{Wie lässt sich ein hybrides KI-gestütztes Redaktionssystem für die
-Liveticker-Erstellung im Profifußball konzipieren und prototypisch
-implementieren, und inwiefern erfüllt das System die definierten
-journalistischen Qualitätsanforderungen hinsichtlich Korrektheit,
-Tonalität und Verständlichkeit?}
+\emph{Lässt sich ein hybrides KI-gestütztes Redaktionssystem für die
+Liveticker-Erstellung im Profifußball realisieren, das
+Echtzeit-Verarbeitung, Mehrsprachigkeit und White-Label-Betrieb
+unterstützt~-- und inwiefern erfüllt ein solches System journalistische
+Qualitätsanforderungen hinsichtlich Korrektheit, Tonalität und
+Verständlichkeit?}
 \end{quote}
 
 Die Beantwortung gliedert sich in Konzeption und Implementierung sowie journalistische Qualität.
 
-\textbf{Konzeption und Implementierung.} Die vollständige Implementierung belegt die Realisierbarkeit: Alle 23 definierten funktionalen, nicht-funktionalen und architektonischen Anforderungen werden erfüllt (vgl. Abschnitt~6.6); 439 automatisierte Tests und eine TypeScript-Typenabdeckung von 98,02~\% belegen die technische Reife.
+\textbf{Konzeption und Implementierung.} Die vollständige Implementierung belegt die Realisierbarkeit: Alle 23 definierten funktionalen, nicht-funktionalen und architektonischen Anforderungen werden erfüllt (vgl. Abschnitt~6.6); 439 automatisierte Tests und eine TypeScript-Typenabdeckung von 98{,}02~\% belegen die technische Reife.
 
-\textbf{Journalistische Qualität.} Die journalistische Qualität wurde entlang der drei in der Forschungsfrage definierten Kriterien operationalisiert. \textbf{Korrektheit}: Die generierten Texte erreichen einen Ø-Wert von 4,6\,/\,5. In 38 von 40 bewerteten Einträgen (95~\%) wurden alle verfügbaren Fakten (Spieler, Team, Minute, Ergebnis) korrekt wiedergegeben (Hauptevaluation, N~=~40, deutschsprachig). Die Pre-Match-Schutzregel verhindert zuverlässig die Erfindung von Live-Spielszenen; eine Wettempfehlung (2~von~40 Einträgen, 5~\%) ist eine inhaltliche Halluzination geringerer Schwere. Im journalistischen Kontext, wo ein falscher Torschütze sofort erkennbar und für Fans bedeutsam ist, stellt eine Faktenkorrektheit von 95~\% eine Mindestanforderung dar, die das System knapp erfüllt; die verbleibenden Abweichungen betreffen keine kritischen Spielfakten (Ergebnisse, Torschützen), sondern eine qualitativ mindere Fehlerklasse. Für den \texttt{coop}-Modus, bei dem eine redaktionelle Sichtung vor der Publikation erfolgt, ist dieser Wert hinreichend — eine vollständig autonom publizierende Instanz würde eine höhere Schwelle (≥~98~\% oder N~=~0 kritische Halluzinationen) erfordern. \textbf{Tonalität}: Mit einem Ø-Wert von 4,1\,/\,5 erzeugen die drei Stilprofile deutlich unterscheidbare Textstile. Der euphorische Modus erzielt in der Hauptevaluation die stärksten qualitativen Ergebnisse bei Tor-Events; das neutrale Profil zeigt die größte Inkonsistenz (20~\% der Einträge zu emotional formuliert), bedingt durch die starken euphorischen Few-Shot-Referenzen. \textbf{Verständlichkeit}: Mit 4,3\,/\,5 erfüllen die generierten Texte die linguistischen Anforderungen des Liveticker-Genres (Kapitel~2.5) zuverlässig: kurze Satzkonstruktionen, Präsenskonstruktionen, idiomatische Ausrufe und konzeptionelle Mündlichkeit sind durchgehend vorhanden. Die Qualitätsbewertung stützt sich auf drei Evaluationsebenen: Hauptevaluation (N~=~40, Abschnitt~6.3.4), Experteninterview (Abschnitt~6.3.5) sowie eine LLM-as-Judge-Evaluation (N~=~80: Ø~4,1\,/\,5, Abschnitt~6.3.6). Die LLM-as-Judge-Evaluation (reale Bundesliga-Daten Saison~2025/26, 30~Spiele) repliziert die hohe Korrektheit (4,12) und Verständlichkeit (4,35) und identifiziert die Tonalitätsschwäche bei Wechsel- und Karten-Events im euphorischen Profil als konsistente Fehlerklasse.
+\textbf{Journalistische Qualität.} Die journalistische Qualität wurde entlang der drei in der Forschungsfrage definierten Kriterien operationalisiert. \textbf{Korrektheit}: Die generierten Texte erreichen einen Ø-Wert von 4{,}6\,/\,5. In 38 von 40 bewerteten Einträgen (95~\%) wurden alle verfügbaren Fakten (Spieler, Team, Minute, Ergebnis) korrekt wiedergegeben (Hauptevaluation, N~=~40, deutschsprachig). Die Pre-Match-Schutzregel verhindert zuverlässig die Erfindung von Live-Spielszenen; eine Wettempfehlung (2~von~40 Einträgen, 5~\%) ist eine inhaltliche Halluzination geringerer Schwere. Im journalistischen Kontext, wo ein falscher Torschütze sofort erkennbar und für Fans bedeutsam ist, stellt eine Faktenkorrektheit von 95~\% eine Mindestanforderung dar, die das System knapp erfüllt; die verbleibenden Abweichungen betreffen keine kritischen Spielfakten (Ergebnisse, Torschützen), sondern eine qualitativ mindere Fehlerklasse. Für den \texttt{coop}-Modus, bei dem eine redaktionelle Sichtung vor der Publikation erfolgt, ist dieser Wert hinreichend — eine vollständig autonom publizierende Instanz würde eine höhere Schwelle (≥~98~\% oder N~=~0 kritische Halluzinationen) erfordern. \textbf{Tonalität}: Mit einem Ø-Wert von 4{,}1\,/\,5 erzeugen die drei Stilprofile deutlich unterscheidbare Textstile. Der euphorische Modus erzielt in der Hauptevaluation die stärksten qualitativen Ergebnisse bei Tor-Events; das neutrale Profil zeigt die größte Inkonsistenz (20~\% der Einträge zu emotional formuliert), bedingt durch die starken euphorischen Few-Shot-Referenzen. \textbf{Verständlichkeit}: Mit 4{,}3\,/\,5 erfüllen die generierten Texte die linguistischen Anforderungen des Liveticker-Genres (Kapitel~2.5) zuverlässig: kurze Satzkonstruktionen, Präsenskonstruktionen, idiomatische Ausrufe und konzeptionelle Mündlichkeit sind durchgehend vorhanden. Die Qualitätsbewertung stützt sich auf drei Evaluationsebenen: Hauptevaluation (N~=~40, Abschnitt~6.3.4), Experteninterview (Abschnitt~6.3.5) sowie eine LLM-as-Judge-Evaluation (N~=~80: Ø~4{,}1\,/\,5, Abschnitt~6.3.6). Die LLM-as-Judge-Evaluation (reale Bundesliga-Daten Saison~2025/26, 30~Spiele) repliziert die hohe Korrektheit (4{,}12) und Verständlichkeit (4{,}35) und identifiziert die Tonalitätsschwäche bei Wechsel- und Karten-Events im euphorischen Profil als konsistente Fehlerklasse.
 
 Die Forschungsfrage ist in beiden Teilfragen positiv zu beantworten.
 
 \textbf{Realisierbarkeit:} Das System ist vollständig implementiert und produktionsnah deployt; alle 23 definierten Anforderungen sind erfüllt (vgl.\ Abschnitt~6.6).
 
-\textbf{Journalistische Qualität:} Die Textqualität erfüllt die Anforderungen in den Dimensionen Korrektheit (Ø~4,6/5) und Verständlichkeit (Ø~4,3/5) zuverlässig. Bei der Tonalität ist das Bild differenziert: Neutrale und kritische Stilprofile erzielen stabile Werte; das euphorische Profil zeigt eine systematische Schwäche bei ereignisarmen Event-Typen (LLM-as-Judge Tonalität~2,93/5), die das Prompt-Design als priorisierten Verbesserungsbedarf ausweist (vgl.\ Abschnitt~8.3). Als technischer Zusatzbefund zeigen die gemessenen
+\textbf{Journalistische Qualität:} Die Textqualität erfüllt die Anforderungen in den Dimensionen Korrektheit (Ø~4{,}6/5) und Verständlichkeit (Ø~4{,}3/5) zuverlässig. Bei der Tonalität ist das Bild differenziert: Neutrale und kritische Stilprofile erzielen stabile Werte; das euphorische Profil zeigt eine systematische Schwäche bei ereignisarmen Event-Typen (LLM-as-Judge Tonalität~2{,}93/5), die das Prompt-Design als priorisierten Verbesserungsbedarf ausweist (vgl.\ Abschnitt~8.3). Als technischer Zusatzbefund zeigen die gemessenen
 Systemlatenzen (Median 859~ms, P95 2\,047~ms, vgl. Abschnitt~6.5.1) ein
 architekturbasiertes Latenzpotenzial; ein kontrollierter Feldvergleich
 bleibt als Folgestudie vorgesehen (vgl. Abschnitt~8.3).
@@ -56,10 +57,10 @@ bleibt als Folgestudie vorgesehen (vgl. Abschnitt~8.3).
 Die modus-spezifische Betrachtung ergibt eine klare Empfehlung:
 Im \texttt{auto}-Modus ist das Latenzpotenzial maximal, die
 Qualitätssicherung jedoch nicht vollständig abgedeckt (Stil-Inkonsistenz
-20 \%, Halluzinationsrate 5 \%). Im \texttt{coop}-Modus werden beide
+20\,\%, Halluzinationsrate 5\,\%). Im \texttt{coop}-Modus werden beide
 Anforderungen (Beschleunigung und Qualitätssicherung) gleichzeitig
 erfüllt: Die KI übernimmt die zeitkritische Textproduktion, der Redakteur
-die publizistische Verantwortung. Der \texttt{coop}-Modus ist damit der empfehlenswerteste Betriebsmodus für den produktiven Einsatz. Der
+die publizistische Verantwortung. Der \texttt{coop}-Modus ist damit der empfehlenswerteste Betriebsmodus für den produktiven Einsatz (vgl. Abschnitt~7.3). Der
 \texttt{manual}-Modus bleibt als Rückfalloption und
 Vertrauensaufbau-Stufe erhalten. Das Human-in-the-Loop-Design löst den
 Speed-Quality-Trade-off nicht durch Kompromiss, sondern durch klare
@@ -97,7 +98,7 @@ Erweiterungen}\label{mittelfristige-erweiterungen}
 \item \textbf{Multimodale Ticker:} Die bestehende Integration von Medieninhalten (ScorePlay, YouTube, Instagram) könnte zu einem multimodalen Ticker weiterentwickelt werden, in dem Bild, Video und Text automatisch zu einem kohärenten Narrativ verwoben werden. Vision-Language-Modelle könnten dabei Spielszenen aus Bildern beschreiben und in den Tickertext integrieren.
 \item \textbf{Autonomes Scoring der Textqualität:} Die Ablösung der manuellen Qualitätsbewertung durch ein trainiertes Scoring-Modell, das Korrektheit, Tonalität und Verständlichkeit automatisch bewertet, würde eine kontinuierliche Qualitätsüberwachung im Produktivbetrieb ermöglichen. Die implementierte \texttt{aggregate\_quality\_by\_group}-Funktion bildet die Aggregationslogik hierfür bereits ab.
 \item \textbf{Generalisierung über den Fußball hinaus:} Die Provider-agnostische LLM-Architektur und das Event-basierte Generierungsmodell sind nicht fußballspezifisch. Eine Erweiterung auf andere Sportarten (Handball, Basketball, Eishockey) erforderte primär die Anpassung der Event-Typ-Mappings, der Phasendefinitionen und der Kontextbuilder; die Kernarchitektur bliebe unverändert.
-\item \textbf{Regulatorische Compliance:} Die in Kapitel~7.6 diskutierten regulatorischen Anforderungen (EU AI Act Art.~50 Abs.~4, DSGVO-konforme Verarbeitungsvereinbarungen mit LLM-Providern) sind für eine Produktiveinführung vollständig umzusetzen. Konkret erfordert dies eine Kennzeichnungsstrategie für KI-generierte Inhalte sowie vertragliche Absicherung der Datenweitergabe an OpenRouter und die nachgelagerten Modell-Provider.
+\item \textbf{Regulatorische Compliance:} Die in Kapitel~7.6 diskutierten regulatorischen Anforderungen (EU AI Act Art.~50 Abs.~4, ab August~2026 verpflichtend, DSGVO-konforme Verarbeitungsvereinbarungen mit LLM-Providern) sind für eine Produktiveinführung vollständig umzusetzen. Konkret erfordert dies eine Kennzeichnungsstrategie für KI-generierte Inhalte sowie vertragliche Absicherung der Datenweitergabe an OpenRouter und die nachgelagerten Modell-Provider.
 \end{itemize}
 
 
@@ -117,9 +118,7 @@ Architekturansatzes. Die in Kapitel~7 diskutierten Limitationen
 markieren klare Erweiterungspfade, stellen aber die grundsätzliche
 Funktionalität nicht in Frage.
 
-Die KI-gestützte Liveticker-Generierung ersetzt den Redakteur nicht;
-sie gibt ihm die Zeit zurück, die er braucht, um seiner eigentlichen
-Aufgabe nachzukommen: Journalismus. In einer Medienlandschaft, in der Vereine zunehmend als eigenständige
-Medienproduzenten internationale Fanbases in Echtzeit bedienen müssen,
+Die KI-gestützte Liveticker-Generierung ersetzt den Redakteur nicht; sie reduziert den kognitiven Engpass der simultanen Textproduktion unter Echtzeit-Bedingungen und schafft damit Kapazität für journalistische Kernleistungen: Einordnung, Bewertung und redaktionelle Verantwortung. In einer Medienlandschaft, in der Vereine zunehmend als eigenständige
+Medienproduzenten internationale Fanbases in Echtzeit bedienen müssen (vgl. Kap.~2.3),
 eröffnet der hybride KI-Ansatz eine skalierbare Alternative –
 ohne die publizistische Verantwortung aus menschlicher Hand zu geben.

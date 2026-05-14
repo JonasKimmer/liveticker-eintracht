@@ -9,7 +9,7 @@ aufgearbeiteten technologischen Grundlagen. Die Kapitelstruktur folgt dem System
 \section{Überblick und
 Schichtenmodell}\label{uxfcberblick-und-schichtenmodell}
 
-Das System ist überwiegend als Cloud-Service konzipiert: Backend und Frontend laufen als eigenständige Render-Deployments, während die n8n-Workflow-Instanz lokal betrieben wird (vgl. Abschnitt~5.6). Es verarbeitet alle Spiele der konfigurierten Wettbewerbe automatisch: von der Datenimportierung über die KI-Textgenerierung bis zur Publikation. Die dreischichtige Architektur trennt Integrations-, Anwendungs- und Präsentationsschicht klar voneinander. Die drei Schichten sind funktional wie folgt konzipiert:
+Das System ist überwiegend als Cloud-Service konzipiert: Backend und Frontend laufen als eigenständige Render-Deployments, während die n8n-Workflow-Instanz lokal betrieben wird (vgl. Abschnitt~5.6). Es verarbeitet alle Spiele der konfigurierten Wettbewerbe automatisch: vom Datenimport über die KI-Textgenerierung bis zur Publikation. Die dreischichtige Architektur trennt Integrations-, Anwendungs- und Präsentationsschicht klar voneinander. Die drei Schichten sind funktional wie folgt konzipiert:
 
 Die \textbf{Integrationsschicht} wird durch n8n realisiert und bildet die Schnittstelle zu externen Datenquellen. Sie bindet Football-API, ScorePlay und Social-Feeds an, normalisiert die Rohdaten und übergibt sie entweder direkt in die Datenbank oder über REST-Endpunkte an die Anwendungsschicht. Die Kapselung der gesamten Integrationslogik in n8n ermöglicht Workflow-Anpassungen, ohne den Anwendungskern zu verändern.
 
@@ -70,7 +70,7 @@ Matchauswahl und im Live-Takt nach; Generierungs-Trigger stoßen
 KI-Textprozesse für Events, Matchphasen und Zusammenfassungen an. Der
 \textbf{WebSocket-Kanal \texttt{/ws/media}} übernimmt den Echtzeit-Push
 für latenzkritische Medieninhalte; Ticker- und Matchdaten verbleiben
-im stabileren Polling-Modell. Diese hybride Triggerarchitektur unterstützt im \texttt{coop}-Modus redaktionelle Kontrolle im Sinne des \textbf{Human-in-the-Loop}-Ansatzes; im \texttt{auto}-Modus läuft dieselbe Infrastruktur ohne redaktionellen Eingriff vollautomatisiert.
+im stabileren Polling-Modell. Diese hybride Triggerarchitektur unterstützt im \texttt{coop}-Modus redaktionelle Kontrolle im Sinne des \textbf{Human-in-the-Loop}-Ansatzes; im \texttt{auto}-Modus läuft dieselbe Infrastruktur ohne redaktionellen Eingriff vollautomatisiert. Für den Ticker-Datenfluss wurde Polling gegenüber Server-Sent Events (SSE) bevorzugt: Da die redaktionelle Latenztoleranz bei 15--20~Sekunden liegt (vgl.~Kap.~2.6), bietet SSE keinen relevanten Vorteil, während das Polling-Modell einfacher zu implementieren, zu testen und bei Verbindungsunterbrechungen robuster ist. SSE bleibt als mögliche Erweiterung erhalten (vgl.~Abschnitt~8.3.1).
 
 
 
@@ -79,7 +79,7 @@ White-Label-Steuerung}\label{partner-team-konzept-und-white-label-steuerung}
 
 Das System unterscheidet zwischen dem \textbf{Partner-Team} (dem konfigurierten Partnerverein) und den jeweiligen Gegnern. Das System erkennt das Partner-Team über ein konfigurierbares Keyword, das in n8n-Workflows und Frontend gegen den Teamnamen abgeglichen wird, unabhängig davon, ob der Verein Heim- oder Auswärtsteam ist. Partner-Team-Spiele verwenden den \texttt{ef\_whitelabel}-Instanzpfad mit standardmäßig euphorischem Stil. Dabei werden vereinsspezifische UI-Bereiche eingeblendet: Social-Media-Panels für YouTube, X und Instagram sowie die ScorePlay-Mediensuche für Bildmaterial. Alle anderen Spiele durchlaufen den \texttt{generic}-Pfad mit neutralem Stil. Die Implementierungsdetails sind in Kapitel~5 dokumentiert.
 
-Für die Einrichtung einer neuen Instanz (z.\,B. für einen anderen Bundesligaverein) sind vier Konfigurationsschritte erforderlich: (1) Vereinsname, Team-Keyword, Farben und API-Endpunkte in \texttt{src/config.ts} anpassen (vgl.~Kap.~5.3.1). (2) Den Instanzbezeichner in der Backend-Konfiguration setzen. (3) In der \texttt{style\_references}-Tabelle Few-Shot-Beispieltexte mit dem neuen Instanzbezeichner anlegen, damit die instanzspezifische Stilkonditionierung greift. (4) Im n8n-Workflow~09 den SQL-Knoten zur Instanzbestimmung auf das neue Team-Keyword anpassen.
+Für die Einrichtung einer neuen Instanz (z.\,B. für einen anderen Bundesligaverein) sind vier Konfigurationsschritte erforderlich: (1) Vereinsname, Team-Keyword, Farben und API-Endpunkte in der Frontend-Konfiguration anpassen (vgl.~Kap.~5.3.1). (2) Den Instanzbezeichner in der Backend-Konfiguration setzen. (3) In der \texttt{style\_references}-Tabelle Few-Shot-Beispieltexte mit dem neuen Instanzbezeichner anlegen, damit die instanzspezifische Stilkonditionierung greift. (4) Die relevanten n8n-Workflows um das neue Team-Keyword ergänzen (vgl.~Kap.~5.4).
 
 
 
@@ -93,7 +93,7 @@ den technologischen Grundlagen aus Kap.~3.6.
 \subsection{Framework-Wahl und
 Schichtstruktur}\label{interne-struktur-und-datenzugriff}
 
-Als Backend-Framework wurde FastAPI gewählt (vgl. Abschnitt~3.6). Für diese Entscheidung sprechen drei systemspezifische Eigenschaften: FastAPIs native Unterstützung für asynchrone I/O über Pythons \texttt{asyncio} ermöglicht die parallele Verarbeitung von LLM-Aufrufen, externen API-Abfragen und Medienverarbeitung ohne Worker-Blockierung. Die automatisch generierte OpenAPI-Spezifikation vereinfacht die n8n-Integration erheblich, da Webhook-Endpunkte maschinenlesbar beschrieben sind. Zudem reduziert die enge Pydantic-Integration Schnittstellenfehler durch typisierte Validierung aller Eingaben zwischen Frontend, Backend und n8n. Die Datenbankschicht setzt auf synchrones SQLAlchemy: Die typischen Transaktionen liegen unter 100~ms, sodass ein asynchrones ORM Komplexität ohne messbaren Latenz-Vorteil hinzufügen würde.
+Als Backend-Framework wurde FastAPI gewählt (vgl. Abschnitt~3.6). Für diese Entscheidung sprechen drei systemspezifische Eigenschaften: FastAPIs native Unterstützung für asynchrone I/O über Pythons \texttt{asyncio} ermöglicht die parallele Verarbeitung von LLM-Aufrufen, externen API-Abfragen und Medienverarbeitung ohne Worker-Blockierung. Die automatisch generierte OpenAPI-Spezifikation vereinfacht die n8n-Integration erheblich, da Webhook-Endpunkte maschinenlesbar beschrieben sind. Zudem reduziert die enge Pydantic-Integration Schnittstellenfehler durch typisierte Validierung aller Eingaben zwischen Frontend, Backend und n8n. Die Datenbankschicht setzt auf synchrones SQLAlchemy: Die typischen Transaktionen liegen unter 100~ms, sodass ein asynchrones ORM Komplexität ohne messbaren Latenz-Vorteil hinzufügen würde. Flask als Alternative schied aus, da es keine native ASGI-Unterstützung und keine automatische OpenAPI-Generierung bietet, die für die n8n-Integration essentiell ist; Django hätte eine höhere Einstiegskomplexität ohne messbaren Mehrwert bedeutet, da seine ORM- und Templating-Features im vorliegenden API-only-Backend ungenutzt geblieben wären.
 
 Die interne Schichtstruktur folgt dem \textbf{Repository Pattern} (Fowler 2002, S.~322). Router übernehmen die HTTP-Schicht und orchestrieren Use Cases; dedizierte Repositories kapseln den gesamten Datenbankzugriff, sodass die Anwendungslogik frei von SQL-Details bleibt. ORM-Modelle beschreiben die Persistenzstruktur, Pydantic-Schemas die API-Verträge. Diese Trennung ist zugleich Voraussetzung für transaktionale Testbarkeit. Einfache CRUD-Operationen folgen dem Muster Router \(\rightarrow\) Repository; komplexere Generierungs- und Orchestrierungsabläufe durchlaufen zusätzlich eine Service-Schicht nach dem Muster Router \(\rightarrow\) Service \(\rightarrow\) Repository, realisiert durch \texttt{ticker\_service} und \texttt{llm\_service}.
 
@@ -118,7 +118,7 @@ Für den Live-Betrieb ist das Backend auf kontrollierte Degradation ausgelegt: B
 
 \section{Datenbankkonzeption}\label{datenbankkonzeption}
 
-Die Persistenzschicht basiert auf PostgreSQL. Die Domänendaten des Systems sind stark strukturiert: Fremdschlüsselbeziehungen zwischen Teams, Wettbewerben, Spielen, Events und Ticker-Einträgen sind klar definiert und referenziell integer zu halten, was ein relationales System gegenüber dokumentenorientierten Alternativen begünstigt. JSONB-Felder werden selektiv für semistrukturierte Daten eingesetzt, sodass die ACID-Garantien erhalten bleiben. Das Schema ist auf stabilen Live-Betrieb mit wiederholbaren Importen, klaren Zustandsübergängen und nachvollziehbaren Redaktionsentscheidungen ausgelegt; die konkrete Datenbankanbindung ist in Abschnitt~5.1 beschrieben.
+Die Persistenzschicht basiert auf PostgreSQL. Die Domänendaten des Systems sind stark strukturiert: Fremdschlüsselbeziehungen zwischen Teams, Wettbewerben, Spielen, Events und Ticker-Einträgen sind klar definiert und referenziell integer zu halten, was ein relationales System gegenüber dokumentenorientierten Alternativen wie MongoDB begünstigt — diese böten zwar höhere Schemaflexibilität, erforderten aber den Verzicht auf ACID-Garantien und deklarative Join-Abfragen, die für den Redaktionsworkflow zentral sind. JSONB-Felder werden selektiv für semistrukturierte Daten eingesetzt, sodass die ACID-Garantien erhalten bleiben. Das Schema ist auf stabilen Live-Betrieb mit wiederholbaren Importen, klaren Zustandsübergängen und nachvollziehbaren Redaktionsentscheidungen ausgelegt; die konkrete Datenbankanbindung ist in Abschnitt~5.1 beschrieben.
 
 \subsection{Schemadesign-Prinzipien}\label{schemadesign-prinzipien}
 
@@ -170,7 +170,7 @@ Das Feld \texttt{ticker\_mode} in \texttt{matches} steuert das Verhalten der Gen
 
 \section{Workflow-Konzeption (n8n)}\label{workflow-konzeption-n8n}
 
-Die Workflow-Schicht ist als entkoppelte Orchestrierungsebene zwischen externen Datenquellen und Backend ausgelegt. n8n wurde gegenüber Alternativen wie Custom-Schedulern oder cron-basierten Skripten gewählt, weil es Workflow-Logik ohne Codeänderungen am Backend anpassbar macht, eine visuelle Debugging-Oberfläche bietet und HTTP-Trigger sowie Webhook-Empfang ohne zusätzliche Infrastruktur unterstützt.
+Die Workflow-Schicht ist als entkoppelte Orchestrierungsebene zwischen externen Datenquellen und Backend ausgelegt. n8n wurde gegenüber Alternativen gewählt: Custom-Scheduler und cron-basierte Skripte fehlt eine visuelle Debugging-Oberfläche und natives Webhook-Handling; Apache Airflow und Prefect sind auf Batch-ETL-Pipelines ausgerichtet und setzen Python-Kenntnisse für jeden Workflow voraus — n8n bietet demgegenüber Low-Code-Konfigurierbarkeit ohne Codeänderungen am Backend, was Workflow-Anpassungen für nicht-technische Teammitglieder ermöglicht, und integrierten HTTP-Trigger- sowie Webhook-Support ohne zusätzliche Infrastruktur.
 
 \subsection{Workflow-Klassen und
 Verantwortlichkeiten}\label{workflow-klassen-und-verantwortlichkeiten}
@@ -234,7 +234,7 @@ Das System setzt primär \textbf{OpenRouter} als LLM-Gateway ein. OpenRouter fun
 Als Standardmodell im Deployment wurde \textbf{Gemini 2.0 Flash Lite} über OpenRouter gewählt. Die Entscheidung stützt sich auf drei Faktoren:
 
 \begin{itemize}\tightlist
-\item \textbf{Aufgabencharakteristik:} Liveticker-Texte sind kurz und faktenbasiert; kompakte Modelle erzielen vergleichbare Qualität bei deutlich niedrigerer Latenz als große Flagship-Modelle.
+\item \textbf{Aufgabencharakteristik:} Liveticker-Texte sind kurz und faktenbasiert; kompakte Modelle erzielen vergleichbare Qualität bei deutlich niedrigerer Latenz, was die Latenzanalyse in Abschnitt~6.5.1 zeigen wird.
 \item \textbf{Kosteneffizienz:} Das Modell zählt zu den kostengünstigsten kommerziell verfügbaren Optionen und macht den Dauerbetrieb über eine Saison für ressourcenbegrenzte Redaktionen wirtschaftlich darstellbar (vgl. Kap.~2.1).
 \item \textbf{Kontextfenster:} Das Modell unterstützt bis zu 1~Million~Token, sodass umfangreiche Pre-Match-Kontextinformationen und mehrere Few-Shot-Referenzen ohne Abschneidung eingebunden werden können.
 \end{itemize}
@@ -267,13 +267,15 @@ und inhaltlichen Einschränkungen (vgl. Abb.~\ref{fig:prompt-aufbau}).
 \label{fig:prompt-aufbau}
 \end{figure}
 
-Der Few-Shot-Block wird aus manuell kuratierten Original-Tickertexten des Partnervereins gespeist. Pro LLM-Aufruf werden bis zu drei Referenzen zufällig aus dem nach Ereignistyp, Instanz und optional Liga gefilterten Pool selektiert. Die Begrenzung auf drei ergibt sich aus der Abwägung zwischen stilistischer Konditionierungsstärke und Promptlänge: Mehr Referenzen erhöhen den Kontext ohne nachweisbaren Qualitätsgewinn bei kurzen Ticker-Texten; die Randomisierung verhindert zudem die monotone Reproduktion identischer Formulierungen bei gleichartigen Events, während der stilistische Korridor gewahrt bleibt. Für Pre-Match-Typen enthält der Prompt zusätzliche Restriktionen, um Halluzinationen von Live-Szenen zu vermeiden und die Ausgabe auf Vorschau- und Analyseinhalte zu begrenzen. Die konkreten Inferenzparameter sind in Abschnitt~5.1.5 dokumentiert.
+Der Few-Shot-Block wird aus manuell kuratierten Original-Tickertexten des Partnervereins gespeist. Pro LLM-Aufruf werden bis zu drei Referenzen zufällig aus dem nach Ereignistyp, Instanz und optional Liga gefilterten Pool selektiert; die Randomisierung verhindert die monotone Reproduktion identischer Formulierungen bei gleichartigen Events, während der stilistische Korridor gewahrt bleibt. Für Pre-Match-Typen enthält der Prompt zusätzliche Restriktionen, um Halluzinationen von Live-Szenen zu vermeiden und die Ausgabe auf Vorschau- und Analyseinhalte zu begrenzen. Die konkreten Inferenzparameter sind in Abschnitt~5.1.5 dokumentiert.
 
+\subsection{Mehrsprachige Textgenerierung}\label{mehrsprachige-textgenerierung-konzept}
 
+Mehrsprachigkeit ist als natives Designmerkmal der KI-Komponente konzipiert (F7, vgl. Kap.~2.2): Die Zielsprache wird als Parameter in den LLM-Aufruf übergeben, sodass derselbe Prompt-Mechanismus für deutsch- und fremdsprachige Ausgaben genutzt wird, ohne sprachspezifische Prompt-Varianten. Damit adressiert die Architektur die in Kapitel~2.2 hergeleitete Anforderung, dass internationale Fanbases in Echtzeit in ihrer Landessprache bedient werden können. Ergänzend ist ein Batch-Übersetzungsendpunkt konzipiert, der nachträgliche Lokalisierung bestehender Einträge mit reduzierter Temperatur ermöglicht und sprachliche Varianz minimiert. Die konkrete Implementierung ist in Abschnitt~5.1.3 dokumentiert.
 
 \section{Frontend-Konzeption}\label{frontend-konzeption}
 
-Das Frontend realisiert die Präsentationsschicht als React-Anwendung mit TypeScript und ist auf redaktionelle Arbeit im Live-Betrieb ausgelegt.
+Das Frontend realisiert die Präsentationsschicht als React-Anwendung mit TypeScript und ist auf redaktionelle Arbeit im Live-Betrieb ausgelegt. React wurde gegenüber Vue und Svelte bevorzugt: Das größere Ökosystem und die breitere Verbreitung reduzierten das Risiko bei der Integration von Drittbibliotheken (z.\,B. WebSocket-Hooks, Echtzeitstate), und die bestehende Projekterfahrung im Team vermied unnötige Einarbeitungszeit.
 
 \subsection{Architektur und Zustandsmanagement}\label{architekturprinzipien}
 
@@ -283,7 +285,9 @@ Das Frontend trennt UI-Komponenten, datenbezogene Hooks und API-Zugriffsschicht 
 
 Die Hauptansicht folgt einem Dreispalten-Ansatz mit klarer Aufgabenverteilung. Das linke Panel zeigt den chronologischen Feed publizierter Ticker-Einträge. Das mittlere Panel bildet die redaktionelle Kernarbeit ab: Event-Verarbeitung in Abhängigkeit vom Betriebsmodus, Draft-Prüfung und Freigabe, manuelle Eingabe sowie integrierte Media- und Social-Panels für Partnervereinsspiele. Das rechte Panel liefert Kontextinformationen: Matchstatistiken, Aufstellungen und spielerbezogene Leistungsdaten.
 
-Die Modusumschaltung ist mit Bestätigungsdialog und visueller Rückmeldung ausgestattet; im kooperativen Modus sind Tastatur-Shortcuts für den Accept-/Reject-Flow verfügbar (vgl. Kap.~4.3.2). Das Frontend kombiniert REST-Polling für Kerndaten, Webhook-Trigger für bedarfsgesteuerte n8n-Importe und WebSocket für latenzkritische Medieninhalte. Die konkreten Intervalle, Shortcuts und Hook-Implementierungen sind in Kapitel~5.3 dokumentiert.
+Die Modusumschaltung ist mit Bestätigungsdialog und visueller Rückmeldung ausgestattet; im kooperativen Modus sind Tastatur-Shortcuts für den Accept-/Reject-Flow verfügbar (vgl. Kap.~4.3.2). Für die manuelle Eingabe ist ein \textbf{Slash-Command-Parser} konzipiert: Phase- und Event-Commands (\texttt{/kickoff}, \texttt{/goal}, \texttt{/yellowcard} u.\,a.) werden über eine einheitliche Syntaxstruktur geparst und direkt in strukturierte Ticker-Einträge überführt, ohne Formularnavigation; die Implementierung ist in Abschnitt~5.3.4 dokumentiert. Das Frontend kombiniert REST-Polling für Kerndaten, Webhook-Trigger für bedarfsgesteuerte n8n-Importe und WebSocket für latenzkritische Medieninhalte. Die konkreten Intervalle, Shortcuts und Hook-Implementierungen sind in Kapitel~5.3 dokumentiert.
+
+Mit der Frontend-Konzeption ist die systemweite Gestaltung des Artefakts abgeschlossen. Die erarbeiteten Konzepte — Drei-Schichten-Architektur, Datenmodell, n8n-ETL-Workflows, LLM-Pipeline und React-Frontend — bilden in ihrer Gesamtheit die konzeptionelle Grundlage für die Implementierung. Kapitel~5 dokumentiert die technische Realisierung und zeigt, wie die in Kapitel~2 definierten Anforderungen in lauffähigen, getesteten Code überführt wurden.
 
 
 

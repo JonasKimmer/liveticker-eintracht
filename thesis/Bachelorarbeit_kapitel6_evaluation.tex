@@ -3,13 +3,13 @@
 
 \section{Zielsetzung der Evaluation}\label{zielsetzung-der-evaluation}
 
-Die Evaluation bewertet das implementierte System auf mehreren Ebenen. Sie gliedert sich in drei Blöcke: Die \textbf{technische Qualitätssicherung} (Abschnitt~6.2) fasst die Kernkennzahlen der Testsuite und TypeScript-Typsicherheit zusammen; Implementierungsdetails sind in Kapitel~5.5 und~5.3.6 dokumentiert. Die \textbf{Evaluation der KI-Textgenerierung} (Abschnitt~6.3) umfasst quantitative Metriken, eine qualitative Analyse der generierten Texte sowie ein Experteninterview und eine LLM-as-Judge-Evaluation. Die \textbf{Systembetrachtung} (Abschnitte 6.4--6.6) behandelt das Latenzpotenzial der Betriebsmodi, Performance und Laufzeitverhalten sowie den Anforderungsabgleich (Soll-Ist).
+Die Evaluation bewertet das implementierte System auf mehreren Ebenen. Sie gliedert sich in drei Blöcke: Die \textbf{technische Qualitätssicherung} (Abschnitt~6.2) fasst die Kernkennzahlen der Testsuite und TypeScript-Typsicherheit zusammen; Implementierungsdetails sind in Kapitel~5.5 und~5.3.6 dokumentiert. Die \textbf{Evaluation der KI-Textgenerierung} (Abschnitt~6.3) umfasst quantitative Metriken, eine qualitative Analyse der generierten Texte sowie ein Experteninterview und eine LLM-as-Judge-Evaluation. Die \textbf{Systembetrachtung} (Abschnitte 6.4--6.6) behandelt das Latenzpotenzial der Betriebsmodi, Performance und Laufzeitverhalten sowie den Anforderungsabgleich (Soll-Ist). Die Evaluation ist darauf ausgerichtet, beide Teilfragen der Forschungsfrage (vgl. Abschnitt~1.2) zu beantworten: Die technische Realisierbarkeit wird durch den Anforderungsabgleich (Abschnitt~6.6) belegt; die journalistische Textqualität hinsichtlich Korrektheit, Tonalität und Verständlichkeit wird durch die Hauptevaluation (Abschnitt~6.3) und das LLM-as-Judge-Verfahren (Abschnitt~6.3.6) quantifiziert.
 
 
 \section{Technische
 Qualitätssicherung}\label{technische-qualituxe4tssicherung}
 
-Die Codebasis ist durch 439 automatisierte Tests abgesichert (187 Frontend-Tests mit Jest/React Testing Library, 246 Backend-Tests mit pytest, 6 Browser-Smoke-Tests mit Playwright), die vollständig fehlerfrei durchlaufen. Die Teststrategie folgt dem Pyramiden-Modell nach Cohn (2009): Unit-Tests bilden die breite Basis, API-Integrationstests prüfen Endpunkte gegen eine transaktional isolierte PostgreSQL-Testinstanz, Playwright-Smoke-Tests validieren zentrale Browser-Workflows. Das Backend erreicht eine Gesamt-Coverage von 79\,\%; die systemkritischen Schichten Modelle ($\approx$96\,\%) und Utilities ($\approx$92\,\%) sind nahezu vollständig abgedeckt; die niedrigere Coverage bei API-Nebenrouten und Services spiegelt eine bewusste Priorisierung auf den kritischen Redaktionspfad wider. Das Frontend wurde vollständig auf TypeScript migriert und erreicht 98,02\,\% type-coverage bei 0 Compilerfehler; die verbleibenden 1,98\,\% konzentrieren sich auf API-Response-Typen externer Dienste (vgl. Abschnitt~5.3.6). Die vollständige Aufschlüsselung der Testmetriken und Migrationsschritte ist in Kapitel~5.5 und 5.3.6 dokumentiert.
+Die Codebasis ist durch 439 automatisierte Tests abgesichert (187 Frontend-Tests mit Jest/React Testing Library, 246 Backend-Tests mit pytest, 6 Browser-Smoke-Tests mit Playwright), die vollständig fehlerfrei durchlaufen. Die Teststrategie folgt dem Pyramiden-Modell nach Cohn (2009): Unit-Tests bilden die breite Basis, API-Integrationstests prüfen Endpunkte gegen eine transaktional isolierte PostgreSQL-Testinstanz, Playwright-Smoke-Tests validieren zentrale Browser-Workflows. Das Backend erreicht eine Gesamt-Coverage von 79\,\%; die systemkritischen Schichten Modelle ($\approx$96\,\%) und Utilities ($\approx$92\,\%) sind nahezu vollständig abgedeckt; die niedrigere Coverage bei API-Nebenrouten und Services spiegelt eine bewusste Priorisierung auf den kritischen Redaktionspfad wider. Das Frontend wurde vollständig auf TypeScript migriert und erreicht 98{,}02\,\% type-coverage bei 0 Compilerfehler; die verbleibenden 1{,}98\,\% konzentrieren sich auf API-Response-Typen externer Dienste (vgl. Abschnitt~5.3.6). Die vollständige Aufschlüsselung der Testmetriken und Migrationsschritte ist in Kapitel~5.5 und 5.3.6 dokumentiert.
 
 
 \section{Evaluation der
@@ -28,7 +28,7 @@ Das Evaluationsmodul (\texttt{app/utils/evaluation\_metrics.py}) stellt sechs Me
 \begin{itemize}\tightlist
 \item \textbf{Time-to-Publish (TTP):} Latenz zwischen Ereigniszeitpunkt und Veröffentlichung in Sekunden.
 \item \textbf{Cliff's Delta} (Cliff 1993): Nicht-parametrische Effektstärke für ordinale Daten (Wertebereich [−1, 1]).
-\item \textbf{Bootstrap-Konfidenzintervall:} Resampling-basierte Schätzung des Mittelwertunterschieds (5.000 Iterationen, 95~\%).
+\item \textbf{Bootstrap-Konfidenzintervall:} Resampling-basierte Schätzung des Mittelwertunterschieds (5.000 Iterationen, 95\,\%).
 \item \textbf{Cohen's Kappa} (Cohen 1960): Interrater-Reliabilitätsmaß für kategoriale Bewertungen.
 \item \textbf{Verteilungsanalyse} (\texttt{summarize\_distribution}): Median, Standardabweichung, Quartile, IQR und 95.~Perzentil.
 \item \textbf{Qualitätsaggregation} (\texttt{aggregate\_quality\_by\_group}): Mittelwerte je Bewertungsdimension, gruppiert nach Schlüssel (z.~B. Modus oder Modell).
@@ -61,17 +61,17 @@ Temperatur
 \endhead
 \bottomrule\noalign{}
 \endlastfoot
-1 & OpenRouter & \texttt{google/gemini-2.0-flash-lite-001} & 0,5 \\
-2 & Gemini & \texttt{gemini-2.0-flash-lite-001} & 0,5 \\
-3 & OpenAI & \texttt{gpt-4o-mini} & 0,5 \\
-4 & Anthropic & \texttt{claude-haiku-4-5-20251001} & 0,5 \\
+1 & OpenRouter & \texttt{google/gemini-2.0-flash-lite-001} & 0{,}5 \\
+2 & Gemini & \texttt{gemini-2.0-flash-lite-001} & 0{,}5 \\
+3 & OpenAI & \texttt{gpt-4o-mini} & 0{,}5 \\
+4 & Anthropic & \texttt{claude-haiku-4-5-20251001} & 0{,}5 \\
 5 & Mock & --- (regelbasierte Templates) & --- \\
 \end{longtable}
 }
 
-Im produktiven Render-Deployment waren nur OpenRouter (Priorität~1) und Mock (Fallback) aktiv; die übrigen Provider wurden mangels aktivierter API-Keys nicht evaluiert, sind jedoch architektonisch vollständig implementiert. Die qualitative Bewertung (N~=~40, OpenRouter) zeigt einen klaren Qualitätsvorsprung des LLM-Providers gegenüber dem regelbasierten Mock-Provider in der Tonalitätstreue (OpenRouter: 4,1\,/\,5 vs.\ Mock: 3,0\,/\,5 bei N~= 7 Mock-Einträgen; Δ~= 1,1 Skalenpunkte); Korrektheit und Verständlichkeit liegen bei 4,6 bzw.\ 4,3 (OpenRouter). Die Latenzanalyse findet sich in Abschnitt~6.5.1.
+Im produktiven Render-Deployment waren nur OpenRouter (Priorität~1) und Mock (Fallback) aktiv; die übrigen Provider wurden mangels aktivierter API-Keys nicht evaluiert, sind jedoch architektonisch vollständig implementiert. Die qualitative Bewertung (N~=~40, OpenRouter) zeigt einen klaren Qualitätsvorsprung des LLM-Providers gegenüber dem regelbasierten Mock-Provider in der Tonalitätstreue (OpenRouter: 4{,}1\,/\,5 vs.\ Mock: 3{,}0\,/\,5 bei N~=~7 Mock-Einträgen; Δ~=~1{,}1 Skalenpunkte); Korrektheit und Verständlichkeit liegen bei 4{,}6 bzw.\ 4{,}3 (OpenRouter). Die Latenzanalyse findet sich in Abschnitt~6.5.1.
 
-Der Tonalitätswert von 4,1\,/\,5 bedarf einer inhaltlichen Einordnung: Clerwall (2014, S.~631) befragte Leser zur Qualitätsbewertung algorithmisch generierter Sporttexte und stellte fest, dass automatisch erstellte Berichte hinsichtlich Glaubwürdigkeit und Lesbarkeit auf vergleichbaren Skalen mit professionell verfassten Texten mithalten können. Der vorliegende Wert ist redaktionell akzeptabel, sofern die Stilprofil-Differenzierung berücksichtigt wird: Das neutrale Profil erzielt in der LLM-as-Judge-Evaluation 4,81\,/\,5, das kritische 4,04\,/\,5 — Werte, die journalistischer Publikationsreife entsprechen. Die Gesamtdurchschnittsschwäche von 4,1\,/\,5 ist primär dem euphorischen Profil bei ereignisarmen Event-Typen zuzurechnen (Wechsel: Tonalität~2,93\,/\,5, vgl. Abschnitt~6.3.6) und benennt damit einen konkreten, eingrenzbaren Verbesserungsbedarf im Prompt-Design — kein systemisches Qualitätsproblem.
+Der Tonalitätswert von 4{,}1\,/\,5 bedarf einer inhaltlichen Einordnung: Clerwall (2014, S.~631) befragte Leser zur Qualitätsbewertung algorithmisch generierter Sporttexte und stellte fest, dass automatisch erstellte Berichte hinsichtlich Glaubwürdigkeit und Lesbarkeit auf vergleichbaren Skalen mit professionell verfassten Texten mithalten können. Der vorliegende Wert ist redaktionell akzeptabel, sofern die Stilprofil-Differenzierung berücksichtigt wird: Das neutrale Profil erzielt in der LLM-as-Judge-Evaluation 4{,}81\,/\,5, das kritische 4{,}04\,/\,5 — Werte, die journalistischer Publikationsreife entsprechen. Die Gesamtdurchschnittsschwäche von 4{,}1\,/\,5 ist primär dem euphorischen Profil bei ereignisarmen Event-Typen zuzurechnen (Wechsel: Tonalität~2{,}93\,/\,5, vgl. Abschnitt~6.3.6) und benennt damit einen konkreten, eingrenzbaren Verbesserungsbedarf im Prompt-Design; eine inhaltliche Einordnung dieses Befunds findet sich in Kapitel~7.
 
 \subsection{Einfluss der Stilprofile}\label{einfluss-der-stilprofile}
 
@@ -194,13 +194,13 @@ Gesamt (Ø)
 \endhead
 \bottomrule\noalign{}
 \endlastfoot
-Tor & 13 & 4,7 & 3,7 & 4,7 & 4,4 \\
-Gelbe Karte & 14 & 4,9 & 4,4 & 4,0 & 4,4 \\
+Tor & 13 & 4{,}7 & 3{,}7 & 4{,}7 & 4{,}4 \\
+Gelbe Karte & 14 & 4{,}9 & 4{,}4 & 4{,}0 & 4{,}4 \\
 Rote Karte & 0 & --- & --- & --- & --- \\
-Wechsel & 10 & 4,4 & 4,0 & 4,3 & 4,2 \\
-Pre-Match (Kontext) & 3 & 3,3 & 4,7 & 4,0 & 4,0 \\
-\textbf{Gesamt} & \textbf{40} & \textbf{4,6} & \textbf{4,1} &
-\textbf{4,3} & \textbf{4,3} \\
+Wechsel & 10 & 4{,}4 & 4{,}0 & 4{,}3 & 4{,}2 \\
+Pre-Match (Kontext) & 3 & 3{,}3 & 4{,}7 & 4{,}0 & 4{,}0 \\
+\textbf{Gesamt} & \textbf{40} & \textbf{4{,}6} & \textbf{4{,}1} &
+\textbf{4{,}3} & \textbf{4{,}3} \\
 \end{longtable}
 }
 
@@ -271,7 +271,7 @@ Beispiel
 \endhead
 \bottomrule\noalign{}
 \endlastfoot
-\textbf{Stil-Inkonsistenz} & 8 / 40 (20 \%) & Neutraler Stil enthält
+\textbf{Stil-Inkonsistenz} & 8 / 40 (20\,\%) & Neutraler Stil enthält
 emotionale Formulierungen & „33. Minute: Oh nein! Lienhart sieht Gelb!
 \ldots{} Aber Kopf hoch, Jungs! Kämpfen!'' \emph{(angefordert:
 neutral)} \\
@@ -295,7 +295,7 @@ aus den euphorischen Few-Shot-Referenzen der
 \texttt{ef\_whitelabel}-Instanz auch dann, wenn \texttt{neutral} als
 Stilparameter übergeben wird (Verbesserungsansatz: vgl.\ Abschnitt~8.3).
 
-Das kritische Stilprofil erweist sich in der Hauptevaluation und der LLM-as-Judge-Evaluation als schwächste Dimension (LLM-as-Judge Tonalität: 4,04\,/\,5, vgl. Abschnitt~6.3.6). Die Ursache liegt in einer konzeptuellen Ambiguität des Profils: Während \texttt{euphorisch} und \texttt{neutral} klare emotionale Pole beschreiben, bleibt \texttt{kritisch} semantisch vielschichtig: das LLM kann den Stil als kritisch-analytisch (sachlich-distanziert), kritisch-konfrontativ (negativ gegenüber der eigenen Mannschaft) oder kritisch-fordernd (appellierend an mehr Leistung) interpretieren. Ohne explizitere Stilinstruktion, etwa durch zielgerichtete Few-Shot-Beispiele mit klar analytisch-einordnendem Ton oder durch eine präzisierte Prompt-Formulierung, nähert das Modell das kritische Profil dem neutralen an. Verbesserungsansätze für das kritische Profil sind in Abschnitt~8.3 ausgewiesen.
+Das kritische Stilprofil erweist sich in der Hauptevaluation und der LLM-as-Judge-Evaluation als schwächste Dimension (LLM-as-Judge Tonalität: 4{,}04\,/\,5, vgl. Abschnitt~6.3.6). Die Ursache liegt in einer konzeptuellen Ambiguität des Profils: Während \texttt{euphorisch} und \texttt{neutral} klare emotionale Pole beschreiben, bleibt \texttt{kritisch} semantisch vielschichtig: das LLM kann den Stil als kritisch-analytisch (sachlich-distanziert), kritisch-konfrontativ (negativ gegenüber der eigenen Mannschaft) oder kritisch-fordernd (appellierend an mehr Leistung) interpretieren. Ohne explizitere Stilinstruktion, etwa durch zielgerichtete Few-Shot-Beispiele mit klar analytisch-einordnendem Ton oder durch eine präzisierte Prompt-Formulierung, nähert das Modell das kritische Profil dem neutralen an. Verbesserungsansätze für das kritische Profil sind in Abschnitt~8.3 ausgewiesen.
 
 
 Die Pre-Match-Prompts enthalten eine explizite Schutzregel gegen
@@ -337,7 +337,7 @@ Das Interview folgte einem semi-strukturierten Ansatz mit vorbereiteten Leitfrag
 Raum für vertiefende Nachfragen. Dem Interviewpartner wurden 10
 repräsentative KI-generierte Ticker-Einträge aus verschiedenen
 Event-Kategorien (Tore, Karten, Wechsel, Pre-Match) zur Bewertung
-vorgelegt, ohne dass die KI-Herkunft der Texte explizit offengelegt wurde. Dieses Blind-Vorgehen diente der Vermeidung eines Erwartungseffekts bei der Qualitätseinschätzung.
+vorgelegt, ohne dass die KI-Herkunft der Texte explizit offengelegt wurde. Dieses Blind-Vorgehen diente der Vermeidung eines Erwartungseffekts bei der Qualitätseinschätzung. Die Auswertung erfolgte durch thematische Kategorisierung entlang der Leitfragenblöcke: Die zentralen Aussagen wurden paraphrasierend den vier Themenbereichen Textqualität, Moduswahl, Verbesserungspotenzial und Markenwiedererkennung zugeordnet (vgl. Kuckartz 2018).
 
 \paragraph{Zentrale Erkenntnisse}
 Die Erkenntnisse bestätigten die grundsätzliche Praxistauglichkeit des Systems. Im Einzelnen:
@@ -350,13 +350,15 @@ Die Erkenntnisse bestätigten die grundsätzliche Praxistauglichkeit des Systems
 \end{itemize}
 
 \paragraph{Methodische Einordnung}
-Das Interview dient im Sinne des Design Science Research als explorative Feldevaluation mit einem primären Domänenexperten (Hevner et al.~2004): Es ergänzt die quantitativen Metriken um die Perspektive der Zielnutzergruppe, die durch Scores allein nicht erfassbar ist. Die Stärke dieser Methode liegt nicht in statistischer Generalisierbarkeit, sondern in der domänenspezifischen Tiefe – ein erfahrener Sportredakteur kann Stilbrüche, Workflow-Integration und Praxistauglichkeit beurteilen, die außerhalb des Bewertungsrahmens quantitativer Metriken liegen. Die Erkenntnisse fließen in die Gesamtbewertung in Kapitel~8.2 und die vorgeschlagenen Erweiterungen in Kapitel~8.3 ein.
+Das Interview dient im Sinne des Design Science Research als explorative Feldevaluation mit einem primären Domänenexperten (Hevner et al.~2004): Es ergänzt die quantitativen Metriken um die Perspektive der Zielnutzergruppe, die durch Scores allein nicht erfassbar ist. Die Stärke dieser Methode liegt nicht in statistischer Generalisierbarkeit, sondern in der domänenspezifischen Tiefe – ein erfahrener Sportredakteur kann Stilbrüche, Workflow-Integration und Praxistauglichkeit beurteilen, die außerhalb des Bewertungsrahmens quantitativer Metriken liegen. Als Einschränkung ist das institutionelle Näheverhältnis zwischen Entwickler und Interviewpartner zu berücksichtigen: Der Experte ist Mitarbeiter der Partnerorganisation Eintracht Frankfurt; das beschriebene Blind-Vorgehen bei der Textvorlage dient der Minderung eines möglichen Erwartungs- oder Gefälligkeitseffekts. Die Erkenntnisse fließen in die Gesamtbewertung in Kapitel~8.2 und die vorgeschlagenen Erweiterungen in Kapitel~8.3 ein.
 
 \subsection{Erweiterte Evaluation: LLM-as-Judge-Verfahren}\label{erweiterte-evaluation}
 
 Zur Erweiterung der Evaluationsbasis über N\,=\,40 hinaus und zur Adressierung der Selbstevaluationsproblematik wurden N\,=\,80 Einträge nach dem \textbf{LLM-as-Judge}-Verfahren (vgl. Kap.~3.3; Zheng et al.~2023) automatisiert evaluiert.
 
 \textbf{Datenbasis:} Die Datenbasis umfasst reale Ereignisse aus 30 Bundesliga-Spielen der Saison~2025/26 (u.\,a. Borussia~Dortmund -- SC~Freiburg, FSV~Mainz~05 -- FC~Bayern~München, FC~Augsburg -- Eintracht~Frankfurt, 1.~FC~Köln -- Bayer~Leverkusen), abgefragt über die Football~API~v3. Die Nutzung der Saison~2025/26 – statt der in der Hauptevaluation verwendeten Saison~2024/25 – ist methodisch bewusst gewählt: Zum Zeitpunkt der LLM-as-Judge-Evaluation standen Spieltage der laufenden Saison~2025/26 als frische, vom Entwickler noch nicht manuell bewertete Daten zur Verfügung, was eine unabhängigere Datenbasis als eine Teilmenge der bereits in Abschnitt~6.3.4 verwendeten Spiele gewährleistet. Generierungsmodell: \texttt{google/gemini-2.0-flash-lite-001} (identisch zur Hauptevaluation, Temperatur~0{,}5). Bewertendes Modell: \texttt{anthropic/claude-sonnet-4-5} via OpenRouter, ein anderes Modell als das generierende, was Selbstreferenzialität vermeidet. Abgedeckte Event-Typen: 25~Tore, 25~Gelbe Karten, 4~Rote Karten, 25~Wechsel, 1~Eigentor; je 27 bzw.\ 26~Einträge pro Stilprofil.
+
+\textbf{Bewertungsprotokoll:} Der Bewertungsauftrag an \texttt{anthropic/claude-sonnet-4-5} wurde als Systemprompt übergeben, der das Modell als unabhängigen Qualitätsbewerter für KI-generierte Liveticker-Texte instruierte. Die Bewertungsdimensionen (Korrektheit, Tonalität, Verständlichkeit, je 1--5) sind identisch mit denen der manuellen Evaluation (vgl. Abschnitt~6.3.2); die operationalen Definitionen aus Abschnitt~6.3.2 wurden im Systemprompt wörtlich übernommen. Der User-Prompt enthielt je Eintrag Ereignistyp, Spielminute, Spieler, Spielstand, das angeforderte Stilprofil und den generierten Text. Die Ausgabe erfolgte als strukturiertes JSON mit den drei Scores und einer einzeiligen Begründung, was eine maschinelle Weiterverarbeitung ohne manuelle Nachinterpretation ermöglichte.
 
 {\def\LTcaptype{none} % do not increment counter
 \begin{longtable}[]{@{}
@@ -372,16 +374,16 @@ Stil & n & Korrektheit & Tonalität & Verständlichkeit & Gesamt \\
 \endhead
 \bottomrule\noalign{}
 \endlastfoot
-neutral     & 27 & 4,81 & 4,81 & 4,81 & 4,82 \\
-kritisch    & 26 & 4,35 & 4,04 & 4,58 & 4,32 \\
-euphorisch  & 27 & 3,22 & 2,93 & 3,67 & 3,27 \\
-\textbf{Gesamt} & \textbf{80} & \textbf{4,12} & \textbf{3,92} & \textbf{4,35} & \textbf{4,13} \\
+neutral     & 27 & 4{,}81 & 4{,}81 & 4{,}81 & 4{,}82 \\
+kritisch    & 26 & 4{,}35 & 4{,}04 & 4{,}58 & 4{,}32 \\
+euphorisch  & 27 & 3{,}22 & 2{,}93 & 3{,}67 & 3{,}27 \\
+\textbf{Gesamt} & \textbf{80} & \textbf{4{,}12} & \textbf{3{,}92} & \textbf{4{,}35} & \textbf{4{,}13} \\
 \end{longtable}
 }
 
 \emph{K = Korrektheit, T = Tonalität, V = Verständlichkeit (je 1--5). Bewerter: Claude Sonnet~4.5 via OpenRouter. Datenbasis: Football API~v3, Bundesliga Saison 2025/26, 30~Spiele.}
 
-Die LLM-as-Judge-Evaluation bestätigt Korrektheit (4,12) und Verständlichkeit (4,35) auf einem mit der Hauptevaluation konsistenten Niveau. Das neutrale Stilprofil erzielt den höchsten Gesamtwert (4,82) und zeigt damit die stärkste Prompt-Kopplung. Das kritische Profil liegt mit 4,32 im soliden Bereich; das euphorische Profil bleibt mit 3,27 deutlich schwächer, insbesondere beim Tonalitätswert (2,93). Dieser Wert steht scheinbar im Widerspruch zum Gesamttonalitätswert der Hauptevaluation (4,1\,/\,5, vgl. Abschnitt~6.3.4); die Diskrepanz erklärt sich durch den Event-Mix: Die Hauptevaluation enthält überwiegend Tor-Events, bei denen das euphorische Profil stark performt (Ø~4,4). Die LLM-as-Judge-Evaluation mit 25~Wechseln und anteilig mehr Karten deckt systematisch diejenigen Event-Typen auf, die in der Hauptevaluation unterrepräsentiert waren. Für die Forschungsfrage — \emph{inwiefern erfüllt das System die journalistischen Qualitätsanforderungen hinsichtlich Tonalität?} — lautet die differenzierte Antwort: Bei Tor- und Karten-Events ist die Anforderung erfüllt; bei Wechsel-Events im euphorischen Profil besteht ein systematischer Verbesserungsbedarf, der durch Event-spezifische Stilreferenzen im Prompt-Design adressierbar ist. Die Ursache liegt im Event-Mix: Wechsel-Einträge (n\,=\,25) erzielen die schwächste Korrektheit (2,92) und den niedrigsten Gesamtwert (3,21), da das Modell taktische Begründungen erfindet, die nicht im übergebenen Kontext stehen. Im euphorischen Profil produziert das Modell bei Wechseln und Gelben Karten wiederholt formelharte Phrasen wie „Na, ob das was wird?'' oder „Hoffentlich bringt er frischen Wind'' ohne authentische Situationsdifferenzierung. Tore (Ø~4,33) und Rote Karten (Ø~4,75) erreichen hingegen konsistent hohe Werte. Diese Befunde replizieren die Fehlerklassen der Hauptevaluation: Die euphorische Tonalitätsschwäche bei ereignisarmen Event-Typen ist die konsistenteste Schwäche des aktuellen Prompt-Designs. Im Vergleich zur Literatur — Clerwall (2014, S.~529) dokumentiert für KI-generierte Sporttexte Lesbarkeits- und Vertrauenswürdigkeitswerte im Bereich von $\approx$\,3,8--4,2 auf einer 5-Punkte-Skala — liegen die neutralen (4,82) und kritischen (4,32) Profile in einem publikationsreifen Bereich; das euphorische Profil (3,27) fällt hingegen unter diesen Referenzbereich. Die Methode des LLM-as-Judge ist als Ergänzung zur menschlichen Bewertung etabliert (Zheng et al.~2023), ersetzt diese jedoch nicht vollständig; eine externe Nutzerstudie bleibt als Folgeschritt vorgesehen (Abschnitt~\ref{mittelfristige-erweiterungen}).
+Die LLM-as-Judge-Evaluation bestätigt Korrektheit (4{,}12) und Verständlichkeit (4{,}35) auf einem mit der Hauptevaluation konsistenten Niveau. Das neutrale Stilprofil erzielt den höchsten Gesamtwert (4{,}82) und zeigt damit die stärkste Prompt-Kopplung. Das kritische Profil liegt mit 4{,}32 im soliden Bereich; das euphorische Profil bleibt mit 3{,}27 deutlich schwächer, insbesondere beim Tonalitätswert (2{,}93). Dieser Wert steht scheinbar im Widerspruch zum Gesamttonalitätswert der Hauptevaluation (4{,}1\,/\,5, vgl. Abschnitt~6.3.4); die Diskrepanz erklärt sich durch den Event-Mix: Die Hauptevaluation enthält überwiegend Tor-Events, bei denen das euphorische Profil stark performt (Ø~4{,}4). Die LLM-as-Judge-Evaluation mit 25~Wechseln und anteilig mehr Karten deckt systematisch diejenigen Event-Typen auf, die in der Hauptevaluation unterrepräsentiert waren. Für die Forschungsfrage — \emph{inwiefern erfüllt das System die journalistischen Qualitätsanforderungen hinsichtlich Tonalität?} — lautet die differenzierte Antwort: Bei Tor- und Karten-Events ist die Anforderung erfüllt; bei Wechsel-Events im euphorischen Profil besteht ein systematischer Verbesserungsbedarf, der durch Event-spezifische Stilreferenzen im Prompt-Design adressierbar ist. Die Ursache liegt im Event-Mix: Wechsel-Einträge (n\,=\,25) erzielen die schwächste Korrektheit (2{,}92) und den niedrigsten Gesamtwert (3{,}21), da das Modell taktische Begründungen erfindet, die nicht im übergebenen Kontext stehen. Im euphorischen Profil produziert das Modell bei Wechseln und Gelben Karten wiederholt formelharte Phrasen wie „Na, ob das was wird?'' oder „Hoffentlich bringt er frischen Wind'' ohne authentische Situationsdifferenzierung. Tore (Ø~4{,}33) und Rote Karten (Ø~4{,}75) erreichen hingegen konsistent hohe Werte. Diese Befunde replizieren die Fehlerklassen der Hauptevaluation: Die euphorische Tonalitätsschwäche bei ereignisarmen Event-Typen ist die konsistenteste Schwäche des aktuellen Prompt-Designs. Im Vergleich zur Literatur — Clerwall (2014, S.~529) dokumentiert für KI-generierte Sporttexte Lesbarkeits- und Vertrauenswürdigkeitswerte im Bereich von $\approx$\,3{,}8--4{,}2 auf einer 5-Punkte-Skala — liegen die neutralen (4{,}82) und kritischen (4{,}32) Profile in einem publikationsreifen Bereich; das euphorische Profil (3{,}27) fällt hingegen unter diesen Referenzbereich. Die Methode des LLM-as-Judge ist als Ergänzung zur menschlichen Bewertung etabliert (Zheng et al.~2023), ersetzt diese jedoch nicht vollständig; eine externe Nutzerstudie bleibt als Folgeschritt vorgesehen (Abschnitt~\ref{mittelfristige-erweiterungen}).
 
 
 \section{Latenzpotenzial der Betriebsmodi}\label{evaluation-der-betriebsmodi}
@@ -456,7 +458,7 @@ Fehlerrate
 \bottomrule\noalign{}
 \endlastfoot
 Render-Deploy. & OpenRouter & \texttt{google/gemini-2.0-flash-lite-001}
-& 25 & 836 & 859 & 2.047 & 0 \% \\
+& 25 & 836 & 859 & 2\,047 & 0 \% \\
 Direkt (lokal) & OpenRouter & \texttt{google/gemini-2.0-flash-lite-001}
 & 9 & 942 & 955 & 1.348 & 0 \% \\
 Mock & --- & regelbasiert (Templates) & 7 & \textless{} 10 & \textless{}
@@ -475,7 +477,7 @@ KI-Aufruf mit dem Feld \texttt{generation\_ms} persistiert, das die
 Backend-interne Verarbeitungszeit (Request-Eingang bis DB-Write)
 automatisch erfasst; damit ist eine kontinuierliche Latenzmessung im
 Produktivbetrieb ohne externen Monitoring-Aufwand möglich. Im Kontext
-des \texttt{coop}-Modus ist die gemessene P95-Latenz von 2,1\ s (2\,047
+des \texttt{coop}-Modus ist die gemessene P95-Latenz von 2{,}1\ s (2\,047
 ms) unproblematisch (vgl. Abb.~\ref{fig:latenzen-histogram}).
 
 \begin{figure}[H]
@@ -530,7 +532,7 @@ F3 & Drei Stilprofile & \texttt{STYLE\_DESC} im Prompt; per Match konfigurierbar
 F4 & Few-Shot-Prompting mit Stilreferenzen & Bis zu 3 Referenzen aus \texttt{style\_references}; nach Event-Typ gefiltert \\
 F5 & Ticker-Lifecycle (draft → published / rejected) & State-Machine mit publish/reject/retract; 21 API-Tests \\
 F6 & Slash-Command-Parser & 11 Phasen- und 14 Event-Commands (in \texttt{CMD\_MAP}); 45 Unit-Tests \\
-F7 & Mehrsprachige Textgenerierung & \texttt{translate\_text()} mit Temperatur 0,1; Batch-Endpoint; funktional verifiziert; Übersetzungsqualität qualitativ nicht benchmarkt (vgl. Abschnitt~7.2.2) \\
+F7 & Mehrsprachige Textgenerierung & \texttt{translate\_text()} mit Temperatur 0{,}1; Batch-Endpoint; funktional verifiziert; Übersetzungsqualität qualitativ nicht benchmarkt (vgl. Abschnitt~7.2.2) \\
 F8 & Idempotenter n8n-Import & UPSERT-Strategien für Events, Spieler, Teams \\
 F9 & Provider-Fallback-Kette & 5 Provider (openrouter → gemini → openai → anthropic → mock) \\
 F10 & Deduplizierung & Prüfung auf bestehenden Eintrag per \texttt{event\_id} vor LLM-Aufruf \\
@@ -541,7 +543,7 @@ F12 & Live-Statistik-Updates & \texttt{ctx\_live\_stats()} mit automatischen Zwi
 N1 & Concurrency-Begrenzung LLM & \texttt{asyncio.Semaphore(8)} in \texttt{ticker\_service.py} \\
 N2 & Retry mit Rate-Limit-Erkennung & 3 Versuche; 30\,s/60\,s bei Rate-Limit; 1\,s/2\,s sonst \\
 N3 & Transaktionale Testisolierung & Rollback-Fixtures; keine persistenten Testdaten \\
-N4 & TypeScript-Typsicherheit & 98,02\,\% type-coverage; 0 Compiler-Fehler \\
+N4 & TypeScript-Typsicherheit & 98{,}02\,\% type-coverage; 0 Compiler-Fehler \\
 N5 & Responsive UI & Playwright-Test 375×812 (iPhone SE); Mobile Tab Bar \\
 N6 & Fehlerresistenz Frontend & \texttt{ErrorBoundary} mit Fallback-UI; 4 Tests \\
 \midrule\noalign{}
@@ -558,11 +560,11 @@ A5 & White-Label-Fähigkeit & Instanz-spezifische Kontextaufbereitung und Few-Sh
 \section{Zusammenfassung}\label{zusammenfassung}
 
 Die Evaluation belegt eine technisch reife Codebasis (439 Tests, 79 \%
-Python-Backend-Coverage, 98,02 \% TypeScript-Typsicherheit, 0
+Python-Backend-Coverage, 98{,}02 \% TypeScript-Typsicherheit, 0
 Compiler-Fehler) mit vollständiger Erfüllung aller 23 definierten
 Anforderungen. Die KI-generierten Texte erreichen in der Hauptevaluation
-(N~=~40, Selbstbewertung) einen Gesamtdurchschnitt von 4,3\,/\,5;
-die LLM-as-Judge-Evaluation (N\,=\,80, Bundesliga 2025/26: Ø~4,1\,/\,5, vgl.\ Abschnitt~6.3.6) bestätigt Korrektheit und Verständlichkeit und repliziert die stilprofilabhängige Tonalitätsschwäche als konsistente Fehlerklasse. Die LLM-Latenz beträgt im Median 859 ms, woraus sich
+(N~=~40, Selbstbewertung) einen Gesamtdurchschnitt von 4{,}3\,/\,5;
+die LLM-as-Judge-Evaluation (N\,=\,80, Bundesliga 2025/26: Ø~4{,}1\,/\,5, vgl.\ Abschnitt~6.3.6) bestätigt Korrektheit und Verständlichkeit und repliziert die stilprofilabhängige Tonalitätsschwäche als konsistente Fehlerklasse. Die LLM-Latenz beträgt im Median 859 ms, woraus sich
 im \texttt{auto}-Modus ein geschätztes TTP-Potenzial von ≈~2--17~s ergibt (vgl. Abschnitt~6.4). Konsistente Fehlerklassen über beide Evaluationsrunden sind Phrasenwiederholung im euphorischen Profil sowie Tonalitätsinkonsistenz bei ereignisarmen Event-Typen (Wechsel, Gelbe Karten) im euphorischen Profil. Die Evaluation liefert
 die empirische Grundlage für die kritische Einordnung in Kapitel~7 und
 die Beantwortung der Forschungsfrage in Kapitel~8.2.

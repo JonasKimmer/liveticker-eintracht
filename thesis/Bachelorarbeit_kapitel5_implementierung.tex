@@ -125,8 +125,6 @@ Das JSONB-Feld \texttt{synthetic\_events.data} speichert kontextabhängig strukt
 \end{Highlighting}
 \end{Shaded}
 
-Da diese Strukturen sich je nach Prematch-Kategorie unterscheiden und sich über die Saison ändern können, ist JSONB hier dem expliziten Spaltenmodell vorzuziehen.
-
 Für jeden Router gibt es eigenständige Pydantic-Schemas für Create-, Update- und Response-Strukturen; alle nutzen \texttt{alias\_generator=to\_camel} für konsistente camelCase-API-Verträge bei Python-internem snake\_case.
 
 Jede Entität hat ein dediziertes Repository, das alle SQL-Operationen
@@ -272,12 +270,12 @@ Das Dispatch-Pattern erlaubt das einfache Hinzufügen neuer Provider:
 Implementierung einer Methode \texttt{\_generate\_X\_text()} und ein
 Eintrag im Dictionary. Die Auswahl des aktiven Providers erfolgt zur Startzeit durch \texttt{\_build\_singleton()}, das das Dictionary \texttt{\_PROVIDER\_KEY\_MAP} (vgl.~Kap.~4.5.1) iteriert und den ersten Eintrag mit gesetztem API-Key aktiviert; die Insertion-Order bestimmt die Priorität in der Konfigurationskette.
 
-Vorab normalisiert eine \texttt{EVENT\_TYPE\_MAP} externe API-Strings auf einheitliche interne Bezeichner (\texttt{goal}, \texttt{card} etc.); unbekannte Typen fallen auf \texttt{"comment"} zurück. Der Prompt wird über vier modulare Hilfsmethoden (\texttt{\_build\_event\_lines}, \texttt{\_build\_context\_str}, \texttt{\_build\_few\_shot\_block}, \texttt{\_build\_prematch\_parts}) zusammengesetzt, die fehlende Parameter auslassen, statt den Prompt zu invalidieren; der Regelblock (\texttt{\#\#\# REGELN}) ist direkt in \texttt{\_build\_prompt} eingebettet (vgl.\ Abschnitt~4.5.2).
+Vorab normalisiert eine \texttt{EVENT\_TYPE\_MAP} externe API-Strings auf einheitliche interne Bezeichner (\texttt{goal}, \texttt{card} etc.); unbekannte Typen fallen auf \texttt{"comment"} zurück. Der Prompt wird über vier modulare Hilfsmethoden (\texttt{\_build\_event\_lines}, \texttt{\_build\_context\_str}, \texttt{\_build\_few\_shot\_block}, \texttt{\_build\_prematch\_parts}) zusammengesetzt, die fehlende Parameter auslassen, statt den Prompt zu invalidieren; der Regelblock (\texttt{\#\#\# REGELN}) ist direkt in \texttt{\_build\_prompt} eingebettet (vgl.\ Abschnitt~4.5.2); die Schreibregeln operationalisieren dabei die in Kapitel~2.5 hergeleiteten linguistischen Gattungsmerkmale des Liveticker-Genres (Ellipsen, Präsenstempus, konzeptionelle Mündlichkeit) als explizite Modellanweisungen.
 
 Als Standardmodell im Deployment wird \texttt{google/gemini-2.0-flash-lite-001} über OpenRouter eingesetzt (vgl. Kap.~4.5.1 für die Begründung der Modellwahl).
 
 LLM-Parameter: \texttt{temperature=0.5} für stilistische Textvariation,
-\texttt{max\_tokens} aus \texttt{LLM\_MAX\_TOKENS} (konfigurierbar). Alle Prompts werden als einzelne User-Nachricht übermittelt, ohne separaten System-Prompt-Slot (\texttt{[\{"role":\ "user",\ "content":\ prompt\}]}). Diese Entscheidung vereinheitlicht das Format über alle Provider hinweg, da die Interpretation eines System-Prompt-Feldes providerabhängig variiert; der Rollenkontext (Journalisten-Anweisung, Stilprofil) ist stattdessen in den Prompttext eingebettet. Bei Rate-Limit-Fehlern wiederholt das System den Aufruf bis zu \texttt{LLM\_RETRY\_ATTEMPTS} (3) Mal mit linearem Backoff (\texttt{30\ s\ /\ 60\ s}). Bei sonstigen transienten Fehlern greift exponentielles Backoff (\texttt{1\ s\ /\ 2\ s}). Das Retry-Schema sieht vereinfacht so aus:
+\texttt{max\_tokens} aus \texttt{LLM\_MAX\_TOKENS} (konfigurierbar). Alle Prompts werden als einzelne User-Nachricht übermittelt (\texttt{[\{"role":\ "user",\ "content":\ prompt\}]}); der Rollenkontext (Journalisten-Anweisung, Stilprofil) ist direkt in den Prompttext eingebettet (vgl.\ Kap.~4.5.2). Bei Rate-Limit-Fehlern wiederholt das System den Aufruf bis zu \texttt{LLM\_RETRY\_ATTEMPTS} (3) Mal mit linearem Backoff (\texttt{30\ s\ /\ 60\ s}). Bei sonstigen transienten Fehlern greift exponentielles Backoff (\texttt{1\ s\ /\ 2\ s}). Das Retry-Schema sieht vereinfacht so aus:
 
 \begin{Shaded}
 \begin{Highlighting}[]
@@ -328,7 +326,7 @@ Ticker-Eintrag für die \texttt{event\_id} existiert:
 
 Dies macht den Endpunkt für Standardfälle idempotent gegenüber
 Mehrfachaufrufen, ein wichtiges Merkmal, da n8n-Workflows bei
-Fehlern automatisch wiederholen. Ohne diese Prüfung würde jeder Retry
+Fehlern automatische Wiederholungsversuche (Retries) ausführen. Ohne diese Prüfung würde jeder Retry
 einen zusätzlichen Ticker-Eintrag mit unterschiedlichem
 (nicht-deterministischem) Text erzeugen. Wird ein abweichendes
 Stilprofil (\texttt{data.style}) übergeben, wird der bestehende Eintrag
@@ -399,7 +397,7 @@ App
 
 Die drei Panels sind physisch getrennte React-Komponenten, kommunizieren
 aber ausschließlich über Context-Provider, kein Prop-Drilling über
-Komponentengrenzen hinweg.
+Komponentengrenzen hinweg. Die gesamte Anwendung ist von einer \texttt{ErrorBoundary}-Komponente umschlossen, die unkontrollierte JavaScript-Fehler abfängt und eine Fallback-UI anzeigt, sodass ein Rendering-Fehler in einem Panel die übrigen Panele nicht blockiert (N6); vier dedizierte Tests sichern dieses Verhalten ab.
 
 
 \subsection{React Context-Architektur}\label{react-context-architektur}
@@ -570,8 +568,6 @@ inkrementelle Migration ohne blockierende Fehlereskalation zu erlauben.
 
 Nach der Migration erzielt das Projekt 0 TypeScript-Compilerfehler. Die verbleibenden 1,98\% ungetypter Stellen konzentrieren sich auf API-Response-Strukturen externer Dienste (Football-API, OpenRouter), bei denen vollständige Typdefinitionen massiven Duplikationsaufwand bedeuten würden, sowie auf einzelne Legacy-Callbacks in älteren Komponenten. Die Auswertung der type-coverage ist in Abschnitt~6.2 zusammengefasst.
 
-TypeScript macht API-Verträge zwischen Frontend und Backend explizit: Jede Schema-Änderung erzeugt sofort einen Compilerfehler, bevor Laufzeitfehler in der Produktion auftreten — der Wert liegt nicht allein in der 98,02-\%-Kennzahl, sondern im frühen Feedback-System, das im Projektverlauf konkrete Laufzeitfehler vor der Produktion abgefangen hat.
-
 \section{n8n
 Workflow-Implementierung}\label{n8n-workflow-implementierung}
 
@@ -671,19 +667,7 @@ Dieser Workflow sucht Medien-Assets bei ScorePlay für Spieler eines Torereignis
 Tests}\label{qualituxe4tssicherung-und-tests}
 
 Die Qualitätssicherung folgt dem Testpyramiden-Modell nach Cohn (2009).
-Die Testsuite umfasst 439 Tests (187 Frontend, 246 Backend, 6
-Browser-Smoke-Tests), die alle fehlerfrei bestehen. Das Frontend setzt auf Jest mit
-\texttt{@testing-library/react}; besonders umfangreich ist der
-\texttt{parseCommand}-Parser mit 45 Testfällen (davon 16 über
-\texttt{test.each}-Expansionen), da er die kritische manuelle
-Eingabeschicht bildet. Das Backend nutzt pytest mit FastAPI
-\texttt{TestClient} und transaktionalem Rollback; API-Integrationstests
-prüfen Endpunkte gegen eine echte PostgreSQL-Testinstanz, Unit-Tests
-decken Services und Repositories ab. Sechs Playwright-E2E-Tests
-validieren grundlegende Browser-Interaktionen. Ergänzend enthält
-\texttt{evaluation\_metrics.py} statistische Hilfsfunktionen (Cliff's
-Delta, Bootstrap-KI, Cohen's Kappa u.\,a.), die als Evaluationsinfrastruktur
-für Folgestudien bereitstehen. Die Kernkennzahlen der Testmetriken und Coverage sind in Abschnitt~6.2 zusammengefasst.
+Das Frontend setzt auf Jest mit \texttt{@testing-library/react}; besonders umfangreich ist der \texttt{parseCommand}-Parser mit 45 Testfällen (davon 16 über \texttt{test.each}-Expansionen), da er die kritische manuelle Eingabeschicht bildet. Das Backend nutzt pytest mit FastAPI \texttt{TestClient} und transaktionalem Rollback; API-Integrationstests prüfen Endpunkte gegen eine echte PostgreSQL-Testinstanz, Unit-Tests decken Services und Repositories ab. Sechs Playwright-E2E-Tests validieren grundlegende Browser-Interaktionen, darunter ein responsiver Mobile-Test mit Viewport 375\,×\,812 (iPhone~SE), der die mobile Nutzbarkeit der Tab-Navigation sicherstellt (N5). Ergänzend enthält \texttt{evaluation\_metrics.py} statistische Hilfsfunktionen (Cliff's Delta, Bootstrap-KI, Cohen's Kappa u.\,a.), die als Evaluationsinfrastruktur für Folgestudien bereitstehen. Die vollständigen Testmetriken und Coverage-Kennzahlen sind in Abschnitt~6.2 dokumentiert.
 
 
 \section{Deployment}\label{deployment}

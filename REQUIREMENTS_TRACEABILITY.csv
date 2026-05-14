@@ -1,0 +1,24 @@
+Req_ID,Req_Type,Requirement_Name,Problem_Dimension,Kap_2_Derivation,Kap_4_Concept,Kap_5_Implementation,Kap_6_Evaluation,Status,Completeness
+F1,Functional,Drei Betriebsmodi (auto/coop/manual),Operativer Zeitdruck,2.1 Zeitdruck,4.3.3 Betriebsmodi,5.3.3 Modes,6.4 Evaluation,Complete,100%
+F2,Functional,KI-Textgenerierung für alle Event-Typen,Operativer Zeitdruck,2.1 Kognitive Teilleistungen,4.5.1 LLM Pipeline,5.2.6 Context Builders,6.3.6 Qualitätsbewertung,Complete,100%
+F3,Functional,Drei Stilprofile (neutral/euphorisch/kritisch),White-Label-Bedarf,2.3 Tonalitätsdifferenzierung,4.5 Stilprofile,5.3.1 Prompt Variation,6.3.6 Tonalität,Complete,100%
+F4,Functional,Few-Shot-Prompting mit Stilreferenzen,White-Label-Bedarf + Linguistik,2.3+2.5 Stilkonsistenz,4.5.2 Few-Shot Design,5.2.7 Style References,6.3.6 Referenz-Wirkung,Complete,100%
+F5,Functional,Ticker-Lifecycle (draft/published/rejected),Operativer Zeitdruck,2.1 Workflow,4.3.2 Lifecycle,5.3.2 State Transitions,6.6 Anforderungsabgleich,Complete,100%
+F6,Functional,Slash-Command-Parser manueller Modus,Operativer Zeitdruck,2.1 Tippaufwand,4.3.1 Command Design,5.3.4 parseCommand.ts,6.2.2 45 Tests,Complete,100%
+F7,Functional,Mehrsprachige Textgenerierung (DE/EN/JP),Mehrsprachigkeit,2.2 Internationalisierung,4.5.2 Zielsprachen-Parameter,5.2.8 Native Generation,6.5 PARTIAL: nur Deutsch,Partial,100%
+F8,Functional,Idempotenter Datenimport via n8n,Operativer Zeitdruck,2.1 Automatisierung,4.4.1 ETL Design,5.5 Workflows,6.6 Anforderungsabgleich,Complete,100%
+F9,Functional,Provider-Fallback-Kette,Operativer Zeitdruck,2.1 Verfügbarkeit,4.5.3 Multi-Provider,5.2.4 OpenRouter Priority,6.3.2 Provider-Override,Complete,100%
+F10,Functional,Deduplizierung Ticker-Einträge,Operativer Zeitdruck,2.1 Robustheit,4.4.2 Dedup Logic,5.2.5 Event Mapping,6.6 Anforderungsabgleich,Complete,100%
+F11,Functional,Pre-Match-Kontextgenerierung,Operativer Zeitdruck,2.1 Elaboration,4.5.2 Context Generation,5.2.6 Pre-Match Builder,6.3.6 Synthetic Events,Complete,100%
+F12,Functional,Live-Statistik-Updates,Operativer Zeitdruck,2.1 Echtzeit,4.4.3 Stats Pipeline,5.5.2 Live Stats Workflow,6.5 Documented,Complete,100%
+N1,Non-Functional,Concurrency-Begrenzung LLM-Aufrufe,Operativer Zeitdruck,2.1 Skalierung,4.5.3 Concurrency Control,5.2.4 Semaphore,6.5 Latency Profile,Complete,100%
+N2,Non-Functional,Retry-Logik mit Rate-Limit-Erkennung,Operativer Zeitdruck,2.1 Robustheit,4.5.3 Resilience,5.2.4 Retry Handler,6.3.2 Tested,Complete,100%
+N3,Non-Functional,Transaktionale Testisolierung,Technische QS,2.6 Tech QS,4.2 DB Layer,5.2.1 Alembic Fixtures,6.2.2 Pytest Setup,Complete,100%
+N4,Non-Functional,TypeScript-Typsicherheit,Technische QS,2.6 Tech QS,4.2 Type Safety,5.3.5 Strict Mode,6.2.4 Coverage Check,Complete,85%
+N5,Non-Functional,Responsive UI (Mobile-tauglich),Operativer Zeitdruck,2.1 Einsatzszenarien,4.6 Frontend Design,5.3.6 Responsive Layout,6.2.3 E2E Tests,Complete,100%
+N6,Non-Functional,Fehlerresistenz im Frontend,Operativer Zeitdruck,2.1 Robustheit,4.6 Error Handling,5.3.7 Error Boundary,6.2.3 E2E Tests,Complete,100%
+A1,Architecture,Drei-Schichten-Architektur,Operativer Zeitdruck,2.1 Modularität,4.1 Architecture,5.1 Implementation,6.6 Abgleich,Complete,100%
+A2,Architecture,Isolierte Datenzugriffsschicht,White-Label-Bedarf,2.3 Mandantenfähigkeit,4.2 Data Layer,5.2.1 Repositories,6.2.2 Tests,Complete,100%
+A3,Architecture,REST-API zur Systemsteuerung,White-Label-Bedarf,2.3 Mandantenkonfiguration,4.2 API Design,5.2.2 Endpoints,6.2.2 Integration Tests,Complete,100%
+A4,Architecture,Vollständiges Datenmodell,Operativer Zeitdruck,2.1 Domäne,4.2 Schema,5.2.1 17 Modelle,6.6 Abgleich,Complete,100%
+A5,Architecture,White-Label-Fähigkeit (ef_whitelabel/generic),White-Label-Bedarf,2.3 White-Label,4.3.2 Config,5.3.3 whitelabel.ts,6.4.3 Instanzlogik,Complete,100%
