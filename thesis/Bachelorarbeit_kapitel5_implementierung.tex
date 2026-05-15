@@ -591,6 +591,8 @@ Nach der Migration erzielt das Projekt 0 TypeScript-Compilerfehler. Die verbleib
 
 Die systemkritischen Workflows setzen die in Abschnitt~\ref{workflow-klassen} konzipierten Gruppen um; alle 17 Workflow-Dateien liegen als versionierte JSON-Exporte unter \texttt{n8n/} vor.
 
+n8n modelliert Workflows als gerichtete Graphen aus typisierten Knoten. Die im System verwendeten Knotentypen sind: \textbf{Webhook}-Knoten empfangen HTTP-Anfragen und starten die Verarbeitungskette; \textbf{Postgres}-Knoten führen parametrisierte SQL-Statements direkt gegen die Datenbank aus (SELECT, INSERT mit ON CONFLICT, UPDATE); \textbf{Code}-Knoten enthalten benutzerdefiniertes JavaScript für Validierungs- und Transformationslogik; \textbf{HTTP-Request}-Knoten rufen externe REST-APIs oder das FastAPI-Backend auf; \textbf{Filter}-Knoten leiten den Datenfluss anhand einer Bedingung weiter oder beenden ihn. Zusammenfassungs-Workflows ersetzen den HTTP-Request-Knoten gegen einen direkten \textbf{OpenRouter}-Knoten, da sie umfangreichere Prompts benötigen als der generische Backend-Endpunkt erlaubt.
+
 \subsection{Events-LLM-Workflow (09)}\label{events-llm-workflow}
 
 \begin{figure}[H]
@@ -612,9 +614,9 @@ Workflow~14 verarbeitet Spielzustands-Übergänge via Webhook (\texttt{POST /mat
 
 \subsection{Zusammenfassung (13) und ScorePlay-Medien (08)}\label{zusammenfassung-und-medien-workflow}
 
-Workflow~13 erzeugt narrative Zusammenfassungen und ruft OpenRouter direkt auf, da Zusammenfassungen einen umfangreicheren Prompt mit parallel geladenen Statistiken (Ballbesitz, Schüsse, Spieler-Ratings) erfordern und keinen Few-Shot-Stil aus der Datenbank benötigen. Das Ergebnis wird je nach \texttt{ticker\_mode} als \texttt{published} oder \texttt{draft} gespeichert.
+Workflow~13 erzeugt narrative Halbzeit- und Abpfiff-Zusammenfassungen. Im Unterschied zu Workflow~09 ruft er OpenRouter direkt über den dedizierten OpenRouter-Knoten auf, nicht über das FastAPI-Backend: Zusammenfassungen erfordern einen umfangreicheren Prompt, der parallel über vier Postgres-Knoten geladene Statistiken (Ballbesitz, Schüsse, Karten, Spieler-Ratings) einbettet und deshalb die Eingabelimits des generischen Backend-Endpunkts überschreiten würde. Few-Shot-Referenzen aus der \texttt{style\_references}-Tabelle werden für Zusammenfassungen nicht verwendet, da der narrative Charakter dieser Texte eigene Stilmuster erfordert. Das Ergebnis wird je nach \texttt{ticker\_mode} direkt als \texttt{published} oder als \texttt{draft} zur redaktionellen Prüfung gespeichert.
 
-Workflow~08 sucht Medien-Assets bei ScorePlay für Spieler eines Torereignisses. Die Spieler-Suche normalisiert Umlaute und matcht gegen vier Namensfelder. Gefundene URLs werden an \texttt{POST /api/v1/media/incoming} übertragen und vom Backend per WebSocket an verbundene Clients verteilt.
+Workflow~08 sucht Medien-Assets bei ScorePlay für den Torschützen eines Torereignisses. Die Spieler-Suche normalisiert zunächst Umlaute im Namen und matcht gegen vier Namensfelder in der ScorePlay-API (\texttt{firstName}, \texttt{lastName}, \texttt{displayName}, \texttt{shortName}), um Abweichungen in der Schreibweise zu tolerieren. Gefundene Asset-URLs werden per HTTP-Request-Knoten an \texttt{POST /api/v1/media/incoming} im FastAPI-Backend übertragen; das Backend leitet sie über den WebSocket-Kanal (\texttt{/ws/media}) in Echtzeit an alle verbundenen Redaktions-Clients weiter, wo sie im Media-Panel zur Auswahl erscheinen.
 
 \subsection{Übergreifende Implementierungsmuster}\label{n8n-implementierungsmuster}
 
