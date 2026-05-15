@@ -1,60 +1,13 @@
 \chapter{Evaluation}\label{evaluation}
 
-\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
-
-\section{Zielsetzung der Evaluation}\label{zielsetzung-der-evaluation}
-
-Das Ziel der Evaluation ist es, das implementierte System auf mehreren
-Ebenen nachweisbar zu bewerten. Die Evaluation gliedert sich in drei
-Blöcke:
-
-\begin{enumerate}
-\def\labelenumi{\arabic{enumi}.}
-\tightlist
-\item
-  \textbf{Technische Qualitätssicherung} (Abschnitt 6.2): Korrektheit
-  der Kernlogik (Unit-Tests), Zusammenspiel der API-Schichten
-  (Integrations-Tests), Stabilität der Benutzeroberfläche
-  (End-to-End-Tests) und statische Typsicherheit (TypeScript-Coverage).
-\item
-  \textbf{Evaluation der KI-Textgenerierung} (Abschnitte 6.3--6.4):
-  Quantitative Metriken, qualitative Analyse der generierten Texte und
-  Vergleich der Betriebsmodi.
-\item
-  \textbf{Systembetrachtung} (Abschnitte 6.5--6.6): Performance und
-  Laufzeitverhalten sowie Anforderungsabgleich (Soll-Ist); eine ausführliche
-  kritische Reflexion der Limitationen erfolgt in Kapitel~7.2.
-\end{enumerate}
-
-Die Metriken dienen nicht nur der Qualitätssicherung, sondern
-dokumentieren auch die Reife der Codebasis für einen produktiven Einsatz
-und identifizieren gleichzeitig die Grenzen des aktuellen Systems.
+Die Evaluation bewertet das System auf drei Ebenen: technische Qualitätssicherung (Abschnitt~6.1), Evaluation der KI-Textgenerierung und Betriebsmodi (Abschnitte~6.2--6.3) sowie Performance und Anforderungsabgleich (Abschnitte~6.4--6.5). Bekannte Grenzen des Systems fasst Abschnitt~6.6 zusammen; eine kritische Reflexion erfolgt in Kapitel~7.2.
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
 \section{Technische
 Qualitätssicherung}\label{technische-qualituxe4tssicherung}
 
-Die technische Qualitätssicherung umfasst die vollständige Testsuite
-(Frontend, Backend, End-to-End) sowie die statische
-Typsicherheitsanalyse.
-
-\subsection{Teststrategie und
-Testpyramide}\label{teststrategie-und-testpyramide}
-
-Die Teststrategie folgt dem klassischen Pyramiden-Modell nach Cohn
-(2009): Eine breite Basis schneller, isolierter Unit-Tests wird durch
-eine mittlere Schicht von Integrations-Tests ergänzt, die reale
-HTTP-Endpunkte gegen eine transaktionale Testdatenbank prüfen. An der
-Spitze stehen Playwright-basierte End-to-End-Tests, die den
-vollständigen Redaktionsworkflow im Browser simulieren.
-
-Diese Pyramide stellt sicher, dass die Mehrheit der Testfälle ohne
-externe Abhängigkeiten läuft und damit in CI-Pipelines schnell und
-zuverlässig ausgeführt werden kann. Die Integrations-Tests sind so
-strukturiert, dass sie bei fehlender Datenbankverbindung automatisch
-übersprungen werden (\texttt{pytest.skip}) und keine falschen
-Fehlermeldungen erzeugen.
+Die technische Qualitätssicherung umfasst die vollständige Testsuite (Frontend, Backend, End-to-End) sowie die statische Typsicherheitsanalyse. Die Ergebnisse folgen dem Pyramiden-Modell (vgl. Abschnitt~\ref{qualituxe4tssicherung-und-tests}).
 
 \subsection{Frontend-Unit-Tests (Jest + React Testing
 Library)}\label{frontend-unit-tests-jest-react-testing-library}
@@ -122,25 +75,13 @@ Event-Listener-Lifecycle \\
 
 \textbf{Kernmodul: \texttt{parseCommand}}
 
-Der \texttt{parseCommand}-Utility ist das komplexeste Stück
-Geschäftslogik im Frontend --- er transformiert Slash-Commands (z. B.
-\texttt{/g\ Müller\ SGE}) in strukturierte Ticker-Einträge. Die 45 Tests
-decken alle 11 Command-Typen (Tor, Eigentor, Gelbe/Rote Karte, Wechsel,
-Notiz, verfehlter Elfmeter und alle 11 Phasen-Commands) sowie explizit
+Die 45 Tests decken alle 11 Command-Typen (Tor, Eigentor, Gelbe/Rote Karte, Wechsel,
+Notiz, verfehlter Elfmeter und alle Phasen-Commands) sowie explizit
 die Fehlerfälle ab: Jeder Test prüft \texttt{isValid}, \texttt{type},
 \texttt{formatted}, \texttt{meta.icon} und \texttt{warnings} ---
 unvollständige Eingaben liefern gezielte Hinweise
 (\texttt{"Fehlend:\ Spieler"}) statt Laufzeitfehler (vgl.
 \texttt{parseCommand.test.ts}).
-
-\textbf{Beispiel: \texttt{useLiveMinute}}
-
-Der Hook \texttt{useLiveMinute} berechnet die aktuelle Spielminute aus
-dem Anstoßzeitpunkt, sofern keine Minuten-Information direkt im
-Match-Objekt vorhanden ist. Die 10 Tests decken sowohl die
-Halbzeit-Korrektur (+46 Minuten ab der 60. Minute) als auch den Puffer
-bei fehlendem Kickoff-Timestamp ab (vgl.
-\texttt{useLiveMinute.test.ts}).
 
 \subsection{Backend-Unit-Tests
 (pytest)}\label{backend-unit-tests-pytest}
@@ -196,18 +137,7 @@ DB-Utilities, Context-Builder \\
 
 \textbf{API-Integrations-Tests}
 
-Die API-Tests nutzen FastAPIs \texttt{TestClient} mit einer
-transaktionalen PostgreSQL-Session, die nach jedem Test per Rollback
-zurückgesetzt wird. Dadurch sind Tests voneinander isoliert und
-hinterlassen keine persistenten Daten. Der \texttt{db}-Fixture erzeugt
-eine Session mit \texttt{autocommit=False} und führt nach dem
-\texttt{yield} ein \texttt{session.rollback()} aus; der
-\texttt{client}-Fixture überschreibt die
-\texttt{get\_db}-Dependency-Injection von FastAPI, sodass alle
-Route-Handler dieselbe transaktionale Session verwenden. Exemplarisch
-wird ein Test für die Ticker-Mode-Route gezeigt, der sowohl den
-Erfolgsfall (\texttt{mode:\ "coop"} → 200) als auch die Validierung
-(\texttt{mode:\ "invalid"} → 422) abdeckt.
+Die API-Tests nutzen FastAPIs \texttt{TestClient} mit einer transaktionalen PostgreSQL-Session, die nach jedem Test per Rollback zurückgesetzt wird. Tests sind dadurch voneinander isoliert und hinterlassen keine persistenten Daten. Jeder Test prüft Erfolgs- und Fehlerfall; der Ticker-Mode-Test etwa validiert \texttt{mode:\ "coop"} → 200 und \texttt{mode:\ "invalid"} → 422.
 
 \textbf{Coverage-Verteilung nach Schicht}
 
@@ -240,7 +170,7 @@ abgedeckt \\
 Pydantic-Validierung vollständig getestet \\
 \textbf{Utilities} (\texttt{app/utils/}) & 5 & \textasciitilde80 \% &
 Evaluation-Metriken, HTTP-Fehler, Context-Builder \\
-\textbf{API-Endpunkte} (\texttt{app/api/v1/}) & 14 & \textasciitilde55
+\textbf{API-Endpunkte} (\texttt{app/api/v1/}) & 13 & \textasciitilde55
 \% & Kern-Routes getestet; Clip/Media/Teams noch offen \\
 \textbf{Repositories} & 12 & \textasciitilde55 \% & Ticker/Event/Match
 gut; Clip/Season/Style offen \\
@@ -303,7 +233,7 @@ die Tests unmittelbar an.
 
 Die vollständige Migration von JavaScript zu TypeScript und die zentrale
 Typen-Architektur (\texttt{src/types/index.ts} mit Domain-Interfaces,
-Union-Types und \texttt{as\ const}-Konstanten) sind in Abschnitt 5.4.7
+Union-Types und \texttt{as\ const}-Konstanten) sind in Abschnitt~\ref{typescript-migration}
 dokumentiert.
 
 \textbf{Ergebnis}
@@ -357,11 +287,9 @@ verteilen sich auf wenige, bewusst offen gelassene Stellen:
   gezählt.
 \end{itemize}
 
-\textbf{Nutzen im Entwicklungsprozess}
+\textbf{Wirksamkeit der Typisierung}
 
-Die TypeScript-Migration hat im Verlauf der Implementierung mehrere
-Fehler früh aufgedeckt, die sonst erst zur Laufzeit sichtbar geworden
-wären:
+Die Migration hat mehrere Fehler frühzeitig aufgedeckt, die ohne statische Typen erst zur Laufzeit sichtbar geworden wären:
 
 \begin{itemize}
 \tightlist
@@ -378,6 +306,8 @@ wären:
   Null-Zugriff
 \end{itemize}
 
+In der Summe belegt die technische Qualitätssicherung eine produktionsreife Codebasis: 391 Tests (187 Frontend, 198 Backend, 6 E2E) laufen vollständig grün, die Backend-Coverage beträgt 75\,\%, und die TypeScript-Typsicherheit erreicht 95,84\,\% bei 0 Compiler-Fehlern.
+
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
 \section{Evaluation der
@@ -390,18 +320,7 @@ konkreter Textbeispiele einschließlich Expertenvalidierung.
 
 \subsection{Evaluationsinfrastruktur}\label{evaluationsinfrastruktur}
 
-Das System stellt über den Endpunkt
-\texttt{POST\ /api/v1/ticker/generate-bulk/\{match\_id\}} eine
-Bulk-Generierungsfunktion bereit, die alle Events eines Spiels mit einem
-wählbaren Provider und Modell generiert. Durch optionale
-\texttt{provider}- und \texttt{model}-Parameter im Request-Body können
-verschiedene LLM-Konfigurationen systematisch verglichen werden, ohne
-den Produktivbetrieb zu beeinflussen.
-
-Für jeden Aufruf wird eine temporäre \texttt{LLMService}-Instanz
-erzeugt, falls Provider oder Modell vom konfigurierten Singleton
-abweichen. Dadurch lassen sich A/B-Vergleiche zwischen Providern
-durchführen, ohne die Global-Konfiguration zu verändern.
+Für den Provider-Vergleich wurde der Bulk-Generierungs-Endpunkt (\texttt{POST /api/v1/ticker/generate-bulk/\{match\_id\}}) genutzt. Über optionale \texttt{provider}- und \texttt{model}-Parameter lassen sich verschiedene LLM-Konfigurationen systematisch vergleichen, ohne den Produktivbetrieb zu beeinflussen.
 
 \subsection{Quantitative Metriken}\label{quantitative-metriken}
 
@@ -441,16 +360,9 @@ sechs Metriken bereit, die sich in zwei Kategorien gliedern:
   den Zufall. κ \textgreater{} 0,61 gilt als substantielle
   Übereinstimmung.
 \item
-  \textbf{Verteilungsanalyse} (\texttt{summarize\_distribution}):
-  Berechnet Median, Standardabweichung, Quartile (Q1, Q3), IQR und 95.
-  Perzentil --- robuste Lagemaße, die gegen Ausreißer unempfindlich
-  sind.
+  \textbf{Verteilungsanalyse}: Berechnet Median, Standardabweichung, Quartile (Q1, Q3), IQR und 95.\,Perzentil --- robuste Lagemaße, die gegen Ausreißer unempfindlich sind.
 \item
-  \textbf{Qualitätsaggregation}
-  (\texttt{aggregate\_quality\_by\_group}): Gruppiert
-  Bewertungsergebnisse nach einem Schlüssel (z. B. Modus oder Modell)
-  und berechnet je Dimension (Korrektheit, Tonalität, Verständlichkeit)
-  den Mittelwert sowie einen Gesamtscore.
+  \textbf{Qualitätsaggregation}: Gruppiert Bewertungsergebnisse nach einem Schlüssel (z.\,B. Modus oder Modell) und berechnet je Dimension (Korrektheit, Tonalität, Verständlichkeit) den Mittelwert sowie einen Gesamtscore.
 \end{itemize}
 
 Alle sechs Funktionen sind durch 18 Unit-Tests abgesichert
@@ -459,42 +371,7 @@ Alle sechs Funktionen sind durch 18 Unit-Tests abgesichert
 \subsection{Modell- und
 Provider-Evaluation}\label{modell--und-provider-evaluation}
 
-Das System unterstützt fünf LLM-Provider in einer festen
-Prioritätskette, die beim Serverstart den ersten Provider mit gültigem
-API-Key als Singleton aktiviert:
-
-{\def\LTcaptype{none} % do not increment counter
-\begin{longtable}[]{@{}
-  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.1429}}
-  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.1587}}
-  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.5397}}
-  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.1587}}@{}}
-\toprule\noalign{}
-\begin{minipage}[b]{\linewidth}\raggedright
-Priorität
-\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
-Provider
-\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
-Standard-Modell
-\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
-Temperatur
-\end{minipage} \\
-\midrule\noalign{}
-\endhead
-\bottomrule\noalign{}
-\endlastfoot
-1 & OpenRouter & \texttt{google/gemini-2.0-flash-lite-001} & 0,3 \\
-2 & Gemini & \texttt{gemini-2.0-flash-lite-001} & 0,3 \\
-3 & OpenAI & \texttt{gpt-4o-mini} & 0,3 \\
-4 & Anthropic & \texttt{claude-haiku-4-5-20251001} & 0,3 \\
-5 & Mock & --- (regelbasierte Templates) & --- \\
-\end{longtable}
-}
-
-Im produktiven Render-Deployment sind OpenRouter (Priority 1) und Mock
-(Fallback) konfiguriert. Die übrigen Provider wurden mangels aktivierter
-API-Keys nicht evaluiert; ihre Einbindung ist architektonisch
-vollständig implementiert und in der Prioritätskette vorgesehen.
+Im Evaluationszeitraum wurden zwei Provider verglichen: OpenRouter (\texttt{google/gemini-2.0-flash-lite-001}, Temperatur 0,5) als primärer LLM-Provider und Mock (regelbasierte Templates) als Fallback. Die übrigen Provider der Prioritätskette (Gemini, OpenAI, Anthropic) wurden mangels aktivierter API-Keys nicht evaluiert; ihre Einbindung ist architektonisch vollständig implementiert (vgl. Abschnitt~\ref{multi-provider-architektur}).
 
 {\def\LTcaptype{none} % do not increment counter
 \begin{longtable}[]{@{}
@@ -536,7 +413,7 @@ Anthropic & \texttt{claude-haiku-4-5-20251001} & --- & --- & --- &
 \emph{Messgrundlage: N = 16 deutschsprachige KI-generierte Einträge
 (OpenRouter), N = 7 (Mock), aus 9 Bundesliga-Spielen der Saison
 2024/25 auf dem Render-Deployment. Qualitätswerte (1--5) wurden
-manuell anhand der Kriterien aus Abschnitt 6.3.6 bewertet.}
+manuell anhand der Kriterien aus Abschnitt~\ref{qualitative-analyse-der-generierten-texte} bewertet.}
 
 Die detaillierte Latenzanalyse einschließlich der Charakterisierung der
 Antwortzeit-Verteilung findet sich in Abschnitt 6.5.1. Die deskriptiven
@@ -546,21 +423,7 @@ gegenüber dem Mock in der Tonalitätstreue (Δ = 1,1 Skalenpunkte).
 \subsection{Einfluss der
 Stilprofile}\label{einfluss-der-stilprofile}
 
-Das System generiert Texte in drei Stilprofilen, die über den Prompt
-gesteuert werden:
-
-\begin{itemize}
-\tightlist
-\item
-  \textbf{neutral}: „sachlich und neutral --- keine Vereinspräferenz''
-\item
-  \textbf{euphorisch}: „begeistert und emotional --- aus Sicht der
-  Heimfans''
-\item
-  \textbf{kritisch}: „analytisch und kritisch''
-\end{itemize}
-
-Da der Backend-Deduplizierungsmechanismus für identische
+Das System generiert Texte in drei Stilprofilen (\texttt{neutral}, \texttt{euphorisch}, \texttt{kritisch}; vgl. Abschnitt~\ref{prompt-engineering-strategie}). Da der Backend-Deduplizierungsmechanismus für identische
 \texttt{event\_id} denselben Eintrag zurückgibt, wurde der Stilvergleich
 anhand typischer Treffer-Einträge (Event-Typ: Tor) aus unterschiedlichen
 Spielen durchgeführt --- die jeweils zugehörige Stilanweisung war
@@ -630,7 +493,7 @@ in Ausrufezeichen-Dichte, Wortwahl und Perspektive. Während
 Ausrufe. \texttt{kritisch} nähert sich dem neutralen Register, enthält
 aber keine explizite analytische Einordnung --- ein Hinweis darauf, dass
 das Prompt-Design für dieses Profil noch Optimierungspotenzial bietet
-(vgl. Abschnitt 6.3.6). Der kontrollierte Direktvergleich zeigt außerdem
+(vgl. Abschnitt~\ref{qualitative-analyse-der-generierten-texte}). Der kontrollierte Direktvergleich zeigt außerdem
 eine Inkonsistenz in der Spielstands-Interpretation: \texttt{euphorisch}
 beschreibt den Treffer als „Führung'', \texttt{kritisch} als
 „Ausgleich'' --- obwohl der übergebene Spielstand (1:2 für Bayern) den
@@ -650,7 +513,7 @@ Ein kontrollierter A/B-Test mit 0, 1 und 3 Few-Shot-Referenzen für
 denselben Event konnte im Rahmen dieser Arbeit nicht durchgeführt
 werden, da das Backend keinen direkten Parameter zur Steuerung der
 Referenzanzahl pro Request exponiert. Qualitativ zeigt die Evaluation
-(Abschnitt 6.3.6), dass die \texttt{style\_references}-Tabelle der
+(Abschnitt~\ref{qualitative-analyse-der-generierten-texte}), dass die \texttt{style\_references}-Tabelle der
 \texttt{ef\_whitelabel}-Instanz konsistente Formatierungsmuster
 (Minutenformat, TOOOOR-Konvention) in den generierten Texten etabliert
 --- ein indirekter Hinweis auf die Wirksamkeit der
@@ -995,8 +858,8 @@ Interviewleitfaden, Kap. 2.4):
 \item
   \emph{IF14: Welche Features fehlen für einen produktiven Einsatz?}
 \item
-  \_IF15: Erkennen Sie den vereinsspezifischen Eintracht-Stil in den
-  generierten Texten wieder?
+  \emph{IF15: Erkennen Sie den vereinsspezifischen Eintracht-Stil in den
+  generierten Texten wieder?}
 \end{itemize}
 
 \textbf{Methodik} --- Das Interview folgte einem
@@ -1037,7 +900,7 @@ Die Interviewergebnisse fließen in die Gesamtbewertung des Systems
 \subsection{Drei Betriebsmodi}\label{drei-betriebsmodi}
 
 Das System unterstützt drei zur Laufzeit umschaltbare Betriebsmodi
-(\texttt{auto}, \texttt{coop}, \texttt{manual}), die in Abschnitt 4.3.3
+(\texttt{auto}, \texttt{coop}, \texttt{manual}), die in Abschnitt~\ref{status-lifecycle-und-betriebsmodi}
 konzeptionell beschrieben sind. Die folgende Evaluation vergleicht ihre
 Leistungsfähigkeit anhand messbarer Metriken.
 
@@ -1046,7 +909,7 @@ Leistungsfähigkeit anhand messbarer Metriken.
 Ein kontrollierter Vergleich derselben Spiels in allen drei Modi war im
 Evaluationszeitraum nicht durchführbar, da kein parallel in mehreren
 Modi betriebenes Live-Spiel vorlag. Die folgende Tabelle beruht auf den
-gemessenen Latenzdaten (Abschnitt 6.5.1) und der implementierten
+gemessenen Latenzdaten (Abschnitt~\ref{llm-latenz}) und der implementierten
 Systemarchitektur:
 
 {\def\LTcaptype{none} % do not increment counter
@@ -1081,8 +944,7 @@ Redakteur-Interventionen & 0 & 1 pro Eintrag & alle \\
 }
 
 \emph{TTP-Schätzungen basieren auf den Latenzmessungen aus Abschnitt
-6.5.1 (Median: 859 ms) und dem Polling-Intervall von 5.000 ms (vgl.
-6.5.3). Der Wert ≈ 5,9 s entspricht dem Worst Case (volles
+6.5.1 (Median: 859 ms) und dem Polling-Intervall von 5.000 ms (vgl. Abschnitt~\ref{frontend-polling}). Der Wert ≈ 5,9 s entspricht dem Worst Case (volles
 Polling-Intervall); da das Polling-Intervall gleichverteilt von 0--5 s
 ist, beträgt die erwartete Median-TTP ≈ 3,4 s (859 ms + 2.500 ms
 Erwartungswert). Im Vergleich zur manuellen TTP von 30--120 s ergibt
@@ -1104,7 +966,7 @@ Laufzeitverhalten}\label{performance-und-laufzeitverhalten}
 \subsection{LLM-Latenz}\label{llm-latenz}
 
 Die Concurrency- und Retry-Konfiguration der LLM-Aufrufe ist in
-Abschnitt 5.2.6 beschrieben. Die Messung erfolgte durch 25 sequenzielle
+Abschnitt~\ref{llm-service-prompt-aufbau-und-provider-dispatch} beschrieben. Die Messung erfolgte durch 25 sequenzielle
 HTTP-Aufrufe an das Render-Deployment
 (\texttt{/api/v1/ticker/generate/\{event\_id\}}) über 9
 Bundesliga-Spiele. Gemessen wurde die \textbf{End-to-End-Latenz} (Client
@@ -1380,7 +1242,7 @@ A1 & Drei-Schichten-Architektur & ✅ & Data-Ingestion (n8n), Application
 (FastAPI+PostgreSQL), Presentation (React) \\
 A2 & Repository-Pattern & ✅ & 13 Repository-Klassen ohne
 Vererbungshierarchie \\
-A3 & 70+ API-Endpunkte unter \texttt{/api/v1} & ✅ & 14 Router-Dateien;
+A3 & 70+ API-Endpunkte unter \texttt{/api/v1} & ✅ & 13 Router-Dateien;
 81 API-Tests \\
 A4 & 17 ORM-Modelle / 18 Datenbanktabellen & ✅ & 100 \% Model-Coverage
 in Tests \\
@@ -1394,7 +1256,7 @@ Instanz-spezifische Kontextaufbereitung und Few-Shot-Filterung \\
 \section{Limitationen}\label{limitationen}
 
 \textbf{Keine externe Nutzerstudie.} Die Evaluation der Textqualität in
-Abschnitt 6.3.6 basiert auf einer Selbstbewertung durch den Entwickler.
+Abschnitt~\ref{qualitative-analyse-der-generierten-texte} basiert auf einer Selbstbewertung durch den Entwickler.
 Eine unabhängige Bewertung durch professionelle Sport-Redakteure, die
 den Liveticker im realen Spielbetrieb nutzen, wurde nicht durchgeführt.
 Die Cohen's-Kappa-Metrik zur Interrater-Reliabilität ist im System
@@ -1451,8 +1313,8 @@ könnten. Die Einschränkung liegt in einer fehlenden Filterung nach
 Mehrsprachigkeitsstrategie wäre eine separate Behandlung manueller
 Einträge sinnvoll.
 
-\textbf{Keine Tests für n8n-Workflows.} Die 15 n8n-Workflows (vgl.
-Kapitel 5.5) verfügen über keine automatisierten Tests. Ihre Korrektheit
+\textbf{Keine Tests für n8n-Workflows.} Die 17 n8n-Workflows (vgl.
+Abschnitt~\ref{n8n-workflow-implementierung}) verfügen über keine automatisierten Tests. Ihre Korrektheit
 wurde ausschließlich durch manuelle Ausführung und Inspektion der
 Datenbank-Ergebnisse verifiziert. Eine testgetriebene Absicherung wäre
 über n8n-Workflow-Mocks oder Integrationstests gegen eine

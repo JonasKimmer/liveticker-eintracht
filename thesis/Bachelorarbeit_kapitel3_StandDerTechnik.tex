@@ -3,7 +3,7 @@
 Dieses Kapitel legt die technologischen Grundlagen für das vorliegende
 System. Es gliedert sich in sieben Bereiche: KI-gestützte Textgenerierung
 mit Large Language Models und Prompt Engineering (Kap.~3.1--3.2),
-automatisierte Sprachgenerierung im Sportjournalismus (Kap.~3.3),
+automatisierte Sportberichterstattung und Evaluationsmethodik (Kap.~3.3),
 Echtzeit-Kommunikationsmuster (Kap.~3.4), ETL-Workflows und
 Automatisierungsplattformen (Kap.~3.5) sowie die eingesetzten Backend-,
 Frontend- und Deployment-Technologien (Kap.~3.6). Kapitel~3.7
@@ -21,20 +21,11 @@ Den technischen Ausgangspunkt bildet die \textbf{Transformer-Architektur}
 (Vaswani et al.~2017), die Text mithilfe sogenannter
 \textbf{Aufmerksamkeitsmechanismen} (Attention) verarbeitet: Das Modell
 gewichtet bei der Verarbeitung eines Wortes alle anderen Wörter im
-Kontext nach ihrer Relevanz. Dadurch erfasst das Modell semantische Zusammenhänge über lange Sequenzen. Das Modell generiert Text autoregressiv: Es erzeugt ein Wort nach dem anderen, wobei jedes neue Wort auf den bereits generierten Text aufbaut.
+Kontext nach ihrer Relevanz. Dadurch erfasst das Modell semantische Zusammenhänge über lange Sequenzen. Das Modell generiert Text autoregressiv: Jedes neue Wort wird auf Basis des bereits generierten Kontexts vorhergesagt.
 
-Durch das Vortraining auf umfangreichen Textkorpora entwickeln diese Modelle ein breites Sprachverständnis. Aufgrund dieser Breite
-können sie direkt auf neue Aufgaben angewendet werden, ohne
-aufgabenspezifisches Fine-tuning zu erfordern, eine Eigenschaft, die
-als \textbf{Zero-Shot-Generalisierung} bezeichnet wird (vgl. Brown et
-al.~2020, S.~7).
+Durch das umfangreiche Vortraining entwickeln diese Modelle ein breites Sprachverständnis und können direkt auf neue Aufgaben angewendet werden -- eine Eigenschaft, die als \textbf{Zero-Shot-Generalisierung} bezeichnet wird (vgl. Brown et al.~2020, S.~7).
 
-Die empirische Grundlage für das \textbf{In-Context Learning} wurde mit
-GPT-3 gelegt (vgl. Brown et al.~2020, S.~4). Das Prinzip, Modelle über Beispiele
-im Prompt zu konditionieren, ohne ihre Gewichte anzupassen, hat sich
-seitdem als Standard für aufgabenspezifische LLM-Anpassung etabliert.
-
-Parallel zum In-Context Learning hat das \textbf{Instruction Tuning} (Ouyang et al.~2022) die praktische Nutzbarkeit von LLMs maßgeblich verbessert. Durch Feinabstimmung auf menschliches Feedback (\emph{Reinforcement Learning from Human Feedback}, RLHF) werden Modelle auf instruktionsfolgendes Verhalten ausgerichtet, sodass zuverlässige Ausgaben entstehen, ohne aufwändige Prompt-Konstruktion. Instruction-optimierte Modelle generieren damit auch bei klar strukturierten Aufgaben mit kurzem Output zuverlässig nutzbare Ergebnisse (vgl. Ouyang et al.~2022, S.~3). Diese Technik liegt der Entwicklung von ChatGPT (GPT-3.5) zugrunde und hat sich seitdem als Industriestandard für praxistaugliche Sprachmodelle etabliert (vgl. Ouyang et al.~2022; Christiano et al.~2023).
+Die empirische Grundlage für das \textbf{In-Context Learning} wurde mit GPT-3 gelegt (vgl. Brown et al.~2020, S.~4): Modelle lassen sich über Beispiele im Prompt konditionieren, ohne ihre Gewichte anzupassen. Instruction-optimierte Modelle folgen darüber hinaus Anweisungen zuverlässig ohne aufwändige Prompt-Konstruktion und liefern auch bei klar strukturierten Aufgaben mit kurzem Output nutzbare Ergebnisse (vgl. Ouyang et al.~2022, S.~3).
 
 Trotz ihrer Leistungsfähigkeit weisen LLMs strukturelle Schwächen auf,
 insbesondere die Neigung zu \textbf{Halluzinationen}, also der
@@ -62,9 +53,9 @@ Datenkuration). \textbf{Prompting-basierte Ansätze} hingegen nutzen das
 vortrainierte Modell direkt und steuern dessen Verhalten ausschließlich
 über die Eingabeformulierung (vgl. Brown et al.~2020, S.~3 u.~6). Für Domänen mit kleinen oder nicht verfügbaren Trainingsdatensätzen ist Prompting methodisch vorzuziehen: Fine-tuning neigt unter diesen Bedingungen zu Overfitting, während Prompting-basierte Ansätze mit wenigen kuratierten Beispielen auskommen (vgl. ebd.).
 
-Innerhalb des Prompting-Paradigmas lassen sich zwei wesentliche Techniken unterscheiden. Beim \textbf{Zero-Shot Prompting} erhält das Modell ausschließlich eine Aufgabenbeschreibung ohne Demonstrationsbeispiele (vgl. Brown et al.~2020, S.~7); dieser Ansatz maximiert Flexibilität und eignet sich für generische Anwendungsfälle ohne spezifische Stilerwartungen. Beim \textbf{Few-Shot Prompting} werden dem Modell neben der Aufgabenbeschreibung zusätzlich wenige Beispiele als Stilreferenz bereitgestellt (vgl. Brown et al.~2020, S.~6), die das Modell auf eine gewünschte Tonalität konditionieren, ohne dass modellseitiges Fine-tuning erforderlich ist. Few-Shot-Prompting entfaltet seinen Vorteil gegenüber Fine-tuning besonders bei kleinen Beispielmengen; ab etwa 50--100 Beispielen können Fine-tuned Modelle in Stilkonsistenz und Token-Effizienz überlegen sein (vgl. Brown et al.~2020, S.~6). Die konkrete Implementierung mit kuratierten Stilreferenzen ist in Kapitel~4.5.2 beschrieben.
+Innerhalb des Prompting-Paradigmas lassen sich zwei wesentliche Techniken unterscheiden. Beim \textbf{Zero-Shot Prompting} erhält das Modell ausschließlich eine Aufgabenbeschreibung ohne Demonstrationsbeispiele (vgl. Brown et al.~2020, S.~7); dieser Ansatz maximiert Flexibilität und eignet sich für generische Anwendungsfälle ohne spezifische Stilerwartungen. Beim \textbf{Few-Shot Prompting} werden dem Modell neben der Aufgabenbeschreibung zusätzlich wenige Beispiele als Stilreferenz bereitgestellt (vgl. Brown et al.~2020, S.~6), die das Modell auf eine gewünschte Tonalität konditionieren, ohne dass modellseitiges Fine-tuning erforderlich ist. Few-Shot-Prompting entfaltet seinen Vorteil gegenüber Fine-tuning besonders bei kleinen Beispielmengen; ab etwa 50--100 Beispielen können Fine-tuned Modelle in Stilkonsistenz und Token-Effizienz überlegen sein.
 
-Ergänzend hat sich das \textbf{Role Prompting} als eigenständige Technik etabliert: Durch die explizite Zuweisung einer Persona (z.\,B. „Du bist ein Sportredakteur von Eintracht Frankfurt'') werden Modelle auf eine konsistente sprachliche Identität verpflichtet. Rollenbasierte Instruktionen verbessern nachweislich die Ausgabekonsistenz bei stilistisch definierten Aufgaben (vgl. Shanahan et al.~2023, S.~3). Die Kombination von Role Prompting mit Few-Shot-Stilreferenzen zu einer gemeinsamen Prompt-Architektur wird in Kapitel~4.5.2 beschrieben.
+Ergänzend hat sich das \textbf{Role Prompting} als eigenständige Technik etabliert: Durch die explizite Zuweisung einer Persona (z.\,B. „Du bist ein Sportredakteur von Eintracht Frankfurt'') werden Modelle auf eine konsistente sprachliche Identität verpflichtet. Rollenbasierte Instruktionen verbessern nachweislich die Ausgabekonsistenz bei stilistisch definierten Aufgaben (vgl. Shanahan et al.~2023, S.~3).
 
 Moderne Chat-Modelle unterscheiden strukturell zwischen zwei
 Prompt-Rollen (OpenAI 2024; Anthropic 2024): Der \textbf{System Prompt} legt die übergeordnete Persona
@@ -76,9 +67,7 @@ und den User Prompt auf die jeweilige Aufgabe zu beschränken.
 
 Ein weiterer zentraler Steuerungsparameter ist die \textbf{Temperature},
 die die Wahrscheinlichkeitsverteilung der Token-Auswahl beeinflusst
-(vgl. Brown et al.~2020). Niedrige Werte (z.\,B. 0,0--0,3) führen zu
-deterministischeren, faktentreueren Ausgaben; höhere Werte (z.\,B.
-0,7--1,0) erhöhen die kreative Varianz. Für strikt faktenbasierte journalistische Texte sprechen niedrige Werte. Genres, die stilistische Variation erfordern – im Liveticker-Kontext belegen Clerwall (2014, S.~529) sowie Boisserée (zit. n. Beils 2023, S.~207), dass formelhaft wirkende Texte die Rezeptionsqualität beeinträchtigen –, profitieren von einem mittleren Wert als produktive Balance aus Faktentreue und sprachlicher Lebendigkeit. Für Übersetzungsaufgaben, bei denen semantische Abweichungen vom Originaltext minimiert werden sollen, sind niedrigere Werte geeignet. Die konkrete Parameterwahl des vorliegenden Systems wird in Kapitel~4.5.2 begründet.
+(vgl. Brown et al.~2020). Niedrige Werte (z.\,B. 0,0--0,3) führen zu deterministischeren, faktentreueren Ausgaben; höhere Werte (z.\,B. 0,7--1,0) erhöhen die kreative Varianz. Für den Liveticker-Kontext, in dem formelhaft wirkende Texte die Rezeptionsqualität beeinträchtigen (vgl. Clerwall 2014, S.~529; Boisserée, zit. n. Beils 2023, S.~207), empfiehlt sich ein mittlerer Wert als Balance aus Faktentreue und sprachlicher Lebendigkeit. Für Übersetzungsaufgaben, bei denen semantische Abweichungen vom Originaltext minimiert werden sollen, sind niedrigere Werte geeignet. Die konkrete Parameterwahl des vorliegenden Systems wird in Kapitel~4.5.2 begründet.
 
 Ein weiterer praktischer Constraint ist das \textbf{Kontextfenster} (Context Window): Jedes LLM kann nur eine begrenzte Token-Anzahl pro Aufruf verarbeiten, je nach Modell mehrere Tausend bis mehrere Hunderttausend Token. Jeder Few-Shot-Beispielblock, jeder Kontextbaustein und die Aufgabenbeschreibung verbrauchen Token und begrenzen damit die Anzahl sinnvoll einzubettender Stilreferenzen. Die optimale Anzahl von Few-Shot-Beispielen ist damit eine Abwägung zwischen Stilsteuerungstiefe und verfügbarem Kontextfenster.
 
@@ -86,18 +75,16 @@ Kapitel~4.5.2 erläutert die konkrete Prompt-Struktur, Few-Shot-Beispiele und Te
 
 
 
-\section{Natural Language Generation im
-Sportjournalismus}\label{natural-language-generation-im-sportjournalismus}
+\section{Automatisierte Sportberichterstattung und Evaluationsmethodik}\label{automatisierte-sportberichterstattung}
 
 Die automatisierte Erzeugung natürlichsprachlicher Texte aus strukturierten Daten (Data-to-Text Generation) bildet die technische Grundlage für KI-gestützte Berichterstattungssysteme (vgl. Puduppully \& Lapata 2021, S.~510). Historische Ansätze basierten auf regelbasierten Template-Architekturen mit vorhersagbarer Ausgabe, aber stilistischer Monotonie; neuronale End-to-End-Systeme verbesserten die sprachliche Natürlichkeit auf Kosten erhöhter Halluzinationsanfälligkeit (vgl. Puduppully \& Lapata 2021, S.~520; Boisserée, zit. n. Beils 2023, S.~207). Im professionellen Roboterjournalismus erzeugt beispielsweise \emph{Die Welt} bereits automatisierte Spielberichte via Retresco (vgl. Beils 2023, S.~207), ein templatebasierter Ansatz, der deterministische, aber stilistisch begrenzte Texte liefert.
 
 Empirische Befunde zur automatisierten Sportberichterstattung zeigen, dass Leser KI-generierte Sporttexte in Lesbarkeit und Vertrauenswürdigkeit ähnlich wie menschlich verfasste Texte bewerten, diese jedoch in wahrgenommener Expertise und Stilqualität schlechter einschätzen (Clerwall 2014, S.~529). Graefe et al.\ (2018, S.~7) replizieren diesen Befund und zeigen, dass die wahrgenommene Qualitätslücke beim faktenintensiven Sportbericht schmaler ausfällt als bei allgemeinen Nachrichtentexten — ein Hinweis darauf, dass das strukturierte, datendichte Sportformat algorithmischer Generierung besonders entgegenkommt. Für das Genre Liveticker, das von sprachlicher Lebendigkeit, Ellipsen und situativer Einordnung lebt (vgl. Kap.~2.5), ist dieser Stilnachteil besonders relevant: Formelhaft wirkende, templatebasierte Texte verstoßen gegen Genrekonventionen und senken die Leserbindung. LLM-basierte Systeme können diesem Problem durch variable Formulierung begegnen, erkaufen dies aber mit erhöhtem Halluzinationsrisiko (vgl. Kap.~3.1). Eine Qualitätssteigerung lässt sich durch Few-Shot-Prompting mit kuratierten Beispieltexten aus dem Domänenkontext erzielen, die das Modell auf domänenspezifische Ausdrucksweise konditionieren (vgl. Kap.~3.2).
 
-Der Einsatz von KI-Systemen in professionellen Redaktionsworkflows wirft die grundlegende Frage auf, wie maschinelle Effizienz und menschliche Kontrolle zu verbinden sind. Das Konzept des \textbf{Human-in-the-Loop} (HITL) bezeichnet Systemdesigns, in denen menschliche Akteure gezielt in automatisierte Entscheidungsprozesse eingebunden bleiben (Mosqueira-Rey et al.~2023, S.~2). Für den journalistischen Kontext ist HITL besonders relevant: Die finale publizistische Verantwortung — wie etwa die treffsichere Festlegung von Richtigkeit, Ton und Relevanz (vgl. hierzu Canalp, zit. n. Beils 2023, S.~57) — lässt sich nicht vollständig an ein Modell delegieren, das weder redaktionellen Kontext noch die Implikationen einer Falschaussage einschätzen kann. HITL-Architekturen lösen dieses Spannungsfeld, indem KI zeitkritische Teilaufgaben übernimmt, der Mensch jedoch die Freigabeentscheidung behält. Amershi et al.\ (vgl. 2019, S.~17) zeigen, dass HITL-Designs in ML-Systemen die Fehlertoleranz erhöhen und das Nutzervertrauen in automatisierte Ausgaben stärken. HITL-Architekturen haben sich damit als geeignetes Designmuster für hybride Mensch-KI-Systeme etabliert, bei denen Automatisierung und publizistische Kontrolle in Einklang gebracht werden müssen.
+Der Einsatz von KI-Systemen in professionellen Redaktionsworkflows wirft die grundlegende Frage auf, wie maschinelle Effizienz und menschliche Kontrolle zu verbinden sind. Das Konzept des \textbf{Human-in-the-Loop} (HITL) bezeichnet Systemdesigns, in denen menschliche Akteure gezielt in automatisierte Entscheidungsprozesse eingebunden bleiben (Mosqueira-Rey et al.~2023, S.~2). Für den journalistischen Kontext ist HITL besonders relevant: Die finale publizistische Verantwortung — wie etwa die treffsichere Festlegung von Richtigkeit, Ton und Relevanz (vgl. hierzu Canalp, zit. n. Beils 2023, S.~57) — lässt sich nicht vollständig an ein Modell delegieren, das weder redaktionellen Kontext noch die Implikationen einer Falschaussage einschätzen kann. HITL-Architekturen lösen dieses Spannungsfeld, indem KI zeitkritische Teilaufgaben übernimmt, der Mensch jedoch die Freigabeentscheidung behält. Amershi et al.\ (vgl. 2019, S.~17) zeigen, dass HITL-Designs in ML-Systemen die Fehlertoleranz erhöhen und das Nutzervertrauen in automatisierte Ausgaben stärken. Die Umsetzung als \textit{coop}-Modus ist in Kapitel~4.3.3 beschrieben.
 
-LLM-basierte Ansätze bieten gegenüber klassischen templatebasierten NLG-Architekturen strukturelle Vorteile für stilistisch variable Aufgaben: höhere sprachliche Varianz, flexible Stilsteuerung per Prompt und keine manuelle Pflegepflicht für Templates. Die jeweiligen Trade-offs — insbesondere das erhöhte Halluzinationsrisiko gegenüber deterministischen Templates — werden in Kapitel~4.5 gegen die Anforderungen abgewogen.
 
-Neben der Frage, wie Texte generiert werden, stellt sich für die empirische Evaluation NLG-basierter Systeme die Frage, wie Textqualität skalierbar und unabhängig gemessen werden kann. Zur automatisierten Qualitätsbewertung generierter Texte hat sich der \textbf{LLM-as-Judge}-Ansatz etabliert (vgl. Zheng et al.~2023): Ein unabhängiges Sprachmodell bewertet die Ausgaben des generierenden Modells anhand definierter Kriterien -- im Fall der vorliegenden Arbeit anhand der Metriken Korrektheit, Tonalität und Verständlichkeit (vgl. Kap.~1.3). Voraussetzung für valide Ergebnisse ist, dass bewertendes und generierendes Modell verschieden sind, um Selbstreferenzialität zu vermeiden. Diese Methodik bildet mittlerweile auch den industriellen Standard: OpenAI nutzt sogenannte Rule-Based Reward Models (RBRMs), bei denen GPT-4 als Klassifikator anhand strikt vorgegebener Rubriken Textausgaben qualitativ bewertet (vgl. OpenAI 2023, S.~12). Die Methode ergänzt menschliche Evaluation, ersetzt sie jedoch nicht vollständig (vgl. Zheng et al.~2023). Sie wird in Kapitel~6.3.6 für die Qualitätsevaluation der generierten Ticker-Einträge eingesetzt.
+Für die empirische Evaluation NLG-basierter Systeme stellt sich zudem die Frage, wie Textqualität skalierbar und unabhängig gemessen werden kann. Zur automatisierten Qualitätsbewertung generierter Texte hat sich der \textbf{LLM-as-Judge}-Ansatz etabliert (vgl. Zheng et al.~2023): Ein unabhängiges Sprachmodell bewertet die Ausgaben des generierenden Modells anhand definierter Kriterien -- im Fall der vorliegenden Arbeit anhand der Metriken Korrektheit, Tonalität und Verständlichkeit (vgl. Kap.~1.3). Voraussetzung für valide Ergebnisse ist, dass bewertendes und generierendes Modell verschieden sind, um Selbstreferenzialität zu vermeiden. Diese Methodik bildet mittlerweile auch den industriellen Standard: OpenAI nutzt sogenannte Rule-Based Reward Models (RBRMs), bei denen GPT-4 als Klassifikator anhand strikt vorgegebener Rubriken Textausgaben qualitativ bewertet (vgl. OpenAI 2023, S.~12). Die Methode ergänzt menschliche Evaluation, ersetzt sie jedoch nicht vollständig (vgl. Zheng et al.~2023). Sie wird in Kapitel~6.3.6 für die Qualitätsevaluation der generierten Ticker-Einträge eingesetzt.
 
 
 
@@ -111,18 +98,15 @@ existieren mehrere etablierte Kommunikationsmuster, die sich
 hinsichtlich dieser Dimensionen unterscheiden.
 
 \begin{itemize}\tightlist
-\item \textbf{HTTP-Polling} ist das einfachste Muster: Der Client sendet in regelmäßigen Intervallen Anfragen an den Server, um neue Daten abzurufen. Der Vorteil liegt in der Einfachheit und breiten Kompatibilität; das Muster nutzt Standard-HTTP-Requests ohne zusätzliche Protokollschichten. Nachteile sind die inhärente Latenz (Daten werden erst beim nächsten Polling-Zyklus sichtbar) und der erhöhte Ressourcenverbrauch durch wiederholte Request/Response-Zyklen (inklusive TCP-Handshake-Overhead), selbst wenn keine neuen Daten vorliegen (vgl. de la Torre et al.~2019, S.~261). Für Anwendungen mit akzeptabler Latenztoleranz (z. B. wenige Sekunden) und begrenzter Updatefrequenz ist Polling jedoch eine robuste und wartbare Lösung.
-\item \textbf{Server-Sent Events (SSE)} ermöglichen eine leichtgewichtige, HTTP-basierte Push-Verbindung, bei der der Server kontinuierlich Ereignisse an den Client überträgt (Hickson 2015). Im Gegensatz zu Polling entfällt der wiederholte Request-Overhead; im Gegensatz zu WebSocket wird kein eigenes Protokoll benötigt. SSE ist auf unidirektionale Kommunikation (Server→Client) beschränkt und eignet sich daher besonders für Benachrichtigungs- und Update-Szenarien, bei denen der Client keine Nachrichten zurücksendet. Browser-Reconnect-Logik ist nativ spezifiziert (HTTP~200 mit \texttt{Content-Type: text/event-stream}), was die Implementierungskomplexität gering hält (vgl. de la Torre et al.~2019, S.~261--262).
-\item \textbf{WebSocket} etabliert eine vollständig bidirektionale, persistente Verbindung über das WebSocket-Protokoll (vgl. RFC 6455). Nach einem initialen HTTP-Handshake wechselt die Verbindung in ein binäres Protokoll mit minimalem Overhead. WebSocket eignet sich für latenzkritische Echtzeitanwendungen, bei denen minimale Latenz und eine persistente Verbindung erforderlich sind, auch wenn die Kommunikation faktisch überwiegend unidirektional (Server → Client) verläuft. Der Preis für niedrige Latenz sind höhere Implementierungskomplexität und erhöhter Server-Ressourcenbedarf durch persistente Verbindungen; clientseitig ist bei Verbindungsabbrüchen eine Reconnect-Strategie mit exponentiellem Backoff erforderlich (vgl. RFC~6455, Kap.~7.2.3; de la Torre et al.~2019, S.~262).
+\item \textbf{HTTP-Polling} ist das einfachste Muster: Der Client sendet in regelmäßigen Intervallen Anfragen an den Server, um neue Daten abzurufen. Der Vorteil liegt in der Einfachheit und breiten Kompatibilität; das Muster nutzt Standard-HTTP-Requests ohne zusätzliche Protokollschichten. Nachteile sind die inhärente Latenz (Daten werden erst beim nächsten Polling-Zyklus sichtbar) und der erhöhte Ressourcenverbrauch durch wiederholte Request/Response-Zyklen, selbst wenn keine neuen Daten vorliegen (vgl. de la Torre et al.~2019, S.~261). Für Anwendungen mit akzeptabler Latenztoleranz (z. B. wenige Sekunden) und begrenzter Updatefrequenz ist Polling jedoch eine robuste und wartbare Lösung.
+\item \textbf{Server-Sent Events (SSE)} ermöglichen eine leichtgewichtige, HTTP-basierte Push-Verbindung, bei der der Server kontinuierlich Ereignisse an den Client überträgt (Hickson 2015). Im Gegensatz zu Polling entfällt der wiederholte Request-Overhead; im Gegensatz zu WebSocket wird kein eigenes Protokoll benötigt. SSE ist auf unidirektionale Kommunikation (Server→Client) beschränkt und eignet sich daher besonders für Benachrichtigungs- und Update-Szenarien, bei denen der Client keine Nachrichten zurücksendet (vgl. de la Torre et al.~2019, S.~261--262).
+\item \textbf{WebSocket} etabliert eine vollständig bidirektionale, persistente Verbindung über das WebSocket-Protokoll (vgl. RFC 6455). Nach einem initialen HTTP-Handshake wechselt die Verbindung in ein binäres Protokoll mit minimalem Overhead. WebSocket eignet sich für latenzkritische Echtzeitanwendungen, bei denen minimale Latenz und eine persistente Verbindung erforderlich sind, auch wenn die Kommunikation faktisch überwiegend unidirektional (Server → Client) verläuft. Der Preis für niedrige Latenz sind höhere Implementierungskomplexität und erhöhter Server-Ressourcenbedarf durch persistente Verbindungen (vgl. de la Torre et al.~2019, S.~262).
 \end{itemize}
 
 Die Wahl des Kommunikationsmusters hängt von den Anforderungen der
 Anwendung ab: Polling bevorzugt Einfachheit, SSE bietet effizienten
 unidirektionalen Push, WebSocket minimiert Latenz bei bidirektionaler
-Kommunikation. Hybridansätze nutzen verschiedene Muster für unterschiedliche Datenströme innerhalb derselben Anwendung, um Trade-offs gezielt zu optimieren. Für Anwendungen mit heterogenen Latenzanforderungen bietet sich an, verschiedene Datenkategorien unterschiedlichen Mustern zuzuweisen: toleranzkritische Zustandsdaten per Polling und latenzkritische Ereignisdaten per WebSocket. Bei WebSocket-Verbindungsabbrüchen ist clientseitig ein exponentieller Backoff empfehlenswert, nach dem das System auf Polling zurückfallen kann; die konkrete Parametrierung hängt von der Anwendungsanforderung ab (vgl. Kap.~4.1.1).
-
-Die konkrete Umsetzung im vorliegenden System wird in Kapitel~4.1.1
-beschrieben.
+Kommunikation. Hybridansätze nutzen verschiedene Muster für unterschiedliche Datenströme innerhalb derselben Anwendung, um Trade-offs gezielt zu optimieren: latenztolerante Zustandsdaten per Polling, latenzkritische Ereignisdaten per WebSocket (vgl. Kap.~4.1.1).
 
 
 
@@ -132,11 +116,7 @@ Workflow-Automatisierung}\label{etl-prozesse-und-workflow-automatisierung}
 Die Datenbeschaffung in datengetriebenen Anwendungen folgt überwiegend
 dem \textbf{Extract-Transform-Load-Prinzip (ETL)}. Daten werden aus
 heterogenen Quellen extrahiert, in ein einheitliches Zielformat
-transformiert und in den Datenspeicher geladen (vgl. Freitas et al.~2025, S.~807). Für Sport-Liveticker bedeutet dies die Integration von
-Live-Spielereignissen, Statistiken, Aufstellungen und Mediendaten aus
-unterschiedlichen APIs oder Datenfeeds. Die Herausforderung besteht
-darin, diese Daten zeitnah, konsistent und in einer für die
-Anwendungslogik verwertbaren Struktur bereitzustellen.
+transformiert und in den Datenspeicher geladen (vgl. Freitas et al.~2025, S.~807). Für Sport-Liveticker bedeutet dies die Integration von Live-Spielereignissen, Statistiken, Aufstellungen und Mediendaten aus unterschiedlichen APIs oder Datenfeeds.
 
 Workflow-Orchestrierungsplattformen modellieren ETL-Logik als konfigurierbare DAG-Prozesse, die Abhängigkeiten zwischen Verarbeitungsschritten explizit machen (vgl. Venkiteela 2025, S.~3). Low-Code-Plattformen reduzieren die Einstiegshürde gegenüber prozeduralem ETL-Code erheblich und erlauben bei Bedarf die Einbettung von Custom-Code-Blöcken (vgl. Venkiteela 2025, S.~2).
 
@@ -162,7 +142,6 @@ Verarbeitung und effizienten Webhook-Mechanismen, um auf externe
 Ereignisse sofort reagieren zu können (vgl. Nakavisute \& Sincharoonsak
 2025).
 
-Workflow-Plattformen wie n8n bieten integrierte Fehlerbehandlung: Einzelne Nodes können bei Fehlern einen Alternativpfad beschreiten, automatische Retry-Mechanismen behandeln transiente Netzwerkfehler. Die Zuverlässigkeit hängt dabei von der Konfigurationsqualität ab — undefinierte Fehlerpfade führen zu stillem Scheitern. Die Fehlerbehandlung der vorliegenden Workflows ist in Kap.~5.4 beschrieben.
 
 Die konkrete Umsetzung der ETL-Architektur im vorliegenden System wird
 in Kapitel~4.4 beschrieben.
@@ -173,13 +152,17 @@ in Kapitel~4.4 beschrieben.
 
 Für KI-gestützte Webanwendungen mit asynchronen Backend-Anfragen und interaktiven Frontends sind Python-ASGI-Frameworks, komponentenbasierte Frontend-Bibliotheken und PaaS-Deployment-Infrastrukturen eine verbreitete Kombination. Die folgenden Abschnitte beschreiben die entscheidungsrelevanten Eigenschaften dieser Technologieklassen sowie relevante Alternativen.
 
-Im Python-Backend-Ökosystem stehen für asynchrone Webanwendungen drei verbreitete Frameworks zur Verfügung: \texttt{Flask} ist ein schlankes WSGI-Framework ohne nativen \texttt{asyncio}-Support; \textbf{Django} bietet einen vollständigen MVC-Stack mit eigenem ORM, ist aber primär auf synchrone Webanwendungen ausgerichtet; \textbf{FastAPI} basiert auf dem ASGI-Standard und unterstützt \texttt{asyncio} nativ (vgl. Grigorev 2019). \texttt{FastAPI} generiert aus \texttt{Pydantic}-Schemata automatisch eine OpenAPI-konforme Dokumentation, die als maschinenlesbarer Vertrag für Frontend-Clients und externe Integratoren dient. \texttt{SQLAlchemy} bildet als typsichere ORM-Schicht über PostgreSQL eine Datenbankanbindung mit ACID-Garantien. Die konkrete Backend-Architektur und Schichtstruktur werden in Kapitel~4.2 beschrieben.
+\subsection{Backend-Framework und Persistenzschicht}\label{backend-framework-und-persistenzschicht}
 
-Für die Persistenzschicht bieten sich relationale Datenbanksysteme (z.\,B. \textbf{PostgreSQL}, MySQL) und dokumentenorientierte Stores (z.\,B. \textbf{MongoDB}) als Hauptklassen an. Relationale Systeme erzwingen über Fremdschlüsselbeziehungen referenzielle Integrität und unterstützen typsichere Joins über normalisierte Schemata; dokumentenorientierte Stores bieten höhere Schemaflexibilität auf Kosten von ACID-Garantien und deklarativer Join-Semantik (vgl. Fowler \& Sadalage 2012, S.~26--27).
+Im Python-Backend-Ökosystem stehen für asynchrone Webanwendungen drei verbreitete Frameworks zur Verfügung: \texttt{Flask} ist ein schlankes WSGI-Framework ohne nativen \texttt{asyncio}-Support; \textbf{Django} bietet einen vollständigen MVC-Stack mit eigenem ORM, ist aber primär auf synchrone Webanwendungen ausgerichtet; \textbf{FastAPI} basiert auf dem ASGI-Standard und unterstützt \texttt{asyncio} nativ (vgl. Grigorev 2019). \texttt{FastAPI} generiert aus \texttt{Pydantic}-Schemata automatisch eine OpenAPI-konforme Dokumentation, die als maschinenlesbarer Vertrag für Frontend-Clients und externe Integratoren dient. Die konkrete Backend-Architektur und Schichtstruktur werden in Kapitel~4.2 beschrieben.
+
+Für die Persistenzschicht bieten sich relationale Datenbanksysteme (z.\,B. \textbf{PostgreSQL}, MySQL) und dokumentenorientierte Stores (z.\,B. \textbf{MongoDB}) als Hauptklassen an. Relationale Systeme erzwingen über Fremdschlüsselbeziehungen referenzielle Integrität und unterstützen Joins über normalisierte Schemata; dokumentenorientierte Stores bieten höhere Schemaflexibilität auf Kosten von ACID-Garantien und deklarativer Join-Semantik (vgl. Fowler \& Sadalage 2012, S.~26--27).
+
+\subsection{Frontend-Framework}\label{frontend-framework}
 
 Im Frontend-Ökosystem konkurrieren mehrere komponentenbasierte Bibliotheken und Frameworks: \textbf{React} (Meta) setzt auf eine unidirektionale Datenflussmechanik mit virtuellem DOM; \textbf{Vue} bietet ein vergleichbares Komponentenmodell mit reaktivem Datenbindungsansatz; \textbf{Svelte} kompiliert Komponenten zu nativem JavaScript ohne Laufzeit-Framework-Overhead. Alle drei sind für interaktive Single-Page-Applications geeignet. Die konkrete Frontend-Architektur wird in Kapitel~4.6 beschrieben.
 
-Bei ETL-Orchestrierung und Workflow-Automatisierung stehen prozedurale Ansätze (Cron-Skripte, Custom-Scheduler) neben dedizierten Plattformen: \textbf{Apache Airflow} und \textbf{Prefect} sind auf Python-basierte, Entwickler-verwaltete DAG-Pipelines ausgerichtet; \textbf{n8n} und vergleichbare Low-Code-Plattformen (z.\,B. Make, Zapier) ermöglichen visuell konfigurierbare Workflows ohne Programmierkenntnisse und unterstützen direkten Datenbankzugriff sowie HTTP-Trigger nativ (vgl. Venkiteela 2025, S.~2--3). Die konkrete ETL-Entscheidung wird in Kapitel~4.4 begründet.
+\subsection{Cloud-Deployment}\label{cloud-deployment}
 
 \textbf{Platform-as-a-Service (PaaS)}-Anbieter wie Render abstrahieren die Infrastrukturverwaltung und ermöglichen Deployments direkt aus Git-Branches. PaaS setzt ein \textbf{Stateless-Design} voraus: Persistente Daten werden in externe Dienste ausgelagert, sodass zusätzliche Instanzen ohne Zustandskonsistenzprobleme gestartet werden können.
 
@@ -188,7 +171,7 @@ Bei ETL-Orchestrierung und Workflow-Automatisierung stehen prozedurale Ansätze 
 \section{Synthese: Technologische Konsequenzen für das
 Systemdesign}\label{synthese-technologische-konsequenzen-fuxfcr-das-systemdesign}
 
-Der Stand der Technik zeigt, dass die drei Problemdimensionen aus Kapitel~2 jeweils konkrete Technologieentscheidungen nach sich ziehen. Tabelle~\ref{tab:technik-mapping} fasst diese Zuordnung kompakt zusammen.
+Der Stand der Technik zeigt, dass die identifizierten Anforderungsdimensionen aus Kapitel~2 jeweils konkrete Technologieentscheidungen nach sich ziehen. Tabelle~\ref{tab:technik-mapping} fasst diese Zuordnung kompakt zusammen.
 
 \begin{table}[h]
 \centering
@@ -198,13 +181,13 @@ Der Stand der Technik zeigt, dass die drei Problemdimensionen aus Kapitel~2 jewe
 \toprule
 \textbf{Problem\-dimension} & \textbf{Techno\-logie\-ent\-schei\-dung} & \textbf{System\-kom\-po\-nen\-te} \\
 \midrule
-Operativer Zeitdruck (Kap.~2.1) & Kompaktes LLM + Few-Shot-Prompting (Kap.~3.1--3.2); hybrides NLG-Design mit menschlicher Kontrollinstanz (Kap.~3.3) & LLM-Pipeline mit \texttt{coop}-Modus (Kap.~4.3.3, 4.5) \\
+Operativer Zeitdruck (Kap.~2.1) & LLM-gestützte Textgenerierung + Few-Shot-Prompting (Kap.~3.1--3.2); hybrides NLG-Design mit menschlicher Kontrollinstanz (Kap.~3.3) & LLM-Pipeline mit \texttt{coop}-Modus (Kap.~4.3.3, 4.5) \\
 \addlinespace
 Mehrsprachigkeit (Kap.~2.2) & Native LLM-Mehrsprachfähigkeit ohne proportionalen Personalaufwand (Kap.~3.1) & LLM-Übersetzungsfunktion (Kap.~4.5.2) \\
 \addlinespace
 White-Label-Bedarf (Kap.~2.3) & Self-hostbare Workflow-Plattform; konfigurierbare Instanzlogik (Kap.~3.5--3.6) & n8n-ETL + White-Label-Instanzkonfiguration (Kap.~4.1.2, 4.5) \\
 \addlinespace
-Echtzeit-Datenabruf & Polling/SSE/WebSocket je nach Latenzanforderung (Kap.~3.4) & Hybrides Muster: Polling für Ticker-/Matchdaten, WebSocket für Medien (Kap.~4.1.1) \\
+Echtzeit-Datenabruf & Polling/WebSocket je nach Latenzanforderung (Kap.~3.4) & Hybrides Muster: Polling für Ticker-/Matchdaten, WebSocket für Medien (Kap.~4.1.1) \\
 \addlinespace
 Verknüpfte Spielentitäten & Relationale DB mit ACID-Garantien (Kap.~3.6) & PostgreSQL-Datenmodell (Kap.~4.3) \\
 \bottomrule

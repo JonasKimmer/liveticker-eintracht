@@ -170,7 +170,8 @@
 {\LARGE \textbf{KI-gestütztes Liveticker-Redaktionssystem für den Profifußball}}\\[0.5cm]
 {\large Automatisierte Textgenerierung für Echtzeit-Sportjournalismus mit Human-in-the-Loop-Kontrolle}\\[3cm]
 {\large \textbf{Autor}}\\
-Jonas Kimmer\\[3cm]
+Jonas Kimmer\\
+Matrikelnummer: 1296369\\[3cm]
 {\large \textbf{Hochschule}}\\
 Hochschule RheinMain\\[0.5cm]
 Fachbereich Wirtschaftsinformatik\\[2cm]
@@ -212,7 +213,7 @@ Die manuelle Erstellung von Liveticker-Einträgen im Profifußball ist ein kogni
 
 Die Arbeit folgt methodisch dem Design-Science-Research-Ansatz nach Hevner et al.\ (2004): Das Artefakt wird iterativ konzipiert, implementiert und evaluiert. Das entwickelte System kombiniert eine FastAPI/PostgreSQL-Backend-Architektur mit einer mehrsprachigen LLM-Pipeline (Gemini 2.0 Flash Lite via OpenRouter) und einem React/TypeScript-Frontend. Die drei Betriebsmodi \textit{auto} (vollautomatisch), \textit{coop} (Human-in-the-Loop) und \textit{manual} (klassisch) ermöglichen einen graduellen Übergang zwischen autonomer KI-Generierung und redaktioneller Kontrolle. n8n-Workflows übernehmen die automatisierte Datenversorgung aus externen Sportdaten-APIs. Das System wurde als generische und als White-Label-Instanz (Eintracht Frankfurt) realisiert.
 
-Die Evaluation umfasst 439 automatisierte Tests, eine TypeScript-Typenabdeckung von 98,02 \% sowie eine qualitative Bewertung von 40 KI-generierten Ticker-Einträgen (Korrektheit 4{,}6\,/\,5, Tonalität 4{,}1\,/\,5, Verständlichkeit 4{,}3\,/\,5). Eine ergänzende LLM-as-Judge-Evaluation (N~=~80, Bundesliga Saison 2025/26) bestätigt diese Ergebnisse (Ø~4{,}1\,/\,5) und identifiziert die Tonalitätsschwäche des euphorischen Profils bei ereignisarmen Event-Typen als konsistente Fehlerklasse. Auf Basis gemessener LLM-Latenzen (Median 859\,ms) ergibt sich ein geschätztes TTP-Potenzial von $\approx$\,2--17\,Sekunden im \textit{auto}-Modus gegenüber 30--120\,Sekunden bei manueller Produktion. Alle 23 definierten funktionalen, nicht-funktionalen und architektonischen Anforderungen werden erfüllt.
+Die Evaluation umfasst 439 automatisierte Tests, eine TypeScript-Typenabdeckung von 98,02 \% sowie eine qualitative Bewertung von 40 KI-generierten Ticker-Einträgen (Korrektheit 4{,}6\,/\,5, Tonalität 4{,}1\,/\,5, Verständlichkeit 4{,}3\,/\,5). Eine ergänzende LLM-as-Judge-Evaluation (N~=~80, Bundesliga Saison 2025/26) bestätigt diese Ergebnisse (Ø~4{,}1\,/\,5) und identifiziert die Tonalitätsschwäche des euphorischen Profils bei ereignisarmen Event-Typen als konsistente Fehlerklasse. Alle 24 definierten funktionalen, nicht-funktionalen und architektonischen Anforderungen werden erfüllt.
 
 Die Arbeit zeigt, dass eine produktionstaugliche KI-Assistenz bei der Liveticker-Erstellung mit einem Kompakt-Modell und Few-Shot-Prompting realisierbar ist. Der \textit{coop}-Modus erweist sich als empfohlener Betriebsmodus für den produktiven Einsatz: Die KI übernimmt die zeitkritische Textproduktion, der Redakteur die publizistische Verantwortung.
 
@@ -226,16 +227,19 @@ Die Arbeit zeigt, dass eine produktionstaugliche KI-Assistenz bei der Liveticker
 \addcontentsline{toc}{chapter}{Abkürzungsverzeichnis}
 \begin{tabbing}
 \hspace{3.5cm} \= \kill
+ACID      \> Atomicity, Consistency, Isolation, Durability \\
 API       \> Application Programming Interface \\
 ASGI      \> Asynchronous Server Gateway Interface \\
 CI        \> Corporate Identity \\
 CRUD      \> Create, Read, Update, Delete \\
+DAG       \> Directed Acyclic Graph \\
 DSR       \> Design Science Research \\
 DSGVO     \> Datenschutz-Grundverordnung \\
 E2E       \> End-to-End \\
 ETL       \> Extract, Transform, Load \\
 EU        \> Europäische Union \\
 H2H       \> Head-to-Head \\
+HITL      \> Human-in-the-Loop \\
 HTTP      \> Hypertext Transfer Protocol \\
 JSON      \> JavaScript Object Notation \\
 JWT       \> JSON Web Token \\
@@ -250,8 +254,13 @@ SQL       \> Structured Query Language \\
 SSE       \> Server-Sent Events \\
 TTP       \> Time-to-Publish \\
 URL       \> Uniform Resource Locator \\
+UX        \> User Experience \\
 VAR       \> Video Assistant Referee \\
 \end{tabbing}
+
+% ABBILDUNGSVERZEICHNIS
+\listoffigures
+\addcontentsline{toc}{chapter}{Abbildungsverzeichnis}
 
 % CHAPTER 1: EINLEITUNG
 \input{Bachelorarbeit_Kapitel1}
@@ -282,14 +291,41 @@ VAR       \> Video Assistant Referee \\
 \input{Bachelorarbeit_Appendix}
 
 % SELBSTSTÄNDIGKEITSERKLÄRUNG
-\chapter*{Selbstständigkeitserklärung}
-\addcontentsline{toc}{chapter}{Selbstständigkeitserklärung}
+\chapter*{Eigenständigkeitserklärung}
+\addcontentsline{toc}{chapter}{Eigenständigkeitserklärung}
 
-Ich versichere, dass ich die vorliegende Bachelorarbeit selbstständig und ohne Benutzung anderer als der angegebenen Hilfsmittel angefertigt habe. Alle Stellen, die wörtlich oder sinngemäß aus veröffentlichten oder nicht veröffentlichten Schriften entnommen wurden, sind als solche kenntlich gemacht. Dies gilt auch für Inhalte, die mithilfe von KI-basierten Werkzeugen (insbesondere Large Language Models) erstellt oder überarbeitet wurden und entsprechend als solche ausgewiesen sind.
+\noindent\textit{gem. ABPO, Ziff. 4.1.5.4 bzw. RPO, §19.6}
 
-Die Arbeit hat in gleicher oder ähnlicher Form noch keiner anderen Prüfungsbehörde vorgelegen.
+\vspace{0.5cm}
 
-\vspace{3cm}
+Ich bin verantwortlich für die Qualität des Inhalts dieser Arbeit, den ich mit geeigneten wissenschaftlichen Quellen belegt bzw. gestützt habe. Die aus fremden Quellen direkt oder indirekt übernommenen Texte, Gedankengänge, Konzepte, Grafiken, technischen Inhalte und ähnliches in meinen Ausführungen habe ich eindeutig gekennzeichnet und mit vollständigen Verweisen auf die jeweilige Quelle versehen. Alle weiteren Inhalte der Arbeit (Textteile, Abbildungen, Tabellen etc.) ohne entsprechende Verweise stammen im urheberrechtlichen Sinn von mir.
+
+Ich versichere außerdem, dass ich die Bachelor-Arbeit selbstständig verfasst und keine anderen als die angegebenen Quellen und Hilfsmittel benutzt habe.
+
+\bigskip
+
+\noindent\textbf{Erlaubnis KI-generierter Inhalte}
+
+\noindent Ich versichere, dass ich KI-Tools lediglich als Hilfsmittel verwendet habe und in der vorliegenden Arbeit mein gestalterischer Einfluss überwiegt. Ich verantworte die Übernahme jeglicher von mir verwendeter KI-generierter Inhalte vollumfänglich selbst.
+
+\bigskip
+
+Die vorliegende Arbeit wurde bisher weder im In- noch im Ausland in gleicher oder ähnlicher Form einer anderen Prüfungsbehörde vorgelegt. Mir ist bekannt, dass ein Verstoß gegen die genannten Punkte als Täuschungsversuch gelten und prüfungsrechtliche Konsequenzen haben kann. Insbesondere kann es dazu führen, dass die Leistung nicht bestanden ist und dass bei mehrfachem oder schwerwiegendem Täuschungsversuch eine Exmatrikulation droht.
+
+\vspace{1cm}
+
+\noindent Hiermit erkläre ich mein Einverständnis mit den im Folgenden aufgeführten Verbreitungsformen dieser Bachelor-Arbeit:
+
+\vspace{0.5cm}
+
+\noindent
+\begin{tabular}{p{10cm}cc}
+\textbf{Verbreitungsform} & \textbf{ja} & \textbf{nein} \\[0.5em]
+Veröffentlichung des Titels der Arbeit im Internet & $\times$ & \\
+Veröffentlichung der Arbeit im Internet & & $\times$ \\
+\end{tabular}
+
+\vspace{2cm}
 
 \noindent Wiesbaden, April 2026
 
