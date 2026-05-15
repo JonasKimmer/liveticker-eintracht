@@ -5,7 +5,13 @@ Dieses Kapitel beschreibt die Konzeption des Liveticker-Systems auf Basis der in
 
 
 \section{Überblick und
-Schichtenmodell}\label{uxfcberblick-und-schichtenmodell}
+Schichtenmodell}\label{überblick-und-schichtenmodell}
+
+Dieser Abschnitt beschreibt die Systemarchitektur auf drei Ebenen: das Schichtenmodell (Abschnitt~\ref{schichtenmodell}), die Kommunikations- und Triggerarchitektur (Abschnitt~\ref{kommunikations--und-triggerarchitektur}) sowie das Partner-Team-Konzept und die White-Label-Steuerung (Abschnitt~\ref{partner-team-konzept-und-white-label-steuerung}).
+
+
+
+\subsection{Schichtenmodell}\label{schichtenmodell}
 
 Das System verarbeitet alle Spiele der konfigurierten Wettbewerbe automatisch: vom Datenimport über die KI-Textgenerierung bis zur Publikation. Es ist überwiegend als Cloud-Service konzipiert: Backend und Frontend laufen als eigenständige Render-Deployments, während die n8n-Workflow-Instanz lokal betrieben wird (vgl. Abschnitt~5.6).
 

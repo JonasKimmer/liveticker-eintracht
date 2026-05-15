@@ -70,74 +70,10 @@ dokumentiert.
 
 \section{Abgrenzung}\label{abgrenzung}
 
-Die Praxisorientierung dieser Arbeit ergibt sich aus ihrem Entstehungskontext: Die Aufgabenstellung wurde im Umfeld der Stackwork GmbH im IT-Bereich von Eintracht Frankfurt definiert und die Anforderungen iterativ mit professionellen Redakteuren sowie der Redaktionsleitung verfeinert. Das daraus entstandene System ist als vollständiges, eigenständig lauffähiges Redaktionssystem realisiert, das als Cloud-Service betrieben wird und alle Spiele der konfigurierten Wettbewerbe automatisiert verarbeitet. Die technischen Details der Architektur und Implementierung werden in Kapitel~4 und 5 beschrieben.
-
-Dennoch bestehen Einschränkungen, die bewusst ausgeklammert wurden und
-in Kapitel~7 kritisch reflektiert werden. Konkret nicht Gegenstand dieser
-Arbeit sind:
-
-\begin{itemize}\tightlist
-\item \textbf{Nutzerakzeptanz und UX-Evaluation:} Eine systematische
-  Nutzerstudie mit professionellen Redakteuren im realen Spielbetrieb
-  (etwa über Usability-Tests oder Fragebögen) wurde nicht durchgeführt.
-  Erkenntnisse zur Akzeptanz des Systems entstammen ausschließlich dem
-  strukturierten Experteninterview (Leitfaden: Kap.~2.4; Auswertung: Abschnitt~6.3.5).
-\item \textbf{Vollkostenanalyse:} Eine quantitative Kosten-Nutzen-Analyse
-  (API-Kosten, Personalkosten, Infrastrukturkosten im Vergleich zu
-  manueller Produktion) liegt außerhalb des Untersuchungsrahmens.
-\item \textbf{Vergleich mit kommerziellen Systemen:} Das System wird nicht
-  systematisch gegen bestehende kommerzielle Lösungen (z.\,B. Retresco,
-  AP Automated Insights) verglichen; die Abgrenzung findet sich qualitativ in
-  Kapitel~7.1.
-\item \textbf{Authentifizierung und Mehrbenutzerbetrieb:} Das System
-  verzichtet bewusst auf eine Authentifizierungsschicht und ist als
-  internes Redaktionswerkzeug konzipiert. Aspekte des
-  Produktiv-Mehrbenutzerbetriebs (Rollen, Zugriffssteuerung,
-  Audit-Logging) werden nicht implementiert.
-\item \textbf{Langzeitbetrieb und Saison-Coverage:} Das System wurde
-  nicht über eine vollständige Saison im Produktivbetrieb evaluiert;
-  Textqualitätsdrift, kumulative API-Kosten und Rate-Limit-Verhalten
-  unter Dauerlast sind nicht erfasst.
-\end{itemize}
+Die Praxisorientierung dieser Arbeit ergibt sich aus der Kooperation mit der Stackwork GmbH im IT-Bereich von Eintracht Frankfurt; die Anforderungen wurden iterativ mit professionellen Redakteuren und der Redaktionsleitung verfeinert. Bewusst ausgeklammert bleiben: systematische Nutzerstudien, eine Vollkostenanalyse, der systematische Vergleich mit kommerziellen Systemen, eine Authentifizierungsschicht sowie der Langzeitbetrieb über eine vollständige Spielsaison. Diese Einschränkungen werden nach der Evaluation in Abschnitt~\ref{kritische-reflexion} kritisch reflektiert.
 
 
 
 \section{Aufbau der Arbeit}\label{aufbau-der-arbeit}
 
-Die vorliegende Arbeit gliedert sich in acht Kapitel:
-
-\begin{itemize}
-\tightlist
-\item
-  \textbf{Kapitel~1 -- Einleitung} \emph{(vorliegendes Kapitel)}:
-  Problemstellung und Zielsetzung, Forschungsfrage, methodisches Vorgehen und Aufbau der Arbeit.
-\item
-  \textbf{Kapitel~2 -- Motivation und Anforderungen:} Vertiefung der
-  drei Problemdimensionen (redaktioneller Aufwand, Mehrsprachigkeit,
-  White-Label-Bedarf), Ableitung der Systemanforderungen am Beispiel
-  Eintracht Frankfurt, Experteninterview-Leitfaden und formale
-  Anforderungsdefinition.
-\item
-  \textbf{Kapitel~3 -- Stand der Technik:} Large Language Models, Prompt
-  Engineering, automatisierte Sportberichterstattung und Evaluationsmethodik, Echtzeit-Technologien
-  sowie Backend-, Frontend- und Deployment-Technologien.
-\item
-  \textbf{Kapitel~4 -- Systemkonzeption:} Dreischichtige Architektur,
-  Datenmodell, LLM-Pipeline und Prompt-Design.
-\item
-  \textbf{Kapitel~5 -- Implementierung:} Umsetzung als produktionsfähige
-  Webanwendung mit TypeScript-Frontend, REST-API und n8n-ETL-System;
-  ergänzt durch vollständige TypeScript-Typisierung, automatisierte
-  Testsuite und Cloud-Deployment.
-\item
-  \textbf{Kapitel~6 -- Evaluation:} Technische Qualitätssicherung
-  (Tests, Coverage, Typsicherheit), Evaluation der KI-Textgenerierung
-  und systematischer Anforderungsabgleich.
-\item
-  \textbf{Kapitel~7 -- Diskussion:} Einordnung in den Stand der Technik,
-  kritische Reflexion der Limitationen und Implikationen für den
-  Sportjournalismus.
-\item
-  \textbf{Kapitel~8 -- Fazit und Ausblick:} Zusammenfassung der
-  Erkenntnisse, Beantwortung der Forschungsfrage und Ausblick.
-\end{itemize}
+Die vorliegende Arbeit gliedert sich in acht Kapitel. Kapitel~\ref{motivation-und-anforderungen} vertieft die drei Problemdimensionen und leitet die formalen Systemanforderungen am Fallbeispiel Eintracht Frankfurt ab. Kapitel~\ref{stand-der-technik} arbeitet die technologischen Grundlagen auf: Large Language Models, Prompt Engineering, automatisierte Sportberichterstattung, Echtzeit-Technologien sowie Backend-, Frontend- und Deployment-Technologien. Kapitel~\ref{systemkonzeption} beschreibt die dreischichtige Systemarchitektur mit Datenmodell, LLM-Pipeline und Prompt-Design. Kapitel~\ref{implementierung} dokumentiert die Umsetzung als produktionsfähige Webanwendung mit TypeScript-Frontend, REST-API, n8n-ETL-System und Cloud-Deployment. Kapitel~\ref{evaluation} evaluiert die technische Qualität, die KI-Textgenerierung und gleicht alle Anforderungen systematisch ab. Kapitel~\ref{diskussion} ordnet die Ergebnisse in den Stand der Technik ein, reflektiert Limitationen und diskutiert Implikationen für den Sportjournalismus. Kapitel~\ref{fazit-und-ausblick} fasst die Erkenntnisse zusammen, beantwortet die Forschungsfrage und gibt einen Ausblick auf Erweiterungen.

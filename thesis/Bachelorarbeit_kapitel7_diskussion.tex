@@ -171,16 +171,20 @@ Die implementierte Mehrsprachigkeit adressiert darüber hinaus die in Kapitel~2.
 
 \section{Ethische und regulatorische Einordnung}\label{ethik}
 
-Der Einsatz KI-generierter Texte im Sportjournalismus berührt normative Fragen, die über die technische Systemgestaltung hinausgehen.
+Der Einsatz KI-generierter Texte im Sportjournalismus berührt normative Fragen, die über die technische Systemgestaltung hinausgehen. Abschnitt~\ref{ethische-einordnung} behandelt die journalistisch-ethische Perspektive; Abschnitt~\ref{regulatorische-anforderungen} die rechtlich-regulatorischen Anforderungen.
+
+\subsection{Ethische Einordnung}\label{ethische-einordnung}
 
 \paragraph{Transparenz gegenüber Lesern.}
 Die Veröffentlichung KI-generierter Liveticker-Einträge ohne Kennzeichnung ist aus journalistisch-ethischer Sicht kritisch zu reflektieren: Leser können nicht zwischen redaktionell verantworteten und automatisch generierten Texten unterscheiden. Der \texttt{auto}-Modus verstärkt dieses Risiko, da Halluzinationen (Tonalitätsinkonsistenz 20\,\%, Halluzinationsrate 5\,\%) ohne menschliche Prüfung publiziert werden können. Aus journalistischer Sicht entspräche eine transparente Kennzeichnung KI-generierter Inhalte dem Gebot der Quellentransparenz (vgl. Bluhm \& Schäfer 2023, S.~57). Technisch wäre eine solche Kennzeichnung über das bestehende \texttt{source}-Feld im Ticker-Datenmodell (\texttt{ai} vs.~\texttt{manual}) ohne Codeänderung realisierbar.
 
-\paragraph{Regulatorischer Rahmen.}
-Ab August 2026 verpflichtet Art.~50 Abs.~4 des EU AI Act zur Kennzeichnung KI-generierter Texte, sofern die automatisierte Herkunft nicht offensichtlich erkennbar ist. Liveticker-Einträge fallen unter diesen Anwendungsbereich. Ein produktiver Betrieb des Systems erfordert damit eine explizite Kennzeichnungsstrategie sowie datenschutzkonforme Verarbeitungsvereinbarungen mit den LLM-Providern (insbesondere OpenRouter als Intermediär). Diese regulatorischen Anforderungen lagen außerhalb des Projektumfangs, sind aber für eine Produktiveinführung unerlässlich.
-
 \paragraph{Publizistische Verantwortung.}
 Das Human-in-the-Loop-Design des \texttt{coop}-Modus beantwortet die Verantwortungsfrage konstruktiv: Die redaktionelle Freigabe stellt sicher, dass ein Mensch die publizistische Verantwortung für jeden veröffentlichten Eintrag trägt. Im \texttt{auto}-Modus ist diese Verantwortungslinie unterbrochen, eine Einschränkung, die über die technische Halluzinationsrate hinaus eine normative Systementscheidung darstellt.
+
+\subsection{Regulatorische Anforderungen}\label{regulatorische-anforderungen}
+
+\paragraph{Regulatorischer Rahmen.}
+Ab August 2026 verpflichtet Art.~50 Abs.~4 des EU AI Act zur Kennzeichnung KI-generierter Texte, sofern die automatisierte Herkunft nicht offensichtlich erkennbar ist. Liveticker-Einträge fallen unter diesen Anwendungsbereich. Ein produktiver Betrieb des Systems erfordert damit eine explizite Kennzeichnungsstrategie sowie datenschutzkonforme Verarbeitungsvereinbarungen mit den LLM-Providern (insbesondere OpenRouter als Intermediär). Diese regulatorischen Anforderungen lagen außerhalb des Projektumfangs, sind aber für eine Produktiveinführung unerlässlich.
 
 \paragraph{Rechtlicher Rahmen.}
 Die Nutzung von LLM-APIs zur Textgenerierung berührt mehrere Rechtsbereiche, die im Rahmen dieser Arbeit ausgeklammert wurden, für eine Produktiveinführung jedoch verbindlich zu klären sind. Urheberrechtlich ist zu prüfen, ob KI-generierte Liveticker-Texte nach § 2 Abs.~2 UrhG als persönliche geistige Schöpfungen schutzfähig sind. Da eine menschliche Schöpfungshöhe im \texttt{auto}-Modus strukturell fehlt, dürften vollautomatisch generierte Einträge keinen Urheberrechtsschutz genießen. Datenschutzrechtlich erfordert die Übermittlung von Match-Daten an externe LLM-Anbieter (insbesondere OpenRouter als Drittland-Intermediär) geeignete Garantien gemäß DSGVO Art.~46, sofern die Serverinfrastruktur außerhalb des EWR betrieben wird. Für Modelle, die unter den General-Purpose-AI-Begriff von Art.~53 Abs.~1 der Verordnung (EU) 2024/1689 (EU AI Act) fallen, gelten ab August 2026 zusätzliche Transparenz- und Dokumentationspflichten gegenüber Downstream-Nutzern. Der hier eingesetzte \texttt{google/gemini-2.0-flash-lite-001}-Dienst fällt voraussichtlich in diesen Anwendungsbereich. Die Kennzeichnungspflicht nach Art.~50 Abs.~4 EU AI Act greift komplementär und ist bereits im Abschnitt über den Regulatorischen Rahmen adressiert.
