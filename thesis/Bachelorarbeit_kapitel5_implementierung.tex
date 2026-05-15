@@ -313,6 +313,8 @@ Die fünfstufige LLM-Pipeline verarbeitet eingehende Events vom Datenimport bis 
 
 \subsection{Pipeline-Mechanik und Idempotenz}\label{pipeline-mechanik-und-idempotenz}
 
+Die Pipeline durchläuft fünf Stufen: Event-Import, Kontextanreicherung, Prompt-Aufbau, LLM-Aufruf und Persistenz. Abbildung~\ref{fig:event-workflow} zeigt die Stufenabfolge im Überblick; Abbildung~\ref{fig:ki-generierungspipeline} stellt den vollständigen Ablauf vom Ereignis-Import bis zum gespeicherten Ticker-Eintrag dar.
+
 \begin{figure}[H]
 \centering
 \DiagramEventWorkflow
