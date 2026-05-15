@@ -217,12 +217,11 @@ F2 & KI-Textgenerierung für alle Event-Typen & Kap.~\ref{redaktioneller-aufwand
 F3 & Drei Stilprofile (neutral, euphorisch, kritisch) & Kap.~\ref{white-label-bedarf-im-profisport}, \ref{anforderungsanalyse-am-beispiel-eintracht-frankfurt} \\
 F4 & Few-Shot-Prompting mit Stilreferenzen & Kap.~\ref{linguistische-anforderungen-an-die-textgenerierung}, \ref{prompt-engineering} \\
 F5 & Ticker-Lifecycle (draft → published / rejected / deleted) & Kap.~\ref{redaktioneller-aufwand-bei-livetickern} \\
-F6 & Slash-Command-Parser für manuellen Modus & Kap.~\ref{redaktioneller-aufwand-bei-livetickern} (Zeitdruck: auch im manuellen Modus muss die Eingabe schnell möglich sein; der Parser reduziert Tippaufwand durch strukturierte Kürzel) \\
+F6 & Slash-Command-Parser für manuellen Modus & Kap.~\ref{redaktioneller-aufwand-bei-livetickern} (Zeitdruck) \\
 F7 & Mehrsprachige Textgenerierung (Deutsch, Englisch; erweiterbar auf
 weitere Sprachen) & Kap.~\ref{mehrsprachigkeit-als-herausforderung} \\
 F8 & Idempotenter Datenimport via n8n & Kap.~\ref{redaktioneller-aufwand-bei-livetickern} (Robustheit) \\
-F9 & Provider-Fallback-Kette & Kap.~\ref{redaktioneller-aufwand-bei-livetickern} (Verfügbarkeitsanforderung im
-Echtzeit-Produktionsbetrieb) \\
+F9 & Provider-Fallback-Kette & Kap.~\ref{redaktioneller-aufwand-bei-livetickern} (Verfügbarkeit) \\
 F10 & Deduplizierung von Ticker-Einträgen & Kap.~\ref{redaktioneller-aufwand-bei-livetickern} (Korrektheit) \\
 F11 & Pre-Match-Kontextgenerierung (Verletzungen, H2H, etc.) & Kap.~\ref{linguistische-anforderungen-an-die-textgenerierung}
 (Elaboration) \\
@@ -252,14 +251,13 @@ Herleitung
 \bottomrule\noalign{}
 \endlastfoot
 N1 & Concurrency-Begrenzung für LLM-Aufrufe & Kap.~\ref{redaktioneller-aufwand-bei-livetickern} (Zeitdruck) \\
-N2 & Retry-Logik mit Rate-Limit-Erkennung & Kap.~\ref{redaktioneller-aufwand-bei-livetickern} (Verfügbarkeit im Echtzeit-Produktionsbetrieb) \\
+N2 & Retry-Logik mit Rate-Limit-Erkennung & Kap.~\ref{redaktioneller-aufwand-bei-livetickern} (Verfügbarkeit) \\
 N3 & Transaktionale Testisolierung & Technische Qualitätssicherung
 (Echtzeit-Produktionssysteme erfordern Testisolierung aufgrund der
 Datenbankkopplung) \\
 N4 & TypeScript-Typsicherheit & Technische Qualitätssicherung
 (Wartbarkeit und Fehlervermeidung im Team) \\
-N5 & Responsive UI (Mobile-tauglich) & Kap.~\ref{redaktioneller-aufwand-bei-livetickern} (Einsatzszenarien:
-Stadion und Home-Office erfordern mobile Bedienbarkeit) \\
+N5 & Responsive UI (Mobile-tauglich) & Kap.~\ref{redaktioneller-aufwand-bei-livetickern} (Einsatzszenarien) \\
 N6 & Fehlerresistenz im Frontend & Kap.~\ref{redaktioneller-aufwand-bei-livetickern} (Robustheit) \\
 \end{longtable}
 }
@@ -286,9 +284,7 @@ Herleitung
 A1 & Drei-Schichten-Architektur & Kap.~\ref{redaktioneller-aufwand-bei-livetickern}, \ref{white-label-bedarf-im-profisport} (Modularität) \\
 A2 & Isolierte Datenzugriffsschicht: Persistenzlogik muss von
 API-Logik getrennt sein, sodass Datenbankzugriffe unabhängig testbar
-und austauschbar bleiben & Wartbarkeit, Testbarkeit; Mandanten mit
-unterschiedlichen Backend-Anforderungen müssen bedienbar sein, ohne
-den Anwendungskern zu ändern (vgl. Kap.~\ref{white-label-bedarf-im-profisport}) \\
+und austauschbar bleiben & Kap.~\ref{white-label-bedarf-im-profisport} (Wartbarkeit, Testbarkeit) \\
 A3 & REST-API zur vollständigen Systemsteuerung und
 Mandantenkonfiguration & Kap.~\ref{white-label-bedarf-im-profisport} (White-Label) \\
 A4 & Vollständiges Datenmodell & Kap.~\ref{redaktioneller-aufwand-bei-livetickern}, \ref{anforderungsanalyse-am-beispiel-eintracht-frankfurt} \\
