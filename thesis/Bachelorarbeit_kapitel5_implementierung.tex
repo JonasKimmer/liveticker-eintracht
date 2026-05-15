@@ -634,29 +634,32 @@ Workflow~08 sucht Medien-Assets bei ScorePlay für den Torschützen eines Torere
 \section{Qualitätssicherung und
 Tests}\label{qualituxe4tssicherung-und-tests}
 
-Die Qualitätssicherung folgt dem Testpyramiden-Modell nach Cohn (2009) mit drei Schichten.
+Die Implementierung setzt das in Abschnitt~\ref{qualitätssicherungskonzept} beschriebene Testpyramiden-Modell mit drei Schichten um.
 
-\textbf{Frontend (Jest + React Testing Library):} Unit-Tests decken Utility-Funktionen, Hooks, UI-Komponenten und TypeScript-Typen ab. Der \texttt{parseCommand}-Parser ist besonders umfangreich abgesichert, da er die kritische manuelle Eingabeschicht bildet.
+\textbf{Frontend (Jest + React Testing Library):} Unit-Tests decken Utility-Funktionen, Hooks, UI-Komponenten und TypeScript-Typen ab. Der \texttt{parseCommand}-Parser ist besonders umfangreich abgesichert: Als kritische manuelle Eingabeschicht muss er sämtliche Slash-Command-Varianten, Fehleingaben und Kantenfälle zuverlässig verarbeiten; ein Fehler hier würde sich direkt in falsch klassierten Ticker-Einträgen niederschlagen. Jest wurde gegenüber Vitest bevorzugt, da die Create-React-App-Basiskonfiguration eine reibungslose Integration ohne zusätzlichen Build-Setup erlaubt.
 
-\textbf{Backend (pytest):} API-Integrationstests prüfen Endpunkte gegen eine echte PostgreSQL-Testinstanz mit transaktionalem Rollback; Unit-Tests decken Services, Repositories und Utilities ab.
+\textbf{Backend (pytest):} API-Integrationstests prüfen alle Endpunkte gegen eine echte PostgreSQL-Testinstanz mit transaktionalem Rollback; nach jedem Test wird die Datenbank auf den Ausgangszustand zurückgesetzt, sodass Tests voneinander isoliert und in beliebiger Reihenfolge ausführbar sind. Unit-Tests decken Services, Repositories und Utility-Funktionen ab. Der Verzicht auf einen Datenbank-Mock ist bewusst: Mock-Implementierungen riskieren Divergenzen zum realen Schema, die gerade bei Schemaänderungen während der Entwicklung unbemerkt bleiben.
 
-\textbf{End-to-End (Playwright):} Browser-seitige Tests validieren grundlegende Nutzerinteraktionen — darunter ein responsiver Mobile-Test mit Viewport 375\,×\,812 (iPhone~SE) als Regressionsschutz für die Tab-Navigation (N5).
+\textbf{End-to-End (Playwright):} Browser-seitige Smoke-Tests validieren grundlegende Nutzerinteraktionen — darunter ein responsiver Mobile-Test mit Viewport 375\,×\,812 (iPhone~SE) als Regressionsschutz für die Tab-Navigation (N5). Playwright wurde gegenüber Cypress bevorzugt, da es keine Electron-Laufzeitabhängigkeit hat und Cross-Browser-Tests ohne zusätzliche Lizenzen erlaubt.
 
-Ergänzend enthält \texttt{evaluation\_metrics.py} statistische Hilfsfunktionen (Cliff's Delta, Bootstrap-KI, Cohen's Kappa u.\,a.) als Evaluationsinfrastruktur für die KI-Textbewertung. Testmetriken und Coverage-Kennzahlen sind in Abschnitt~\ref{technische-qualituxe4tssicherung} dokumentiert.
+Ergänzend enthält \texttt{evaluation\_metrics.py} statistische Hilfsfunktionen (Cliff's Delta, Bootstrap-KI, Cohen's Kappa u.\,a.) als Evaluationsinfrastruktur für die KI-Textbewertung. Testmetriken, Coverage-Kennzahlen und TypeScript-Typsicherheitswerte sind in Abschnitt~\ref{technische-qualituxe4tssicherung} dokumentiert.
 
 
 \section{Deployment}\label{deployment}
 
-Das System ist auf Render.com (Region: Oregon, US West) deployt. Das FastAPI-Backend läuft als Docker-Container (Free-Tier Web Service); das React-Frontend wird als statische Seite über das Render-CDN ausgeliefert. Die PostgreSQL-15-Datenbank wird als Managed-Dienst über Supabase betrieben und ist über eine externe Connection-URL eingebunden. Alle drei Dienste werden aus demselben Repository-Branch (\texttt{deploy/render-v2}) deployt; Konfiguration und Zugangsdaten werden als Umgebungsvariablen injiziert. Die n8n-Instanz läuft lokal und ist über einen \texttt{ngrok}-Tunnel für externe Webhooks erreichbar.
+Das Deployment setzt das in Abschnitt~\ref{deployment-konzept} beschriebene Konzept als produktiv erreichbare Infrastruktur um. Alle Dienste werden aus demselben Repository-Branch (\texttt{deploy/render-v2}) betrieben.
 
-Dieses Setup ist für den Evaluationsbetrieb ausreichend, hat jedoch zwei Einschränkungen:
+Das \textbf{FastAPI-Backend} läuft als Docker-Container auf Render.com (Free-Tier Web Service, Region Oregon/US West). Das Docker-Image basiert auf \texttt{python:3.11-slim}; Abhängigkeiten werden aus \texttt{requirements.txt} installiert, der Startbefehl startet Uvicorn als ASGI-Server. Render deployt automatisch bei jedem Push auf den konfigurierten Branch; Konfiguration und Zugangsdaten — Datenbankverbindung, OpenRouter-API-Key, CORS-Whitelist — werden ausschließlich als Umgebungsvariablen injiziert.
+
+Das \textbf{React-Frontend} wird als statische Seite über das Render-CDN ausgeliefert. Der Build-Prozess führt \texttt{npm run build} aus und deployt das \texttt{build/}-Verzeichnis; Content-Hashing stellt sicher, dass Assets versioniert ausgeliefert und unbegrenzt gecacht werden können.
+
+Die \textbf{PostgreSQL-15-Datenbank} wird als Managed Service über Supabase betrieben. Das Backend bindet sie über eine externe Connection-URL ein; Supabase übernimmt Backups, Patches und Verbindungspooling ohne operativen Aufwand auf Anwendungsseite.
+
+Die \textbf{n8n-Instanz} läuft lokal und ist über einen \texttt{ngrok}-Tunnel für externe Webhooks erreichbar. Dieses Setup ist für den Evaluationsbetrieb ausreichend, hat jedoch zwei Einschränkungen:
 
 \begin{itemize}\tightlist
 \item \textbf{Lokale Verfügbarkeit:} Die Webhook-Erreichbarkeit ist an die Laufzeit des lokalen Rechners gebunden; beim Systemabschalten sind keine eingehenden Webhooks möglich. Für einen Produktivbetrieb wäre eine dedizierte, persistente n8n-Instanz erforderlich.
 \item \textbf{WebSocket-Skalierung:} Der \texttt{ConnectionManager} des WebSocket-Kanals \texttt{/ws/media} ist prozesslokal und damit nicht für horizontales Skalieren mit mehreren Backend-Workern geeignet; eine Erweiterung über Redis Pub/Sub wäre hierfür notwendig (vgl. Abschnitt~\ref{technische-einordnung}).
 \end{itemize}
 
-Die vier Komponenten bilden die drei Systemschichten aus Abschnitt~\ref{überblick-und-schichtenmodell}:
-n8n die Datenbeschaffung, Backend und Datenbank die Anwendungs- und
-Persistenzlogik, das Frontend die Präsentation. Kapitel~\ref{evaluation} dokumentiert
-die systematische Evaluation des so realisierten Systems.
+Die vier Komponenten bilden die drei Systemschichten aus Abschnitt~\ref{überblick-und-schichtenmodell}: n8n die Datenbeschaffung, Backend und Datenbank die Anwendungs- und Persistenzlogik, das Frontend die Präsentation. Kapitel~\ref{evaluation} dokumentiert die systematische Evaluation des so realisierten Systems.
