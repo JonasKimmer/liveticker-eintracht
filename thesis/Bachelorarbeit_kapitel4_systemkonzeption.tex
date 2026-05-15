@@ -7,7 +7,7 @@ Dieses Kapitel beschreibt die Konzeption des Liveticker-Systems auf Basis der in
 \section{Überblick und
 Schichtenmodell}\label{überblick-und-schichtenmodell}
 
-Die Systemarchitektur gliedert sich in ein Drei-Schichten-Modell aus Integrations-, Anwendungs- und Präsentationsschicht, verbunden über definierte Kommunikationspfade und ein konfigurierbares White-Label-Konzept.
+Die Systemarchitektur folgt einem Drei-Schichten-Modell, das Entkopplung und White-Label-Fähigkeit als Kernprinzipien vereint.
 
 
 
@@ -129,6 +129,10 @@ Für den Live-Betrieb ist das Backend auf kontrollierte Degradation ausgelegt: B
 
 \section{Datenbankkonzeption}\label{datenbankkonzeption}
 
+Die Datenbankkonzeption legt das Persistenzmodell, das Schemadesign und den Ticker-Lifecycle fest.
+
+\subsection{Datenbankwahl}\label{datenbankwahl}
+
 Als Datenbanksystem wurde PostgreSQL gewählt: Die Domänendaten sind stark strukturiert — Fremdschlüsselbeziehungen zwischen Teams, Wettbewerben, Spielen, Events und Ticker-Einträgen sind klar definiert und referenziell integer zu halten — was ein relationales Modell gegenüber dokumentenorientierten Alternativen begünstigt, die auf deklarative Join-Abfragen und striktes Fremdschlüssel-Constraint-Enforcement verzichten.
 
 \subsection{Schemadesign-Prinzipien}\label{schemadesign-prinzipien}
@@ -174,6 +178,10 @@ Eng damit verknüpft ist das Feld \texttt{ticker\_mode} in \texttt{matches}: Es 
 
 
 \section{Workflow-Konzeption (n8n)}\label{workflow-konzeption-n8n}
+
+Die Workflow-Schicht orchestriert alle Datenimporte und Generierungsprozesse als entkoppelte Ebene zwischen externen Quellen und Backend.
+
+\subsection{Technologiewahl}\label{n8n-technologiewahl}
 
 Die Workflow-Schicht ist als entkoppelte Orchestrierungsebene zwischen externen Datenquellen und Backend konzipiert. Gegenüber Batch-orientierten Alternativen wie Apache Airflow und Prefect, die Python-Kenntnisse für jeden Workflow voraussetzen, bietet n8n Low-Code-Konfigurierbarkeit und integrierten Webhook-Support ohne zusätzliche Infrastruktur (vgl. Abschnitt~\ref{etl-prozesse-und-workflow-automatisierung}).
 
@@ -224,7 +232,7 @@ Diese Trennung reduziert Kopplung und erlaubt es, einzelne Teilprozesse unabhän
 
 \section{KI-Komponente}\label{ki-komponente}
 
-Die KI-Komponente übersetzt strukturierte Spielereignisse in natürlichsprachliche Ticker-Texte; ihre Architektur abstrahiert die Providerwahl, sodass Modelländerungen ohne Codeänderung konfigurierbar bleiben. Die Concurrency-Steuerung ist in Abschnitt~\ref{asynchronituxe4t-nebenluxe4ufigkeit-und-performance} beschrieben.
+Die KI-Komponente übersetzt strukturierte Spielereignisse in natürlichsprachliche Ticker-Texte; ihre Architektur abstrahiert die Providerwahl, sodass Modelländerungen ohne Codeänderung konfigurierbar bleiben.
 
 \subsection{Multi-Provider-Architektur}\label{multi-provider-architektur}
 
@@ -263,7 +271,11 @@ Mehrsprachigkeit ist als natives Designmerkmal der KI-Komponente konzipiert (F7,
 
 \section{Frontend-Konzeption}\label{frontend-konzeption}
 
-Das Frontend realisiert die Präsentationsschicht als React-Anwendung mit TypeScript und ist auf redaktionelle Arbeit im Live-Betrieb ausgelegt. React wurde gegenüber Vue und Svelte bevorzugt: Das größere Ökosystem und die breitere Verbreitung reduzierten das Risiko bei der Integration von Drittbibliotheken (z.\,B. WebSocket-Hooks, Echtzeitstate), und die bestehende Projekterfahrung im Team vermied unnötige Einarbeitungszeit.
+Das Frontend realisiert die Präsentationsschicht als React-Anwendung mit TypeScript und ist auf redaktionelle Arbeit im Live-Betrieb ausgelegt.
+
+\subsection{Framework-Wahl}\label{frontend-framework-wahl}
+
+React wurde gegenüber Vue und Svelte bevorzugt: Das größere Ökosystem und die breitere Verbreitung reduzierten das Risiko bei der Integration von Drittbibliotheken (z.\,B. WebSocket-Hooks, Echtzeitstate), und die bestehende Projekterfahrung im Team vermied unnötige Einarbeitungszeit.
 
 \subsection{Architektur und Zustandsmanagement}\label{architekturprinzipien}
 
