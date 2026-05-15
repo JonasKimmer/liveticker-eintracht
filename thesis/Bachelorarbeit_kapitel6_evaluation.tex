@@ -162,7 +162,7 @@ dann die qualitative Analyse konkreter Textbeispiele einschließlich Expertenval
 
 \subsection{Quantitative Metriken und Evaluationsinfrastruktur}\label{quantitative-metriken}
 
-Das System stellt einen Bulk-Generierungsendpunkt bereit (\texttt{POST /api/v1/ticker/generate-bulk/\{match\_id\}}, vgl.\ Kap.~5.1), der alle Events eines Spiels mit einem wählbaren Provider und Modell generiert. Optionale \texttt{provider}- und \texttt{model}-Parameter ermöglichen A/B-Vergleiche zwischen LLM-Konfigurationen, ohne die Produktiv-Konfiguration zu verändern.
+Das System stellt einen Bulk-Generierungsendpunkt bereit (\texttt{POST /api/v1/ticker/generate-bulk/\{match\_id\}}, vgl.\ Abschnitt~\ref{backend-implementierung}), der alle Events eines Spiels mit einem wählbaren Provider und Modell generiert. Optionale \texttt{provider}- und \texttt{model}-Parameter ermöglichen A/B-Vergleiche zwischen LLM-Konfigurationen, ohne die Produktiv-Konfiguration zu verändern.
 
 Das Evaluationsmodul (\texttt{app/utils/evaluation\_metrics.py}) stellt sechs Metriken bereit:
 
@@ -180,7 +180,7 @@ Alle sechs Funktionen sind durch 17 Unit-Tests abgesichert (\textasciitilde96 \%
 \subsection{Modell- und
 Provider-Evaluation}\label{modell--und-provider-evaluation}
 
-Die Multi-Provider-Architektur mit Prioritätskette ist in Kap.~4.5.1 beschrieben. Für die Evaluation relevante Provider und Konfiguration:
+Die Multi-Provider-Architektur mit Prioritätskette ist in Abschnitt~\ref{multi-provider-architektur} beschrieben. Für die Evaluation relevante Provider und Konfiguration:
 
 {\def\LTcaptype{none} % do not increment counter
 \begin{longtable}[]{@{}
@@ -212,11 +212,11 @@ Temperatur
 
 Im produktiven Render-Deployment waren nur OpenRouter (Priorität~1) und Mock (Fallback) aktiv; die übrigen Provider wurden mangels aktivierter API-Keys nicht evaluiert, sind jedoch architektonisch vollständig implementiert. Die qualitative Bewertung (N~=~40, OpenRouter) zeigt einen klaren Qualitätsvorsprung des LLM-Providers gegenüber dem regelbasierten Mock-Provider in der Tonalitätstreue (OpenRouter: 4{,}1\,/\,5 vs.\ Mock: 3{,}0\,/\,5 bei N~=~7 Mock-Einträgen; Δ~=~1{,}1 Skalenpunkte); Korrektheit und Verständlichkeit liegen bei 4{,}6 bzw.\ 4{,}3 (OpenRouter). Die Latenzanalyse findet sich in Abschnitt~\ref{llm-latenz}.
 
-Der Tonalitätswert von 4{,}1\,/\,5 differenziert sich nach Stilprofil: Das neutrale Profil erzielt in der LLM-as-Judge-Evaluation 4{,}81\,/\,5, das kritische 4{,}04\,/\,5. Die Schwäche im Gesamtdurchschnitt ist primär dem euphorischen Profil bei ereignisarmen Event-Typen zuzurechnen (Wechsel: Tonalität~2{,}93\,/\,5, vgl. Abschnitt~\ref{erweiterte-evaluation}); eine Einordnung dieses Befunds findet sich in Kapitel~7.
+Der Tonalitätswert von 4{,}1\,/\,5 differenziert sich nach Stilprofil: Das neutrale Profil erzielt in der LLM-as-Judge-Evaluation 4{,}81\,/\,5, das kritische 4{,}04\,/\,5. Die Schwäche im Gesamtdurchschnitt ist primär dem euphorischen Profil bei ereignisarmen Event-Typen zuzurechnen (Wechsel: Tonalität~2{,}93\,/\,5, vgl. Abschnitt~\ref{erweiterte-evaluation}); eine Einordnung dieses Befunds findet sich in Kapitel~\ref{diskussion}.
 
 \subsection{Einfluss der Stilprofile}\label{einfluss-der-stilprofile}
 
-Das System generiert Texte in drei Stilprofilen (vgl.~Kap.~2.3): \texttt{neutral}, \texttt{euphorisch} und \texttt{kritisch}. Da der Backend-Deduplizierungsmechanismus für identische
+Das System generiert Texte in drei Stilprofilen (vgl.~Abschnitt~\ref{white-label-bedarf-im-profisport}): \texttt{neutral}, \texttt{euphorisch} und \texttt{kritisch}. Da der Backend-Deduplizierungsmechanismus für identische
 \texttt{event\_id} denselben Eintrag zurückgibt, wurde der Stilvergleich
 anhand typischer Treffer-Einträge (Event-Typ: Tor) aus unterschiedlichen
 Spielen durchgeführt, die jeweils zugehörige Stilanweisung war
@@ -286,7 +286,7 @@ in Ausrufezeichen-Dichte, Wortwahl und Perspektive. Während
 Ausrufe. \texttt{kritisch} nähert sich dem neutralen Register, enthält
 aber keine explizite analytische Einordnung, ein Hinweis darauf, dass
 das Prompt-Design für dieses Profil noch Optimierungspotenzial bietet
-(vgl.\ Abschnitt~8.3). Die Prompt-Architektur bindet bis zu drei Stilreferenzen aus der \texttt{style\_references}-Tabelle als Few-Shot-Beispiele ein; qualitativ zeigt sich, dass die \texttt{ef\_whitelabel}-Instanz dadurch konsistente Formatierungsmuster (Minutenformat, TOOOOR-Konvention) etabliert (vgl. Abb.~\ref{fig:qualitaet-stilprofil}). Ein kontrollierter A/B-Test zur Few-Shot-Wirksamkeit war im Evaluationszeitraum nicht durchführbar. Ein solcher Test (mit vs. ohne Stilreferenzen, über 20--30 Spiele) würde die Effektstärke der Prompt-Konditionierung quantifizieren und ist als Folgestudie vorgesehen (vgl. Abschnitt~8.3).
+(vgl.\ Abschnitt~\ref{ausblick}). Die Prompt-Architektur bindet bis zu drei Stilreferenzen aus der \texttt{style\_references}-Tabelle als Few-Shot-Beispiele ein; qualitativ zeigt sich, dass die \texttt{ef\_whitelabel}-Instanz dadurch konsistente Formatierungsmuster (Minutenformat, TOOOOR-Konvention) etabliert (vgl. Abb.~\ref{fig:qualitaet-stilprofil}). Ein kontrollierter A/B-Test zur Few-Shot-Wirksamkeit war im Evaluationszeitraum nicht durchführbar. Ein solcher Test (mit vs. ohne Stilreferenzen, über 20--30 Spiele) würde die Effektstärke der Prompt-Konditionierung quantifizieren und ist als Folgestudie vorgesehen (vgl. Abschnitt~\ref{ausblick}).
 
 \begin{figure}[H]
 \centering
@@ -297,7 +297,7 @@ das Prompt-Design für dieses Profil noch Optimierungspotenzial bietet
 
 \subsection{Qualitative Textbewertung}\label{qualitative-analyse-der-generierten-texte}
 
-Die qualitative Bewertung zielt auf explorative Validierung des ersten Artefakts; statistische Generalisierbarkeit ist einer Folgestudie mit mehreren externen Ratern vorbehalten (vgl. Abschnitt~8.3). Die Stichprobengröße wurde bewusst so gewählt, dass differenzierte Einzelanalyse je Event-Typ und Stilprofil möglich bleibt, entsprechend dem Vorgehen vergleichbarer NLG-Evaluationen (vgl. Gatt \& Krahmer 2018, S.~79).
+Die qualitative Bewertung zielt auf explorative Validierung des ersten Artefakts; statistische Generalisierbarkeit ist einer Folgestudie mit mehreren externen Ratern vorbehalten (vgl. Abschnitt~\ref{ausblick}). Die Stichprobengröße wurde bewusst so gewählt, dass differenzierte Einzelanalyse je Event-Typ und Stilprofil möglich bleibt, entsprechend dem Vorgehen vergleichbarer NLG-Evaluationen (vgl. Gatt \& Krahmer 2018, S.~79).
 
 Für die qualitative Analyse wurden 40 KI-generierte Ticker-Einträge (Modell: \texttt{google/gemini-2.0-flash-lite-001}, Sprache: Deutsch) aus 15 Bundesliga-Spielen der Saison 2024/25 manuell auf drei Dimensionen bewertet. Die formale Bewertung von N~=~40 Einträgen stützt sich auf eine breite informelle Vorbeobachtung: Im Projektzeitraum wurden mehrere Hundert KI-generierte Ticker-Einträge über zahlreiche Bundesliga-Spieltage hinweg direkt mit den zugehörigen Spielszenen abgeglichen, bevor die strukturierte Evaluation der dokumentierten Stichprobe erfolgte. Diese Vorbeobachtung bildet die Urteilsbasis für die formale Bewertung und gewährleistet kontextinformierte Einschätzungen jenseits einer isolierten Textlektüre. Die Auswahl der Einträge folgte einer gezielten Stichprobenlogik: Es wurden ereignisreiche Spiele mit unterschiedlichen Spielverläufen gewählt, um die häufigsten Event-Typen (Tor, Gelbe Karte, Wechsel) sowie alle drei Stilprofile abzudecken, bei einem für manuelle Einzelbewertung vertretbaren Umfang. Rote Karten sind in der Stichprobe nicht vertreten, da kein entsprechendes Ereignis in den ausgewählten Spielen vorlag; die LLM-as-Judge-Evaluation (Abschnitt~\ref{erweiterte-evaluation}) schließt diesen Event-Typ mit ein. \textbf{Korrektheit} prüft, ob alle Fakten (Spieler, Team, Minute, Ergebnis) korrekt wiedergegeben sind und der Text keine Halluzinationen enthält. \textbf{Tonalität} bewertet, ob der Stil dem gewählten Profil (neutral/euphorisch/kritisch) entspricht. \textbf{Verständlichkeit} beurteilt, ob der Text sprachlich flüssig, grammatikalisch korrekt und dem Genre „Liveticker'' angemessen ist. Jede Dimension wurde auf einer Skala von 1 (ungenügend) bis 5 (exzellent) bewertet. Der Entwickler bewertete alle Einträge; ein
 zweiter Rater war nicht verfügbar, sodass kein Cohen's Kappa
@@ -434,9 +434,9 @@ Die häufigste Fehlerklasse ist die \textbf{Stil-Inkonsistenz} des
 neutralen Profils (20\,\%): Das LLM übernimmt idiomatische Muster
 aus den euphorischen Few-Shot-Referenzen der
 \texttt{ef\_whitelabel}-Instanz auch dann, wenn \texttt{neutral} als
-Stilparameter übergeben wird (Verbesserungsansatz: vgl.\ Abschnitt~8.3).
+Stilparameter übergeben wird (Verbesserungsansatz: vgl.\ Abschnitt~\ref{ausblick}).
 
-Das kritische Stilprofil erweist sich in der Hauptevaluation und der LLM-as-Judge-Evaluation als schwächste Dimension (LLM-as-Judge Tonalität: 4{,}04\,/\,5, vgl. Abschnitt~\ref{erweiterte-evaluation}). Die Ursache liegt in einer konzeptuellen Ambiguität des Profils: Während \texttt{euphorisch} und \texttt{neutral} klare emotionale Pole beschreiben, bleibt \texttt{kritisch} semantisch vielschichtig: das LLM kann den Stil als kritisch-analytisch (sachlich-distanziert), kritisch-konfrontativ (negativ gegenüber der eigenen Mannschaft) oder kritisch-fordernd (appellierend an mehr Leistung) interpretieren. Ohne explizitere Stilinstruktion, etwa durch zielgerichtete Few-Shot-Beispiele mit klar analytisch-einordnendem Ton oder durch eine präzisierte Prompt-Formulierung, nähert das Modell das kritische Profil dem neutralen an. Verbesserungsansätze für das kritische Profil sind in Abschnitt~8.3 ausgewiesen.
+Das kritische Stilprofil erweist sich in der Hauptevaluation und der LLM-as-Judge-Evaluation als schwächste Dimension (LLM-as-Judge Tonalität: 4{,}04\,/\,5, vgl. Abschnitt~\ref{erweiterte-evaluation}). Die Ursache liegt in einer konzeptuellen Ambiguität des Profils: Während \texttt{euphorisch} und \texttt{neutral} klare emotionale Pole beschreiben, bleibt \texttt{kritisch} semantisch vielschichtig: das LLM kann den Stil als kritisch-analytisch (sachlich-distanziert), kritisch-konfrontativ (negativ gegenüber der eigenen Mannschaft) oder kritisch-fordernd (appellierend an mehr Leistung) interpretieren. Ohne explizitere Stilinstruktion, etwa durch zielgerichtete Few-Shot-Beispiele mit klar analytisch-einordnendem Ton oder durch eine präzisierte Prompt-Formulierung, nähert das Modell das kritische Profil dem neutralen an. Verbesserungsansätze für das kritische Profil sind in Abschnitt~\ref{ausblick} ausgewiesen.
 
 
 Die Pre-Match-Prompts enthalten eine explizite Schutzregel gegen
@@ -491,11 +491,11 @@ Die Erkenntnisse bestätigten die grundsätzliche Praxistauglichkeit des Systems
 \end{itemize}
 
 \paragraph{Methodische Einordnung}
-Das Interview dient im Sinne des Design Science Research als explorative Feldevaluation mit einem primären Domänenexperten (Hevner et al.~2004): Es ergänzt die quantitativen Metriken um die Perspektive der Zielnutzergruppe, die durch Scores allein nicht erfassbar ist. Die Stärke dieser Methode liegt nicht in statistischer Generalisierbarkeit, sondern in der domänenspezifischen Tiefe – ein erfahrener Sportredakteur kann Stilbrüche, Workflow-Integration und Praxistauglichkeit beurteilen, die außerhalb des Bewertungsrahmens quantitativer Metriken liegen. Als Einschränkung ist das institutionelle Näheverhältnis zwischen Entwickler und Interviewpartner zu berücksichtigen: Der Experte ist Mitarbeiter der Partnerorganisation Eintracht Frankfurt; das beschriebene Blind-Vorgehen bei der Textvorlage dient der Minderung eines möglichen Erwartungs- oder Gefälligkeitseffekts. Die Erkenntnisse fließen in die Gesamtbewertung in Kapitel~8.2 und die vorgeschlagenen Erweiterungen in Kapitel~8.3 ein.
+Das Interview dient im Sinne des Design Science Research als explorative Feldevaluation mit einem primären Domänenexperten (Hevner et al.~2004): Es ergänzt die quantitativen Metriken um die Perspektive der Zielnutzergruppe, die durch Scores allein nicht erfassbar ist. Die Stärke dieser Methode liegt nicht in statistischer Generalisierbarkeit, sondern in der domänenspezifischen Tiefe – ein erfahrener Sportredakteur kann Stilbrüche, Workflow-Integration und Praxistauglichkeit beurteilen, die außerhalb des Bewertungsrahmens quantitativer Metriken liegen. Als Einschränkung ist das institutionelle Näheverhältnis zwischen Entwickler und Interviewpartner zu berücksichtigen: Der Experte ist Mitarbeiter der Partnerorganisation Eintracht Frankfurt; das beschriebene Blind-Vorgehen bei der Textvorlage dient der Minderung eines möglichen Erwartungs- oder Gefälligkeitseffekts. Die Erkenntnisse fließen in die Gesamtbewertung in Abschnitt~\ref{beantwortung-der-forschungsfrage} und die vorgeschlagenen Erweiterungen in Abschnitt~\ref{ausblick} ein.
 
 \subsection{Erweiterte Evaluation: LLM-as-Judge-Verfahren}\label{erweiterte-evaluation}
 
-Zur Erweiterung der Evaluationsbasis über N\,=\,40 hinaus und zur Adressierung der Selbstevaluationsproblematik wurden N\,=\,80 Einträge nach dem \textbf{LLM-as-Judge}-Verfahren (vgl. Kap.~3.3; Zheng et al.~2023) automatisiert evaluiert.
+Zur Erweiterung der Evaluationsbasis über N\,=\,40 hinaus und zur Adressierung der Selbstevaluationsproblematik wurden N\,=\,80 Einträge nach dem \textbf{LLM-as-Judge}-Verfahren (vgl. Abschnitt~\ref{automatisierte-sportberichterstattung}; Zheng et al.~2023) automatisiert evaluiert.
 
 \textbf{Datenbasis:} Die Datenbasis umfasst reale Ereignisse aus 30 Bundesliga-Spielen der Saison~2025/26 (u.\,a. Borussia~Dortmund -- SC~Freiburg, FSV~Mainz~05 -- FC~Bayern~München, FC~Augsburg -- Eintracht~Frankfurt, 1.~FC~Köln -- Bayer~Leverkusen), abgefragt über die Football~API~v3. Die Nutzung der Saison~2025/26 – statt der in der Hauptevaluation verwendeten Saison~2024/25 – ist methodisch bewusst gewählt: Zum Zeitpunkt der LLM-as-Judge-Evaluation standen Spieltage der laufenden Saison~2025/26 als frische, vom Entwickler noch nicht manuell bewertete Daten zur Verfügung, was eine unabhängigere Datenbasis als eine Teilmenge der bereits in Abschnitt~\ref{qualitative-analyse-der-generierten-texte} verwendeten Spiele gewährleistet. Generierungsmodell: \texttt{google/gemini-2.0-flash-lite-001} (identisch zur Hauptevaluation, Temperatur~0{,}5). Bewertendes Modell: \texttt{anthropic/claude-sonnet-4-5} via OpenRouter, ein anderes Modell als das generierende, was Selbstreferenzialität vermeidet. Abgedeckte Event-Typen: 25~Tore, 25~Gelbe Karten, 4~Rote Karten, 25~Wechsel, 1~Eigentor; je 27 bzw.\ 26~Einträge pro Stilprofil.
 
@@ -529,7 +529,7 @@ Die LLM-as-Judge-Evaluation bestätigt Korrektheit (4{,}12) und Verständlichkei
 
 \section{Latenzpotenzial der Betriebsmodi}\label{evaluation-der-betriebsmodi}
 
-Die drei Betriebsmodi unterscheiden sich strukturell in ihrer erreichbaren Publikationslatenz. Auf Basis der gemessenen LLM-Latenzen (Median 859~ms, P95 2\,047~ms, vgl. Abschnitt~\ref{llm-latenz}) und des 15-Sekunden-Polling-Intervalls im Live-Modus (vgl. Abschnitt~\ref{frontend-polling}) ergibt sich für den \texttt{auto}-Modus eine architekturbasierte Time-to-Publish von ≈ 2--17~s (LLM-Generierung: 1--2~s; Frontend-Polling: bis zu 15~s), verglichen mit der manuellen Baseline von 30--120~s (Kapitel~2.1). Die folgende Tabelle schlüsselt die Latenzkomponenten auf:
+Die drei Betriebsmodi unterscheiden sich strukturell in ihrer erreichbaren Publikationslatenz. Auf Basis der gemessenen LLM-Latenzen (Median 859~ms, P95 2\,047~ms, vgl. Abschnitt~\ref{llm-latenz}) und des 15-Sekunden-Polling-Intervalls im Live-Modus (vgl. Abschnitt~\ref{frontend-polling}) ergibt sich für den \texttt{auto}-Modus eine architekturbasierte Time-to-Publish von ≈ 2--17~s (LLM-Generierung: 1--2~s; Frontend-Polling: bis zu 15~s), verglichen mit der manuellen Baseline von 30--120~s (Abschnitt~\ref{zeitdruck-als-strukturelles-problem}). Die folgende Tabelle schlüsselt die Latenzkomponenten auf:
 
 {\def\LTcaptype{none}
 \begin{longtable}[]{@{}llll@{}}
@@ -559,7 +559,7 @@ Dieser Abschnitt dokumentiert die gemessenen Laufzeiteigenschaften des Systems: 
 \subsection{LLM-Latenz}\label{llm-latenz}
 
 Die Concurrency- und Retry-Konfiguration der LLM-Aufrufe ist in
-Abschnitt~5.1 beschrieben. Gemessen wurden 25 sequenzielle
+Abschnitt~\ref{llm-service-prompt-aufbau-und-provider-dispatch} beschrieben. Gemessen wurden 25 sequenzielle
 HTTP-Aufrufe an das Render-Deployment
 (\texttt{/api/v1/ticker/generate/\{event\_id\}}) über 9
 Bundesliga-Spiele. Gemessen wurde die \textbf{End-to-End-Latenz} (Client
@@ -653,7 +653,7 @@ Die \texttt{resolvePollingInterval}-Utility differenziert das Polling-Intervall 
 \section{Anforderungsabgleich
 (Soll-Ist-Vergleich)}\label{anforderungsabgleich-soll-ist-vergleich}
 
-Alle 24 in Kapitel~2.6 hergeleiteten Anforderungen sind vollständig erfüllt. Die folgende Tabelle dokumentiert den Nachweis je Anforderung:
+Alle 24 in Abschnitt~\ref{zusammenfassung-der-systemanforderungen} hergeleiteten Anforderungen sind vollständig erfüllt. Die folgende Tabelle dokumentiert den Nachweis je Anforderung:
 
 {\def\LTcaptype{none} % do not increment counter
 \begin{longtable}[]{@{}
@@ -698,4 +698,4 @@ A5 & White-Label-Fähigkeit & Instanz-spezifische Kontextaufbereitung und Few-Sh
 \end{longtable}
 }
 
-Die Evaluation liefert die empirische Grundlage für die kritische Einordnung in Kapitel~7 und die Beantwortung der Forschungsfrage in Abschnitt~\ref{beantwortung-der-forschungsfrage}.
+Die Evaluation liefert die empirische Grundlage für die kritische Einordnung in Kapitel~\ref{diskussion} und die Beantwortung der Forschungsfrage in Abschnitt~\ref{beantwortung-der-forschungsfrage}.
