@@ -6,7 +6,7 @@ Dieses Kapitel evaluiert das System auf fünf Ebenen und beantwortet damit die F
 \section{Technische
 Qualitätssicherung}\label{technische-qualituxe4tssicherung}
 
-Die technische Qualitätssicherung umfasst die vollständige Testsuite (Frontend, Backend, End-to-End) sowie die statische Typsicherheitsanalyse. Die 439 automatisierten Tests folgen dem Pyramiden-Modell nach Cohn (2009): Unit-Tests bilden die breite Basis, API-Integrationstests prüfen Endpunkte gegen eine transaktional isolierte PostgreSQL-Testinstanz, Playwright-Smoke-Tests validieren zentrale Browser-Workflows.
+Die technische Qualitätssicherung umfasst die vollständige Testsuite sowie die statische Typsicherheitsanalyse. Sie gliedert sich in Frontend-Unit-Tests (Abschnitt~\ref{frontend-unit-tests-jest-react-testing-library}), Backend-Unit-Tests (Abschnitt~\ref{backend-unit-tests-pytest}), End-to-End-Tests (Abschnitt~\ref{end-to-end-tests-playwright}) und TypeScript-Typsicherheit (Abschnitt~\ref{typescript-typsicherheit}).
 
 \subsection{Frontend-Unit-Tests (Jest + React Testing
 Library)}\label{frontend-unit-tests-jest-react-testing-library}
@@ -157,9 +157,7 @@ Von 18.813 gemessenen Typausdrücken sind 18.456 explizit getypt. Die verbleiben
 \section{Evaluation der
 KI-Textgenerierung}\label{evaluation-der-ki-textgenerierung}
 
-Die Evaluation der Textgenerierung gliedert sich in zwei Teile: zunächst
-die Evaluationsinfrastruktur mit quantitativen Metriken und Provider-Vergleich,
-dann die qualitative Analyse konkreter Textbeispiele einschließlich Expertenvalidierung.
+Die Evaluation der Textgenerierung gliedert sich in quantitative Metriken und Evaluationsinfrastruktur (Abschnitt~\ref{quantitative-metriken}), Modell- und Provider-Evaluation (Abschnitt~\ref{modell--und-provider-evaluation}), Einfluss der Stilprofile (Abschnitt~\ref{einfluss-der-stilprofile}), qualitative Textbewertung (Abschnitt~\ref{qualitative-analyse-der-generierten-texte}), Experteninterview-Auswertung (Abschnitt~\ref{experteninterview-auswertung}) und die erweiterte LLM-as-Judge-Evaluation (Abschnitt~\ref{erweiterte-evaluation}).
 
 \subsection{Quantitative Metriken und Evaluationsinfrastruktur}\label{quantitative-metriken}
 
@@ -525,7 +523,7 @@ Die LLM-as-Judge-Evaluation bestätigt Korrektheit (4{,}12) und Verständlichkei
 \section{Performance und
 Laufzeitverhalten}\label{performance-und-laufzeitverhalten}
 
-Dieser Abschnitt dokumentiert die gemessene End-to-End-Latenz der LLM-Aufrufe.
+Dieser Abschnitt dokumentiert die gemessene End-to-End-Latenz der LLM-Aufrufe (Abschnitt~\ref{llm-latenz}).
 
 \subsection{LLM-Latenz}\label{llm-latenz}
 
