@@ -1,6 +1,6 @@
 \chapter{Stand der Technik}\label{stand-der-technik}
 
-Dieses Kapitel legt die technologischen Grundlagen für das vorliegende System. Es gliedert sich in sieben Abschnitte: Large Language Models (Abschnitt~\ref{large-language-models}), Prompt Engineering (Abschnitt~\ref{prompt-engineering}), automatisierte Sportberichterstattung (Abschnitt~\ref{automatisierte-sportberichterstattung}), Echtzeit-Kommunikation (Abschnitt~\ref{echtzeit-kommunikation-im-web}), ETL-Workflows (Abschnitt~\ref{etl-prozesse-und-workflow-automatisierung}), Backend-, Frontend- und Deployment-Technologien (Abschnitt~\ref{backend-frontend-und-deployment-technologien}) sowie eine Synthese der Technologieentscheidungen (Abschnitt~\ref{synthese-technologische-konsequenzen-für-das-systemdesign}).
+Dieses Kapitel legt die technologischen Grundlagen für das vorliegende System. Es gliedert sich in sechs Abschnitte: Large Language Models (Abschnitt~\ref{large-language-models}), Prompt Engineering (Abschnitt~\ref{prompt-engineering}), automatisierte Sportberichterstattung (Abschnitt~\ref{automatisierte-sportberichterstattung}), ETL-Workflows (Abschnitt~\ref{etl-prozesse-und-workflow-automatisierung}), Backend-, Frontend- und Deployment-Technologien inkl. Echtzeit-Kommunikationsmuster (Abschnitt~\ref{backend-frontend-und-deployment-technologien}) sowie eine Synthese der Technologieentscheidungen (Abschnitt~\ref{synthese-technologische-konsequenzen-für-das-systemdesign}).
 
 \section{Large Language Models}\label{large-language-models}
 
@@ -77,25 +77,6 @@ Mit zunehmender Automatisierung stellt sich im Kontext der Sportberichterstattun
 
 
 
-\section{Echtzeit-Kommunikation im
-Web}\label{echtzeit-kommunikation-im-web}
-
-Die Übertragung von Daten zwischen Frontend und Backend erfordert eine
-Balance zwischen Latenz, Ressourcenverbrauch und
-Implementierungskomplexität. Für Echtzeitanwendungen wie Liveticker
-existieren mehrere etablierte Kommunikationsmuster, die sich
-hinsichtlich dieser Dimensionen unterscheiden.
-
-\begin{itemize}\tightlist
-\item \textbf{HTTP-Polling} ist das einfachste Muster: Der Client sendet in regelmäßigen Intervallen Anfragen an den Server, um neue Daten abzurufen. Der Vorteil liegt in der Einfachheit und breiten Kompatibilität; das Muster nutzt Standard-HTTP-Requests ohne zusätzliche Protokollschichten. Nachteile sind die inhärente Latenz (Daten werden erst beim nächsten Polling-Zyklus sichtbar) und der erhöhte Ressourcenverbrauch durch wiederholte Request/Response-Zyklen, selbst wenn keine neuen Daten vorliegen (vgl. de la Torre et al.~2019, S.~261). Für Anwendungen mit akzeptabler Latenztoleranz (z. B. wenige Sekunden) und begrenzter Updatefrequenz ist Polling jedoch eine robuste und wartbare Lösung.
-\item \textbf{Server-Sent Events (SSE)} ermöglichen eine leichtgewichtige, HTTP-basierte Push-Verbindung, bei der der Server kontinuierlich Ereignisse an den Client überträgt (Hickson 2015). Im Gegensatz zu Polling entfällt der wiederholte Request-Overhead; im Gegensatz zu WebSocket wird kein eigenes Protokoll benötigt. SSE ist auf unidirektionale Kommunikation (Server→Client) beschränkt und eignet sich daher besonders für Benachrichtigungs- und Update-Szenarien, bei denen der Client keine Nachrichten zurücksendet (vgl. de la Torre et al.~2019, S.~261--262).
-\item \textbf{WebSocket} etabliert eine vollständig bidirektionale, persistente Verbindung über das WebSocket-Protokoll (vgl. RFC 6455). Nach einem initialen HTTP-Handshake wechselt die Verbindung in ein binäres Protokoll mit minimalem Overhead. WebSocket eignet sich für latenzkritische Echtzeitanwendungen, bei denen minimale Latenz und eine persistente Verbindung erforderlich sind, auch wenn die Kommunikation faktisch überwiegend unidirektional (Server → Client) verläuft. Der Preis für niedrige Latenz sind höhere Implementierungskomplexität und erhöhter Server-Ressourcenbedarf durch persistente Verbindungen (vgl. de la Torre et al.~2019, S.~262).
-\end{itemize}
-
-Die Wahl des Kommunikationsmusters hängt von den Anforderungen der
-Anwendung ab: Polling bevorzugt Einfachheit, SSE bietet effizienten
-unidirektionalen Push, WebSocket minimiert Latenz bei bidirektionaler
-Kommunikation. Hybridansätze nutzen verschiedene Muster für unterschiedliche Datenströme innerhalb derselben Anwendung, um Trade-offs gezielt zu optimieren: latenztolerante Zustandsdaten per Polling, latenzkritische Ereignisdaten per WebSocket (vgl. Abschnitt~\ref{kommunikations--und-triggerarchitektur}).
 
 
 
@@ -148,6 +129,18 @@ Im Python-Backend-Ökosystem stehen für asynchrone Webanwendungen drei verbreit
 Für die Persistenzschicht bieten sich relationale Datenbanksysteme (z.\,B. \textbf{PostgreSQL}, MySQL) und dokumentenorientierte Stores (z.\,B. \textbf{MongoDB}) als Hauptklassen an. Relationale Systeme erzwingen über Fremdschlüsselbeziehungen referenzielle Integrität und unterstützen Joins über normalisierte Schemata; dokumentenorientierte Stores bieten höhere Schemaflexibilität auf Kosten von ACID-Garantien und deklarativer Join-Semantik (vgl. Fowler \& Sadalage 2012, S.~26--27).
 
 Der Zugang zu LLM-Anbietern erfolgt im Backend zunehmend über \textbf{LLM-API-Aggregatoren} wie OpenRouter, die unter einer einheitlichen API-Schicht Modelle verschiedener Anbieter bündeln. Dies ermöglicht anbieterunabhängige Modellauswahl und vereinfacht Fallback-Strategien bei Anbieterausfällen — ein entscheidender Faktor für Produktivsysteme mit Verfügbarkeitsanforderungen (vgl. Abschnitt~\ref{multi-provider-architektur}).
+
+\subsection{Echtzeit-Kommunikationsmuster}\label{echtzeit-kommunikation-im-web}
+
+Für Echtzeitanwendungen wie Liveticker existieren drei etablierte Kommunikationsmuster, die sich in Latenz, Ressourcenverbrauch und Implementierungskomplexität unterscheiden:
+
+\begin{itemize}\tightlist
+\item \textbf{HTTP-Polling}: Der Client sendet in regelmäßigen Intervallen Anfragen; einfach und kompatibel, aber mit inhärenter Latenz und Overhead bei leeren Antworten (vgl. de la Torre et al.~2019, S.~261).
+\item \textbf{Server-Sent Events (SSE)}: HTTP-basierter unidirektionaler Push vom Server zum Client ohne Protokollwechsel — effizienter als Polling, geeignet für reine Update-Szenarien (vgl. de la Torre et al.~2019, S.~261--262).
+\item \textbf{WebSocket}: Bidirektionale, persistente Verbindung mit minimalem Overhead nach initialem HTTP-Handshake; latenzoptimal, aber ressourcenintensiver (vgl. RFC 6455; de la Torre et al.~2019, S.~262).
+\end{itemize}
+
+Hybridansätze kombinieren mehrere Muster für unterschiedliche Datenströme: latenztolerante Zustandsdaten per Polling, latenzkritische Ereignisse per WebSocket (vgl. Abschnitt~\ref{kommunikations--und-triggerarchitektur}).
 
 \subsection{Frontend-Framework}\label{frontend-framework}
 
