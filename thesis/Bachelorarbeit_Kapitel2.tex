@@ -61,7 +61,7 @@ Skalierung personell und wirtschaftlich kaum darstellbar.
 
 Liveticker-Stellen werden häufig mit freien Mitarbeitern oder studentischen Hilfskräften besetzt (Bluhm \& Schäfer 2023, S.~32); wechselndes Personal und variierende Arbeitsbedingungen machen konsistente Tonalität und sprachliches Niveau manuell kaum gewährleistbar — eine technologische Unterstützung ist daher keine optionale Ergänzung, sondern eine strukturelle Notwendigkeit.
 
-Das Experteninterview (Abschnitt~\ref{anforderungsanalyse-am-beispiel-eintracht-frankfurt}) validiert diese Problemdimension empirisch über die Interviewfragen IF1--IF4c (Workflow, Arbeitsort, Personalbindung, Parallelaufgaben, Reaktionszeit, Fehlerquellen und Systemnutzung).
+Das Experteninterview (Abschnitt~\ref{anforderungsanalyse-am-beispiel-eintracht-frankfurt}) validiert diese Problemdimension empirisch: Workflow-Struktur, Personalbedarf, Fehlerquellen und Systemnutzung wurden direkt aus der Vereinspraxis bestätigt.
 
 
 
@@ -80,7 +80,7 @@ Die Herausforderung beschränkt sich nicht auf eine reine Übersetzung existiere
 Beispiel der Live-Berichterstattung von \emph{Die Zeit}, dass die Integration mehrsprachiger Echtzeitinhalte den internationalen Wissenstransfer maßgeblich erweitert und vereinfacht. Im Kontext von Sport-Livetickern kommt als qualitative Anforderung hinzu, dass sprachliche Konventionen, idiomatische Wendungen und die emotionale Tonalität kulturspezifisch variieren -- es handelt sich daher weniger um ein Übersetzungs- als um ein Lokalisierungsproblem. Der operative Zeitdruck verschärft sich mit jeder zusätzlichen Sprache erheblich. Jede weitere Sprache erfordert spezialisiertes Personal für Übersetzungs- und Anpassungsprozesse, was unter den ohnehin ressourcenknappen Echtzeit-Bedingungen redaktionell kaum zu bewältigen ist (vgl. Bluhm \& Schäfer 2023, S.~32). Eine manuelle Skalierung auf mehrere Sprachen übersteigt die wirtschaftlichen und personellen Kapazitäten der meisten Vereinsredaktionen.
 Eine mehrsprachige Liveticker-Produktion wird so ohne proportionalen Personalaufwand möglich (vgl. Abschnitt~\ref{large-language-models}).
 
-Das Experteninterview (Abschnitt~\ref{anforderungsanalyse-am-beispiel-eintracht-frankfurt}) validiert diese Problemdimension empirisch; Interview-Frage IF5 fragt direkt, ob bei Eintracht Frankfurt aktuell Bedarf an mehrsprachigen Tickern besteht und welche Sprachen dabei relevant wären.
+Das Experteninterview (Abschnitt~\ref{anforderungsanalyse-am-beispiel-eintracht-frankfurt}) validiert diese Problemdimension empirisch: Der Bedarf an englischsprachigen Tickern wurde direkt aus der Vereinspraxis bestätigt.
 
 
 
@@ -115,11 +115,7 @@ Prinzip auf die Liveticker-Produktion, folgt die Anforderung, dass ein und dasse
 emotionaler Fanbindung als auch einen neutralen, anbieterunabhängigen
 Ticker bedienen können muss. Die stilistische Differenzierung (von der Wortwahl über die Tonalität bis hin zu vereinsspezifischen Redewendungen) muss als Konfiguration abbildbar sein, nicht als separate Implementierung.
 
-Das Experteninterview (Abschnitt~\ref{anforderungsanalyse-am-beispiel-eintracht-frankfurt}) validiert diese Problemdimension empirisch: IF6 fragt nach vorhandenen Styleguides
-und der aktuellen Stilkonsistenz; IF7 nach den charakteristischen
-Merkmalen des Eintracht-Ticker-Stils im Vergleich zur neutralen
-Berichterstattung sowie nach den verwendeten Formulierungsmustern
-(IF7a).
+Das Experteninterview (Abschnitt~\ref{anforderungsanalyse-am-beispiel-eintracht-frankfurt}) validiert diese Problemdimension empirisch: Das Vorhandensein klarer redaktioneller Stilrichtlinien sowie der emotionale, fan-nahe Charakter des Eintracht-Ticker-Stils wurden direkt bestätigt.
 
 Wie sich diese Anforderungen am konkreten Beispiel eines
 Bundesliga-Vereins ausprägen, zeigt der folgende Abschnitt.
@@ -135,29 +131,19 @@ Eintracht Frankfurt dient in dieser Arbeit als konkreter Anwendungsfall für die
 
 Aus den drei Problemdimensionen ergeben sich folgende vereinsspezifische
 Anforderungen: Eintracht Frankfurt bestreitet pro Saison bis zu 60
-Pflichtspiele; pro Spiel fallen nach Angaben des Interviewpartners typischerweise 60--120 Ticker-Einträge an, wobei die genaue Zahl von der Ereignisdichte abhängt (IF3a), was den Zeitdruck auf manuelle
+Pflichtspiele; pro Spiel fallen nach Angaben des Interviewpartners typischerweise 60--120 Ticker-Einträge an, wobei die genaue Zahl von der Ereignisdichte abhängt, was den Zeitdruck auf manuelle
 Abdeckung mit konsistenter Qualität auf ein personell kaum
 darstellbares Niveau treibt. Die internationale Fanbasis (vgl. Abschnitt~\ref{mehrsprachigkeit-als-herausforderung}) begründet den Bedarf an
 mehrsprachigen Tickern; der Interviewpartner bestätigt Englisch als
-relevante Sprache (IF5). Hinsichtlich der Tonalität folgen
+relevante Sprache. Hinsichtlich der Tonalität folgen
 vereinseigene Ticker einer emotionalen, fanbezogenen Perspektive, die
 sich von neutraler Berichterstattung überregionaler Medien unterscheidet
 (vgl. Canalp, zit. n. Beils 2023, S.~57); das System muss diese stilistische
 Differenzierung konfigurierbar abbilden.
 
-\subsection{Experteninterview-Leitfaden}\label{experteninterview-leitfaden}
+\subsection{Experteninterview}\label{experteninterview-leitfaden}
 
-Die Anforderungsanalyse stützt sich ergänzend auf ein strukturiertes Experteninterview mit einem Digitalverantwortlichen von Eintracht Frankfurt, der für die Weiterentwicklung des digitalen Angebots — einschließlich des Liveticker-Systems — zuständig ist. Das Leitfadeninterview nach Kuckartz (2018) ermöglicht bei kleiner Fallzahl eine systematische Vergleichbarkeit der Antworten mit den hergeleiteten Anforderungen; der Interviewpartner ist als Experte im Sinne von Meuser und Nagel (1991) einzustufen, da er über umfassendes Systemwissen zu Produktionsprozessen, technischer Infrastruktur und den strategischen digitalen Anforderungen des Vereins verfügt. Die Auswertung erfolgt in Abschnitt~6.3.5.
-
-Über die in den Abschnitten~\ref{zeitdruck-als-strukturelles-problem}--\ref{white-label-bedarf} eingebetteten Validierungsfragen
-(IF1--IF7a) hinaus behandelt das Experteninterview zwei weitere
-Themenblöcke, die erst nach der Systemdemonstration beantwortet werden
-können: die Systembewertung (IF8--IF12, eingebettet in
-Abschnitt~6.3.5) und die Zukunftsperspektive (IF13--IF13a,
-behandelt in Abschnitt~\ref{implikationen-für-den-sportjournalismus}). Ein valides Systemurteil zu diesen beiden Themenblöcken
-setzt die vorherige Exposition mit dem laufenden System voraus, weshalb
-sie sequenziell nach der Systemdemonstration eingesetzt wurden.
-Die vollständige thematische Auswertung des Interviews mit Einzelergebnissen findet sich in Abschnitt~6.3.5. Der vollständige Interviewleitfaden mit 28 Fragen ist im Anhang dieser Arbeit beigefügt.
+Die Anforderungsanalyse stützt sich ergänzend auf ein strukturiertes Experteninterview mit einem Digitalverantwortlichen von Eintracht Frankfurt, der für die Weiterentwicklung des digitalen Angebots — einschließlich des Liveticker-Systems — zuständig ist. Das Interview gliedert sich in zwei Teile: Zunächst werden die drei Problemdimensionen aus Vereinssicht validiert; nach einer Live-Demonstration des entwickelten Systems folgen Bewertungsfragen zur Systemeignung und Zukunftsperspektive. Die vollständige Auswertung findet sich in Abschnitt~\ref{experteninterview-auswertung}.
 
 
 
