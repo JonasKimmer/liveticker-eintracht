@@ -467,7 +467,7 @@ Hook & Paket & Verantwortlichkeit \\
 \end{longtable}
 }
 
-Die Polling-Hooks \texttt{useMatchCore}, \texttt{useMatchEvents} und \texttt{useMatchTicker} betreiben je einen eigenen \texttt{setInterval}-Zyklus; das Intervall wird über \texttt{resolvePollingInterval(matchState)} zustandsabhängig gesetzt: 15 Sekunden im Live- und FullTime-Betrieb, 20 Sekunden in allen anderen Zuständen (PreMatch, Cancelled u.\,a.) sowie 15 Sekunden als Standardwert, wenn der Spielstatus noch nicht geladen ist (\texttt{matchState === null}). \texttt{useMatchData} aggregiert die drei Hooks und stellt die Daten über \texttt{TickerDataContext} bereit.
+Die Polling-Hooks \texttt{useMatchCore}, \texttt{useMatchEvents} und \texttt{useMatchTicker} betreiben je einen eigenen \texttt{setInterval}-Zyklus; das Intervall wird über \texttt{resolvePollingInterval} zustandsabhängig gesetzt: 15 Sekunden im Live- und FullTime-Betrieb, 20 Sekunden in allen anderen Zuständen (PreMatch, Cancelled u.\,a.) sowie 15 Sekunden als Standardwert, wenn der Spielstatus noch nicht geladen ist (\texttt{matchState === null}). \texttt{useMatchData} aggregiert die drei Hooks und stellt die Daten über \texttt{TickerDataContext} bereit.
 
 
 \subsection{\texorpdfstring{Slash-Command-Parser
@@ -510,7 +510,7 @@ Command & Ausgabe & Phase & Icon \\
 /gelb Müller EF   → "Gelb — Müller (EF)"             + icon [Gelb]
 /rot Huber Bayern → "Rote Karte — Huber (Bayern)"    + icon [Rot]
 /s EinRaus AusRein EF → "Wechsel — EinRaus <-> AusRein (EF)" + icon [Wechsel]
-/n Freistoß knapp über das Tor → "Freistoß knapp über das Tor"
+/n Freistoß übers Tor → "Freistoß übers Tor"        + icon [Notiz]
 \end{verbatim}
 
 \end{itemize}

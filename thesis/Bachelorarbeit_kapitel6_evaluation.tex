@@ -13,12 +13,12 @@ Library)}\label{frontend-unit-tests-jest-react-testing-library}
 
 Das Frontend verfügt über \textbf{187 Unit-Tests} in 15 Testdateien, die alle fehlerfrei durchlaufen. Die Tests decken vier Kategorien ab: Utility-Funktionen, React-Hooks, UI-Komponenten und TypeScript-Typen.
 
-{\def\LTcaptype{none} % do not increment counter
+{\footnotesize\def\LTcaptype{none} % do not increment counter
 \begin{longtable}[]{@{}
-  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.1920}}
-  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.3360}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.1500}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.4200}}
   >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.0400}}
-  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.4320}}@{}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.3900}}@{}}
 \toprule\noalign{}
 Test-Suite & Datei & Tests & Fokus \\
 \midrule\noalign{}
@@ -50,11 +50,11 @@ Das Kernmodul \texttt{parseCommand} ist mit 45 Tests am dichtesten abgedeckt: al
 
 Das Backend verfügt über \textbf{246 Tests} in 14 Test-Dateien, die mit einer Gesamt-Coverage von \textbf{79\,\%} fehlerfrei durchlaufen. Die API-Tests nutzen FastAPIs \texttt{TestClient} mit einer transaktionalen PostgreSQL-Session, die nach jedem Test per Rollback zurückgesetzt wird; Tests sind dadurch voneinander isoliert und hinterlassen keine persistenten Daten.
 
-{\def\LTcaptype{none} % do not increment counter
+{\footnotesize\def\LTcaptype{none} % do not increment counter
 \begin{longtable}[]{@{}
-  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.2900}}
-  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.1600}}
-  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.5500}}@{}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.4000}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.1500}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.4500}}@{}}
 \toprule\noalign{}
 Test-Datei & Kategorie & Fokus \\
 \midrule\noalign{}
@@ -162,7 +162,7 @@ dann die qualitative Analyse konkreter Textbeispiele einschließlich Expertenval
 
 \subsection{Quantitative Metriken und Evaluationsinfrastruktur}\label{quantitative-metriken}
 
-Das System stellt einen Bulk-Generierungsendpunkt bereit (\texttt{POST /api/v1/ticker/generate-bulk/\{match\_id\}}, vgl.\ Abschnitt~\ref{backend-implementierung}), der alle Events eines Spiels mit einem wählbaren Provider und Modell generiert. Optionale \texttt{provider}- und \texttt{model}-Parameter ermöglichen A/B-Vergleiche zwischen LLM-Konfigurationen, ohne die Produktiv-Konfiguration zu verändern.
+Das System stellt einen Bulk-Generierungsendpunkt bereit (vgl.\ Abschnitt~\ref{backend-implementierung}), der alle Events eines Spiels mit einem wählbaren Provider und Modell generiert. Optionale \texttt{provider}- und \texttt{model}-Parameter ermöglichen A/B-Vergleiche zwischen LLM-Konfigurationen, ohne die Produktiv-Konfiguration zu verändern.
 
 Das Evaluationsmodul (\texttt{app/utils/evaluation\_metrics.py}) stellt sechs Metriken bereit:
 
@@ -388,12 +388,12 @@ Eintracht-Sicht positiv zu rahmen ist.
 
 Die qualitative Analyse identifizierte folgende wiederkehrende Fehlerklassen:
 
-{\def\LTcaptype{none} % do not increment counter
+{\footnotesize\def\LTcaptype{none} % do not increment counter
 \begin{longtable}[]{@{}
-  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.1154}}
-  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.0625}}
-  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.3317}}
-  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.4904}}@{}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.2300}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.1600}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.2900}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.3200}}@{}}
 \toprule\noalign{}
 \begin{minipage}[b]{\linewidth}\raggedright
 Fehlerklasse
@@ -521,7 +521,7 @@ Die LLM-as-Judge-Evaluation bestätigt Korrektheit (4{,}12) und Verständlichkei
 
 \section{Latenzpotenzial der Betriebsmodi}\label{evaluation-der-betriebsmodi}
 
-Die drei Betriebsmodi unterscheiden sich strukturell in ihrer erreichbaren Publikationslatenz. Auf Basis der gemessenen LLM-Latenzen (Median 859~ms, P95 2\,047~ms, vgl. Abschnitt~\ref{llm-latenz}) und des 15-Sekunden-Polling-Intervalls im Live-Modus (vgl. Abschnitt~\ref{frontend-polling}) ergibt sich für den \texttt{auto}-Modus eine architekturbasierte Time-to-Publish von ≈ 2--17~s (LLM-Generierung: 1--2~s; Frontend-Polling: bis zu 15~s), verglichen mit der manuellen Baseline von 30--120~s (Abschnitt~\ref{zeitdruck-als-strukturelles-problem}). Die folgende Tabelle schlüsselt die Latenzkomponenten auf:
+Die drei Betriebsmodi unterscheiden sich strukturell in ihrer erreichbaren Publikationslatenz. Auf Basis der gemessenen LLM-Latenzen (Median 859~ms, P95 2\,047~ms, vgl. Abschnitt~\ref{llm-latenz}) und des 15-Sekunden-Polling-Intervalls im Live-Modus (vgl. Abschnitt~\ref{frontend-polling}) ergibt sich für den \texttt{auto}-Modus eine architekturbasierte Time-to-Publish von ≈ 2--17~s (LLM-Generierung: 1--2~s; Frontend-Polling: bis zu 15~s), verglichen mit der manuellen Baseline von 30--120~s (Abschnitt~\ref{zeitdruck-und-fehleranfaelligkeit}). Die folgende Tabelle schlüsselt die Latenzkomponenten auf:
 
 {\def\LTcaptype{none}
 \begin{longtable}[]{@{}llll@{}}
@@ -558,16 +558,16 @@ Bundesliga-Spiele. Gemessen wurde die \textbf{End-to-End-Latenz} (Client
 → Backend → OpenRouter → Gemini → Backend → Client), die für die
 TTP-Analyse relevant ist.
 
-{\def\LTcaptype{none} % do not increment counter
+{\footnotesize\def\LTcaptype{none} % do not increment counter
 \begin{longtable}[]{@{}
-  >{\raggedright\arraybackslash}p{(\linewidth - 14\tabcolsep) * \real{0.1458}}
-  >{\raggedright\arraybackslash}p{(\linewidth - 14\tabcolsep) * \real{0.1042}}
-  >{\raggedright\arraybackslash}p{(\linewidth - 14\tabcolsep) * \real{0.3542}}
-  >{\raggedright\arraybackslash}p{(\linewidth - 14\tabcolsep) * \real{0.0312}}
-  >{\raggedright\arraybackslash}p{(\linewidth - 14\tabcolsep) * \real{0.0625}}
-  >{\raggedright\arraybackslash}p{(\linewidth - 14\tabcolsep) * \real{0.1146}}
-  >{\raggedright\arraybackslash}p{(\linewidth - 14\tabcolsep) * \real{0.0833}}
-  >{\raggedright\arraybackslash}p{(\linewidth - 14\tabcolsep) * \real{0.1042}}@{}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 14\tabcolsep) * \real{0.1400}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 14\tabcolsep) * \real{0.1000}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 14\tabcolsep) * \real{0.4600}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 14\tabcolsep) * \real{0.0300}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 14\tabcolsep) * \real{0.0600}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 14\tabcolsep) * \real{0.0700}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 14\tabcolsep) * \real{0.0600}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 14\tabcolsep) * \real{0.0800}}@{}}
 \toprule\noalign{}
 \begin{minipage}[b]{\linewidth}\raggedright
 Messserie
