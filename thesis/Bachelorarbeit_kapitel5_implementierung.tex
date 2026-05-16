@@ -19,7 +19,7 @@ backend/app/
 |-- repositories/    # Datenbankzugriff (je Entitaet eine Klasse)
 |-- schemas/         # Pydantic-Schemas (Request / Response)
 |-- services/        # Fachliche Services (llm_service, ticker_service)
-|-- utils/           # Hilfsmodule (llm_context_builders, evaluation_metrics)
+|-- utils/           # Hilfsmodule (context_builders, metrics)
 `-- core/            # Konfiguration, Datenbankverbindung, Enums, Konstanten
 \end{verbatim}
 
@@ -185,19 +185,19 @@ Die fünf kritischen Lifecycle-Endpunkte sind:
 
 {\def\LTcaptype{none}
 \begin{longtable}[]{@{}
-  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.40}}
-  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.60}}@{}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.48}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.52}}@{}}
 \toprule\noalign{}
 Endpunkt & Funktion \\
 \midrule\noalign{}
 \endhead
 \bottomrule\noalign{}
 \endlastfoot
-\texttt{POST /api/v1/events} & Importiert ein Live-Ereignis (n8n-Webhook); löst die LLM-Pipeline aus \\
-\texttt{POST /api/v1/ticker/generate/\{event\_id\}} & Generiert einen KI-Ticker-Eintrag für ein konkretes Ereignis \\
-\texttt{PATCH /api/v1/ticker/\{id\}} & Generisches Update (Text, Status, Stil); dedizierte Shortcuts \texttt{/publish}, \texttt{/reject} für Coop-Flow \\
-\texttt{POST /api/v1/ticker/manual} & Erstellt einen manuellen Eintrag ohne LLM-Aufruf \\
-\texttt{POST /api/v1/match-status} & Aktualisiert Spielzustand und Phase; triggert Phasen-Events \\
+{\small\texttt{POST /api/v1/events}} & Importiert ein Live-Ereignis (n8n-Webhook); löst die LLM-Pipeline aus \\
+{\small\texttt{POST /api/v1/ticker/generate/\{event\_id\}}} & Generiert einen KI-Ticker-Eintrag für ein konkretes Ereignis \\
+{\small\texttt{PATCH /api/v1/ticker/\{id\}}} & Generisches Update (Text, Status, Stil); dedizierte Shortcuts \texttt{/publish}, \texttt{/reject} für Coop-Flow \\
+{\small\texttt{POST /api/v1/ticker/manual}} & Erstellt einen manuellen Eintrag ohne LLM-Aufruf \\
+{\small\texttt{POST /api/v1/match-status}} & Aktualisiert Spielzustand und Phase; triggert Phasen-Events \\
 \end{longtable}
 }
 
@@ -399,7 +399,8 @@ gespeist werden:
 
 \begin{verbatim}
 App
-`- LiveTicker  [TickerModeContext | TickerDataContext | TickerActionsContext]
+`- LiveTicker  [TickerModeContext | TickerDataContext
+               | TickerActionsContext]
    |- LeftPanel
    |  `- PublishedEntry
    |- CenterPanel
