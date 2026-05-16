@@ -125,7 +125,7 @@ Der \textbf{\texttt{manual}-Modus} entspricht dem Status quo der manuellen Livet
 \section{Diskussion der
 Prompt-Architektur}\label{diskussion-der-prompt-architektur}
 
-Zwei Aspekte der Prompt-Architektur verdienen eine gesonderte Diskussion: das Design der dynamischen Stilreferenzen und die Wahl der Temperaturparameter in Verbindung mit den spezialisierten Context-Buildern.
+Die Prompt-Architektur verdient eine eigenständige Diskussion, weil ihre Designentscheidungen sowohl die Betriebsmodiwahl (Abschnitt~\ref{diskussion-der-betriebsmodi}) als auch die Evaluationsbefunde aus Abschnitt~\ref{einfluss-der-stilprofile} kausal erklären — eine integrative Funktion, die über die Reichweite der einzelnen Kapitel hinausgeht. Im Mittelpunkt stehen zwei Aspekte: das Design der dynamischen Stilreferenzen und die Wahl der Temperaturparameter in Verbindung mit den spezialisierten Context-Buildern.
 
 \subsection{Dynamische Stilreferenzen}\label{stilreferenzen}
 
@@ -145,8 +145,8 @@ Sportjournalismus}\label{implikationen-fuxfcr-den-sportjournalismus}
 Das hybride System zielt darauf ab, die Rolle des Liveticker-Redakteurs von
 der Textproduktion zur Textredaktion zu verlagern: Statt unter Zeitdruck zu
 formulieren, prüft, editiert und kuratiert der Redakteur KI-generierte
-Vorschläge. Diese Verschiebung entspricht dem von Bluhm und Schäfer
-(2023, S. 35) beschriebenen Wandel hin zu einer „augmented authorship" (erweiterter Autorschaft),
+Vorschläge. Diese Verschiebung entspricht dem in der Forschungsliteratur diskutierten Wandel hin zu einer
+„augmented authorship" (erweiterter Autorschaft; vgl. Bluhm \& Schäfer 2023, S.~35),
 bei der menschliche Expertise und maschinelle Effizienz komplementär
 zusammenwirken. Der kognitive Engpass – simultane Beobachtung des Spielgeschehens, Relevanzbewertung und
 Texterstellung unter extremem Zeitdruck (vgl. Abschnitt~\ref{zeitdruck-und-fehleranfaelligkeit}) – könnte
@@ -191,6 +191,6 @@ Das Human-in-the-Loop-Design des \texttt{coop}-Modus beantwortet die Verantwortu
 Ab August 2026 verpflichtet Art.~50 Abs.~4 des EU AI Act zur Kennzeichnung KI-generierter Texte, sofern die automatisierte Herkunft nicht offensichtlich erkennbar ist. Liveticker-Einträge fallen unter diesen Anwendungsbereich. Ein produktiver Betrieb des Systems erfordert damit eine explizite Kennzeichnungsstrategie sowie datenschutzkonforme Verarbeitungsvereinbarungen mit den LLM-Providern (insbesondere OpenRouter als Intermediär). Diese regulatorischen Anforderungen lagen außerhalb des Projektumfangs, sind aber für eine Produktiveinführung unerlässlich.
 
 \paragraph{Rechtlicher Rahmen.}
-Die Nutzung von LLM-APIs zur Textgenerierung berührt mehrere Rechtsbereiche, die im Rahmen dieser Arbeit ausgeklammert wurden, für eine Produktiveinführung jedoch verbindlich zu klären sind. Urheberrechtlich ist zu prüfen, ob KI-generierte Liveticker-Texte nach § 2 Abs.~2 UrhG als persönliche geistige Schöpfungen schutzfähig sind. Da eine menschliche Schöpfungshöhe im \texttt{auto}-Modus strukturell fehlt, dürften vollautomatisch generierte Einträge keinen Urheberrechtsschutz genießen. Datenschutzrechtlich erfordert die Übermittlung von Match-Daten an externe LLM-Anbieter (insbesondere OpenRouter als Drittland-Intermediär) geeignete Garantien gemäß DSGVO Art.~46, sofern die Serverinfrastruktur außerhalb des EWR betrieben wird. Für Modelle, die unter den General-Purpose-AI-Begriff von Art.~53 Abs.~1 der Verordnung (EU) 2024/1689 (EU AI Act) fallen, gelten ab August 2026 zusätzliche Transparenz- und Dokumentationspflichten gegenüber Downstream-Nutzern. Der hier eingesetzte \texttt{google/gemini-2.0-flash-lite-001}-Dienst fällt voraussichtlich in diesen Anwendungsbereich. Die Kennzeichnungspflicht nach Art.~50 Abs.~4 EU AI Act greift komplementär und ist bereits im Abschnitt über den Regulatorischen Rahmen adressiert.
+Die Nutzung von LLM-APIs zur Textgenerierung berührt mehrere Rechtsbereiche, die im Rahmen dieser Arbeit ausgeklammert wurden, für eine Produktiveinführung jedoch verbindlich zu klären sind. Urheberrechtlich ist zu prüfen, ob KI-generierte Liveticker-Texte nach § 2 Abs.~2 UrhG als persönliche geistige Schöpfungen schutzfähig sind. Da eine menschliche Schöpfungshöhe im \texttt{auto}-Modus strukturell fehlt, dürften vollautomatisch generierte Einträge nach überwiegender urheberrechtlicher Auffassung keinen Urheberrechtsschutz genießen — eine im Detail rechtlich noch nicht abschließend geklärte Frage. Datenschutzrechtlich erfordert die Übermittlung von Match-Daten an externe LLM-Anbieter (insbesondere OpenRouter als Drittland-Intermediär) geeignete Garantien gemäß DSGVO Art.~46, sofern die Serverinfrastruktur außerhalb des EWR betrieben wird. Für Modelle, die unter den General-Purpose-AI-Begriff von Art.~53 Abs.~1 der Verordnung (EU) 2024/1689 (EU AI Act) fallen, gelten ab August 2026 zusätzliche Transparenz- und Dokumentationspflichten gegenüber Downstream-Nutzern. Der hier eingesetzte \texttt{google/gemini-2.0-flash-lite-001}-Dienst fällt voraussichtlich in diesen Anwendungsbereich. Die Kennzeichnungspflicht nach Art.~50 Abs.~4 EU AI Act greift komplementär und ist bereits im Abschnitt über den Regulatorischen Rahmen adressiert.
 
 Die Diskussion entlang der sechs Dimensionen ergibt ein konsistentes Gesamtbild: Das System bewältigt die identifizierten Problemdimensionen durch nachweisbare Mechanismen; verbleibende Schwächen (Stil-Inkonsistenz, fehlende Authentifizierung, eingeschränkte Stichprobengröße) sind klar lokalisiert und behebbar.
