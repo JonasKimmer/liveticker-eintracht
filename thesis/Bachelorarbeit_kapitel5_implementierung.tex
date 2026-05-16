@@ -291,6 +291,8 @@ Priorität & Provider & Standard-Modell & Fallback \\
 \end{longtable}
 }
 
+Claude Haiku (Priorität 4) wurde als direkter Anthropic-Fallback ohne OpenRouter-Intermediär aufgenommen: Das Modell erzielt bei Kurztext-Aufgaben kosteneffiziente Latenzen und ist für Konfigurationsszenarien vorgesehen, in denen OpenRouter nicht verfügbar ist.
+
 Als LLM-Parameter werden \texttt{temperature=0.5} für stilistische Variation und \texttt{max\_tokens} aus \texttt{LLM\_MAX\_TOKENS} gesetzt. Alle Prompts werden als einzelne User-Nachricht übermittelt; der Rollenkontext ist direkt in den Prompttext eingebettet (vgl. Abschnitt~\ref{prompt-engineering-strategie}). Für die Fehlerbehandlung unterscheidet der Service zwei Backoff-Strategien: Bei Rate-Limit-Fehlern greift lineares Backoff (\texttt{30\ s\ /\ 60\ s}), bei transienten Fehlern exponentielles Backoff (\texttt{1\ s\ /\ 2\ s}), jeweils bis zu \texttt{LLM\_RETRY\_ATTEMPTS} (3) Wiederholungen. Das Retry-Schema sieht vereinfacht so aus:
 
 \begin{Shaded}
@@ -554,9 +556,11 @@ Im Auto-Modus existieren zwei parallele Automatisierungspfade: Der primäre Pfad
 \subsection{TypeScript-Migration}\label{typescript-migration}
 
 Das Frontend wurde im Verlauf des Projekts von reinem JavaScript auf
-TypeScript migriert. Ziel war nicht die vollständige Auflösung aller
-\texttt{any}-Typen, sondern eine pragmatische Typisierung der
-systemkritischen Pfade mit messbaren Qualitätskennzahlen.
+TypeScript migriert. Die Migration priorisierte systemkritische Pfade mit
+messbaren Qualitätskennzahlen und verzichtete bewusst auf vollständige
+\texttt{any}-Auflösung, um durch Fehlereskalation keine
+Entwicklungsblockierungen zu erzeugen — eine pragmatische Entscheidung,
+die inkrementelle Typsicherheit ohne Entwicklungsstopp ermöglicht.
 
 Die Migration folgte einem schrittweisen Ansatz: Zunächst wurden alle
 \texttt{.js}/\texttt{.jsx}-Dateien umbenannt und die
@@ -636,11 +640,11 @@ Tests}\label{qualituxe4tssicherung-und-tests}
 
 Die Implementierung setzt das in Abschnitt~\ref{qualitätssicherungskonzept} beschriebene Testpyramiden-Modell mit drei Schichten um.
 
-\textbf{Frontend (Jest + React Testing Library):} Unit-Tests decken Utility-Funktionen, Hooks, UI-Komponenten und TypeScript-Typen ab. Der \texttt{parseCommand}-Parser ist besonders umfangreich abgesichert: Als kritische manuelle Eingabeschicht muss er sämtliche Slash-Command-Varianten, Fehleingaben und Kantenfälle zuverlässig verarbeiten; ein Fehler hier würde sich direkt in falsch klassierten Ticker-Einträgen niederschlagen. Jest wurde gegenüber Vitest bevorzugt, da die Create-React-App-Basiskonfiguration eine reibungslose Integration ohne zusätzlichen Build-Setup erlaubt.
+\textbf{Frontend (Jest + React Testing Library):} Unit-Tests decken Utility-Funktionen, Hooks, UI-Komponenten und TypeScript-Typen ab. Der \texttt{parseCommand}-Parser ist besonders umfangreich abgesichert: Als kritische manuelle Eingabeschicht muss er sämtliche Slash-Command-Varianten, Fehleingaben und Kantenfälle zuverlässig verarbeiten; ein Fehler hier würde sich direkt in falsch klassierten Ticker-Einträgen niederschlagen. Jest wurde gegenüber Vitest bevorzugt: Die Create-React-App-Basiskonfiguration integriert Jest nativ, sodass kein eigener Vite-Build-Stack eingeführt werden muss; Vitests Laufzeitvorteil wird erst bei deutlich größeren Test-Suites relevant und rechtfertigt im vorliegenden Umfang keinen Konfigurationsmehraufwand.
 
 \textbf{Backend (pytest):} API-Integrationstests prüfen alle Endpunkte gegen eine echte PostgreSQL-Testinstanz mit transaktionalem Rollback; nach jedem Test wird die Datenbank auf den Ausgangszustand zurückgesetzt, sodass Tests voneinander isoliert und in beliebiger Reihenfolge ausführbar sind. Unit-Tests decken Services, Repositories und Utility-Funktionen ab. Der Verzicht auf einen Datenbank-Mock ist bewusst: Mock-Implementierungen riskieren Divergenzen zum realen Schema, die gerade bei Schemaänderungen während der Entwicklung unbemerkt bleiben.
 
-\textbf{End-to-End (Playwright):} Browser-seitige Smoke-Tests validieren grundlegende Nutzerinteraktionen — darunter ein responsiver Mobile-Test mit Viewport 375\,×\,812 (iPhone~SE) als Regressionsschutz für die Tab-Navigation (N5). Playwright wurde gegenüber Cypress bevorzugt, da es keine Electron-Laufzeitabhängigkeit hat und Cross-Browser-Tests ohne zusätzliche Lizenzen erlaubt.
+\textbf{End-to-End (Playwright):} Browser-seitige Smoke-Tests validieren grundlegende Nutzerinteraktionen — darunter ein responsiver Mobile-Test mit Viewport 375\,×\,812 (iPhone~SE) als Regressionsschutz für die Tab-Navigation (N5). Playwright wurde gegenüber Cypress bevorzugt: Es benötigt keine Electron-Laufzeitabhängigkeit, ermöglicht Cross-Browser-Tests ohne Lizenzschranken und ist damit für den responsiven Mobile-Test auf verschiedenen Viewports (N5) die geeignetere Wahl.
 
 Ergänzend enthält \texttt{evaluation\_metrics.py} statistische Hilfsfunktionen (Cliff's Delta, Bootstrap-KI, Cohen's Kappa u.\,a.) als Evaluationsinfrastruktur für die KI-Textbewertung. Testmetriken, Coverage-Kennzahlen und TypeScript-Typsicherheitswerte sind in Abschnitt~\ref{technische-qualituxe4tssicherung} dokumentiert.
 
