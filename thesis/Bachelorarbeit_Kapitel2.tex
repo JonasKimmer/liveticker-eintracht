@@ -15,7 +15,7 @@ Als Ausgangspunkt illustriert Abbildung~\ref{fig:altsystem} den konkreten Ist-Zu
 \begin{figure}[H]
 \centering
 \includegraphics[width=0.95\textwidth]{altsystem_eintracht.png}
-\caption{Bestehendes Liveticker-Redaktionssystem bei Eintracht Frankfurt (Stand: Saison 2024/25). Links: Ticker-Editor mit manueller Score-Pflege. Mitte: Feed bereits erstellter Meldungen. Rechts: Aufstellungs-Panel ohne automatischen Datenabruf.}
+\caption{Bestehendes Liveticker-Redaktionssystem bei Eintracht Frankfurt (Stand: Saison 2024/25). Links: Ticker-Editor mit manueller Score-Pflege. Mitte: Feed bereits erstellter Meldungen. Rechts: Aufstellungs-Panel im Leerzustand ohne geladene Spielerdaten.}
 \label{fig:altsystem}
 \end{figure}
 
@@ -27,14 +27,14 @@ Die Systemanalyse zeigt sechs strukturelle Defizite, die den Handlungsbedarf fü
 \item \textbf{Keine Medienintegration:} Das System bietet lediglich einen einfachen „Bild auswählen''-Button ohne strukturierte Social-Media-Anbindung, Galeriefunktion oder automatischen Medien-Import (z.\,B. ScorePlay, YouTube, Instagram).
 \item \textbf{Stilinkonsistenz im Feed:} Die bestehenden Ticker-Einträge (Abbildung~\ref{fig:altsystem}, Mitte) zeigen erheblich variierende Qualität und Länge (von einwortigen Kommentaren wie „drin!'' bis zu vollständigen Sätzen) ohne einheitliches Stilprofil oder Qualitätssicherung.
 \item \textbf{Fehlender Mehrsprachen-Support:} Das System ist ausschließlich deutschsprachig ausgelegt. Eine Übersetzungsfunktion oder mehrsprachige Textgenerierung ist nicht vorgesehen.
-\item \textbf{Kein automatischer Datenabruf:} Die Aufstellungsanzeige (Abbildung~\ref{fig:altsystem}, rechts) zeigt lediglich „Reservebank'' ohne geladene Spielerdaten, ein Hinweis darauf, dass Stammdaten manuell eingepflegt oder gar nicht verfügbar sind.
+\item \textbf{Fehlende Live-Statistiken und Medieneinbettung:} Aufstellungsdaten werden laut Experteninterview bereits automatisiert übertragen; eine Integration von Live-Statistiken sowie audiovisuellen Inhalten fehlt jedoch vollständig — im Interview wurde bestätigt: „Videos und Audios können wir noch nicht darstellen, Statistiken ebenso'' (vgl.\ Abschnitt~\ref{anforderungsanalyse-am-beispiel-eintracht-frankfurt}).
 \end{itemize}
 
 Diese Defizite spiegeln die drei in Abschnitt~\ref{problemstellung-und-zielsetzung} identifizierten Problemdimensionen direkt wider: operativer Zeitdruck durch vollständig manuelle Produktion, fehlende Mehrsprachigkeit und eingeschränkte White-Label-Fähigkeit. Das in dieser Arbeit entwickelte System behebt alle sechs Punkte: Die fehlende KI-Unterstützung und Stilinkonsistenz werden durch die LLM-Pipeline mit konfigurierbaren Stilprofilen adressiert (vgl.\ Abschnitt~\ref{ki-komponente}); die manuelle Score-Pflege und der fehlende Datenabruf durch automatisierte n8n-ETL-Workflows (vgl.\ Abschnitt~\ref{workflow-konzeption-n8n}); die fehlende Medienintegration durch die MediaQueue-Architektur (vgl.\ Abschnitt~\ref{n8n-workflow-implementierung}); das Mehrsprachdefizit durch die native LLM-Übersetzungsfunktion (vgl.\ Abschnitt~\ref{mehrsprachige-textgenerierung-konzept}).
 
 \subsection{Zeitdruck, Fehleranfälligkeit und Skalierungsgrenzen}\label{zeitdruck-und-fehleranfaelligkeit}
 
-Die manuelle Erstellung von Livetickern zählt zu den kognitiv anspruchsvollsten Tätigkeiten im Journalismus (vgl. Seibt, zit. n. Beils 2023, S.~56). Die strukturelle Komposition von Liveticker-Einträgen umfasst nach Ojomo und Olomojobi (zit. n. Bluhm \& Schäfer 2023, S.~27) vier kognitive Teilleistungen — Narration (Ereignisbeschreibung), Evaluation (journalistische Einordnung), Elaboration (kontextuelle Vertiefung) und Zusammenfassung (Verdichtung des Spielgeschehens). Diese sind in Abständen von einer bis drei Minuten unter simultaner Beobachtung des Spielgeschehens zu erbringen: Ereignis wahrnehmen, journalistische Relevanz bewerten, Kontext abrufen und in sprachlich angemessene Form bringen (Hauser 2008, S.~3--4). Diese kognitive Parallelverarbeitung macht den Liveticker zu einer Echtzeit-Textgattung, die sich fundamental von retrospektiven Formaten wie dem Spielbericht unterscheidet (vgl. Hauser 2008, S.~2--3). Zusätzlich muss ein Ticker ein heterogenes Publikum gleichzeitig bedienen: First-Screen-Nutzer ohne TV-Bild fordern eine primäre Beschreibung des Spielgeschehens, während Second-Screen-Nutzer mit TV-Bild auf zusätzliche Einordnung und Unterhaltung aus sind (vgl. McEnnis 2016, zit. n. Bluhm \& Schäfer 2023, S.~24 u.~36). Diese Doppelfunktion verschärft die kognitiven Anforderungen an den Autor zusätzlich.
+Die manuelle Erstellung von Livetickern zählt zu den kognitiv anspruchsvollsten Tätigkeiten im Journalismus (vgl. Seibt, zit. n. Beils 2023, S.~56). Die strukturelle Komposition von Liveticker-Einträgen umfasst nach Ojomo und Olomojobi (zit. n. Bluhm \& Schäfer 2023, S.~27) vier kognitive Teilleistungen — Narration (Ereignisbeschreibung), Evaluation (journalistische Einordnung), Elaboration (kontextuelle Vertiefung) und Zusammenfassung (Verdichtung des Spielgeschehens). Diese sind in Abständen von einer bis drei Minuten unter simultaner Beobachtung des Spielgeschehens zu erbringen: Ereignis wahrnehmen, journalistische Relevanz bewerten, Kontext abrufen und in sprachlich angemessene Form bringen (Hauser 2008, S.~3--4). Diese kognitive Parallelverarbeitung macht den Liveticker zu einer Echtzeit-Textgattung, die sich fundamental von retrospektiven Formaten wie dem Spielbericht unterscheidet (vgl. Hauser 2008, S.~2--3). Im Produktivbetrieb entstehen dabei typischerweise 60 bis 120 Einträge pro Spiel (vgl.\ Abschnitt~\ref{anforderungsanalyse-am-beispiel-eintracht-frankfurt}). Zusätzlich muss ein Ticker ein heterogenes Publikum gleichzeitig bedienen: First-Screen-Nutzer ohne TV-Bild fordern eine primäre Beschreibung des Spielgeschehens, während Second-Screen-Nutzer mit TV-Bild auf zusätzliche Einordnung und Unterhaltung aus sind (vgl. McEnnis 2016, zit. n. Bluhm \& Schäfer 2023, S.~24 u.~36). Diese Doppelfunktion verschärft die kognitiven Anforderungen an den Autor zusätzlich.
 
 Erschwerend kommt der extreme Zeitdruck hinzu. Unmittelbar nach einer
 relevanten Spielszene haben die Autorinnen und Autoren nur wenige
@@ -46,11 +46,16 @@ Erstellung des abschließenden Spielberichts (Bluhm \& Schäfer 2023, S.~35). Di
 Zahlendreher bei Spielminuten, falsch zugeordnete Spielernamen oder
 stilistische Brüche innerhalb eines Tickers sind keine Ausnahme, sondern
 eine vorhersehbare Konsequenz des Produktionsdrucks (vgl. Walter 2020,
-S.~29; Bluhm \& Schäfer 2023, S.~35).
+S.~29; Bluhm \& Schäfer 2023, S.~35). Das Experteninterview bestätigt
+dies unmittelbar: Als typische Fehlerquellen wurden „Zahlendreher,
+falsche Spielernamen, Rechtschreibfehler'' direkt aus der Vereinspraxis
+benannt (vgl.\ Abschnitt~\ref{anforderungsanalyse-am-beispiel-eintracht-frankfurt}).
 
 Das Skalierungsproblem verschärft sich an Spieltagen mit Parallelspielen
 erheblich. An einem typischen Bundesliga-Samstag finden bis zu sechs
-Partien zeitgleich statt (vgl. DFL 2024).
+Partien zeitgleich statt (vgl. DFL 2024). Im Fall von Eintracht Frankfurt
+deckt ein zweiköpfiges Team diese Aufgabe ab: „Ein Redakteur, der tickert,
+und ein technischer Administrator'' (vgl.\ Abschnitt~\ref{anforderungsanalyse-am-beispiel-eintracht-frankfurt}).
 Redaktionen, die für mehrere Spiele Ticker anbieten, müssen entweder
 entsprechend viele Autoren gleichzeitig einsetzen oder einzelne Autoren
 mehrere Ticker parallel betreuen lassen, mit absehbaren
