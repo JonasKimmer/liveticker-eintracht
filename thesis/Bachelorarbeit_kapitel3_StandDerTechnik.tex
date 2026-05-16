@@ -1,6 +1,6 @@
 \chapter{Stand der Technik}\label{stand-der-technik}
 
-Dieses Kapitel legt die technologischen Grundlagen für das vorliegende System. Es gliedert sich in sieben Abschnitte: Large Language Models (Abschnitt~\ref{large-language-models}), Prompt Engineering (Abschnitt~\ref{prompt-engineering}), automatisierte Sportberichterstattung und Evaluationsmethodik (Abschnitt~\ref{automatisierte-sportberichterstattung}), Echtzeit-Kommunikation (Abschnitt~\ref{echtzeit-kommunikation-im-web}), ETL-Workflows (Abschnitt~\ref{etl-prozesse-und-workflow-automatisierung}), Backend-, Frontend- und Deployment-Technologien (Abschnitt~\ref{backend-frontend-und-deployment-technologien}) sowie eine Synthese der Technologieentscheidungen (Abschnitt~\ref{synthese-technologische-konsequenzen-für-das-systemdesign}).
+Dieses Kapitel legt die technologischen Grundlagen für das vorliegende System. Es gliedert sich in sieben Abschnitte: Large Language Models (Abschnitt~\ref{large-language-models}), Prompt Engineering (Abschnitt~\ref{prompt-engineering}), automatisierte Sportberichterstattung (Abschnitt~\ref{automatisierte-sportberichterstattung}), Echtzeit-Kommunikation (Abschnitt~\ref{echtzeit-kommunikation-im-web}), ETL-Workflows (Abschnitt~\ref{etl-prozesse-und-workflow-automatisierung}), Backend-, Frontend- und Deployment-Technologien (Abschnitt~\ref{backend-frontend-und-deployment-technologien}) sowie eine Synthese der Technologieentscheidungen (Abschnitt~\ref{synthese-technologische-konsequenzen-für-das-systemdesign}).
 
 \section{Large Language Models}\label{large-language-models}
 
@@ -67,7 +67,7 @@ Abschnitt~\ref{prompt-engineering-strategie} erläutert die konkrete Prompt-Stru
 
 
 
-\section{Automatisierte Sportberichterstattung und Evaluationsmethodik}\label{automatisierte-sportberichterstattung}
+\section{Automatisierte Sportberichterstattung}\label{automatisierte-sportberichterstattung}
 
 Die automatisierte Erzeugung natürlichsprachlicher Texte aus strukturierten Daten (Data-to-Text Generation) bildet die technische Grundlage für KI-gestützte Berichterstattungssysteme (vgl. Puduppully \& Lapata 2021, S.~510). Historische Ansätze basierten auf regelbasierten Template-Architekturen mit vorhersagbarer Ausgabe, aber stilistischer Monotonie; neuronale End-to-End-Systeme verbesserten die sprachliche Natürlichkeit auf Kosten erhöhter Halluzinationsanfälligkeit (vgl. Puduppully \& Lapata 2021, S.~520; Boisserée, zit. n. Beils 2023, S.~207). Im professionellen Roboterjournalismus erzeugt beispielsweise \emph{Die Welt} bereits automatisierte Spielberichte via Retresco (vgl. Beils 2023, S.~207), ein templatebasierter Ansatz, der deterministische, aber stilistisch begrenzte Texte liefert.
 
@@ -75,8 +75,6 @@ Empirische Befunde zur automatisierten Sportberichterstattung zeigen, dass Leser
 
 Der Einsatz von KI-Systemen in professionellen Redaktionsworkflows wirft die grundlegende Frage auf, wie maschinelle Effizienz und menschliche Kontrolle zu verbinden sind. Das Konzept des \textbf{Human-in-the-Loop} (HITL) bezeichnet Systemdesigns, in denen menschliche Akteure gezielt in automatisierte Entscheidungsprozesse eingebunden bleiben (Mosqueira-Rey et al.~2023, S.~2). Für den journalistischen Kontext ist HITL besonders relevant: Die finale publizistische Verantwortung — wie etwa die treffsichere Festlegung von Richtigkeit, Ton und Relevanz (vgl. hierzu Canalp, zit. n. Beils 2023, S.~57) — lässt sich nicht vollständig an ein Modell delegieren, das weder redaktionellen Kontext noch die Implikationen einer Falschaussage einschätzen kann. HITL-Architekturen lösen dieses Spannungsfeld, indem KI zeitkritische Teilaufgaben übernimmt, der Mensch jedoch die Freigabeentscheidung behält. Amershi et al.\ (vgl. 2019, S.~17) zeigen, dass HITL-Designs in ML-Systemen die Fehlertoleranz erhöhen und das Nutzervertrauen in automatisierte Ausgaben stärken. Die Umsetzung als \textit{coop}-Modus ist in Abschnitt~\ref{status-lifecycle-und-betriebsmodi} beschrieben.
 
-
-Für die empirische Evaluation NLG-basierter Systeme stellt sich zudem die Frage, wie Textqualität skalierbar und unabhängig gemessen werden kann. Zur automatisierten Qualitätsbewertung generierter Texte hat sich der \textbf{LLM-as-Judge}-Ansatz etabliert (vgl. Zheng et al.~2023): Ein unabhängiges Sprachmodell bewertet die Ausgaben des generierenden Modells anhand definierter Kriterien -- im Fall der vorliegenden Arbeit anhand der Metriken Korrektheit, Tonalität und Verständlichkeit (vgl. Abschnitt~\ref{methodisches-vorgehen}). Voraussetzung für valide Ergebnisse ist, dass bewertendes und generierendes Modell verschieden sind, um Selbstreferenzialität zu vermeiden. Diese Methodik bildet mittlerweile auch den industriellen Standard: OpenAI nutzt sogenannte Rule-Based Reward Models (RBRMs), bei denen GPT-4 als Klassifikator anhand strikt vorgegebener Rubriken Textausgaben qualitativ bewertet (vgl. OpenAI 2023, S.~12). Die Methode ergänzt menschliche Evaluation, ersetzt sie jedoch nicht vollständig (vgl. Zheng et al.~2023). Sie wird in Abschnitt~\ref{erweiterte-evaluation} für die Qualitätsevaluation der generierten Ticker-Einträge eingesetzt.
 
 
 

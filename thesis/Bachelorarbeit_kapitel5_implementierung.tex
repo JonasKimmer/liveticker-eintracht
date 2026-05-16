@@ -554,44 +554,6 @@ Im Auto-Modus existieren zwei parallele Automatisierungspfade: Der primäre Pfad
 \end{figure}
 
 
-\subsection{TypeScript-Migration}\label{typescript-migration}
-
-Das Frontend wurde im Verlauf des Projekts von reinem JavaScript auf
-TypeScript migriert. Die Migration priorisierte systemkritische Pfade mit
-messbaren Qualitätskennzahlen und verzichtete bewusst auf vollständige
-\texttt{any}-Auflösung, um durch Fehlereskalation keine
-Entwicklungsblockierungen zu erzeugen — eine pragmatische Entscheidung,
-die inkrementelle Typsicherheit ohne Entwicklungsstopp ermöglicht.
-
-Die Migration folgte einem schrittweisen Ansatz: Zunächst wurden alle
-\texttt{.js}/\texttt{.jsx}-Dateien umbenannt und die
-\texttt{tsconfig.json} konfiguriert; anschließend wurden
-TypeScript-Fehler von innen nach außen behoben, beginnend mit dem
-Typ-System (\texttt{src/types/index.ts}) über Contexts bis zu den
-Komponenten. Der \texttt{strict}-Modus ist deaktiviert, um
-inkrementelle Migration ohne blockierende Fehlereskalation zu erlauben.
-\texttt{src/types/index.ts} definiert die zentralen Domain-Interfaces:
-
-\begin{Shaded}
-\begin{Highlighting}[]
-\ImportTok{export type}\NormalTok{ TickerMode  }\OperatorTok{=} \StringTok{"auto"} \OperatorTok{|} \StringTok{"coop"} \OperatorTok{|} \StringTok{"manual"}\OperatorTok{;}
-\ImportTok{export type}\NormalTok{ TickerStyle }\OperatorTok{=} \StringTok{"neutral"} \OperatorTok{|} \StringTok{"euphorisch"} \OperatorTok{|} \StringTok{"kritisch"}\OperatorTok{;}
-\ImportTok{export type}\NormalTok{ MatchPhase  }\OperatorTok{=} \StringTok{"Before"} \OperatorTok{|} \StringTok{"FirstHalf"} \OperatorTok{|} \StringTok{"FirstHalfBreak"} \OperatorTok{|} \StringTok{"SecondHalf"} \OperatorTok{|} \OperatorTok{...;}
-
-\ImportTok{export} \KeywordTok{interface}\NormalTok{ TickerEntry \{}
-\NormalTok{  id}\OperatorTok{:} \DataTypeTok{number}\OperatorTok{;}
-\NormalTok{  text}\OperatorTok{:} \DataTypeTok{string}\OperatorTok{;}
-\NormalTok{  status}\OperatorTok{:} \StringTok{"draft"} \OperatorTok{|} \StringTok{"published"} \OperatorTok{|} \StringTok{"rejected"} \OperatorTok{|} \StringTok{"deleted"}\OperatorTok{;}
-\NormalTok{  source}\OperatorTok{?:} \StringTok{"ai"} \OperatorTok{|} \StringTok{"manual"}\OperatorTok{;}
-\NormalTok{  minute}\OperatorTok{?:} \DataTypeTok{number} \OperatorTok{|} \DataTypeTok{null}\OperatorTok{;}
-\NormalTok{  style}\OperatorTok{?:} \DataTypeTok{string} \OperatorTok{|} \DataTypeTok{null}\OperatorTok{;}
-\NormalTok{  icon}\OperatorTok{?:} \DataTypeTok{string} \OperatorTok{|} \DataTypeTok{null}\OperatorTok{;}
-\NormalTok{  \}\textit{ // weitere Felder: event\_id, phase, image\_url, video\_url, llm\_model}}
-\end{Highlighting}
-\end{Shaded}
-
-Nach der Migration erzielt das Projekt 0 TypeScript-Compilerfehler. Die verbleibenden 1,98\% ungetypter Stellen konzentrieren sich auf API-Response-Strukturen externer Dienste (Football-API, OpenRouter), bei denen vollständige Typdefinitionen massiven Duplikationsaufwand bedeuten würden, sowie auf einzelne Legacy-Callbacks in älteren Komponenten. Die Auswertung der type-coverage ist in Abschnitt~\ref{typescript-typsicherheit} zusammengefasst.
-
 \section{n8n Workflow-Implementierung}\label{n8n-workflow-implementierung}
 
 Die systemkritischen Workflows setzen die in Abschnitt~\ref{workflow-klassen} konzipierten Gruppen um; alle 17 Workflow-Dateien liegen als versionierte JSON-Exporte unter \texttt{n8n/} vor.
