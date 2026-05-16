@@ -1,7 +1,7 @@
 \chapter{Motivation und
 Anforderungen}\label{motivation-und-anforderungen}
 
-Dieses Kapitel begründet die Notwendigkeit eines KI-gestützten Liveticker-Systems und leitet daraus formale Anforderungen ab. Es analysiert die drei Problemdimensionen redaktioneller Aufwand (Abschnitt~\ref{redaktioneller-aufwand-bei-livetickern}), Mehrsprachigkeit (Abschnitt~\ref{mehrsprachigkeit-als-herausforderung}) und White-Label-Bedarf (Abschnitt~\ref{white-label-bedarf-im-profisport}), konkretisiert diese am Fallbeispiel Eintracht Frankfurt (Abschnitt~\ref{anforderungsanalyse-am-beispiel-eintracht-frankfurt}), ergänzt linguistische Anforderungen an die Textgenerierung (Abschnitt~\ref{linguistische-anforderungen-an-die-textgenerierung}) und fasst alle Anforderungen in einem formalen Pflichtenheft zusammen (Abschnitt~\ref{zusammenfassung-der-systemanforderungen}).
+Dieses Kapitel begründet die Notwendigkeit eines KI-gestützten Liveticker-Systems und leitet daraus formale Anforderungen ab. Es analysiert die drei Problemdimensionen redaktioneller Aufwand (Abschnitt~\ref{redaktioneller-aufwand-bei-livetickern}), Mehrsprachigkeit (Abschnitt~\ref{mehrsprachigkeit-als-herausforderung}) und White-Label-Bedarf (Abschnitt~\ref{white-label-bedarf-im-profisport}), konkretisiert diese am Fallbeispiel Eintracht Frankfurt (Abschnitt~\ref{anforderungsanalyse-am-beispiel-eintracht-frankfurt}) und fasst alle Anforderungen in einem formalen Pflichtenheft zusammen (Abschnitt~\ref{zusammenfassung-der-systemanforderungen}).
 
 \section{Redaktioneller Aufwand bei
 Livetickern}\label{redaktioneller-aufwand-bei-livetickern}
@@ -149,31 +149,6 @@ Differenzierung konfigurierbar abbilden.
 \subsection{Experteninterview}\label{experteninterview-leitfaden}
 
 Die Anforderungsanalyse stützt sich ergänzend auf ein strukturiertes Experteninterview mit einem Digitalverantwortlichen von Eintracht Frankfurt, der für die Weiterentwicklung des digitalen Angebots — einschließlich des Liveticker-Systems — zuständig ist. Das Interview gliedert sich in zwei Teile: Zunächst werden die drei Problemdimensionen aus Vereinssicht validiert; nach einer Live-Demonstration des entwickelten Systems folgen Bewertungsfragen zur Systemeignung und Zukunftsperspektive. Die vollständige Auswertung findet sich in Abschnitt~\ref{experteninterview-auswertung}.
-
-
-
-\section{Linguistische Anforderungen an die
-Textgenerierung}\label{linguistische-anforderungen-an-die-textgenerierung}
-
-Neben den organisatorischen und stilistischen Aspekten stellt die automatisierte Liveticker-Produktion auch spezifische linguistische Anforderungen. Liveticker stellen eine
-linguistisch eigenständige Textgattung dar (vgl. Hauser 2008, S.~1). Hauser
-charakterisiert sie als \textbf{„schriftlich-grafische
-Simultanerzählung"} (ebd., S.~2). Im Gegensatz zum Spielbericht fehlt der
-\emph{benefit of hindsight} (vgl. Bluhm \& Schäfer 2023, S.~37); es handelt sich um eine quasi-synchrone
-Berichterstattung (vgl. Hauser 2008, S.~2).
-
-Für das Prompt-Design sind fünf linguistische Merkmale leitend:
-
-\begin{itemize}\tightlist
-\item \textbf{Konzeptionelle Mündlichkeit} (Oraliteralität): Verschriftlichung mündlicher Ausdrucksweisen (vgl. Marx/Weidacher, zit. n. Smułczyński 2020, S.~54).
-\item \textbf{Syntax}: Ellipsen und verblose Satzeinheiten dominieren; Sätze sollten nicht mehr als 15 Wörter umfassen, Hauptsatzkonstruktionen sind vorherrschend (vgl. Walter 2020, S.~52; Burkhardt, zit. n. Walter 2020, S.~40).
-\item \textbf{Tempus}: Präsens für gleichzeitige Situationen, Perfekt statt Präteritum für vergangene Ereignisse (vgl. Schwitalla, zit. n. Walter 2020, S.~39).
-\item \textbf{Graphostilistik}: Großschreibung und Zeicheniterationen (z.\,B. „TOOOOR!!!") als Äquivalent zu Lautstärke und Betonung (vgl. Smułczyński 2020, S.~54; Walter 2020, S.~41).
-\item \textbf{Direkte Adressierung}: Deutsche Liveticker-Moderatoren nutzen bewusst Personalpronomen der ersten und zweiten Person Plural („wir", „uns"), um eine dialogische Nähe zum Publikum zu simulieren und mündliches Gesprächsverhalten zu erzeugen (vgl. Ronkainen 2015, S.~44 u.~51). Für den vereinsspezifischen Fan-Modus ist dies ein konkreter Prompt-Parameter.
-\end{itemize}
-
-Diese Merkmale definieren das Zielformat, auf das das LLM durch
-gezieltes Prompt Engineering konditioniert werden muss (vgl. Abschnitt~\ref{prompt-engineering}).
 
 
 

@@ -252,6 +252,22 @@ Das Backend implementiert eine \textbf{Fallback-Kette}: Beim Start wird in feste
 
 
 
+\subsection{Linguistische Grundlagen des Prompt-Designs}\label{linguistische-anforderungen-an-die-textgenerierung}
+
+Liveticker stellen eine linguistisch eigenständige Textgattung dar (vgl. Hauser 2008, S.~1). Hauser charakterisiert sie als \textbf{„schriftlich-grafische Simultanerzählung"} (ebd., S.~2). Im Gegensatz zum Spielbericht fehlt der \emph{benefit of hindsight} (vgl. Bluhm \& Schäfer 2023, S.~37); es handelt sich um eine quasi-synchrone Berichterstattung (vgl. Hauser 2008, S.~2).
+
+Für das Prompt-Design sind fünf linguistische Merkmale leitend:
+
+\begin{itemize}\tightlist
+\item \textbf{Konzeptionelle Mündlichkeit} (Oraliteralität): Verschriftlichung mündlicher Ausdrucksweisen (vgl. Marx/Weidacher, zit. n. Smułczyński 2020, S.~54).
+\item \textbf{Syntax}: Ellipsen und verblose Satzeinheiten dominieren; Sätze sollten nicht mehr als 15 Wörter umfassen, Hauptsatzkonstruktionen sind vorherrschend (vgl. Walter 2020, S.~52; Burkhardt, zit. n. Walter 2020, S.~40).
+\item \textbf{Tempus}: Präsens für gleichzeitige Situationen, Perfekt statt Präteritum für vergangene Ereignisse (vgl. Schwitalla, zit. n. Walter 2020, S.~39).
+\item \textbf{Graphostilistik}: Großschreibung und Zeicheniterationen (z.\,B. „TOOOOR!!!") als Äquivalent zu Lautstärke und Betonung (vgl. Smułczyński 2020, S.~54; Walter 2020, S.~41).
+\item \textbf{Direkte Adressierung}: Liveticker-Moderatoren nutzen bewusst Personalpronomen der ersten und zweiten Person Plural („wir", „uns"), um dialogische Nähe zu simulieren (vgl. Ronkainen 2015, S.~44 u.~51). Für den vereinsspezifischen Fan-Modus ist dies ein konkreter Prompt-Parameter.
+\end{itemize}
+
+Diese Merkmale definieren das Zielformat, auf das das LLM durch die nachfolgend beschriebene Prompting-Strategie konditioniert wird.
+
 \subsection{Prompt-Engineering-Strategie}\label{prompt-engineering-strategie}
 
 Die Generierung verwendet ein modulares Few-Shot-Prompting mit sechs dynamisch zusammengesetzten Bausteinen (Rolleninstruktion, Stilinstruktion, Faktenblock, Kontextblock, Few-Shot-Block und Regelblock), deren Zusammenspiel Abbildung~\ref{fig:prompt-aufbau} zeigt. Die Stilinstruktion parametrisiert eines von drei Stilprofilen: \textbf{neutral} (sachlicher, unparteiischer Reporter-Stil), \textbf{euphorisch} (leidenschaftlicher Fan-Stil, situationsadaptiv je nach Spielstand) und \textbf{kritisch} (analytischer Kommentator-Stil mit expliziter Fehlerbennenung).
