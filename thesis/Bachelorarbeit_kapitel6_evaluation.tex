@@ -13,33 +13,34 @@ Library)}\label{frontend-unit-tests-jest-react-testing-library}
 
 Das Frontend verfügt über \textbf{187 Unit-Tests} in 15 Testdateien, die alle fehlerfrei durchlaufen. Die Tests decken vier Kategorien ab: Utility-Funktionen, React-Hooks, UI-Komponenten und TypeScript-Typen.
 
+Die Testdateien liegen unter \texttt{src/} nach dem Muster \texttt{<ordner>/<Name>.test.ts(x)} (\texttt{hooks/}, \texttt{utils/}, \texttt{components/}).
+
 {\footnotesize\def\LTcaptype{none} % do not increment counter
 \begin{longtable}[]{@{}
-  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.1500}}
-  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.4200}}
-  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.0400}}
-  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.3900}}@{}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.2800}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.0700}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.6500}}@{}}
 \toprule\noalign{}
-Test-Suite & Datei & Tests & Fokus \\
+Test-Suite & Tests & Fokus \\
 \midrule\noalign{}
 \endhead
 \bottomrule\noalign{}
 \endlastfoot
-\texttt{parseCommand} & \texttt{utils/parseCommand.test.ts} & 45 & Slash-Command-Parser: alle Events, Phasen, Fehlerfälle \\
-\texttt{roundLabel} & \texttt{utils/roundLabel.test.ts} & 16 & Spieltag-Beschriftungen, Knockout-Mapping \\
-\texttt{RightPanelComponents} & \texttt{components/RightPanelComponents.test.tsx} & 18 & Aufstellung, Statistiken, Tabs \\
-\texttt{PublishedEntry} & \texttt{components/PublishedEntry.test.tsx} & 17 & Eintrag-Darstellung, Bearbeitungsmodus \\
-\texttt{EntryEditor} & \texttt{components/EntryEditor.test.tsx} & 19 & Publish-Flow, Preview-Rendering, Keyboard-Shortcuts \\
-\texttt{useRightPanelData} & \texttt{hooks/useRightPanelData.test.ts} & 10 & Spieler-Lookup, Linien-Bildung, Torschützen \\
-\texttt{useSearchableDropdown} & \texttt{hooks/useSearchableDropdown.test.ts} & 10 & Filter-, Keyboard-, Reset-Logik \\
-\texttt{useLiveMinute} & \texttt{hooks/useLiveMinute.test.ts} & 10 & Live-Minuten-Berechnung, Halbzeit-Offset \\
-\texttt{useListKeyboard} & \texttt{hooks/useListKeyboard.test.tsx} & 9 & Arrow-Navigation, Tab/Enter/Escape \\
-\texttt{CommandPalette} & \texttt{components/CommandPalette.test.ts} & 7 & Autocomplete-Logik, Keyboard-Navigation \\
-\texttt{useMatchEvents} & \texttt{hooks/useMatchEvents.test.ts} & 6 & Event-Filterung, Status-Mapping \\
-\texttt{resolvePollingInterval} & \texttt{utils/resolvePollingInterval.test.ts} & 6 & Polling-Frequenz je Spielstatus \\
-\texttt{useMatchTicker} & \texttt{hooks/useMatchTicker.test.ts} & 5 & Polling-Logik, Fehlerbehandlung \\
-\texttt{useClickOutside} & \texttt{hooks/useClickOutside.test.ts} & 5 & Event-Listener-Lifecycle \\
-\texttt{ErrorBoundary} & \texttt{components/ErrorBoundary.test.tsx} & 4 & Fehler-Capture, Fallback-UI \\
+\texttt{parseCommand} & 45 & Slash-Command-Parser: alle Events, Phasen, Fehlerfälle \\
+\texttt{roundLabel} & 16 & Spieltag-Beschriftungen, Knockout-Mapping \\
+\texttt{RightPanelComponents} & 18 & Aufstellung, Statistiken, Tabs \\
+\texttt{PublishedEntry} & 17 & Eintrag-Darstellung, Bearbeitungsmodus \\
+\texttt{EntryEditor} & 19 & Publish-Flow, Preview-Rendering, Keyboard-Shortcuts \\
+\texttt{useRightPanelData} & 10 & Spieler-Lookup, Linien-Bildung, Torschützen \\
+\texttt{useSearchableDropdown} & 10 & Filter-, Keyboard-, Reset-Logik \\
+\texttt{useLiveMinute} & 10 & Live-Minuten-Berechnung, Halbzeit-Offset \\
+\texttt{useListKeyboard} & 9 & Arrow-Navigation, Tab/Enter/Escape \\
+\texttt{CommandPalette} & 7 & Autocomplete-Logik, Keyboard-Navigation \\
+\texttt{useMatchEvents} & 6 & Event-Filterung, Status-Mapping \\
+\texttt{resolvePollingInterval} & 6 & Polling-Frequenz je Spielstatus \\
+\texttt{useMatchTicker} & 5 & Polling-Logik, Fehlerbehandlung \\
+\texttt{useClickOutside} & 5 & Event-Listener-Lifecycle \\
+\texttt{ErrorBoundary} & 4 & Fehler-Capture, Fallback-UI \\
 \end{longtable}
 }
 

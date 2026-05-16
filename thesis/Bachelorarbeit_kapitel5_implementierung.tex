@@ -71,11 +71,11 @@ API-Validierung}\label{datenmodelle-datenbankschema-und-api-validierung}
 Das Schema umfasst 17 ORM-Modelle (18 Datenbanktabellen). Die
 zentralen Domänenobjekte sind:
 
-{\def\LTcaptype{none} % do not increment counter
+{\small\def\LTcaptype{none} % do not increment counter
 \begin{longtable}[]{@{}
-  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.1848}}
-  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.2065}}
-  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.6087}}@{}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.2300}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.2700}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.5000}}@{}}
 \toprule\noalign{}
 \begin{minipage}[b]{\linewidth}\raggedright
 Modell
@@ -106,7 +106,7 @@ Weitere Stammdaten-Modelle (Country, Team, Competition, Lineup, MatchStatistic, 
 Das \texttt{TickerEntry}-Modell ist zentral für den Lifecycle des Systems: Es verknüpft über \texttt{event\_id} (FK auf \texttt{events})
 und \texttt{synthetic\_event\_id} (FK auf \texttt{synthetic\_events})
 den generierten Text mit seinem Auslöser. Die Felder \texttt{status}
-(\texttt{draft}/\texttt{published}/\texttt{rejected}/\texttt{deleted}) und
+(\texttt{draft}/\allowbreak\texttt{published}/\allowbreak\texttt{rejected}/\allowbreak\texttt{deleted}) und
 \texttt{source} (\texttt{ai}/\texttt{manual}) bilden den
 Ticker-Lifecycle ab (vgl. Abschnitt~\ref{status-lifecycle-und-betriebsmodi}). Drei zusammengesetzte Indizes
 (\texttt{ix\_ticker\_match\_status}, \texttt{ix\_ticker\_match\_phase},
@@ -146,9 +146,9 @@ Der Ticker-Bereich ist in drei Router aufgeteilt, die gemeinsam unter
 
 {\def\LTcaptype{none} % do not increment counter
 \begin{longtable}[]{@{}
-  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.1753}}
-  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.2062}}
-  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.6186}}@{}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.2500}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3000}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.4500}}@{}}
 \toprule\noalign{}
 \begin{minipage}[b]{\linewidth}\raggedright
 Router
@@ -449,9 +449,9 @@ Die wichtigsten Hooks und ihre Verantwortlichkeiten:
 
 {\def\LTcaptype{none} % do not increment counter
 \begin{longtable}[]{@{}
-  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.22}}
-  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.10}}
-  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.68}}@{}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.27}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.16}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.57}}@{}}
 \toprule\noalign{}
 Hook & Paket & Verantwortlichkeit \\
 \midrule\noalign{}
@@ -509,7 +509,7 @@ Command & Ausgabe & Phase & Icon \\
 /g Mustermann EF  → "TOR — Mustermann (EF)"          + icon [Tor]
 /gelb Müller EF   → "Gelb — Müller (EF)"             + icon [Gelb]
 /rot Huber Bayern → "Rote Karte — Huber (Bayern)"    + icon [Rot]
-/s EinRaus AusRein EF → "Wechsel — EinRaus <-> AusRein (EF)" + icon [Wechsel]
+/s Ein Aus EF → "Wechsel — Ein <-> Aus (EF)"  + icon [Wechsel]
 /n Freistoß übers Tor → "Freistoß übers Tor"        + icon [Notiz]
 \end{verbatim}
 
