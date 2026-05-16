@@ -121,7 +121,7 @@ Eng damit verknüpft ist das Feld \texttt{ticker\_mode} in \texttt{matches}: Es 
 
 \section{Backend-Konzeption}\label{backend-konzeption}
 
-Die Backend-Konzeption legt Framework, Schichtstruktur, API-Design, Laufzeitrobustheit und Teststrategie fest; alle Entscheidungen orientieren sich an den Anforderungen aus Abschnitt~\ref{zusammenfassung-der-systemanforderungen} und den technologischen Grundlagen aus Abschnitt~\ref{backend-frontend-und-deployment-technologien}.
+Die Backend-Konzeption legt die Architekturentscheidungen für das FastAPI-Backend fest. Sie gliedert sich in Framework-Wahl (Abschnitt~\ref{framework-wahl}), Interne Schichtstruktur (Abschnitt~\ref{interne-schichtstruktur}), API-Design und Endpunktstrategie (Abschnitt~\ref{api-design-und-endpunktstrategie}), Asynchronität und Robustheit (Abschnitt~\ref{asynchronituxe4t-nebenluxe4ufigkeit-und-performance}) sowie das Qualitätssicherungskonzept (Abschnitt~\ref{qualitätssicherungskonzept}).
 
 \subsection{Framework-Wahl}\label{framework-wahl}
 
@@ -160,7 +160,7 @@ Für die Testtool-Wahl gelten zwei konkrete Entscheidungen: \textbf{Jest} wurde 
 
 \section{Datenbankkonzeption}\label{datenbankkonzeption}
 
-Die Datenbankkonzeption legt das Persistenzmodell und das Schemadesign fest.
+Die Datenbankkonzeption legt das Persistenzmodell und das Schemadesign des Systems fest. Sie gliedert sich in die Datenbankwahl (Abschnitt~\ref{datenbankwahl}) und die Schemadesign-Prinzipien (Abschnitt~\ref{schemadesign-prinzipien}).
 
 \subsection{Datenbankwahl}\label{datenbankwahl}
 
@@ -186,7 +186,7 @@ Das Schema folgt einem hybriden Entwurfsansatz aus strukturierter Normalisierung
 
 \section{Workflow-Konzeption (n8n)}\label{workflow-konzeption-n8n}
 
-Die Workflow-Schicht orchestriert alle Datenimporte und Generierungsprozesse als entkoppelte Ebene zwischen externen Quellen und Backend.
+Die Workflow-Schicht orchestriert alle Datenimporte und Generierungsprozesse als entkoppelte Ebene zwischen externen Quellen und Backend. Sie gliedert sich in die Technologiewahl (Abschnitt~\ref{n8n-technologiewahl}), die Workflow-Muster (Abschnitt~\ref{workflow-muster}) und die Workflow-Klassen (Abschnitt~\ref{workflow-klassen}).
 
 \subsection{Technologiewahl}\label{n8n-technologiewahl}
 
@@ -239,7 +239,7 @@ Diese Trennung reduziert Kopplung und erlaubt es, einzelne Teilprozesse unabhän
 
 \section{KI-Komponente}\label{ki-komponente}
 
-Die KI-Komponente übersetzt strukturierte Spielereignisse in natürlichsprachliche Ticker-Texte; ihre Architektur abstrahiert die Providerwahl, sodass Modelländerungen ohne Codeänderung konfigurierbar bleiben.
+Die KI-Komponente übersetzt strukturierte Spielereignisse in natürlichsprachliche Ticker-Texte. Sie gliedert sich in die Multi-Provider-Architektur (Abschnitt~\ref{multi-provider-architektur}), die Prompt-Engineering-Strategie (Abschnitt~\ref{prompt-engineering-strategie}) und die mehrsprachige Textgenerierung (Abschnitt~\ref{mehrsprachige-textgenerierung-konzept}).
 
 \subsection{Multi-Provider-Architektur}\label{multi-provider-architektur}
 
@@ -280,7 +280,7 @@ Mehrsprachigkeit ist als natives Designmerkmal der KI-Komponente konzipiert (F7,
 
 \section{Frontend-Konzeption}\label{frontend-konzeption}
 
-Das Frontend realisiert die Präsentationsschicht als React-Anwendung mit TypeScript und ist auf redaktionelle Arbeit im Live-Betrieb ausgelegt.
+Das Frontend realisiert die Präsentationsschicht als React-Anwendung mit TypeScript und ist auf redaktionelle Arbeit im Live-Betrieb ausgelegt. Es gliedert sich in die Framework-Wahl (Abschnitt~\ref{frontend-framework-wahl}), Architektur und Zustandsmanagement (Abschnitt~\ref{architekturprinzipien}) sowie Layout, Moduslogik und Kommunikation (Abschnitt~\ref{dreispalten-layout-und-redaktionsfluss}).
 
 \subsection{Framework-Wahl}\label{frontend-framework-wahl}
 

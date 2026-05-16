@@ -5,7 +5,7 @@ Dieses Kapitel dokumentiert die konkrete Umsetzung des in Kapitel~\ref{systemkon
 
 \section{Backend-Implementierung}\label{backend-implementierung}
 
-Das Backend setzt die in Abschnitt~\ref{backend-konzeption} konzipierten Schichten als lauffähige FastAPI-Anwendung um.
+Das Backend setzt die in Abschnitt~\ref{backend-konzeption} konzipierten Schichten als lauffähige FastAPI-Anwendung um. Es gliedert sich in Projektstruktur und Application Entry Point (Abschnitt~\ref{projektstruktur-und-application-entry-point}), Datenmodelle und API-Validierung (Abschnitt~\ref{datenmodelle-datenbankschema-und-api-validierung}), API-Router und Endpunktstruktur (Abschnitt~\ref{api-router-endpunktstruktur}), Ticker-Service und Domänenlogik (Abschnitt~\ref{ticker-service-domuxe4nenlogik}) sowie LLM-Service und Provider-Dispatch (Abschnitt~\ref{llm-service-prompt-aufbau-und-provider-dispatch}).
 
 \subsection{Projektstruktur und Application Entry
 Point}\label{projektstruktur-und-application-entry-point}
@@ -311,7 +311,7 @@ Als LLM-Parameter werden \texttt{temperature=0.5} für stilistische Variation un
 
 \section{KI-Generierungspipeline}\label{ki-generierungspipeline}
 
-Die fünfstufige LLM-Pipeline verarbeitet eingehende Events vom Datenimport bis zum gespeicherten Ticker-Eintrag.
+Die fünfstufige LLM-Pipeline verarbeitet eingehende Events vom Datenimport bis zum gespeicherten Ticker-Eintrag. Sie gliedert sich in Pipeline-Mechanik und Idempotenz (Abschnitt~\ref{pipeline-mechanik-und-idempotenz}) sowie Betriebsmodi und Statusübergänge (Abschnitt~\ref{betriebsmodi-und-statusuxfcberguxe4nge}).
 
 \subsection{Pipeline-Mechanik und Idempotenz}\label{pipeline-mechanik-und-idempotenz}
 
@@ -388,7 +388,7 @@ verworfene) sind für spätere Qualitätsanalysen auswertbar. Die Evaluation der
 
 \section{Frontend-Implementierung}\label{frontend-implementierung}
 
-Die Frontend-Implementierung setzt die in Abschnitt~\ref{frontend-konzeption} konzipierten Entscheidungen zu Architektur, Zustandsmanagement und Redaktionsfluss in lauffähigen TypeScript-Code um (vgl. Abschnitt~\ref{frontend-framework} für die technologische Einordnung von TypeScript).
+Die Frontend-Implementierung setzt die in Abschnitt~\ref{frontend-konzeption} konzipierten Entscheidungen zu Architektur, Zustandsmanagement und Redaktionsfluss in lauffähigen TypeScript-Code um. Sie gliedert sich in Komponentenhierarchie (Abschnitt~\ref{komponentenhierarchie}), React Context-Architektur (Abschnitt~\ref{react-context-architektur}), Hook-Architektur (Abschnitt~\ref{hook-architektur}), Slash-Command-Parser (Abschnitt~\ref{slash-command-parser-parsecommand.ts}), Modusimplementierung (Abschnitt~\ref{modusimplementierung-im-frontend}) und Frontend-Polling (Abschnitt~\ref{frontend-polling}).
 
 \subsection{Komponentenhierarchie}\label{komponentenhierarchie}
 
@@ -577,7 +577,7 @@ Die \texttt{resolvePollingInterval}-Utility differenziert das Intervall je nach 
 
 \section{n8n Workflow-Implementierung}\label{n8n-workflow-implementierung}
 
-Die systemkritischen Workflows setzen die in Abschnitt~\ref{workflow-klassen} konzipierten Gruppen um; alle 17 Workflow-Dateien liegen als versionierte JSON-Exporte unter \texttt{n8n/} vor.
+Die systemkritischen Workflows setzen die in Abschnitt~\ref{workflow-klassen} konzipierten Gruppen um. Sie gliedert sich in den Events-LLM-Workflow (Abschnitt~\ref{events-llm-workflow}), den Prematch-Import-Workflow (Abschnitt~\ref{prematch-import-workflow}), den Matchphasen-Workflow (Abschnitt~\ref{matchphasen-workflow}), Zusammenfassung und Medien (Abschnitt~\ref{zusammenfassung-und-medien-workflow}) sowie übergreifende Implementierungsmuster (Abschnitt~\ref{n8n-implementierungsmuster}). Alle 17 Workflow-Dateien liegen als versionierte JSON-Exporte unter \texttt{n8n/} vor.
 
 n8n modelliert Workflows als gerichtete Graphen aus typisierten Knoten (vgl. Venkiteela 2025, S.~3). Die im System verwendeten Knotentypen sind: \textbf{Webhook}-Knoten empfangen HTTP-Anfragen und starten die Verarbeitungskette; \textbf{Postgres}-Knoten führen parametrisierte SQL-Statements direkt gegen die Datenbank aus (SELECT, INSERT mit ON CONFLICT, UPDATE); \textbf{Code}-Knoten enthalten benutzerdefiniertes JavaScript für Validierungs- und Transformationslogik; \textbf{HTTP-Request}-Knoten rufen externe REST-APIs oder das FastAPI-Backend auf; \textbf{Filter}-Knoten leiten den Datenfluss anhand einer Bedingung weiter oder beenden ihn. Zusammenfassungs-Workflows ersetzen den HTTP-Request-Knoten gegen einen direkten \textbf{OpenRouter}-Knoten, da sie umfangreichere Prompts benötigen als der generische Backend-Endpunkt erlaubt.
 
