@@ -372,7 +372,7 @@ entsprechend.
 
 Die drei Modi unterscheiden sich implementierungsseitig in zwei konkreten Details (konzeptionelle Beschreibung vgl. Abschnitt~\ref{status-lifecycle-und-betriebsmodi}): Im \texttt{manual}-Modus triggert n8n keinen LLM-Aufruf; Ticker-Einträge entstehen ausschließlich über \texttt{POST /api/v1/ticker/manual} mit sofortigem \texttt{status=published}. Im \texttt{coop}-Modus zeigt das Frontend \texttt{draft}-Einträge mit \texttt{TAB}/\texttt{ESC}-Shortcuts (vgl. Abschnitt~\ref{modusimplementierung-im-frontend}), sodass kein KI-Text ohne menschliche Prüfung publiziert wird.
 
-Ergänzend sind zwei Aspekte des Statusmodells (vgl. Abschnitt~\ref{status-lifecycle-und-betriebsmodi}) hervorzuheben:
+Ergänzend sind zwei Aspekte des Statusmodells hervorzuheben:
 
 Der Übergang \texttt{published\ →\ draft} (Undo) ist im Frontend als
 Toast-Aktion realisiert: Nach jeder Publikation erscheint für 5
