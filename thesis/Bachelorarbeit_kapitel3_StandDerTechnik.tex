@@ -152,11 +152,11 @@ Für die Persistenzschicht bieten sich relationale Datenbanksysteme (z.\,B. \tex
 
 \subsection{Frontend-Framework}\label{frontend-framework}
 
-Im Frontend-Ökosystem konkurrieren mehrere komponentenbasierte Bibliotheken und Frameworks: \textbf{React} (Meta) setzt auf eine unidirektionale Datenflussmechanik mit virtuellem DOM; \textbf{Vue} bietet ein vergleichbares Komponentenmodell mit reaktivem Datenbindungsansatz; \textbf{Svelte} kompiliert Komponenten zu nativem JavaScript ohne Laufzeit-Framework-Overhead. Alle drei sind für interaktive Single-Page-Applications geeignet. Die konkrete Frontend-Architektur wird in Abschnitt~\ref{frontend-konzeption} beschrieben.
+Im Frontend-Ökosystem konkurrieren mehrere komponentenbasierte Bibliotheken und Frameworks: \textbf{React} (Meta) setzt auf eine unidirektionale Datenflussmechanik mit virtuellem DOM; \textbf{Vue} bietet ein vergleichbares Komponentenmodell mit reaktivem Datenbindungsansatz; \textbf{Svelte} kompiliert Komponenten zu nativem JavaScript ohne Laufzeit-Framework-Overhead. Alle drei sind für interaktive Single-Page-Applications geeignet. Für Echtzeit-Anwendungen mit häufigen asynchronen State-Updates eignet sich die unidirektionale Datenflussmechanik von React besonders: Sie minimiert unerwartete Seiteneffekte bei gleichzeitigen Polling-Zyklen und WebSocket-Events. Die konkrete Frontend-Architektur wird in Abschnitt~\ref{frontend-konzeption} beschrieben.
 
 \subsection{Cloud-Deployment}\label{cloud-deployment}
 
-\textbf{Platform-as-a-Service (PaaS)}-Anbieter wie Render abstrahieren die Infrastrukturverwaltung und ermöglichen Deployments direkt aus Git-Branches. PaaS setzt ein \textbf{Stateless-Design} voraus: Persistente Daten werden in externe Dienste ausgelagert, sodass zusätzliche Instanzen ohne Zustandskonsistenzprobleme gestartet werden können.
+\textbf{Platform-as-a-Service (PaaS)}-Anbieter wie Render abstrahieren die Infrastrukturverwaltung und ermöglichen Deployments direkt aus Git-Branches. PaaS setzt ein \textbf{Stateless-Design} voraus: Persistente Daten werden in externe Dienste ausgelagert, sodass zusätzliche Instanzen ohne Zustandskonsistenzprobleme gestartet werden können. Im PaaS-Vergleich unterscheiden sich die gängigen Anbieter primär in Kostenmodell und Deployment-Komplexität: Heroku entfernte 2022 seinen kostenlosen Tier; Railway und Fly.io bieten ähnliche Git-basierte Deployments, wobei Fly.io mehr Container-Konfigurationsaufwand erfordert. Die konkrete Plattformwahl ist in Abschnitt~\ref{deployment-konzept} begründet.
 
 
 
@@ -173,11 +173,11 @@ Der Stand der Technik zeigt, dass die identifizierten Anforderungsdimensionen au
 \toprule
 \textbf{Problem\-dimension} & \textbf{Techno\-logie\-ent\-schei\-dung} & \textbf{System\-kom\-po\-nen\-te} \\
 \midrule
-Operativer Zeitdruck (Kap.~\ref{zeitdruck-als-strukturelles-problem}) & LLM-gestützte Textgenerierung + Few-Shot-Prompting (Abschnitte~\ref{large-language-models}--\ref{prompt-engineering}); hybrides NLG-Design mit menschlicher Kontrollinstanz (Kap.~\ref{automatisierte-sportberichterstattung}) & LLM-Pipeline mit \texttt{coop}-Modus (Abschnitte~\ref{status-lifecycle-und-betriebsmodi}, \ref{ki-komponente}) \\
+Operativer Zeitdruck (Kap.~\ref{zeitdruck-und-fehleranfaelligkeit}) & LLM-gestützte Textgenerierung + Few-Shot-Prompting (Abschnitte~\ref{large-language-models}--\ref{prompt-engineering}); hybrides NLG-Design mit menschlicher Kontrollinstanz (Kap.~\ref{automatisierte-sportberichterstattung}) & LLM-Pipeline mit \texttt{coop}-Modus (Abschnitte~\ref{status-lifecycle-und-betriebsmodi}, \ref{ki-komponente}) \\
 \addlinespace
 Mehrsprachigkeit (Kap.~\ref{mehrsprachigkeit-als-herausforderung}) & Native LLM-Mehrsprachfähigkeit ohne proportionalen Personalaufwand (Kap.~\ref{large-language-models}) & LLM-Übersetzungsfunktion (Kap.~\ref{mehrsprachige-textgenerierung-konzept}) \\
 \addlinespace
-White-Label-Bedarf (Kap.~\ref{white-label-bedarf}) & Self-hostbare Workflow-Plattform; konfigurierbare Instanzlogik (Abschnitte~\ref{etl-prozesse-und-workflow-automatisierung}--\ref{backend-frontend-und-deployment-technologien}) & n8n-ETL + White-Label-Instanzkonfiguration (Abschnitte~\ref{partner-team-konzept-und-white-label-steuerung} und~\ref{ki-komponente}) \\
+White-Label-Bedarf (Kap.~\ref{white-label-bedarf-im-profisport}) & Self-hostbare Workflow-Plattform; konfigurierbare Instanzlogik (Abschnitte~\ref{etl-prozesse-und-workflow-automatisierung}--\ref{backend-frontend-und-deployment-technologien}) & n8n-ETL + White-Label-Instanzkonfiguration (Abschnitte~\ref{partner-team-konzept-und-white-label-steuerung} und~\ref{ki-komponente}) \\
 \addlinespace
 Echtzeit-Datenabruf & Polling/WebSocket je nach Latenzanforderung (Kap.~\ref{echtzeit-kommunikation-im-web}) & Hybrides Muster: Polling für Ticker-/Matchdaten, WebSocket für Medien (Abschnitt~\ref{kommunikations--und-triggerarchitektur}) \\
 \addlinespace
