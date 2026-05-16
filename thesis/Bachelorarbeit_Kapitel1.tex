@@ -1,6 +1,6 @@
 \chapter{Einleitung}\label{einleitung}
 
-Ein Liveticker ist eine Form der Echtzeit-Berichterstattung, bei der Spielereignisse und redaktionelle Einordnungen eines Fußballspiels fortlaufend als kurze Texteinträge publiziert werden (vgl. Hauser 2008, S.~1; Bluhm \& Schäfer 2023, S.~24--27). Dieses Kapitel entwickelt Problemstellung und Forschungsfrage (Abschnitte~\ref{problemstellung-und-zielsetzung} und~\ref{forschungsfrage}), beschreibt das methodische Vorgehen und den Untersuchungsrahmen (Abschnitte~\ref{methodisches-vorgehen} und~\ref{abgrenzung}) und gibt einen Überblick über den Aufbau der Arbeit (Abschnitt~\ref{aufbau-der-arbeit}).
+Ein Liveticker ist eine Form der Echtzeit-Berichterstattung, bei der Spielereignisse und redaktionelle Einordnungen eines Fußballspiels fortlaufend als kurze Texteinträge publiziert werden (vgl. Hauser 2008, S.~1; Bluhm \& Schäfer 2023, S.~24--27).
 
 \section{Problemstellung und
 Zielsetzung}\label{problemstellung-und-zielsetzung}
@@ -27,8 +27,7 @@ Um das Ziel zu operationalisieren, definiert und evaluiert die Arbeit drei Betri
 
 \section{Forschungsfrage}\label{forschungsfrage}
 
-Aus der in Abschnitt~1.1 entwickelten Zielsetzung ergibt sich folgende
-Forschungsfrage, die der vorliegenden Arbeit zugrunde liegt:
+Aus der vorstehenden Zielsetzung ergibt sich folgende Forschungsfrage, die der vorliegenden Arbeit zugrunde liegt:
 
 \begin{quote}
 Lässt sich ein hybrides KI-gestütztes Redaktionssystem für die
@@ -55,18 +54,7 @@ auch aus dem Entwurfs- und Implementierungsprozess selbst.
 
 Das methodische Vorgehen gliedert sich in fünf Phasen. Die \textbf{Problemanalyse und Anforderungserhebung} vertieft literaturgestützt die Problemdimensionen und leitet funktionale sowie nicht-funktionale Anforderungen ab. Die \textbf{Technologierecherche} arbeitet den Stand der Technik in den relevanten Bereichen auf und bewertet ihn hinsichtlich der Eignung für das identifizierte Problem. Die \textbf{Systemkonzeption} entwirft eine dreischichtige Systemarchitektur mit Datenmodell, LLM-Pipeline und Prompt-Design. Die \textbf{Implementierung} setzt das System als produktionsfähige Webanwendung mit vollständiger API, browserbasiertem Frontend, automatisiertem ETL-System und Cloud-Deployment um. Die \textbf{Evaluation} umfasst technische Qualitätssicherung, Bewertung der KI-Textgenerierung sowie einen systematischen Anforderungsabgleich.
 
-Die Evaluationsmethodik operationalisiert die Forschungsfrage anhand
-der drei Qualitätsdimensionen: Eine manuelle Bewertung von 40
-KI-generierten Ticker-Einträgen auf den Skalen Korrektheit, Tonalität
-und Verständlichkeit (je 1--5 Punkte) -- abgeleitet aus den literaturgestützten Herausforderungen der Sportberichterstattung (vgl. Bluhm \& Schäfer 2023; Siehr 2016) -- bildet die Hauptevaluation.
-Ergänzend wird eine \textbf{LLM-as-Judge-Evaluation} (N~=~80 Einträge,
-Saison 2025/26; vgl. Zheng et al.~2023) eingesetzt, bei der ein unabhängiges Sprachmodell die
-generierten Texte nach denselben drei Dimensionen bewertet. Ein
-\textbf{strukturiertes Experteninterview} mit einem professionellen
-Sportredakteur validiert die Systemeignung im redaktionellen
-Arbeitskontext. Als technischer Zusatzbefund werden die
-End-to-End-Latenzen des LLM-Service (25 Messpunkte, Render-Deployment)
-dokumentiert.
+Die Evaluationsmethodik operationalisiert die Forschungsfrage anhand der drei Qualitätsdimensionen Korrektheit, Tonalität und Verständlichkeit: Eine manuelle Bewertung von 40 KI-generierten Ticker-Einträgen bildet die Hauptevaluation; eine ergänzende LLM-as-Judge-Evaluation (vgl. Zheng et al.~2023) erweitert die Datenbasis mit einem unabhängigen Bewertungsmodell. Ein strukturiertes Experteninterview mit einem Digitalverantwortlichen von Eintracht Frankfurt validiert die Systemeignung im Praxiskontext. Die vollständige Evaluationsmethodik ist in Kapitel~\ref{evaluation} beschrieben.
 
 \section{Abgrenzung}\label{abgrenzung}
 
