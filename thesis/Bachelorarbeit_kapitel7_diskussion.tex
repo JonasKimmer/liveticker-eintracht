@@ -109,6 +109,8 @@ Wirksamkeit jedoch nur im \texttt{coop}-Modus durch die redaktionelle
 Kontrolle vollständig abgesichert ist. Im \texttt{auto}-Modus verbleibt
 ein Restrisiko fehlerhafter Veröffentlichungen.
 
+Zugleich ist zu berücksichtigen, dass der hohe Korrektheitswert (Ø~4{,}6\,/\,5) durch die strukturierte Faktenübergabe im Prompt begünstigt wird: Torschütze, Minute und Spielstand stammen direkt aus der API und werden dem Modell explizit übergeben. Ein Modell, das den Prompt nicht ignoriert, erzeugt damit faktuell korrekte Einträge weitgehend unabhängig von seiner eigentlichen Sprachkompetenz. Der Korrektheitswert misst damit eher die Güte des Prompt-Designs als eine intrinsische LLM-Stärke — was die hohen Werte erklärt, ihre Übertragbarkeit auf faktenarme Prompts aber einschränkt.
+
 
 
 \section{Diskussion der Betriebsmodi}\label{diskussion-der-betriebsmodi}
