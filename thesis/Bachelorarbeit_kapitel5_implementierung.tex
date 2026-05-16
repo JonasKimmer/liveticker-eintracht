@@ -388,7 +388,7 @@ verworfene) sind für spätere Qualitätsanalysen auswertbar. Die Evaluation der
 
 \section{Frontend-Implementierung}\label{frontend-implementierung}
 
-Die Frontend-Implementierung setzt die in Abschnitt~\ref{frontend-konzeption} konzipierten Entscheidungen zu Architektur, Zustandsmanagement und Redaktionsfluss in lauffähigen TypeScript-Code um.
+Die Frontend-Implementierung setzt die in Abschnitt~\ref{frontend-konzeption} konzipierten Entscheidungen zu Architektur, Zustandsmanagement und Redaktionsfluss in lauffähigen TypeScript-Code um (vgl. Abschnitt~\ref{frontend-framework} für die technologische Einordnung von TypeScript).
 
 \subsection{Komponentenhierarchie}\label{komponentenhierarchie}
 
@@ -470,8 +470,7 @@ Hook & Paket & Verantwortlichkeit \\
 Die Polling-Hooks \texttt{useMatchCore}, \texttt{useMatchEvents} und \texttt{useMatchTicker} betreiben je einen eigenen \texttt{setInterval}-Zyklus; das Intervall wird über \texttt{resolvePollingInterval} zustandsabhängig gesetzt: 15 Sekunden im Live- und FullTime-Betrieb, 20 Sekunden in allen anderen Zuständen (PreMatch, Cancelled u.\,a.) sowie 15 Sekunden als Standardwert, wenn der Spielstatus noch nicht geladen ist (\texttt{matchState === null}). \texttt{useMatchData} aggregiert die drei Hooks und stellt die Daten über \texttt{TickerDataContext} bereit.
 
 
-\subsection{\texorpdfstring{Slash-Command-Parser
-(\texttt{parseCommand.ts})}{Slash-Command-Parser (parseCommand.ts)}}\label{slash-command-parser-parsecommand.ts}
+\subsection{Slash-Command-Parser (parseCommand.ts)}\label{slash-command-parser-parsecommand.ts}
 
 Der Slash-Command-Parser ermöglicht schnelle manuelle Texteingabe ohne
 Maus-Interaktion. Er übersetzt kurze Kommandos in formatierte
@@ -554,6 +553,28 @@ Im Auto-Modus existieren zwei parallele Automatisierungspfade: Der primäre Pfad
 \end{figure}
 
 
+\subsection{Frontend-Polling}\label{frontend-polling}
+
+Das Frontend fragt den Backend-Status über vier Polling-Ressourcen ab:
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}llp{7cm}@{}}
+\toprule\noalign{}
+Ressource & Intervall & Bedingung \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Events \& Ticker & 15.000 ms & Live, Halbzeit, Abpfiff (\texttt{resolvePollingInterval}) \\
+Events \& Ticker & 20.000 ms & Alle anderen Spielstatus (PreMatch, Pause) \\
+Match-Refresh & 30.000 ms & Immer \\
+Match-Sync & 60.000 ms & Immer \\
+\end{longtable}
+}
+
+Die \texttt{resolvePollingInterval}-Utility differenziert das Intervall je nach Spielstatus: Im Live-Modus (sowie bei Halbzeit und Abpfiff) beträgt es 15.000\,ms, in allen anderen Zuständen (PreMatch, Pause u.\,a.) 20.000\,ms. Für einen Produktiveinsatz mit vielen gleichzeitigen Nutzern könnte das PreMatch-Intervall weiter auf 30.000\,ms oder mehr erhöht werden, um die Serverlast außerhalb der Spielphasen zu senken.
+
+
 \section{n8n Workflow-Implementierung}\label{n8n-workflow-implementierung}
 
 Die systemkritischen Workflows setzen die in Abschnitt~\ref{workflow-klassen} konzipierten Gruppen um; alle 17 Workflow-Dateien liegen als versionierte JSON-Exporte unter \texttt{n8n/} vor.
@@ -603,11 +624,11 @@ Tests}\label{qualituxe4tssicherung-und-tests}
 
 Die Implementierung setzt das in Abschnitt~\ref{qualitätssicherungskonzept} beschriebene Testpyramiden-Modell mit drei Schichten um.
 
-\textbf{Frontend (Jest + React Testing Library):} Unit-Tests decken Utility-Funktionen, Hooks, UI-Komponenten und TypeScript-Typen ab. Der \texttt{parseCommand}-Parser ist besonders umfangreich abgesichert: Als kritische manuelle Eingabeschicht muss er sämtliche Slash-Command-Varianten, Fehleingaben und Kantenfälle zuverlässig verarbeiten; ein Fehler hier würde sich direkt in falsch klassierten Ticker-Einträgen niederschlagen. Jest wurde gegenüber Vitest bevorzugt: Die Create-React-App-Basiskonfiguration integriert Jest nativ, sodass kein eigener Vite-Build-Stack eingeführt werden muss; Vitests Laufzeitvorteil wird erst bei deutlich größeren Test-Suites relevant und rechtfertigt im vorliegenden Umfang keinen Konfigurationsmehraufwand.
+\textbf{Frontend (Jest + React Testing Library):} Unit-Tests decken Utility-Funktionen, Hooks, UI-Komponenten und TypeScript-Typen ab. Der \texttt{parseCommand}-Parser ist besonders umfangreich abgesichert: Als kritische manuelle Eingabeschicht muss er sämtliche Slash-Command-Varianten, Fehleingaben und Kantenfälle zuverlässig verarbeiten; ein Fehler hier würde sich direkt in falsch klassierten Ticker-Einträgen niederschlagen.
 
 \textbf{Backend (pytest):} API-Integrationstests prüfen alle Endpunkte gegen eine echte PostgreSQL-Testinstanz mit transaktionalem Rollback; nach jedem Test wird die Datenbank auf den Ausgangszustand zurückgesetzt, sodass Tests voneinander isoliert und in beliebiger Reihenfolge ausführbar sind. Unit-Tests decken Services, Repositories und Utility-Funktionen ab. Der Verzicht auf einen Datenbank-Mock ist bewusst: Mock-Implementierungen riskieren Divergenzen zum realen Schema, die gerade bei Schemaänderungen während der Entwicklung unbemerkt bleiben.
 
-\textbf{End-to-End (Playwright):} Browser-seitige Smoke-Tests validieren grundlegende Nutzerinteraktionen — darunter ein responsiver Mobile-Test mit Viewport 375\,×\,812 (iPhone~SE) als Regressionsschutz für die Tab-Navigation (N5). Playwright wurde gegenüber Cypress bevorzugt: Es benötigt keine Electron-Laufzeitabhängigkeit, ermöglicht Cross-Browser-Tests ohne Lizenzschranken und ist damit für den responsiven Mobile-Test auf verschiedenen Viewports (N5) die geeignetere Wahl.
+\textbf{End-to-End (Playwright):} Browser-seitige Smoke-Tests validieren grundlegende Nutzerinteraktionen — darunter ein responsiver Mobile-Test mit Viewport 375\,×\,812 (iPhone~SE) als Regressionsschutz für die Tab-Navigation (N5).
 
 Ergänzend enthält \texttt{evaluation\_metrics.py} statistische Hilfsfunktionen (Cliff's Delta, Bootstrap-KI, Cohen's Kappa u.\,a.) als Evaluationsinfrastruktur für die KI-Textbewertung. Testmetriken, Coverage-Kennzahlen und TypeScript-Typsicherheitswerte sind in Abschnitt~\ref{technische-qualituxe4tssicherung} dokumentiert.
 
@@ -616,17 +637,12 @@ Ergänzend enthält \texttt{evaluation\_metrics.py} statistische Hilfsfunktionen
 
 Das Deployment setzt das in Abschnitt~\ref{deployment-konzept} beschriebene Konzept als produktiv erreichbare Infrastruktur um. Alle Dienste werden aus demselben Repository-Branch (\texttt{deploy/render-v2}) betrieben.
 
-Das \textbf{FastAPI-Backend} läuft als Docker-Container auf Render.com (Free-Tier Web Service, Region Oregon/US West). Das Docker-Image basiert auf \texttt{python:3.11-slim}; Abhängigkeiten werden aus \texttt{requirements.txt} installiert, der Startbefehl startet Uvicorn als ASGI-Server. Render deployt automatisch bei jedem Push auf den konfigurierten Branch; Konfiguration und Zugangsdaten — Datenbankverbindung, OpenRouter-API-Key, CORS-Whitelist — werden ausschließlich als Umgebungsvariablen injiziert.
+Das \textbf{FastAPI-Backend} läuft als Docker-Container auf Render.com (Free-Tier Web Service, Region Oregon/US West); die technologische Einordnung von Docker findet sich in Abschnitt~\ref{cloud-deployment}. Das Docker-Image basiert auf \texttt{python:3.11-slim}; Abhängigkeiten werden aus \texttt{requirements.txt} installiert, der Startbefehl startet Uvicorn als ASGI-Server. Render deployt automatisch bei jedem Push auf den konfigurierten Branch; Konfiguration und Zugangsdaten — Datenbankverbindung, OpenRouter-API-Key, CORS-Whitelist — werden ausschließlich als Umgebungsvariablen injiziert.
 
 Das \textbf{React-Frontend} wird als statische Seite über das Render-CDN ausgeliefert. Der Build-Prozess führt \texttt{npm run build} aus und deployt das \texttt{build/}-Verzeichnis; Content-Hashing stellt sicher, dass Assets versioniert ausgeliefert und unbegrenzt gecacht werden können.
 
 Die \textbf{PostgreSQL-15-Datenbank} wird als Managed Service über Supabase betrieben. Das Backend bindet sie über eine externe Connection-URL ein; Supabase übernimmt Backups, Patches und Verbindungspooling ohne operativen Aufwand auf Anwendungsseite.
 
-Die \textbf{n8n-Instanz} läuft lokal und ist über einen \texttt{ngrok}-Tunnel für externe Webhooks erreichbar. Dieses Setup ist für den Evaluationsbetrieb ausreichend, hat jedoch zwei Einschränkungen:
-
-\begin{itemize}\tightlist
-\item \textbf{Lokale Verfügbarkeit:} Die Webhook-Erreichbarkeit ist an die Laufzeit des lokalen Rechners gebunden; beim Systemabschalten sind keine eingehenden Webhooks möglich. Für einen Produktivbetrieb wäre eine dedizierte, persistente n8n-Instanz erforderlich.
-\item \textbf{WebSocket-Skalierung:} Der \texttt{ConnectionManager} des WebSocket-Kanals \texttt{/ws/media} ist prozesslokal und damit nicht für horizontales Skalieren mit mehreren Backend-Workern geeignet; eine Erweiterung über Redis Pub/Sub wäre hierfür notwendig (vgl. Abschnitt~\ref{technische-einordnung}).
-\end{itemize}
+Die \textbf{n8n-Instanz} läuft lokal und ist über einen \texttt{ngrok}-Tunnel für externe Webhooks erreichbar. Dieses Setup ist auf den Evaluationszeitraum beschränkt; die Limitationen gegenüber einem Produktivbetrieb sind in Abschnitt~\ref{technische-einordnung} diskutiert.
 
 Die vier Komponenten bilden die drei Systemschichten aus Abschnitt~\ref{überblick-und-schichtenmodell}: n8n die Datenbeschaffung, Backend und Datenbank die Anwendungs- und Persistenzlogik, das Frontend die Präsentation. Kapitel~\ref{evaluation} dokumentiert die systematische Evaluation des so realisierten Systems.

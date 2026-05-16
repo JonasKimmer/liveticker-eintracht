@@ -59,23 +59,6 @@
 \end{tikzpicture}%
 }
 
-%% DIAGRAM 2: Player Statistics Pipeline
-\newcommand{\DiagramPlayerStatsPipeline}{%
-\begin{tikzpicture}[node distance=2cm, auto]
-  \node[block] (input) {Player Stats\\Input (JSON)};
-  \node[block, right of=input] (parse) {Parse \&\\Normalize};
-  \node[block, right of=parse] (rank) {Rank Stats\\(Percentile)};
-  \node[block, right of=rank] (template) {Load Template\\(Sprache)};
-  \node[block, right of=template] (fill) {Fill Variables};
-  \node[block, right of=fill] (output) {Output\\(Text)};
-  
-  \draw[arrow] (input) -- (parse);
-  \draw[arrow] (parse) -- (rank);
-  \draw[arrow] (rank) -- (template);
-  \draw[arrow] (template) -- (fill);
-  \draw[arrow] (fill) -- (output);
-\end{tikzpicture}%
-}
 
 %% DIAGRAM 3: Ticker State Transitions
 \newcommand{\DiagramTickerStates}{%
@@ -117,9 +100,6 @@
   \draw[arrow] (dispatch) -- (enrich);
   \draw[arrow] (enrich) -- (llm);
   \draw[arrow] (llm) -- (store);
-  
-  % Feedback loop
-  \draw[arrow, bend right=45] (store) -- node[below, pos=0.5] {broadcast} (event);
 \end{tikzpicture}%
 }
 
@@ -158,10 +138,6 @@
   % Frontend ↔ Backend (REST)
   \draw[arrow] ([yshift= 3pt]fe.east)  -- node[above, font=\scriptsize] {GET /matches}   ([yshift= 3pt]be.west);
   \draw[arrow] ([yshift=-3pt]be.west)  -- node[below, font=\scriptsize] {JSON response}  ([yshift=-3pt]fe.east);
-
-  % Frontend → n8n (Webhook, gebogen über Backend)
-  \draw[arrow] (fe.north) to[out=60, in=120]
-    node[above, font=\scriptsize, pos=0.5] {POST Webhook} (n8n.north);
 
   % n8n ↔ Football-API
   \draw[arrow] ([yshift= 3pt]n8n.east) -- node[above, font=\scriptsize] {HTTP request}  ([yshift= 3pt]api.west);
@@ -203,24 +179,6 @@
 \end{tikzpicture}%
 }
 
-%% DIAGRAM 8: Match Event Processing (Simplified Sequence)
-\newcommand{\DiagramEventProcessing}{%
-\begin{tikzpicture}[node distance=2.5cm, auto]
-  \tikzset{stepbox/.style={rectangle, draw, fill=purple!15, text width=2.2cm, text centered, minimum height=0.9cm, font=\footnotesize}}
-  
-  \node[stepbox] (import) {1. Event\\Import};
-  \node[stepbox, right of=import] (check) {2. Dedup\\Check};
-  \node[stepbox, right of=check] (enrich) {3. Enrich\\Data};
-  \node[stepbox, right of=enrich] (gen) {4. LLM\\Generate};
-  \node[stepbox, below of=gen] (store) {5. Store\\Ticker};
-  
-  \draw[arrow] (import) -- (check);
-  \draw[arrow] (check) -- (enrich);
-  \draw[arrow] (enrich) -- (gen);
-  \draw[arrow] (gen) -- (store);
-  \draw[arrow, bend right=45] (store) -- node[right, font=\tiny] {broadcast} (import);
-\end{tikzpicture}%
-}
 
 %% DIAGRAM 9: Ticker Generation Flow (Sequence-style, Kapitel 5)
 \newcommand{\DiagramTickerGenerationFlow}{%
@@ -252,72 +210,11 @@
   \draw[msg]    (1,7.2) -- node[above]{INSERT ticker\_entry (draft|published)} (2,7.2);
   \draw[retmsg] (1,7.9) -- node[above]{201 Created}          (0,7.9);
   % Polling
-  \draw[msg]    (4,8.6) -- node[above]{GET /ticker/\{id\} (Polling 5 s)} (1,8.6);
+  \draw[msg]    (4,8.6) -- node[above]{GET /ticker/\{id\} (Polling 15 s)} (1,8.6);
   \draw[retmsg] (1,9.3) -- node[above]{TickerEntry[]}        (4,9.3);
 \end{tikzpicture}%
 }
 
-%% DIAGRAM 10: React Frontend Component Tree (Kapitel 5)
-\newcommand{\DiagramFrontendComponentTree}{%
-\begin{tikzpicture}[
-  comp/.style={rectangle, draw, fill=blue!10, rounded corners, text centered,
-               font=\small, minimum height=0.6cm, text width=2.1cm},
-  sub/.style={rectangle, draw, fill=blue!5, rounded corners, text centered,
-              font=\tiny, minimum height=0.5cm, text width=1.7cm},
-  ctx/.style={rectangle, draw=orange!60, fill=orange!10, rounded corners, text centered,
-              font=\tiny, minimum height=0.5cm, text width=2cm},
-  arr/.style={->, thick, >=stealth},
-  ctxarr/.style={->, dashed, orange!70, >=stealth},
-]
-  % Root
-  \node[comp] (app) at (5,0) {App};
-  \node[comp] (lt)  at (5,-1.4) {LiveTicker};
-  \draw[arr] (app) -- (lt);
-
-  % Context annotation
-  \node[ctx]  (ctx) at (9,-1.4) {3 Contexts:\\Mode / Data / Actions};
-  \draw[ctxarr] (ctx.west) -- (lt.east);
-
-  % Three panels
-  \node[comp] (lp) at (1.5,-3) {LeftPanel};
-  \node[comp] (cp) at (5,-3)   {CenterPanel};
-  \node[comp] (rp) at (8.5,-3) {RightPanel};
-  \draw[arr] (lt) -- (lp);
-  \draw[arr] (lt) -- (cp);
-  \draw[arr] (lt) -- (rp);
-
-  % CenterPanel children
-  \node[sub] (ec) at (3.2,-4.8) {EventCard};
-  \node[sub] (ee) at (5,-4.8)   {EntryEditor};
-  \node[sub] (ai) at (6.8,-4.8) {AIDraft};
-  \draw[arr] (cp) -- (ec);
-  \draw[arr] (cp) -- (ee);
-  \draw[arr] (cp) -- (ai);
-
-  % Context callbacks
-  \draw[ctxarr, bend right=20] (ec.north) to node[left,font=\tiny]{onGenerate} (ctx.south);
-  \draw[ctxarr, bend left=10]  (ai.north) to node[right,font=\tiny]{onPublish} (ctx.south);
-
-  % LeftPanel child
-  \node[sub] (pe) at (1.5,-4.8) {PublishedEntry};
-  \draw[arr] (lp) -- (pe);
-
-  % RightPanel children (collapsible sections)
-  \tikzset{collapsible/.style={rectangle, draw=gray!70, fill=gray!8, rounded corners,
-    text centered, font=\tiny, minimum height=0.5cm, text width=1.9cm,
-    append after command={\pgfextra{\draw[gray!50, thin]
-      ([xshift=-0.75cm,yshift=0.08cm]\tikzlastnode.north east)
-      -- ([xshift=-0.6cm,yshift=-0.05cm]\tikzlastnode.north east)
-      -- ([xshift=-0.45cm,yshift=0.08cm]\tikzlastnode.north east);}}}
-  }
-  \node[collapsible] (stat)  at (7.2,-4.8) {Statistiken\\{\tiny\textit{(\textcolor{gray}{auf-/zuklappbar})}}};
-  \node[collapsible] (auf)   at (9.2,-4.8) {Auswechselbank\\{\tiny\textit{(\textcolor{gray}{auf-/zuklappbar})}}};
-  \node[collapsible] (verletzt) at (8.2,-6.1) {Verletzt /\\Fraglich\\{\tiny\textit{(\textcolor{gray}{auf-/zuklappbar})}}};
-  \draw[arr] (rp) -- (stat);
-  \draw[arr] (rp) -- (auf);
-  \draw[arr] (rp) -- (verletzt);
-\end{tikzpicture}%
-}
 
 %% ─── DIAGRAM 11: Backend-Schichtenarchitektur ─────────────────────────────
 \newcommand{\DiagramBackendSchichten}{%
@@ -328,7 +225,7 @@
   arr/.style={->, thick, gray!70}
 ]
   \node[layer, fill=blue!30] (router) at (0,0)
-        {\textbf{Router / API} \quad {\footnotesize HTTP-Endpunkte (FastAPI, 11 Router)}};
+        {\textbf{Router / API} \quad {\footnotesize HTTP-Endpunkte (FastAPI, 13 Router)}};
   \node[layer, fill=blue!20] (service) at (0,-1.4)
         {\textbf{Service} \quad {\footnotesize Fachlogik (\texttt{ticker\_service}, \texttt{llm\_service})}};
   \node[layer, fill=blue!10] (repo) at (0,-2.8)

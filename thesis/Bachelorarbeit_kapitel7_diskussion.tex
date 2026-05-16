@@ -73,6 +73,8 @@ Continuous Integration wurde im Projektzeitraum nicht eingerichtet. Für einen P
 
 Die n8n-Instanz ist für den Evaluationszeitraum lokal betrieben und über einen \texttt{ngrok}-Tunnel für eingehende Webhooks erreichbar (vgl. Abschnitt~\ref{deployment-konzept}). Diese Lösung ist im Produktivbetrieb nicht vertretbar: Die Tunnel-Stabilität hängt von einer persistenten Internetverbindung des lokalen Rechners ab, und bei Tunnel-Neustarts müssen alle Webhook-URLs aktualisiert werden. Für einen produktiven Betrieb ist ein Cloud-Hosting der n8n-Instanz erforderlich.
 
+Die Provider-Fallback-Kette (Prioritäten 2--4: Gemini direkt, OpenAI, Anthropic) ist architektonisch vollständig implementiert und wurde im Evaluationszeitraum mangels aktivierter API-Keys nicht produktiv eingesetzt. Ein empirischer Qualitätsvergleich der Provider sowie eine Überprüfung der Fallback-Zuverlässigkeit unter Lastbedingungen stehen damit aus — ein relevanter blinder Fleck für ein System, das Multi-Provider-Redundanz als Kern-Architekturmerkmal ausweist (vgl. Abschnitt~\ref{multi-provider-architektur}).
+
 Die WebSocket-Verbindung existiert als In-Memory-Singleton pro Prozess.
 Bei einem Multi-Prozess-Deployment (mehrere Uvicorn-Worker hinter einem
 Load-Balancer) würden Medien-Updates nur Clients des jeweiligen Workers

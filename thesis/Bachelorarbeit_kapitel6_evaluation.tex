@@ -1,6 +1,6 @@
 \chapter{Evaluation}\label{evaluation}
 
-Dieses Kapitel evaluiert das System auf fünf Ebenen und beantwortet damit die Forschungsfrage (vgl. Abschnitt~\ref{forschungsfrage}): technische Qualitätssicherung (Abschnitt~\ref{technische-qualitätssicherung}), KI-Textgenerierung (Abschnitt~\ref{evaluation-der-ki-textgenerierung}), Latenzpotenzial der Betriebsmodi (Abschnitt~\ref{evaluation-der-betriebsmodi}), Performance und Laufzeitverhalten (Abschnitt~\ref{performance-und-laufzeitverhalten}) sowie der Anforderungsabgleich als Soll-Ist-Vergleich (Abschnitt~\ref{anforderungsabgleich-soll-ist-vergleich}).
+Dieses Kapitel evaluiert das System auf fünf Ebenen und beantwortet damit die Forschungsfrage (vgl. Abschnitt~\ref{forschungsfrage}): technische Qualitätssicherung (Abschnitt~\ref{technische-qualitätssicherung}), KI-Textgenerierung (Abschnitt~\ref{evaluation-der-ki-textgenerierung}), Performance und Laufzeitverhalten (Abschnitt~\ref{performance-und-laufzeitverhalten}), Latenzpotenzial der Betriebsmodi (Abschnitt~\ref{evaluation-der-betriebsmodi}) sowie der Anforderungsabgleich als Soll-Ist-Vergleich (Abschnitt~\ref{anforderungsabgleich-soll-ist-vergleich}).
 
 
 \section{Technische
@@ -300,7 +300,7 @@ das Prompt-Design für dieses Profil noch Optimierungspotenzial bietet
 
 Die qualitative Bewertung zielt auf explorative Validierung des ersten Artefakts; statistische Generalisierbarkeit ist einer Folgestudie mit mehreren externen Ratern vorbehalten (vgl. Abschnitt~\ref{ausblick}). Die Stichprobengröße wurde bewusst so gewählt, dass differenzierte Einzelanalyse je Event-Typ und Stilprofil möglich bleibt, entsprechend dem Vorgehen vergleichbarer NLG-Evaluationen (vgl. Gatt \& Krahmer 2018, S.~79).
 
-Für die qualitative Analyse wurden 40 KI-generierte Ticker-Einträge (Modell: \texttt{google/gemini-2.0-flash-lite-001}, Sprache: Deutsch) aus 15 Bundesliga-Spielen der Saison 2024/25 manuell auf drei Dimensionen bewertet. Für die qualitative Analyse wurden 40 KI-generierte Ticker-Einträge aus 15 Bundesliga-Spielen der Saison 2024/25 strukturiert ausgewählt: Es wurden ereignisreiche Spiele mit unterschiedlichen Spielverläufen gewählt, um die häufigsten Event-Typen (Tor, Gelbe Karte, Wechsel) sowie alle drei Stilprofile abzudecken, bei einem für manuelle Einzelbewertung vertretbaren Umfang. Rote Karten sind in der Stichprobe nicht vertreten, da kein entsprechendes Ereignis in den ausgewählten Spielen vorlag; die LLM-as-Judge-Evaluation (Abschnitt~\ref{erweiterte-evaluation}) schließt diesen Event-Typ mit ein. \textbf{Korrektheit} prüft, ob alle Fakten (Spieler, Team, Minute, Ergebnis) korrekt wiedergegeben sind und der Text keine Halluzinationen enthält. \textbf{Tonalität} bewertet, ob der Stil dem gewählten Profil (neutral/euphorisch/kritisch) entspricht. \textbf{Verständlichkeit} beurteilt, ob der Text sprachlich flüssig, grammatikalisch korrekt und dem Genre „Liveticker'' angemessen ist. Jede Dimension wurde auf einer Skala von 1 (ungenügend) bis 5 (exzellent) bewertet. Der Entwickler bewertete alle Einträge als Einzelrater. Im frühen DSR-Artefaktzyklus, dessen Ziel die explorative Artefaktvalidierung ist, stellt die Entwickler-Selbstevaluation eine pragmatisch begründete Vorgehensweise dar (vgl. Hevner et al.~2004, S.~87); die implementierte Cohen's-Kappa-Infrastruktur bereitet eine Folgestudie mit externen Ratern systematisch vor. Die Selbstevaluationsproblematik wird in Abschnitt~\ref{erweiterte-evaluation} durch ein LLM-as-Judge-Verfahren (unabhängiges Modell als Bewerter) abgemildert; das strukturierte Experteninterview ergänzt die externe qualitative Validierung.
+Für die qualitative Analyse wurden 40 KI-generierte Ticker-Einträge (Modell: \texttt{google/gemini-2.0-flash-lite-001}, Sprache: Deutsch) aus 15 Bundesliga-Spielen der Saison 2024/25 strukturiert ausgewählt: Es wurden ereignisreiche Spiele mit unterschiedlichen Spielverläufen gewählt, um die häufigsten Event-Typen (Tor, Gelbe Karte, Wechsel) sowie alle drei Stilprofile abzudecken, bei einem für manuelle Einzelbewertung vertretbaren Umfang. Rote Karten sind in der Stichprobe nicht vertreten, da kein entsprechendes Ereignis in den ausgewählten Spielen vorlag; die LLM-as-Judge-Evaluation (Abschnitt~\ref{erweiterte-evaluation}) schließt diesen Event-Typ mit ein. \textbf{Korrektheit} prüft, ob alle Fakten (Spieler, Team, Minute, Ergebnis) korrekt wiedergegeben sind und der Text keine Halluzinationen enthält. \textbf{Tonalität} bewertet, ob der Stil dem gewählten Profil (neutral/euphorisch/kritisch) entspricht. \textbf{Verständlichkeit} beurteilt, ob der Text sprachlich flüssig, grammatikalisch korrekt und dem Genre „Liveticker'' angemessen ist. Jede Dimension wurde auf einer Skala von 1 (ungenügend) bis 5 (exzellent) bewertet. Der Entwickler bewertete alle Einträge als Einzelrater. Im frühen DSR-Artefaktzyklus, dessen Ziel die explorative Artefaktvalidierung ist, stellt die Entwickler-Selbstevaluation eine pragmatisch begründete Vorgehensweise dar (vgl. Hevner et al.~2004, S.~87); die implementierte Cohen's-Kappa-Infrastruktur bereitet eine Folgestudie mit externen Ratern systematisch vor. Die Selbstevaluationsproblematik wird in Abschnitt~\ref{erweiterte-evaluation} durch ein LLM-as-Judge-Verfahren (unabhängiges Modell als Bewerter) abgemildert; das strukturierte Experteninterview ergänzt die externe qualitative Validierung.
 
 Ein strukturiertes Experteninterview mit einem professionellen Sportredakteur von Eintracht Frankfurt ergänzt die quantitative Bewertung; seine Erkenntnisse folgen im Anschluss.
 
@@ -522,34 +522,10 @@ euphorisch  & 27 & 3{,}22 & 2{,}93 & 3{,}67 & 3{,}27 \\
 Die LLM-as-Judge-Evaluation bestätigt Korrektheit (4{,}12) und Verständlichkeit (4{,}35) auf einem mit der Hauptevaluation konsistenten Niveau. Das neutrale Stilprofil erzielt den höchsten Gesamtwert (4{,}82) und zeigt damit die stärkste Prompt-Kopplung. Das kritische Profil liegt mit 4{,}32 im soliden Bereich; das euphorische Profil bleibt mit 3{,}27 deutlich schwächer, insbesondere beim Tonalitätswert (2{,}93). Dieser Wert steht scheinbar im Widerspruch zum Gesamttonalitätswert der Hauptevaluation (4{,}1\,/\,5, vgl. Abschnitt~\ref{qualitative-analyse-der-generierten-texte}); die Diskrepanz erklärt sich durch den Event-Mix: Die Hauptevaluation enthält überwiegend Tor-Events, bei denen das euphorische Profil stark performt (Ø~4{,}4). Die LLM-as-Judge-Evaluation mit 25~Wechseln und anteilig mehr Karten deckt systematisch diejenigen Event-Typen auf, die in der Hauptevaluation unterrepräsentiert waren. Für die Forschungsfrage — \emph{inwiefern erfüllt das System die journalistischen Qualitätsanforderungen hinsichtlich Tonalität?} — lautet die differenzierte Antwort: Bei Tor- und Karten-Events ist die Anforderung erfüllt; bei Wechsel-Events im euphorischen Profil besteht ein systematischer Verbesserungsbedarf, der durch Event-spezifische Stilreferenzen im Prompt-Design adressierbar ist. Die Ursache liegt im Event-Mix: Wechsel-Einträge (n\,=\,25) erzielen die schwächste Korrektheit (2{,}92) und den niedrigsten Gesamtwert (3{,}21), da das Modell taktische Begründungen erfindet, die nicht im übergebenen Kontext stehen. Im euphorischen Profil produziert das Modell bei Wechseln und Gelben Karten wiederholt formelharte Phrasen wie „Na, ob das was wird?'' oder „Hoffentlich bringt er frischen Wind'' ohne authentische Situationsdifferenzierung. Tore (Ø~4{,}33) und Rote Karten (Ø~4{,}75) erreichen hingegen konsistent hohe Werte. Diese Befunde replizieren die Fehlerklassen der Hauptevaluation: Die euphorische Tonalitätsschwäche bei ereignisarmen Event-Typen zeigt sich als konsistentes Muster über beide Evaluationsrunden. Im Vergleich zur Literatur — Clerwall (2014, S.~529) dokumentiert für KI-generierte Sporttexte Lesbarkeits- und Vertrauenswürdigkeitswerte im Bereich von $\approx$\,3{,}8--4{,}2 auf einer 5-Punkte-Skala — liegen die neutralen (4{,}82) und kritischen (4{,}32) Profile in einem publikationsreifen Bereich; das euphorische Profil (3{,}27) fällt hingegen unter diesen Referenzbereich. Die Methode des LLM-as-Judge ist als Ergänzung zur menschlichen Bewertung etabliert (Zheng et al.~2023), ersetzt diese jedoch nicht vollständig; eine externe Nutzerstudie bleibt als Folgeschritt vorgesehen (Abschnitt~\ref{mittelfristige-erweiterungen}).
 
 
-\section{Latenzpotenzial der Betriebsmodi}\label{evaluation-der-betriebsmodi}
-
-Die drei Betriebsmodi unterscheiden sich strukturell in ihrer erreichbaren Publikationslatenz. Auf Basis der gemessenen LLM-Latenzen (Median 859~ms, P95 2\,047~ms, vgl. Abschnitt~\ref{llm-latenz}) und des 15-Sekunden-Polling-Intervalls im Live-Modus (vgl. Abschnitt~\ref{frontend-polling}) ergibt sich für den \texttt{auto}-Modus eine architekturbasierte Time-to-Publish von ≈ 2--17~s (LLM-Generierung: 1--2~s; Frontend-Polling: bis zu 15~s), verglichen mit der manuellen Baseline von 30--120~s (Abschnitt~\ref{zeitdruck-und-fehleranfaelligkeit}). Die folgende Tabelle schlüsselt die Latenzkomponenten auf:
-
-{\def\LTcaptype{none}
-\begin{longtable}[]{@{}llll@{}}
-\toprule\noalign{}
-Komponente & Gemessen? & Typischer Wert & Quelle \\
-\midrule\noalign{}
-\endhead
-\bottomrule\noalign{}
-\endlastfoot
-n8n-Polling (Football-API) & Nein & $\sim$5--10~s & geschätzt \\
-n8n → Backend (HTTP) & Nein & $\sim$100--200~ms & geschätzt \\
-Backend → LLM → Backend & Ja & 859~ms Median & Abschnitt~\ref{llm-latenz} \\
-Backend → DB & Ja & $<$50~ms & Abschnitt~\ref{llm-latenz} \\
-Frontend-Polling & Ja & bis 15~s & Abschnitt~\ref{frontend-polling} \\
-\textbf{Gesamt TTP (auto)} & Nein & $\approx$\,2--17~s & Potenzialschätzung \\
-\end{longtable}
-}
-
-Die n8n-seitige Erkennungslatenz (Polling-Zyklus der Workflows gegen die Football-API sowie HTTP-Overhead bis zum Backend-Aufruf) ist nicht gemessen und ist eine zusätzliche, nicht quantifizierte Komponente der Gesamtlatenz. Da ein kontrolliertes Feldexperiment mit echten Redakteuren nicht durchführbar war, ist dies eine Potenzialabschätzung, keine empirisch gemessene Größe; ein Feldtest bleibt als Folgestudie vorgesehen (vgl. Abschnitt~\ref{mittelfristige-erweiterungen}).
-
-
 \section{Performance und
 Laufzeitverhalten}\label{performance-und-laufzeitverhalten}
 
-Dieser Abschnitt dokumentiert die gemessenen Laufzeiteigenschaften des Systems: die End-to-End-Latenz der LLM-Aufrufe (Abschnitt~\ref{llm-latenz}) und das Frontend-Polling-Modell (Abschnitt~\ref{frontend-polling}).
+Dieser Abschnitt dokumentiert die gemessene End-to-End-Latenz der LLM-Aufrufe.
 
 \subsection{LLM-Latenz}\label{llm-latenz}
 
@@ -623,26 +599,29 @@ ms) unproblematisch (vgl. Abb.~\ref{fig:latenzen-histogram}).
 \label{fig:latenzen-histogram}
 \end{figure}
 
-\subsection{Frontend-Polling}\label{frontend-polling}
 
-Das Frontend fragt den Backend-Status über drei Polling-Intervalle ab:
+\section{Latenzpotenzial der Betriebsmodi}\label{evaluation-der-betriebsmodi}
 
-{\def\LTcaptype{none} % do not increment counter
-\begin{longtable}[]{@{}llp{7cm}@{}}
+Die drei Betriebsmodi unterscheiden sich strukturell in ihrer erreichbaren Publikationslatenz. Auf Basis der gemessenen LLM-Latenzen (Median 859~ms, P95 2\,047~ms, vgl. Abschnitt~\ref{llm-latenz}) und des 15-Sekunden-Polling-Intervalls im Live-Modus (vgl. Abschnitt~\ref{frontend-polling}) ergibt sich für den \texttt{auto}-Modus eine architekturbasierte Time-to-Publish von ≈ 2--17~s (LLM-Generierung: 1--2~s; Frontend-Polling: bis zu 15~s), verglichen mit der manuellen Baseline von 30--120~s (Abschnitt~\ref{zeitdruck-und-fehleranfaelligkeit}). Die folgende Tabelle schlüsselt die Latenzkomponenten auf:
+
+{\def\LTcaptype{none}
+\begin{longtable}[]{@{}llll@{}}
 \toprule\noalign{}
-Ressource & Intervall & Bedingung \\
+Komponente & Gemessen? & Typischer Wert & Quelle \\
 \midrule\noalign{}
 \endhead
 \bottomrule\noalign{}
 \endlastfoot
-Events \& Ticker & 15.000 ms & Live, Halbzeit, Abpfiff (\texttt{resolvePollingInterval}) \\
-Events \& Ticker & 20.000 ms & Alle anderen Spielstatus (PreMatch, Pause) \\
-Match-Refresh & 30.000 ms & Immer \\
-Match-Sync & 60.000 ms & Immer \\
+n8n-Polling (Football-API) & Nein & $\sim$5--10~s & geschätzt \\
+n8n → Backend (HTTP) & Nein & $\sim$100--200~ms & geschätzt \\
+Backend → LLM → Backend & Ja & 859~ms Median & Abschnitt~\ref{llm-latenz} \\
+Backend → DB & Ja & $<$50~ms & Abschnitt~\ref{llm-latenz} \\
+Frontend-Polling & Ja & bis 15~s & Abschnitt~\ref{frontend-polling} \\
+\textbf{Gesamt TTP (auto)} & Nein & $\approx$\,2--17~s & Potenzialschätzung \\
 \end{longtable}
 }
 
-Die \texttt{resolvePollingInterval}-Utility differenziert das Polling-Intervall je nach Spielstatus: Im Live-Modus (sowie bei Halbzeit und Abpfiff) beträgt das Intervall 15.000\,ms, in allen anderen Zuständen (PreMatch, Pause u.\,a.) 20.000\,ms. Für einen Produktiveinsatz mit vielen gleichzeitigen Nutzern könnte das PreMatch-Intervall weiter auf 30.000\,ms oder mehr erhöht werden, um die Serverlast außerhalb der Spielphasen zu senken.
+Die n8n-seitige Erkennungslatenz (Polling-Zyklus der Workflows gegen die Football-API sowie HTTP-Overhead bis zum Backend-Aufruf) ist nicht gemessen und ist eine zusätzliche, nicht quantifizierte Komponente der Gesamtlatenz. Da ein kontrolliertes Feldexperiment mit echten Redakteuren nicht durchführbar war, ist dies eine Potenzialabschätzung, keine empirisch gemessene Größe; ein Feldtest bleibt als Folgestudie vorgesehen (vgl. Abschnitt~\ref{mittelfristige-erweiterungen}).
 
 
 \section{Anforderungsabgleich
