@@ -6,33 +6,6 @@ Dieses Kapitel begründet die Notwendigkeit eines KI-gestützten Liveticker-Syst
 \section{Redaktioneller Aufwand bei
 Livetickern}\label{redaktioneller-aufwand-bei-livetickern}
 
-Dieser Abschnitt beschreibt den Ist-Zustand der manuellen Liveticker-Produktion und die strukturellen Skalierungsgrenzen, die den Einsatz technologischer Unterstützung notwendig machen. Er gliedert sich in den Ist-Zustand des bestehenden Redaktionssystems (Abschnitt~\ref{ist-zustand-bestehendes-system}) und die Analyse von Zeitdruck, Fehleranfälligkeit und Skalierungsgrenzen (Abschnitt~\ref{zeitdruck-und-fehleranfaelligkeit}).
-
-\subsection{Ist-Zustand: Bestehendes Redaktionssystem}\label{ist-zustand-bestehendes-system}
-
-Als Ausgangspunkt illustriert Abbildung~\ref{fig:altsystem} den konkreten Ist-Zustand anhand des im Projektzeitraum eingesetzten Redaktionssystems bei Eintracht Frankfurt. Das System repräsentiert den Stand eines rein manuellen Werkzeugs ohne KI-Integration.
-
-\begin{figure}[H]
-\centering
-\includegraphics[width=0.95\textwidth]{altsystem_eintracht.png}
-\caption[Bestehendes Liveticker-Redaktionssystem (Eintracht Frankfurt, Saison 2024/25)]{Bestehendes Liveticker-Redaktionssystem bei Eintracht Frankfurt (Stand: Saison 2024/25). Links: Ticker-Editor mit manueller Score-Pflege. Mitte: Feed bereits erstellter Meldungen. Rechts: Aufstellungs-Panel im Leerzustand ohne geladene Spielerdaten.}
-\label{fig:altsystem}
-\end{figure}
-
-Die Systemanalyse zeigt sechs strukturelle Defizite, die den Handlungsbedarf für das in dieser Arbeit entwickelte System begründen:
-
-\begin{itemize}\tightlist
-\item \textbf{Kein KI-Vorschlag, kein Stilprofil:} Der Ticker-Editor ist ein reines Freitextfeld ohne jegliche KI-Unterstützung, Stilsteuerung oder Vorschlagsfunktion. Jeder Eintrag wird vollständig manuell formuliert.
-\item \textbf{Manuelle Score-Pflege:} Der Spielstand wird über numerische Eingabefelder manuell gepflegt (Abbildung~\ref{fig:altsystem}, links unten). Eine automatische Synchronisation mit einem Live-Datenfeed existiert nicht, was zu Verzögerungen und Flüchtigkeitsfehlern führt.
-\item \textbf{Keine Medienintegration:} Das System bietet lediglich einen einfachen „Bild auswählen''-Button ohne strukturierte Social-Media-Anbindung, Galeriefunktion oder automatischen Medien-Import (z.\,B. ScorePlay, YouTube, Instagram).
-\item \textbf{Stilinkonsistenz im Feed:} Die bestehenden Ticker-Einträge (Abbildung~\ref{fig:altsystem}, Mitte) zeigen erheblich variierende Qualität und Länge (von einwortigen Kommentaren wie „drin!'' bis zu vollständigen Sätzen) ohne einheitliches Stilprofil oder Qualitätssicherung.
-\item \textbf{Fehlender Mehrsprachen-Support:} Das System ist ausschließlich deutschsprachig ausgelegt. Eine Übersetzungsfunktion oder mehrsprachige Textgenerierung ist nicht vorgesehen.
-\item \textbf{Fehlende Live-Statistiken und Medieneinbettung:} Aufstellungsdaten werden laut Experteninterview bereits automatisiert übertragen; eine Integration von Live-Statistiken sowie audiovisuellen Inhalten fehlt jedoch vollständig. Im Interview wurde bestätigt: „Videos und Audios können wir noch nicht darstellen, Statistiken ebenso'' (vgl.\ Abschnitt~\ref{anforderungsanalyse-am-beispiel-eintracht-frankfurt}).
-\end{itemize}
-
-Diese Defizite spiegeln die drei in Abschnitt~\ref{problemstellung-und-zielsetzung} identifizierten Problemdimensionen direkt wider: operativer Zeitdruck durch vollständig manuelle Produktion, fehlende Mehrsprachigkeit und eingeschränkte White-Label-Fähigkeit. Das in dieser Arbeit entwickelte System behebt alle sechs Punkte: Die fehlende KI-Unterstützung und Stilinkonsistenz werden durch die LLM-Pipeline mit konfigurierbaren Stilprofilen adressiert (vgl.\ Abschnitt~\ref{ki-komponente}); die manuelle Score-Pflege und der fehlende Datenabruf durch automatisierte n8n-ETL-Workflows (vgl.\ Abschnitt~\ref{workflow-konzeption-n8n}); die fehlende Medienintegration durch die MediaQueue-Architektur (vgl.\ Abschnitt~\ref{n8n-workflow-implementierung}); das Mehrsprachdefizit durch die native LLM-Übersetzungsfunktion (vgl.\ Abschnitt~\ref{mehrsprachige-textgenerierung-konzept}).
-
-\subsection{Zeitdruck, Fehleranfälligkeit und Skalierungsgrenzen}\label{zeitdruck-und-fehleranfaelligkeit}
 
 Die manuelle Erstellung von Livetickern zählt zu den kognitiv anspruchsvollsten Tätigkeiten im Journalismus (vgl. Seibt, zit. n. Beils 2023, S.~56). Die strukturelle Komposition von Liveticker-Einträgen umfasst nach Ojomo und Olomojobi (zit. n. Bluhm \& Schäfer 2023, S.~27) vier kognitive Teilleistungen: Narration (Ereignisbeschreibung), Evaluation (journalistische Einordnung), Elaboration (kontextuelle Vertiefung) und Zusammenfassung (Verdichtung des Spielgeschehens). Diese sind in Abständen von einer bis drei Minuten unter simultaner Beobachtung des Spielgeschehens zu erbringen: Ereignis wahrnehmen, journalistische Relevanz bewerten, Kontext abrufen und in sprachlich angemessene Form bringen (Hauser 2008, S.~3--4). Diese kognitive Parallelverarbeitung macht den Liveticker zu einer Echtzeit-Textgattung, die sich fundamental von retrospektiven Formaten wie dem Spielbericht unterscheidet (vgl. Hauser 2008, S.~2--3). Im Produktivbetrieb entstehen dabei pro Spiel typischerweise mehrere Dutzend bis über hundert Einträge (vgl.\ Abschnitt~\ref{anforderungsanalyse-am-beispiel-eintracht-frankfurt}). Zusätzlich muss ein Ticker ein heterogenes Publikum gleichzeitig bedienen: First-Screen-Nutzer ohne TV-Bild fordern eine primäre Beschreibung des Spielgeschehens, während Second-Screen-Nutzer mit TV-Bild auf zusätzliche Einordnung und Unterhaltung aus sind (vgl. McEnnis 2016, zit. n. Bluhm \& Schäfer 2023, S.~24 u.~36). Diese Doppelfunktion verschärft die kognitiven Anforderungen an den Autor zusätzlich.
 
@@ -84,7 +57,6 @@ Millionen-Reichweiten auf globalen Plattformen (vgl. Beils 2023, S.~200). Am Bei
 Die Herausforderung beschränkt sich nicht auf eine reine Übersetzung existierender Inhalte. Smułczyński (2020, S.~57) zeigt am
 Beispiel der Live-Berichterstattung von \textit{Die Zeit}, dass die Integration mehrsprachiger Echtzeitinhalte den internationalen Wissenstransfer maßgeblich erweitert und vereinfacht. Im Kontext von Sport-Livetickern kommt als qualitative Anforderung hinzu, dass sprachliche Konventionen, idiomatische Wendungen und die emotionale Tonalität kulturspezifisch variieren. Es handelt sich daher weniger um ein Übersetzungs- als um ein Lokalisierungsproblem. Der operative Zeitdruck verschärft sich mit jeder zusätzlichen Sprache erheblich. Jede weitere Sprache erfordert spezialisiertes Personal für Übersetzungs- und Anpassungsprozesse, was unter den ohnehin ressourcenknappen Echtzeit-Bedingungen redaktionell kaum zu bewältigen ist (vgl. Bluhm \& Schäfer 2023, S.~32). Eine manuelle Skalierung auf mehrere Sprachen übersteigt die wirtschaftlichen und personellen Kapazitäten der meisten Vereinsredaktionen. LLMs eröffnen hier einen skalierbaren Lösungsweg (vgl. Abschnitt~\ref{large-language-models}).
 
-Das Experteninterview (Abschnitt~\ref{anforderungsanalyse-am-beispiel-eintracht-frankfurt}) validiert diese Problemdimension empirisch: Der Bedarf an englischsprachigen Tickern wurde direkt aus der Vereinspraxis bestätigt.
 
 
 
@@ -119,31 +91,42 @@ Prinzip auf die Liveticker-Produktion, folgt die Anforderung, dass ein und dasse
 emotionaler Fanbindung als auch einen neutralen, anbieterunabhängigen
 Ticker bedienen können muss. Die stilistische Differenzierung (von der Wortwahl über die Tonalität bis hin zu vereinsspezifischen Redewendungen) muss als Konfiguration abbildbar sein, nicht als separate Implementierung.
 
-Das Experteninterview (Abschnitt~\ref{anforderungsanalyse-am-beispiel-eintracht-frankfurt}) validiert diese Problemdimension empirisch: Das Vorhandensein klarer redaktioneller Stilrichtlinien sowie der emotionale, fan-nahe Charakter des Eintracht-Ticker-Stils wurden direkt bestätigt.
-
-Wie sich diese Anforderungen am konkreten Beispiel eines
-Bundesliga-Vereins ausprägen, zeigt der folgende Abschnitt.
+Wie sich diese Anforderungen am konkreten Beispiel eines Bundesliga-Vereins ausprägen, zeigt der folgende Abschnitt.
 
 
 
-\section{Anforderungsanalyse am Beispiel Eintracht
+\section{Fallstudie Eintracht
 Frankfurt}\label{anforderungsanalyse-am-beispiel-eintracht-frankfurt}
 
-Eintracht Frankfurt dient in dieser Arbeit als konkreter Anwendungsfall für die vereinsspezifische White-Label-Instanz. Sie gliedert sich in die Fallstudie Eintracht Frankfurt (Abschnitt~\ref{fallstudie-eintracht-frankfurt}) und das Experteninterview (Abschnitt~\ref{experteninterview-leitfaden}).
+Eintracht Frankfurt dient in dieser Arbeit als konkreter Anwendungsfall für die vereinsspezifische White-Label-Instanz. Die Analyse gliedert sich in den Ist-Zustand des bestehenden Redaktionssystems (Abschnitt~\ref{ist-zustand-bestehendes-system}), die vereinsspezifischen Betriebskennzahlen (Abschnitt~\ref{fallstudie-eintracht-frankfurt}) und das Experteninterview (Abschnitt~\ref{experteninterview-leitfaden}).
 
-\subsection{Fallstudie Eintracht Frankfurt}\label{fallstudie-eintracht-frankfurt}
+\subsection{Ist-Zustand: Bestehendes Redaktionssystem}\label{ist-zustand-bestehendes-system}
 
-Aus den drei Problemdimensionen ergeben sich folgende vereinsspezifische
-Anforderungen: Eintracht Frankfurt bestreitet pro Saison bis zu 60
-Pflichtspiele; pro Spiel fallen nach Angaben des Interviewpartners typischerweise 60--120 Ticker-Einträge an, wobei die genaue Zahl von der Ereignisdichte abhängt, was den Zeitdruck auf manuelle
-Abdeckung mit konsistenter Qualität auf ein personell kaum
-darstellbares Niveau treibt. Die internationale Fanbasis (vgl. Abschnitt~\ref{mehrsprachigkeit-als-herausforderung}) begründet den Bedarf an
-mehrsprachigen Tickern; der Interviewpartner bestätigt Englisch als
-relevante Sprache. Hinsichtlich der Tonalität folgen
-vereinseigene Ticker einer emotionalen, fanbezogenen Perspektive, die
-sich von neutraler Berichterstattung überregionaler Medien unterscheidet
-(vgl. Canalp, zit. n. Beils 2023, S.~57); das System muss diese stilistische
-Differenzierung konfigurierbar abbilden.
+Als Ausgangspunkt illustriert Abbildung~\ref{fig:altsystem} den konkreten Ist-Zustand anhand des im Projektzeitraum eingesetzten Redaktionssystems bei Eintracht Frankfurt. Das System repräsentiert den Stand eines rein manuellen Werkzeugs ohne KI-Integration.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.95\textwidth]{altsystem_eintracht.png}
+\caption[Bestehendes Liveticker-Redaktionssystem (Eintracht Frankfurt, Saison 2024/25)]{Bestehendes Liveticker-Redaktionssystem bei Eintracht Frankfurt (Stand: Saison 2024/25). Links: Ticker-Editor mit manueller Score-Pflege. Mitte: Feed bereits erstellter Meldungen. Rechts: Aufstellungs-Panel im Leerzustand ohne geladene Spielerdaten.}
+\label{fig:altsystem}
+\end{figure}
+
+Die Systemanalyse zeigt sechs strukturelle Defizite, die den Handlungsbedarf für das in dieser Arbeit entwickelte System begründen:
+
+\begin{itemize}\tightlist
+\item \textbf{Kein KI-Vorschlag, kein Stilprofil:} Der Ticker-Editor ist ein reines Freitextfeld ohne jegliche KI-Unterstützung, Stilsteuerung oder Vorschlagsfunktion. Jeder Eintrag wird vollständig manuell formuliert.
+\item \textbf{Manuelle Score-Pflege:} Der Spielstand wird über numerische Eingabefelder manuell gepflegt (Abbildung~\ref{fig:altsystem}, links unten). Obwohl der Verein externe Datenquellen (Opta, DFBnet) für Livedaten nutzt, ist keine automatische Synchronisation dieser Feeds mit der Liveticker-Oberfläche vorhanden, sodass Spielstandsaktualisierungen manuell eingetragen werden müssen.
+\item \textbf{Keine Medienintegration:} Das System bietet lediglich einen einfachen „Bild auswählen''-Button ohne strukturierte Social-Media-Anbindung, Galeriefunktion oder automatischen Medien-Import (z.\,B. ScorePlay, YouTube, Instagram).
+\item \textbf{Keine technische Stilunterstützung:} Der Ticker-Editor ist ein reines Freitextfeld, das den vereinsinternen Redaktionsstil weder einfordern noch vorschlagen kann. Obwohl im Experteninterview klare redaktionelle Richtlinien für den Eintracht-Stil bestätigt wurden, fehlt jede systemseitige Unterstützung bei deren Einhaltung.
+\item \textbf{Fehlender Mehrsprachen-Support:} Das System ist ausschließlich deutschsprachig ausgelegt. Eine Übersetzungsfunktion oder mehrsprachige Textgenerierung ist nicht vorgesehen.
+\item \textbf{Fehlende Live-Statistiken und Medieneinbettung:} Aufstellungsdaten werden laut Experteninterview bereits automatisiert übertragen; eine Integration von Live-Statistiken sowie audiovisuellen Inhalten fehlt jedoch vollständig. Im Interview wurde bestätigt: „Videos und Audios können wir noch nicht darstellen, Statistiken ebenso'' (vgl.\ Abschnitt~\ref{experteninterview-leitfaden}).
+\end{itemize}
+
+Diese Defizite spiegeln die drei in Abschnitt~\ref{problemstellung-und-zielsetzung} identifizierten Problemdimensionen direkt wider: operativer Zeitdruck durch vollständig manuelle Produktion, fehlende Mehrsprachigkeit und eingeschränkte White-Label-Fähigkeit. Das in dieser Arbeit entwickelte System behebt alle sechs Punkte: Die fehlende KI-Unterstützung und die fehlende technische Stilunterstützung werden durch die LLM-Pipeline mit konfigurierbaren Stilprofilen adressiert (vgl.\ Abschnitt~\ref{ki-komponente}); die manuelle Score-Pflege und der fehlende Datenabruf durch automatisierte n8n-ETL-Workflows (vgl.\ Abschnitt~\ref{workflow-konzeption-n8n}); die fehlende Medienintegration durch die MediaQueue-Architektur (vgl.\ Abschnitt~\ref{n8n-workflow-implementierung}); das Mehrsprachdefizit durch die native LLM-Übersetzungsfunktion (vgl.\ Abschnitt~\ref{mehrsprachige-textgenerierung-konzept}).
+
+\subsection{Vereinsspezifische Betriebskennzahlen}\label{fallstudie-eintracht-frankfurt}
+
+Eintracht Frankfurt bestreitet pro Saison bis zu 60 Pflichtspiele; pro Spiel fallen nach Angaben des Interviewpartners typischerweise 60--120 Ticker-Einträge an, wobei die genaue Zahl von der Ereignisdichte abhängt. Die Liveticker-Produktion übernimmt ein zweiköpfiges Team aus Redakteur und technischem Administrator -- ein Personalumfang, der bei erhöhter Ereignisdichte an strukturelle Grenzen stößt. Als Zielsprache neben Deutsch bestätigt der Interviewpartner Englisch als relevant für die internationale Fanbasis des Vereins.
 
 \subsection{Experteninterview}\label{experteninterview-leitfaden}
 
