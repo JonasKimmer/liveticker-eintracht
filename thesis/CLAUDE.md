@@ -47,7 +47,7 @@ konkreten Vorher/Nachher-Beispielen — **kein Lob, nur echte Probleme**.
 | ZAHLEN | Zahlenformatierung, Ausschreibpflicht, Dezimal-/Tausendertrennzeichen |
 | ABKÜRZUNGEN | Erstbelegpflicht, einmalige Abkürzungen, Konsistenz |
 | ANFÜHRUNGSZEICHEN | „..." korrekt überall, \emph{}/\textit{} konsistent |
-| SATZLÄNGE | Überlange Sätze, Schachtelsätze, abgehackte Kurzsequenzen |
+| SATZLÄNGE | Überlange Sätze, Schachtelsätze, Gedankenstriche, Semikolons |
 | PASSIV | Passivlastigkeit, Nominalstil, Stellen die durch Aktiv gewinnen |
 | ABBILDUNGEN | Jede Figure/Tabelle im Text referenziert und davor erwähnt? |
 | GRAMMATIK | Kommasetzung, Genus, Kasus, Subjekt-Verb-Kongruenz |
@@ -226,7 +226,28 @@ In akademischem Text sind Klammerexzesse ein Zeichen schlechter Integration
 von Nebenpunkten — besser als Nebensatz oder Fußnote.
 Maximal 5 Instanzen.
 
-### D) Listenmissbrauch
+### D) Gedankenstriche im Satz
+**Stilregel:** Kein Satz soll einen Gedankenstrich-Einschub verwenden (`--`).
+Einschübe mit `X -- Y -- Z` sind durch Umformulierung zu ersetzen:
+entweder durch einen Relativsatz, einen eigenständigen Satz oder Klammern
+(wenn der Einschub kurz und rein ergänzend ist).
+
+Suche alle Sätze mit `--`-Einschüben im Fließtext (nicht in Tabellen, nicht in
+verbatim-Blöcken, nicht in Abschnittsintros als Listenersatz).
+Für jede Stelle: Vorher → konkreter Nachher-Vorschlag ohne Gedankenstrich.
+Maximal 15 Instanzen mit Datei + Zeile.
+
+### E) Semikolons
+**Stilregel:** Kein Semikolon (`;`) im Fließtext — jeder Semikolon-Satz soll
+in zwei eigenständige Sätze aufgeteilt werden.
+Ausnahmen: Semikolons in LaTeX-Code, in Tabellenzellen und in \begin{itemize}-Einträgen
+sind akzeptabel.
+
+Suche alle Semikolons im Fließtext (Satzebene, nicht in Code/Tabellen).
+Für jede Stelle: Vorher → Nachher als zwei Sätze.
+Maximal 15 Instanzen mit Datei + Zeile.
+
+### F) Listenmissbrauch
 Suche \begin{itemize}-Listen mit Einträgen die so kurz sind (< 5 Wörter),
 dass sie besser als einfache Aufzählung im Fließtext stehen würden.
 Oder Listen mit nur 2 Punkten die kein eigenes Environment brauchen.
