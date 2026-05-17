@@ -112,7 +112,7 @@ Ticker-Lifecycle ab (vgl. Abschnitt~\ref{status-lifecycle-und-betriebsmodi}). Dr
 (\texttt{ix\_ticker\_match\_status}, \texttt{ix\_ticker\_match\_phase},
 \texttt{ix\_ticker\_event\_id}) optimieren die häufigsten Abfragen:
 publizierte Einträge je Spiel, Phase-Filter und den
-Deduplizierungs-Check per Event. Das Status-Enum wird als nicht-nativ gespeichert (\texttt{native\_enum=False}), damit Migrationen ohne PostgreSQL-seitige Enum-Typ-Änderungen auskommen — solche Änderungen würden sonst eine exklusive Tabellensperre erfordern.
+Deduplizierungs-Check per Event. Das Status-Enum wird als nicht-nativ gespeichert (\texttt{native\_enum=False}), damit Migrationen ohne PostgreSQL-seitige Enum-Typ-Änderungen auskommen -- solche Änderungen würden sonst eine exklusive Tabellensperre erfordern.
 
 Das JSONB-Feld \texttt{synthetic\_events.data} speichert kontextabhängig strukturierte Ereignisdaten, deren Schema je nach \texttt{type} variiert. Beispiel für den Typ \texttt{prematch\_head\_to\_head}:
 
@@ -250,7 +250,7 @@ Aufrufkontext festlegt (\texttt{draft} im Co-op-Modus,
 \subsection{LLM-Service: Prompt-Aufbau und
 Provider-Dispatch}\label{llm-service-prompt-aufbau-und-provider-dispatch}
 
-Der \texttt{LLMService} ist eine single-class-Implementierung, die beim
+Der \texttt{ticker\_service} delegiert die eigentliche Textgenerierung an den \texttt{LLMService}, der als single-class-Implementierung, die beim
 Initialisieren den passenden Client instanziiert und über ein
 Dispatch-Dictionary aufruft:
 
@@ -543,7 +543,7 @@ der Datenbank gespeicherten \texttt{ticker\_mode} und schreibt
 Backend zurück; Optimistic-Updates vermeiden wahrnehmbare Latenz beim
 Umschalten. Für die Modusumschaltung registriert \texttt{useTickerMode} die Shortcuts \texttt{Ctrl+1} / \texttt{Ctrl+2} / \texttt{Ctrl+3}; im Co-op-Modus kommen \texttt{TAB} (acceptDraft) und \texttt{ESC} (rejectDraft) als Keyboard-Event-Listener hinzu, die bei Moduswechsel automatisch aktualisiert werden.
 
-Im Auto-Modus existieren zwei parallele Automatisierungspfade: Der primäre Pfad verläuft über n8n, das \texttt{auto\_publish=True} an den Backend-Endpunkt übergibt, woraufhin der Eintrag direkt mit \texttt{status=published} angelegt wird. Der sekundäre Pfad ist \texttt{useAutoPublisher} im Frontend: Dieser Hook pollt die Draft-Queue und publiziert neu eintreffende Entwürfe unmittelbar — als Fallback für verzögerte n8n-Webhooks oder bei direkter Modusumschaltung im Frontend ohne n8n-Neustart. Die Deduplizierungsprüfung per \texttt{event\_id} verhindert Doppelveröffentlichungen auf beiden Pfaden.
+Im Auto-Modus existieren zwei parallele Automatisierungspfade: Der primäre Pfad verläuft über n8n, das \texttt{auto\_publish=True} an den Backend-Endpunkt übergibt, woraufhin der Eintrag direkt mit \texttt{status=published} angelegt wird. Der sekundäre Pfad ist \texttt{useAutoPublisher} im Frontend: Dieser Hook pollt die Draft-Queue und publiziert neu eintreffende Entwürfe unmittelbar -- als Fallback für verzögerte n8n-Webhooks oder bei direkter Modusumschaltung im Frontend ohne n8n-Neustart. Die Deduplizierungsprüfung per \texttt{event\_id} verhindert Doppelveröffentlichungen auf beiden Pfaden.
 
 \begin{figure}[H]
 \centering
@@ -628,7 +628,7 @@ Die Implementierung setzt das in Abschnitt~\ref{qualitätssicherungskonzept} bes
 
 \textbf{Backend (pytest):} API-Integrationstests prüfen alle Endpunkte gegen eine echte PostgreSQL-Testinstanz mit transaktionalem Rollback; nach jedem Test wird die Datenbank auf den Ausgangszustand zurückgesetzt, sodass Tests voneinander isoliert und in beliebiger Reihenfolge ausführbar sind. Unit-Tests decken Services, Repositories und Utility-Funktionen ab. Der Verzicht auf einen Datenbank-Mock ist bewusst: Mock-Implementierungen riskieren Divergenzen zum realen Schema, die gerade bei Schemaänderungen während der Entwicklung unbemerkt bleiben.
 
-\textbf{End-to-End (Playwright):} Browser-seitige Smoke-Tests validieren grundlegende Nutzerinteraktionen — darunter ein responsiver Mobile-Test mit Viewport 375\,×\,812 (iPhone~SE) als Regressionsschutz für die Tab-Navigation (N5).
+\textbf{End-to-End (Playwright):} Browser-seitige Smoke-Tests validieren grundlegende Nutzerinteraktionen -- darunter ein responsiver Mobile-Test mit Viewport 375\,×\,812 (iPhone~SE) als Regressionsschutz für die Tab-Navigation (N5).
 
 Ergänzend enthält \texttt{evaluation\_metrics.py} statistische Hilfsfunktionen (Cliff's Delta, Bootstrap-KI, Cohen's Kappa u.\,a.) als Evaluationsinfrastruktur für die KI-Textbewertung. Testmetriken, Coverage-Kennzahlen und TypeScript-Typsicherheitswerte sind in Abschnitt~\ref{technische-qualituxe4tssicherung} dokumentiert.
 
@@ -637,7 +637,7 @@ Ergänzend enthält \texttt{evaluation\_metrics.py} statistische Hilfsfunktionen
 
 Das Deployment setzt das in Abschnitt~\ref{deployment-konzept} beschriebene Konzept als produktiv erreichbare Infrastruktur um. Alle Dienste werden aus demselben Repository-Branch (\texttt{deploy/render-v2}) betrieben.
 
-Das \textbf{FastAPI-Backend} läuft als Docker-Container auf Render.com (Free-Tier Web Service, Region Oregon/US West); die technologische Einordnung von Docker findet sich in Abschnitt~\ref{cloud-deployment}. Das Docker-Image basiert auf \texttt{python:3.11-slim}; Abhängigkeiten werden aus \texttt{requirements.txt} installiert, der Startbefehl startet Uvicorn als ASGI-Server. Render deployt automatisch bei jedem Push auf den konfigurierten Branch; Konfiguration und Zugangsdaten — Datenbankverbindung, OpenRouter-API-Key, CORS-Whitelist — werden ausschließlich als Umgebungsvariablen injiziert.
+Das \textbf{FastAPI-Backend} läuft als Docker-Container auf Render.com (Free-Tier Web Service, Region Oregon/US West); die technologische Einordnung von Docker findet sich in Abschnitt~\ref{cloud-deployment}. Das Docker-Image basiert auf \texttt{python:3.11-slim}; Abhängigkeiten werden aus \texttt{requirements.txt} installiert, der Startbefehl startet Uvicorn als ASGI-Server. Render deployt automatisch bei jedem Push auf den konfigurierten Branch; Konfiguration und Zugangsdaten -- Datenbankverbindung, OpenRouter-API-Key, CORS-Whitelist -- werden ausschließlich als Umgebungsvariablen injiziert.
 
 Das \textbf{React-Frontend} wird als statische Seite über das Render-CDN ausgeliefert. Der Build-Prozess führt \texttt{npm run build} aus und deployt das \texttt{build/}-Verzeichnis; Content-Hashing stellt sicher, dass Assets versioniert ausgeliefert und unbegrenzt gecacht werden können.
 

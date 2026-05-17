@@ -18,7 +18,7 @@ Die Architektur orientiert sich an der klassischen Drei-Schicht-Architektur, mod
 
 Die \textbf{Integrationsschicht} wird durch n8n realisiert und bildet die Schnittstelle zu externen Datenquellen. Sie bindet Football-API, ScorePlay und Social-Feeds an, normalisiert die Rohdaten und übergibt sie entweder direkt in die Datenbank oder über REST-Endpunkte an die Anwendungsschicht. Die Kapselung der gesamten Integrationslogik in n8n ermöglicht Workflow-Anpassungen, ohne den Anwendungskern zu verändern.
 
-Die \textbf{Anwendungsschicht} basiert auf FastAPI (Python) und PostgreSQL und erfüllt drei Kernaufgaben: REST-Schnittstellen bereitzustellen, Zustandsübergänge der Ticker-Einträge zu verwalten sowie den Großteil der KI-Generierungsschritte zu orchestrieren und alle Domänendaten konsistent zu speichern.
+Die \textbf{Anwendungsschicht} basiert auf \texttt{FastAPI} (Python) und PostgreSQL und erfüllt drei Kernaufgaben: REST-Schnittstellen bereitzustellen, Zustandsübergänge der Ticker-Einträge zu verwalten sowie den Großteil der KI-Generierungsschritte zu orchestrieren und alle Domänendaten konsistent zu speichern.
 
 Die \textbf{Präsentationsschicht} ist als mandantenfähiges White-Label-Frontend in React und TypeScript realisiert. Sie deckt den vollständigen Redaktionsworkflow von der Spielauswahl über Sichtung und Bearbeitung bis zur Publikation ab und ist über Instanz, Stil, Sprache und Branding konfigurierbar. Technisch kombiniert sie REST-basiertes Polling für Ticker- und Spieldaten mit einem WebSocket-Kanal für latenzkritische Medienupdates: Ticker- und Matchdaten tolerieren eine höhere Latenz und profitieren vom stabileren Polling-Modell, während Mediendaten den persistenten WebSocket-Kanal nutzen.
 
@@ -121,11 +121,11 @@ Eng damit verknüpft ist das Feld \texttt{ticker\_mode} in \texttt{matches}: Es 
 
 \section{Backend-Konzeption}\label{backend-konzeption}
 
-Die Backend-Konzeption legt die Architekturentscheidungen für das FastAPI-Backend fest. Sie gliedert sich in Framework-Wahl (Abschnitt~\ref{framework-wahl}), Interne Schichtstruktur (Abschnitt~\ref{interne-schichtstruktur}), API-Design und Endpunktstrategie (Abschnitt~\ref{api-design-und-endpunktstrategie}), Asynchronität und Robustheit (Abschnitt~\ref{asynchronituxe4t-nebenluxe4ufigkeit-und-performance}) sowie das Qualitätssicherungskonzept (Abschnitt~\ref{qualitätssicherungskonzept}).
+Die Backend-Konzeption legt die Architekturentscheidungen für das \texttt{FastAPI}-Backend fest. Sie gliedert sich in Framework-Wahl (Abschnitt~\ref{framework-wahl}), Interne Schichtstruktur (Abschnitt~\ref{interne-schichtstruktur}), API-Design und Endpunktstrategie (Abschnitt~\ref{api-design-und-endpunktstrategie}), Asynchronität und Robustheit (Abschnitt~\ref{asynchronituxe4t-nebenluxe4ufigkeit-und-performance}) sowie das Qualitätssicherungskonzept (Abschnitt~\ref{qualitätssicherungskonzept}).
 
 \subsection{Framework-Wahl}\label{framework-wahl}
 
-Als Backend-Framework wurde FastAPI gewählt (vgl. Abschnitt~\ref{backend-framework-und-persistenzschicht}). Für diese Entscheidung sprechen drei systemspezifische Eigenschaften: FastAPIs native Unterstützung für asynchrone I/O über Pythons \texttt{asyncio} ermöglicht die parallele Verarbeitung von LLM-Aufrufen, externen API-Abfragen und Medienverarbeitung ohne Worker-Blockierung. Die automatisch generierte OpenAPI-Spezifikation vereinfacht die n8n-Integration erheblich, da Webhook-Endpunkte maschinenlesbar beschrieben sind. Zudem reduziert die enge Pydantic-Integration Schnittstellenfehler durch typisierte Validierung aller Eingaben zwischen Frontend, Backend und n8n. Die Datenbankschicht setzt auf synchrones SQLAlchemy: Da Datenbankoperationen im vorliegenden System kurzläufig sind, würde ein asynchrones ORM Komplexität ohne messbaren Latenz-Vorteil hinzufügen. Flask als Alternative schied aus, da es keine native ASGI-Unterstützung und keine automatische OpenAPI-Generierung bietet, die für die n8n-Integration essentiell ist; Django hätte eine höhere Einstiegskomplexität ohne messbaren Mehrwert bedeutet, da seine ORM- und Templating-Features im vorliegenden API-only-Backend ungenutzt geblieben wären.
+Als Backend-Framework wurde \texttt{FastAPI} gewählt (vgl. Abschnitt~\ref{backend-framework-und-persistenzschicht}). Für diese Entscheidung sprechen drei systemspezifische Eigenschaften: \texttt{FastAPI}s native Unterstützung für asynchrone I/O über Pythons \texttt{asyncio} ermöglicht die parallele Verarbeitung von LLM-Aufrufen, externen API-Abfragen und Medienverarbeitung ohne Worker-Blockierung. Die automatisch generierte OpenAPI-Spezifikation vereinfacht die n8n-Integration erheblich, da Webhook-Endpunkte maschinenlesbar beschrieben sind. Zudem reduziert die enge Pydantic-Integration Schnittstellenfehler durch typisierte Validierung aller Eingaben zwischen Frontend, Backend und n8n. Die Datenbankschicht setzt auf synchrones SQLAlchemy: Da Datenbankoperationen im vorliegenden System kurzläufig sind, würde ein asynchrones ORM Komplexität ohne messbaren Latenz-Vorteil hinzufügen. Die Abgrenzung zu Flask und Django ist in Abschnitt~\ref{backend-framework-und-persistenzschicht} begründet.
 
 \subsection{Interne Schichtstruktur}\label{interne-schichtstruktur}
 
@@ -151,7 +151,7 @@ Für den Live-Betrieb ist das Backend auf kontrollierte Degradation ausgelegt: B
 
 \subsection{Qualitätssicherungskonzept}\label{qualitätssicherungskonzept}
 
-Die Qualitätssicherung folgt dem Testpyramiden-Modell nach Cohn (2009): Schnelle, granulare Unit-Tests bilden die Basis; Integrationstests prüfen das Zusammenspiel über Komponentengrenzen; eine schlanke E2E-Schicht validiert kritische Nutzerpfade im Browser. Das Verhältnis ist kostenbewusst gestaltet — teure E2E-Tests decken nur Regressionsrisiken mit hoher Nutzerauswirkung ab, während die eigentliche Logik über Unit- und API-Tests gesichert ist.
+Die Qualitätssicherung folgt dem Testpyramiden-Modell nach Cohn (2009): Schnelle, granulare Unit-Tests bilden die Basis; Integrationstests prüfen das Zusammenspiel über Komponentengrenzen; eine schlanke E2E-Schicht validiert kritische Nutzerpfade im Browser. Das Verhältnis ist kostenbewusst gestaltet -- teure E2E-Tests decken nur Regressionsrisiken mit hoher Nutzerauswirkung ab, während die eigentliche Logik über Unit- und API-Tests gesichert ist.
 
 Das Repository-Pattern (vgl. Abschnitt~\ref{interne-schichtstruktur}) ist architektonische Voraussetzung für die Backend-Testbarkeit: Die Trennung von Router, Service und Repository erlaubt es, einzelne Schichten isoliert zu testen. API-Integrationstests nutzen eine transaktionale PostgreSQL-Testinstanz mit Rollback nach jedem Test, sodass Tests voneinander unabhängig und reproduzierbar sind. Auf einen Datenbank-Mock wurde bewusst verzichtet, da Mock-Implementierungen Divergenzen zu produktiven Schemaänderungen riskieren. Das Frontend wird auf Utility-Ebene und Komponentenebene getestet; TypeScript-Typsicherheit ergänzt die Laufzeittests als statische Analyseschicht. Continuous Integration ist im Rahmen dieser Arbeit bewusst ausgeklammert; die Einordnung als Limitation und Erweiterungspfad ist in Abschnitt~\ref{kritische-reflexion} dokumentiert.
 
@@ -160,15 +160,11 @@ Für die Testtool-Wahl gelten zwei konkrete Entscheidungen: \textbf{Jest} wurde 
 
 \section{Datenbankkonzeption}\label{datenbankkonzeption}
 
-Die Datenbankkonzeption legt das Persistenzmodell und das Schemadesign des Systems fest. Sie gliedert sich in die Datenbankwahl (Abschnitt~\ref{datenbankwahl}) und die Schemadesign-Prinzipien (Abschnitt~\ref{schemadesign-prinzipien}).
+Die Datenbankkonzeption legt das Persistenzmodell und das Schemadesign des Systems fest. Als Datenbanksystem wurde PostgreSQL gewählt: Die Domänendaten sind stark strukturiert -- Fremdschlüsselbeziehungen zwischen Teams, Wettbewerben, Spielen, Events und Ticker-Einträgen sind klar definiert und referenziell integer zu halten -- was ein relationales Modell gegenüber dokumentenorientierten Alternativen begünstigt, die auf deklarative Join-Abfragen und striktes Fremdschlüssel-Constraint-Enforcement verzichten (vgl. Abschnitt~\ref{backend-framework-und-persistenzschicht}).
 
-\subsection{Datenbankwahl}\label{datenbankwahl}
+\subsection{Schemadesign-Prinzipien}\label{schemadesign-prinzipien}\label{datenbankwahl}
 
-Als Datenbanksystem wurde PostgreSQL gewählt: Die Domänendaten sind stark strukturiert — Fremdschlüsselbeziehungen zwischen Teams, Wettbewerben, Spielen, Events und Ticker-Einträgen sind klar definiert und referenziell integer zu halten — was ein relationales Modell gegenüber dokumentenorientierten Alternativen begünstigt, die auf deklarative Join-Abfragen und striktes Fremdschlüssel-Constraint-Enforcement verzichten.
-
-\subsection{Schemadesign-Prinzipien}\label{schemadesign-prinzipien}
-
-Das Schema folgt einem hybriden Entwurfsansatz aus strukturierter Normalisierung und gezielter Schemaflexibilität. Abbildung~\ref{fig:er-diagramm} zeigt die zentralen Entitäten und ihre Beziehungen; Tabellen ohne FK-Bezug (\texttt{media\_queue}, \texttt{style\_references}, \texttt{settings}) sind nicht abgebildet — \texttt{style\_references} dient als Few-Shot-Datenquelle der LLM-Pipeline, \texttt{media\_queue} wird über die Media-Endpunkte verwaltet.
+Das Schema folgt einem hybriden Entwurfsansatz aus strukturierter Normalisierung und gezielter Schemaflexibilität. Abbildung~\ref{fig:er-diagramm} zeigt die zentralen Entitäten und ihre Beziehungen; Tabellen ohne FK-Bezug (\texttt{media\_queue}, \texttt{style\_references}, \texttt{settings}) sind nicht abgebildet -- \texttt{style\_references} dient als Few-Shot-Datenquelle der LLM-Pipeline, \texttt{media\_queue} wird über die Media-Endpunkte verwaltet.
 
 \begin{figure}[H]
   \centering
@@ -178,11 +174,13 @@ Das Schema folgt einem hybriden Entwurfsansatz aus strukturierter Normalisierung
 \end{figure}
 
 \begin{itemize}\tightlist
-\item \textbf{Normalisierte Kernentitäten:} Zentrale Domänenobjekte wie \texttt{teams}, \texttt{matches}, \texttt{events}, \texttt{ticker\_entries}, \texttt{players} und \texttt{competitions} sind normalisiert modelliert (vgl. Codd 1970), sodass Redundanzen minimiert sowie Integrität und Auswertbarkeit im Live-Betrieb stabil bleiben.
-\item \textbf{Gezielter JSONB-Einsatz:} JSONB-Felder werden nur dort verwendet, wo sich Strukturen dynamisch ändern oder kontextabhängig sind -- etwa das Feld \texttt{synthetic\_events.data} sowie Kontextfelder in \texttt{matches}. Statistiktabellen sind dagegen über explizite Spalten modelliert, um konsistente Abfragen und robuste Aggregationen zu ermöglichen.
+\item \textbf{Normalisierte Kernentitäten:} Das Schema modelliert zentrale Domänenobjekte wie \texttt{teams}, \texttt{matches}, \texttt{events}, \texttt{ticker\_entries}, \texttt{players} und \texttt{competitions} normalisiert (vgl. Codd 1970), um Redundanzen zu minimieren sowie Integrität und Auswertbarkeit im Live-Betrieb stabil zu halten.
+\item \textbf{Gezielter JSONB-Einsatz:} JSONB-Felder kommen nur dort zum Einsatz, wo sich Strukturen dynamisch ändern oder kontextabhängig sind -- etwa das Feld \texttt{synthetic\_events.data} sowie Kontextfelder in \texttt{matches}. Statistiktabellen sind dagegen über explizite Spalten modelliert, um konsistente Abfragen und robuste Aggregationen zu ermöglichen.
 \item \textbf{Schlüsselstrategie:} Stammdaten-Entitäten (Teams, Wettbewerbe, Spielpläne) kombinieren numerische Primärschlüssel für performante Joins mit einem UUID-Feld als stabilem externen Referenzschlüssel. Ereignisentitäten (Events, Spieler) verwenden den Integer-\texttt{external\_id} der Football-API als externen Verweis.
 \item \textbf{Upsert-Strategie:} Wiederholte Imports führen durch Unique-Constraints nicht zu unkontrollierten Duplikaten: Stammdaten-Entitäten verwenden \texttt{ON CONFLICT (external\_id) DO UPDATE}; Ereignisentitäten setzen \texttt{ON CONFLICT DO NOTHING}, da bereits persistierte Events unverändert bleiben sollen. Lösch- und Nullsetz-Strategien halten abhängige Daten konsistent und bewahren fachlich relevante Historie.
 \end{itemize}
+
+Das persistierte Datenmodell bildet die Grundlage für die darüberliegende Workflow-Schicht, die alle Datenimporte und Generierungsprozesse orchestriert.
 
 \section{Workflow-Konzeption (n8n)}\label{workflow-konzeption-n8n}
 
@@ -194,7 +192,7 @@ Die Workflow-Schicht ist als entkoppelte Orchestrierungsebene zwischen externen 
 
 \subsection{Workflow-Muster}\label{workflow-muster}
 
-Die 17 Workflows gliedern sich in zwei strukturell unterschiedliche Muster: Event-basierte Generierungs-Workflows prüfen zunächst, ob Ereignisdaten bereits persistiert sind, und triggern die LLM-Pipeline nur bei neuen Einträgen — ein Idempotenz-Mechanismus, der Mehrfachaufrufe desselben Events ohne Duplikate verarbeitet. Zusammenfassungs- und Monitoring-Workflows folgen einem direkteren Pfad und rufen den LLM-Dienst ohne vorherigen Datenbankabgleich auf.
+Die 17 Workflows gliedern sich in zwei strukturell unterschiedliche Muster: Event-basierte Generierungs-Workflows prüfen zunächst, ob Ereignisdaten bereits persistiert sind, und triggern die LLM-Pipeline nur bei neuen Einträgen -- ein Idempotenz-Mechanismus, der Mehrfachaufrufe desselben Events ohne Duplikate verarbeitet. Zusammenfassungs- und Monitoring-Workflows folgen einem direkteren Pfad und rufen den LLM-Dienst ohne vorherigen Datenbankabgleich auf.
 
 \subsection{Workflow-Klassen}\label{workflow-klassen}
 
@@ -255,13 +253,13 @@ Als Standardmodell im Deployment wurde \textbf{Gemini 2.0 Flash Lite} über Open
 \item \textbf{Kontextfenster:} Das Modell unterstützt bis zu 1~Million~Token, sodass umfangreiche Pre-Match-Kontextinformationen und mehrere Few-Shot-Referenzen ohne Abschneidung eingebunden werden können.
 \end{itemize}
 
-Das Backend implementiert eine \textbf{Fallback-Kette}: Beim Start wird in fester Prioritätsreihenfolge der erste verfügbare Provider aktiviert — von OpenRouter über weitere kommerzielle Anbieter bis zu einem Mock-Provider, der die Lauffähigkeit ohne API-Key für Entwicklung und Tests sichert. Die konkreten Provider und Reihenfolge sind in Abschnitt~\ref{llm-service-prompt-aufbau-und-provider-dispatch} dokumentiert.
+Das Backend implementiert eine \textbf{Fallback-Kette}: Beim Start wird in fester Prioritätsreihenfolge der erste verfügbare Provider aktiviert -- von OpenRouter über weitere kommerzielle Anbieter bis zu einem Mock-Provider, der die Lauffähigkeit ohne API-Key für Entwicklung und Tests sichert. Die konkreten Provider und Reihenfolge sind in Abschnitt~\ref{llm-service-prompt-aufbau-und-provider-dispatch} dokumentiert.
 
 
 
 \subsection{Prompt-Engineering-Strategie}\label{prompt-engineering-strategie}
 
-Die in Abschnitt~\ref{linguistische-anforderungen-an-die-textgenerierung} hergeleiteten Merkmale des Liveticker-Genres — konzeptionelle Mündlichkeit, Ellipsen-Syntax, Präsenstempus, Graphostilistik und direkte Adressierung — definieren das Zielformat, auf das das LLM konditioniert wird; der Regelblock des Prompts operationalisiert diese Vorgaben als explizite Modellanweisungen.
+Die in Abschnitt~\ref{linguistische-anforderungen-an-die-textgenerierung} hergeleiteten Merkmale des Liveticker-Genres -- konzeptionelle Mündlichkeit, Ellipsen-Syntax, Präsenstempus, Graphostilistik und direkte Adressierung -- definieren das Zielformat, auf das das LLM konditioniert wird; der Regelblock des Prompts operationalisiert diese Vorgaben als explizite Modellanweisungen.
 
 Die Generierung verwendet ein modulares Few-Shot-Prompting mit sechs dynamisch zusammengesetzten Bausteinen (Rolleninstruktion, Stilinstruktion, Faktenblock, Kontextblock, Few-Shot-Block und Regelblock), deren Zusammenspiel Abbildung~\ref{fig:prompt-aufbau} zeigt. Die Stilinstruktion parametrisiert eines von drei Stilprofilen: \textbf{neutral} (sachlicher, unparteiischer Reporter-Stil), \textbf{euphorisch} (leidenschaftlicher Fan-Stil, situationsadaptiv je nach Spielstand) und \textbf{kritisch} (analytischer Kommentator-Stil mit expliziter Fehlerbennenung).
 
@@ -300,11 +298,11 @@ Die Modusumschaltung ist mit Bestätigungsdialog und visueller Rückmeldung ausg
 
 Das System ist als Cloud-native Anwendung konzipiert, die auf PaaS-Infrastruktur (vgl. Abschnitt~\ref{cloud-deployment}) ohne eigene Serververwaltung betrieben werden kann. Das Deployment-Modell folgt dem Stateless-Design-Prinzip: Backend und Frontend werden als eigenständige Dienste deployt und teilen keinen prozesslokalen Zustand; persistente Daten liegen vollständig in einer extern verwalteten Datenbankinstanz.
 
-Das FastAPI-Backend wird als Docker-Container auf Render.com deployt; das React-Frontend als statische Seite über das Render-CDN. Render ermöglicht Deployments direkt aus einem definierten Git-Branch und injiziert Konfiguration und Zugangsdaten ausschließlich als Umgebungsvariablen, sodass keine Secrets im Repository verbleiben. Die Datenbankschicht nutzt PostgreSQL als Managed Service über Supabase: Diese Auslagerung entlastet den Evaluationsbetrieb von Datenbankadministration (Backups, Patches, Verbindungspooling) und erlaubt die Integration über eine standardisierte externe Connection-URL, ohne die Portabilität einzuschränken.
+Das \texttt{FastAPI}-Backend wird als Docker-Container auf Render.com deployt; das React-Frontend als statische Seite über das Render-CDN. Render ermöglicht Deployments direkt aus einem definierten Git-Branch und injiziert Konfiguration und Zugangsdaten ausschließlich als Umgebungsvariablen, sodass keine Secrets im Repository verbleiben. Die Datenbankschicht nutzt PostgreSQL als Managed Service über Supabase: Diese Auslagerung entlastet den Evaluationsbetrieb von Datenbankadministration (Backups, Patches, Verbindungspooling) und erlaubt die Integration über eine standardisierte externe Connection-URL, ohne die Portabilität einzuschränken.
 
 Die n8n-Workflow-Instanz ist für den Evaluationszeitraum lokal betrieben und über einen \texttt{ngrok}-Tunnel für eingehende Webhooks erreichbar. Diese Lösung ist bewusst auf den Evaluationszeitraum beschränkt: Sie eliminiert Hosting-Kosten und erlaubt schnelle Workflow-Iteration ohne Redeploy-Zyklen; die Limitationen gegenüber einem Produktivbetrieb sind in Abschnitt~\ref{technische-einordnung} diskutiert.
 
-Mit dem Deployment-Konzept ist die systemweite Konzeption des Artefakts abgeschlossen. Die erarbeiteten Konzepte — Drei-Schichten-Architektur, Datenmodell, n8n-ETL-Workflows, LLM-Pipeline, React-Frontend, Deployment-Topologie und Teststrategie — bilden in ihrer Gesamtheit die konzeptionelle Grundlage für die Implementierung. Kapitel~\ref{implementierung} dokumentiert die technische Realisierung und zeigt, wie die in Kapitel~\ref{motivation-und-anforderungen} definierten Anforderungen in lauffähigen, getesteten Code überführt wurden.
+Mit dem Deployment-Konzept ist die systemweite Konzeption des Artefakts abgeschlossen. Die erarbeiteten Konzepte -- Drei-Schichten-Architektur, Datenmodell, n8n-ETL-Workflows, LLM-Pipeline, React-Frontend, Deployment-Topologie und Teststrategie -- bilden in ihrer Gesamtheit die konzeptionelle Grundlage für die Implementierung. Kapitel~\ref{implementierung} dokumentiert die technische Realisierung und zeigt, wie die in Kapitel~\ref{motivation-und-anforderungen} definierten Anforderungen in lauffähigen, getesteten Code überführt wurden.
 
 
 

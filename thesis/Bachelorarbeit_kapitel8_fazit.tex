@@ -1,13 +1,13 @@
 \chapter{Fazit und Ausblick}\label{fazit-und-ausblick}
 
-Dieses Kapitel schließt die Arbeit ab. Es umfasst die Zusammenfassung der Ergebnisse (Abschnitt~\ref{zusammenfassung-der-ergebnisse}), die Beantwortung der Forschungsfrage (Abschnitt~\ref{beantwortung-der-forschungsfrage}), einen strukturierten Ausblick auf kurzfristige, mittelfristige und langfristige Erweiterungen (Abschnitt~\ref{ausblick}) sowie ein abschließendes Schlusswort (Abschnitt~\ref{schlusswort}).
+Die Diskussion in Kapitel~\ref{diskussion} hat die Evaluationsbefunde eingeordnet und die Grenzen des Systems transparent gemacht. Dieses Kapitel schließt die Arbeit ab. Es umfasst die Zusammenfassung der Ergebnisse (Abschnitt~\ref{zusammenfassung-der-ergebnisse}), die Beantwortung der Forschungsfrage (Abschnitt~\ref{beantwortung-der-forschungsfrage}), einen strukturierten Ausblick auf kurzfristige, mittelfristige und langfristige Erweiterungen (Abschnitt~\ref{ausblick}) sowie ein abschließendes Schlusswort (Abschnitt~\ref{schlusswort}).
 
 
 
 \section{Zusammenfassung der
 Ergebnisse}\label{zusammenfassung-der-ergebnisse}
 
-Die vorliegende Arbeit hat ein hybrides Redaktionssystem für die KI-gestützte Liveticker-Erstellung im Profifußball konzipiert, implementiert und evaluiert. Das System entstand in direkter Kooperation mit der Stackwork GmbH im IT-Bereich von Eintracht Frankfurt. Es löst die drei in Abschnitt~\ref{problemstellung-und-zielsetzung} identifizierten Problemdimensionen (operativer Zeitdruck, Mehrsprachigkeit und White-Label-Bedarf) durch eine dreischichtige Architektur aus Datenbeschaffung (n8n), Anwendungslogik (FastAPI, PostgreSQL) und Präsentation (React, TypeScript); die White-Label-Architektur und die drei Betriebsmodi (manual, coop, auto) bilden die zentralen Designbeiträge.
+Die vorliegende Arbeit hat ein hybrides Redaktionssystem für die KI-gestützte Liveticker-Erstellung im Profifußball konzipiert, implementiert und evaluiert. Das System entstand in direkter Kooperation mit der Stackwork GmbH im IT-Bereich von Eintracht Frankfurt. Es löst die drei in Abschnitt~\ref{problemstellung-und-zielsetzung} identifizierten Problemdimensionen (operativer Zeitdruck, Mehrsprachigkeit und White-Label-Bedarf) durch die in Abschnitt~\ref{schichtenmodell} beschriebene dreischichtige Architektur; die White-Label-Architektur und die drei Betriebsmodi (\texttt{manual}, \texttt{coop}, \texttt{auto}) bilden die zentralen Designbeiträge. Im Sinne des Design Science Research (vgl. Hevner et al.~2004) leistet die Arbeit damit drei explizite Beiträge: einen \textbf{architektonischen} (generisch übertragbare LLM-Redaktionsarchitektur), einen \textbf{methodischen} (reproduzierbare LLM-as-Judge-Evaluationsinfrastruktur) und einen \textbf{praktischen} (White-Label-System für vereinsspezifischen Produktiveinsatz).
 
 \textbf{Technische Ergebnisse.} Die technische Evaluation (Abschnitt~\ref{technische-qualitätssicherung}) belegt eine produktionsnahe Codebasis: 439 automatisierte Tests über drei Schichten (Unit, Integration, E2E), eine TypeScript-Typenabdeckung von 98{,}02\,\% der Frontend-Quelldateien und ein vollständiger Anforderungsabgleich mit allen 24 definierten Anforderungen (vgl.\ Abschnitt~\ref{anforderungsabgleich-soll-ist-vergleich}). Die bewusst ausgeklammerte Authentifizierungsschicht ist als Systembeschränkung in Abschnitt~\ref{kritische-reflexion} eingeordnet.
 
@@ -31,7 +31,7 @@ Verständlichkeit?}
 
 Die Forschungsfrage ist in beiden Teilfragen positiv zu beantworten.
 
-\textbf{Realisierbarkeit:} Das System ist vollständig implementiert und produktionsnah deployt; alle 24 definierten Anforderungen sind erfüllt (vgl.\ Abschnitt~\ref{anforderungsabgleich-soll-ist-vergleich}).
+\textbf{Realisierbarkeit:} Das System ist vollständig implementiert und produktionsnah deployt; 23 der 24 definierten Anforderungen sind vollständig erfüllt (vgl.\ Abschnitt~\ref{anforderungsabgleich-soll-ist-vergleich}). F7 (Mehrsprachige Textgenerierung) ist funktional implementiert und verifiziert; eine qualitative Evaluation der Übersetzungsqualität steht als Folgestudie aus (vgl.\ Abschnitt~\ref{mittelfristige-erweiterungen}).
 
 \textbf{Journalistische Qualität:} Die Textqualität erfüllt die Anforderungen in den Dimensionen Korrektheit (Ø~4{,}6/5) und Verständlichkeit (Ø~4{,}3/5) zuverlässig. Bei der Tonalität ist das Bild differenziert: Neutrale und kritische Stilprofile erzielen stabile Werte; das euphorische Profil zeigt eine systematische Schwäche bei ereignisarmen Event-Typen (LLM-as-Judge Tonalität~2{,}93/5), die das Prompt-Design als priorisierten Verbesserungsbedarf ausweist (vgl.\ Abschnitt~\ref{ausblick}). Als technischer Zusatzbefund zeigen die gemessenen
 Systemlatenzen (Median 859~ms, P95 2\,047~ms, vgl. Abschnitt~\ref{llm-latenz}) ein
@@ -85,6 +85,6 @@ Redaktionssystem den operativen Zeitdruck bei der Liveticker-Erstellung
 bewältigen kann, ohne die redaktionelle Kontrolle aufzugeben. Der
 \texttt{coop}-Modus realisiert das in Abschnitt~\ref{problemstellung-und-zielsetzung} formulierte Zielbild
 eines Systems, in dem „die finale Entscheidungshoheit und publizistische
-Verantwortung beim Menschen verbleiben“.
+Verantwortung beim Menschen verbleiben”. Die White-Label-Architektur adressiert den Bedarf an vereinsspezifischer Identität ohne Systemduplizierung; die mehrsprachige Generierungskomponente legt die technische Grundlage für die Internationalisierung, deren Qualitätssicherung als nächster Schritt aussteht.
 
 Die KI-gestützte Liveticker-Generierung ersetzt den Redakteur nicht; sie reduziert den kognitiven Engpass der simultanen Textproduktion unter Echtzeit-Bedingungen und schafft damit Kapazität für journalistische Kernleistungen: Einordnung, Bewertung und redaktionelle Verantwortung. Die von Constantin Seibt beschriebene „komplette Überforderung" des Liveticker-Autors bleibt eine strukturelle Bedingung des Genres -- das System trägt sie mit, ohne die Entscheidung abzunehmen.
