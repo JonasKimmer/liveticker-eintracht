@@ -130,7 +130,7 @@ Die E2E-Tests decken den \emph{stabilen Kern} der UI ab: initiales Rendern, Fehl
 
 \subsection{TypeScript-Typsicherheit}\label{typescript-typsicherheit}
 
-Das Frontend wurde im Projektverlauf von JavaScript auf TypeScript migriert. Die Migration folgte einem schrittweisen Ansatz von innen nach außen -- beginnend mit dem zentralen Typ-System (\texttt{src/types/index.ts}, Domain-Interfaces, Union-Types) über Contexts bis zu den Komponenten; der \texttt{strict}-Modus ist deaktiviert, um inkrementelle Typsicherheit ohne Entwicklungsstopp zu ermöglichen. Die \texttt{type-coverage}-Metrik (Anteil explizit getypter Ausdrücke an allen Ausdrücken) wurde iterativ gesteigert:
+Das Frontend wurde im Projektverlauf von JavaScript auf TypeScript migriert. Die Migration folgte einem schrittweisen Ansatz von innen nach außen, beginnend mit dem zentralen Typ-System (\texttt{src/types/index.ts}, Domain-Interfaces, Union-Types) über Contexts bis zu den Komponenten. Der \texttt{strict}-Modus ist deaktiviert, um inkrementelle Typsicherheit ohne Entwicklungsstopp zu ermöglichen. Die \texttt{type-coverage}-Metrik (Anteil explizit getypter Ausdrücke an allen Ausdrücken) wurde iterativ gesteigert:
 
 {\def\LTcaptype{none} % do not increment counter
 \begin{longtable}[]{@{}
@@ -174,7 +174,7 @@ Das Evaluationsmodul (\texttt{app/utils/evaluation\_metrics.py}) stellt sechs Me
 \item \textbf{Qualitätsaggregation} (\texttt{aggregate\_quality\_by\_group}): Mittelwerte je Bewertungsdimension, gruppiert nach Schlüssel (z.~B. Modus oder Modell).
 \end{itemize}
 
-Alle sechs Funktionen sind durch 17 Unit-Tests abgesichert (\textasciitilde96\,\% Coverage). Das Bootstrap-Konfidenzintervall wurde in der Hauptevaluation (N~=~40) nicht eingesetzt, da N~=~40 für eine stabile Bootstrap-Schätzung je Event-Typ und Stilprofil zu klein ist; eine Folgestudie mit N~$\geq$~100 je Gruppe würde diese Methode produktiv einsetzen können. Cliff's Delta wurde ebenfalls nicht angewendet: Die Stichprobengrößen je Event-Typ (N~$\leq$~12) unterschreiten die für eine belastbare Effektstärken-Schätzung empfohlene Mindestgröße; eine Anwendung auf die Gesamtstichprobe (N~=~40) wäre zwar rechnerisch möglich, würde aber die für die Forschungsfrage zentralen Gruppenstrukturen (Stilprofil, Event-Typ) ignorieren und ist daher für eine Folgestudie mit erweiterter Datenbasis vorgesehen.
+Alle sechs Funktionen sind durch 17 Unit-Tests abgesichert (\textasciitilde96\,\% Coverage). Das Bootstrap-Konfidenzintervall wurde in der Hauptevaluation (N~=~40) nicht eingesetzt, da N~=~40 für eine stabile Bootstrap-Schätzung je Event-Typ und Stilprofil zu klein ist; eine Folgestudie mit N~$\geq$~100 je Gruppe würde diese Methode produktiv einsetzen können. Cliff's Delta wurde ebenfalls nicht angewendet: Die Stichprobengrößen je Event-Typ (N~$\leq$~12) unterschreiten die für eine belastbare Effektstärken-Schätzung empfohlene Mindestgröße. Eine Anwendung auf die Gesamtstichprobe (N~=~40) wäre zwar rechnerisch möglich, würde aber die für die Forschungsfrage zentralen Gruppenstrukturen (Stilprofil, Event-Typ) ignorieren und ist daher für eine Folgestudie mit erweiterter Datenbasis vorgesehen.
 
 \subsection{Modell- und
 Provider-Evaluation}\label{modell--und-provider-evaluation}
@@ -251,7 +251,7 @@ vs.~Eintracht Frankfurt, Md. 11)} \\
 
 Ergänzender Direktvergleich: identisches Event in allen drei Stilen
 (synthetischer Kontext: Eintracht Frankfurt vs.~FC Bayern
-München, 78. Minute, Tor Omar Marmoush; Marmoush war in der Saison 2024/25 aktiver EF-Spieler und wechselte im Januar 2025 zu Manchester City):
+München, 78. Minute, Tor Omar Marmoush, der in der Saison 2024/25 aktiver EF-Spieler war und im Januar 2025 zu Manchester City wechselte):
 
 {\def\LTcaptype{none} % do not increment counter
 \begin{longtable}[]{@{}
@@ -347,7 +347,7 @@ Die folgenden Beispiele illustrieren die typischen Stärken der generierten Text
 \begin{figure}[H]
 \centering
 \includegraphics[width=\textwidth]{frontend_published_entries.png}
-\caption[Publizierter Ticker-Feed im euphorischen Stilprofil]{Publizierter Ticker-Feed im LiveTicker-Editor: KI-generierte Einträge im euphorischen Stilprofil (ef\_whitelabel-Instanz), sortiert nach Spielminute. Sichtbar: Tor-Eintrag mit TOOOOR-Konvention, Karten- und Wechsel-Einträge.}
+\caption[Publizierter Ticker-Feed im euphorischen Stilprofil]{Publizierter Ticker-Feed im euphorischen Stilprofil (ef\_whitelabel-Instanz) mit Tor-, Karten- und Wechsel-Einträgen.}
 \label{fig:frontend-published-entries}
 \end{figure}
 
@@ -466,7 +466,7 @@ Ausblick (Abschnitt~\ref{mittelfristige-erweiterungen}) vorgesehen.
 
 \subsection{Experteninterview-Auswertung}\label{experteninterview-auswertung}
 
-Zur Validierung der Systemeignung im operativen Vereinskontext wurde ein strukturiertes Experteninterview mit einem Digitalverantwortlichen von Eintracht Frankfurt durchgeführt, der für die Weiterentwicklung des digitalen Angebots -- einschließlich des Liveticker-Systems -- zuständig ist (vgl. Abschnitt~\ref{experteninterview-leitfaden}). Das Interview ergänzt die quantitative Evaluation um eine praxisnahe Einschätzung zu Systemeignung, Workflow-Integration und strategischer Zukunftsperspektive.
+Zur Validierung der Systemeignung im operativen Vereinskontext wurde ein strukturiertes Experteninterview mit einem Digitalverantwortlichen von Eintracht Frankfurt durchgeführt, der für die Weiterentwicklung des digitalen Angebots (einschließlich des Liveticker-Systems) zuständig ist (vgl. Abschnitt~\ref{experteninterview-leitfaden}). Das Interview ergänzt die quantitative Evaluation um eine praxisnahe Einschätzung zu Systemeignung, Workflow-Integration und strategischer Zukunftsperspektive.
 
 \paragraph{Methodik}
 Das Interview gliederte sich in einen Anforderungsvalidierungsteil (Produktionsprozess, Mehrsprachigkeit, Stilistik) und einen nach der Live-Demonstration durchgeführten Bewertungsteil (Systemeignung, Moduswahl, Zukunftsperspektive). Die Auswertung erfolgte durch thematische Kategorisierung der Antworten entlang der Fragenblöcke (vgl. Kuckartz 2018).
@@ -474,15 +474,15 @@ Das Interview gliederte sich in einen Anforderungsvalidierungsteil (Produktionsp
 \paragraph{Zentrale Erkenntnisse}
 
 \begin{itemize}\tightlist
-\item \textbf{KI als Unterstützer, nicht Ersatz:} Der Interviewpartner sieht KI im Sportjournalismus klar als Unterstützung für standardisierte, wiederkehrende Abläufe. Für Live-Einträge, die situative Wahrnehmung aus dem Stadion erfordern -- Trainerverhalten, Fanstimmung, unvorhergesehene Ereignisse -- bleibt der Mensch unverzichtbar. KI könne Inspiration geben und Fehler erkennen; redaktionelle Qualität, Tonalität und Eintracht-Sprache seien aber menschliche Aufgaben.
-\item \textbf{Textqualität und Markenwiedererkennung:} Die generierten Texte werden als eher generisch eingestuft. Der vereinseigene Ticker lebt von der Stadionperspektive -- Atmosphäre, Zweikampfverhalten und situative Wahrnehmung der Redakteure lassen sich nicht aus strukturierten Ereignisdaten ableiten. Ohne diesen Kontext riskiert die KI Halluzinationen; vereinstypische Stilelemente allein reichen nicht für authentische Einträge.
+\item \textbf{KI als Unterstützer, nicht Ersatz:} Der Interviewpartner sieht KI im Sportjournalismus klar als Unterstützung für standardisierte, wiederkehrende Abläufe. Für Live-Einträge, die situative Wahrnehmung aus dem Stadion erfordern (Trainerverhalten, Fanstimmung, unvorhergesehene Ereignisse), bleibt der Mensch unverzichtbar. KI könne Inspiration geben und Fehler erkennen. Redaktionelle Qualität, Tonalität und Eintracht-Sprache seien aber menschliche Aufgaben.
+\item \textbf{Textqualität und Markenwiedererkennung:} Die generierten Texte werden als eher generisch eingestuft. Der vereinseigene Ticker lebt von der Stadionperspektive: Atmosphäre, Zweikampfverhalten und situative Wahrnehmung der Redakteure lassen sich nicht aus strukturierten Ereignisdaten ableiten. Ohne diesen Kontext riskiert die KI Halluzinationen. Vereinstypische Stilelemente allein reichen nicht für authentische Einträge.
 \item \textbf{Coop-Modus als realistischer Kompromiss:} Der Coop-Modus wird als sinnvoller und realistischer Betriebsmodus bestätigt: Die KI fungiert als Unterstützer, redaktionelle Kontrolle bleibt erhalten. Ein vollautomatisierter Betrieb würde nicht zum Qualitäts- und Markenverständnis des Vereins passen.
 \item \textbf{Benutzeroberfläche:} Das Interface wird als sehr intuitiv und nutzerfreundlich bewertet. Das bestehende Eintracht-System ist intern komplexer und würde ein Rechtesystem (Rollenverwaltung: wer darf welches Spiel bearbeiten) sowie parallele Redaktionsstreams erfordern.
-\item \textbf{Transparenz und Vereinsidentität:} Transparenz gegenüber Lesern über den KI-Einsatz wird als wichtig erachtet -- insbesondere da Eintracht Frankfurt dieses Thema aktiv adressiert und die Ultras als relevante Stakeholder-Gruppe eine klare Haltung dazu vertreten.
+\item \textbf{Transparenz und Vereinsidentität:} Transparenz gegenüber Lesern über den KI-Einsatz wird als wichtig erachtet, insbesondere da Eintracht Frankfurt dieses Thema aktiv adressiert und die Ultras als relevante Stakeholder-Gruppe eine klare Haltung dazu vertreten.
 \end{itemize}
 
 \paragraph{Methodische Einordnung}
-Das Interview dient im Sinne des Design Science Research als explorative Feldevaluation mit einem primären Domänenexperten (Hevner et al.~2004): Es ergänzt die quantitativen Metriken um die Perspektive des Praxispartners, die durch Scores allein nicht erfassbar ist. Die Stärke dieser Methode liegt nicht in statistischer Generalisierbarkeit, sondern in der domänenspezifischen Tiefe -- ein Digitalverantwortlicher mit Systemkenntnis kann Workflow-Integration, UX-Qualität und strategische Praxistauglichkeit beurteilen, die außerhalb quantitativer Metriken liegen. Als Einschränkung ist das institutionelle Näheverhältnis zwischen Entwickler und Interviewpartner zu berücksichtigen: Der Experte ist Mitarbeiter der Partnerorganisation Eintracht Frankfurt, was einen Gefälligkeitseffekt nicht vollständig ausschließt. Die Erkenntnisse fließen in die Gesamtbewertung in Abschnitt~\ref{beantwortung-der-forschungsfrage} und die vorgeschlagenen Erweiterungen in Abschnitt~\ref{ausblick} ein.
+Das Interview dient im Sinne des Design Science Research als explorative Feldevaluation mit einem primären Domänenexperten (Hevner et al.~2004): Es ergänzt die quantitativen Metriken um die Perspektive des Praxispartners, die durch Scores allein nicht erfassbar ist. Die Stärke dieser Methode liegt nicht in statistischer Generalisierbarkeit, sondern in der domänenspezifischen Tiefe. Ein Digitalverantwortlicher mit Systemkenntnis kann Workflow-Integration, UX-Qualität und strategische Praxistauglichkeit beurteilen, die außerhalb quantitativer Metriken liegen. Als Einschränkung ist das institutionelle Näheverhältnis zwischen Entwickler und Interviewpartner zu berücksichtigen: Der Experte ist Mitarbeiter der Partnerorganisation Eintracht Frankfurt, was einen Gefälligkeitseffekt nicht vollständig ausschließt. Die Erkenntnisse fließen in die Gesamtbewertung in Abschnitt~\ref{beantwortung-der-forschungsfrage} und die vorgeschlagenen Erweiterungen in Abschnitt~\ref{ausblick} ein.
 
 \subsection{Erweiterte Evaluation: LLM-as-Judge-Verfahren}\label{erweiterte-evaluation}
 
@@ -566,7 +566,7 @@ Fehlerrate
 Render-Deploy. & OpenRouter & \texttt{google/gemini-2.0-flash-lite-001}
 & 25 & 836 & 859 & 2\,047 & 0\,\% \\
 Direkt (lokal) & OpenRouter & \texttt{google/gemini-2.0-flash-lite-001}
-& 9 & 942 & 955 & 1.348 & 0\,\% \\
+& 9 & 942 & 955 & 1\,348 & 0\,\% \\
 Mock & --- & regelbasiert (Templates) & 7 & \textless{} 10 & \textless{}
 10 & \textless{} 10 & 0\,\% \\
 \end{longtable}
@@ -576,8 +576,8 @@ Mock & --- & regelbasiert (Templates) & 7 & \textless{} 10 & \textless{}
 
 Die Latenzmessungen für OpenRouter deuten auf eine rechtsschiefe Antwortzeit-Verteilung hin: Render-Messserie zeigt 44\,\%
 der Messungen unter 310 ms (mutmaßlich Gemini-seitige Cache-Treffer) und
-56\,\% zwischen 859 ms und 2.128 ms (Kaltgenerierung), Standardabweichung
-695 ms. Die direkte Messserie (lokal, n\,=\,9) liegt enger zusammen (695--1.348 ms), was auf fehlende Cache-Treffer ohne Render-Warm-up hindeutet. Die bimodale Verteilung ist mutmaßlich auf OpenRouter-seitiges Prompt-Caching zurückzuführen; eine tiefere Diagnose würde OpenRouter-spezifische Latenz-Metriken erfordern, die über die Standard-API nicht zugänglich sind. Ab
+56\,\% zwischen 859\,ms und 2\,128\,ms (Kaltgenerierung), Standardabweichung
+695 ms. Die direkte Messserie (lokal, n\,=\,9) liegt enger zusammen (695--1\,348\,ms), was auf fehlende Cache-Treffer ohne Render-Warm-up hindeutet. Die bimodale Verteilung ist mutmaßlich auf OpenRouter-seitiges Prompt-Caching zurückzuführen. Eine tiefere Diagnose würde OpenRouter-spezifische Latenz-Metriken erfordern, die über die Standard-API nicht zugänglich sind. Ab
 Version \texttt{0005} der Datenbank-Migration wird jeder produktive
 KI-Aufruf mit dem Feld \texttt{generation\_ms} persistiert, das die
 Backend-interne Verarbeitungszeit (Request-Eingang bis DB-Write)
