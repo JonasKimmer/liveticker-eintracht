@@ -33,7 +33,7 @@ Diese Aufteilung setzt das in Abschnitt~\ref{interne-schichtstruktur} konzipiert
 \end{figure}
 
 \texttt{app/main.py} ist der einzige Einstiegspunkt. Er umfasst zwölf Router-Registrierungen: elf Router unter \texttt{/api/v1} sowie den WebSocket-Router \texttt{/ws/media}. Da der Ticker-Bereich intern auf drei Dateien aufgeteilt ist (vgl. Abschnitt~\ref{api-router-endpunktstruktur}), ergeben sich 13 Router-Dateien in \texttt{api/v1/}. Darüber hinaus konfiguriert \texttt{app/main.py}
-CORS-Middleware und bindet statische Dateien (Thumbnail-Cache) ein. Beim Start legt \texttt{Base.metadata.create\_all(bind=engine)} alle Tabellen idempotent an. Schema-Änderungen im Produktionsbetrieb steuert Alembic. Die Datenbankverbindung wird per FastAPI Dependency Injection in jeden Router injiziert: \texttt{core/database.py} stellt einen \texttt{get\_db()}-Generator bereit, der für jede Anfrage eine Session öffnet und am Anfrageende garantiert schließt:
+CORS-Middleware und bindet statische Dateien (Thumbnail-Cache) ein. Beim Start führt ein \texttt{lifespan}-Context-Manager \texttt{alembic upgrade head} aus, sodass ausstehende Migrationen automatisch eingespielt werden, bevor der erste Request eintrifft. Die Datenbankverbindung wird per FastAPI Dependency Injection in jeden Router injiziert: \texttt{core/database.py} stellt einen \texttt{get\_db()}-Generator bereit, der für jede Anfrage eine Session öffnet und am Anfrageende garantiert schließt:
 
 \begin{Shaded}
 \begin{Highlighting}[]
@@ -48,7 +48,7 @@ CORS-Middleware und bindet statische Dateien (Thumbnail-Cache) ein. Beim Start l
 
 Router-Funktionen deklarieren \texttt{db: Session = Depends(get\_db)} und reichen die Session an die Repository-Konstruktoren weiter; kein globaler Session-State entsteht.
 
-Die Anwendung stellt zwei Metaendpunkte bereit:
+Die Anwendung stellt drei Metaendpunkte bereit:
 
 {\def\LTcaptype{none} % do not increment counter
 \begin{longtable}[]{@{}ll@{}}
@@ -59,8 +59,8 @@ Endpunkt & Funktion \\
 \bottomrule\noalign{}
 \endlastfoot
 \texttt{GET\ /} & Statusantwort mit Version (\texttt{0.3.0}) \\
-\texttt{GET\ /health} & Datenbankverbindungscheck
-(\texttt{healthy}/\texttt{degraded}) \\
+\texttt{GET\ /health} & Liveness-Check (gibt immer \texttt{healthy} zurück) \\
+\texttt{GET\ /health/db} & Datenbankverbindungscheck (\texttt{healthy}/\texttt{degraded}) \\
 \end{longtable}
 }
 
@@ -112,21 +112,26 @@ Ticker-Lifecycle ab (vgl. Abschnitt~\ref{status-lifecycle-und-betriebsmodi}). Dr
 (\texttt{ix\_ticker\_match\_status}, \texttt{ix\_ticker\_match\_phase},
 \texttt{ix\_ticker\_event\_id}) optimieren die häufigsten Abfragen:
 publizierte Einträge je Spiel, Phase-Filter und den
-Deduplizierungs-Check per Event. Das Status-Enum wird als nicht-nativ gespeichert (\texttt{native\_enum=False}), damit Migrationen ohne PostgreSQL-seitige Enum-Typ-Änderungen auskommen, da solche Änderungen sonst eine exklusive Tabellensperre erfordern würden.
+Deduplizierungs-Check per Event. Beide Enums (\texttt{status} und \texttt{source}) werden als nicht-nativ gespeichert (\texttt{native\_enum=False}), damit Migrationen ohne PostgreSQL-seitige Enum-Typ-Änderungen auskommen, da solche Änderungen sonst eine exklusive Tabellensperre erfordern würden.
 
-Das JSONB-Feld \texttt{synthetic\_events.data} speichert kontextabhängig strukturierte Ereignisdaten, deren Schema je nach \texttt{type} variiert. Beispiel für den Typ \texttt{prematch\_head\_to\_head}:
+Das JSONB-Feld \texttt{synthetic\_events.data} speichert kontextabhängig strukturierte Ereignisdaten, deren Schema je nach \texttt{type} variiert. Beispiel für den Typ \texttt{pre\_match\_h2h}:
 
 \begin{Shaded}
 \begin{Highlighting}[]
 \NormalTok{\{}
-  \StringTok{"last\_5\_home"}\NormalTok{: }\StringTok{"W W D L W"}\NormalTok{,}
-  \StringTok{"last\_5\_away"}\NormalTok{: }\StringTok{"D W W L D"}\NormalTok{,}
-  \StringTok{"h2h\_last\_3"}\NormalTok{: [\{}\StringTok{"date"}\NormalTok{: }\StringTok{"2024-10-05"}\NormalTok{, }\StringTok{"result"}\NormalTok{: }\StringTok{"2:1"}\NormalTok{\}, ...]}
+  \StringTok{"fixture\_id"}\NormalTok{: 1035443,}
+  \StringTok{"matches"}\NormalTok{: [\{}
+    \StringTok{"date"}\NormalTok{: }\StringTok{"2024-10-05"}\NormalTok{,}
+    \StringTok{"home\_team"}\NormalTok{: }\StringTok{"Eintracht Frankfurt"}\NormalTok{,}
+    \StringTok{"away\_team"}\NormalTok{: }\StringTok{"FC Bayern München"}\NormalTok{,}
+    \StringTok{"goals\_home"}\NormalTok{: 2, }\StringTok{"goals\_away"}\NormalTok{: 1,}
+    \StringTok{"winner"}\NormalTok{: }\StringTok{"Eintracht Frankfurt"}
+  \NormalTok{\}, ...]}
 \NormalTok{\}}
 \end{Highlighting}
 \end{Shaded}
 
-Für jeden Router gibt es eigenständige Pydantic-Schemas für Create-, Update- und Response-Strukturen; alle nutzen \texttt{alias\_generator=to\_camel} für konsistente camelCase-API-Verträge bei Python-internem snake\_case.
+Für jeden Router gibt es eigenständige Pydantic-Schemas für Create-, Update- und Response-Strukturen. Die Stammdaten-Schemas (Match, Event, Team, Competition u.\,a.) nutzen \texttt{alias\_generator=to\_camel} für konsistente camelCase-API-Verträge bei Python-internem snake\_case; Ticker- und Medien-Schemas serialisieren Felder direkt ohne Alias-Konvertierung.
 
 Jede Entität hat ein dediziertes Repository, das alle SQL-Operationen
 kapselt. Alle Repositories erben von
@@ -193,11 +198,11 @@ Endpunkt & Funktion \\
 \endhead
 \bottomrule\noalign{}
 \endlastfoot
-{\small\texttt{POST /api/v1/events}} & Importiert ein Live-Ereignis (n8n-Webhook); löst die LLM-Pipeline aus \\
-{\small\texttt{POST /api/v1/ticker/generate/\{event\_id\}}} & Generiert einen KI-Ticker-Eintrag für ein konkretes Ereignis \\
+{\small\texttt{POST /api/v1/events}} & Erstellt oder aktualisiert ein Spielereignis per Upsert (nach \texttt{sourceId}); n8n Workflow~09 schreibt Ereignisse alternativ direkt per SQL \\
+{\small\texttt{POST /api/v1/ticker/generate/\{event\_id\}}} & Generiert einen KI-Ticker-Eintrag für ein konkretes Ereignis; wird von n8n Workflow~09 nach dem Ereignis-Import aufgerufen \\
 {\small\texttt{PATCH /api/v1/ticker/\{id\}}} & Generisches Update (Text, Status, Stil); dedizierte Shortcuts \texttt{/publish}, \texttt{/reject} für Coop-Flow \\
 {\small\texttt{POST /api/v1/ticker/manual}} & Erstellt einen manuellen Eintrag ohne LLM-Aufruf \\
-{\small\texttt{POST /api/v1/match-status}} & Aktualisiert Spielzustand und Phase; triggert Phasen-Events \\
+{\small\texttt{PATCH /api/v1/matches/\{matchId\}}} & Aktualisiert Spielzustand (\texttt{match\_state}) und Phase (\texttt{match\_phase}); Phasenübergänge steuert n8n Workflow~14 zusätzlich per direktem SQL \\
 \end{longtable}
 }
 
@@ -215,8 +220,9 @@ keine Datenbankabhängigkeit.
 Der Service umfasst vier zentrale Funktionen. \texttt{score\_at\_event()}
 berechnet den Spielstand zum Zeitpunkt eines Torereignisses: Da die
 Football-API den kumulativen Stand liefert, muss der Stand \emph{vor}
-dem aktuellen Event rekonstruiert werden, wobei Eigentore gesondert
-behandelt werden. \texttt{build\_match\_context()} erstellt das
+dem aktuellen Event rekonstruiert werden. Eigentore werden korrekt
+verarbeitet, da API-Football \texttt{team\_id} stets auf den
+Nutznießer des Tores setzt -- auch bei Eigentoren. \texttt{build\_match\_context()} erstellt das
 Kontext-Dictionary für den LLM-Prompt aus Teamnamen, aktuellem Stand,
 Matchzustand, Spielminute und Liga.
 
@@ -293,20 +299,7 @@ Priorität & Provider & Standard-Modell & Fallback \\
 
 Claude Haiku (Priorität 4) wurde als direkter Anthropic-Fallback ohne OpenRouter-Intermediär aufgenommen: Das Modell erzielt bei Kurztext-Aufgaben kosteneffiziente Latenzen und ist für Konfigurationsszenarien vorgesehen, in denen OpenRouter nicht verfügbar ist.
 
-Als LLM-Parameter werden \texttt{temperature=0.5} für stilistische Variation, \texttt{max\_tokens} aus \texttt{LLM\_MAX\_TOKENS} sowie der \texttt{language}-Parameter für die Zielsprache gesetzt. Die Zielsprache wird direkt in den Prompt eingebettet (z.\,B. „Schreibe einen Ticker-Eintrag auf German.") und ermöglicht so eine native Generierung in Deutsch, Englisch, Spanisch oder Französisch ohne sprachspezifische Prompt-Varianten (vgl. Abschnitt~\ref{mehrsprachige-textgenerierung-konzept}). Alle Prompts werden als einzelne User-Nachricht übermittelt. Der Rollenkontext ist direkt in den Prompttext eingebettet (vgl. Abschnitt~\ref{prompt-engineering-strategie}). Für die Fehlerbehandlung unterscheidet der Service zwei Backoff-Strategien: Bei Rate-Limit-Fehlern greift lineares Backoff (\texttt{30\ s\ /\ 60\ s}), bei transienten Fehlern exponentielles Backoff (\texttt{1\ s\ /\ 2\ s}), jeweils bis zu \texttt{LLM\_RETRY\_ATTEMPTS} (3) Wiederholungen. Das Retry-Schema sieht vereinfacht so aus:
-
-\begin{Shaded}
-\begin{Highlighting}[]
-\ControlFlowTok{for}\NormalTok{ attempt }\ControlFlowTok{in} \BuiltInTok{range}\NormalTok{(settings.LLM\_RETRY\_ATTEMPTS):}
-    \ControlFlowTok{try}\NormalTok{:}
-        \ControlFlowTok{return} \ControlFlowTok{await} \VariableTok{self}\NormalTok{.\_dispatch(}\OperatorTok{**}\NormalTok{kwargs)}
-    \ControlFlowTok{except}\NormalTok{ RateLimitError:}
-        \ControlFlowTok{await}\NormalTok{ asyncio.sleep(}\DecValTok{30} \OperatorTok{*}\NormalTok{ (attempt }\OperatorTok{+} \DecValTok{1}\NormalTok{))  }\CommentTok{\# linear: 30s, 60s}
-    \ControlFlowTok{except}\NormalTok{ TransientError:}
-        \ControlFlowTok{await}\NormalTok{ asyncio.sleep(}\DecValTok{2} \OperatorTok{**}\NormalTok{ attempt)          }\CommentTok{\# exponentiell: 1s, 2s}
-\ControlFlowTok{raise}\NormalTok{ LLMUnavailableError}
-\end{Highlighting}
-\end{Shaded}
+Als LLM-Parameter werden \texttt{temperature=0.5} für stilistische Variation, \texttt{max\_tokens} aus \texttt{LLM\_MAX\_TOKENS} sowie der \texttt{language}-Parameter für die Zielsprache gesetzt. Die Zielsprache wird direkt in den Prompt eingebettet (z.\,B. „Schreibe einen Ticker-Eintrag auf German.") und ermöglicht so eine native Generierung in Deutsch, Englisch, Spanisch oder Französisch ohne sprachspezifische Prompt-Varianten (vgl. Abschnitt~\ref{mehrsprachige-textgenerierung-konzept}). Alle Prompts werden als einzelne User-Nachricht übermittelt. Der Rollenkontext ist direkt in den Prompttext eingebettet (vgl. Abschnitt~\ref{prompt-engineering-strategie}). Für die Fehlerbehandlung unterscheidet der Service zwei Backoff-Strategien: Bei Rate-Limit-Fehlern (HTTP~429) greift lineares Backoff (\texttt{30\ s\ /\ 60\ s}), bei transienten Fehlern exponentielles Backoff (\texttt{1\ s\ /\ 2\ s}), jeweils bis zu \texttt{LLM\_RETRY\_ATTEMPTS} (3) Wiederholungen; danach wird die ursprüngliche Ausnahme weitergereicht.
 
 
 \section{KI-Generierungspipeline}\label{ki-generierungspipeline}
@@ -331,9 +324,10 @@ Die Pipeline durchläuft fünf Stufen: Event-Import, Kontextanreicherung, Prompt
 \label{fig:ki-generierungspipeline}
 \end{figure}
 
-Ein zentrales Qualitätsmerkmal der Pipeline ist die Deduplizierung: Der
-Generierungsendpunkt prüft vor jedem LLM-Aufruf, ob bereits ein
-Ticker-Eintrag für die \texttt{event\_id} existiert:
+Ein zentrales Qualitätsmerkmal der Pipeline ist die Deduplizierung für
+ereignisbasierte Generierung: \texttt{POST\ /generate/\{event\_id\}}
+prüft vor jedem LLM-Aufruf, ob bereits ein aktiver Ticker-Eintrag für
+die \texttt{event\_id} existiert:
 
 \begin{Shaded}
 \begin{Highlighting}[]
@@ -343,13 +337,27 @@ Ticker-Eintrag für die \texttt{event\_id} existiert:
 \end{Highlighting}
 \end{Shaded}
 
-Dies macht den Endpunkt für Standardfälle idempotent gegenüber
-Mehrfachaufrufen, ein wichtiges Merkmal, da n8n-Workflows bei
-Fehlern automatische Wiederholungsversuche (Retries) ausführen. Ohne diese Prüfung würde jeder Retry
-einen zusätzlichen Ticker-Eintrag mit abweichendem Text erzeugen. Wird ein abweichendes
-Stilprofil (\texttt{data.style}) übergeben, wird der bestehende Eintrag
-gelöscht und neu generiert; der idempotente Pfad gilt damit nur für
+\texttt{get\_by\_event()} liefert dabei nur Einträge mit Status
+\texttt{draft} oder \texttt{published} zurück; abgelehnte
+(\texttt{rejected}) und weich gelöschte (\texttt{deleted}) Einträge
+werden gefiltert. Nach einer Ablehnung kann der Endpunkt daher erneut
+einen Text generieren.
+
+Dies macht \texttt{POST\ /generate/\{event\_id\}} für Standardfälle
+idempotent gegenüber Mehrfachaufrufen, ein wichtiges Merkmal, da
+n8n-Workflows bei Fehlern automatische Wiederholungsversuche ausführen.
+Wird ein abweichendes Stilprofil (\texttt{data.style}) übergeben, wird
+der bestehende Eintrag per Soft-Delete auf \texttt{status=deleted}
+gesetzt und neu generiert; der idempotente Pfad gilt damit nur für
 Aufrufe mit identischem Stil.
+
+Diese Schutzprüfung fehlt im Endpunkt \texttt{POST\ /generate-synthetic}
+für Spielphasen-Events bewusst: Da n8n Workflow~14 denselben
+\texttt{synthetic\_event\_id} bei jedem Phasenübergang erneut übergibt,
+würde ein Dedup-Check eine Neugenerierung nach Ablehnung dauerhaft
+blockieren. Stattdessen erzeugt jeder Aufruf ohne aktives Gegenstück
+einen neuen Eintrag, was dazu führt, dass abgelehnte Spielphasen-Drafts
+beim nächsten Workflow-Lauf automatisch neu erscheinen.
 
 Der initiale Status des erzeugten Ticker-Eintrags wird über den
 Aufrufparameter \texttt{auto\_publish} gesteuert, den n8n aus dem
@@ -380,6 +388,8 @@ Sekunden ein Widerruf-Button. Über \texttt{PATCH\ /api/v1/ticker/\{id\}}
 mit \texttt{\{\ "status":\ "draft"\ \}} wird der Eintrag zurückgesetzt
 und steht erneut zur Bearbeitung bereit.
 
+Für publizierte Ticker-Einträge bietet das Frontend zwei weitere Eingriffsmöglichkeiten, die unabhängig vom Toast-Fenster verfügbar sind: Jeder Eintrag in der Publikationsliste (LeftPanel) trägt ein Drei-Punkte-Menü (\texttt{EntryMenu}), das \textit{Bearbeiten} und \textit{Löschen} anbietet. Der Bearbeiten-Pfad öffnet ein Inline-Textarea, dessen Änderung per \texttt{PATCH /api/v1/ticker/\{id\}} persistiert wird. Der Löschen-Pfad zeigt einen Bestätigungsdialog und ruft anschließend \texttt{DELETE /api/v1/ticker/\{id\}} auf, das den Eintrag per Soft-Delete auf \texttt{status=deleted} setzt. Für Spielphasen- und Zusammenfassungs-Einträge existiert ein zweiter Retract-Pfad: Die \texttt{PublishedSummarySection} im CenterPanel zeigt alle publizierten Phasen-Einträge in einem einklappbaren Abschnitt „Veröffentlicht". Jeder Eintrag trägt dort einen \textit{↩ Stornieren}-Button, der \texttt{PATCH /api/v1/ticker/\{id\}} mit \texttt{\{"status": "draft"\}} aufruft und den Eintrag wieder in die Draft-Queue zurückführt.
+
 \texttt{rejected}-Einträge werden nicht aus der Datenbank gelöscht,
 sondern behalten ihren Status. Diese Entscheidung sichert die
 Reproduzierbarkeit der Evaluation: Alle je generierten Einträge (auch
@@ -406,23 +416,21 @@ App
    |- CenterPanel
    |  |- EventCard       --onGenerate-----------> TickerActionsContext
    |  |- EntryEditor     --onManualPublish-------> TickerActionsContext
-   |  |- AIDraft         --onPublished/onDraft---> TickerActionsContext
+   |  |- SummaryDraftCard --onPublished----------> TickerActionsContext
    |  |- SummarySection
-   |  `- MediaPickerPanel | YouTubePanel | TwitterPanel | InstagramPanel
+   |  `- MediaPickerPanel (ScorePlay-Bilder) | YouTubePanel | TwitterPanel | InstagramPanel
    `- RightPanel
       |- Collapsible  (Statistiken, Aufstellung, Spieler)
-      |- FormationColumn
+      |- PitchFormation
       `- StatRow
 \end{verbatim}
 
-Die drei Panels sind physisch getrennte React-Komponenten, kommunizieren
-aber ausschließlich über Context-Provider, kein Prop-Drilling über
-Komponentengrenzen hinweg. Die gesamte Anwendung ist von einer \texttt{ErrorBoundary}-Komponente umschlossen, die unkontrollierte JavaScript-Fehler abfängt und eine Fallback-UI anzeigt, sodass ein Rendering-Fehler in einem Panel die übrigen Panels nicht blockiert (N6). Vier dedizierte Tests sichern dieses Verhalten ab.
+Die drei Panels sind physisch getrennte React-Komponenten und kommunizieren ausschließlich über die drei Context-Provider, kein Panel übergibt dem anderen Daten als Props. Jedes Panel ist von einer eigenen \texttt{ErrorBoundary}-Instanz umschlossen, die unkontrollierte JavaScript-Fehler abfängt und eine Fallback-UI anzeigt, sodass ein Rendering-Fehler in einem Panel die übrigen Panels nicht blockiert (N6). Vier dedizierte Tests sichern dieses Verhalten ab.
 
 
 \subsection{React Context-Architektur}\label{react-context-architektur}
 
-Das Frontend verwendet drei spezialisierte Contexts, die in \texttt{LiveTicker} zusammengeführt werden. \texttt{TickerModeContext} hält den Modus-State (\texttt{auto}/\texttt{coop}/\texttt{manual}) und die Keyboard-Shortcuts (TAB/ESC). \texttt{TickerDataContext} exponiert Match-Daten, Events und Ticker-Einträge mit zugehörigen Reload-Funktionen. \texttt{TickerActionsContext} kapselt Callbacks für redaktionelle Aktionen wie Generierung, Publikation und Bearbeitung.
+Das Frontend verwendet drei spezialisierte Contexts, die in \texttt{LiveTicker} zusammengeführt werden. \texttt{TickerModeContext} hält den Modus-State (\texttt{auto}/\texttt{coop}/\texttt{manual}) sowie die Callbacks \texttt{acceptDraft} und \texttt{rejectDraft}, die im Coop-Modus über die TAB/ESC-Shortcuts ausgelöst werden. \texttt{TickerDataContext} exponiert Match-Daten, Events und Ticker-Einträge mit zugehörigen Reload-Funktionen. \texttt{TickerActionsContext} kapselt Callbacks für redaktionelle Aktionen wie Generierung, Publikation und Bearbeitung.
 
 Die Trennung von Daten- und Aktions-Context hat einen konkreten
 Performance-Vorteil: Komponenten, die nur Actions konsumieren (z.\,B.
@@ -454,8 +462,8 @@ Hook & Paket & Verantwortlichkeit \\
 \endlastfoot
 \texttt{useNavigation} & LT/hooks/ & Land→Team→Wettbewerb→Spieltag→Spiel Navigationskette \\
 \texttt{useMatchData} & LT/hooks/ & Aggregiert Polling-Hooks, koordiniert Reload-Zyklen \\
-\texttt{useTickerMode} & LT/hooks/ & \texttt{mode}-State, PATCH zum Backend, TAB/ESC-Shortcuts \\
-\texttt{useTicker} & LT/hooks/ & Ticker-Actions, Draft-Queue, Publish-Toast (Undo) \\
+\texttt{useTickerMode} & LT/hooks/ & \texttt{mode}-State, TAB/ESC-Shortcuts, Coop-Callbacks \\
+\texttt{useTicker} & LT/hooks/ & Ticker-Actions, Modus-PATCH, Draft-Queue, Publish-Toast (Undo) \\
 \texttt{useEventDraft} & LT/hooks/ & Entwurfsansicht, Accept/Reject-Logik \\
 \texttt{useAutoPublisher} & LT/hooks/ & Automatisches Publizieren im Auto-Modus \\
 \end{longtable}
@@ -502,7 +510,7 @@ Command & Ausgabe & Phase & Icon \\
 /g Mustermann EF  → "TOR — Mustermann (EF)"          + icon [Tor]
 /gelb Müller EF   → "Gelb — Müller (EF)"             + icon [Gelb]
 /rot Huber Bayern → "Rote Karte — Huber (Bayern)"    + icon [Rot]
-/s Ein Aus EF → "Wechsel — Ein <-> Aus (EF)"  + icon [Wechsel]
+/s Ein Aus EF → "Wechsel — Ein ↔ Aus (EF)"   + icon [Wechsel]
 /n Freistoß übers Tor → "Freistoß übers Tor"        + icon [Notiz]
 \end{verbatim}
 
@@ -542,7 +550,7 @@ Im Auto-Modus existieren zwei parallele Automatisierungspfade: Der primäre Pfad
 \begin{figure}[H]
 \centering
 \includegraphics[width=\textwidth]{frontend_coop.png}
-\caption[LiveTicker-Editor im Coop-Modus]{LiveTicker-Editor im Coop-Modus: Links KI-generierte Entwürfe (Freigabe per TAB, Ablehnung per ESC), Mitte publizierte Ticker-Einträge, Rechts Spielstatistiken und Kontext. Bei Eintracht-Spielen (\texttt{ef\_whitelabel}) erscheinen links zusätzlich Social-Media-Panels (YouTube, X, ScorePlay) unterhalb der Draft-Queue.}
+\caption[LiveTicker-Editor im Coop-Modus]{LiveTicker-Editor im Coop-Modus: Links KI-generierte Entwürfe (Freigabe per TAB, Ablehnung per ESC), Mitte publizierte Ticker-Einträge, Rechts Spielstatistiken und Kontext. Bei Eintracht-Spielen (\texttt{ef\_whitelabel}) erscheinen links zusätzlich vier Media-Panels unterhalb der Draft-Queue: ein ScorePlay-Bilder-Panel (\texttt{MediaPickerPanel}) sowie YouTube-, Twitter/X- und Instagram-Panels. Das ScorePlay-Panel zeigt Torjubel-Videos und Bilder des Torschützen, die per Doppelklick direkt als Ticker-Eintrag veröffentlicht werden können.}
 \label{fig:frontend-coop}
 \end{figure}
 
@@ -559,21 +567,30 @@ Ressource & Intervall & Bedingung \\
 \endhead
 \bottomrule\noalign{}
 \endlastfoot
-Events \& Ticker & 15.000 ms & Live, Halbzeit, Abpfiff (\texttt{resolvePollingInterval}) \\
+Events \& Ticker & 15.000 ms & Live, Abpfiff (\texttt{resolvePollingInterval}) \\
 Events \& Ticker & 20.000 ms & Alle anderen Spielstatus (PreMatch, Pause) \\
-Match-Refresh & 30.000 ms & Immer \\
-Match-Sync & 60.000 ms & Immer \\
+Match-Refresh & 30.000 ms & Einmalig beim Spielwechsel \\
+Match-Sync & 60.000 ms & Live, PreMatch, ToBeConfirmed \\
 \end{longtable}
 }
 
-Die \texttt{resolvePollingInterval}-Utility differenziert das Intervall je nach Spielstatus: Im Live-Modus (sowie bei Halbzeit und Abpfiff) beträgt es 15.000\,ms, in allen anderen Zuständen (PreMatch, Pause u.\,a.) 20.000\,ms. Für einen Produktiveinsatz mit vielen gleichzeitigen Nutzern könnte das PreMatch-Intervall weiter auf 30.000\,ms oder mehr erhöht werden, um die Serverlast außerhalb der Spielphasen zu senken.
+Die \texttt{resolvePollingInterval}-Utility differenziert das Intervall je nach Spielstatus: Im Live-Modus sowie bei Spielende (\texttt{FullTime}) beträgt es 15.000\,ms, in allen anderen Zuständen (PreMatch, Pause u.\,a.) 20.000\,ms. Für einen Produktiveinsatz mit vielen gleichzeitigen Nutzern könnte das PreMatch-Intervall weiter auf 30.000\,ms oder mehr erhöht werden, um die Serverlast außerhalb der Spielphasen zu senken.
 
 
 \section{n8n Workflow-Implementierung}\label{n8n-workflow-implementierung}
 
-Die systemkritischen Workflows setzen die in Abschnitt~\ref{workflow-klassen} konzipierten Gruppen um. Sie gliedert sich in den Events-LLM-Workflow (Abschnitt~\ref{events-llm-workflow}), den Prematch-Import-Workflow (Abschnitt~\ref{prematch-import-workflow}), den Matchphasen-Workflow (Abschnitt~\ref{matchphasen-workflow}), Zusammenfassung und Medien (Abschnitt~\ref{zusammenfassung-und-medien-workflow}) sowie übergreifende Implementierungsmuster (Abschnitt~\ref{n8n-implementierungsmuster}). Alle 17 Workflow-Dateien liegen als versionierte JSON-Exporte unter \texttt{n8n/} vor.
+Die n8n-Workflow-Implementierung setzt die in Abschnitt~\ref{workflow-klassen} konzipierten Workflow-Klassen als 17 versionierte JSON-Exporte unter \texttt{n8n/} um (Knotentypen vgl. Abschnitt~\ref{n8n-technologiewahl}). Sie gliedert sich in einen Workflow-Überblick (Abschnitt~\ref{workflow-ueberblick}), den Events-LLM-Workflow (Abschnitt~\ref{events-llm-workflow}), den Prematch-Import-Workflow (Abschnitt~\ref{prematch-import-workflow}), den Matchphasen-Workflow (Abschnitt~\ref{matchphasen-workflow}), Zusammenfassung und Medien (Abschnitt~\ref{zusammenfassung-und-medien-workflow}) sowie übergreifende Implementierungsmuster (Abschnitt~\ref{n8n-implementierungsmuster}).
 
-n8n modelliert Workflows als gerichtete Graphen aus typisierten Knoten (vgl. Venkiteela 2025, S.~3). Die im System verwendeten Knotentypen sind: \textbf{Webhook}-Knoten empfangen HTTP-Anfragen und starten die Verarbeitungskette; \textbf{Postgres}-Knoten führen parametrisierte SQL-Statements direkt gegen die Datenbank aus (SELECT, INSERT mit ON CONFLICT, UPDATE); \textbf{Code}-Knoten enthalten benutzerdefiniertes JavaScript für Validierungs- und Transformationslogik; \textbf{HTTP-Request}-Knoten rufen externe REST-APIs oder das FastAPI-Backend auf; \textbf{Filter}-Knoten leiten den Datenfluss anhand einer Bedingung weiter oder beenden ihn. Zusammenfassungs-Workflows ersetzen den HTTP-Request-Knoten gegen einen direkten \textbf{OpenRouter}-Knoten, da sie umfangreichere Prompts benötigen als der generische Backend-Endpunkt erlaubt.
+\subsection{Workflow-Überblick}\label{workflow-ueberblick}
+
+Abbildung~\ref{fig:workflow-timeline} zeigt, welche Workflows zu welchem Zeitpunkt eines Spieltags aktiv sind. Phasengesteuerte Workflows (WF14, WF13) feuern einmalig bei Zustandsübergängen; ereignis- und zeitbasierte Workflows (WF09, WF15, WF16) laufen während beider Halbzeiten kontinuierlich.
+
+\begin{figure}[H]
+\centering
+\DiagramWorkflowTimeline
+\caption{Zeitliche Aktivität der n8n-Workflows über einen Spieltag}
+\label{fig:workflow-timeline}
+\end{figure}
 
 \subsection{Events-LLM-Workflow (09)}\label{events-llm-workflow}
 
@@ -584,7 +601,7 @@ n8n modelliert Workflows als gerichtete Graphen aus typisierten Knoten (vgl. Ven
 \label{fig:n8n-event-workflow}
 \end{figure}
 
-Workflow~09 ist der kritischste im System. Er importiert Live-Ereignisse via Webhook (\texttt{POST /Events}) und persistiert sie per UPSERT (\texttt{ON CONFLICT (source\_id) DO NOTHING}). Eine initiale SQL-Abfrage bestimmt anhand der Teamzugehörigkeit Instanz (\texttt{ef\_whitelabel} oder \texttt{generic}) und Stilprofil. \texttt{auto\_publish} wird direkt aus \texttt{ticker\_mode} des Spiels gesetzt. Nur Events mit erfolgreicher Datenbankzeile passieren den Filter-Knoten. Ein EF-spezifischer Zweig sucht per SQL-Abfrage in der \texttt{players}-Tabelle nach hinterlegter \texttt{video\_url} des Torschützen und persistiert den Video-Link als Ticker-Eintrag (Icon~\texttt{🎬}).
+Workflow~09 ist der kritischste im System. Er importiert Live-Ereignisse via Webhook (\texttt{POST /Events}) und persistiert sie per UPSERT (\texttt{ON CONFLICT (source\_id) DO UPDATE SET}). Eine initiale SQL-Abfrage bestimmt anhand der Teamzugehörigkeit Instanz (\texttt{ef\_whitelabel} oder \texttt{generic}) und Stilprofil. \texttt{auto\_publish} wird direkt aus \texttt{ticker\_mode} des Spiels gesetzt. Nur Events mit erfolgreicher Datenbankzeile passieren den Filter-Knoten. Ein EF-spezifischer Zweig sucht per SQL-Abfrage in der \texttt{players}-Tabelle nach hinterlegter \texttt{video\_url} des Torschützen und persistiert den Video-Link als Ticker-Eintrag (Icon~\texttt{🎬}).
 
 \subsection{Prematch-Import-Workflow (07)}\label{prematch-import-workflow}
 
@@ -596,9 +613,9 @@ Workflow~14 verarbeitet Spielzustands-Übergänge via Webhook (\texttt{POST /mat
 
 \subsection{Zusammenfassung (13) und ScorePlay-Medien (08)}\label{zusammenfassung-und-medien-workflow}
 
-Workflow~13 erzeugt narrative Halbzeit- und Abpfiff-Zusammenfassungen. Im Unterschied zu Workflow~09 ruft er OpenRouter direkt über den dedizierten OpenRouter-Knoten auf, nicht über das FastAPI-Backend: Zusammenfassungen erfordern einen umfangreicheren Prompt, der parallel über vier HTTP-Request-Knoten geladene Daten (Spielereignisse, Teamstatistiken, Spieler-Ratings) einbettet und deshalb die Eingabelimits des generischen Backend-Endpunkts überschreiten würde. Few-Shot-Referenzen aus der \texttt{style\_references}-Tabelle werden für Zusammenfassungen nicht verwendet, da der narrative Charakter dieser Texte eigene Stilmuster erfordert. Das Ergebnis wird je nach \texttt{ticker\_mode} direkt als \texttt{published} oder als \texttt{draft} zur redaktionellen Prüfung gespeichert.
+Workflow~13 erzeugt narrative Halbzeit- und Abpfiff-Zusammenfassungen. Im Unterschied zu Workflow~09 ruft er den OpenRouter-Dienst direkt über einen HTTP-Request-Knoten auf, nicht über das FastAPI-Backend: Zusammenfassungen erfordern einen umfangreicheren Prompt, der parallel über vier HTTP-Request-Knoten geladene Daten (Spieldaten, Spielereignisse, Teamstatistiken, Spieler-Ratings) einbettet und deshalb die Eingabelimits des generischen Backend-Endpunkts überschreiten würde. Few-Shot-Referenzen aus der \texttt{style\_references}-Tabelle werden für Zusammenfassungen nicht verwendet, da der narrative Charakter dieser Texte eigene Stilmuster erfordert. Das Ergebnis wird je nach \texttt{ticker\_mode} direkt als \texttt{published} oder als \texttt{draft} zur redaktionellen Prüfung gespeichert.
 
-Workflow~08 sucht Medien-Assets bei ScorePlay für den Torschützen eines Torereignisses. Die Spieler-Suche normalisiert zunächst Umlaute im Namen und gleicht den normalisierten Namen gegen vier Namensfelder der ScorePlay-API (\texttt{firstName}, \texttt{lastName}, \texttt{displayName}, \texttt{shortName}) ab, um Abweichungen in der Schreibweise zu tolerieren. Gefundene Asset-URLs werden per HTTP-Request-Knoten an \texttt{POST /api/v1/media/incoming} im FastAPI-Backend übertragen. Das Backend leitet sie über den WebSocket-Kanal (\texttt{/ws/media}) in Echtzeit an alle verbundenen Redaktions-Clients weiter, wo sie im Media-Panel zur Auswahl erscheinen.
+Workflow~08 sucht Medien-Assets bei ScorePlay für den Torschützen eines Torereignisses. Die Spieler-Suche normalisiert zunächst Umlaute im Namen und gleicht den normalisierten Namen gegen vier Namensfelder der ScorePlay-API (\texttt{full\_name}, \texttt{first\_name}, \texttt{last\_name}, \texttt{ai\_name}) ab, um Abweichungen in der Schreibweise zu tolerieren. Gefundene Asset-URLs werden per HTTP-Request-Knoten an \texttt{POST /api/v1/media/incoming} im FastAPI-Backend übertragen. Das Backend leitet sie über den WebSocket-Kanal (\texttt{/ws/media}) in Echtzeit an alle verbundenen Redaktions-Clients weiter, wo sie im Media-Panel zur Auswahl erscheinen.
 
 Die drei EF-spezifischen Medien-Import-Workflows (10, 11, 12) importieren Social-Media-Inhalte aus X (via RSS-Feed), YouTube (via Firecrawl-Scraper) und Instagram (via RSS-Feed) idempotent in die \texttt{media\_clips}-Tabelle und stellen dem Redakteur im EF-spezifischen Media-Panel aktuelle Vereinsinhalte zur kontextuellen Einbettung in den Liveticker bereit.
 
@@ -608,7 +625,7 @@ Die drei EF-spezifischen Medien-Import-Workflows (10, 11, 12) importieren Social
 
 \begin{itemize}\tightlist
 \item \textbf{UPSERT-Strategien:} Alle Insert-Operationen verwenden \texttt{ON CONFLICT DO UPDATE/DO NOTHING} für Idempotenz.
-\item \textbf{Filter-Knoten:} Vor event-basierten LLM-Triggern (09, 14) steht ein Filterknoten, der nur Rows mit einer \texttt{id} (erfolgreicher DB-Insert) durchlässt; Zusammenfassungs-Workflows (13, 15) rufen den LLM-Provider direkt auf.
+\item \textbf{Filter-Knoten:} Vor event-basierten LLM-Triggern (09, 14) steht ein Filterknoten, der nur Rows mit einer \texttt{id} (erfolgreicher DB-Insert) durchlässt; Workflow~13 (Zusammenfassung) und Workflow~15 (Live-Stats-Monitor) rufen den LLM-Provider direkt per HTTP-Request auf, nicht über das FastAPI-Backend.
 \item \textbf{Statusbasierte Filterung:} Bestehende nicht-verworfene Ticker-Einträge verhindern redundante Generierungen.
 \item \textbf{Mode-Propagation:} \texttt{ticker\_mode} wird als \texttt{auto\_publish}-Flag an das Backend weitergegeben.
 \item \textbf{Instanz-Routing:} Das System unterscheidet \texttt{ef\_whitelabel} und \texttt{generic} per \texttt{ILIKE '\%Frankfurt\%'}-Abfrage.
@@ -622,27 +639,27 @@ Die Implementierung setzt das in Abschnitt~\ref{qualitätssicherungskonzept} bes
 
 \subsection{Frontend-Tests (Jest + React Testing Library)}\label{impl-frontend-tests}
 
-Unit-Tests decken Utility-Funktionen, Hooks, UI-Komponenten und TypeScript-Typen ab. Der \texttt{parseCommand}-Parser ist besonders umfangreich abgesichert: Als kritische manuelle Eingabeschicht muss er sämtliche Slash-Command-Varianten, Fehleingaben und Kantenfälle zuverlässig verarbeiten. Ein Fehler hier würde sich direkt in falsch klassierten Ticker-Einträgen niederschlagen.
+Unit-Tests decken Utility-Funktionen, Hooks und UI-Komponenten ab. Sieben Hook-Tests sichern das Zustandsmanagement isoliert von der UI ab, darunter \texttt{useMatchEvents}, \texttt{useMatchTicker} und \texttt{useLiveMinute}. Fünf Komponenten-Tests prüfen kritische UI-Elemente: \texttt{EntryEditor}, \texttt{PublishedEntry}, \texttt{CommandPalette}, \texttt{RightPanelComponents} und \texttt{ErrorBoundary}. Der \texttt{parseCommand}-Parser ist mit 29 Testfällen besonders umfangreich abgesichert: Als kritische manuelle Eingabeschicht muss er sämtliche Slash-Command-Varianten, Fehleingaben und Kantenfälle zuverlässig verarbeiten. Ein Fehler hier würde sich direkt in falsch klassierten Ticker-Einträgen niederschlagen.
 
 \subsection{Backend-Tests (pytest)}\label{impl-backend-tests}
 
-API-Integrationstests prüfen alle Endpunkte gegen eine echte PostgreSQL-Testinstanz mit transaktionalem Rollback. Nach jedem Test wird die Datenbank auf den Ausgangszustand zurückgesetzt, sodass Tests voneinander isoliert und in beliebiger Reihenfolge ausführbar sind. Unit-Tests decken Services, Repositories und Utility-Funktionen ab. Der Verzicht auf einen Datenbank-Mock ist bewusst: Mock-Implementierungen riskieren Divergenzen zum realen Schema, die gerade bei Schemaänderungen während der Entwicklung unbemerkt bleiben. Ergänzend enthält \texttt{evaluation\_metrics.py} statistische Hilfsfunktionen (Cliff's Delta, Bootstrap-Konfidenzintervall, Cohen's Kappa u.\,a.) als Evaluationsinfrastruktur für die KI-Textbewertung in Kapitel~\ref{evaluation}.
+API-Integrationstests prüfen alle Endpunkte gegen eine echte PostgreSQL-Testinstanz mit transaktionalem Rollback. Nach jedem Test wird die Datenbank auf den Ausgangszustand zurückgesetzt, sodass Tests voneinander isoliert und in beliebiger Reihenfolge ausführbar sind. Repository- und Service-Unit-Tests ergänzen die Integrationstests auf Schichtebene. Der Verzicht auf Datenbank-Mocks in diesen Schichten ist bewusst: Mock-Implementierungen riskieren Divergenzen zum realen Schema, die gerade bei Schemaänderungen während der Entwicklung unbemerkt bleiben. Der LLM-Service wird hingegen gemockt, da externe LLM-Aufrufe nicht deterministisch und in automatisierten Läufen nicht reproduzierbar sind. Ergänzend enthält \texttt{evaluation\_metrics.py} statistische Hilfsfunktionen (Cliff's Delta, Bootstrap-Konfidenzintervall, Cohen's Kappa u.\,a.) als Evaluationsinfrastruktur für die KI-Textbewertung in Kapitel~\ref{evaluation}.
 
 \subsection{End-to-End-Tests (Playwright)}\label{impl-e2e-tests}
 
-Browser-seitige Smoke-Tests validieren grundlegende Nutzerinteraktionen, darunter ein responsiver Mobile-Test mit Viewport 375\,×\,812 (iPhone~SE) als Regressionsschutz für die Tab-Navigation (N5). Testmetriken, Coverage-Kennzahlen und TypeScript-Typsicherheitswerte sind in Abschnitt~\ref{technische-qualituxe4tssicherung} dokumentiert.
+Browser-seitige Smoke-Tests in \texttt{e2e/liveticker.spec.ts} validieren grundlegende Nutzerinteraktionen: App-Laden ohne JavaScript-Fehler, Sichtbarkeit des Länder-Dropdowns, Öffnen und Schließen des Keyboard-Shortcuts-Modals über den \texttt{?}-Button sowie ein Viewport-Test bei 375\,×\,812\,px (iPhone~SE) als Regressionsschutz gegen Layout-Brüche auf kleinen Bildschirmen (N5). Testmetriken, Coverage-Kennzahlen und TypeScript-Typsicherheitswerte sind in Abschnitt~\ref{technische-qualituxe4tssicherung} dokumentiert.
 
 
 \section{Deployment}\label{deployment}
 
-Das Deployment setzt das in Abschnitt~\ref{deployment-konzept} beschriebene Konzept als produktiv erreichbare Infrastruktur um. Alle Dienste werden aus demselben Repository-Branch (\texttt{deploy/render-v2}) betrieben.
+Das Deployment setzt das in Abschnitt~\ref{deployment-konzept} beschriebene Konzept als produktiv erreichbare Infrastruktur um. Alle vier Komponenten werden deklarativ über \texttt{render.yaml} im Repository-Branch \texttt{deploy/render-v2} konfiguriert.
 
-Das \textbf{FastAPI-Backend} läuft als Docker-Container auf Render.com (Free-Tier Web Service, Region Oregon/US West); die technologische Einordnung von Docker findet sich in Abschnitt~\ref{cloud-deployment}. Das Docker-Image basiert auf \texttt{python:3.11-slim}. Abhängigkeiten werden aus \texttt{requirements.txt} installiert, der Startbefehl startet Uvicorn als ASGI-Server. Render deployt automatisch bei jedem Push auf den konfigurierten Branch. Konfiguration und Zugangsdaten (Datenbankverbindung, OpenRouter-API-Key, CORS-Whitelist) werden ausschließlich als Umgebungsvariablen injiziert.
+Das \textbf{FastAPI-Backend} läuft als Docker-Container auf Render.com (Free-Tier Web Service, Region Oregon/US West); die technologische Einordnung von Docker findet sich in Abschnitt~\ref{cloud-deployment}. Das Docker-Image basiert auf \texttt{python:3.12-slim}. Render deployt automatisch bei jedem Push auf den konfigurierten Branch. Konfiguration und Zugangsdaten werden ausschließlich als Umgebungsvariablen injiziert.
 
-Das \textbf{React-Frontend} wird als statische Seite über das Render-CDN ausgeliefert. Der Build-Prozess führt \texttt{npm run build} aus und deployt das \texttt{build/}-Verzeichnis. Content-Hashing stellt sicher, dass Assets versioniert ausgeliefert und unbegrenzt gecacht werden können.
+Das \textbf{React-Frontend} wird als statische Seite über das Render-CDN ausgeliefert. Der Build-Prozess führt \texttt{npm ci \&\& npm run build} aus und deployt das \texttt{frontend/build/}-Verzeichnis. Alle Anfragen werden per SPA-Rewrite auf \texttt{index.html} umgeleitet.
 
 Die \textbf{PostgreSQL-15-Datenbank} wird als Managed Service über Supabase betrieben. Das Backend bindet sie über eine externe Connection-URL ein. Supabase übernimmt Backups, Patches und Verbindungspooling ohne operativen Aufwand auf Anwendungsseite.
 
-Die \textbf{n8n-Instanz} läuft lokal und ist über einen \texttt{ngrok}-Tunnel für externe Webhooks erreichbar. Dieses Setup ist auf den Evaluationszeitraum beschränkt. Die Limitationen gegenüber einem Produktivbetrieb sind in Abschnitt~\ref{technische-einordnung} diskutiert.
+Die \textbf{n8n-Instanz} läuft lokal als Docker-Container und ist über einen \texttt{ngrok}-Tunnel für externe Webhooks erreichbar. Dieses Setup ist auf den Evaluationszeitraum beschränkt. Die Limitationen gegenüber einem skalierten Produktivbetrieb sind in Abschnitt~\ref{technische-einordnung} diskutiert.
 
 Die vier Komponenten bilden die drei Systemschichten aus Abschnitt~\ref{überblick-und-schichtenmodell}: n8n die Datenbeschaffung, Backend und Datenbank die Anwendungs- und Persistenzlogik, das Frontend die Präsentation. Kapitel~\ref{evaluation} dokumentiert die systematische Evaluation des so realisierten Systems.
