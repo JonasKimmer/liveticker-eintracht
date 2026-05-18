@@ -298,19 +298,6 @@ klein für eine statistische Aussage; die Schutzregel verhindert
 im evaluierten Stichprobenumfang Spielszenen-Halluzinationen, schützt jedoch nicht gegen alle
 Formen der Kontextüberschreitung.
 
-\textbf{Vergleich KI-generiert vs.~manuell:} Ein direkter Paarvergleich KI vs.~Redakteur für identische Events war im
-Evaluationszeitraum nicht vollständig durchführbar: Die vorliegenden
-Testspiele enthielten manuell erstellte Einträge entweder ohne Text
-(reine Medien-Einträge mit Video-URL) oder wurden ausschließlich im
-\texttt{auto}-Modus betrieben. Für Match 1 (FV Engers 07 vs.~Eintracht
-Frankfurt, 0:5) lag für Tor in der 44. Minute ein manueller Eintrag ohne
-Fließtext vor (Icon: 🎬, Video-URL, kein Textkörper); der KI-generierte
-Text lautete: \emph{„44. Minute: TOOOOR! J. Bahoya bringt Frankfurt auf
-1:0! Traumpass von X. Das Stadion bebt!{\kern0pt}``}, eine
-vollständige Faktendarstellung, die der manuelle Eintrag nicht enthielt.
-
-Ein systematischer Paarvergleich ist als externe Nutzerstudie im
-Ausblick (Abschnitt~\ref{mittelfristige-erweiterungen}) vorgesehen.
 
 \subsection{Experteninterview-Auswertung}\label{experteninterview-auswertung}
 
@@ -425,12 +412,7 @@ Mock & --- & regelbasiert (Templates) & 7 & \textless{} 10 & \textless{}
 Die Latenzmessungen für OpenRouter deuten auf eine rechtsschiefe Antwortzeit-Verteilung hin: Render-Messserie zeigt 44\,\%
 der Messungen unter 310 ms (mutmaßlich Gemini-seitige Cache-Treffer) und
 56\,\% zwischen 859\,ms und 2\,128\,ms (Kaltgenerierung), Standardabweichung
-695 ms. Die direkte Messserie (lokal, n\,=\,9) liegt enger zusammen (695--1\,348\,ms), was auf fehlende Cache-Treffer ohne Render-Warm-up hindeutet. Die bimodale Verteilung ist mutmaßlich auf OpenRouter-seitiges Prompt-Caching zurückzuführen. Eine tiefere Diagnose würde OpenRouter-spezifische Latenz-Metriken erfordern, die über die Standard-API nicht zugänglich sind. Ab
-Version \texttt{0005} der Datenbank-Migration wird jeder produktive
-KI-Aufruf mit dem Feld \texttt{generation\_ms} persistiert, das die
-Backend-interne Verarbeitungszeit (Request-Eingang bis DB-Write)
-automatisch erfasst. Damit ist eine kontinuierliche Latenzmessung im
-Produktivbetrieb ohne externen Monitoring-Aufwand möglich. Im Kontext
+695 ms. Die direkte Messserie (lokal, n\,=\,9) liegt enger zusammen (695--1\,348\,ms), was auf fehlende Cache-Treffer ohne Render-Warm-up hindeutet. Die bimodale Verteilung ist mutmaßlich auf OpenRouter-seitiges Prompt-Caching zurückzuführen. Eine tiefere Diagnose würde OpenRouter-spezifische Latenz-Metriken erfordern, die über die Standard-API nicht zugänglich sind. Im Kontext
 des \texttt{coop}-Modus ist die gemessene P95-Latenz von 2{,}05\ s (2\,047
 ms) unproblematisch (vgl. Abbildung~\ref{fig:latenzen-histogram}).
 
@@ -463,7 +445,7 @@ Frontend-Polling & Ja & bis 15~s & Abschnitt~\ref{frontend-polling} \\
 \end{longtable}
 }
 
-Die n8n-seitige Erkennungslatenz (Polling-Zyklus der Workflows gegen die Football-API sowie HTTP-Overhead bis zum Backend-Aufruf) ist nicht gemessen und ist eine zusätzliche, nicht quantifizierte Komponente der Gesamtlatenz. Da ein kontrolliertes Feldexperiment mit echten Redakteuren nicht durchführbar war, ist dies eine Potenzialabschätzung, keine empirisch gemessene Größe. Ein Feldtest bleibt als Folgestudie vorgesehen (vgl. Abschnitt~\ref{mittelfristige-erweiterungen}).
+Die n8n-seitige Erkennungslatenz (Polling-Zyklus der Workflows gegen die Football-API sowie HTTP-Overhead bis zum Backend-Aufruf) ist nicht gemessen und ist eine zusätzliche, nicht quantifizierte Komponente der Gesamtlatenz. Da ein kontrolliertes Feldexperiment mit echten Redakteuren nicht durchführbar war, ist dies eine Potenzialabschätzung, keine empirisch gemessene Größe.
 
 
 \section{Anforderungsabgleich
