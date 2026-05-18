@@ -138,7 +138,7 @@ Die Prompt-Architektur bindet bis zu drei Stilreferenzen aus der \texttt{style\_
 \begin{figure}[H]
 \centering
 \DiagramQualitaetStilprofil
-\caption[Qualitätsbewertung nach Stilprofil (LLM-as-Judge-Evaluation, N\,=\,80)]{Qualitätsbewertung nach Stilprofil -- LLM-as-Judge-Evaluation (N~=~80; Bewertungsskala 1--5). Datengrundlage: Abschnitt~\ref{erweiterte-evaluation}, Bundesliga Saison 2025/26.}
+\caption[Qualitätsbewertung nach Stilprofil (LLM-as-Judge-Evaluation, N\,=\,80)]{Qualitätsbewertung nach Stilprofil: LLM-as-Judge-Evaluation (N~=~80; Bewertungsskala 1--5). Datengrundlage: Abschnitt~\ref{erweiterte-evaluation}, Bundesliga Saison 2025/26.}
 \label{fig:qualitaet-stilprofil}
 \end{figure}
 
@@ -228,7 +228,7 @@ Der Rasen brennt!''
 Bewertung: Alle Fakten (Minute, Spieler, Team) korrekt. Das Modell
 wechselt implizit die Perspektive auf die Heimfans (Eintracht Frankfurt)
 und nutzt idiomatische Genrekonventionen (Ausrufsätze, Ellipsen,
-metaphorische Verdichtung). Die Kürze ist genrekonform; kein einziger
+metaphorische Verdichtung). Die Kürze ist genrekonform. Kein einziger
 Satz überschreitet drei Wörter. Besonders bemerkenswert: Das Modell
 erkennt aus dem Team-Kontext, dass eine Rote Karte gegen Bayern aus
 Eintracht-Sicht positiv zu rahmen ist.
@@ -294,7 +294,7 @@ In der Stichprobe enthielt 1 von 3 untersuchten Pre-Match-Texten keine
 unzulässigen Spielszenen, jedoch eine nicht aus dem Datenbankkontext
 ableitbare Wettempfehlung, eine inhaltliche Halluzination geringerer
 Schwere. Der evaluierte Stichprobenumfang für Pre-Match-Texte ist zu
-klein für eine statistische Aussage; die Schutzregel verhindert
+klein für eine statistische Aussage. Die Schutzregel verhindert
 im evaluierten Stichprobenumfang Spielszenen-Halluzinationen, schützt jedoch nicht gegen alle
 Formen der Kontextüberschreitung.
 
@@ -325,7 +325,7 @@ Zur automatisierten Qualitätsbewertung generierter Texte hat sich der \textbf{L
 
 Zur Erweiterung der Evaluationsbasis über N\,=\,40 hinaus und zur Adressierung der Selbstevaluationsproblematik wurden N\,=\,80 Einträge nach diesem Verfahren automatisiert evaluiert.
 
-\textbf{Datenbasis:} Die Datenbasis umfasst reale Ereignisse aus 30 Bundesliga-Spielen der Saison~2025/26 (u.\,a. Borussia~Dortmund -- SC~Freiburg, FSV~Mainz~05 -- FC~Bayern~München, FC~Augsburg -- Eintracht~Frankfurt, 1.~FC~Köln -- Bayer~Leverkusen), abgefragt über die Football~API~v3. Die Nutzung der Saison~2025/26 – statt der in der Hauptevaluation verwendeten Saison~2024/25 – ist methodisch bewusst gewählt: Zum Zeitpunkt der LLM-as-Judge-Evaluation standen Spieltage der laufenden Saison~2025/26 als frische, vom Entwickler noch nicht manuell bewertete Daten zur Verfügung, was eine unabhängigere Datenbasis als eine Teilmenge der bereits in der Hauptevaluation verwendeten Spiele gewährleistet. Generierungsmodell: \texttt{google/gemini-2.0-flash-lite-001} (identisch zur Hauptevaluation, Temperatur~0{,}5). Bewertendes Modell: \texttt{anthropic/claude-sonnet-4-5} via OpenRouter, ein anderes Modell als das generierende, was Selbstreferenzialität vermeidet. Abgedeckte Event-Typen: 25~Tore, 25~Gelbe Karten, 4~Rote Karten, 25~Wechsel, 1~Eigentor; je 27 bzw.\ 26~Einträge pro Stilprofil.
+\textbf{Datenbasis:} Die Datenbasis umfasst reale Ereignisse aus 30 Bundesliga-Spielen der Saison~2025/26 (u.\,a. Borussia~Dortmund -- SC~Freiburg, FSV~Mainz~05 -- FC~Bayern~München, FC~Augsburg -- Eintracht~Frankfurt, 1.~FC~Köln -- Bayer~Leverkusen), abgefragt über die Football~API~v3. Die Nutzung der Saison~2025/26 (statt der in der Hauptevaluation verwendeten Saison~2024/25) ist methodisch bewusst gewählt: Zum Zeitpunkt der LLM-as-Judge-Evaluation standen Spieltage der laufenden Saison~2025/26 als frische, vom Entwickler noch nicht manuell bewertete Daten zur Verfügung, was eine unabhängigere Datenbasis als eine Teilmenge der bereits in der Hauptevaluation verwendeten Spiele gewährleistet. Generierungsmodell: \texttt{google/gemini-2.0-flash-lite-001} (identisch zur Hauptevaluation, Temperatur~0{,}5). Bewertendes Modell: \texttt{anthropic/claude-sonnet-4-5} via OpenRouter, ein anderes Modell als das generierende, was Selbstreferenzialität vermeidet. Abgedeckte Event-Typen: 25~Tore, 25~Gelbe Karten, 4~Rote Karten, 25~Wechsel, 1~Eigentor (je 27 bzw.\ 26~Einträge pro Stilprofil).
 
 \textbf{Bewertungsprotokoll:} Der Bewertungsauftrag an \texttt{anthropic/claude-sonnet-4-5} wurde als Systemprompt übergeben, der das Modell als unabhängigen Qualitätsbewerter für KI-generierte Liveticker-Texte instruierte. Die Bewertungsdimensionen (Korrektheit, Tonalität, Verständlichkeit, je 1--5) sind identisch mit denen der manuellen Evaluation (vgl. Abschnitt~\ref{qualitative-analyse-der-generierten-texte}); die operationalen Definitionen aus Abschnitt~\ref{qualitative-analyse-der-generierten-texte} wurden im Systemprompt wörtlich übernommen. Der User-Prompt enthielt je Eintrag Ereignistyp, Spielminute, Spieler, Spielstand, das angeforderte Stilprofil und den generierten Text. Die Ausgabe erfolgte als strukturiertes JSON mit den drei Scores und einer einzeiligen Begründung, was eine maschinelle Weiterverarbeitung ohne manuelle Nachinterpretation ermöglichte.
 

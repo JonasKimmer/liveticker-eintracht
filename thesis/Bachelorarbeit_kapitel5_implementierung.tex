@@ -222,7 +222,7 @@ berechnet den Spielstand zum Zeitpunkt eines Torereignisses: Da die
 Football-API den kumulativen Stand liefert, muss der Stand \emph{vor}
 dem aktuellen Event rekonstruiert werden. Eigentore werden korrekt
 verarbeitet, da API-Football \texttt{team\_id} stets auf den
-Nutznießer des Tores setzt -- auch bei Eigentoren. \texttt{build\_match\_context()} erstellt das
+Nutznießer des Tores setzt (auch bei Eigentoren). \texttt{build\_match\_context()} erstellt das
 Kontext-Dictionary für den LLM-Prompt aus Teamnamen, aktuellem Stand,
 Matchzustand, Spielminute und Liga.
 
@@ -348,7 +348,7 @@ idempotent gegenüber Mehrfachaufrufen, ein wichtiges Merkmal, da
 n8n-Workflows bei Fehlern automatische Wiederholungsversuche ausführen.
 Wird ein abweichendes Stilprofil (\texttt{data.style}) übergeben, wird
 der bestehende Eintrag per Soft-Delete auf \texttt{status=deleted}
-gesetzt und neu generiert; der idempotente Pfad gilt damit nur für
+gesetzt und neu generiert. Der idempotente Pfad gilt damit nur für
 Aufrufe mit identischem Stil.
 
 Diese Schutzprüfung fehlt im Endpunkt \texttt{POST\ /generate-synthetic}
@@ -370,8 +370,8 @@ konzeptionelle Beschreibung der drei Betriebsmodi):
 \end{Highlighting}
 \end{Shaded}
 
-Damit wird die Modus-Logik zu einem reinen Aufrufparameter des Backends;
-die Entscheidungsinstanz ist n8n auf Basis des in der Datenbank
+Damit wird die Modus-Logik zu einem reinen Aufrufparameter des Backends.
+Die Entscheidungsinstanz ist n8n auf Basis des in der Datenbank
 gespeicherten \texttt{ticker\_mode}. Das Backend selbst ist
 modus-agnostisch: Es erhält einen Booleschen Wert und setzt den Status
 entsprechend.
