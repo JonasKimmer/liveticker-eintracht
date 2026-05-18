@@ -69,23 +69,13 @@ Die 17 n8n-Workflows stellen den größten nicht automatisiert getesteten
 Systemteil dar. Da sie die gesamte Datenversorgung des Systems
 verantworten, sollten Integrationstests gegen eine Staging-Datenbank den Produktivbetrieb absichern.
 
-Continuous Integration wurde im Projektzeitraum nicht eingerichtet. Für einen Produktivbetrieb ist eine CI-Pipeline mit automatisiertem Testlauf und Deployment-Gate erforderlich; die bestehende Repository-Schichtstruktur und Testinfrastruktur bieten dafür eine geeignete Grundlage.
-
 Die n8n-Instanz ist für den Evaluationszeitraum lokal betrieben und über einen \texttt{ngrok}-Tunnel für eingehende Webhooks erreichbar (vgl. Abschnitt~\ref{deployment-konzept}). Diese Lösung ist im Produktivbetrieb nicht vertretbar: Die Tunnel-Stabilität hängt von einer persistenten Internetverbindung des lokalen Rechners ab, und bei Tunnel-Neustarts müssen alle Webhook-URLs aktualisiert werden. Für einen produktiven Betrieb ist ein Cloud-Hosting der n8n-Instanz erforderlich.
 
 Die Provider-Fallback-Kette (Prioritäten 2--4: Gemini direkt, OpenAI, Anthropic) ist architektonisch vollständig implementiert und wurde im Evaluationszeitraum mangels aktivierter API-Keys nicht produktiv eingesetzt. Ein empirischer Qualitätsvergleich der Provider sowie eine Überprüfung der Fallback-Zuverlässigkeit unter Lastbedingungen stehen damit aus, ein relevanter blinder Fleck für ein System, das Multi-Provider-Redundanz als Kern-Architekturmerkmal ausweist (vgl. Abschnitt~\ref{multi-provider-architektur}).
 
-Die WebSocket-Verbindung existiert als In-Memory-Singleton pro Prozess.
-Bei einem Multi-Prozess-Deployment (mehrere Uvicorn-Worker hinter einem
-Load-Balancer) würden Medien-Updates nur Clients des jeweiligen Workers
-erreichen; eine Redis-Pub/Sub-Erweiterung wäre die natürliche
-Skalierungsstufe.
-
 Das System wurde nicht über einen längeren Zeitraum im Produktivbetrieb evaluiert. Aspekte wie kumulierte API-Kosten, Rate-Limit-Häufigkeit im Regelbetrieb und eine mögliche Qualitätsdrift der generierten Texte über eine vollständige Spielsaison hinweg sind empirisch nicht erfasst; die Bulk-Evaluationsinfrastruktur ermöglicht jedoch eine systematische Nacherhebung.
 
 Die Übersetzungsfunktion (\texttt{translate\_text()}, vgl.\ Abschnitt~\ref{llm-service-prompt-aufbau-und-provider-dispatch}) wurde funktional verifiziert, aber nicht qualitativ evaluiert. Eine Beurteilung durch Muttersprachler oder automatische Metriken (z.\,B. BLEU, COMET) wäre Voraussetzung für den Einsatz in nicht-deutschsprachigen Märkten; die implementierte Batch-Übersetzung übersetzt zudem alle publizierten Einträge unabhängig vom \texttt{source}-Feld, sodass auch bereits in der Zielsprache verfasste manuelle Einträge erfasst werden. Eine Filterung nach \texttt{source="ai"} wäre die naheliegende Präzisierung.
-
-In einzelnen n8n-Workflows ist die Saisonlogik auf die Spielzeit 2025/26 begrenzt. Für den Betrieb in einer Folgesaison sind entsprechende Parametrisierungen erforderlich; die betroffenen Konfigurationsstellen sind dokumentiert, aber nicht automatisiert anpassbar.
 
 \subsection{Inhaltliche Reflexion}\label{inhaltliche-reflexion}
 
@@ -139,7 +129,6 @@ Die dynamische Einbindung von bis zu drei Stilreferenzen aus der \texttt{style\_
 
 Die gewählte Temperatur von 0{,}5 für die Textgenerierung und 0{,}1 für Übersetzungen ist ein Kompromiss zwischen sprachlicher Varianz und Vorhersagbarkeit. Eine niedrigere Temperatur dürfte die Halluzinationsrate weiter senken, die Texte aber formelhafter machen, ein Zielkonflikt, der im Genre Liveticker (das von Überraschung und sprachlicher Kreativität lebt) besonders relevant ist; ein kontrollierter A/B-Test verschiedener Temperature-Werte war im Evaluationszeitraum nicht durchführbar. Die sieben spezialisierten Context-Builder (vgl. Abschnitt~\ref{prompt-engineering-strategie}) strukturieren die Fakten vor der Übergabe an das LLM und reduzieren damit die Wahrscheinlichkeit von Halluzinationen, da das Modell bereits aufbereitete Faktenblöcke erhält statt unstrukturierte Rohdaten. Die Wirksamkeit zeigt sich insbesondere bei ereignistypischen Einträgen (Tore, Karten), wo die Faktengrundlage eng begrenzt ist; bei Pre-Match-Einträgen verhinderte die Schutzregel zuverlässig Spielszenen-Halluzinationen, nicht jedoch alle Formen der Kontextüberschreitung (vgl. Abschnitt~\ref{qualitative-analyse-der-generierten-texte}).
 
-Die Evaluationsbefunde aus Abschnitt~\ref{evaluation-der-ki-textgenerierung} lassen sich auf konkrete Schwachstellen der Prompt-Architektur zurückführen. Die Tonalitätsschwäche des euphorischen Profils bei Wechsel- und Karten-Events (LLM-as-Judge: Ø~2{,}93/5, vgl. Abschnitt~\ref{erweiterte-evaluation}) erklärt sich durch eine Schiefe im Few-Shot-Korpus: Die \texttt{style\_references}-Tabelle enthält überwiegend Tor-Events als Referenztexte, da diese im redaktionellen Alltag die stilprägendsten Einträge bilden. Für ereignisarme Event-Typen (Wechsel, Karten) fehlen ausreichend distinkte euphorische Referenzen, sodass das Modell auf generische Sprachmuster zurückfällt. Die 20~\% stilistisch inkonsistenten Einträge im neutralen Profil deuten darauf hin, dass die Stilinstruktion im Prompt allein nicht stark genug ist, um den euphorischen Charakter verfügbarer Referenzen zu übersteuern, wenn profilspezifisch neutrale Referenzen fehlen. Beide Fehlerklassen sind damit durch gezielte Erweiterung des Referenzkorpus um profilspezifische Nicht-Tor-Events behebbar --- ein priorisierter Erweiterungspfad, der in Abschnitt~\ref{ausblick} ausgewiesen ist.
 
 
 \section{Implikationen für den
