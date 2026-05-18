@@ -6,7 +6,7 @@ Das in Kapitel~\ref{systemkonzeption} konzipierte und in Kapitel~\ref{implementi
 \section{Evaluation der
 KI-Textgenerierung}\label{evaluation-der-ki-textgenerierung}
 
-Die Evaluation der Textgenerierung gliedert sich in quantitative Metriken und Evaluationsinfrastruktur (Abschnitt~\ref{quantitative-metriken}), Modell- und Provider-Evaluation (Abschnitt~\ref{modell--und-provider-evaluation}), Einfluss der Stilprofile (Abschnitt~\ref{einfluss-der-stilprofile}), qualitative Textbewertung (Abschnitt~\ref{qualitative-analyse-der-generierten-texte}), Experteninterview-Auswertung (Abschnitt~\ref{experteninterview-auswertung}) und die erweiterte LLM-as-Judge-Evaluation (Abschnitt~\ref{erweiterte-evaluation}).
+Die Evaluation der Textgenerierung gliedert sich in quantitative Metriken und Evaluationsinfrastruktur (Abschnitt~\ref{quantitative-metriken}), Provider-Konfiguration und Qualitätsübersicht (Abschnitt~\ref{modell--und-provider-evaluation}), Einfluss der Stilprofile (Abschnitt~\ref{einfluss-der-stilprofile}), qualitative Textbewertung (Abschnitt~\ref{qualitative-analyse-der-generierten-texte}), Experteninterview-Auswertung (Abschnitt~\ref{experteninterview-auswertung}) und die erweiterte LLM-as-Judge-Evaluation (Abschnitt~\ref{erweiterte-evaluation}).
 
 \subsection{Quantitative Metriken und Evaluationsinfrastruktur}\label{quantitative-metriken}
 
@@ -25,10 +25,9 @@ Das Evaluationsmodul (\texttt{app/utils/evaluation\_metrics.py}) stellt sechs Me
 
 Das Evaluationsmodul ist im Rahmen der Qualitätssicherung durch Unit-Tests abgedeckt (vgl. Abschnitt~\ref{qualitätssicherung-und-tests}). Das Bootstrap-Konfidenzintervall wurde in der Hauptevaluation (N~=~40) nicht eingesetzt, da N~=~40 für eine stabile Bootstrap-Schätzung je Event-Typ und Stilprofil zu klein ist. Eine Folgestudie mit N~$\geq$~100 je Gruppe würde diese Methode produktiv einsetzen können. Cliff's Delta wurde ebenfalls nicht angewendet: Die Stichprobengrößen je Event-Typ (N~$\leq$~12) unterschreiten die für eine belastbare Effektstärken-Schätzung empfohlene Mindestgröße. Eine Anwendung auf die Gesamtstichprobe (N~=~40) wäre zwar rechnerisch möglich, würde aber die für die Forschungsfrage zentralen Gruppenstrukturen (Stilprofil, Event-Typ) ignorieren und ist daher für eine Folgestudie mit erweiterter Datenbasis vorgesehen.
 
-\subsection{Modell- und
-Provider-Evaluation}\label{modell--und-provider-evaluation}
+\subsection{Provider-Konfiguration und Qualitätsübersicht}\label{modell--und-provider-evaluation}
 
-Die Multi-Provider-Architektur mit Prioritätskette ist in Abschnitt~\ref{multi-provider-architektur} beschrieben. Für die Evaluation relevante Provider und Konfiguration:
+Die Multi-Provider-Architektur mit Prioritätskette ist in Abschnitt~\ref{multi-provider-architektur} beschrieben. Im Evaluationszeitraum waren nur OpenRouter (Priorität~1) und der regelbasierte Mock-Provider (Fallback) aktiv; die übrigen Provider sind architektonisch vollständig implementiert, wurden jedoch mangels aktivierter API-Keys nicht in die Evaluation einbezogen. Die folgende Tabelle zeigt die vollständige Konfiguration:
 
 {\def\LTcaptype{none} % do not increment counter
 \begin{longtable}[]{@{}
@@ -58,7 +57,7 @@ Temperatur
 \end{longtable}
 }
 
-Im produktiven Render-Deployment waren nur OpenRouter (Priorität~1) und Mock (Fallback) aktiv. Die übrigen Provider wurden mangels aktivierter API-Keys nicht evaluiert, sind jedoch architektonisch vollständig implementiert. Die qualitative Bewertung (N~=~40, OpenRouter) zeigt einen klaren Qualitätsvorsprung des LLM-Providers gegenüber dem regelbasierten Mock-Provider in der Tonalitätstreue (OpenRouter: 4{,}1\,/\,5 vs.\ Mock: 3{,}0\,/\,5 bei N~=~7 Mock-Einträgen; Δ~=~1{,}1 Skalenpunkte); Korrektheit und Verständlichkeit liegen bei 4{,}6 bzw.\ 4{,}3 (OpenRouter). Die Latenzanalyse findet sich in Abschnitt~\ref{llm-latenz}.
+Die qualitative Bewertung (N~=~40, OpenRouter) zeigt einen klaren Qualitätsvorsprung des LLM-Providers gegenüber dem regelbasierten Mock-Provider in der Tonalitätstreue (OpenRouter: 4{,}1\,/\,5 vs.\ Mock: 3{,}0\,/\,5 bei N~=~7 Mock-Einträgen; Δ~=~1{,}1 Skalenpunkte); Korrektheit und Verständlichkeit liegen bei 4{,}6 bzw.\ 4{,}3 (OpenRouter). Die Latenzanalyse findet sich in Abschnitt~\ref{llm-latenz}.
 
 Der Tonalitätswert von 4{,}1\,/\,5 differenziert sich nach Stilprofil: Das neutrale Profil erzielt in der LLM-as-Judge-Evaluation 4{,}81\,/\,5, das kritische 4{,}04\,/\,5. Die Schwäche im Gesamtdurchschnitt ist primär dem euphorischen Profil bei ereignisarmen Event-Typen zuzurechnen (Wechsel: Tonalität~2{,}93\,/\,5, vgl. Abschnitt~\ref{erweiterte-evaluation}); eine Einordnung dieses Befunds findet sich in Kapitel~\ref{diskussion}.
 
