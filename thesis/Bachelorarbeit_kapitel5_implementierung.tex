@@ -639,15 +639,67 @@ Die Implementierung setzt das in Abschnitt~\ref{qualitätssicherungskonzept} bes
 
 \subsection{Frontend-Tests (Jest + React Testing Library)}\label{impl-frontend-tests}
 
-Unit-Tests decken Utility-Funktionen, Hooks und UI-Komponenten ab. Sieben Hook-Tests sichern das Zustandsmanagement isoliert von der UI ab, darunter \texttt{useMatchEvents}, \texttt{useMatchTicker} und \texttt{useLiveMinute}. Fünf Komponenten-Tests prüfen kritische UI-Elemente: \texttt{EntryEditor}, \texttt{PublishedEntry}, \texttt{CommandPalette}, \texttt{RightPanelComponents} und \texttt{ErrorBoundary}. Der \texttt{parseCommand}-Parser ist mit 29 Testfällen besonders umfangreich abgesichert: Als kritische manuelle Eingabeschicht muss er sämtliche Slash-Command-Varianten, Fehleingaben und Kantenfälle zuverlässig verarbeiten. Ein Fehler hier würde sich direkt in falsch klassierten Ticker-Einträgen niederschlagen.
+Unit-Tests decken Utility-Funktionen, Hooks und UI-Komponenten ab. Sieben Hook-Tests sichern das Zustandsmanagement isoliert von der UI ab, darunter \texttt{useMatchEvents}, \texttt{useMatchTicker} und \texttt{useLiveMinute}. Fünf Komponenten-Tests prüfen kritische UI-Elemente: \texttt{EntryEditor}, \texttt{PublishedEntry}, \texttt{CommandPalette}, \texttt{RightPanelComponents} und \texttt{ErrorBoundary}. Der \texttt{parseCommand}-Parser ist mit 45 Testfällen besonders umfangreich abgesichert: Als kritische manuelle Eingabeschicht muss er sämtliche Slash-Command-Varianten, Fehleingaben und Kantenfälle zuverlässig verarbeiten. Ein Fehler hier würde sich direkt in falsch klassierten Ticker-Einträgen niederschlagen. Die folgende Übersicht zeigt die Verteilung auf alle 15 Testdateien.
+
+{\small\def\LTcaptype{none}
+\begin{longtable}[]{@{}llr@{}}
+\toprule\noalign{}
+Datei & Kategorie & Tests \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+\texttt{useClickOutside.test.ts} & Hook & 5 \\
+\texttt{useListKeyboard.test.tsx} & Hook & 9 \\
+\texttt{useMatchEvents.test.ts} & Hook & 6 \\
+\texttt{useMatchTicker.test.ts} & Hook & 5 \\
+\texttt{useLiveMinute.test.ts} & Hook & 10 \\
+\texttt{useRightPanelData.test.ts} & Hook & 10 \\
+\texttt{useSearchableDropdown.test.ts} & Hook & 10 \\
+\texttt{resolvePollingInterval.test.ts} & Utility & 6 \\
+\texttt{roundLabel.test.ts} & Utility & 16 \\
+\texttt{parseCommand.test.ts} & Utility (Parser) & 45 \\
+\texttt{ErrorBoundary.test.tsx} & Komponente & 4 \\
+\texttt{CommandPalette.test.ts} & Komponente & 7 \\
+\texttt{EntryEditor.test.tsx} & Komponente & 19 \\
+\texttt{PublishedEntry.test.tsx} & Komponente & 17 \\
+\texttt{RightPanelComponents.test.tsx} & Komponente & 18 \\
+\midrule\noalign{}
+\textbf{Gesamt} & & \textbf{187} \\
+\end{longtable}
+}
 
 \subsection{Backend-Tests (pytest)}\label{impl-backend-tests}
 
-API-Integrationstests prüfen alle Endpunkte gegen eine echte PostgreSQL-Testinstanz mit transaktionalem Rollback. Nach jedem Test wird die Datenbank auf den Ausgangszustand zurückgesetzt, sodass Tests voneinander isoliert und in beliebiger Reihenfolge ausführbar sind. Repository- und Service-Unit-Tests ergänzen die Integrationstests auf Schichtebene. Der Verzicht auf Datenbank-Mocks in diesen Schichten ist bewusst: Mock-Implementierungen riskieren Divergenzen zum realen Schema, die gerade bei Schemaänderungen während der Entwicklung unbemerkt bleiben. Der LLM-Service wird hingegen gemockt, da externe LLM-Aufrufe nicht deterministisch und in automatisierten Läufen nicht reproduzierbar sind. Ergänzend enthält \texttt{evaluation\_metrics.py} statistische Hilfsfunktionen (Cliff's Delta, Bootstrap-Konfidenzintervall, Cohen's Kappa u.\,a.) als Evaluationsinfrastruktur für die KI-Textbewertung in Kapitel~\ref{evaluation}.
+API-Integrationstests prüfen alle Endpunkte gegen eine echte PostgreSQL-Testinstanz mit transaktionalem Rollback. Nach jedem Test wird die Datenbank auf den Ausgangszustand zurückgesetzt, sodass Tests voneinander isoliert und in beliebiger Reihenfolge ausführbar sind. Repository- und Service-Unit-Tests ergänzen die Integrationstests auf Schichtebene. Der Verzicht auf Datenbank-Mocks in diesen Schichten ist bewusst: Mock-Implementierungen riskieren Divergenzen zum realen Schema, die gerade bei Schemaänderungen während der Entwicklung unbemerkt bleiben. Der LLM-Service wird hingegen gemockt, da externe LLM-Aufrufe nicht deterministisch und in automatisierten Läufen nicht reproduzierbar sind. Ergänzend enthält \texttt{evaluation\_metrics.py} statistische Hilfsfunktionen (Cliff's Delta, Bootstrap-Konfidenzintervall, Cohen's Kappa u.\,a.) als Evaluationsinfrastruktur für die KI-Textbewertung in Kapitel~\ref{evaluation}. Die folgende Übersicht zeigt die Coverage-Verteilung nach Architekturschicht (246 Tests, 3.230 Statements gesamt).
+
+{\small\def\LTcaptype{none}
+\begin{longtable}[]{@{}lr@{}}
+\toprule\noalign{}
+Schicht & Coverage \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Datenmodelle (ORM) & 100\,\% \\
+Pydantic-Schemas & 98\,\% \\
+Hilfsfunktionen (\texttt{utils}) & 97\,\% \\
+Konfiguration (\texttt{core}) & 86\,\% \\
+Repositories & 66\,\% \\
+Services & 62\,\% \\
+API-Router & 59\,\% \\
+\midrule\noalign{}
+\textbf{Gesamt} & \textbf{79\,\%} \\
+\end{longtable}
+}
+
+Die unterdurchschnittliche Coverage in API-Router (59\,\%) und Services (62\,\%) ist strukturell bedingt: Endpunkte für externe Medien-Integrationen (\texttt{clips}, \texttt{media}) und die vollständige LLM-Generierungspipeline (\texttt{ticker\_generate}) benötigen externe Dienste, die in automatisierten Läufen nicht reproduzierbar sind. Die Kernfunktionalität (CRUD-Operationen auf Ticker-Einträgen und Spielmetadaten) ist durch die Integrationstests vollständig abgedeckt.
 
 \subsection{End-to-End-Tests (Playwright)}\label{impl-e2e-tests}
 
-Browser-seitige Smoke-Tests in \texttt{e2e/liveticker.spec.ts} validieren grundlegende Nutzerinteraktionen: App-Laden ohne JavaScript-Fehler, Sichtbarkeit des Länder-Dropdowns, Öffnen und Schließen des Keyboard-Shortcuts-Modals über den \texttt{?}-Button sowie ein Viewport-Test bei 375\,×\,812\,px (iPhone~SE) als Regressionsschutz gegen Layout-Brüche auf kleinen Bildschirmen (N5). Testmetriken, Coverage-Kennzahlen und TypeScript-Typsicherheitswerte sind in Abschnitt~\ref{technische-qualituxe4tssicherung} dokumentiert.
+Browser-seitige Smoke-Tests in \texttt{e2e/liveticker.spec.ts} validieren grundlegende Nutzerinteraktionen: App-Laden ohne JavaScript-Fehler, Sichtbarkeit des Länder-Dropdowns, Öffnen und Schließen des Keyboard-Shortcuts-Modals über den \texttt{?}-Button sowie ein Viewport-Test bei 375\,×\,812\,px (iPhone~SE) als Regressionsschutz gegen Layout-Brüche auf kleinen Bildschirmen (N5).
+
+Die vollständige Testsuite umfasst \textbf{187 Frontend-Unit-Tests} in 15 Dateien, \textbf{246 Backend-Tests} in 14 Dateien bei 79\,\% Gesamt-Coverage sowie sechs Playwright-Smoke-Tests. Das Frontend wurde schrittweise auf TypeScript migriert und erreicht im Endstand eine \texttt{type-coverage} von \textbf{98{,}02\,\%} bei null Compilerfehlern (18.665 von 19.041 Ausdrücken explizit getypt).
 
 
 \section{Deployment}\label{deployment}
