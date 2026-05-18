@@ -29,6 +29,7 @@ class Player(Base):
     signing_date = Column(Date, nullable=True)
     image_url = Column(String(500), nullable=True)
     person_hero_image_url = Column(String(500), nullable=True)
+    video_url = Column(String(500), nullable=True)          # Torjubel-Video (S3)
     profile = Column(Text, nullable=True)
     hidden = Column(Boolean, nullable=False, default=False)
     statistics = Column(JSONB, nullable=True)              # PlayerStatistics als JSON

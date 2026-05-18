@@ -1,0 +1,258 @@
+{
+  "name": "Sync 10 | Spielphasen LiveTicker",
+  "nodes": [
+    {
+      "parameters": {
+        "url": "https://v3.football.api-sports.io/fixtures",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "id",
+              "value": "1388536"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        352,
+        240
+      ],
+      "id": "c214c14d-2202-4a4a-9b16-53723d8cc3dc",
+      "name": "GET: Live Fixtures",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "8TXlLPe7BeXnl0Ut",
+          "name": "Header Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const phaseMap = {\n  '1H': { phase: 'FirstHalf',       eventType: 'PhaseChange', label: 'Anpfiff!',            minute: 1  },\n  'HT': { phase: 'FirstHalfBreak',  eventType: 'PhaseChange', label: 'Halbzeit!',           minute: 45 },\n  '2H': { phase: 'SecondHalf',      eventType: 'PhaseChange', label: 'Wiederanpfiff!',      minute: 46 },\n  'FT': { phase: 'After',           eventType: 'PhaseChange', label: 'Abpfiff!',            minute: 90 },\n  'ET': { phase: 'ExtraFirstHalf',  eventType: 'PhaseChange', label: 'Verlängerung!',       minute: 91 },\n  'BT': { phase: 'ExtraBreak',      eventType: 'PhaseChange', label: 'Verlängerungspause!', minute: 105 },\n  'P':  { phase: 'PenaltyShootout', eventType: 'PhaseChange', label: 'Elfmeterschießen!',   minute: 121 }\n};\n\nreturn ($input.first().json.response || []).flatMap(f => {\n  const status = f.fixture.status.short;\n  const base = {\n    fixtureId: f.fixture.id,\n    homeTeam:  f.teams.home.name,\n    awayTeam:  f.teams.away.name,\n    homeScore: f.goals.home ?? 0,\n    awayScore: f.goals.away ?? 0\n  };\n\n  if (status === 'FT') {\n    return ['1H', 'HT', '2H', 'FT'].map(s => ({\n      json: { ...base, status: s, minute: phaseMap[s].minute, ...phaseMap[s] }\n    }));\n  }\n\n  if (phaseMap[status]) {\n    return [{ json: { ...base, status, minute: f.fixture.status.elapsed ?? phaseMap[status].minute, ...phaseMap[status] } }];\n  }\n\n  return [];\n});"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        560,
+        240
+      ],
+      "id": "0ba375c4-ffeb-41ee-b496-463546d7359a",
+      "name": "Phasen mappen"
+    },
+    {
+      "parameters": {
+        "url": "=https://partner-api.stackwork-01-test.tech/cms/v1/matches/{{ $json.fixtureId }}/events",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "pageSize",
+              "value": "100"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer 52091AC14B524E59DEF531D0EA8F57EF0804D4CFADCF4A1A52CE842687D2D209-1"
+            },
+            {
+              "name": "et-partner-id",
+              "value": "4"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        752,
+        240
+      ],
+      "id": "683dc2a3-30f9-484f-8c03-d2ace3ad96ab",
+      "name": "GET: Already posted Events"
+    },
+    {
+      "parameters": {
+        "jsCode": "const postedIds = new Set(\n  ($('GET: Already posted Events').first().json.items || [])\n    .map(e => e.sourceId)\n);\n\nreturn $input.all()\n  .map(item => {\n    const d = item.json;\n    const sourceId = `phase-${d.fixtureId}-${d.status}`;\n    return { json: { ...d, sourceId } };\n  })\n  .filter(item => !postedIds.has(item.json.sourceId));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        960,
+        240
+      ],
+      "id": "e2a13acf-e425-46ea-9d15-d2a0729b1fb2",
+      "name": "Filter: Noch nicht gepostet"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://openrouter.ai/api/v1/chat/completions",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"model\": \"google/gemini-2.0-flash-lite-001\",\n  \"max_tokens\": 150,\n  \"messages\": [{\n    \"role\": \"user\",\n    \"content\": \"Du bist Liveticker-Redakteur für Eintracht Frankfurt. Schreibe einen kurzen, emotionalen Phasen-Ticker (1 Satz, Deutsch, Fansprache) für: {{ $json.label }} Spiel: {{ $json.homeTeam }} {{ $json.homeScore }}:{{ $json.awayScore }} {{ $json.awayTeam }}, Minute {{ $json.minute }}. Nur den Text ausgeben.\"\n  }]\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1152,
+        240
+      ],
+      "id": "a6272320-8cb8-4165-a22a-dd44f975e47c",
+      "name": "LLM: Phasen-Text",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "qgFPOEHRxazizzJI",
+          "name": "Header Auth account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const text = $input.first().json.choices?.[0]?.message?.content?.trim() || null;\nconst d = $('Filter: Noch nicht gepostet').all()[$itemIndex]?.json || {};\n\nreturn [{\n  json: {\n    fixtureId: d.fixtureId,\n    body: {\n      sourceId:            d.sourceId,\n      sport:               'Football',\n      position:            d.minute,\n      time:                d.minute,\n      timeAdditional:      0,\n      description:         text,\n      imageUrl:            null,\n      videoUrl:            null,\n      pushTitle:           null,\n      pushDescription:     null,\n      pushImageSrc:        null,\n      embedHtml:           null,\n      liveTickerPhaseType: d.phase,\n      liveTickerEventType: d.eventType,\n      players:             []\n    }\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1360,
+        240
+      ],
+      "id": "5526b044-4590-4754-8595-3065b088b739",
+      "name": "Body bauen"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://partner-api.stackwork-01-test.tech/cms/v1/matches/{{ $json.fixtureId }}/events",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer 52091AC14B524E59DEF531D0EA8F57EF0804D4CFADCF4A1A52CE842687D2D209-1"
+            },
+            {
+              "name": "et-partner-id",
+              "value": "4"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json.body) }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        1552,
+        240
+      ],
+      "id": "180cc6bd-7950-431c-a792-d0a40ccbfb63",
+      "name": "POST: Phasen-Event",
+      "onError": "continueRegularOutput"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "GET: Live Fixtures": {
+      "main": [
+        [
+          {
+            "node": "Phasen mappen",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Phasen mappen": {
+      "main": [
+        [
+          {
+            "node": "GET: Already posted Events",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GET: Already posted Events": {
+      "main": [
+        [
+          {
+            "node": "Filter: Noch nicht gepostet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter: Noch nicht gepostet": {
+      "main": [
+        [
+          {
+            "node": "LLM: Phasen-Text",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "LLM: Phasen-Text": {
+      "main": [
+        [
+          {
+            "node": "Body bauen",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Body bauen": {
+      "main": [
+        [
+          {
+            "node": "POST: Phasen-Event",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "2a927608-6acc-42b7-a4bf-52be070c0bfb",
+  "meta": {
+    "instanceId": "8f356ecf824174491100e48f7fade606f544a76873378b03e211127fbec11c97"
+  },
+  "id": "97BD6mXv6UI8RoDX",
+  "tags": []
+}

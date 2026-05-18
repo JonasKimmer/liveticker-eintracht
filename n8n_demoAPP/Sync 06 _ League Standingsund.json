@@ -1,0 +1,244 @@
+{
+  "name": "Sync 06 | League Standingsund",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        -128
+      ],
+      "id": "cbc52e42-3e40-4c9f-a16e-e8dce47a1459",
+      "name": "Manual Trigger"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "1",
+              "name": "season_id",
+              "value": 2026,
+              "type": "number"
+            },
+            {
+              "id": "2",
+              "name": "season",
+              "value": 2025,
+              "type": "number"
+            },
+            {
+              "id": "3",
+              "name": "comp_bundesliga",
+              "value": 3,
+              "type": "number"
+            },
+            {
+              "id": "4",
+              "name": "comp_cl",
+              "value": 5,
+              "type": "number"
+            },
+            {
+              "id": "5",
+              "name": "league_bundesliga",
+              "value": 78,
+              "type": "number"
+            },
+            {
+              "id": "6",
+              "name": "league_cl",
+              "value": 2,
+              "type": "number"
+            },
+            {
+              "id": "7",
+              "name": "matchday_bl",
+              "value": 26,
+              "type": "number"
+            },
+            {
+              "id": "8",
+              "name": "matchday_cl",
+              "value": 8,
+              "type": "number"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        208,
+        -128
+      ],
+      "id": "0832e993-4c5e-4617-8fb2-e4bcf08579cf",
+      "name": "Konfiguration"
+    },
+    {
+      "parameters": {
+        "jsCode": "const c = $('Konfiguration').first().json;\nreturn [\n  { json: { league_id: c.league_bundesliga, competition_id: c.comp_bundesliga, matchday: c.matchday_bl, season: c.season, season_id: c.season_id } },\n  { json: { league_id: c.league_cl,         competition_id: c.comp_cl,         matchday: c.matchday_cl, season: c.season, season_id: c.season_id } }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        400,
+        -128
+      ],
+      "id": "783343e4-b91f-47a7-af36-a0e5a26ee249",
+      "name": "Liga Liste"
+    },
+    {
+      "parameters": {
+        "url": "=https://v3.football.api-sports.io/standings",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "league",
+              "value": "={{ $json.league_id }}"
+            },
+            {
+              "name": "season",
+              "value": "={{ $json.season }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        608,
+        -128
+      ],
+      "id": "0122d632-47a8-4986-a882-63c54a233200",
+      "name": "HTTP: Get Standings",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "8TXlLPe7BeXnl0Ut",
+          "name": "Header Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const item = $input.all()[0];\nconst standings = item.json.response[0].league.standings[0];\nconst competition_id = $('Liga Liste').all()[$itemIndex].json.competition_id;\nconst season_id = $('Liga Liste').all()[$itemIndex].json.season_id;\nconst matchday = $('Liga Liste').all()[$itemIndex].json.matchday;\n\nreturn [{\n  json: {\n    season_id,\n    competition_id,\n    matchday,\n    standings: standings.map(s => ({\n      teamId: s.team.id,\n      sport: \"Football\",\n      position: s.rank,\n      trend: null,\n      matchesPlayed: s.all.played,\n      matchesWon: s.all.win,\n      matchesDrawn: s.all.draw,\n      matchesLost: s.all.lose,\n      goalsFor: s.all.goals.for,\n      goalsAgainst: s.all.goals.against,\n      goalBalance: s.goalsDiff,\n      points: s.points\n    }))\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        800,
+        -128
+      ],
+      "id": "b757b7d5-48cd-471a-9ae0-e2978d6ece96",
+      "name": "JS: Map Standings"
+    },
+    {
+      "parameters": {
+        "method": "PUT",
+        "url": "=https://partner-api.stackwork-01-test.tech/cms/v1/seasons/{{ $json.season_id }}/competitions/{{ $json.competition_id }}/matchdays/{{ $json.matchday }}/standings",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer 52091AC14B524E59DEF531D0EA8F57EF0804D4CFADCF4A1A52CE842687D2D209-1"
+            },
+            {
+              "name": "et-partner-id",
+              "value": "4"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"standings\": {{ JSON.stringify($json.standings) }}\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        1008,
+        -128
+      ],
+      "id": "05ff6794-2287-415b-9b3e-70e1c073d3ce",
+      "name": "HTTP: PUT Standings",
+      "onError": "continueRegularOutput"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Manual Trigger": {
+      "main": [
+        [
+          {
+            "node": "Konfiguration",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Konfiguration": {
+      "main": [
+        [
+          {
+            "node": "Liga Liste",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Liga Liste": {
+      "main": [
+        [
+          {
+            "node": "HTTP: Get Standings",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP: Get Standings": {
+      "main": [
+        [
+          {
+            "node": "JS: Map Standings",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "JS: Map Standings": {
+      "main": [
+        [
+          {
+            "node": "HTTP: PUT Standings",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "1627a0f7-a1a9-4c64-95d0-9f38e85841a7",
+  "meta": {
+    "instanceId": "8f356ecf824174491100e48f7fade606f544a76873378b03e211127fbec11c97"
+  },
+  "id": "8SG0tuIJhLpP99JW",
+  "tags": []
+}

@@ -1,0 +1,31 @@
+interface WhitelabelConfig {
+  clubName: string;
+  teamKeyword: string;
+  primaryColor: string;
+  secondaryColor: string;
+  accentColor: string;
+  darkBg: string;
+  darkCard: string;
+  darkBorder: string;
+  darkText: string;
+  darkMuted: string;
+  apiBase: string;
+  n8nBase: string;
+}
+
+const config: WhitelabelConfig = {
+  clubName: "Liveticker",
+  teamKeyword: "frankfurt",
+  primaryColor: "#f5a623",
+  secondaryColor: "#e8940f",
+  accentColor: "#ffd700",
+  darkBg: "#0d0d0d",
+  darkCard: "#1a1a1a",
+  darkBorder: "#2a2a2a",
+  darkText: "#e0e0e0",
+  darkMuted: "#888",
+  apiBase: process.env.REACT_APP_API_BASE || "http://localhost:8001/api/v1",
+  n8nBase: process.env.REACT_APP_N8N_BASE || "http://localhost:5678/webhook",
+};
+
+export default config;

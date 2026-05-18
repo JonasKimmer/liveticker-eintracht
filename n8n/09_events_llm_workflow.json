@@ -1,0 +1,956 @@
+{
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "Events",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        4256,
+        9488
+      ],
+      "id": "d97e154c-9840-4c89-8314-39d763c8da9a",
+      "name": "Webhook Events14",
+      "webhookId": "6188adc1-362c-45e1-9e8a-abd1889bbe3b"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT\n  m.id AS match_id,\n  COALESCE($2, m.ticker_mode) AS ticker_mode,\n  CASE WHEN (ht.name ILIKE '%Frankfurt%' OR at.name ILIKE '%Frankfurt%')\n       THEN 'ef_whitelabel' ELSE 'generic' END AS instance,\n  CASE WHEN (ht.name ILIKE '%Frankfurt%' OR at.name ILIKE '%Frankfurt%')\n       THEN 'euphorisch' ELSE 'neutral' END AS style,\n  CASE WHEN ht.name ILIKE '%Frankfurt%' THEN ht.name\n       WHEN at.name ILIKE '%Frankfurt%' THEN at.name\n       ELSE NULL END AS fan_team\nFROM matches m\nJOIN teams ht ON ht.id = m.home_team_id\nJOIN teams at ON at.id = m.away_team_id\nWHERE m.external_id = $1\nLIMIT 1\n",
+        "options": {
+          "queryReplacement": "={{ $json.body.fixture_id + ',' + ($json.body.ticker_mode ?? '') }}"
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        4512,
+        9488
+      ],
+      "id": "2ea34b35-952b-47a4-a424-75e88f2c2ffd",
+      "name": "DB: Match-Instanz13",
+      "credentials": {
+        "postgres": {
+          "id": "WHRqubCoiFyFjqqL",
+          "name": "Postgres account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "https://v3.football.api-sports.io/fixtures/events",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "fixture",
+              "value": "={{ $('Webhook Events14').first().json.body.fixture_id }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        4768,
+        9488
+      ],
+      "id": "1f8e37f9-ce9e-4767-a248-03f8ae8ef9c4",
+      "name": "API: Events abrufen15",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "nw1wvLZ4u2BCZRVl",
+          "name": "Header Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\n\nreturn items.flatMap(item => {\n  if (!item.json.response) return [];\n  const fixtureId = item.json.parameters?.fixture;\n\n  return item.json.response\n    .filter(event => (event.time?.elapsed ?? 0) >= 0)\n    .map(event => ({\n      json: {\n        fixture_id:       fixtureId,\n        minute:           event.time.elapsed,\n        extra_time:       event.time.extra || null,\n        team_external_id: event.team.id,\n        team_name:        event.team?.name || null,\n        player_id:        event.player?.id || null,\n        player_name:      event.player?.name || null,\n        assist_id:        event.assist?.id || null,\n        assist_name:      event.assist?.name || null,\n        type:             event.type,\n        detail:           event.detail,\n        comments:         event.comments || null\n      }\n    }));\n});"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        4992,
+        9488
+      ],
+      "id": "c3fd2468-7019-42ab-af3e-d7a887e02d22",
+      "name": "Events extrahieren14"
+    },
+    {
+      "parameters": {
+        "jsCode": "// ── Hilfsfunktionen ─────────────────────────────────────\nfunction esc(val) {\n  if (val === null || val === undefined) return 'NULL';\n  return `'${String(val).replace(/'/g, \"''\")}'`;\n}\nfunction num(val) {\n  return (val === null || val === undefined) ? 'NULL' : val;\n}\nfunction mbucket(min) {\n  return Math.floor((min ?? 0) / 3);\n}\nfunction getIcon(eventType) {\n  const icons = {\n    'goal':             '⚽',\n    'own_goal':         '🙈',\n    'yellow_card':      '🟨',\n    'red_card':         '🟥',\n    'yellow_red_card':  '🟨🟥',\n    'substitution':     '🔄',\n    'penalty_won':      '🎯',\n    'penalty_cancelled':'❌',\n    'goal_cancelled':   '🚫',\n    'var_red_card':     '📺🟥',\n    'missed_penalty':   '❌',\n    'comment':          '💬',\n  };\n  return icons[eventType] || '📋';\n}\nfunction normalizeType(type, detail) {\n  if (type === 'Card') {\n    const d = (detail || '').toLowerCase();\n    if (d.includes('red')) return 'red_card';\n    return 'yellow_card';\n  }\n  if (type === 'Goal') {\n    const d = (detail || '').toLowerCase();\n    if (d.includes('own')) return 'own_goal';\n    return 'goal';\n  }\n  if (type === 'Var') {\n    const d = (detail || '').toLowerCase();\n    if (d.includes('penalty confirmed'))  return 'penalty_won';\n    if (d.includes('penalty cancelled')) return 'penalty_cancelled';\n    if (d.includes('goal cancelled'))    return 'goal_cancelled';\n    if (d.includes('red card'))          return 'var_red_card';\n    return 'comment';\n  }\n  const TYPE_MAP = { 'subst': 'substitution', 'Miss': 'missed_penalty' };\n  return TYPE_MAP[type] || 'comment';\n}\n\n// ── Schritt 1: Gelb-Rot erkennen ────────────────────────\nconst cardGroups = new Map();\nconst allItems = $input.all();\n\nallItems.forEach((item, idx) => {\n  const e = item.json;\n  if (e.type !== 'Card') return;\n  const key = `${e.fixture_id}_b${mbucket(e.minute)}_${e.player_id ?? 'x'}`;\n  if (!cardGroups.has(key)) cardGroups.set(key, []);\n  cardGroups.get(key).push({ ...e, _idx: idx });\n});\n\nconst yellowRedKeys = new Set();\nconst skipIdxs = new Set();\n\nfor (const [key, events] of cardGroups) {\n  const hasYellow = events.some(e => (e.detail || '').toLowerCase().includes('yellow'));\n  const hasRed    = events.some(e => (e.detail || '').toLowerCase().includes('red'));\n  if (hasYellow && hasRed) {\n    yellowRedKeys.add(key);\n    events.forEach(e => skipIdxs.add(e._idx));\n  }\n}\n\n// ── Schritt 2: Normale Events ────────────────────────────\nconst result = [];\n\nallItems.forEach((item, idx) => {\n  const e = item.json;\n  if (skipIdxs.has(idx)) return;\n\n  const eventType = normalizeType(e.type, e.detail);\n  const sourceId  = `apifootball_${e.fixture_id}_b${mbucket(e.minute)}_${e.type}_${(e.detail||'').replace(/\\s+/g,'_')}_${e.player_id ?? 'x'}`;\n  const description = JSON.stringify({\n    player_id:   e.player_id,\n    player_name: e.player_name,\n    assist_id:   e.assist_id,\n    assist_name: e.assist_name,\n    team_id:     e.team_external_id,\n    team_name:   e.team_name,\n    type:        e.type,\n    detail:      e.detail,\n    comments:    e.comments,\n    icon:        getIcon(eventType),\n  });\n\n  const query = `\n    INSERT INTO events (\n      match_id, time, time_additional,\n      event_type, description, source, source_id, position\n    )\n    VALUES (\n      (SELECT id FROM matches WHERE external_id = ${num(e.fixture_id)}::integer),\n      ${num(e.minute)},\n      ${num(e.extra_time)},\n      ${esc(eventType)},\n      ${esc(description)},\n      'api_football',\n      ${esc(sourceId)},\n      ${(e.minute ?? 0) + (e.extra_time ?? 0)}\n    )\n    ON CONFLICT (source_id) WHERE source_id IS NOT NULL\n    DO UPDATE SET\n      source          = EXCLUDED.source,\n      time            = EXCLUDED.time,\n      time_additional = EXCLUDED.time_additional,\n      position        = EXCLUDED.position\n    RETURNING id, event_type, time, description, (xmax = 0) AS is_new\n  `.trim();\n\n  result.push({ json: { query, fixture_id: e.fixture_id } });\n});\n\n// ── Schritt 3: Gelb-Rot-Events ───────────────────────────\nfor (const [key, events] of cardGroups) {\n  if (!yellowRedKeys.has(key)) continue;\n\n  const base = events[0];\n  const sourceId = `apifootball_${base.fixture_id}_b${mbucket(base.minute)}_yellowred_${base.player_id ?? 'x'}`;\n  const description = JSON.stringify({\n    player_id:   base.player_id,\n    player_name: base.player_name,\n    assist_id:   null,\n    assist_name: null,\n    team_id:     base.team_external_id,\n    team_name:   base.team_name,\n    type:        'Card',\n    detail:      'Yellow Red Card',\n    comments:    base.comments,\n    icon:        '🟨🟥',\n  });\n\n  const query = `\n    WITH cleanup AS (\n      DELETE FROM events\n      WHERE match_id = (SELECT id FROM matches WHERE external_id = ${num(base.fixture_id)}::integer)\n        AND source = 'api_football'\n        AND time = ${num(base.minute)}\n        AND event_type IN ('yellow_card', 'red_card')\n        AND (description::jsonb->>'player_id')::integer = ${num(base.player_id)}\n    )\n    INSERT INTO events (\n      match_id, time, time_additional,\n      event_type, description, source, source_id, position\n    )\n    VALUES (\n      (SELECT id FROM matches WHERE external_id = ${num(base.fixture_id)}::integer),\n      ${num(base.minute)},\n      ${num(base.extra_time)},\n      'yellow_red_card',\n      ${esc(description)},\n      'api_football',\n      ${esc(sourceId)},\n      ${(base.minute ?? 0) + (base.extra_time ?? 0)}\n    )\n    ON CONFLICT (source_id) WHERE source_id IS NOT NULL\n    DO UPDATE SET\n      source          = EXCLUDED.source,\n      time            = EXCLUDED.time,\n      time_additional = EXCLUDED.time_additional,\n      position        = EXCLUDED.position\n    RETURNING id, event_type, time, description, (xmax = 0) AS is_new\n  `.trim();\n\n  result.push({ json: { query, fixture_id: base.fixture_id } });\n}\n\nreturn result;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        5216,
+        9488
+      ],
+      "id": "a724c5c1-16ef-4529-a625-d69f002f4830",
+      "name": "Events Insert - Code Node13"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "={{ $json.query }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        5440,
+        9488
+      ],
+      "id": "8275073d-58cf-4bcd-9bfa-70a608032545",
+      "name": "Insert Events15",
+      "credentials": {
+        "postgres": {
+          "id": "WHRqubCoiFyFjqqL",
+          "name": "Postgres account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "filter5-id-exists",
+              "leftValue": "={{ $json.id }}",
+              "rightValue": "",
+              "operator": {
+                "type": "number",
+                "operation": "exists",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "filter5-is-new",
+              "leftValue": "={{ $json.is_new }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.2,
+      "position": [
+        5856,
+        9168
+      ],
+      "id": "18a028d9-728a-4beb-968f-dc01a25efc9e",
+      "name": "Filter13"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://liveticker-backend.onrender.com/api/v1/ticker/generate/{{ $json.event_id }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"style\": \"{{ $('DB: Match-Instanz13').first().json.style || 'neutral' }}\",\n  \"instance\": \"{{ $('DB: Match-Instanz13').first().json.instance || 'generic' }}\",\n  \"language\": \"{{ $('Webhook Events14').first().json.body.language || 'de' }}\",\n  \"auto_publish\": {{ $('DB: Match-Instanz13').first().json.ticker_mode === 'auto' }},\n  \"fan_team\": \"{{ $('DB: Match-Instanz13').first().json.fan_team || '' }}\"\n}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        6192,
+        9152
+      ],
+      "id": "b9df1827-5be4-4a7f-940f-135db51c2e0f",
+      "name": "LLM Trigger Node14",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "nw1wvLZ4u2BCZRVl",
+          "name": "Header Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "https://v3.football.api-sports.io/fixtures",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "id",
+              "value": "={{ $('Webhook Events14').first().json.body.fixture_id }}"
+            }
+          ]
+        },
+        "options": {
+          "batching": {
+            "batch": {
+              "batchSize": 1
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        5824,
+        8944
+      ],
+      "id": "4b97e31a-cd53-496a-9e51-4f3b2b101827",
+      "name": "API: Score abrufen3",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "nw1wvLZ4u2BCZRVl",
+          "name": "Header Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE matches SET\n  home_score = $2,\n  away_score = $3\nWHERE id = $1\nRETURNING id, home_score, away_score",
+        "options": {
+          "queryReplacement": "={{ $('DB: Match-Instanz13').first().json.match_id + ',' + ($json.response[0].goals.home ?? 0) + ',' + ($json.response[0].goals.away ?? 0) }}"
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        6080,
+        8928
+      ],
+      "id": "5e87f6b3-16d4-4705-8be3-dac1b7b75914",
+      "name": "Update Match Score8",
+      "credentials": {
+        "postgres": {
+          "id": "WHRqubCoiFyFjqqL",
+          "name": "Postgres account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "ef-tor-id-exists",
+              "leftValue": "={{ $json.id }}",
+              "rightValue": "",
+              "operator": {
+                "type": "number",
+                "operation": "exists",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "ef-tor-is-new",
+              "leftValue": "={{ $json.is_new }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            },
+            {
+              "id": "aa000001-0000-0000-0000-000000000001",
+              "leftValue": "={{ $json.event_type }}",
+              "rightValue": "goal",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            },
+            {
+              "id": "aa000001-0000-0000-0000-000000000002",
+              "leftValue": "={{ $('DB: Match-Instanz13').first().json.instance }}",
+              "rightValue": "ef_whitelabel",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.2,
+      "position": [
+        5776,
+        9776
+      ],
+      "id": "bb01f1a3-5cac-4ea8-bac2-1ceffe9ade11",
+      "name": "Nur EF-Tore12"
+    },
+    {
+      "parameters": {
+        "jsCode": "function esc(v) {\n  return `'${String(v).replace(/'/g, \"''\")}'`;\n}\n\nreturn $input.all().flatMap(item => {\n  const e = item.json;\n  const desc = typeof e.description === 'string'\n    ? JSON.parse(e.description)\n    : (e.description ?? {});\n\n  const teamName = (desc.team_name || '').toLowerCase();\n  if (!teamName.includes('frankfurt')) return [];\n\n  const playerName = desc.player_name;\n  if (!playerName) return [];\n\n  const parts = playerName.trim().split(/\\s+/);\n  const lastName = parts[parts.length - 1];\n  const eventTime = e.time ?? null;\n\n  const query = `\n    SELECT video_url, display_name, ${eventTime !== null ? eventTime : 'NULL'} AS event_time\n    FROM players\n    WHERE video_url IS NOT NULL\n      AND team_id IN (SELECT id FROM teams WHERE name ILIKE '%Frankfurt%')\n      AND (\n        display_name ILIKE ${esc('%' + lastName + '%')}\n        OR display_name ILIKE ${esc('%' + playerName + '%')}\n      )\n    LIMIT 1\n  `.trim();\n\n  return [{ json: { query, player_name: playerName, event_id: e.id, event_time: eventTime } }];\n});"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        6000,
+        9776
+      ],
+      "id": "64a9a1fd-3d9a-464b-b133-52c0ff2e6e5c",
+      "name": "Video-Query bauen12"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "={{ $json.query }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        6224,
+        9776
+      ],
+      "id": "1121ee77-cabd-44f6-856d-8585aef6b036",
+      "name": "DB: Torschützen-Video14",
+      "credentials": {
+        "postgres": {
+          "id": "WHRqubCoiFyFjqqL",
+          "name": "Postgres account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "bb000001-0000-0000-0000-000000000001",
+              "leftValue": "={{ $json.video_url }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "exists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.2,
+      "position": [
+        6448,
+        9776
+      ],
+      "id": "2314df79-a7b6-4cc0-8781-38bd36811714",
+      "name": "Hat Video?12"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://liveticker-backend.onrender.com/api/v1/ticker/manual",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"match_id\": {{ $('DB: Match-Instanz13').first().json.match_id }},\n  \"event_id\": {{ $('Video-Query bauen12').item.json.event_id }},\n  \"text\": \"\",\n  \"icon\": \"🎬\",\n  \"minute\": {{ $('Video-Query bauen12').item.json.event_time ?? 'null' }},\n  \"video_url\": \"{{ $('Hat Video?12').item.json.video_url }}\",\n  \"instance\": \"{{ $('DB: Match-Instanz13').first().json.instance }}\",\n  \"status\": \"{{ $('DB: Match-Instanz13').first().json.ticker_mode === 'auto' ? 'published' : 'draft' }}\"\n}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        6768,
+        9776
+      ],
+      "id": "d89e6c01-d994-469c-b3a6-91fb4fcaac99",
+      "name": "Torjubel-Ticker posten21",
+      "retryOnFail": true,
+      "maxTries": 5,
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "nw1wvLZ4u2BCZRVl",
+          "name": "Header Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "video-auto-001",
+              "leftValue": "={{ $('DB: Match-Instanz13').first().json.ticker_mode }}",
+              "rightValue": "auto",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.2,
+      "position": [
+        6976,
+        9776
+      ],
+      "id": "8c294e34-ee4f-46cc-b5b6-aa15fd379ce5",
+      "name": "Video AUTO?12",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "=https://liveticker-backend.onrender.com/api/v1/ticker/{{ $json.id }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={ \n  \"status\": \"{{ $('DB: Match-Instanz13').first().json.ticker_mode === 'auto' ? 'published' : 'draft' }}\",\n  \"video_url\": \"{{ $('Hat Video?12').item.json.video_url }}\",\n  \"icon\": \"🎬\",\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        7120,
+        9776
+      ],
+      "id": "7cb1bea9-49b9-4e6a-b499-4d64db502371",
+      "name": "Video AUTO publishen12",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "nw1wvLZ4u2BCZRVl",
+          "name": "Header Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT id \nFROM ticker_entries \nWHERE event_id = {{ $('Video-Query bauen12').item.json.event_id }} \nORDER BY created_at DESC \nLIMIT 1;",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        6608,
+        9952
+      ],
+      "id": "e6af0cbd-0949-4c17-8ed9-b791ccfde82e",
+      "name": "DB: Torschützen-Video15",
+      "credentials": {
+        "postgres": {
+          "id": "WHRqubCoiFyFjqqL",
+          "name": "Postgres account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT m.match_phase, m.external_id,\n  (SELECT COUNT(*) FROM ticker_entries\n   WHERE match_id = m.id AND phase = 'PenaltyShootout' AND source = 'manual') AS has_penalty_ticker\nFROM matches AS m WHERE m.id = $1",
+        "options": {
+          "queryReplacement": "={{ [$('DB: Match-Instanz13').first().json.match_id] }}"
+        }
+      },
+      "id": "73d82300-d17e-42b3-b853-372fea5cb2af",
+      "name": "SQL: Penalty prüfen1",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        5664,
+        10160
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "WHRqubCoiFyFjqqL",
+          "name": "Postgres account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "pen09-phase-check",
+              "leftValue": "={{ $json.match_phase }}",
+              "rightValue": "PenaltyShootout",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            },
+            {
+              "id": "pen09-no-ticker",
+              "leftValue": "={{ $json.has_penalty_ticker }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "number",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "cc4868d1-4887-43aa-b764-d6b956710292",
+      "name": "Filter: Penalty fehlt noch?1",
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.2,
+      "position": [
+        5888,
+        10160
+      ]
+    },
+    {
+      "parameters": {
+        "url": "=https://v3.football.api-sports.io/fixtures?id={{ $json.external_id }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {}
+      },
+      "id": "d8f3a231-ef8a-4856-8764-479e36718f02",
+      "name": "API: Penalty-Score",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        6112,
+        10160
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "nw1wvLZ4u2BCZRVl",
+          "name": "Header Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const fixture = $json.response?.[0];\nif (!fixture) return [];\n\nconst penHome = fixture.score?.penalty?.home ?? null;\nconst penAway = fixture.score?.penalty?.away ?? null;\nif (penHome === null || penAway === null) return [];\n\nconst matchId = $('DB: Match-Instanz13').first().json.match_id;\nconst instance = $('DB: Match-Instanz13').first().json.instance || 'generic';\nconst tickerMode = $('DB: Match-Instanz13').first().json.ticker_mode ?? 'coop';\nconst homeTeamName = fixture.teams?.home?.name ?? 'Heim';\nconst awayTeamName = fixture.teams?.away?.name ?? 'Gast';\nconst winner = penHome > penAway ? homeTeamName : awayTeamName;\n\nreturn [{ json: {\n  match_id: matchId,\n  penalty_home: penHome,\n  penalty_away: penAway,\n  instance,\n  ticker_mode: tickerMode,\n  text: `🥅 Elferschießen: ${winner} gewinnt ${penHome}:${penAway} n.E.`\n} }];"
+      },
+      "id": "742fccdf-2372-445c-8fd1-869661548598",
+      "name": "Penalty-Daten aufbereiten",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        6336,
+        10160
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE matches SET penalty_home_score = $1, penalty_away_score = $2 WHERE id = $3",
+        "options": {
+          "queryReplacement": "={{ [$json.penalty_home, $json.penalty_away, $json.match_id] }}"
+        }
+      },
+      "id": "5e397a3f-fdcc-46b4-9a1a-cfcaa0301ad1",
+      "name": "SQL: Penalty-Score updaten",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        6560,
+        10160
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "WHRqubCoiFyFjqqL",
+          "name": "Postgres account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://liveticker-backend.onrender.com/api/v1/ticker/manual",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"match_id\": {{ $('Penalty-Daten aufbereiten').first().json.match_id }},\n  \"text\": \"{{ $('Penalty-Daten aufbereiten').first().json.text }}\",\n  \"icon\": \"🥅\",\n  \"minute\": 121,\n  \"phase\": \"PenaltyShootout\",\n  \"instance\": \"{{ $('Penalty-Daten aufbereiten').first().json.instance }}\",\n  \"status\": \"{{ $('Penalty-Daten aufbereiten').first().json.ticker_mode === 'auto' ? 'published' : 'draft' }}\"\n}",
+        "options": {}
+      },
+      "id": "1950b8cd-a9f5-4481-b059-8d7f1e1d1d6a",
+      "name": "Penalty-Ticker posten",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        6784,
+        10160
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "nw1wvLZ4u2BCZRVl",
+          "name": "Header Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT COUNT(*) AS cnt, $1::integer AS event_id FROM ticker_entries WHERE event_id = $1",
+        "options": {
+          "queryReplacement": "={{ [$json.id] }}"
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        6000,
+        9152
+      ],
+      "id": "dedup-db-check-001",
+      "name": "DB: Ticker bereits vorhanden?",
+      "credentials": {
+        "postgres": {
+          "id": "WHRqubCoiFyFjqqL",
+          "name": "Postgres account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "dedup-filter-cnt",
+              "leftValue": "={{ $json.cnt }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "number",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.2,
+      "position": [
+        6096,
+        9152
+      ],
+      "id": "dedup-filter-001",
+      "name": "Filter: Noch kein Ticker?"
+    }
+  ],
+  "connections": {
+    "Webhook Events14": {
+      "main": [
+        [
+          {
+            "node": "DB: Match-Instanz13",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DB: Match-Instanz13": {
+      "main": [
+        [
+          {
+            "node": "API: Events abrufen15",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "API: Events abrufen15": {
+      "main": [
+        [
+          {
+            "node": "Events extrahieren14",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Events extrahieren14": {
+      "main": [
+        [
+          {
+            "node": "Events Insert - Code Node13",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Events Insert - Code Node13": {
+      "main": [
+        [
+          {
+            "node": "Insert Events15",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insert Events15": {
+      "main": [
+        [
+          {
+            "node": "Filter13",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "API: Score abrufen3",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Nur EF-Tore12",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "SQL: Penalty prüfen1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter13": {
+      "main": [
+        [
+          {
+            "node": "DB: Ticker bereits vorhanden?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "API: Score abrufen3": {
+      "main": [
+        [
+          {
+            "node": "Update Match Score8",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Nur EF-Tore12": {
+      "main": [
+        [
+          {
+            "node": "Video-Query bauen12",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Video-Query bauen12": {
+      "main": [
+        [
+          {
+            "node": "DB: Torschützen-Video14",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DB: Torschützen-Video14": {
+      "main": [
+        [
+          {
+            "node": "Hat Video?12",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Hat Video?12": {
+      "main": [
+        [
+          {
+            "node": "DB: Torschützen-Video15",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Torjubel-Ticker posten21": {
+      "main": [
+        [
+          {
+            "node": "Video AUTO?12",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Video AUTO?12": {
+      "main": [
+        [
+          {
+            "node": "Video AUTO publishen12",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DB: Torschützen-Video15": {
+      "main": [
+        [
+          {
+            "node": "Torjubel-Ticker posten21",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "SQL: Penalty prüfen1": {
+      "main": [
+        [
+          {
+            "node": "Filter: Penalty fehlt noch?1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter: Penalty fehlt noch?1": {
+      "main": [
+        [
+          {
+            "node": "API: Penalty-Score",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "API: Penalty-Score": {
+      "main": [
+        [
+          {
+            "node": "Penalty-Daten aufbereiten",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Penalty-Daten aufbereiten": {
+      "main": [
+        [
+          {
+            "node": "SQL: Penalty-Score updaten",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "SQL: Penalty-Score updaten": {
+      "main": [
+        [
+          {
+            "node": "Penalty-Ticker posten",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DB: Ticker bereits vorhanden?": {
+      "main": [
+        [
+          {
+            "node": "Filter: Noch kein Ticker?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter: Noch kein Ticker?": {
+      "main": [
+        [
+          {
+            "node": "LLM Trigger Node14",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "meta": {
+    "instanceId": "c812d7c91145a37daf0cb923fa307183fa91637fdbe8017dda5dce71e0f572b5"
+  }
+}

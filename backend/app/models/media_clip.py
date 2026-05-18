@@ -1,10 +1,14 @@
-from sqlalchemy import Column, Integer, String, Text, Boolean, TIMESTAMP, ForeignKey
+from sqlalchemy import Column, Index, Integer, String, Text, Boolean, TIMESTAMP, ForeignKey, text
 from sqlalchemy.sql import func
 from app.core.database import Base
 
 
 class MediaClip(Base):
     __tablename__ = "media_clips"
+    __table_args__ = (
+        # Partial unique index: ein vid darf nur einmal existieren (NULL erlaubt mehrfach)
+        Index("uq_media_clips_vid", "vid", unique=True, postgresql_where=text("vid IS NOT NULL")),
+    )
 
     id = Column(Integer, primary_key=True)
     match_id = Column(

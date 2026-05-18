@@ -1,0 +1,248 @@
+\documentclass[12pt,a4paper,notitlepage,ngerman]{report}
+
+\usepackage[utf8]{inputenc}
+\usepackage[ngerman]{babel}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{geometry}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage{fancyhdr}
+\usepackage{setspace}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{float}
+\usepackage{subcaption}
+\usepackage{tikz}
+\usepackage{minted}
+
+\geometry{left=2.5cm, right=2cm, top=2.5cm, bottom=2.5cm}
+\onehalfspacing
+
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\nouppercase{\leftmark}}
+\fancyhead[R]{\thepage}
+\lfoot{Bachelorarbeit}
+\rfoot{Jonas Kimmer}
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    urlcolor=blue,
+    citecolor=blue
+}
+
+\title{KI-gestütztes Liveticker-Redaktionssystem für den Profifußball}
+\author{Jonas Kimmer}
+\date{April 2026}
+
+\lstset{
+    basicstyle=\ttfamily\small,
+    breaklines=true,
+    breakatwhitespace=true,
+    postbreak=\mbox{\textcolor{red}{$\hookrightarrow$}\space},
+    language=Python,
+    showstringspaces=false,
+    extendedchars=true,
+    literate={ÄÄ}{Ä}1 {Öö}{Ö}1 {Üü}{Ü}1 {ß}{ß}1
+}
+
+\begin{document}
+
+% TITELSEITE
+\begin{titlepage}
+\centering
+\vspace*{2cm}
+{\Large \textbf{Bachelorarbeit}}\\[2cm]
+{\LARGE \textbf{KI-gestütztes Liveticker-Redaktionssystem für den Profifußball}}\\[0.5cm]
+{\large Automatisierte Textgenerierung für Echtzeit-Sportjournalismus mit Human-in-the-Loop-Kontrolle}\\[3cm]
+{\large \textbf{autor}}\\
+Jonas Kimmer\\[3cm]
+{\large \textbf{Hochschule}}\\
+Technische Hochschule Aschaffenburg\\[0.5cm]
+Fachbereich Informatik\\[2cm]
+{\large \textbf{Betreuung}}\\
+Prof. Dr. [Betreuer]\\[3cm]
+{\large \textbf{Firmenbetreuung}}\\
+Stackwork GmbH\\
+IT-Bereich, Eintracht Frankfurt\\[3cm]
+{\large \textbf{Datum}}\\
+April 2026
+\end{titlepage}
+
+% ABSTRACT
+\chapter*{Abstract}
+
+Die manuelle Erstellung von Liveticker-Einträgen im Profifußball ist ein kognitiv anspruchsvoller, zeitkritischer Prozess: Redakteure müssen Spielereignisse in Echtzeit beobachten, einordnen und in kurze, stilistisch kohärente Texte überführen — typischerweise innerhalb von 30 bis 120 Sekunden pro Eintrag. Diese Arbeit untersucht, inwiefern ein hybrides KI-gestütztes Redaktionssystem die Time-to-Publish (TTP) bei der Liveticker-Erstellung im Profifußball reduziert, ohne die journalistische Qualität hinsichtlich Korrektheit, Tonalität und Verständlichkeit zu beeinträchtigen.
+
+Das entwickelte System kombiniert eine FastAPI/PostgreSQL-Backend-Architektur mit einer mehrsprachigen LLM-Pipeline (Gemini 2.0 Flash Lite via OpenRouter) und einem React/TypeScript-Frontend. Drei Betriebsmodi — \textit{auto} (vollautomatisch), \textit{coop} (Human-in-the-Loop) und \textit{manual} (klassisch) — ermöglichen einen graduellen Übergang zwischen autonomer KI-Generierung und redaktioneller Kontrolle. n8n-Workflows übernehmen die automatisierte Datenversorgung aus externen Sportdaten-APIs. Das System wurde als generische und als White-Label-Instanz (Eintracht Frankfurt) realisiert.
+
+Die Evaluation umfasst 391 automatisierte Tests (187 Frontend, 198 Backend, 6 End-to-End), eine TypeScript-Typenabdeckung von 95,84 \% sowie eine qualitative Bewertung von 16 KI-generierten Ticker-Einträgen aus 9 Bundesliga-Spielen. Die KI-generierten Texte erzielen einen Gesamtdurchschnitt von 4,3 / 5 Punkten (Korrektheit 4,6, Tonalität 4,1, Verständlichkeit 4,3). Die geschätzte TTP im \textit{auto}-Modus beträgt 3,4–5,9 Sekunden gegenüber 30–120 Sekunden im manuellen Modus — ein geschätzter Reduktionsfaktor von 5× bis 35×. Alle 23 definierten funktionalen, nicht-funktionalen und architektonischen Anforderungen werden erfüllt.
+
+Die Arbeit zeigt, dass eine produktionstaugliche KI-Assistenz bei der Liveticker-Erstellung mit einem kleinen Kompakt-Modell und Few-Shot-Prompting realisierbar ist. Der \textit{coop}-Modus erweist sich als optimaler Kompromiss zwischen Publikationsgeschwindigkeit und journalistischer Qualitätssicherung.
+
+\noindent\textbf{Schlüsselwörter:} Large Language Models, Liveticker, Natural Language Generation, Human-in-the-Loop, Few-Shot Prompting, Sportjournalismus, FastAPI, React, TypeScript
+
+% INHALTSVERZEICHNIS
+\tableofcontents
+
+% EINLEITUNG
+\chapter{Einleitung}
+
+\section{Problemstellung und Zielsetzung}
+
+``Ein vernünftiger Live-Ticker ist fast unmöglich zu schreiben. Denn sein Konzept ist die komplette Überforderung. Des Autors. Des Schreibens. Und der Wirklichkeit.'' Mit diesen Worten beschreibt der Journalist Constantin Seibt das Grundproblem der Liveticker-Berichterstattung — eine Einschätzung, die im modernen digitalen Sportjournalismus bis heute nichts an Aktualität verloren hat. Der Liveticker hat sich zur dominanten Darstellungsform der Echtzeit-Berichterstattung im Profifußball entwickelt und steht dabei exemplarisch für einen Zielkonflikt zwischen \textbf{Geschwindigkeit und Qualität}, der mit rein manuellen Mitteln nicht auflösbar ist.
+
+Die vorliegende Arbeit identifiziert drei Problemdimensionen, die den Einsatz neuer technologischer Lösungen notwendig machen:
+
+\begin{itemize}
+    \item Der \textbf{operative Zeitdruck} bei der manuellen Texterstellung: Redakteure müssen Spielereignisse in Echtzeit beobachten, einordnen und in stilistisch kohärente Kurztexte überführen — typischerweise innerhalb von 30 bis 120 Sekunden pro Eintrag.
+    
+    \item Die Herausforderungen der \textbf{Internationalisierung} durch Mehrsprachigkeit: Profifußballvereine bedienen zunehmend internationale Fanbases; deutschsprachige Redaktionen stehen vor der Anforderung, Inhalte parallel auf Englisch oder weiteren Sprachen bereitzustellen, ohne ausreichend mehrsprachiges Redaktionspersonal vorzuhalten.
+    
+    \item Der \textbf{strukturelle Wandel} der Vereine zu eigenständigen Medienproduzenten mit White-Label-Anforderungen: Vereine betreiben eigene digitale Kanäle und Medienmarken, die Redaktionswerkzeuge mit konfigurierbarem vereinsspezifischem Ton und CI-konformer Gestaltung erfordern.
+\end{itemize}
+
+Das übergeordnete Ziel der vorliegenden Arbeit ist daher die Konzeption und Implementierung eines produktionsfähigen Redaktionssystems, das diesen Konflikt durch den gezielten Einsatz von \textbf{Large Language Models} auflöst, während die finale Entscheidungshoheit und publizistische Verantwortung beim Menschen verbleiben. Das System wird dabei in zwei Ausprägungen realisiert: einer generischen Instanz für beliebige Vereine sowie einer vereinsspezifischen White-Label-Instanz am Beispiel \textbf{Eintracht Frankfurt}.
+
+Um dieses Ziel zu operationalisieren, definiert und evaluiert die Arbeit drei Betriebsmodi:
+
+\begin{enumerate}
+    \item \textbf{Status quo (\textit{manual})}: Vollmanuelle Erstellung als Vergleichsbasis.
+    \item \textbf{Vollautonom (\textit{auto})}: KI-basierte Texterstellung und Publikation ohne menschliches Korrektiv.
+    \item \textbf{Hybrid (\textit{coop})}: Kombination aus KI-generierten Textvorschlägen mit redaktioneller Prüfung und Freigabe.
+\end{enumerate}
+
+\section{Forschungsfrage}
+
+Aus der in Abschnitt 1.1 entwickelten Zielsetzung ergibt sich folgende Forschungsfrage, die der vorliegenden Arbeit zugrunde liegt:
+
+\begin{quote}
+\textit{Inwiefern reduziert ein hybrides KI-gestütztes Redaktionssystem die Time-to-Publish bei der Liveticker-Erstellung im Profifußball im Vergleich zur rein manuellen Erstellung, ohne die journalistische Qualität hinsichtlich Korrektheit, Tonalität und Verständlichkeit zu beeinträchtigen?}
+\end{quote}
+
+Die Frage ist bewusst zweiteilig formuliert: Sie erfasst einerseits eine \textbf{zeitliche Dimension} — die Reduktion der Publikationslatenz — und andererseits eine \textbf{qualitative Dimension}, die sicherstellt, dass Geschwindigkeit nicht auf Kosten journalistischer Standards erzielt wird. Beide Dimensionen sind für die Praxis gleichermaßen relevant.
+
+\section{Methodisches Vorgehen}
+
+Die Arbeit folgt einem konstruktiven Forschungsansatz im Sinne des \textbf{Design Science Research} (Hevner et al. 2004): Ein softwarebasiertes Artefakt wird als Antwort auf ein identifiziertes Praxisproblem entworfen, implementiert und evaluiert.
+
+Das methodische Vorgehen gliedert sich in fünf Phasen:
+
+\begin{enumerate}
+    \item \textbf{Problemanalyse und Anforderungserhebung}
+    \item \textbf{Technologierecherche}
+    \item \textbf{Systemkonzeption}
+    \item \textbf{Implementierung}
+    \item \textbf{Evaluation}
+\end{enumerate}
+
+Die Evaluationsmethodik operationalisiert die Forschungsfrage entlang zweier Dimensionen: Die \textbf{zeitliche Dimension} wird über die Time-to-Publish-Metrik (TTP) gemessen. Die \textbf{qualitative Dimension} wird über eine manuelle Bewertung auf den Skalen Korrektheit, Tonalität und Verständlichkeit operationalisiert, ergänzt durch ein \textbf{strukturiertes Experteninterview} mit einem professionellen Sportredakteur.
+
+\subsection{Abgrenzung}
+
+Das System geht bewusst über den Umfang eines typischen akademischen Projekts hinaus und zielt auf Produktionsfähigkeit: Eine umfassende automatisierte Testsuite, ein Cloud-Deployment und die Integration realer Datenquellen dokumentieren diesen Anspruch. Diese Praxisorientierung ist durch den beruflichen Kontext des Autors motiviert: Als Mitarbeiter der \textbf{Stackwork GmbH} im IT-Bereich von Eintracht Frankfurt entstand das System in direkter Kooperation mit den fachlichen Anforderungen einer professionellen Redaktion.
+
+Dennoch bestehen Einschränkungen hinsichtlich Authentifizierung, Evaluationsunabhängigkeit und thematischer Reichweite, die in den folgenden Kapiteln kritisch reflektiert werden.
+
+\section{Aufbau der Arbeit}
+
+Die vorliegende Arbeit gliedert sich in acht Kapitel:
+
+\begin{itemize}
+    \item \textbf{Kapitel 1 – Einleitung} \textit{(vorliegendes Kapitel)}: Problemstellung, Forschungsfrage, methodisches Vorgehen und Aufbau der Arbeit.
+    
+    \item \textbf{Kapitel 2 – Motivation und Anforderungen}: Vertiefung der drei Problemdimensionen, Ableitung der Systemanforderungen am Beispiel Eintracht Frankfurt, Experteninterview-Leitfaden und formale Anforderungsdefinition.
+    
+    \item \textbf{Kapitel 3 – Stand der Technik}: Large Language Models, Prompt Engineering, Natural Language Generation im Sport sowie Echtzeit-Technologien und ETL-Prozesse.
+    
+    \item \textbf{Kapitel 4 – Systemkonzeption}: Dreischichtige Architektur, Datenmodell, LLM-Pipeline und Prompt-Design.
+    
+    \item \textbf{Kapitel 5 – Implementierung}: Umsetzung als produktionsfähige Webanwendung mit über 70 API-Endpunkten, TypeScript-Frontend und n8n-ETL-System; ergänzt durch vollständige TypeScript-Typisierung, automatisierte Testsuite und Cloud-Deployment.
+    
+    \item \textbf{Kapitel 6 – Evaluation}: Technische Qualitätssicherung (Tests, Coverage, Typsicherheit), Evaluation der KI-Textgenerierung und systematischer Anforderungsabgleich.
+    
+    \item \textbf{Kapitel 7 – Diskussion}: Einordnung in den Stand der Technik, kritische Reflexion der Limitationen und Implikationen für den Sportjournalismus.
+    
+    \item \textbf{Kapitel 8 – Fazit und Ausblick}: Zusammenfassung der Erkenntnisse, Beantwortung der Forschungsfrage und Ausblick.
+\end{itemize}
+
+% Import all chapters from individual files would go here
+% For brevity in this template, I'm including a note that all chapters would be included
+% In practice, you would use \input{kapitel2} etc. for each chapter
+
+% Placeholder for remaining chapters
+\chapter{Motivation und Anforderungen}
+\section{(Content from kapitel2.md)}
+% All content from kapitel2.md would be included here
+
+\chapter{Stand der Technik}
+\section{(Content from kapitel3\_StandDerTechnik.md)}
+
+\chapter{Systemkonzeption}
+\section{(Content from kapitel4\_systemkonzeption.md)}
+
+\chapter{Implementierung}
+\section{(Content from kapitel5\_implementierung.md)}
+
+\chapter{Evaluation}
+\section{(Content from kapitel6\_evaluation.md)}
+
+\chapter{Diskussion}
+\section{(Content from kapitel7\_diskussion.md)}
+
+\chapter{Fazit und Ausblick}
+\section{(Content from kapitel8\_fazit.md)}
+
+% APPENDIX
+\appendix
+
+\chapter{Interviewleitfaden}
+\section{Ziel und Methodik}
+Das Experteninterview mit einem professionellen Sportredakteur von Eintracht Frankfurt adressiert vier zentrale Aspekte: (1) Gebrauchstauglichkeit des Systems, (2) Qualitätsbewertung der KI-Texte, (3) Einschätzung der Betriebsmodi und (4) Verbesserungsvorschläge.
+
+\section{Interviewfragen}
+
+\subsection{Block 1: Redaktioneller Workflow (IF1--IF5)}
+\begin{enumerate}
+    \item Wie läuft die Liveticker-Produktion bei Eintracht Frankfurt aktuell ab?
+    \item Wie viele Personen sind an einem Spieltag für den Liveticker eingeteilt?
+    \item Welche Aufgaben muss ein Ticker-Autor neben dem Tickern parallel erledigen?
+    \item Was sind die häufigsten Fehlerquellen unter Zeitdruck?
+    \item Wie wird die Ticker-Abdeckung bei Parallelspielen oder Jugend-/Frauenspielen gehandhabt?
+\end{enumerate}
+
+\subsection{Block 2: Mehrsprachigkeit (IF6--IF9)}
+\begin{enumerate}
+    \setcounter{enumi}{5}
+    \item Gibt es aktuell Bedarf an mehrsprachigen Tickern?
+    \item Wie wird sichergestellt, dass verschiedene Autoren in einem konsistenten Stil schreiben?
+    \item Wie würden Sie den Eintracht-Ticker-Stil beschreiben?
+    \item Wie wichtig ist die stilistische Konsistenz über verschiedene Spiele hinweg?
+\end{enumerate}
+
+\subsection{Block 3: Systembewertung (IF10--IF15)}
+\begin{enumerate}
+    \setcounter{enumi}{9}
+    \item Wie bewerten Sie die Qualität der KI-generierten Ticker-Texte?
+    \item Lesen sich die Texte wie ein typischer Eintracht-Frankfurt-Ticker?
+    \item Welchen der drei Modi würden Sie im Redaktionsalltag bevorzugt einsetzen?
+    \item Ist der Coop-Modus ein realistischer Kompromiss zwischen Zeitersparnis und Qualitätskontrolle?
+    \item Welche Features fehlen für einen produktiven Einsatz?
+    \item Erkennen Sie den vereinsspezifischen Eintracht-Stil in den generierten Texten?
+\end{enumerate}
+
+\subsection{Block 4: Zukunftsperspektive (IF16--IF18)}
+\begin{enumerate}
+    \setcounter{enumi}{15}
+    \item Wie könnte das System zukünftig erweitert werden?
+    \item Sehen Sie Einsatzpotenziale für andere Sportarten?
+    \item Was wären die größten Hürden für einen produktiven Einsatz?
+\end{enumerate}
+
+\end{document}

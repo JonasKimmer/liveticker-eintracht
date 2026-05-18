@@ -1,0 +1,400 @@
+{
+  "name": "Sync | 01 | Seasons & Competitions",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## Setup: Saison & Wettbewerbe Initialisierung"
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -1056,
+        112
+      ],
+      "id": "2af57b79-1d83-4f34-8a1c-a0c4d44e6b0c",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "jsCode": "return [\n  { json: { league_id: 78,  team_id: 169, season: 2025, shortTitle: \"BL\" } },\n  { json: { league_id: 81,  team_id: 169, season: 2025, shortTitle: \"DFB\" } },\n  { json: { league_id: 2,   team_id: 169, season: 2025, shortTitle: \"CL\" } },\n  { json: { league_id: 667, team_id: 169, season: 2025, shortTitle: \"FR\" } },\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -640,
+        112
+      ],
+      "id": "0faa15bf-ee1e-427e-afcc-4bcf31a4804a",
+      "name": "Config: Wettbewerbe"
+    },
+    {
+      "parameters": {
+        "url": "https://v3.football.api-sports.io/leagues",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "id",
+              "value": "={{ $json.league_id }}"
+            },
+            {
+              "name": "season",
+              "value": "={{ $json.season }}"
+            },
+            {
+              "name": "team",
+              "value": "={{ $json.team_id }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -288,
+        112
+      ],
+      "id": "5622eafc-72cb-40dc-b721-6e9d1c87ede2",
+      "name": "HTTP: Get League Info",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "8TXlLPe7BeXnl0Ut",
+          "name": "Header Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const allSeasons = $input.all().flatMap(item => \n  item.json.response?.[0]?.seasons.filter(s => s.current === true) || []\n);\n\nconst year = allSeasons[0]?.year || 2025;\nconst startsAt = `${year}-06-01`;\nconst endsAt = `${year + 1}-05-30`;\n\nreturn [{\n  json: {\n    id: year + 1,\n    sport: \"Football\",\n    title: `Saison ${year}/${String(year + 1).slice(-2)}`,\n    shortTitle: `${String(year).slice(-2)}/${String(year + 1).slice(-2)}`,\n    startsAt,\n    endsAt\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        0,
+        0
+      ],
+      "id": "051b87d7-ab0d-4ca6-876d-6eaf3a2a3e2a",
+      "name": "JS: Parse Season Data"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://partner-api.stackwork-01-test.tech/cms/v1/seasons",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer 52091AC14B524E59DEF531D0EA8F57EF0804D4CFADCF4A1A52CE842687D2D209-1"
+            },
+            {
+              "name": "et-partner-id",
+              "value": "4"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"id\": {{ $json.id }},\n  \"sport\": \"{{ $json.sport }}\",\n  \"title\": \"{{ $json.title }}\",\n  \"shortTitle\": \"{{ $json.shortTitle }}\",\n  \"startsAt\": \"{{ $json.startsAt }}\",\n  \"endsAt\": \"{{ $json.endsAt }}\"\n}",
+        "options": {}
+      },
+      "id": "96294b2d-b5f8-465f-9938-9ce5f075a92f",
+      "name": "API: Create Season",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        256,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "return $input.all().flatMap((item, index) => {\n  const r = item.json.response?.[0];\n  if (!r) return [];\n  const season = r.seasons.find(s => s.current) || r.seasons.find(s => s.year === 2025);\n  if (!season) return [];\n  const def = $('Config: Wettbewerbe').all().find(l => l.json.league_id === r.league.id);\n  return [{\n    json: {\n      sport: \"Football\",\n      id: index,\n      title: r.league.name,\n      localizedTitle: {\n        de: r.league.name,\n        en: r.league.name\n      },\n      shortTitle: def?.json.shortTitle || \"\",\n      position: index,\n      hidden: false,\n      logoUrl: r.league.logo,\n      matchcenterImageUrl: null,\n      hasStandingsPerMatchday: r.league.type === \"League\"\n    }\n  }];\n});"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        0,
+        192
+      ],
+      "id": "32c3fce4-09d4-4482-a09a-e14a611ddc1b",
+      "name": "JS: Map Competition Data"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://partner-api.stackwork-01-test.tech/cms/v1/competitions",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer 52091AC14B524E59DEF531D0EA8F57EF0804D4CFADCF4A1A52CE842687D2D209-1"
+            },
+            {
+              "name": "et-partner-id",
+              "value": "4"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"id\": {{ $json.id + 3 }},\n  \"sport\": \"{{ $json.sport }}\",\n  \"title\": \"{{ $json.title }}\",\n  \"localizedTitle\": {{ JSON.stringify($json.localizedTitle) }},\n  \"shortTitle\": \"{{ $json.shortTitle }}\",\n  \"position\": {{ $json.position + 3 }},\n  \"hidden\": {{ $json.hidden }},\n  \"logoUrl\": \"{{ $json.logoUrl }}\",\n  \"matchcenterImageUrl\": null,\n  \"hasStandingsPerMatchday\": {{ $json.hasStandingsPerMatchday }}\n}",
+        "options": {}
+      },
+      "id": "38dd2829-9dbb-466f-86dd-a7b5796bf530",
+      "name": "API: Create Competition",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        272,
+        192
+      ]
+    },
+    {
+      "parameters": {
+        "url": "https://v3.football.api-sports.io/fixtures",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "league",
+              "value": "={{ $('Config: Wettbewerbe').all()[$itemIndex].json.league_id }}"
+            },
+            {
+              "name": "season",
+              "value": "=2025"
+            },
+            {
+              "name": "team",
+              "value": "169"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        560,
+        192
+      ],
+      "id": "6f57d8bc-a7bf-4988-a3e6-4232040240b6",
+      "name": "HTTP: Get Fixtures",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "8TXlLPe7BeXnl0Ut",
+          "name": "Header Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const seen = new Set();\nconst teams = $input.all().flatMap(item => {\n  if (!item.json.response?.length) return [];\n  return item.json.response.flatMap(fixture => {\n    return [fixture.teams.home, fixture.teams.away]\n      .filter(t => t.id !== 169)\n      .map(t => ({\n        json: {\n          external_id: t.id,\n          name: t.name,\n          code: t.name.substring(0, 3).toUpperCase(),\n          short_name: t.name.split(' ')[0],\n          logo_url: t.logo,\n          is_partner: false\n        }\n      }));\n  });\n}).filter(item => {\n  if (seen.has(item.json.external_id)) return false;\n  seen.add(item.json.external_id);\n  return true;\n});\n\nteams.push({\n  json: {\n    external_id: 169,\n    name: \"Eintracht Frankfurt\",\n    code: \"SGE\",\n    short_name: \"Eintracht\",\n    logo_url: \"https://media.api-sports.io/football/teams/169.png\",\n    is_partner: true\n  }\n});\n\nreturn teams;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        768,
+        192
+      ],
+      "id": "a382cb07-e150-4ca2-90a9-4f12fe799547",
+      "name": "JS: Extract Opponents"
+    },
+    {
+      "parameters": {
+        "url": "https://partner-api.stackwork-01-test.tech/cms/v1/teams",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer 52091AC14B524E59DEF531D0EA8F57EF0804D4CFADCF4A1A52CE842687D2D209-1"
+            },
+            {
+              "name": "et-partner-id",
+              "value": "4"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"id\": {{ $json.external_id}},\n  \"sport\": \"Football\",\n  \"name\": \"{{ $json.name }}\",\n  \"initials\": \"{{ $json.code }}\",\n  \"shortName\": \"{{ $json.short_name }}\",\n  \"logoUrl\": \"{{ $json.logo_url }}\",\n  \"isPartnerTeam\": {{ $json.is_partner }},\n  \"position\": 0,\n  \"hidden\": false\n}",
+        "options": {}
+      },
+      "id": "de2a0cdc-cf75-4474-be72-372957f80ec6",
+      "name": "API: Create Teams",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        992,
+        192
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const fixtures = $('HTTP: Get Fixtures').all();\nconst competitionMap = [];\n\nfixtures.forEach((item, idx) => {\n  if (!item.json.response?.length) return;\n  const competition_id = idx + 3;\n  const teamIds = new Set();\n  item.json.response.forEach(fixture => {\n    teamIds.add(fixture.teams.home.id);\n    teamIds.add(fixture.teams.away.id);\n  });\n  teamIds.forEach(teamId => {\n    competitionMap.push({\n      json: {\n        season_id: 2026,\n        competition_id,\n        team_id: teamId\n      }\n    });\n  });\n});\n\nreturn competitionMap;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1200,
+        192
+      ],
+      "id": "b93be48b-7037-4781-bb10-c1c4abb43381",
+      "name": "JS: Create Team-League-Map"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://partner-api.stackwork-01-test.tech/cms/v1/seasons/{{ $json.season_id }}/competitions/{{ $json.competition_id }}/teams/{{ $json.team_id }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer 52091AC14B524E59DEF531D0EA8F57EF0804D4CFADCF4A1A52CE842687D2D209-1"
+            },
+            {
+              "name": "et-partner-id",
+              "value": "4"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "27d8c6e3-267f-453b-bfc0-e6ecb4bfd7f7",
+      "name": "API: Link Team to Competition",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        1456,
+        192
+      ]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Config: Wettbewerbe": {
+      "main": [
+        [
+          {
+            "node": "HTTP: Get League Info",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP: Get League Info": {
+      "main": [
+        [
+          {
+            "node": "JS: Parse Season Data",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "JS: Map Competition Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "JS: Parse Season Data": {
+      "main": [
+        [
+          {
+            "node": "API: Create Season",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "JS: Map Competition Data": {
+      "main": [
+        [
+          {
+            "node": "API: Create Competition",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "API: Create Competition": {
+      "main": [
+        [
+          {
+            "node": "HTTP: Get Fixtures",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP: Get Fixtures": {
+      "main": [
+        [
+          {
+            "node": "JS: Extract Opponents",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "JS: Extract Opponents": {
+      "main": [
+        [
+          {
+            "node": "API: Create Teams",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "API: Create Teams": {
+      "main": [
+        [
+          {
+            "node": "JS: Create Team-League-Map",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "JS: Create Team-League-Map": {
+      "main": [
+        [
+          {
+            "node": "API: Link Team to Competition",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "5b530405-d3f2-4c91-b941-f76a44faa4a2",
+  "meta": {
+    "instanceId": "8f356ecf824174491100e48f7fade606f544a76873378b03e211127fbec11c97"
+  },
+  "id": "5DnKR1tV21AJWW9u",
+  "tags": []
+}

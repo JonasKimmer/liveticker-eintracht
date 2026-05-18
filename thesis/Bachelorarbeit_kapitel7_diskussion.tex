@@ -1,0 +1,190 @@
+\chapter{Diskussion}\label{diskussion}
+
+Die Evaluation in Kapitel~\ref{evaluation} hat die empirische Grundlage gelegt; dieses Kapitel interpretiert die Evaluationsergebnisse entlang sechs Dimensionen: Einordnung in den Stand der Technik (Abschnitt~\ref{einordnung-in-den-stand-der-technik}), kritische Reflexion und Limitationen (Abschnitt~\ref{kritische-reflexion}), Diskussion der Betriebsmodi (Abschnitt~\ref{diskussion-der-betriebsmodi}) und der Prompt-Architektur (Abschnitt~\ref{diskussion-der-prompt-architektur}), Implikationen für den Sportjournalismus (Abschnitt~\ref{implikationen-für-den-sportjournalismus}) sowie ethische und regulatorische Einordnung (Abschnitt~\ref{ethik}).
+
+
+\section{Einordnung in den Stand der
+Technik}\label{einordnung-in-den-stand-der-technik}
+
+Das entwickelte System lässt sich in den Stand der Technik in zwei Richtungen einordnen. Sie gliedert sich in die Abgrenzung zu bestehenden Systemen (Abschnitt~\ref{abgrenzung-zu-bestehenden-systemen}) und den Beitrag zur Forschung (Abschnitt~\ref{beitrag-zur-forschung}).
+
+\subsection{Abgrenzung zu bestehenden
+Systemen}\label{abgrenzung-zu-bestehenden-systemen}
+
+Die Evaluation ermöglicht eine empirisch gestützte Positionierung des Systems gegenüber bestehenden Ansätzen der automatisierten Sportberichterstattung (Abschnitt~\ref{automatisierte-sportberichterstattung}):
+
+\begin{itemize}\tightlist
+\item \textbf{Gegenüber templatebasierten Systemen} (z.\,B. Retresco, vgl. Beils 2023, S.~207) bestätigt die Evaluation den erwarteten Qualitätsvorsprung des LLM-basierten Ansatzes: Die drei Stilprofile erzeugen deutlich unterscheidbare Texte (neutral Ø~4{,}82, kritisch Ø~4{,}32, euphorisch Ø~3{,}27 im LLM-as-Judge-Verfahren), die ein regelbasiertes Template-System strukturell nicht abbilden kann. Die Fehlerklasse Phrasenwiederholung (13\,\% der Einträge, vgl. Abschnitt~\ref{qualitative-analyse-der-generierten-texte}) zeigt jedoch, dass auch LLMs ohne gezielte Diversitätsmechanismen in formelhaften Mustern verharren können (eine Schwäche, die templatebasierte Systeme und LLM-basierte Ansätze teilen).
+\item \textbf{Gegenüber vollautonomen KI-Systemen} validiert die Evaluation die Entscheidung für den hybriden \texttt{coop}-Modus: Eine Halluzinationsrate von 5\,\% und eine Stil-Inkonsistenzrate von 20\,\% im \texttt{auto}-Modus (vgl. Abschnitt~\ref{qualitative-analyse-der-generierten-texte}) belegen, dass vollautonome Publikation im journalistischen Kontext ein nicht akzeptables Restrisiko trägt (vgl. Bluhm \& Schäfer 2023, S.~33). Das Experteninterview (vgl. Abschnitt~\ref{experteninterview-auswertung}) bestätigt diese Einschätzung: Der Interviewpartner bewertete den \texttt{coop}-Modus als realistischen Kompromiss, der Zeitdruck reduziert, ohne die redaktionelle Kontrolle aufzugeben.
+\item \textbf{Gegenüber reinen Übersetzungslösungen} für Mehrsprachigkeit bietet das System nativ multilinguale Generierung durch Prompt-Parametrisierung. Die Übersetzungsqualität wurde jedoch nicht qualitativ evaluiert (vgl. Abschnitt~\ref{technische-einordnung}): Der empirische Abstand zu spezialisierten Übersetzungslösungen (z.\,B. DeepL, NLLB) bleibt damit offen und ist als priorisierter Evaluationsbedarf in Abschnitt~\ref{mittelfristige-erweiterungen} ausgewiesen.
+\end{itemize}
+
+\subsection{Beitrag zur Forschung}\label{beitrag-zur-forschung}
+
+Im Sinne der DSR-Artefakttaxonomie nach Hevner et al.\ (2004, S.~77) stellt das System eine \textbf{Instantiierung} dar: ein lauffähiges, prototypisches System, das ein theoretisches Konzept (hybride KI-gestützte Texterstellung mit Human-in-the-Loop) in einer realen Organisationsumgebung realisiert und damit belegt, dass dieses Konzept nicht nur theoretisch formulierbar, sondern praktisch implementierbar und evaluierbar ist. Diese Artefaktkategorie grenzt sich von Konstrukten (begriffsbildenden Taxonomien), Modellen (Referenzarchitekturen ohne Implementierung) und Methoden (Vorgehensmodellen) ab.
+
+Die Arbeit leistet drei Beiträge zum aktuellen Forschungsstand.
+
+Als \textbf{architektonischen Beitrag} demonstriert sie eine produktionsnahe Referenzarchitektur für KI-gestützte Echtzeit-Textgenerierung: Die modulare Provider-Abstraktion mit Prioritätskette, das Few-Shot-Prompting aus einer kuratierten Stilreferenz-Datenbank und das dreistufige Betriebsmodus-Konzept bilden zusammen ein generisch übertragbares Muster für domänenspezifische LLM-Redaktionssysteme. Vergleichbare Architekturen in der Literatur (z.\,B. Graefe 2016; Clerwall 2014) beschreiben überwiegend templatebasierte Systeme zur automatisierten Textgenerierung (Natural Language Generation, NLG) ohne adaptive Stilsteuerung; ein LLM-basierter Ansatz mit konfigurierbarer Few-Shot-Stilkonditionierung und Human-in-the-Loop-Kontrolle für Liveticker ist nach aktuellem Recherchstand (vgl. Abschnitt~\ref{automatisierte-sportberichterstattung}) eine eigenständige Erweiterung.
+
+Als \textbf{methodischen Beitrag} stellt die Evaluationsinfrastruktur mit Bulk-Generierungsendpunkt, Provider-Override und LLM-as-Judge-Pipeline systematische und reproduzierbare Modellvergleiche bereit, ohne manuelle Einzelbewertung für jede Konfigurationsänderung. Dies löst ein verbreitetes Problem der NLG-Evaluation: die hohe Aufwand-Nutzen-Ratio manueller Bewertungen bei sich ändernden Modellen und Prompts (vgl. Gatt \& Krahmer 2018).
+
+Als \textbf{praktischen Beitrag} greift die White-Label-Architektur mit instanzspezifischer Stilsteuerung den in Abschnitt~\ref{white-label-bedarf-im-profisport} beschriebenen Bedarf von Vereinen als eigenständige Medienproduzenten auf. Die Trennung von generischer Instanz (\texttt{generic}) und vereinsspezifischer Ausprägung (\texttt{ef\_whitelabel}) auf Datenbank- und Prompt-Ebene zeigt, dass ein einziges System mehrere redaktionelle Stimmen bedienen kann, ein Skalierungsmuster, das über den Fußball hinaus anwendbar ist.
+
+
+\section{Kritische Reflexion und Limitationen}\label{kritische-reflexion}
+
+Die Evaluation in Kapitel~\ref{evaluation} hat systematisch sowohl die Stärken als auch die verbleibenden Grenzen des Systems dokumentiert. Sie gliedert sich in die methodische Einordnung (Abschnitt~\ref{methodische-einordnung}), die technische Einordnung (Abschnitt~\ref{technische-einordnung}) und die inhaltliche Reflexion (Abschnitt~\ref{inhaltliche-reflexion}).
+
+\subsection{Methodische Einordnung}\label{methodische-einordnung}
+
+Die zentrale methodische Einschränkung betrifft die Selbstbewertung der
+Textqualität: Eine unabhängige Bewertung durch professionelle Sportredakteure fehlt. In frühen Iterationszyklen des Design Science Research (DSR), deren Ziel explorative Artefaktvalidierung ist, stellt die Entwickler-Selbstevaluation eine pragmatisch begründete Vorgehensweise dar, die mit zunehmender Artefaktreife durch externe Domänenevaluation zu ergänzen ist (vgl. Hevner et al.~2004, S.~87). Sie begrenzt jedoch die externe Validität der qualitativen Ergebnisse. Dieser Einschränkung begegnet die Arbeit auf zwei Ebenen: methodisch durch das LLM-as-Judge-Verfahren (N~=~80, Abschnitt~\ref{erweiterte-evaluation}), bei dem ein unabhängiges Modell (\texttt{anthropic/claude-sonnet-4-5}) als Bewerter fungiert und die Selbstreferenzialität systematisch aufbricht. Infrastrukturell wird die implementierte Cohen's-Kappa-Metrik als Vorbereitung für eine Folgestudie mit externen Ratern genutzt. Da das LLM-as-Judge-Verfahren seinerseits modellspezifische Bewertungstendenzen einbringen kann (vgl. Zheng et al.~2023), ersetzt es die externe Nutzerstudie nicht vollständig, erhöht jedoch die Belastbarkeit der Befunde deutlich über eine reine Selbstbewertung hinaus. Konkret ist für das verwendete Bewertungsmodell (\texttt{claude-sonnet-4-5}) eine bekannte Präferenz für sachlich-neutralen Stil dokumentiert; dies könnte die im Vergleich auffällig niedrigen Tonalitätswerte des euphorischen Stilprofils (LLM-as-Judge~2{,}93/5 vs. Hauptevaluation~3{,}8/5, vgl. Abschnitt~\ref{einfluss-der-stilprofile}) zumindest teilweise erklären. Ob die Diskrepanz primär tatsächliche Qualitätsmängel des euphorischen Profils oder systematischen Bewerterbias widerspiegelt, lässt sich mit den vorliegenden Daten nicht abschließend trennen und bleibt als Validierungsfrage für eine Folgestudie mit menschlichen Ratern offen.
+
+Die eingeschränkte Stichprobengröße (15 Spiele, 40 Events) relativiert die Generalisierbarkeit der
+quantitativen Ergebnisse. Insbesondere Randsituationen (torloses
+Unentschieden, Elfmeterschießen, Spielabbrüche) sind in der
+Datenbasis strukturell unterrepräsentiert. Die
+Bulk-Evaluationsinfrastruktur ermöglicht jedoch eine systematische
+Erweiterung der Datenbasis ohne Codeänderung.
+
+\subsection{Technische Einordnung}\label{technische-einordnung}
+
+Das Polling-Modell stellt für
+den Einzelbetrieb keine Einschränkung dar, würde aber bei steigender
+Nutzerzahl (\textgreater50 gleichzeitige Clients) zu einer relevanten
+Serverlast führen. Die bestehende WebSocket-Infrastruktur für den
+Media-Kanal zeigt, dass eine Umstellung auf Server-Sent Events für den
+Ticker-Datenfluss technisch machbar ist.
+
+Die in Abschnitt~\ref{llm-latenz} dokumentierte bimodale Latenzverteilung (Cache-Treffer-Cluster unter 300~ms vs.\ Kaltgenerierungs-Cluster von 800--2\,200~ms) hat eine praktische Konsequenz für den Produktivbetrieb: Wird das System längere Zeit nicht genutzt (z.\,B. zwischen zwei Spielen), ist mit erhöhter Erstlatenz beim nächsten LLM-Aufruf zu rechnen, da Render-seitige und Gemini-seitige Caches abgelaufen sein können. Ein periodischer Warm-up-Aufruf vor Spielbeginn (z.\,B. automatisch beim Laden des Spiels) könnte diese Kaltstart-Latenz zuverlässig reduzieren.
+
+Die fehlende Authentifizierung ist im Kontext eines internen Redaktionswerkzeugs
+vertretbar, schließt aber einen offenen Mehrbenutzerbetrieb ohne
+Netzwerkabsicherung aus. Die Architektur ist durch die saubere
+Middleware-Schichtung (FastAPI Dependencies) für eine nachträgliche
+JWT-Integration (JSON Web Token) vorbereitet.
+
+Die 17 n8n-Workflows stellen den größten nicht automatisiert getesteten
+Systemteil dar. Da sie die gesamte Datenversorgung des Systems
+verantworten, sollten Integrationstests gegen eine Staging-Datenbank den Produktivbetrieb absichern.
+
+Die n8n-Instanz ist für den Evaluationszeitraum lokal betrieben und über einen \texttt{ngrok}-Tunnel für eingehende Webhooks erreichbar (vgl. Abschnitt~\ref{deployment-konzept}). Diese Lösung ist im Produktivbetrieb nicht vertretbar: Die Tunnel-Stabilität hängt von einer persistenten Internetverbindung des lokalen Rechners ab, und bei Tunnel-Neustarts müssen alle Webhook-URLs aktualisiert werden. Für einen produktiven Betrieb ist ein Cloud-Hosting der n8n-Instanz erforderlich.
+
+Die Provider-Fallback-Kette (Prioritäten 2--4: Gemini direkt, OpenAI, Anthropic) ist architektonisch vollständig implementiert und wurde im Evaluationszeitraum mangels aktivierter API-Keys nicht produktiv eingesetzt. Ein empirischer Qualitätsvergleich der Provider sowie eine Überprüfung der Fallback-Zuverlässigkeit unter Lastbedingungen stehen damit aus, ein relevanter blinder Fleck für ein System, das Multi-Provider-Redundanz als Kern-Architekturmerkmal ausweist (vgl. Abschnitt~\ref{multi-provider-architektur}).
+
+Das System wurde nicht über einen längeren Zeitraum im Produktivbetrieb evaluiert. Aspekte wie kumulierte API-Kosten, Rate-Limit-Häufigkeit im Regelbetrieb und eine mögliche Qualitätsdrift der generierten Texte über eine vollständige Spielsaison hinweg sind empirisch nicht erfasst; die Bulk-Evaluationsinfrastruktur ermöglicht jedoch eine systematische Nacherhebung.
+
+Die Übersetzungsfunktion (\texttt{translate\_text()}, vgl.\ Abschnitt~\ref{llm-service-prompt-aufbau-und-provider-dispatch}) wurde funktional verifiziert, aber nicht qualitativ evaluiert. Eine Beurteilung durch Muttersprachler oder automatische Metriken (z.\,B. BLEU, COMET) wäre Voraussetzung für den Einsatz in nicht-deutschsprachigen Märkten; die implementierte Batch-Übersetzung übersetzt zudem alle publizierten Einträge unabhängig vom \texttt{source}-Feld, sodass auch bereits in der Zielsprache verfasste manuelle Einträge erfasst werden. Eine Filterung nach \texttt{source="ai"} wäre die naheliegende Präzisierung.
+
+\subsection{Inhaltliche Reflexion}\label{inhaltliche-reflexion}
+
+Die in Abschnitt~\ref{linguistische-anforderungen-an-die-textgenerierung} hergeleiteten linguistischen Merkmale von Livetickern (Ellipsen, konzeptionelle Mündlichkeit, Graphostilistik wie „TOOOOR!'') erfordern eine besondere Prompt-Gestaltung. Aus der Literatur ist bekannt, dass LLMs ohne domänenspezifische Konditionierung tendenziell in einem formelleren Register schreiben (vgl. Brown et al.~2020, S.~6); die Few-Shot-Referenzen aus der \texttt{style\_references}-Tabelle sind das primäre Mittel, um diese stilistische Lücke zu schließen.
+
+Die Evaluationsergebnisse (Abschnitt~\ref{einfluss-der-stilprofile}) zeigen, dass die
+Few-Shot-Referenzen das Format zuverlässig konditionieren:
+Minutenangaben, TOOOOR-Konvention und Textkürze werden konsistent
+übernommen. Die stilistische Lücke ist damit teilweise geschlossen:
+Faktentreue und Verständlichkeit profitieren von der strukturierten
+Kontextübergabe, während Tonalität als schwächste Dimension verbleibt.
+Die häufigste Fehlerklasse, Stil-Inkonsistenz (vgl.
+Fehlerklassen-Tabelle in Abschnitt~\ref{qualitative-analyse-der-generierten-texte}), tritt gerade dort auf, wo
+euphorische Few-Shot-Muster auf den neutralen Stil durchschlagen. Eine Trennung
+der Referenz-Pools nach Stilprofil wäre die naheliegende Korrektur.
+
+Der in Abschnitt~\ref{large-language-models} beschriebene Halluzinationseffekt ist im Kontext von
+Livetickern besonders kritisch, da fehlerhafte Fakten (falscher
+Torschütze, falsches Ergebnis) unmittelbar die Glaubwürdigkeit
+zerstören. Die explizite Schutzregel für Pre-Match-Prompts und die
+moderat gewählte Temperatur (0{,}5; vgl. Abschnitt~\ref{llm-service-prompt-aufbau-und-provider-dispatch}) sind Gegenmaßnahmen, deren
+Wirksamkeit jedoch nur im \texttt{coop}-Modus durch die redaktionelle
+Kontrolle vollständig abgesichert ist. Im \texttt{auto}-Modus verbleibt
+ein Restrisiko fehlerhafter Veröffentlichungen.
+
+Zugleich ist zu berücksichtigen, dass der hohe Korrektheitswert (Ø~4{,}6\,/\,5) durch die strukturierte Faktenübergabe im Prompt begünstigt wird: Torschütze, Minute und Spielstand stammen direkt aus der API und werden dem Modell explizit übergeben. Ein Modell, das den Prompt nicht ignoriert, erzeugt damit faktuell korrekte Einträge weitgehend unabhängig von seiner eigentlichen Sprachkompetenz. Der Korrektheitswert misst damit eher die Güte des Prompt-Designs als eine intrinsische LLM-Stärke, was die hohen Werte erklärt, deren Übertragbarkeit auf faktenarme Prompts jedoch einschränkt.
+
+
+
+\section{Diskussion der Betriebsmodi}\label{diskussion-der-betriebsmodi}
+
+Die drei Betriebsmodi (\texttt{auto}, \texttt{coop}, \texttt{manual}) wurden in Abschnitt~\ref{status-lifecycle-und-betriebsmodi} konzipiert und in Abschnitt~\ref{evaluation-der-betriebsmodi} evaluiert. Ihre komparative Bewertung ergibt eine klare Hierarchie:
+
+Der \textbf{\texttt{auto}-Modus} maximiert das Latenzpotenzial, trägt jedoch das in Abschnitt~\ref{qualitative-analyse-der-generierten-texte} dokumentierte unkontrollierte Halluzinationsrisiko, das im journalistischen Kontext die Glaubwürdigkeit gefährden kann (Beils 2023, S.~57). Eine Halluzinationsrate von 5\,\% ist dabei im Kontext aktueller LLM-Forschung einzuordnen: Maynez et al.\ (2020, S.~4582) dokumentieren in NLG-Systemen generell substanzielle Raten an Faktinkonsistenzen, insbesondere bei Texten mit Zahlenangaben und Eigennamen. Die Pre-Match-Schutzregel (vgl.~Abschnitt~\ref{prompt-engineering-strategie}) reduziert die kritischste Fehlerklasse (Erfindung von Spielszenen), sodass die verbleibenden 5\,\% ein für LLMs typisches Residualrisiko darstellen, das im \texttt{coop}-Modus durch redaktionelle Sichtung aufgefangen wird. Er ist daher nur für unkritische Event-Typen wie Phasenwechsel vertretbar, bei denen eine fehlerhafte Formulierung keine Falschinformation über Spielergebnisse oder Akteure erzeugt.
+
+Der \textbf{\texttt{manual}-Modus} entspricht dem Status quo der manuellen Liveticker-Erstellung und dient im System als Vergleichsbasis sowie als strategische Einstiegsstufe. Er ist für Redaktionen sinnvoll, die das System zunächst parallel zum bestehenden Workflow evaluieren möchten, ohne KI-Inhalte zu publizieren. Darüber hinaus bleibt er als Rückfalloption in Situationen relevant, in denen die LLM-Verfügbarkeit eingeschränkt ist oder das Halluzinationsrisiko für ein spezifisches Spielereignis (z.\,B. strittiger Elfmeter, VAR-Entscheidung) eine vollständig manuelle Einordnung erfordert.
+
+\textbf{Der \texttt{coop}-Modus ist der intendierte Produktivbetrieb}: Die KI liefert Entwürfe, die redaktionelle Freigabe via TAB/ESC-Steuerung sichert Qualität ohne merkliche Latenzzunahme. Methodisch ist dabei zu beachten, dass die gemessene Systemlatenz (Median 859~ms, vgl. Abschnitt~\ref{llm-latenz}) die reine LLM-Generierungszeit erfasst; im \texttt{coop}-Modus addiert sich die redaktionelle Prüfzeit des Redakteurs, sodass die effektive Time-to-Publish im Produktivbetrieb höher liegt als die gemessene Systemlatenz allein suggeriert. Das Experteninterview (vgl. Abschnitt~\ref{experteninterview-auswertung}) bestätigt diese Einschätzung. Die Laufzeit-Umschaltbarkeit ermöglicht eine schrittweise Einführung von \texttt{manual} über \texttt{coop} bis \texttt{auto}, eine Adoptionsstrategie, die dem in Abschnitt~\ref{zeitdruck-und-fehleranfaelligkeit} beschriebenen Akzeptanzbedarf Rechnung trägt. Die modus-spezifische Gesamtbewertung mit Empfehlung findet sich in Abschnitt~\ref{beantwortung-der-forschungsfrage}.
+
+
+\section{Diskussion der
+Prompt-Architektur}\label{diskussion-der-prompt-architektur}
+
+Die Prompt-Architektur verdient eine eigenständige Diskussion, weil ihre Designentscheidungen sowohl die Betriebsmodiwahl (Abschnitt~\ref{diskussion-der-betriebsmodi}) als auch die Evaluationsbefunde aus Abschnitt~\ref{einfluss-der-stilprofile} kausal erklären. Sie gliedert sich in die dynamischen Stilreferenzen (Abschnitt~\ref{stilreferenzen}) und den Temperaturparameter und Context-Builder (Abschnitt~\ref{temperatur-context}).
+
+\subsection{Stilreferenzen und Temperaturkonfiguration}\label{stilreferenzen}
+
+Die dynamische Einbindung von bis zu drei Stilreferenzen aus der \texttt{style\_references}-Datenbanktabelle ist ein zentraler Designentscheid. Im Vergleich zu einem statischen System-Prompt bietet dieser Ansatz zwei Vorteile: Erstens lassen sich neue Stilbeispiele ohne Codeänderung über die Datenbank hinzufügen. Zweitens erlaubt die Instanzspezifik durch Filterung nach Event-Typ und Instanz (\texttt{ef\_whitelabel} vs.~\texttt{generic}) unterschiedliche Stilprofile für verschiedene Einsatzkontexte. Ein kontrollierter A/B-Test (mit vs.~ohne Referenzen) war nicht durchführbar (vgl. Abschnitt~\ref{einfluss-der-stilprofile}). Qualitativ zeigt die Evaluation konsistente Formatierungsmuster in der \texttt{ef\_whitelabel}-Instanz, insbesondere bei TOOOOR-Konvention und Minutenformat. Der Effekt ist sichtbar, aber statistisch nicht isoliert messbar.
+
+\paragraph{Temperaturparameter und Context-Builder}\label{temperatur-context}
+
+Die gewählte Temperatur von 0{,}5 für die Textgenerierung und 0{,}1 für Übersetzungen ist ein Kompromiss zwischen sprachlicher Varianz und Vorhersagbarkeit. Eine niedrigere Temperatur dürfte die Halluzinationsrate weiter senken, die Texte aber formelhafter machen, ein Zielkonflikt, der im Genre Liveticker (das von Überraschung und sprachlicher Kreativität lebt) besonders relevant ist; ein kontrollierter A/B-Test verschiedener Temperature-Werte war im Evaluationszeitraum nicht durchführbar. Die sieben spezialisierten Context-Builder (vgl. Abschnitt~\ref{prompt-engineering-strategie}) strukturieren die Fakten vor der Übergabe an das LLM und reduzieren damit die Wahrscheinlichkeit von Halluzinationen, da das Modell bereits aufbereitete Faktenblöcke erhält statt unstrukturierte Rohdaten. Die Wirksamkeit zeigt sich insbesondere bei ereignistypischen Einträgen (Tore, Karten), wo die Faktengrundlage eng begrenzt ist; bei Pre-Match-Einträgen verhinderte die Schutzregel zuverlässig Spielszenen-Halluzinationen, nicht jedoch alle Formen der Kontextüberschreitung (vgl. Abschnitt~\ref{qualitative-analyse-der-generierten-texte}).
+
+
+
+\section{Implikationen für den
+Sportjournalismus}\label{implikationen-fuxfcr-den-sportjournalismus}
+
+Das hybride System zielt darauf ab, die Rolle des Liveticker-Redakteurs von
+der Textproduktion zur Textredaktion zu verlagern: Statt unter Zeitdruck zu
+formulieren, prüft, editiert und kuratiert der Redakteur KI-generierte
+Vorschläge. Diese Verschiebung entspricht dem in der Forschungsliteratur diskutierten Wandel hin zu einer
+„augmented authorship" (erweiterter Autorschaft; vgl. Bluhm \& Schäfer 2023, S.~35),
+bei der menschliche Expertise und maschinelle Effizienz komplementär
+zusammenwirken. Der kognitive Engpass – simultane Beobachtung des Spielgeschehens, Relevanzbewertung und
+Texterstellung unter extremem Zeitdruck (vgl. Abschnitt~\ref{zeitdruck-und-fehleranfaelligkeit}) – könnte
+dadurch wesentlich reduziert werden. Ob dies in der Praxis zu messbaren
+Effizienzgewinnen führt, ist empirisch nicht belegt; das Experteninterview
+(vgl. Abschnitt~\ref{experteninterview-auswertung}) deutet auf Akzeptanz und erwarteten Nutzen hin,
+ersetzt jedoch keinen Feldtest mit echten Redakteuren unter Live-Bedingungen.
+Die originäre Kompetenz würde sich verlagern: Sprachliche
+Formulierungsfähigkeit tritt in den Hintergrund, evaluative Kompetenz
+(das schnelle Erkennen von Stilbrüchen, Faktenfehlern und
+Tonalitätsabweichungen) wird zur Kernkompetenz. Die publizistische
+Verantwortung verbleibt vollständig beim Menschen.
+
+Die White-Label-Architektur (\texttt{ef\_whitelabel} vs.~\texttt{generic})
+trägt dem strukturellen Wandel der Vereine zu eigenständigen
+Medienproduzenten Rechnung (vgl. Abschnitt~\ref{white-label-bedarf-im-profisport}). Ein einzelnes System kann, durch
+Instanzkonfiguration, Stilprofile und Few-Shot-Referenzen,
+verschiedene redaktionelle Stimmen bedienen, ohne separate Codebases zu
+erfordern. Technische Voraussetzung für eine echte Multi-Vereins-Skalierung
+ist Mandantenfähigkeit auf Datenbankebene; die aktuelle Architektur hält
+beide Instanzen in einem Schema. Konkrete Erweiterungsszenarien sind in
+Abschnitt~\ref{ausblick} beschrieben.
+
+Die implementierte Mehrsprachigkeit adressiert darüber hinaus die in Abschnitt~\ref{mehrsprachigkeit-als-herausforderung} motivierte Internationalisierungsanforderung: Vereine mit globalen Fanbases könnten KI-generierte Einträge ohne parallele Redaktionskapazitäten in mehreren Sprachen bereitstellen, sofern die Übersetzungsqualität durch eine externe Evaluation abgesichert wird (vgl. Abschnitt~\ref{mittelfristige-erweiterungen}).
+
+Die externe Validität der Befunde ist an mehrere Kontextgrenzen gebunden, die explizit zu benennen sind: Die Evaluation basiert auf einem Verein (Eintracht Frankfurt), einem LLM-Provider (Gemini~2.0~Flash), einer Sprache (Deutsch) und einer Sportart (Fußball, Bundesliga) über eine Saison. Qualitätswerte, Latenzprofile und Stilprofil-Wirksamkeit können bei anderen Vereins-Korpora, anderen Modellen oder anderen Sportarten (Handball, Basketball, Tennis) systematisch abweichen, insbesondere weil die Few-Shot-Referenzen vereinsspezifisch kuratiert sind und nicht übertragen werden können. Die Generalisierung der Architekturprinzipien (Provider-Fallback, dreistufige Betriebsmodi, White-Label-Instanzierung) ist davon unabhängig. Die Generalisierung konkreter Qualitätswerte erfordert Folgestudien in anderen Kontexten.
+
+
+\section{Ethische und regulatorische Einordnung}\label{ethik}
+
+Der Einsatz KI-generierter Texte im Sportjournalismus berührt normative Fragen, die über die technische Systemgestaltung hinausgehen. Sie gliedert sich in die ethische Einordnung (Abschnitt~\ref{ethische-einordnung}) und die regulatorischen Anforderungen (Abschnitt~\ref{regulatorische-anforderungen}).
+
+\subsection{Ethische Einordnung}\label{ethische-einordnung}
+
+\paragraph{Transparenz gegenüber Lesern.}
+Die Veröffentlichung KI-generierter Liveticker-Einträge ohne Kennzeichnung ist aus journalistisch-ethischer Sicht kritisch zu reflektieren: Leser können nicht zwischen redaktionell verantworteten und automatisch generierten Texten unterscheiden. Der \texttt{auto}-Modus verstärkt dieses Risiko, da Halluzinationen (Tonalitätsinkonsistenz 20\,\%, Halluzinationsrate 5\,\%) ohne menschliche Prüfung publiziert werden können. Aus journalistischer Sicht entspräche eine transparente Kennzeichnung KI-generierter Inhalte dem Gebot der Quellentransparenz (vgl. Bluhm \& Schäfer 2023, S.~57). Technisch wäre eine solche Kennzeichnung über das bestehende \texttt{source}-Feld im Ticker-Datenmodell (\texttt{ai} vs.~\texttt{manual}) ohne Codeänderung realisierbar.
+
+\paragraph{Publizistische Verantwortung.}
+Das Human-in-the-Loop-Design des \texttt{coop}-Modus beantwortet die Verantwortungsfrage konstruktiv: Die redaktionelle Freigabe stellt sicher, dass ein Mensch die publizistische Verantwortung für jeden veröffentlichten Eintrag trägt. Im \texttt{auto}-Modus ist diese Verantwortungslinie unterbrochen, eine Einschränkung, die über die technische Halluzinationsrate hinaus eine normative Systementscheidung darstellt.
+
+\subsection{Regulatorische Anforderungen}\label{regulatorische-anforderungen}
+
+\paragraph{Regulatorischer Rahmen.}
+Ab August 2026 verpflichtet Art.~50 Abs.~4 des EU AI Act zur Kennzeichnung KI-generierter Texte, sofern die automatisierte Herkunft nicht offensichtlich erkennbar ist. Liveticker-Einträge fallen unter diesen Anwendungsbereich. Ein produktiver Betrieb des Systems erfordert damit eine explizite Kennzeichnungsstrategie sowie datenschutzkonforme Verarbeitungsvereinbarungen mit den LLM-Providern (insbesondere OpenRouter als Intermediär). Diese regulatorischen Anforderungen lagen außerhalb des Projektumfangs, sind aber für eine Produktiveinführung unerlässlich.
+
+\paragraph{Rechtlicher Rahmen.}
+Die Nutzung von LLM-APIs zur Textgenerierung berührt mehrere Rechtsbereiche, die im Rahmen dieser Arbeit ausgeklammert wurden, für eine Produktiveinführung jedoch verbindlich zu klären sind. Urheberrechtlich ist zu prüfen, ob KI-generierte Liveticker-Texte nach § 2 Abs.~2 UrhG als persönliche geistige Schöpfungen schutzfähig sind. Da eine menschliche Schöpfungshöhe im \texttt{auto}-Modus strukturell fehlt, dürften vollautomatisch generierte Einträge nach überwiegender urheberrechtlicher Auffassung keinen Urheberrechtsschutz genießen, eine im Detail rechtlich noch nicht abschließend geklärte Frage. Datenschutzrechtlich erfordert die Übermittlung von Match-Daten an externe LLM-Anbieter (insbesondere OpenRouter als Drittland-Intermediär) geeignete Garantien gemäß DSGVO Art.~46, sofern die Serverinfrastruktur außerhalb des EWR betrieben wird. Für Modelle, die unter den General-Purpose-AI-Begriff von Art.~53 Abs.~1 der Verordnung (EU) 2024/1689 (EU AI Act) fallen, gelten ab August 2026 zusätzliche Transparenz- und Dokumentationspflichten gegenüber Downstream-Nutzern. Der hier eingesetzte \texttt{google/gemini-2.0-flash-lite-001}-Dienst fällt voraussichtlich in diesen Anwendungsbereich. Die Kennzeichnungspflicht nach Art.~50 Abs.~4 EU AI Act greift komplementär und ist bereits im Abschnitt über den Regulatorischen Rahmen adressiert.
+
+Die Diskussion entlang der sechs Dimensionen ergibt ein konsistentes Gesamtbild: Das System bewältigt die identifizierten Problemdimensionen durch nachweisbare Mechanismen; verbleibende Schwächen (Stil-Inkonsistenz, fehlende Authentifizierung, eingeschränkte Stichprobengröße) sind klar lokalisiert und behebbar. Kapitel~\ref{fazit-und-ausblick} fasst die Erkenntnisse zusammen, beantwortet die Forschungsfrage und gibt einen Ausblick auf Erweiterungen.

@@ -1,0 +1,453 @@
+{
+  "name": "Sync 08 | Prematch Liveticker",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        -48
+      ],
+      "id": "f52912ce-9bfe-461b-8892-6faff79353df",
+      "name": "Manual Trigger"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "1",
+              "name": "fixture_id",
+              "value": 1388536,
+              "type": "number"
+            },
+            {
+              "id": "2",
+              "name": "match_id",
+              "value": 1388536,
+              "type": "number"
+            },
+            {
+              "id": "3",
+              "name": "home_team_id",
+              "value": 169,
+              "type": "number"
+            },
+            {
+              "id": "4",
+              "name": "away_team_id",
+              "value": 180,
+              "type": "number"
+            },
+            {
+              "id": "5",
+              "name": "league_id",
+              "value": 78,
+              "type": "number"
+            },
+            {
+              "id": "6",
+              "name": "season",
+              "value": 2025,
+              "type": "number"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        208,
+        -48
+      ],
+      "id": "917dc445-7b84-4855-8427-c6419c859abc",
+      "name": "Konfiguration"
+    },
+    {
+      "parameters": {
+        "url": "https://v3.football.api-sports.io/predictions",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "fixture",
+              "value": "={{ $json.fixture_id }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        400,
+        -240
+      ],
+      "id": "fc888933-a92a-46e1-bb01-f0ed4d839454",
+      "name": "GET: Predictions",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "8TXlLPe7BeXnl0Ut",
+          "name": "Header Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "https://v3.football.api-sports.io/injuries",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "fixture",
+              "value": "={{ $('Konfiguration').first().json.fixture_id }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        400,
+        -48
+      ],
+      "id": "08a6292f-d8f6-475f-81bd-05c942294ce7",
+      "name": "GET: Injuries",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "8TXlLPe7BeXnl0Ut",
+          "name": "Header Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "https://v3.football.api-sports.io/fixtures/headtohead",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "h2h",
+              "value": "={{ $('Konfiguration').first().json.home_team_id }}-{{ $('Konfiguration').first().json.away_team_id }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        400,
+        160
+      ],
+      "id": "1d2f2471-bd75-47f8-8735-70a010d24682",
+      "name": "GET: H2H",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "8TXlLPe7BeXnl0Ut",
+          "name": "Header Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "numberInputs": 3
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        608,
+        -48
+      ],
+      "id": "8b5b6ad0-0940-46bc-b783-7a65152ffbbb",
+      "name": "Merge: API Calls"
+    },
+    {
+      "parameters": {
+        "jsCode": "const c = $('Konfiguration').first().json;\nconst pred = $('GET: Predictions').first().json.response?.[0];\nconst injuries = $('GET: Injuries').first().json.response || [];\nconst h2h = $('GET: H2H').first().json.response || [];\n\nconst last5h2h = h2h\n  .filter(f => f.fixture.status.short === 'FT')\n  .sort((a, b) => new Date(b.fixture.date) - new Date(a.fixture.date))\n  .slice(0, 5)\n  .map(f => `${f.teams.home.name} ${f.goals.home}:${f.goals.away} ${f.teams.away.name}`);\n\nconst injuryList = injuries.map(i => `${i.player.name} (${i.team.name}): ${i.player.reason}`).join(', ') || 'Keine bekannten Verletzungen';\n\nconst predText = pred ? `Tipp: ${pred.predictions?.winner?.name ?? 'Unentschieden'} - ${pred.predictions?.advice ?? ''}` : '';\n\nreturn [\n  {\n    json: {\n      sourceId: `${c.fixture_id}-prediction`,\n      prompt: `Du bist Liveticker-Redakteur für Eintracht Frankfurt. Schreibe einen spannenden Pre-Match Ticker-Eintrag (max. 3 Sätze, Deutsch, Eintracht-Stil) zur Spielvorschau:\\n\\n${predText}\\n\\nNur den Text ausgeben.`,\n      matchId: c.match_id,\n      eventType: 'Default'\n    }\n  },\n  {\n    json: {\n      sourceId: `${c.fixture_id}-h2h`,\n      prompt: `Du bist Liveticker-Redakteur für Eintracht Frankfurt. Schreibe einen Pre-Match Ticker-Eintrag (max. 3 Sätze, Deutsch, Eintracht-Stil) zum Head-to-Head:\\n\\nLetzte 5 Duelle:\\n${last5h2h.join('\\n')}\\n\\nNur den Text ausgeben.`,\n      matchId: c.match_id,\n      eventType: 'Default'\n    }\n  },\n  {\n    json: {\n      sourceId: `${c.fixture_id}-injuries`,\n      prompt: `Du bist Liveticker-Redakteur für Eintracht Frankfurt. Schreibe einen Pre-Match Ticker-Eintrag (max. 2 Sätze, Deutsch, Eintracht-Stil) zu den Verletzungen:\\n\\n${injuryList}\\n\\nNur den Text ausgeben.`,\n      matchId: c.match_id,\n      eventType: 'Default'\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        800,
+        -48
+      ],
+      "id": "1859ba97-8ba9-406c-9a7d-01059869a3cd",
+      "name": "Pre-Match Prompts bauen"
+    },
+    {
+      "parameters": {
+        "url": "=https://partner-api.stackwork-01-test.tech/cms/v1/matches/{{ $json.matchId }}/events",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer 52091AC14B524E59DEF531D0EA8F57EF0804D4CFADCF4A1A52CE842687D2D209-1"
+            },
+            {
+              "name": "et-partner-id",
+              "value": "4"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1008,
+        -48
+      ],
+      "id": "3a9bca91-d1c9-47d7-8f8d-1674183d208e",
+      "name": "GET: Already posted Events"
+    },
+    {
+      "parameters": {
+        "jsCode": "const allPostedIds = new Set(\n  $('GET: Already posted Events').all()\n    .flatMap(item => (item.json.items || []).map(e => e.sourceId))\n);\n\nconst prompts = $('Pre-Match Prompts bauen').all();\n\nreturn prompts\n  .filter(p => !allPostedIds.has(p.json.sourceId))\n  .map(p => ({ json: p.json }));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1200,
+        -48
+      ],
+      "id": "ccd7ee40-5e8e-49ca-ad3a-68fb86c26915",
+      "name": "Filter: Noch nicht gepostet"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://openrouter.ai/api/v1/chat/completions",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "content-type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"model\": \"google/gemini-2.0-flash-lite-001\",\n  \"max_tokens\": 300,\n  \"messages\": [{ \"role\": \"user\", \"content\": {{ JSON.stringify($json.prompt) }} }]\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1408,
+        -48
+      ],
+      "id": "611af350-e25c-4d68-b079-95b6cb0b95e5",
+      "name": "LLM: Text generieren",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "qgFPOEHRxazizzJI",
+          "name": "Header Auth account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const llm = $input.first().json;\nconst evData = $('Filter: Noch nicht gepostet').all()[$itemIndex]?.json || {};\nconst text = llm.choices?.[0]?.message?.content || null;\n\nreturn [{\n  json: {\n    matchId: evData.matchId,\n    body: {\n      sourceId:            evData.sourceId,\n      sport:               'Football',\n      position:            0,\n      time:                null,\n      timeAdditional:      null,\n      description:         text,\n      imageUrl:            null,\n      videoUrl:            null,\n      pushTitle:           null,\n      pushDescription:     null,\n      pushImageSrc:        null,\n      embedHtml:           null,\n      liveTickerPhaseType: 'Before',\n      liveTickerEventType: evData.eventType,\n      players:             []\n    }\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1600,
+        -48
+      ],
+      "id": "52876c40-5133-48eb-8b0a-5ab18be175c3",
+      "name": "LiveTicker Body bauen"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://partner-api.stackwork-01-test.tech/cms/v1/matches/{{ $json.matchId }}/events",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer 52091AC14B524E59DEF531D0EA8F57EF0804D4CFADCF4A1A52CE842687D2D209-1"
+            },
+            {
+              "name": "et-partner-id",
+              "value": "4"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json.body) }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        1808,
+        -48
+      ],
+      "id": "3397a05c-50bc-4359-be7b-72d3245bdd0f",
+      "name": "POST: LiveTicker Event",
+      "onError": "continueRegularOutput"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Manual Trigger": {
+      "main": [
+        [
+          {
+            "node": "Konfiguration",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Konfiguration": {
+      "main": [
+        [
+          {
+            "node": "GET: Predictions",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "GET: Injuries",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "GET: H2H",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GET: Predictions": {
+      "main": [
+        [
+          {
+            "node": "Merge: API Calls",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GET: Injuries": {
+      "main": [
+        [
+          {
+            "node": "Merge: API Calls",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "GET: H2H": {
+      "main": [
+        [
+          {
+            "node": "Merge: API Calls",
+            "type": "main",
+            "index": 2
+          }
+        ]
+      ]
+    },
+    "Merge: API Calls": {
+      "main": [
+        [
+          {
+            "node": "Pre-Match Prompts bauen",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pre-Match Prompts bauen": {
+      "main": [
+        [
+          {
+            "node": "GET: Already posted Events",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GET: Already posted Events": {
+      "main": [
+        [
+          {
+            "node": "Filter: Noch nicht gepostet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter: Noch nicht gepostet": {
+      "main": [
+        [
+          {
+            "node": "LLM: Text generieren",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "LLM: Text generieren": {
+      "main": [
+        [
+          {
+            "node": "LiveTicker Body bauen",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "LiveTicker Body bauen": {
+      "main": [
+        [
+          {
+            "node": "POST: LiveTicker Event",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "c9917aef-ee43-47a2-bf23-82b5828e7cf4",
+  "meta": {
+    "instanceId": "8f356ecf824174491100e48f7fade606f544a76873378b03e211127fbec11c97"
+  },
+  "id": "XVqxJTxo0ZSk5T2K",
+  "tags": []
+}

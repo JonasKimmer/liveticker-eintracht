@@ -1,0 +1,249 @@
+﻿nr,match,event_type,minute,player,team,score,style,generated_text,latency_ms,gen_model,judge_model,korrektheit,tonalitaet,verstaendlichkeit,gesamt,begruendung
+1,Borussia Dortmund vs. SC Freiburg,goal,8,M. Beier,Borussia Dortmund,1:0,neutral,"8. Minute: TOOOOR! M. Beier bringt Borussia Dortmund in Führung.
+R. Bensebaini lieferte die Vorlage.
+Damit steht es 1:0.
+Borussia Dortmund jubelt.",1272,google/gemini-2.0-flash-lite-001,anthropic/claude-sonnet-4-5,5,2,5,4.0,"Fakten korrekt, aber Ausrufe und 'jubelt' sind zu euphorisch für neutralen Stil."
+2,Borussia Dortmund vs. SC Freiburg,yellow_card,65,Jobe Bellingham,Borussia Dortmund,3:0,euphorisch,"Bellingham sieht Gelb!
+65. Minute
+
+Ach du Schreck! Jobe!
+Unnötig!
+Hoffentlich rächt sich das nicht.
+3:0 steht's immer noch, aber...",880,google/gemini-2.0-flash-lite-001,anthropic/claude-sonnet-4-5,5,2,3,3.33,"Fakten stimmen, aber der besorgte Ton passt nicht zu 'euphorisch' bei 3:0-Führung, zudem wirkt die Fragmentierung übertrieben."
+3,VfL Wolfsburg vs. Borussia Mönchengladbach,red_card,92,Jens Castrop,Borussia Mönchengladbach,0:0,kritisch,"Rote Karte für Castrop.
+
+Der Gladbacher Spieler sieht nach einem Foulspiel die Rote Karte. Eine überfällige Entscheidung. Castrop kam zu spät. Der Schiedsrichter hatte keine andere Wahl.
+0:0.",853,google/gemini-2.0-flash-lite-001,anthropic/claude-sonnet-4-5,5,4,5,4.67,"Fakten korrekt, kritischer Ton gut getroffen, sprachlich einwandfrei und genrekonform."
+4,Borussia Dortmund vs. SC Freiburg,substitution,67,I. Matanovic,SC Freiburg,3:0,neutral,"67. Minute: Der SC Freiburg wechselt.
+
+I. Matanovic verlässt das Feld.
+
+Für ihn kommt M. Philipp.
+
+Der Spielstand: 3:0.",758,google/gemini-2.0-flash-lite-001,anthropic/claude-sonnet-4-5,3,5,4,4.0,"Der eingewechselte Spieler M. Philipp wird nicht im Ereignis erwähnt und könnte eine Halluzination sein, Tonalität und Verständlichkeit sind jedoch gut."
+5,1. FC Köln vs. Werder Bremen,own_goal,90,M. Backhaus,1. FC Köln,2:2,euphorisch,"90. Minute
+
+NEIN! WAS ZUR HÖLLE?! Backhaus... Eigentor! Unglaublich! 2:2! Fassungslos!",693,google/gemini-2.0-flash-lite-001,anthropic/claude-sonnet-4-5,5,3,4,4.0,"Fakten korrekt, aber euphorisch sollte Freude ausdrücken – hier wirkt es eher schockiert-negativ aus Kölner Sicht."
+6,Borussia Dortmund vs. SC Freiburg,goal,14,S. Guirassy,Borussia Dortmund,2:0,kritisch,TOOOOR! 2:0 für Dortmund. Guirassy. Brandt mit der Vorlage. Freiburgs Abwehr unsortiert. Zu viel Raum für Brandt. Keine Gegenwehr.,696,google/gemini-2.0-flash-lite-001,anthropic/claude-sonnet-4-5,5,5,5,5.0,"Alle Fakten korrekt, kritischer Ton gegenüber Freiburg deutlich erkennbar, sprachlich prägnant und verständlich."
+7,VfB Stuttgart vs. Werder Bremen,yellow_card,78,Mio Backhaus,Werder Bremen,1:1,neutral,"78. Minute: Gelbe Karte für Mio Backhaus.
+
+Werder Bremen nun mit einem Spieler verwarnt.
+
+Der Spielstand weiterhin 1:1.",620,google/gemini-2.0-flash-lite-001,anthropic/claude-sonnet-4-5,5,5,5,5.0,"Alle Fakten korrekt, neutral formuliert, sprachlich einwandfrei und genrekonform."
+8,Werder Bremen vs. Hamburger SV,red_card,79,Philip Otele,Hamburger SV,2:1,euphorisch,"Rot! Rot für Otele!
+
+79. Minute: Der VAR greift ein!
+
+Das darf doch nicht wahr sein!
+
+Otele fliegt!
+
+Was für eine Entscheidung!
+
+Werder jetzt in Überzahl!",855,google/gemini-2.0-flash-lite-001,anthropic/claude-sonnet-4-5,5,5,4,4.67,"Alle Fakten korrekt, euphorischer Stil perfekt getroffen, nur die fragmentarische Syntax wirkt etwas übertrieben staccato-artig."
+9,Borussia Dortmund vs. SC Freiburg,substitution,67,V. Grifo,SC Freiburg,3:0,kritisch,67. Minute: Freiburg wechselt. Grifo geht. Beste kommt. Eine erwartbare Reaktion. Der SC Freiburg braucht neue Impulse. Grifos Leistung blieb heute blass.,760,google/gemini-2.0-flash-lite-001,anthropic/claude-sonnet-4-5,3,4,4,3.67,"Der Text nennt 'Beste' als Einwechselspieler, was im Ereignis nicht angegeben ist – mögliche Halluzination."
+10,Borussia Dortmund vs. SC Freiburg,goal,31,R. Bensebaini,Borussia Dortmund,3:0,neutral,"31. Minute: TOOOOR! R. Bensebaini erhöht für Borussia Dortmund!
+
+J. Ryerson lieferte die Vorlage.
+
+Der Ball zappelt im Netz. 3:0 für Dortmund.",791,google/gemini-2.0-flash-lite-001,anthropic/claude-sonnet-4-5,5,3,5,4.33,"Fakten korrekt, aber 'TOOOOR!' und 'zappelt im Netz' sind zu emotional für neutralen Stil."
+11,Hamburger SV vs. 1899 Hoffenheim,yellow_card,8,Robin Hranáč,1899 Hoffenheim,0:0,euphorisch,"HIMMEL! Hranáč sieht Gelb!
+Der Hoffenheimer räumt unseren Mann ab.
+Frechheit!
+Gelb!
+Na, das fängt ja gut an...",799,google/gemini-2.0-flash-lite-001,anthropic/claude-sonnet-4-5,5,2,4,3.67,"Fakten stimmen, aber der Ton ist eher empört-kritisch statt euphorisch, Verständlichkeit durch Ausrufe leicht gehackt."
+12,1. FC Köln vs. Werder Bremen,red_card,24,Marco Friedl,Werder Bremen,1:0,kritisch,"Rote Karte für Marco Friedl.
+
+Der Bremer Verteidiger sieht nach einem überharten Einsteigen die Rote Karte. Völlig berechtigte Entscheidung. Köln nun in Überzahl.",787,google/gemini-2.0-flash-lite-001,anthropic/claude-sonnet-4-5,5,4,5,4.67,"Alle Fakten korrekt, kritischer Ton durch 'überharten Einsteigen' und 'berechtigte Entscheidung' gut getroffen, sprachlich einwandfrei."
+13,Borussia Dortmund vs. SC Freiburg,substitution,74,S. Inacio,Borussia Dortmund,3:0,neutral,"74. Minute: Borussia Dortmund nimmt einen Wechsel vor.
+
+S. Inacio verlässt das Feld.
+
+Dafür kommt D. Svensson ins Spiel.
+
+Der Spielstand: 3:0.",778,google/gemini-2.0-flash-lite-001,anthropic/claude-sonnet-4-5,5,5,5,5.0,"Alle Fakten korrekt, neutral formuliert, klar strukturiert und verständlich."
+14,Borussia Dortmund vs. SC Freiburg,goal,87,F. Silva,Borussia Dortmund,4:0,euphorisch,87. Minute: SILVA! WAS EIN DING! Der Ball zappelt im Netz! 4:0! TOOOOR!,660,google/gemini-2.0-flash-lite-001,anthropic/claude-sonnet-4-5,5,5,5,5.0,"Alle Fakten stimmen, euphorischer Stil perfekt getroffen, Text ist dynamisch und genrekonform."
+15,Hamburger SV vs. 1899 Hoffenheim,yellow_card,32,Oliver Baumann,1899 Hoffenheim,0:1,kritisch,Gelbe Karte für Oliver Baumann. Der Hoffenheimer Torwart kommt zu spät. Unnötiges Foul.,546,google/gemini-2.0-flash-lite-001,anthropic/claude-sonnet-4-5,5,3,5,4.33,"Fakten korrekt, aber für kritischen Stil fehlt schärfere Wertung wie 'leichtsinnig' oder 'vermeidbar'."
+16,Union Berlin vs. FC St. Pauli,red_card,93,Jackson Irvine,FC St. Pauli,1:1,neutral,"93. Minute: Jackson Irvine sieht die Rote Karte.
+
+FC St. Pauli nun mit zehn Spielern.
+
+Der Spielstand bleibt 1:1.",631,google/gemini-2.0-flash-lite-001,anthropic/claude-sonnet-4-5,5,5,5,5.0,"Alle Fakten korrekt, neutral formuliert, klar und prägnant im Liveticker-Stil."
+17,Borussia Dortmund vs. SC Freiburg,substitution,75,P. Lienhart,SC Freiburg,3:0,euphorisch,"75. Minute: Freiburg wechselt... Lienhart geht, Jung kommt. Na, ob das was bringt? Bei dem Spielstand...",677,google/gemini-2.0-flash-lite-001,anthropic/claude-sonnet-4-5,3,1,4,2.67,"Tonalität ist kritisch-resigniert statt euphorisch, außerdem fehlt die Information, wer eingewechselt wird (Jung wird nicht im Ereignis genannt)."
+18,VfB Stuttgart vs. Werder Bremen,goal,18,J. Stage,Werder Bremen,0:1,kritisch,"TOOOOR! Werder Bremen geht in Führung.
+
+Stage trifft. Sugawara mit der Vorlage.
+
+Stuttgarter Abwehr unsortiert. Zu wenig Zugriff im Mittelfeld.
+Stand: 0:1.",787,google/gemini-2.0-flash-lite-001,anthropic/claude-sonnet-4-5,5,4,5,4.67,"Alle Fakten korrekt, kritischer Ton durch 'unsortiert' und 'zu wenig Zugriff' gut getroffen, sprachlich prägnant und klar."
+19,Hamburger SV vs. 1899 Hoffenheim,yellow_card,49,Nicolai Remberg,Hamburger SV,1:2,neutral,"49. Minute: Nicolai Remberg vom Hamburger SV sieht die Gelbe Karte.
+Der Spielstand beträgt 1:2.",577,google/gemini-2.0-flash-lite-001,anthropic/claude-sonnet-4-5,5,5,5,5.0,"Alle Fakten korrekt, sachlich-neutral formuliert, klar und präzise."
+20,Borussia Dortmund vs. SC Freiburg,substitution,75,D. Scherhant,SC Freiburg,3:0,euphorisch,"75. Minute: Scherhant geht runter. Irie kommt! Freiburg wechselt... Na, ob das was bringt? Bei dem Spielstand...",682,google/gemini-2.0-flash-lite-001,anthropic/claude-sonnet-4-5,3,1,4,2.67,"Tonalität ist skeptisch-resigniert statt euphorisch, außerdem fehlt der Vorname-Initial D. bei Scherhant."
+21,VfB Stuttgart vs. Werder Bremen,goal,61,E. Demirovic,VfB Stuttgart,1:1,kritisch,TOOOOR! Stuttgart gleicht aus. Demirovic mit dem Ausgleich. El Khannouss mit der Vorlage. Die Stuttgarter Abwehr unsortiert. Zu spät am Mann. 1:1.,841,google/gemini-2.0-flash-lite-001,anthropic/claude-sonnet-4-5,2,2,4,2.67,"Text verwechselt Angreifer mit Verteidiger (Stuttgarts Abwehr kann nicht unsortiert sein, wenn Stuttgart trifft) und kritischer Stil fehlt weitgehend."
+22,Hamburger SV vs. 1899 Hoffenheim,yellow_card,68,Grischa Promel,1899 Hoffenheim,1:2,neutral,"68. Minute: Gelbe Karte für Grischa Promel.
+
+Hoffenheim-Spieler Promel wird verwarnt.
+
+Der Hamburger SV liegt weiterhin mit 1:2 zurück.",697,google/gemini-2.0-flash-lite-001,anthropic/claude-sonnet-4-5,5,5,5,5.0,"Alle Fakten korrekt, sachlich-neutraler Stil perfekt umgesetzt, sprachlich einwandfrei und gut strukturiert."
+23,Borussia Dortmund vs. SC Freiburg,substitution,84,S. Guirassy,Borussia Dortmund,3:0,euphorisch,"84. Minute
+
+Guirassy geht! Unglaublich! Aber Silva kommt... Na, dann mal ran, Junge! Kämpfen!",674,google/gemini-2.0-flash-lite-001,anthropic/claude-sonnet-4-5,3,4,3,3.33,"Wechsel korrekt, aber eingewechselter Spieler nicht genannt; euphorischer Ton passt, jedoch etwas umgangssprachlich und fragmentiert."
+24,Hamburger SV vs. 1899 Hoffenheim,goal,18,F. Asllani,1899 Hoffenheim,0:1,kritisch,TOOOOR! 0:1 für Hoffenheim. Asllani trifft. Coufal mit der Vorlage. Die Hamburger Abwehr unsortiert. Zu spät am Mann.,734,google/gemini-2.0-flash-lite-001,anthropic/claude-sonnet-4-5,4,5,5,4.67,"Kritischer Ton perfekt getroffen, sprachlich prägnant, nur Vorlagengeber nicht im Ereignis verifizierbar."
+25,Hamburger SV vs. 1899 Hoffenheim,yellow_card,71,Wouter Burger,1899 Hoffenheim,1:2,neutral,"71. Minute: Gelbe Karte für Wouter Burger.
+
+Hoffenheim-Spieler Burger wird verwarnt.
+
+Der Hamburger SV liegt weiterhin mit 1:2 zurück.",660,google/gemini-2.0-flash-lite-001,anthropic/claude-sonnet-4-5,5,5,5,5.0,"Alle Fakten korrekt, neutral formuliert, klar strukturiert und verständlich."
+26,Borussia Dortmund vs. SC Freiburg,substitution,84,J. Brandt,Borussia Dortmund,3:0,euphorisch,"84. Minute
+
+Brandt geht runter! Na endlich!
+Chukwuemeka kommt!
+Kann er noch mal für frischen Wind sorgen?
+3:0 steht's!
+Auf geht's, Jungs!",853,google/gemini-2.0-flash-lite-001,anthropic/claude-sonnet-4-5,2,4,3,3.0,"Chukwuemeka spielt nicht für Dortmund, zudem fehlt die Teamzuordnung von Brandt – klare Halluzination trotz passender euphorischer Tonalität."
+27,Hamburger SV vs. 1899 Hoffenheim,goal,34,R. Glatzel,Hamburger SV,1:1,kritisch,TOOOOR! Glatzel gleicht aus. Der Stürmer mit dem Kopf. Die Hoffenheimer Abwehr unsortiert. Zu wenig Zugriff im Zentrum. 1:1.,799,google/gemini-2.0-flash-lite-001,anthropic/claude-sonnet-4-5,5,4,5,4.67,"Fakten korrekt, kritischer Ton durch 'unsortiert' und 'zu wenig Zugriff' gut getroffen, sprachlich prägnant und verständlich."
+28,Hamburger SV vs. 1899 Hoffenheim,yellow_card,92,Albert Sambi Lokonga,Hamburger SV,1:2,neutral,"92. Minute: Gelbe Karte für Albert Sambi Lokonga.
+
+Hamburger SV: Der Spieler sieht die Verwarnung.",646,google/gemini-2.0-flash-lite-001,anthropic/claude-sonnet-4-5,5,5,4,4.67,"Alle Fakten korrekt, neutral formuliert, aber etwas redundant und knapp für einen Liveticker-Eintrag."
+29,Borussia Dortmund vs. SC Freiburg,substitution,84,N. Hofler,SC Freiburg,3:0,euphorisch,"84. Minute
+
+Hofler geht... Tarnutzer kommt! Freiburg wechselt. Na, ob das noch was ändert? Bei dem Spielstand...",749,google/gemini-2.0-flash-lite-001,anthropic/claude-sonnet-4-5,2,1,4,2.33,Der Text ist ironisch-resigniert statt euphorisch und nennt einen falschen Spielernamen (Tarnutzer statt des tatsächlich eingewechselten Spielers).
+30,Hamburger SV vs. 1899 Hoffenheim,goal,45,T. Lemperle,1899 Hoffenheim,1:2,kritisch,TOOOOR! 1:2. Lemperle. Hajdari mit der Vorlage. Die Hoffenheimer Führung. Der HSV-Abwehrverbund unsortiert. Zu viel Raum für Hajdari. Lemperle eiskalt.,846,google/gemini-2.0-flash-lite-001,anthropic/claude-sonnet-4-5,5,5,5,5.0,"Fakten korrekt, kritischer Ton durch 'unsortiert' und 'zu viel Raum', sprachlich prägnant und genrekonform."
+31,VfL Wolfsburg vs. Borussia Mönchengladbach,yellow_card,61,Fabio Chiarodia,Borussia Mönchengladbach,0:0,neutral,"61. Minute: Gelbe Karte für Fabio Chiarodia. Der Gladbacher Spieler wird verwarnt.
+
+Borussia Mönchengladbach nun mit einer Verwarnung.
+
+Weiterhin 0:0.",724,google/gemini-2.0-flash-lite-001,anthropic/claude-sonnet-4-5,5,5,5,5.0,"Alle Fakten korrekt, neutral formuliert, sprachlich einwandfrei und genrekonform."
+32,Borussia Dortmund vs. SC Freiburg,substitution,88,J. Bellingham,Borussia Dortmund,4:0,euphorisch,"88. Minute
+
+Bellingham geht! Unglaublich! Aber Özcan kommt... Hoffentlich bringt er die Ruhe rein. Bei dem Spielstand kann man das mal machen.",656,google/gemini-2.0-flash-lite-001,anthropic/claude-sonnet-4-5,4,3,4,3.67,"Tonalität schwankt zwischen Euphorie und Skepsis, passt nicht durchgängig zum euphorischen Stil."
+33,FSV Mainz 05 vs. Bayern München,goal,15,D. Kohr,FSV Mainz 05,1:0,kritisch,TOOOOR! Mainz geht in Führung. Kohr mit dem Kopf. Sano mit der Flanke. Bayerns Abwehr ungeordnet. Kein Zugriff. 1:0.,737,google/gemini-2.0-flash-lite-001,anthropic/claude-sonnet-4-5,5,4,5,4.67,"Fakten korrekt, kritischer Unterton bei Bayerns Abwehr vorhanden, sprachlich prägnant und verständlich."
+34,VfL Wolfsburg vs. Borussia Mönchengladbach,yellow_card,94,Adam Daghim,VfL Wolfsburg,0:0,neutral,"94. Minute: Adam Daghim vom VfL Wolfsburg sieht die Gelbe Karte.
+Der Spielstand bleibt unverändert.
+Borussia Mönchengladbach wartet auf den Freistoß.",640,google/gemini-2.0-flash-lite-001,anthropic/claude-sonnet-4-5,5,5,5,5.0,"Alle Fakten korrekt, neutral formuliert, sprachlich einwandfrei und genrekonform."
+35,Borussia Dortmund vs. SC Freiburg,substitution,89,M. Beier,Borussia Dortmund,4:0,euphorisch,"89. Minute
+
+Beier geht! Albert kommt! Endlich! Die letzten Minuten runterspielen. Hoffentlich ohne Verletzungen. Dortmund wechselt nochmal. 4:0! Was für ein Spiel!",837,google/gemini-2.0-flash-lite-001,anthropic/claude-sonnet-4-5,2,5,4,3.67,"Tonalität perfekt euphorisch, aber der eingewechselte Spieler 'Albert' ist faktisch nicht verifizierbar und wahrscheinlich eine Halluzination."
+36,FSV Mainz 05 vs. Bayern München,goal,29,P. Nebel,FSV Mainz 05,2:0,kritisch,TOOOOR! Mainz erhöht. Nebel mit dem 2:0. Bayerns Abwehr unsortiert. Zu viel Raum für den Schützen. Die Bayern-Defensive wirkt überfordert.,750,google/gemini-2.0-flash-lite-001,anthropic/claude-sonnet-4-5,5,5,5,5.0,"Alle Fakten korrekt, kritischer Ton gegenüber Bayern deutlich erkennbar, sprachlich prägnant und verständlich."
+37,VfL Wolfsburg vs. Borussia Mönchengladbach,yellow_card,95,Robin Hack,Borussia Mönchengladbach,0:0,neutral,"95. Minute: Gelbe Karte für Robin Hack.
+
+Borussia Mönchengladbachs Spieler wird verwarnt.
+Der Unparteiische zeigt die Karte.
+Der Spielstand bleibt 0:0.",752,google/gemini-2.0-flash-lite-001,anthropic/claude-sonnet-4-5,5,5,4,4.67,"Alle Fakten korrekt, neutral formuliert, minimal repetitiv aber verständlich."
+38,VfB Stuttgart vs. Werder Bremen,substitution,46,D. Zagadou,VfB Stuttgart,0:1,euphorisch,"Zagadou raus! Was ist denn jetzt los?
+Hendriks kommt!
+Hoffentlich bringt er frischen Wind.
+Wir brauchen jetzt unbedingt einen Impuls!
+0:1...und jetzt schon wieder ein Wechsel.
+Auf geht's, Rino! Zeig's allen!",1086,google/gemini-2.0-flash-lite-001,anthropic/claude-sonnet-4-5,2,4,3,3.0,"Zagadou wird ausgewechselt (korrekt), aber der eingewechselte Spieler 'Hendriks' bzw. 'Rino' wird nicht im Ereignis genannt – mögliche Halluzination."
+39,FSV Mainz 05 vs. Bayern München,goal,45,S. Becker,FSV Mainz 05,3:0,kritisch,TOOOOR! Mainz erhöht. Becker trifft. Bayerns Abwehr indisponiert. Zu passiv. 3:0.,678,google/gemini-2.0-flash-lite-001,anthropic/claude-sonnet-4-5,5,5,4,4.67,"Alle Fakten korrekt, kritischer Ton gegenüber Bayern deutlich, nur leicht stakkatoartig formuliert."
+40,VfL Wolfsburg vs. Borussia Mönchengladbach,yellow_card,94,Rocco Reitz,Borussia Mönchengladbach,0:0,neutral,"94. Minute: Gelbe Karte für Rocco Reitz.
+
+Borussia Mönchengladbachs Spieler wird verwarnt.
+Der Unparteiische zeigt die Karte.
+Der Spielstand bleibt 0:0.",774,google/gemini-2.0-flash-lite-001,anthropic/claude-sonnet-4-5,5,5,4,4.67,"Alle Fakten korrekt, neutral formuliert, minimal repetitiv aber verständlich."
+41,VfB Stuttgart vs. Werder Bremen,substitution,57,T. Tomas,VfB Stuttgart,0:1,euphorisch,"57. Minute
+
+Tomas geht... Nein! Nicht jetzt! Ausgerechnet jetzt!
+Demirovic kommt. Hoffentlich bringt er frischen Wind.
+0:1... Das darf doch nicht wahr sein!",802,google/gemini-2.0-flash-lite-001,anthropic/claude-sonnet-4-5,3,2,4,3.0,"Euphorisch sollte positiv-begeistert sein, hier überwiegt aber Frustration und Verzweiflung trotz guter Lesbarkeit."
+42,FSV Mainz 05 vs. Bayern München,goal,53,N. Jackson,Bayern München,3:1,kritisch,"TOOOOR! Bayern verkürzt. Jackson mit dem Anschlusstreffer. Laimer mit der Vorlage.
+
+Mainzer Abwehr unsortiert. Zu viel Raum für Laimer. Jackson mit dem Abschluss. Unhaltbar für Zentner.",914,google/gemini-2.0-flash-lite-001,anthropic/claude-sonnet-4-5,2,2,4,2.67,"Spielstand falsch dargestellt (3:1 bedeutet Mainz führt, kein 'Anschlusstreffer' für Bayern) und kritischer Stil kaum erkennbar."
+43,FSV Mainz 05 vs. Bayern München,yellow_card,20,Dominik Kohr,FSV Mainz 05,1:0,neutral,20. Minute: Dominik Kohr vom FSV Mainz 05 sieht die Gelbe Karte.,724,google/gemini-2.0-flash-lite-001,anthropic/claude-sonnet-4-5,5,5,5,5.0,"Alle Fakten korrekt, neutral formuliert, sprachlich einwandfrei."
+44,VfB Stuttgart vs. Werder Bremen,substitution,57,L. Assignon,VfB Stuttgart,0:1,euphorisch,"57. Minute
+
+Assignon geht... Fuhrich kommt! Endlich! Der Trainer hat ein Einsehen! Hoffentlich bringt Chris frischen Wind! Wir brauchen jetzt was! 0:1...",926,google/gemini-2.0-flash-lite-001,anthropic/claude-sonnet-4-5,3,5,4,4.0,"Fuhrich als eingewechselter Spieler wird nicht im Ereignis genannt, könnte Halluzination sein."
+45,FSV Mainz 05 vs. Bayern München,goal,73,M. Olise,Bayern München,3:2,kritisch,TOOOOR! Mainz 05 – Bayern München 3:2. Olise mit dem Anschlusstreffer. Laimer mit dem Fehlpass. Bayerns Abwehr unsortiert. Zu wenig Druck auf den Ball.,814,google/gemini-2.0-flash-lite-001,anthropic/claude-sonnet-4-5,2,4,4,3.33,"Der Spielstand ist falsch dargestellt (müsste 3:2 für Mainz sein, Bayern schießt das Tor), kritischer Ton aber gut getroffen."
+46,FSV Mainz 05 vs. Bayern München,yellow_card,33,Konrad Laimer,Bayern München,2:0,neutral,"33. Minute: Laimer von Bayern München sieht Gelb.
+
+Mainz führt weiterhin mit 2:0.",595,google/gemini-2.0-flash-lite-001,anthropic/claude-sonnet-4-5,5,5,5,5.0,"Alle Fakten korrekt, neutral formuliert, klar und präzise im Liveticker-Stil."
+47,VfB Stuttgart vs. Werder Bremen,substitution,65,N. Stark,Werder Bremen,1:1,euphorisch,"65. Minute
+
+Stark runter! Nicht schon wieder!
+
+Wober für Bremen. Na, hoffentlich wird das nix.",748,google/gemini-2.0-flash-lite-001,anthropic/claude-sonnet-4-5,2,1,3,2.0,Text nennt falschen ausgewechselten Spieler (Wober statt Stark) und ist kritisch statt euphorisch.
+48,FSV Mainz 05 vs. Bayern München,goal,80,J. Musiala,Bayern München,3:3,kritisch,TOOOOR! Musiala gleicht aus. 3:3. Mainz' Abwehr unsortiert. Kimmich mit dem Steilpass. Zentimetergenau. Mainz verschiebt nicht rechtzeitig. Musiala eiskalt.,972,google/gemini-2.0-flash-lite-001,anthropic/claude-sonnet-4-5,5,2,4,3.67,"Fakten stimmen, aber der Ton ist zu neutral-euphorisch statt kritisch gegenüber Bayerns Rückstand oder Mainz' Führung."
+49,FSV Mainz 05 vs. Bayern München,yellow_card,97,Michael Olise,Bayern München,3:4,neutral,"97. Minute: Michael Olise sieht die Gelbe Karte.
+
+Bayern München: Der Spieler wird verwarnt.
+
+Nach wie vor steht es 3:4.",910,google/gemini-2.0-flash-lite-001,anthropic/claude-sonnet-4-5,5,5,5,5.0,"Alle Fakten korrekt, neutral formuliert, klar strukturiert und verständlich."
+50,VfB Stuttgart vs. Werder Bremen,substitution,65,J. Milosevic,Werder Bremen,1:1,euphorisch,"65. Minute:
+Milosevic geht... Njinmah kommt! Na, ob das was wird? Hoffentlich! Wir brauchen jetzt frischen Wind! 1:1, das darf doch nicht wahr sein!",837,google/gemini-2.0-flash-lite-001,anthropic/claude-sonnet-4-5,3,4,4,3.67,"Njinmah wird erwähnt, aber nicht im Ereignis genannt – mögliche Halluzination des eingewechselten Spielers."
+51,FSV Mainz 05 vs. Bayern München,goal,83,H. Kane,Bayern München,3:4,kritisch,TOOOOR! Kane. Bayern dreht das Spiel. Mainz' Abwehr unsortiert. Zu viel Raum für den Stürmer. 3:4.,1111,google/gemini-2.0-flash-lite-001,anthropic/claude-sonnet-4-5,5,4,4,4.33,"Fakten korrekt, kritischer Ton vorhanden durch 'unsortiert' und 'zu viel Raum', Stil etwas knapp aber verständlich."
+52,FC Augsburg vs. Eintracht Frankfurt,yellow_card,7,Ellyes Skhiri,Eintracht Frankfurt,0:0,neutral,"7. Minute: Gelbe Karte für Ellyes Skhiri.
+Eintracht Frankfurt: Der Spieler wird verwarnt.
+Derzeitiger Spielstand: 0:0.",748,google/gemini-2.0-flash-lite-001,anthropic/claude-sonnet-4-5,5,5,4,4.67,"Alle Fakten korrekt, neutral formuliert, minimal holprig durch Doppelpunkt-Struktur."
+53,VfB Stuttgart vs. Werder Bremen,substitution,78,J. Leweling,VfB Stuttgart,1:1,euphorisch,"Bouanani für Leweling!
+Na, ob das was wird?
+Leweling geht... schade!
+Hoffentlich bringt Bouanani frischen Wind!
+1:1 steht's immer noch... Nervenkitzel pur!
+Jetzt bloß nicht nachlassen!
+Auf geht's, VfB!",1046,google/gemini-2.0-flash-lite-001,anthropic/claude-sonnet-4-5,3,4,3,3.33,"Wechselspieler Bouanani wird nicht im Ereignis genannt, euphorischer Stil gut getroffen, aber fragmentierte Sätze beeinträchtigen Lesefluss."
+54,FC Augsburg vs. Eintracht Frankfurt,goal,44,A. Kade,FC Augsburg,1:0,kritisch,TOOOOR! Augsburg geht in Führung. Kade trifft. Frankfurt pennt. Die Abwehr unsortiert. Kein Zugriff. 1:0.,1029,google/gemini-2.0-flash-lite-001,anthropic/claude-sonnet-4-5,5,5,4,4.67,"Fakten korrekt, kritischer Ton perfekt getroffen, nur minimal abgehackt im Stil."
+55,FC Augsburg vs. Eintracht Frankfurt,yellow_card,46,Ritsu Doan,Eintracht Frankfurt,1:0,neutral,"46. Minute: Ritsu Doan sieht die Gelbe Karte.
+
+Eintracht Frankfurt nun mit einer Verwarnung.
+
+Der FC Augsburg führt weiterhin mit 1:0.",836,google/gemini-2.0-flash-lite-001,anthropic/claude-sonnet-4-5,5,5,5,5.0,"Alle Fakten korrekt, sachlich-neutraler Stil perfekt umgesetzt, sprachlich einwandfrei."
+56,VfB Stuttgart vs. Werder Bremen,substitution,83,J. Stage,Werder Bremen,1:1,euphorisch,"83. Minute: Stage geht... Mbangula kommt! Na, ob das jetzt die richtige Entscheidung ist? Bremen wechselt. 1:1 steht's. Hoffentlich bringt das frischen Wind!",1411,google/gemini-2.0-flash-lite-001,anthropic/claude-sonnet-4-5,2,3,3,2.67,"Falscher eingewechselter Spieler (Mbangula statt korrekter Name), Tonalität eher skeptisch als euphorisch, Stil umgangssprachlich aber verständlich."
+57,FC Augsburg vs. Eintracht Frankfurt,goal,66,R. Doan,Eintracht Frankfurt,1:1,kritisch,"TOOOOR! Frankfurt gleicht aus. Doan trifft.
+
+Uzun mit dem Zuspiel. Augsburgs Abwehr unsortiert. Zu viel Raum für den Schützen. 1:1.",1400,google/gemini-2.0-flash-lite-001,anthropic/claude-sonnet-4-5,5,4,5,4.67,"Fakten korrekt, kritischer Unterton bei Abwehrverhalten vorhanden, sprachlich prägnant und klar."
+58,FC Augsburg vs. Eintracht Frankfurt,yellow_card,70,Han-Noah Massengo,FC Augsburg,1:1,neutral,"70. Minute: Han-Noah Massengo vom FC Augsburg sieht die Gelbe Karte.
+
+Der Spielstand bleibt 1:1.",571,google/gemini-2.0-flash-lite-001,anthropic/claude-sonnet-4-5,5,5,5,5.0,"Alle Fakten korrekt, sachlich-neutral formuliert, klar und präzise."
+59,VfB Stuttgart vs. Werder Bremen,substitution,89,C. Andres,VfB Stuttgart,1:1,euphorisch,"Nartey kommt! Andres geht...
+
+89. Minute: Der Trainer bringt nochmal frische Kräfte. Hoffentlich bringt Nartey noch was!",685,google/gemini-2.0-flash-lite-001,anthropic/claude-sonnet-4-5,2,3,4,3.0,"Falscher Spielername (Nartey statt Andres wird eingewechselt), Tonalität nur mäßig euphorisch, Text aber verständlich."
+60,1. FC Heidenheim vs. FC St. Pauli,goal,3,B. Zivzivadze,1. FC Heidenheim,1:0,kritisch,TOOOOR! 1:0 für Heidenheim. Zivzivadze mit dem frühen Führungstreffer. Schoppner mit der Vorlage. Die St. Pauli-Abwehr unsortiert. Zu viel Raum für den Pass.,843,google/gemini-2.0-flash-lite-001,anthropic/claude-sonnet-4-5,5,4,5,4.67,"Fakten korrekt, kritischer Ton durch 'unsortiert' und 'zu viel Raum' gut getroffen, sprachlich prägnant und klar."
+61,1. FC Heidenheim vs. FC St. Pauli,yellow_card,76,Martijn Kaars,FC St. Pauli,1:0,neutral,"76. Minute: Gelbe Karte für Martijn Kaars.
+
+Der FC St. Pauli nun mit einer Verwarnung.
+
+Weiterhin 1:0 für Heidenheim.",940,google/gemini-2.0-flash-lite-001,anthropic/claude-sonnet-4-5,5,5,5,5.0,"Alle Fakten korrekt, neutral formuliert, klar und prägnant im Liveticker-Stil."
+62,VfB Stuttgart vs. Werder Bremen,substitution,94,R. Schmid,Werder Bremen,1:1,euphorisch,"94. Minute:
+Schmid geht runter? Jetzt? Kurz vor Schluss? Bremen wechselt... Musah kommt. Hoffentlich bringt das nicht noch Unheil! 1:1 steht's... Nervenzerreißend!",19561,google/gemini-2.0-flash-lite-001,anthropic/claude-sonnet-4-5,3,2,4,3.0,Der Text ist eher nervös-ängstlich statt euphorisch und nennt den eingewechselten Spieler Musah nicht im Ereignis.
+63,1. FC Heidenheim vs. FC St. Pauli,goal,82,E. Dinkci,1. FC Heidenheim,2:0,kritisch,TOOOOR! Heidenheim erhöht auf 2:0. Dinkci trifft. Ramaj mit der Vorlage. Die Abwehr von St. Pauli unsortiert. Zu viel Raum. Zu wenig Zugriff. Ein verdienter Treffer.,851,google/gemini-2.0-flash-lite-001,anthropic/claude-sonnet-4-5,5,5,5,5.0,"Fakten korrekt, kritischer Ton durch Mängelbeschreibung der St. Pauli-Defensive perfekt getroffen, sprachlich prägnant und verständlich."
+64,1. FC Köln vs. Bayer Leverkusen,yellow_card,10,Edmond Tapsoba,Bayer Leverkusen,0:0,neutral,"10. Minute: Tapsoba von Bayer Leverkusen sieht Gelb.
+Der Unparteiische zückt die Karte.
+Weiterhin 0:0.",1158,google/gemini-2.0-flash-lite-001,anthropic/claude-sonnet-4-5,5,5,5,5.0,"Alle Fakten korrekt, neutral formuliert, klar und prägnant im Ticker-Stil."
+65,Hamburger SV vs. 1899 Hoffenheim,substitution,46,R. Hranac,1899 Hoffenheim,1:2,euphorisch,"46. Minute:
+Himmel, was ist denn jetzt los?! Hranac runter, Bernardo rein. Hoffenheim wechselt... Ausgerechnet jetzt! Na, hoffentlich bringt der frischen Wind! Bei dem Rückstand... Puh.",952,google/gemini-2.0-flash-lite-001,anthropic/claude-sonnet-4-5,3,2,4,3.0,"Tonalität eher nervös-besorgt statt euphorisch, Spielername 'Bernardo' nicht im Ereignis verifizierbar, sprachlich aber flüssig."
+66,1. FC Köln vs. Bayer Leverkusen,goal,43,P. Schick,Bayer Leverkusen,0:1,kritisch,TOOOOR! Leverkusen geht in Führung. Schick trifft. Kölns Abwehr unsortiert. Tapsoba mit dem entscheidenden Pass. Schwaches Stellungsspiel von Hübers. 0:1.,791,google/gemini-2.0-flash-lite-001,anthropic/claude-sonnet-4-5,4,5,4,4.33,"Fakten stimmen, kritischer Ton perfekt getroffen, Telegrammstil etwas abgehackt aber genrekonform."
+67,1. FC Köln vs. Bayer Leverkusen,yellow_card,45,Ísak Bergmann Jóhannesson,1. FC Köln,0:1,neutral,"45. Minute: Ísak Bergmann Jóhannesson vom 1. FC Köln sieht die Gelbe Karte.
+
+Der Spielstand bleibt 0:1.",630,google/gemini-2.0-flash-lite-001,anthropic/claude-sonnet-4-5,5,5,5,5.0,"Alle Fakten korrekt, neutral formuliert, sprachlich einwandfrei und genrekonform."
+68,Hamburger SV vs. 1899 Hoffenheim,substitution,64,R. Glatzel,Hamburger SV,1:2,euphorisch,"64. Minute: Glatzel runter! Stange kommt! Na, ob das jetzt was wird... Hoffentlich! Wir brauchen jetzt unbedingt einen! 1:2!",775,google/gemini-2.0-flash-lite-001,anthropic/claude-sonnet-4-5,3,4,3,3.33,"Einwechslung von Stange nicht im Ereignis erwähnt, Tonalität euphorisch-hoffnungsvoll passend, Satzstruktur etwas abgehackt."
+69,1. FC Köln vs. Bayer Leverkusen,goal,52,P. Schick,Bayer Leverkusen,0:2,kritisch,TOOOOR! Leverkusen erhöht. Schick trifft. Tella mit der Vorlage. Kölns Abwehr unsortiert. Kein Zugriff auf den Torschützen. 0:2.,869,google/gemini-2.0-flash-lite-001,anthropic/claude-sonnet-4-5,5,4,4,4.33,"Fakten korrekt, kritischer Ton durch 'unsortiert' und 'kein Zugriff' vorhanden, Telegrammstil etwas abgehackt aber genrekonform."
+70,1. FC Köln vs. Bayer Leverkusen,yellow_card,95,Janis Blaswich,Bayer Leverkusen,1:2,neutral,"95. Minute: Janis Blaswich sieht die Gelbe Karte.
+Bayer Leverkusen: Der Torwart wird verwarnt.
+Der Spielstand beträgt weiterhin 1:2.",6275,google/gemini-2.0-flash-lite-001,anthropic/claude-sonnet-4-5,2,5,5,4.0,"Janis Blaswich spielt für RB Leipzig, nicht für Bayer Leverkusen - schwerer Faktenfehler bei der Teamzuordnung."
+71,Hamburger SV vs. 1899 Hoffenheim,substitution,64,F. Asllani,1899 Hoffenheim,1:2,euphorisch,"64. Minute:
+Asllani geht... Promel kommt! Hoffenheim wechselt. Na, ob das was wird? Hoffentlich nicht spielentscheidend!",764,google/gemini-2.0-flash-lite-001,anthropic/claude-sonnet-4-5,3,1,4,2.67,"Tonalität ist skeptisch-kritisch statt euphorisch, Fakten grundsätzlich korrekt aber unvollständig (Minute fehlt im Text)."
+72,1. FC Köln vs. Bayer Leverkusen,goal,77,L. Waldschmidt,1. FC Köln,1:2,kritisch,TOOOOR! Köln kassiert den Gegentreffer. Waldschmidt trifft. El Mala mit der Vorlage. Leverkusen führt. Die Kölner Abwehr unsortiert. Zu viel Raum für den Schützen. 1:2.,912,google/gemini-2.0-flash-lite-001,anthropic/claude-sonnet-4-5,1,3,4,2.67,"Waldschmidt spielt für Köln und erzielt hier das 1:2 aus Kölner Sicht, der Text beschreibt aber fälschlich einen Gegentreffer für Köln."
+73,RB Leipzig vs. Union Berlin,yellow_card,34,Christoph Baumgartner,RB Leipzig,2:0,neutral,"34. Minute: Gelbe Karte für Christoph Baumgartner.
+
+RB Leipzig: Der Spieler wird nach einem Foul verwarnt.
+
+Der Spielstand beträgt weiterhin 2:0.",695,google/gemini-2.0-flash-lite-001,anthropic/claude-sonnet-4-5,5,5,5,5.0,"Alle Fakten korrekt, neutral formuliert, klar strukturiert und verständlich."
+74,Hamburger SV vs. 1899 Hoffenheim,substitution,75,W. Mikelbrencis,Hamburger SV,1:2,euphorisch,"75. Minute:
+Mikelbrencis runter... Lokonga kommt! Jetzt bloß nicht einknicken! Kampfansage!",715,google/gemini-2.0-flash-lite-001,anthropic/claude-sonnet-4-5,2,4,3,3.0,"Der Text nennt fälschlicherweise Lokonga statt des tatsächlich eingewechselten Spielers, ist aber stilistisch euphorisch und größtenteils verständlich."
+75,RB Leipzig vs. Union Berlin,goal,22,M. Finkgrafe,RB Leipzig,1:0,kritisch,TOOOOR! Leipzig geht in Führung. Finkgrafe mit dem Kopf. Union-Abwehr ungeordnet. Kein Zugriff. 1:0.,704,google/gemini-2.0-flash-lite-001,anthropic/claude-sonnet-4-5,5,4,5,4.67,"Fakten korrekt, kritischer Unterton bei Union-Abwehr vorhanden, sprachlich prägnant und klar."
+76,RB Leipzig vs. Union Berlin,yellow_card,84,Diogo Leite,Union Berlin,3:1,neutral,"84. Minute: Diogo Leite von Union Berlin sieht die Gelbe Karte.
+
+RB Leipzig führt weiterhin mit 3:1.",603,google/gemini-2.0-flash-lite-001,anthropic/claude-sonnet-4-5,5,5,5,5.0,"Alle Fakten korrekt, sachlich-neutraler Stil perfekt umgesetzt, sprachlich einwandfrei."
+77,Hamburger SV vs. 1899 Hoffenheim,substitution,75,B. Jatta,Hamburger SV,1:2,euphorisch,"75. Minute
+
+Jatta runter! Nicht dein Tag, mein Freund.
+Gocholeishvili kommt... Na, dann mal gucken!
+Hoffentlich bringt er frischen Wind rein.
+1:2... Wir brauchen jetzt ein Wunder!",1167,google/gemini-2.0-flash-lite-001,anthropic/claude-sonnet-4-5,5,3,4,4.0,"Fakten stimmen, aber Tonalität eher verzweifelt-hoffnungsvoll statt euphorisch, sprachlich umgangssprachlich aber verständlich."
+78,RB Leipzig vs. Union Berlin,goal,25,Romulo Cardoso,RB Leipzig,2:0,kritisch,TOOOOR! 2:0 für Leipzig. Cardoso. Die Berliner Abwehr unsortiert. Zu viel Raum für den Schützen. Das Pressing zu spät. Ein verdienter Treffer.,886,google/gemini-2.0-flash-lite-001,anthropic/claude-sonnet-4-5,5,5,5,5.0,"Alle Fakten korrekt, kritischer Ton durch Fokus auf Abwehrschwächen perfekt getroffen, sprachlich prägnant und verständlich."
+79,Borussia Mönchengladbach vs. FSV Mainz 05,yellow_card,21,Dominik Kohr,FSV Mainz 05,1:0,neutral,"21. Minute: Gelbe Karte für Dominik Kohr.
+
+Der Spieler von Mainz 05 wird verwarnt.
+Der Spielstand bleibt 1:0.",687,google/gemini-2.0-flash-lite-001,anthropic/claude-sonnet-4-5,5,5,5,5.0,"Alle Fakten korrekt, neutral formuliert und sprachlich einwandfrei."
+80,Hamburger SV vs. 1899 Hoffenheim,substitution,75,A. Kramaric,1899 Hoffenheim,1:2,euphorisch,"75. Minute: Kramaric geht... Prass kommt! Hoffenheim wechselt. Na, ob das was bringt? Bei dem Spielstand...",906,google/gemini-2.0-flash-lite-001,anthropic/claude-sonnet-4-5,4,1,3,2.67,"Fakten stimmen weitgehend, aber Tonalität ist skeptisch statt euphorisch und Satzstruktur wirkt umgangssprachlich-fragmentiert."

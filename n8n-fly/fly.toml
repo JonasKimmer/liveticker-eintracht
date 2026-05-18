@@ -1,0 +1,38 @@
+app = "liveticker-n8n"
+primary_region = "fra"
+
+[build]
+  image = "n8nio/n8n:latest"
+
+[env]
+  N8N_PORT = "8080"
+  N8N_PROTOCOL = "https"
+  N8N_HOST = "liveticker-n8n.fly.dev"
+  WEBHOOK_URL = "https://liveticker-n8n.fly.dev"
+  DB_TYPE = "postgresdb"
+  DB_POSTGRESDB_HOST = "dpg-d7153op5pdvs73fp36u0-a.oregon-postgres.render.com"
+  DB_POSTGRESDB_PORT = "5432"
+  DB_POSTGRESDB_DATABASE = "liveticker_db"
+  DB_POSTGRESDB_USER = "liveticker_db_user"
+  DB_POSTGRESDB_SSL_ENABLED = "true"
+  EXECUTIONS_MODE = "regular"
+  N8N_BASIC_AUTH_ACTIVE = "true"
+  N8N_BASIC_AUTH_USER = "admin"
+
+[[services]]
+  internal_port = 8080
+  protocol = "tcp"
+
+  [[services.ports]]
+    handlers = ["http"]
+    port = 80
+    force_https = true
+
+  [[services.ports]]
+    handlers = ["tls", "http"]
+    port = 443
+
+  [services.concurrency]
+    type = "connections"
+    hard_limit = 25
+    soft_limit = 20

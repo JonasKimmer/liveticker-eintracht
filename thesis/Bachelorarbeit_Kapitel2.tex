@@ -1,0 +1,240 @@
+\chapter{Motivation und
+Anforderungen}\label{motivation-und-anforderungen}
+
+Dieses Kapitel begründet die Notwendigkeit eines KI-gestützten Liveticker-Systems und leitet daraus formale Anforderungen ab. Es analysiert die drei Problemdimensionen redaktioneller Aufwand (Abschnitt~\ref{redaktioneller-aufwand-bei-livetickern}), Mehrsprachigkeit (Abschnitt~\ref{mehrsprachigkeit-als-herausforderung}) und White-Label-Bedarf (Abschnitt~\ref{white-label-bedarf-im-profisport}), konkretisiert diese am Fallbeispiel Eintracht Frankfurt (Abschnitt~\ref{anforderungsanalyse-am-beispiel-eintracht-frankfurt}) und fasst alle Anforderungen in einem formalen Pflichtenheft zusammen (Abschnitt~\ref{zusammenfassung-der-systemanforderungen}).
+
+\section{Redaktioneller Aufwand bei
+Livetickern}\label{redaktioneller-aufwand-bei-livetickern}
+
+
+Die manuelle Erstellung von Livetickern zählt zu den kognitiv anspruchsvollsten Tätigkeiten im Journalismus (vgl. Seibt, zit. n. Beils 2023, S.~56). Die strukturelle Komposition von Liveticker-Einträgen umfasst nach Ojomo und Olomojobi (zit. n. Bluhm \& Schäfer 2023, S.~27) vier kognitive Teilleistungen: Narration (Ereignisbeschreibung), Evaluation (journalistische Einordnung), Elaboration (kontextuelle Vertiefung) und Zusammenfassung (Verdichtung des Spielgeschehens). Diese sind in Abständen von einer bis drei Minuten unter simultaner Beobachtung des Spielgeschehens zu erbringen: Ereignis wahrnehmen, journalistische Relevanz bewerten, Kontext abrufen und in sprachlich angemessene Form bringen (Hauser 2008, S.~3--4). Diese kognitive Parallelverarbeitung macht den Liveticker zu einer Echtzeit-Textgattung, die sich fundamental von retrospektiven Formaten wie dem Spielbericht unterscheidet (vgl. Hauser 2008, S.~2--3). Im Produktivbetrieb entstehen dabei pro Spiel typischerweise mehrere Dutzend bis über hundert Einträge (vgl.\ Abschnitt~\ref{anforderungsanalyse-am-beispiel-eintracht-frankfurt}). Zusätzlich muss ein Ticker ein heterogenes Publikum gleichzeitig bedienen: First-Screen-Nutzer ohne TV-Bild fordern eine primäre Beschreibung des Spielgeschehens, während Second-Screen-Nutzer mit TV-Bild auf zusätzliche Einordnung und Unterhaltung aus sind (vgl. McEnnis 2016, zit. n. Bluhm \& Schäfer 2023, S.~24 u.~36). Diese Doppelfunktion verschärft die kognitiven Anforderungen an den Autor zusätzlich.
+
+Erschwerend kommt der extreme Zeitdruck hinzu. Unmittelbar nach einer
+relevanten Spielszene haben die Autorinnen und Autoren nur wenige
+Augenblicke Zeit, das Geschehen konzise, anschaulich und vor allem
+spannend-unterhaltsam zu beschreiben (Meier 2018, zitiert nach Bluhm \&
+Schäfer 2023, S.~27). Da zum Gegenlesen keine Zeit bleibt, fallen Verfassen und Redigieren in einem einzigen Schritt zusammen (Walter 2020, S.~29). Verschärft wird die Situation dadurch, dass Ticker-Autoren
+häufig parallel weitere Aufgaben übernehmen müssen, wie etwa die
+Erstellung des abschließenden Spielberichts (Bluhm \& Schäfer 2023, S.~35). Die Fehleranfälligkeit unter diesen Bedingungen ist systemimmanent:
+Zahlendreher bei Spielminuten, falsch zugeordnete Spielernamen oder
+stilistische Brüche innerhalb eines Tickers sind keine Ausnahme, sondern
+eine vorhersehbare Konsequenz des Produktionsdrucks (vgl. Walter 2020,
+S.~29; Bluhm \& Schäfer 2023, S.~35). Das Experteninterview bestätigt
+dies unmittelbar: Als typische Fehlerquellen wurden „Zahlendreher,
+falsche Spielernamen, Rechtschreibfehler'', direkt aus der Vereinspraxis
+benannt (vgl.\ Abschnitt~\ref{anforderungsanalyse-am-beispiel-eintracht-frankfurt}).
+
+Das Skalierungsproblem verschärft sich an Spieltagen mit Parallelspielen
+erheblich. An einem typischen Bundesliga-Samstag finden bis zu sechs
+Partien zeitgleich statt (vgl. DFL 2024). Im Fall von Eintracht Frankfurt
+deckt ein zweiköpfiges Team diese Aufgabe ab: „Ein Redakteur, der tickert,
+und ein technischer Administrator''.
+Redaktionen, die für mehrere Spiele Ticker anbieten, müssen entweder
+entsprechend viele Autoren gleichzeitig einsetzen oder einzelne Autoren
+mehrere Ticker parallel betreuen lassen, mit absehbaren
+Qualitätseinbußen (vgl. Bluhm \& Schäfer 2023, S.~32, 35). Für
+Vereinsredaktionen, die zusätzlich zu Pflichtspielen auch Jugend-,
+Frauen- oder Freundschaftsspiele abdecken wollen, ist eine rein manuelle
+Skalierung personell und wirtschaftlich kaum darstellbar.
+
+Liveticker-Stellen werden häufig mit freien Mitarbeitern oder studentischen Hilfskräften besetzt (Bluhm \& Schäfer 2023, S.~32). Wechselndes Personal und variierende Arbeitsbedingungen machen konsistente Tonalität und sprachliches Niveau manuell kaum gewährleistbar. Eine technologische Unterstützung ist daher keine optionale Ergänzung, sondern eine strukturelle Notwendigkeit.
+
+Das Experteninterview (Abschnitt~\ref{anforderungsanalyse-am-beispiel-eintracht-frankfurt}) validiert diese Problemdimension empirisch; die Auswertung der Ergebnisse erfolgt in Abschnitt~\ref{experteninterview-auswertung}: Workflow-Struktur, Personalbedarf, Fehlerquellen und Systemnutzung wurden direkt aus der Vereinspraxis bestätigt.
+
+
+
+\section{Mehrsprachigkeit als
+Herausforderung}\label{mehrsprachigkeit-als-herausforderung}
+
+Die Globalisierung des Profifußballs hat die Anforderungen an die
+Reichweite digitaler Inhalte grundlegend verändert. Internationale
+Fangemeinschaften erwarten heute eine mediale Begleitung in ihrer
+Landessprache. Am Beispiel der Premier League lässt sich dieser Wandel
+besonders deutlich illustrieren: Der internationale Markt ist für die
+Liga längst bedeutender als der heimische englische (vgl. Bertling, zit. n. Beils 2023, S.~221). Dies betrifft zunehmend auch Bundesliga-Vereine mit zweistelligen
+Millionen-Reichweiten auf globalen Plattformen (vgl. Beils 2023, S.~200). Am Beispiel von Eintracht Frankfurt zeigt sich dies konkret: Entsprechende Reichweite ist an den fremdsprachigen Interaktionen auf den offiziellen Social-Media-Kanälen des Vereins erkennbar, wie im Rahmen der begleitenden Projektbeobachtung festgestellt und im Experteninterview bestätigt wurde. Eine rein deutschsprachige Berichterstattung wird ihr nicht mehr gerecht.
+
+Die Herausforderung beschränkt sich nicht auf eine reine Übersetzung existierender Inhalte. Smułczyński (2020, S.~57) zeigt am
+Beispiel der Live-Berichterstattung von \textit{Die Zeit}, dass die Integration mehrsprachiger Echtzeitinhalte den internationalen Wissenstransfer maßgeblich erweitert und vereinfacht. Im Kontext von Sport-Livetickern kommt als qualitative Anforderung hinzu, dass sprachliche Konventionen, idiomatische Wendungen und die emotionale Tonalität kulturspezifisch variieren. Es handelt sich daher weniger um ein Übersetzungs- als um ein Lokalisierungsproblem. Der operative Zeitdruck verschärft sich mit jeder zusätzlichen Sprache erheblich. Jede weitere Sprache erfordert spezialisiertes Personal für Übersetzungs- und Anpassungsprozesse, was unter den ohnehin ressourcenknappen Echtzeit-Bedingungen redaktionell kaum zu bewältigen ist (vgl. Bluhm \& Schäfer 2023, S.~32). Eine manuelle Skalierung auf mehrere Sprachen übersteigt die wirtschaftlichen und personellen Kapazitäten der meisten Vereinsredaktionen. LLMs eröffnen hier einen skalierbaren Lösungsweg (vgl. Abschnitt~\ref{large-language-models}).
+
+
+
+
+\section{White-Label-Bedarf im
+Profisport}\label{white-label-bedarf-im-profisport}
+
+Vereine und Verbände kommunizieren heute zunehmend direkt mit ihrer
+Anhängerschaft und haben eigene Redaktionen aufgebaut (vgl. Beils 2023, S.~155). Die Konsequenz für die Liveticker-Produktion ist erheblich:
+Vereinseigene Inhalte folgen einer anderen Logik als neutrale
+Berichterstattung.
+
+Der entscheidende Unterschied liegt im Blickwinkel. Während
+überregionale Medien neutral bleiben, betrachten Vereinsticker die
+Partie aus der Perspektive der eigenen Fans (vgl. Canalp, zit. n. Beils 2023, S.~57). Ein
+Ereignis muss je nach Medium anders getönt sein: emotional für den
+Vereinskanal, sachlich für neutrale Plattformen. Darüber hinaus
+erfordert die fanbezogene Perspektive einen dritten Tonfall: Bei
+anhaltenden Rückständen oder schwachen Leistungen des eigenen Teams
+kann ein kritisch-analysierender Stil angemessener sein als
+unkritische Euphorie. Daraus resultieren drei funktional
+unterschiedliche Stilprofile: \textbf{neutral}, \textbf{euphorisch} und \textbf{kritisch}. Die in Abschnitt~\ref{redaktioneller-aufwand-bei-livetickern}
+beschriebene personelle Fluktuation verschärft das Problem zusätzlich:
+Eine konsistente Markenstimme ist mit wechselndem Personal manuell kaum
+zu gewährleisten. Eine technologische Lösung muss daher auch die
+stilistische Konsistenz sicherstellen.
+
+Im Softwarekontext wird dieses Problem durch sogenannte
+White-Label-Architekturen gelöst: Ein generisches Kernsystem wird so
+konzipiert, dass es für verschiedene Abnehmer individuell konfigurierbar
+ist, ohne den Quellcode zu ändern (vgl. Pohl et al.\ 2005, S.~12). Überträgt man dieses
+Prinzip auf die Liveticker-Produktion, folgt die Anforderung, dass ein und dasselbe System sowohl einen vereinsspezifischen Ticker mit
+emotionaler Fanbindung als auch einen neutralen, anbieterunabhängigen
+Ticker bedienen können muss. Die stilistische Differenzierung (von der Wortwahl über die Tonalität bis hin zu vereinsspezifischen Redewendungen) muss als Konfiguration abbildbar sein, nicht als separate Implementierung.
+
+Wie sich diese Anforderungen am konkreten Beispiel eines Bundesliga-Vereins ausprägen, zeigt der folgende Abschnitt.
+
+
+
+\section{Fallstudie Eintracht
+Frankfurt}\label{anforderungsanalyse-am-beispiel-eintracht-frankfurt}
+
+Eintracht Frankfurt dient in dieser Arbeit als konkreter Anwendungsfall für die vereinsspezifische White-Label-Instanz. Die Analyse gliedert sich in den Ist-Zustand des bestehenden Redaktionssystems (Abschnitt~\ref{ist-zustand-bestehendes-system}), die vereinsspezifischen Betriebskennzahlen (Abschnitt~\ref{fallstudie-eintracht-frankfurt}) und das Experteninterview (Abschnitt~\ref{experteninterview-leitfaden}).
+
+\subsection{Ist-Zustand: Bestehendes Redaktionssystem}\label{ist-zustand-bestehendes-system}
+
+Als Ausgangspunkt illustriert Abbildung~\ref{fig:altsystem} den konkreten Ist-Zustand anhand des im Projektzeitraum eingesetzten Redaktionssystems bei Eintracht Frankfurt. Das System repräsentiert den Stand eines rein manuellen Werkzeugs ohne KI-Integration.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.95\textwidth]{altsystem_eintracht.png}
+\caption[Bestehendes Liveticker-Redaktionssystem (Eintracht Frankfurt, Saison 2024/25)]{Bestehendes Liveticker-Redaktionssystem bei Eintracht Frankfurt (Stand: Saison 2024/25). Links: Ticker-Editor mit manueller Score-Pflege. Mitte: Feed bereits erstellter Meldungen. Rechts: Aufstellungs-Panel im Leerzustand ohne geladene Spielerdaten.}
+\label{fig:altsystem}
+\end{figure}
+
+Die Systemanalyse zeigt sechs strukturelle Defizite, die den Handlungsbedarf für das in dieser Arbeit entwickelte System begründen:
+
+\begin{itemize}\tightlist
+\item \textbf{Kein KI-Vorschlag, kein Stilprofil:} Der Ticker-Editor ist ein reines Freitextfeld ohne jegliche KI-Unterstützung, Stilsteuerung oder Vorschlagsfunktion. Jeder Eintrag wird vollständig manuell formuliert.
+\item \textbf{Manuelle Score-Pflege:} Der Spielstand wird über numerische Eingabefelder manuell gepflegt (Abbildung~\ref{fig:altsystem}, links unten). Obwohl der Verein externe Datenquellen (Opta, DFBnet) für Livedaten nutzt, ist keine automatische Synchronisation dieser Feeds mit der Liveticker-Oberfläche vorhanden, sodass Spielstandsaktualisierungen manuell eingetragen werden müssen.
+\item \textbf{Keine Medienintegration:} Das System bietet lediglich einen einfachen „Bild auswählen''-Button ohne strukturierte Social-Media-Anbindung, Galeriefunktion oder automatischen Medien-Import (z.\,B. ScorePlay, YouTube, Instagram).
+\item \textbf{Keine technische Stilunterstützung:} Der Ticker-Editor ist ein reines Freitextfeld, das den vereinsinternen Redaktionsstil weder einfordern noch vorschlagen kann. Obwohl im Experteninterview klare redaktionelle Richtlinien für den Eintracht-Stil bestätigt wurden, fehlt jede systemseitige Unterstützung bei deren Einhaltung.
+\item \textbf{Fehlender Mehrsprachen-Support:} Das System ist ausschließlich deutschsprachig ausgelegt. Eine Übersetzungsfunktion oder mehrsprachige Textgenerierung ist nicht vorgesehen.
+\item \textbf{Fehlende Live-Statistiken und Medieneinbettung:} Aufstellungsdaten werden laut Experteninterview bereits automatisiert übertragen; eine Integration von Live-Statistiken sowie audiovisuellen Inhalten fehlt jedoch vollständig. Im Interview wurde bestätigt: „Videos und Audios können wir noch nicht darstellen, Statistiken ebenso'' (vgl.\ Abschnitt~\ref{experteninterview-leitfaden}).
+\end{itemize}
+
+Diese Defizite spiegeln die drei in Abschnitt~\ref{problemstellung-und-zielsetzung} identifizierten Problemdimensionen direkt wider: operativer Zeitdruck durch vollständig manuelle Produktion, fehlende Mehrsprachigkeit und eingeschränkte White-Label-Fähigkeit. Das in dieser Arbeit entwickelte System behebt alle sechs Punkte: Die fehlende KI-Unterstützung und die fehlende technische Stilunterstützung werden durch die LLM-Pipeline mit konfigurierbaren Stilprofilen adressiert (vgl.\ Abschnitt~\ref{ki-komponente}); die manuelle Score-Pflege und der fehlende Datenabruf durch automatisierte n8n-ETL-Workflows (vgl.\ Abschnitt~\ref{workflow-konzeption-n8n}); die fehlende Medienintegration durch die MediaQueue-Architektur (vgl.\ Abschnitt~\ref{n8n-workflow-implementierung}); das Mehrsprachdefizit durch die native LLM-Übersetzungsfunktion (vgl.\ Abschnitt~\ref{mehrsprachige-textgenerierung-konzept}).
+
+\subsection{Vereinsspezifische Betriebskennzahlen}\label{fallstudie-eintracht-frankfurt}
+
+Eintracht Frankfurt bestreitet pro Saison bis zu 60 Pflichtspiele. Pro Spiel fallen nach Angaben des Interviewpartners typischerweise 60--120 Ticker-Einträge an, wobei die genaue Zahl von der Ereignisdichte abhängt. Die Liveticker-Produktion übernimmt ein zweiköpfiges Team aus Redakteur und technischem Administrator (ein Personalumfang, der bei erhöhter Ereignisdichte an strukturelle Grenzen stößt). Als Zielsprache neben Deutsch bestätigt der Interviewpartner Englisch als relevant für die internationale Fanbasis des Vereins.
+
+\subsection{Experteninterview}\label{experteninterview-leitfaden}
+
+Die Anforderungsanalyse stützt sich ergänzend auf ein strukturiertes Experteninterview mit einem Digitalverantwortlichen von Eintracht Frankfurt, der für die Weiterentwicklung des digitalen Angebots (einschließlich des Liveticker-Systems) zuständig ist. Das Interview gliedert sich in zwei Teile: Zunächst werden die drei Problemdimensionen aus Vereinssicht validiert. Nach einer Live-Demonstration des entwickelten Systems folgen Bewertungsfragen zur Systemeignung und Zukunftsperspektive. Die vollständige Auswertung findet sich in Abschnitt~\ref{experteninterview-auswertung}.
+
+
+
+\section{Zusammenfassung der
+Systemanforderungen}\label{zusammenfassung-der-systemanforderungen}
+
+Aus den vorangegangenen Problemdimensionen ergeben sich 24 formale Anforderungen. Sie gliedert sich in funktionale Anforderungen (Abschnitt~\ref{funktionale-anforderungen}), nicht-funktionale Anforderungen (Abschnitt~\ref{nicht-funktionale-anforderungen}) und Architektur-Anforderungen (Abschnitt~\ref{architektur-anforderungen}). Abschnitt~\ref{anforderungsabgleich-soll-ist-vergleich} überprüft jeden Punkt gegen den implementierten Stand.
+
+\subsection{Funktionale Anforderungen}\label{funktionale-anforderungen}
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.0370}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.6667}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.2963}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Nr.
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Anforderung
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Herleitung
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+F1 & Drei Betriebsmodi (\texttt{auto}, \texttt{coop}, \texttt{manual}) & Kap.~\ref{problemstellung-und-zielsetzung}, \ref{redaktioneller-aufwand-bei-livetickern} \\
+F2 & KI-Textgenerierung für alle Event-Typen & Kap.~\ref{redaktioneller-aufwand-bei-livetickern}, \ref{anforderungsanalyse-am-beispiel-eintracht-frankfurt} \\
+F3 & Drei Stilprofile (neutral, euphorisch, kritisch) & Kap.~\ref{white-label-bedarf-im-profisport}, \ref{anforderungsanalyse-am-beispiel-eintracht-frankfurt} \\
+F4 & Few-Shot-Prompting mit Stilreferenzen & Kap.~\ref{white-label-bedarf-im-profisport}, \ref{prompt-engineering} \\
+F5 & Ticker-Lifecycle (draft → published / rejected / deleted) & Kap.~\ref{redaktioneller-aufwand-bei-livetickern} \\
+F6 & Slash-Command-Parser für manuellen Modus & Kap.~\ref{redaktioneller-aufwand-bei-livetickern} (Zeitdruck) \\
+F7 & Mehrsprachige Textgenerierung (Deutsch, Englisch; erweiterbar auf
+weitere Sprachen) & Kap.~\ref{mehrsprachigkeit-als-herausforderung} \\
+F8 & Idempotenter Datenimport via n8n & Kap.~\ref{redaktioneller-aufwand-bei-livetickern} (Robustheit) \\
+F9 & Provider-Fallback-Kette & Kap.~\ref{redaktioneller-aufwand-bei-livetickern} (Verfügbarkeit) \\
+F10 & Deduplizierung von Ticker-Einträgen & Kap.~\ref{redaktioneller-aufwand-bei-livetickern} (Korrektheit) \\
+F11 & Pre-Match-Kontextgenerierung (Verletzungen, H2H, etc.) & Kap.~\ref{redaktioneller-aufwand-bei-livetickern} (Elaboration) \\
+F12 & Live-Statistik-Updates & Kap.~\ref{redaktioneller-aufwand-bei-livetickern} (Echtzeit) \\
+F13 & Medienintegration (ScorePlay-Bildmaterial, Social-Media-Panels für YouTube, X, Instagram) & Kap.~\ref{ist-zustand-bestehendes-system} (Defizit: fehlende Medienintegration im Altsystem) \\
+\end{longtable}
+}
+
+\subsection{Nicht-funktionale
+Anforderungen}\label{nicht-funktionale-anforderungen}
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.0469}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.5938}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3594}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Nr.
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Anforderung
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Herleitung
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+N1 & Concurrency-Begrenzung für LLM-Aufrufe & Kap.~\ref{redaktioneller-aufwand-bei-livetickern} (Zeitdruck) \\
+N2 & Retry-Logik mit Rate-Limit-Erkennung & Kap.~\ref{redaktioneller-aufwand-bei-livetickern} (Verfügbarkeit) \\
+N3 & Transaktionale Testisolierung & Technische Qualitätssicherung
+(Echtzeit-Produktionssysteme erfordern Testisolierung aufgrund der
+Datenbankkopplung) \\
+N4 & TypeScript-Typsicherheit & Technische Qualitätssicherung
+(Wartbarkeit und Fehlervermeidung im Team) \\
+N5 & Responsive UI (Mobile-tauglich) & Kap.~\ref{redaktioneller-aufwand-bei-livetickern} (Einsatzszenarien) \\
+N6 & Fehlerresistenz im Frontend & Kap.~\ref{redaktioneller-aufwand-bei-livetickern} (Robustheit) \\
+\end{longtable}
+}
+
+\subsection{Architektur-Anforderungen}\label{architektur-anforderungen}
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.0390}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.6104}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3506}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Nr.
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Anforderung
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Herleitung
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+A1 & Drei-Schichten-Architektur & Kap.~\ref{redaktioneller-aufwand-bei-livetickern}, \ref{white-label-bedarf-im-profisport} (Modularität) \\
+A2 & Isolierte Datenzugriffsschicht: Persistenzlogik muss von
+API-Logik getrennt sein, sodass Datenbankzugriffe unabhängig testbar
+und austauschbar bleiben & Kap.~\ref{white-label-bedarf-im-profisport} (Wartbarkeit, Testbarkeit) \\
+A3 & REST-API zur vollständigen Systemsteuerung und
+Mandantenkonfiguration & Kap.~\ref{white-label-bedarf-im-profisport} (White-Label) \\
+A4 & Vollständiges Datenmodell & Kap.~\ref{redaktioneller-aufwand-bei-livetickern}, \ref{anforderungsanalyse-am-beispiel-eintracht-frankfurt} \\
+A5 & White-Label-Fähigkeit (vereinsspezifische und generische Instanz) & Kap.~\ref{white-label-bedarf-im-profisport}, \ref{anforderungsanalyse-am-beispiel-eintracht-frankfurt} \\
+\end{longtable}
+}
+
+Die drei Problemdimensionen (operativer Zeitdruck, Mehrsprachigkeit und White-Label-Bedarf) sind keine isolierten Herausforderungen, sondern greifen strukturell ineinander: Zeitdruck macht menschliche Skalierung unmöglich, Mehrsprachigkeit multipliziert diesen Aufwand, und White-Label-Anforderungen verlangen eine stilistische Konsistenz, die wechselndes Personal nicht zuverlässig gewährleisten kann. Dies macht eine integrierte technologische Lösung notwendig, die KI-gestützte Textgenerierung, mehrsprachige Generierung und konfigurierbare Instanzlogik in einer gemeinsamen Architektur vereint. Die vorstehenden 24 Anforderungen bilden damit das vollständige Pflichtenheft für die Systemkonzeption in Kapitel~\ref{systemkonzeption}; die hierfür notwendigen technologischen Grundlagen werden in Kapitel~\ref{stand-der-technik} aufgearbeitet.

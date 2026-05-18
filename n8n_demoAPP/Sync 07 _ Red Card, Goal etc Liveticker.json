@@ -1,0 +1,227 @@
+{
+  "name": "Sync 07 | Red Card, Goal etc Liveticker",
+  "nodes": [
+    {
+      "parameters": {
+        "jsCode": "const TYPE_MAP = {\n  'Goal':  'Goal',\n  'subst': 'Substitution',\n  'Var':   'VideoAssistant'\n};\n\nfunction mapEventType(type, detail) {\n  if (type === 'Card') {\n    const d = (detail || '').toLowerCase();\n    if (d.includes('yellow red') || d.includes('red card')) return 'RedCard';\n    if (d.includes('yellow')) return 'YellowCard';\n    return 'YellowCard';\n  }\n  return TYPE_MAP[type] || 'Default';\n}\n\nfunction mapPhase(elapsed) {\n  if (!elapsed)       return 'FirstHalf';\n  if (elapsed <= 45)  return 'FirstHalf';\n  if (elapsed <= 46)  return 'FirstHalfBreak';\n  if (elapsed <= 90)  return 'SecondHalf';\n  if (elapsed <= 105) return 'ExtraFirstHalf';\n  if (elapsed <= 106) return 'ExtraBreak';\n  if (elapsed <= 120) return 'ExtraSecondHalf';\n  return 'After';\n}\n\nconst postedIds = new Set(\n  ($('Check_Existing_Events').first().json.items || [])\n    .map(e => e.sourceId)\n);\n\nconst matchId   = 1388536;\nconst fixtureId = '1388536';\nconst response  = $input.all()[0].json.response || [];\n\nreturn response\n  .map((event, i) => {\n    const sourceId = `${fixtureId}-${event.time.elapsed}-${i}`;\n    return {\n      json: {\n        matchId,\n        fixtureId,\n        sourceId,\n        alreadyPosted: postedIds.has(sourceId),\n        liveTickerEventType: mapEventType(event.type, event.detail),\n        liveTickerPhaseType: mapPhase(event.time.elapsed),\n        time:           event.time.elapsed,\n        timeAdditional: event.time.extra || 0,\n        type:           event.type,\n        detail:         event.detail || '',\n        playerId:       event.player?.id   || null,\n        playerName:     event.player?.name || null,\n        assistId:       event.assist?.id   || null,\n        assistName:     event.assist?.name || null,\n        teamName:       event.team?.name   || null\n      }\n    };\n  })\n  .filter(item => !item.json.alreadyPosted);"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1216,
+        544
+      ],
+      "id": "fb1c1ac7-6d83-440e-adc9-8f68a6cfcbfa",
+      "name": "Events mappen + Filter3"
+    },
+    {
+      "parameters": {
+        "jsCode": "const llm    = $input.first().json;\nconst evData = $('Events mappen + Filter3').all()[$itemIndex]?.json || {};\nconst text = llm.choices?.[0]?.message?.content || null;\n\nconst players = [];\nif (evData.playerId) players.push({\n  playerId:      evData.playerId,\n  playerName:    evData.playerName || null,\n  avatarImageUrl: null,\n  cheerImageUrl:  null,\n  cheerVideoUrl:  null\n});\nif (evData.assistId) players.push({\n  playerId:      evData.assistId,\n  playerName:    evData.assistName || null,\n  avatarImageUrl: null,\n  cheerImageUrl:  null,\n  cheerVideoUrl:  null\n});\n\nreturn [{\n  json: {\n    matchId:  evData.matchId,\n    sourceId: evData.sourceId,\n    body: {\n      sourceId:            evData.sourceId,\n      sport:               'Football',\n      position:            evData.time || 0,\n      time:                evData.time || null,\n      timeAdditional:      evData.timeAdditional || 0,\n      description:         text,\n      imageUrl:            null,\n      videoUrl:            null,\n      pushTitle:           null,\n      pushDescription:     null,\n      pushImageSrc:        null,\n      embedHtml:           null,\n      liveTickerPhaseType: evData.liveTickerPhaseType,\n      liveTickerEventType: evData.liveTickerEventType,\n      players:             players.length ? players : null\n    }\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1616,
+        544
+      ],
+      "id": "5459dc41-f21b-4205-b73e-c1b87f9ed786",
+      "name": "LiveTicker Body bauen3"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://partner-api.stackwork-01-test.tech/cms/v1/matches/{{ $json.matchId }}/events",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer 52091AC14B524E59DEF531D0EA8F57EF0804D4CFADCF4A1A52CE842687D2D209-1"
+            },
+            {
+              "name": "et-partner-id",
+              "value": "4"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json.body) }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        1808,
+        544
+      ],
+      "id": "19227198-5e9b-4b52-8feb-9b458fc03822",
+      "name": "POST: LiveTicker Event3",
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "url": "https://partner-api.stackwork-01-test.tech/cms/v1/matches/1388536/events",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer 52091AC14B524E59DEF531D0EA8F57EF0804D4CFADCF4A1A52CE842687D2D209-1"
+            },
+            {
+              "name": "et-partner-id",
+              "value": "4"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        816,
+        544
+      ],
+      "id": "8efd5fd9-7c7f-4174-ab08-bfda5c7fc5b9",
+      "name": "Check_Existing_Events"
+    },
+    {
+      "parameters": {
+        "url": "https://v3.football.api-sports.io/fixtures/events",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "fixture",
+              "value": "=1388536"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1008,
+        544
+      ],
+      "id": "5d151c91-1ef0-4cbd-b48c-1ac2d1b7ca49",
+      "name": "Fetch_API_Sports_Events",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "8TXlLPe7BeXnl0Ut",
+          "name": "Header Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://openrouter.ai/api/v1/chat/completions",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "content-type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"model\": \"google/gemini-2.0-flash-lite-001\",\n  \"max_tokens\": 200,\n  \"messages\": [\n    {\n      \"role\": \"user\",\n      \"content\": \"Du bist Liveticker-Redakteur für Eintracht Frankfurt. Schreibe einen kurzen, knappen Liveticker-Eintrag (max. 2 Sätze, auf Deutsch, im Eintracht-Stil) für folgendes Spielereignis:\\n\\nMinute: {{ $json.time }}'{{ $json.timeAdditional > 0 ? '+' + $json.timeAdditional : '' }}\\nEreignis: {{ $json.type }} - {{ $json.detail }}\\nSpieler: {{ $json.playerName || 'unbekannt' }}{{ $json.assistName ? ' (Vorlage: ' + $json.assistName + ')' : '' }}\\nTeam: {{ $json.teamName || '' }}\\n\\nNur den Ticker-Text ausgeben, keine Erklärungen.\"\n    }\n  ]\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1408,
+        544
+      ],
+      "id": "929878eb-ab93-40a8-90a7-bb4f4a44ef21",
+      "name": "Generate_Ticker_Text",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "qgFPOEHRxazizzJI",
+          "name": "Header Auth account 2"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Events mappen + Filter3": {
+      "main": [
+        [
+          {
+            "node": "Generate_Ticker_Text",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "LiveTicker Body bauen3": {
+      "main": [
+        [
+          {
+            "node": "POST: LiveTicker Event3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check_Existing_Events": {
+      "main": [
+        [
+          {
+            "node": "Fetch_API_Sports_Events",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch_API_Sports_Events": {
+      "main": [
+        [
+          {
+            "node": "Events mappen + Filter3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate_Ticker_Text": {
+      "main": [
+        [
+          {
+            "node": "LiveTicker Body bauen3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "43f9f88a-0b3a-493d-843d-d371db8b6b93",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "8f356ecf824174491100e48f7fade606f544a76873378b03e211127fbec11c97"
+  },
+  "id": "xUxrTrr05vIYMqnc",
+  "tags": []
+}

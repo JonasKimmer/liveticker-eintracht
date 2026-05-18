@@ -1,0 +1,213 @@
+"""
+Domain Constants
+================
+Single source of truth for phase mappings used across the application.
+"""
+
+from typing import Optional
+
+# Maps synthetic event type strings to their corresponding ticker phase.
+# Must be kept in sync with SyntheticEvent types produced by n8n workflows.
+SYNTHETIC_EVENT_PHASE_MAP: dict[str, str] = {
+    "match_kickoff": "FirstHalf",
+    "match_halftime": "FirstHalfBreak",
+    "match_second_half": "SecondHalf",
+    "match_fulltime": "FullTime",
+    "match_extra_kickoff": "ExtraFirstHalf",
+    "match_extra_halftime": "ExtraBreak",
+    "match_extra_second_half": "ExtraSecondHalf",
+    "match_penalties": "PenaltyShootout",
+    "match_fulltime_aet": "FullTime",
+    "match_fulltime_pen": "FullTime",
+}
+
+
+# Maps Football-API live status codes (short) to internal ticker phase names.
+FOOTBALL_API_PHASE_MAP: dict[str, str] = {
+    "1H": "FirstHalf",
+    "2H": "SecondHalf",
+    "HT": "FirstHalfBreak",
+    "ET": "SecondHalf",  # extra time – treat as second half for display
+    "BT": "FirstHalfBreak",  # break before extra time
+    "P": "SecondHalf",
+    "FT": "FullTime",
+    "AET": "FullTime",
+    "PEN": "FullTime",
+}
+
+
+# Human-readable German labels for LLM prompt event types.
+EVENT_TYPE_LABEL: dict[str, str] = {
+    "goal": "Tor",
+    "own_goal": "Eigentor",
+    "missed_penalty": "Elfmeter verschossen",
+    "yellow_card": "Gelbe Karte",
+    "red_card": "Rote Karte",
+    "substitution": "Spielerwechsel",
+    "kick_off": "Anstoß",
+    "halftime": "Halbzeit",
+    "fulltime": "Abpfiff",
+    "extra_time_start": "Verlängerung beginnt",
+    "extra_halftime": "Halbzeitpause Verlängerung",
+    "penalty_shootout": "Elfmeterschießen",
+    "fulltime_aet": "Abpfiff nach Verlängerung",
+    "fulltime_pen": "Abpfiff nach Elfmeterschießen",
+    "comment": "Spielszene",
+    "pre_match": "Vorbericht",
+    "pre_match_prediction": "Spielvorschau & Tipp",
+    "pre_match_injuries": "Verletzungsbericht",
+    "pre_match_h2h": "Direktvergleich",
+    "pre_match_team_stats": "Teamstatistik",
+    "pre_match_standings": "Tabellenstand",
+    "post_match": "Nachbericht",
+    "halftime_comment": "Halbzeitkommentar",
+    "live_stats_update": "Live-Statistik-Update",
+}
+
+# Human-readable German descriptions for ticker styles.
+STYLE_DESC: dict[str, str] = {
+    "neutral": (
+        "Sachlicher, unparteiischer Reporter-Stil. "
+        "Keine Vereinspräferenz, keine emotionalen Wertungen — nur Fakten und Spielfluss. "
+        "Kurze, klare Sätze; das Ereignis steht im Mittelpunkt, nicht die Atmosphäre. "
+        "WICHTIG: Variiere den Satzeinstieg. Beginne abwechselnd mit der Minute, dem Spielernamen, "
+        "dem Ereignis selbst oder dem Vereinsnamen — nie zweimal hintereinander gleich. "
+        "Tempo und Präzision sind wichtiger als Dramatik. "
+        "Keine Superlative ohne Anlass, keine Klischees wie 'macht das Ding' oder 'brennt lichterloh'."
+    ),
+    "euphorisch": (
+        "Leidenschaftlicher Fan-Stil — laut, emotional, aber authentisch. "
+        "Kurze Sätze, Ausrufe, Dramatik. "
+        "WICHTIG: Passe die Emotion an die Spielsituation an! "
+        "Bei Toren des Heimteams: euphorisch, mitreißend, feiernd. "
+        "Bei Gegentoren (Tor des Auswärtsteams): frustriert, fassungslos, hadernder Fan. "
+        "Bei hohem Rückstand: zweifelnd, leidend, gallig. "
+        "Bei Führung: selbstbewusst, stolz, treibend. "
+        "Bei Karten oder Wechseln: situationsgerecht — begeistert, skeptisch oder ärgerlich. "
+        "Reagiere IMMER aus Fan-Perspektive — nicht immer positiv, sondern EHRLICH. "
+        "WICHTIG: Variiere stark! Beginne Einträge unterschiedlich: mal mit einem Ausruf, "
+        "mal mit dem Spielernamen, mal mitten ins Geschehen. "
+        "Verbotene Wiederholungen: 'Unfassbar!', 'Die Kurve bebt!', 'Was ist denn hier los?!', "
+        "'Hoffentlich bringt er frischen Wind!', 'Was für ein Spiel!'. "
+        "Orientiere dich am Rhythmus und der Wortwahl der STILREFERENZEN weiter unten."
+    ),
+    "kritisch": (
+        "Du bist ein nüchtern-analytischer Fußballkommentator mit hohem Qualitätsanspruch — "
+        "kein Jubel, keine Verharmlosung, kein Marketingsprech. "
+        "Benenne Fehler, Schwächen und Fehlentscheidungen direkt und konkret. "
+        "Bei Toren: knappe Ursachenanalyse — Abwehrfehler? Zu spätes Pressing? Konter nicht unterbunden? "
+        "Bei Karten: war es berechtigt, zu hart oder überfällig? "
+        "Bei Wechseln: war der Zeitpunkt richtig — oder zu spät, zu früh, zu defensiv? "
+        "Bei Halbzeit/Abpfiff: ein pointiertes Fazit — was lief strukturell falsch oder richtig? "
+        "WICHTIG: Variiere Formulierung und Einstieg stark. "
+        "Verbotene Floskeln: 'schwache Leistung', 'viel Luft nach oben', 'das war nicht gut genug', "
+        "'da muss mehr kommen'. Formuliere stets konkret, situationsbezogen und frisch. "
+        "Kurze, harte Sätze. Urteilend, aber sachlich begründet."
+    ),
+}
+
+
+# Standard 4 match phases generated by generate-match-phases endpoint.
+# Each tuple: (event_type, phase, default_minute)
+STANDARD_PHASES: list[tuple[str, str, int]] = [
+    ("match_kickoff", "FirstHalf", 1),
+    ("match_halftime", "FirstHalfBreak", 45),
+    ("match_second_half", "SecondHalf", 46),
+    ("match_fulltime", "FullTime", 90),
+]
+
+# Verlängerung-Phasen (AET)
+EXTRA_PHASES: list[tuple[str, str, int]] = [
+    ("match_extra_kickoff", "ExtraFirstHalf", 91),
+    ("match_extra_halftime", "ExtraBreak", 105),
+    ("match_extra_second_half", "ExtraSecondHalf", 106),
+]
+
+# Elferschießen-Phase
+PENALTY_PHASES: list[tuple[str, str, int]] = [
+    ("match_penalties", "PenaltyShootout", 121),
+]
+
+# Match-Phasen die Verlängerung anzeigen
+EXTRA_TIME_PHASES = frozenset({
+    "ExtraFirstHalf", "ExtraBreak", "ExtraSecondHalf",
+    "ExtraSecondHalfBreak", "PenaltyShootout",
+})
+
+
+# ── Phasen-Sortierung (Backend DB-Reihenfolge) ───────────────
+# Primär-Sortkey: Before → After. Phasen die fehlen → Mitte (5).
+# Wird von TickerEntryRepository.get_by_match() genutzt.
+PHASE_SORT_ORDER: dict[str, int] = {
+    "Before": 0,
+    "FirstHalf": 1,
+    "FirstHalfBreak": 2,
+    "SecondHalf": 3,
+    "SecondHalfBreak": 4,
+    "ExtraFirstHalf": 5,
+    "ExtraBreak": 6,
+    "ExtraSecondHalf": 7,
+    "ExtraSecondHalfBreak": 8,
+    "PenaltyShootout": 9,
+    "After": 10,
+}
+
+# Phasen die einen Spielabschnitt STARTEN → sortieren innerhalb ihrer Minute zuerst
+PHASE_START_SET: frozenset[str] = frozenset(
+    {
+        "FirstHalf",
+        "SecondHalf",
+        "ExtraFirstHalf",
+        "ExtraSecondHalf",
+        "PenaltyShootout",
+    }
+)
+
+
+# ── Gültige Ticker-Phasen ────────────────────────────────────
+# Alle erlaubten Phase-Strings für Ticker-Einträge (Validierung an API-Grenzen).
+VALID_PHASES: frozenset[str] = frozenset(
+    {
+        "Before",
+        "PreMatch",
+        "FirstHalf",
+        "FirstHalfBreak",
+        "Halftime",
+        "SecondHalf",
+        "SecondHalfBreak",
+        "ExtraFirstHalf",
+        "ExtraBreak",
+        "ExtraSecondHalf",
+        "ExtraSecondHalfBreak",
+        "PenaltyShootout",
+        "FullTime",
+        "After",
+    }
+)
+
+# ── LLM-Konfiguration ────────────────────────────────────────
+# Single source of truth für alle LLM-Provider-Aufrufe.
+LLM_MAX_TOKENS: int = 200
+LLM_TEMPERATURE: float = 0.5
+LLM_TRANSLATION_TEMPERATURE: float = 0.1
+LLM_RETRY_ATTEMPTS: int = 3
+LLM_RATE_LIMIT_WAIT_BASE_S: int = 30  # Sekunden; verdoppelt sich pro Attempt
+
+# ── Ticker-Instanzen ─────────────────────────────────────────
+DEFAULT_TICKER_INSTANCE: str = "ef_whitelabel"
+
+
+def resolve_phase(event_type: str) -> Optional[str]:
+    """Resolve a synthetic event type string to its ticker phase.
+
+    Args:
+        event_type: The synthetic event type (e.g. "match_kickoff", "pre_match_info").
+
+    Returns:
+        The corresponding phase string, or None if the event type is unknown.
+    """
+    if event_type.startswith("pre_match"):
+        return "Before"
+    if event_type.startswith("post_match"):
+        return "After"
+    return SYNTHETIC_EVENT_PHASE_MAP.get(event_type)

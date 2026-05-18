@@ -1,0 +1,171 @@
+\chapter{Stand der Technik}\label{stand-der-technik}
+
+Dieses Kapitel arbeitet die technologischen Grundlagen auf, die das in Kapitel~\ref{motivation-und-anforderungen} beschriebene System erfordert. Es gliedert sich in sechs Abschnitte: Large Language Models (Abschnitt~\ref{large-language-models}), Prompt Engineering (Abschnitt~\ref{prompt-engineering}), automatisierte Sportberichterstattung inkl. linguistischer Genremerkmale des Livetickers (Abschnitt~\ref{automatisierte-sportberichterstattung}), ETL-Workflows (Abschnitt~\ref{etl-prozesse-und-workflow-automatisierung}), Backend-, Frontend- und Deployment-Technologien inkl. Echtzeit-Kommunikationsmuster (Abschnitt~\ref{backend-frontend-und-deployment-technologien}) sowie eine Synthese der Technologieentscheidungen (Abschnitt~\ref{synthese-technologische-konsequenzen-fuxfcr-das-systemdesign}).
+
+\section{Large Language Models}\label{large-language-models}
+
+Large Language Models (LLMs, dt. Große Sprachmodelle) werden auf umfangreichen Textkorpora trainiert und können natürliche Sprache verstehen und generieren. Ihr Einsatz hat sich in den
+vergangenen Jahren von der Forschung in die industrielle Anwendung
+verbreitet, unter anderem für automatisierte Textproduktion im
+Medienbereich (vgl. Bluhm \& Schäfer 2023, S.~36).
+
+Den technischen Ausgangspunkt bildet die \textbf{Transformer-Architektur}
+(Vaswani et al.~2017), die Text mithilfe sogenannter
+\textbf{Aufmerksamkeitsmechanismen} (Attention) verarbeitet: Das Modell
+gewichtet bei der Verarbeitung eines Wortes alle anderen Wörter im
+Kontext nach ihrer Relevanz, wodurch es semantische Zusammenhänge über lange Sequenzen erfasst. Text wird autoregressiv generiert: Jedes neue Wort entsteht auf Basis des bereits generierten Kontexts.
+
+LLMs unterstützen \textbf{In-Context Learning}: Modelle lassen sich über Beispiele im Prompt konditionieren, ohne ihre Gewichte anzupassen (vgl. Brown et al.~2020, S.~4). Instruction-optimierte Modelle folgen darüber hinaus Anweisungen zuverlässig ohne aufwändige Prompt-Konstruktion und liefern auch bei klar strukturierten Aufgaben mit kurzem Output nutzbare Ergebnisse (vgl. Ouyang et al.~2022, S.~3).
+
+Trotz ihrer Leistungsfähigkeit weisen LLMs strukturelle Schwächen auf,
+insbesondere die Neigung zu \textbf{Halluzinationen}, also der
+Generierung von Inhalten, die sachlich unzutreffend oder erfunden sind
+(OpenAI 2023, S.~46). Halluzinationen lassen sich nach Typ differenzieren: \emph{Faktische} Halluzinationen erfinden Ereignisse, die nicht stattgefunden haben (z.\,B. ein nicht existentes Tor); \emph{kontextuale} Halluzinationen misinterpretieren vorhandene Eingabedaten (z.\,B. falsches Team bei korrektem Ereignis). Beide sind im journalistischen Kontext kritisch und gefährden die publizistische Glaubwürdigkeit nachhaltig (vgl. Thürbach, zit. n. Bluhm \& Schäfer 2023, S.~33). Erstere sind jedoch schwerer erkennbar, da kein Abgleich mit den Eingabedaten möglich ist. Dies erfordert Gegenmaßnahmen, etwa redaktionelle Kontrollinstanzen oder explizite Schutzregeln in der Prompt-Gestaltung (vgl. Abschnitt~\ref{prompt-engineering-strategie}).
+
+
+
+
+\section{Prompt Engineering}\label{prompt-engineering}
+
+Die Qualität der Ausgaben eines LLM hängt maßgeblich vom \textbf{Prompt}
+ab. Prompt Engineering bezeichnet die systematische Gestaltung dieser
+Eingaben, um das Modell ohne Änderung seiner Gewichte zu einem
+gewünschten Verhalten zu lenken (Brown et al.~2020).
+
+Für die Anwendung von LLMs auf spezifische Aufgaben existieren
+grundsätzlich zwei Ansätze: \textbf{Fine-tuning} erfordert ein
+aufgabenspezifisches Nachtrainieren des Modells auf kuratierten
+Datensätzen und ist ressourcenintensiv (Rechenzeit, Infrastruktur,
+Datenkuration). \textbf{Prompting-basierte Ansätze} hingegen nutzen das
+vortrainierte Modell direkt und steuern dessen Verhalten ausschließlich
+über die Eingabeformulierung (vgl. Brown et al.~2020, S.~3 u.~6). Für Domänen mit kleinen oder nicht verfügbaren Trainingsdatensätzen ist Prompting methodisch vorzuziehen: Fine-tuning neigt unter diesen Bedingungen zu Overfitting, während Prompting-basierte Ansätze mit wenigen kuratierten Beispielen auskommen (vgl. ebd.).
+
+Innerhalb des Prompting-Paradigmas lassen sich zwei wesentliche Techniken unterscheiden. Beim \textbf{Zero-Shot Prompting} erhält das Modell ausschließlich eine Aufgabenbeschreibung ohne Demonstrationsbeispiele (vgl. Brown et al.~2020, S.~7). Dieser Ansatz maximiert Flexibilität und eignet sich für generische Anwendungsfälle ohne spezifische Stilerwartungen. Beim \textbf{Few-Shot Prompting} werden dem Modell neben der Aufgabenbeschreibung zusätzlich wenige Beispiele als Stilreferenz bereitgestellt (vgl. Brown et al.~2020, S.~6), die das Modell auf eine gewünschte Tonalität konditionieren, ohne dass modellseitiges Fine-tuning erforderlich ist. 
+Ergänzend hat sich das \textbf{Role Prompting} als eigenständige Technik etabliert: Durch die explizite Zuweisung einer Persona (z.\,B. „Du bist ein Sportredakteur von Eintracht Frankfurt'') werden Modelle auf eine konsistente sprachliche Identität verpflichtet. Rollenbasierte Instruktionen verbessern nachweislich die Ausgabekonsistenz bei stilistisch definierten Aufgaben (vgl. Shanahan et al.~2023, S.~3).
+
+Moderne Chat-Modelle unterscheiden strukturell zwischen zwei
+Prompt-Rollen (OpenAI 2024; Anthropic 2024): Der \textbf{System Prompt} legt die übergeordnete Persona
+und Constraints des Modells fest (z.\,B. Stilanforderungen, inhaltliche
+Grenzen, Ausgabeformat), während der \textbf{User Prompt} die konkrete
+Aufgabe mit aufgabenspezifischen Daten enthält. Diese Trennung erlaubt
+es, allgemeine Verhaltensregeln einmalig im System Prompt zu definieren
+und den User Prompt auf die jeweilige Aufgabe zu beschränken.
+
+Ein weiterer zentraler Steuerungsparameter ist die \textbf{Temperature},
+die die Wahrscheinlichkeitsverteilung der Token-Auswahl beeinflusst
+(vgl. Brown et al.~2020). Niedrige Werte (z.\,B. 0,0--0,3) führen zu deterministischeren, faktentreueren Ausgaben; höhere Werte (z.\,B. 0,7--1,0) erhöhen die kreative Varianz. Für den Liveticker-Kontext, in dem formelhaft wirkende Texte die Rezeptionsqualität beeinträchtigen (vgl. Clerwall 2014, S.~529; Boisserée, zit. n. Beils 2023, S.~207), ist ein mittlerer Wert als Balance aus Faktentreue und sprachlicher Lebendigkeit geeignet. Für Übersetzungsaufgaben, bei denen semantische Abweichungen vom Originaltext minimiert werden sollen, sind niedrigere Werte geeignet. Die konkrete Parameterwahl des vorliegenden Systems wird in Abschnitt~\ref{prompt-engineering-strategie} begründet.
+
+Ein weiterer praktischer Constraint ist das \textbf{Kontextfenster} (Context Window): Jedes LLM kann nur eine begrenzte Token-Anzahl pro Aufruf verarbeiten, je nach Modell mehrere Tausend bis mehrere Hunderttausend Token. Jeder Few-Shot-Beispielblock, jeder Kontextbaustein und die Aufgabenbeschreibung verbrauchen Token und begrenzen damit die Anzahl sinnvoll einzubettender Stilreferenzen. Die optimale Anzahl von Few-Shot-Beispielen ist damit eine Abwägung zwischen Stilsteuerungstiefe und verfügbarem Kontextfenster.
+
+Abschnitt~\ref{prompt-engineering-strategie} erläutert die konkrete Prompt-Struktur, Few-Shot-Beispiele und Temperatur-Konfiguration des vorliegenden Systems.
+
+
+
+\section{Automatisierte Sportberichterstattung}\label{automatisierte-sportberichterstattung}
+
+Die automatisierte Erzeugung natürlichsprachlicher Texte aus strukturierten Daten (Data-to-Text Generation) bildet die technische Grundlage für KI-gestützte Berichterstattungssysteme (vgl. Puduppully \& Lapata 2021, S.~510). Historische Ansätze basierten auf regelbasierten Template-Architekturen mit vorhersagbarer Ausgabe, aber stilistischer Monotonie. Neuronale End-to-End-Systeme verbesserten zwar die sprachliche Natürlichkeit, erkauften dies jedoch mit erhöhter Halluzinationsanfälligkeit (vgl. Puduppully \& Lapata 2021, S.~520; Boisserée, zit. n. Beils 2023, S.~207). In der redaktionellen Praxis dominieren trotz dieser Entwicklung templatebasierte Ansätze: \textit{Die Welt} etwa erzeugt automatisierte Spielberichte via Retresco (vgl. Beils 2023, S.~207), die zuverlässige, aber stilistisch monotone Texte liefern.
+
+Empirische Befunde zur automatisierten Sportberichterstattung zeigen, dass Leser KI-generierte Sporttexte in Lesbarkeit und Vertrauenswürdigkeit ähnlich wie menschlich verfasste Texte bewerten, diese jedoch in wahrgenommener Expertise und Stilqualität schlechter einschätzen (Clerwall 2014, S.~529). Graefe et al.\ (2018, S.~7) replizieren diesen Befund und zeigen, dass die wahrgenommene Qualitätslücke beim faktenintensiven Sportbericht schmaler ausfällt als bei allgemeinen Nachrichtentexten (ein Hinweis darauf, dass das strukturierte, datendichte Sportformat algorithmischer Generierung besonders entgegenkommt). Für das Genre Liveticker, das von sprachlicher Lebendigkeit, Ellipsen und situativer Einordnung lebt, ist dieser Stilnachteil besonders relevant: Formelhaft wirkende, templatebasierte Texte verstoßen gegen Genrekonventionen und senken die Leserbindung. \phantomsection\label{linguistische-anforderungen-an-die-textgenerierung}Als linguistisch eigenständige Textgattung folgt der Liveticker dabei spezifischen Konventionen (vgl. Hauser 2008, S.~1--2): Ellipsen und verblose Satzeinheiten dominieren die Syntax, das Präsens beschreibt simultane Ereignisse und konzeptionelle Mündlichkeit prägt den Ausdruck (vgl. Walter 2020, S.~52; Marx/Weidacher, zit. n. Smułczyński 2020, S.~54). Graphostilistische Mittel wie Großschreibung und Zeicheniterationen („TOOOOR!!!") sowie direkte Adressierung durch „wir" und „uns" simulieren dialogische Nähe zum Lesenden (vgl. Smułczyński 2020, S.~54; Ronkainen 2015, S.~44 u.~51). Diese Merkmale werden in der Prompt-Architektur (Abschnitt~\ref{prompt-engineering-strategie}) operationalisiert.
+
+LLM-basierte Systeme können dem Problem formelhafter Texte durch variable Formulierung begegnen, erkaufen dies aber mit erhöhtem Halluzinationsrisiko (vgl. Abschnitt~\ref{large-language-models}).
+
+Mit zunehmender Automatisierung stellt sich im Kontext der Sportberichterstattung unmittelbar die Frage, wie maschinelle Effizienz und redaktionelle Kontrolle zu verbinden sind. Das Konzept des \textbf{Human-in-the-Loop} bezeichnet Systemdesigns, in denen menschliche Akteure gezielt in automatisierte Entscheidungsprozesse eingebunden bleiben (Mosqueira-Rey et al.~2023, S.~2). Für den journalistischen Kontext ist HITL besonders relevant: Die finale publizistische Verantwortung, also die treffsichere Festlegung von Richtigkeit, Ton und Relevanz (vgl. hierzu Canalp, zit. n. Beils 2023, S.~57), lässt sich nicht vollständig an ein Modell delegieren, das weder redaktionellen Kontext noch die Implikationen einer Falschaussage einschätzen kann. Die Umsetzung als \textit{coop}-Modus ist in Abschnitt~\ref{status-lifecycle-und-betriebsmodi} beschrieben.
+
+
+
+
+
+
+\section{ETL-Prozesse und
+Workflow-Automatisierung}\label{etl-prozesse-und-workflow-automatisierung}
+
+Die Datenbeschaffung in datengetriebenen Anwendungen folgt überwiegend
+dem \textbf{Extract-Transform-Load-Prinzip (ETL)}. Daten werden aus
+heterogenen Quellen extrahiert, in ein einheitliches Zielformat
+transformiert und in den Datenspeicher geladen (vgl. Freitas et al.~2025, S.~807). Für Sport-Liveticker bedeutet dies die Integration von Live-Spielereignissen, Statistiken, Aufstellungen und Mediendaten aus unterschiedlichen APIs oder Datenfeeds.
+
+Workflow-Orchestrierungsplattformen modellieren ETL-Logik als konfigurierbare DAG-Prozesse, die Abhängigkeiten zwischen Verarbeitungsschritten explizit machen (vgl. Venkiteela 2025, S.~3). Low-Code-Plattformen reduzieren die Einstiegshürde gegenüber prozeduralem ETL-Code erheblich und erlauben bei Bedarf die Einbettung von Custom-Code-Blöcken (vgl. Venkiteela 2025, S.~2).
+
+Innerhalb dieser Klasse lassen sich cloud-basierte iPaaS-Dienste (z. B.
+Zapier, Make) von self-hostbaren Open-Source-Plattformen (z. B. n8n)
+unterscheiden (vgl. Venkiteela 2025, S.~2). Cloud-Dienste bieten
+sofortige Verfügbarkeit ohne Infrastrukturaufwand, unterliegen jedoch
+Datenschutzeinschränkungen und eingeschränkter Kontrolle über
+Ausführungsumgebung und Kosten. Self-hostbare Plattformen wie n8n
+ermöglichen dagegen den Betrieb in der eigenen Infrastruktur, bieten
+volle Kontrolle über Datenflüsse (vgl. Nakavisute \& Sincharoonsak 2025)
+und erlauben den direkten Datenbankzugriff, ein entscheidender
+Vorteil, wenn Workflows transaktionale Schreiboperationen direkt in die
+Persistenzschicht ausführen sollen, ohne den Umweg über HTTP-Endpunkte
+nehmen zu müssen (vgl. Venkiteela 2025, S.~4).
+
+Für Echtzeitanwendungen wie Liveticker ist zusätzlich die \textbf{Latenz
+der Orchestrierung} kritisch. Während klassische Batch-ETL-Prozesse mit
+Stunden- oder Minutentakten arbeiten (vgl. Pfandzelter \& Bermbach, zit. n. Freitas et al.~2025, S.~808),
+müssen Sport-Events innerhalb von Sekunden verarbeitet werden. Das
+erfordert Orchestrierungsplattformen mit niedrigem Overhead, asynchroner
+Verarbeitung und effizienten Webhook-Mechanismen, um auf externe
+Ereignisse sofort reagieren zu können (vgl. Nakavisute \& Sincharoonsak
+2025).
+
+
+Die konkrete Umsetzung der ETL-Architektur im vorliegenden System wird
+in Abschnitt~\ref{workflow-konzeption-n8n} beschrieben.
+
+
+
+\section{Backend-, Frontend- und Deployment-Technologien}\label{backend-frontend-und-deployment-technologien}
+
+Für KI-gestützte Webanwendungen mit asynchronen Backend-Anfragen und interaktiven Frontends bilden serverseitige Async-Frameworks, komponentenbasierte Frontend-Bibliotheken und PaaS-Deployment-Infrastrukturen eine verbreitete Kombination. Der Abschnitt gliedert sich in Backend-Framework und Persistenzschicht (Abschnitt~\ref{backend-framework-und-persistenzschicht}), Echtzeit-Kommunikationsmuster (Abschnitt~\ref{echtzeit-kommunikation-im-web}), Frontend-Framework (Abschnitt~\ref{frontend-framework}) und Cloud-Deployment (Abschnitt~\ref{cloud-deployment}).
+
+\subsection{Backend-Framework und Persistenzschicht}\label{backend-framework-und-persistenzschicht}
+
+Im Python-Backend-Ökosystem bieten Alternativen wie \texttt{Flask} (WSGI, kein nativer \texttt{asyncio}-Support) und \textbf{Django} (synchroner MVC-Stack) keinen nativen Async-Betrieb. \textbf{FastAPI} basiert auf dem ASGI-Standard und unterstützt \texttt{asyncio} nativ (vgl. Grigorev 2019); es generiert aus \texttt{Pydantic}-Schemata automatisch eine OpenAPI-konforme Dokumentation, die als maschinenlesbarer Vertrag für Frontend-Clients und externe Integratoren dient. Die konkrete Backend-Architektur und Schichtstruktur werden in Abschnitt~\ref{backend-konzeption} beschrieben.
+
+Für die Persistenzschicht bieten sich relationale Datenbanksysteme (z.\,B. \textbf{PostgreSQL}, MySQL) und dokumentenorientierte Stores (z.\,B. \textbf{MongoDB}) als Hauptklassen an. Relationale Systeme erzwingen über Fremdschlüsselbeziehungen referenzielle Integrität und unterstützen Joins über normalisierte Schemata. Dokumentenorientierte Stores bieten höhere Schemaflexibilität auf Kosten von ACID-Garantien und deklarativer Join-Semantik (vgl. Fowler \& Sadalage 2012, S.~26--27).
+
+\textbf{LLM-API-Aggregatoren} bündeln Modelle verschiedener Anbieter unter einer einheitlichen API-Schicht und ermöglichen so anbieterunabhängige Modellauswahl (vgl. Abschnitt~\ref{multi-provider-architektur}).
+
+\subsection{Echtzeit-Kommunikationsmuster}\label{echtzeit-kommunikation-im-web}
+
+Für Echtzeitanwendungen wie Liveticker existieren drei etablierte Kommunikationsmuster. \textbf{HTTP-Polling} ist einfach und kompatibel, erzeugt aber inhärente Latenz und Overhead bei leeren Antworten (vgl. de la Torre et al.~2019, S.~261). \textbf{Server-Sent Events (SSE)} ermöglichen einen HTTP-basierten unidirektionalen Push vom Server ohne Protokollwechsel und sind effizienter als Polling (vgl. ebd., S.~261--262). \textbf{WebSocket} bietet eine bidirektionale, persistente Verbindung mit minimalem Overhead nach initialem Handshake und ist latenzoptimal, aber ressourcenintensiver (vgl. RFC 6455; de la Torre et al.~2019, S.~262). Hybridansätze kombinieren mehrere Muster für unterschiedliche Datenströme (vgl. Abschnitt~\ref{kommunikations--und-triggerarchitektur}).
+
+\subsection{Frontend-Framework}\label{frontend-framework}
+
+Im Frontend-Ökosystem konkurrieren mehrere komponentenbasierte Bibliotheken und Frameworks: \textbf{React} (Meta) setzt auf eine unidirektionale Datenflussmechanik mit virtuellem DOM. \textbf{Vue} bietet ein vergleichbares Komponentenmodell mit reaktivem Datenbindungsansatz. \textbf{Svelte} kompiliert Komponenten zu nativem JavaScript ohne Laufzeit-Framework-Overhead. Alle drei sind für interaktive Single-Page-Applications geeignet. Für Echtzeit-Anwendungen mit häufigen asynchronen State-Updates eignet sich die unidirektionale Datenflussmechanik von React besonders: Sie minimiert unerwartete Seiteneffekte bei gleichzeitigen Polling-Zyklen und WebSocket-Events. \textbf{TypeScript} ergänzt JavaScript um ein statisches Typsystem, das Schnittstellenfehler zwischen Komponenten, API-Responses und Zustandsobjekten zur Kompilierzeit statt zur Laufzeit aufdeckt. Bei state-intensiven Echtzeit-Frontends mit vielen asynchronen Datenpfaden ist diese Eigenschaft besonders relevant (vgl. Microsoft 2023). Die konkrete Frontend-Architektur wird in Abschnitt~\ref{frontend-konzeption} beschrieben.
+
+\subsection{Cloud-Deployment}\label{cloud-deployment}
+
+\textbf{Platform-as-a-Service (PaaS)} abstrahiert die Infrastrukturverwaltung und ermöglicht Deployments direkt aus Git-Branches, setzt jedoch ein \textbf{Stateless-Design} voraus: Persistente Daten werden in externe Dienste ausgelagert, sodass zusätzliche Instanzen ohne Zustandskonsistenzprobleme gestartet werden können. Als Deployment-Einheit hat sich \textbf{Docker} als Standard etabliert: Container kapseln Anwendung und Laufzeitumgebung in einem reproduzierbaren Image, das unabhängig vom Host-Betriebssystem lauffähig und von PaaS-Anbietern direkt aus einem Dockerfile deployt werden kann (vgl. Merkel 2014). Unter den gängigen Anbietern (Heroku, Railway, Fly.io und Render) unterscheiden sich diese primär in Kostenmodell, nativer Docker-Unterstützung und Deployment-Komplexität. Die konkrete Plattformwahl ist in Abschnitt~\ref{deployment-konzept} begründet.
+
+
+
+\section{Synthese: Technologische Konsequenzen für das
+Systemdesign}\label{synthese-technologische-konsequenzen-fuxfcr-das-systemdesign}
+
+Der Stand der Technik zeigt, dass die identifizierten Anforderungsdimensionen aus Kapitel~\ref{motivation-und-anforderungen} jeweils konkrete Technologieentscheidungen nach sich ziehen. Tabelle~\ref{tab:technik-mapping} fasst diese Zuordnung kompakt zusammen.
+
+\begin{table}[h]
+\centering
+\caption{Mapping: Problemdimension → Technologieentscheidung → Systemkomponente}
+\label{tab:technik-mapping}
+\begin{tabular}{p{2.8cm}p{4.8cm}p{4.5cm}}
+\toprule
+\textbf{Problem\-dimension} & \textbf{Techno\-logie\-ent\-schei\-dung} & \textbf{System\-kom\-po\-nen\-te} \\
+\midrule
+Operativer Zeitdruck (Kap.~\ref{zeitdruck-und-fehleranfaelligkeit}) & LLM-gestützte Textgenerierung + Few-Shot-Prompting (Abschnitte~\ref{large-language-models}--\ref{prompt-engineering}); hybrides NLG-Design mit menschlicher Kontrollinstanz (Kap.~\ref{automatisierte-sportberichterstattung}) & LLM-Pipeline mit \texttt{coop}-Modus (Abschnitte~\ref{status-lifecycle-und-betriebsmodi}, \ref{ki-komponente}) \\
+\addlinespace
+Mehrsprachigkeit (Kap.~\ref{mehrsprachigkeit-als-herausforderung}) & Native LLM-Mehrsprachfähigkeit ohne proportionalen Personalaufwand (Kap.~\ref{large-language-models}) & LLM-Übersetzungsfunktion (Kap.~\ref{mehrsprachige-textgenerierung-konzept}) \\
+\addlinespace
+White-Label-Bedarf (Kap.~\ref{white-label-bedarf-im-profisport}) & Self-hostbare Workflow-Plattform; konfigurierbare Instanzlogik (Abschnitte~\ref{etl-prozesse-und-workflow-automatisierung}--\ref{backend-frontend-und-deployment-technologien}) & n8n-ETL + White-Label-Instanzkonfiguration (Abschnitte~\ref{partner-team-konzept-und-white-label-steuerung} und~\ref{ki-komponente}) \\
+\addlinespace
+Echtzeit-Datenabruf & Polling/WebSocket je nach Latenzanforderung (Kap.~\ref{echtzeit-kommunikation-im-web}) & Hybrides Muster: Polling für Ticker-/Matchdaten, WebSocket für Medien (Abschnitt~\ref{kommunikations--und-triggerarchitektur}) \\
+\addlinespace
+Verknüpfte Spielentitäten & Relationale DB mit ACID-Garantien (Kap.~\ref{backend-frontend-und-deployment-technologien}) & PostgreSQL-Datenmodell (Kap.~\ref{datenbankkonzeption}) \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Die Literaturrecherche zeigt zugleich eine spezifische Forschungslücke: Bestehende Ansätze zur automatisierten Sportberichterstattung (Abschnitt~\ref{automatisierte-sportberichterstattung}) operieren entweder templatebasiert ohne adaptive Stilsteuerung (vgl.~Beils 2023, S.~207) oder vollständig autonom ohne redaktionelle Kontrollinstanz. Ein LLM-basiertes System, das konfigurierbares Few-Shot-Prompting, ein dreistufiges Human-in-the-Loop-Betriebsmodell und vereinsspezifische White-Label-Fähigkeit in einer produktionsreifen Architektur vereint, konnte in einer Recherche der einschlägigen Datenbanken (ACM Digital Library, Google Scholar, Springer Link; Suchbegriffe: \emph{automated sports reporting, LLM newsroom, live blog generation, NLG editorial system}) nicht identifiziert werden. Die vorliegende Arbeit schließt diese Lücke.
+
+Diese technologischen Grundlagen münden in die Systemkonzeption (Kapitel~\ref{systemkonzeption}) und deren Implementierung (Kapitel~\ref{implementierung}).

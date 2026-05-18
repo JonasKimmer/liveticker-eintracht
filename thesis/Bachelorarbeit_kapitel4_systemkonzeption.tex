@@ -1,0 +1,329 @@
+\chapter{Systemkonzeption}\label{systemkonzeption}
+
+Dieses Kapitel beschreibt die Konzeption des Liveticker-Systems auf Basis der in Kapitel~\ref{motivation-und-anforderungen} hergeleiteten Anforderungen und der in Kapitel~\ref{stand-der-technik} aufgearbeiteten technologischen Grundlagen. Die Struktur folgt dem Systemaufbau: Systemüberblick mit Schichtenmodell, Kommunikationsarchitektur, White-Label-Konzept und Betriebsmodi (Abschnitt~\ref{überblick-und-schichtenmodell}), Backend-Konzeption inkl. Qualitätssicherungskonzept (Abschnitt~\ref{backend-konzeption}), Datenbankkonzeption (Abschnitt~\ref{datenbankkonzeption}), Workflow-Konzeption (Abschnitt~\ref{workflow-konzeption-n8n}), KI-Komponente und Frontend (Abschnitte~\ref{ki-komponente} und~\ref{frontend-konzeption}) sowie Deployment-Konzept (Abschnitt~\ref{deployment-konzept}).
+
+
+
+\section{Systemüberblick}\label{überblick-und-schichtenmodell}
+
+Dieser Abschnitt beschreibt das Schichtenmodell (Abschnitt~\ref{schichtenmodell}), die Kommunikations- und Triggerarchitektur (Abschnitt~\ref{kommunikations--und-triggerarchitektur}), das Partner-Team- und White-Label-Konzept (Abschnitt~\ref{partner-team-konzept-und-white-label-steuerung}) sowie den Ticker-Status-Lifecycle und die drei Betriebsmodi (Abschnitt~\ref{status-lifecycle-und-betriebsmodi}), die das globale Laufzeitverhalten des Systems steuern.
+
+
+
+\subsection{Schichtenmodell}\label{schichtenmodell}
+
+Das Liveticker-System verarbeitet alle Spiele der konfigurierten Wettbewerbe automatisch, vom Datenimport über KI-Textgenerierung bis zur Publikation. Die zugrunde liegende Architektur modifiziert das klassische Drei-Schicht-Modell funktional (vgl. Dijkstra 1974): Da n8n keine eigene Datenbasis bereitstellt, liegt die dauerhafte Datenhaltung vollständig in der Anwendungsschicht.
+
+Die \textbf{Integrationsschicht} wird durch n8n realisiert und bildet die Schnittstelle zu externen Datenquellen. Sie bindet Football-API, ScorePlay und Social-Feeds an, normalisiert die Rohdaten und übergibt sie entweder direkt in die Datenbank oder über REST-Endpunkte an die Anwendungsschicht. Die Kapselung der gesamten Integrationslogik in n8n ermöglicht Workflow-Anpassungen, ohne den Anwendungskern zu verändern.
+
+Die \textbf{Anwendungsschicht} basiert auf \texttt{FastAPI} (Python) und PostgreSQL und erfüllt drei Kernaufgaben: REST-Schnittstellen bereitzustellen, Zustandsübergänge der Ticker-Einträge zu verwalten sowie den Großteil der KI-Generierungsschritte zu orchestrieren und alle Domänendaten konsistent zu speichern.
+
+Die \textbf{Präsentationsschicht} ist als mandantenfähiges White-Label-Frontend in React und TypeScript realisiert. Sie deckt den vollständigen Redaktionsworkflow von der Spielauswahl über Sichtung und Bearbeitung bis zur Publikation ab und ist über Instanz, Stil, Sprache und Branding konfigurierbar. Die Kommunikationsmuster zur Datenbeschaffung sind in Abschnitt~\ref{kommunikations--und-triggerarchitektur} beschrieben.
+
+Abbildung~\ref{fig:systemarchitektur} zeigt die drei Schichten mit ihren Technologien und Kommunikationspfaden:
+
+\begin{figure}[H]
+\centering
+\DiagramSystemArchitektur
+\caption{Systemarchitektur: drei Schichten und externe Dienste}
+\label{fig:systemarchitektur}
+\end{figure}
+
+
+
+\subsection{Kommunikations- und
+Triggerarchitektur}\label{kommunikations--und-triggerarchitektur}
+
+Der Kommunikationsfluss kombiniert zwei komplementäre Muster. Beim initialen Match-Load folgt das Frontend dem Prinzip \textbf{„read first, trigger if missing''} für Aufstellungen, Events und Spielstatistiken: Diese werden nur dann per n8n nachgeladen, wenn die REST-Abfrage einen leeren Datenbestand zurückgibt. Prematch-Daten und Spieler-Statistiken hingegen werden beim ersten Öffnen eines Matches stets neu abgerufen. Im \textbf{Live-Betrieb} triggert das Frontend Events, Spielstatistiken und Minutenupdates bedingungslos im 60-Sekunden-Takt; die zugehörigen n8n-Workflows führen serverseitig Upserts mit Konfliktbehandlung durch. Das Backend antwortet auf Aufrufe \emph{von} n8n, initiiert aber selbst keine n8n-Workflows. Einzelne Workflows rufen zudem intern weitere Workflows auf: Der Minuten-Update-Workflow löst bei erkannter Spielphasenänderung den Anpfiff/Abpfiff-Workflow aus, der seinerseits den Halbzeit-Zusammenfassungs-Workflow anstößt; das Frontend ist an dieser Kette nicht beteiligt (vgl. Abbildung~\ref{fig:kommunikationsfluss}).
+
+Die folgende Tabelle fasst die Trigger-Muster nach Datenquelle zusammen:
+
+{\def\LTcaptype{none}
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.28}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.36}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.36}}@{}}
+\toprule\noalign{}
+Datenquelle & Trigger-Muster & Latenz-Anforderung \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Aufstellungen, Events, Match-Statistiken & „Read first, trigger if missing" (beim Match-Öffnen) & Keine (nur bei leerem Datenbestand) \\
+Prematch-Daten, Spieler-Statistiken & Immer beim Match-Öffnen & $<$30~s (redaktionelle Vorbereitung) \\
+Live-Events, Spielstatistiken, Minutenupdates & Periodisch, 60-Sekunden-Takt im Live-Betrieb & $<$60~s \\
+Medienupdates (ScorePlay) & WebSocket-Push & $<$1~s (Echtzeit) \\
+\end{longtable}
+}
+
+\begin{figure}[H]
+\centering
+\DiagramCommunicationFlow
+\caption{Kommunikationsfluss: Frontend, Backend, n8n und externe APIs}
+\label{fig:kommunikationsfluss}
+\end{figure}
+
+Das System koppelt über drei klar getrennte Schnittstellentypen.
+Die \textbf{REST-API} bildet den stabilen Kern für alle Lese- und
+Schreiboperationen: Navigation, Ticker-CRUD, Statusübergänge und manuelle
+Eingaben. \textbf{n8n-Webhooks} werden vom Frontend in drei Klassen
+eingesetzt: Initialisierungs-Trigger bauen Stammdaten beim ersten
+Systemstart auf. Match-Kontext-Trigger laden spielbezogene Daten nach
+Matchauswahl und im Live-Takt nach. Generierungs-Trigger stoßen
+KI-Textprozesse für Events, Matchphasen und Zusammenfassungen an. Der
+\textbf{WebSocket-Kanal \texttt{/ws/media}} übernimmt den Echtzeit-Push
+für latenzkritische Medieninhalte. Ticker- und Matchdaten verbleiben
+im stabileren Polling-Modell. Diese hybride Triggerarchitektur unterstützt im \texttt{coop}-Modus redaktionelle Kontrolle im Sinne des \textbf{Human-in-the-Loop}-Ansatzes. Im \texttt{auto}-Modus läuft dieselbe Infrastruktur ohne redaktionellen Eingriff vollautomatisiert. Für den Ticker-Datenfluss wurde Polling gegenüber Server-Sent Events (SSE) bevorzugt: Da die redaktionelle Latenztoleranz bei 15--20~Sekunden liegt (vgl. Abschnitt~\ref{zusammenfassung-der-systemanforderungen}), bietet SSE keinen relevanten Vorteil, während das Polling-Modell einfacher zu implementieren, zu testen und bei Verbindungsunterbrechungen robuster ist. SSE bleibt als mögliche Erweiterung erhalten (vgl. Abschnitt~\ref{kurzfristige-erweiterungen}).
+
+
+
+\subsection{Partner-Team-Konzept und
+White-Label-Steuerung}\label{partner-team-konzept-und-white-label-steuerung}
+
+Das System unterscheidet zwischen \textbf{Spielen des Partner-Teams} (dem konfigurierten Partnerverein) und allen übrigen Spielen. Es erkennt das Partner-Team über ein konfigurierbares Keyword, das in n8n-Workflows und Frontend gegen den Teamnamen abgeglichen wird, unabhängig davon, ob der Verein Heim- oder Auswärtsteam ist. Spiele des Partner-Teams werden der vereinsspezifischen White-Label-Instanz zugeordnet und verwenden standardmäßig den euphorischen Stilmodus. Dabei werden vereinsspezifische UI-Bereiche eingeblendet: Social-Media-Panels für YouTube, X und Instagram sowie die ScorePlay-Mediensuche für Bildmaterial. Alle übrigen Spiele durchlaufen die generische Instanz mit neutralem Stil. Die konkreten Instanzbezeichner und Implementierungsdetails sind in Kapitel~\ref{implementierung} dokumentiert.
+
+Für die Einrichtung einer neuen Instanz (z.\,B. für einen anderen Bundesligaverein) sind vier Konfigurationsschritte erforderlich:
+
+\begin{enumerate}\tightlist
+\item Vereinsname, Team-Keyword, Farbschema und API-Endpunkte in der Frontend-Konfiguration anpassen (vgl. Abschnitt~\ref{komponentenhierarchie}).
+\item Den vereinsspezifischen Instanzbezeichner in der Backend-Konfiguration registrieren.
+\item In der Few-Shot-Referenztabelle Beispieltexte mit dem neuen Instanzbezeichner anlegen, damit die instanzspezifische Stilkonditionierung greift.
+\item Die relevanten n8n-Workflows um das neue Team-Keyword ergänzen (vgl. Abschnitt~\ref{n8n-workflow-implementierung}).
+\end{enumerate}
+
+
+
+\subsection{Status-Lifecycle und Betriebsmodi}\label{status-lifecycle-und-betriebsmodi}
+
+Jeder Ticker-Eintrag folgt einem Statusmodell mit vier Zuständen: \texttt{draft} (Entwurf), \texttt{published} (veröffentlicht), \texttt{rejected} (verworfen, terminal) und \texttt{deleted} (weich gelöscht, bleibt in der Datenbank erhalten). Abbildung~\ref{fig:zustandsautomat} zeigt diese Übergänge als Zustandsdiagramm.
+
+\begin{figure}[H]
+\centering
+\DiagramTickerStates
+\caption{Zustandsautomat der Ticker-Einträge (draft, published, rejected, deleted)}
+\label{fig:zustandsautomat}
+\end{figure}
+
+Eine Rückstufung von \texttt{published} auf \texttt{draft} ist sowohl durch Re-Trigger von Matchphasen-Workflows (vgl. Abschnitt~\ref{n8n-workflow-implementierung}) als auch editor-initiiert möglich: unmittelbar nach der Publikation über eine zeitlich begrenzte Toast-Aktion sowie dauerhaft über die Retract-Funktion in der Frontend-Übersicht publizierter Einträge. Der Übergang \texttt{published} → \texttt{deleted} steht der Redaktion jederzeit über das Eintrag-Menü zur Verfügung und führt zu einem Soft-Delete. Das Feld \texttt{source} (\texttt{ai} vs.~\texttt{manual}) und das Feld \texttt{instance} (\texttt{ef\_whitelabel} / \texttt{generic}) ergänzen jeden Eintrag um Herkunfts- und Instanzattributierung, die für instanzspezifische Few-Shot-Filterung und reproduzierbare Evaluationsauswertungen genutzt wird.
+
+Eng damit verknüpft ist das Feld \texttt{ticker\_mode} in \texttt{matches}: Es steuert das Verhalten der Generierungspipeline pro Spiel, ist zur Laufzeit umschaltbar und bestimmt damit, welche Zustandsübergänge im Ticker-Lifecycle aktiv werden. Im Modus \textbf{\texttt{auto}} (vollautomatisch) läuft die Triggerkette ohne redaktionellen Eingriff. KI-Ergebnisse werden direkt veröffentlicht. Im Modus \textbf{\texttt{coop}} (kooperativ, Human-in-the-Loop) erzeugt die KI Entwürfe, über deren Freigabe oder Ablehnung die Redaktion entscheidet. Dieser Modus bildet das primäre Zielbild des Systems. Im Modus \textbf{\texttt{manual}} (rein redaktionell) werden Einträge ausschließlich manuell erstellt. Eingehende Events lösen nur die Datenpersistenz aus, nicht die LLM-Pipeline. Abbildung~\ref{fig:betriebsmodi} stellt alle drei Modi vergleichend gegenüber.
+
+\begin{figure}[H]
+\centering
+\DiagramBetriebsmodi
+\caption[Die drei Betriebsmodi im Überblick]{Die drei Betriebsmodi im Überblick: Automatisierungsgrad und Entscheidungshoheit je Modus}
+\label{fig:betriebsmodi}
+\end{figure}
+
+
+
+\section{Backend-Konzeption}\label{backend-konzeption}
+
+Die Backend-Konzeption legt die Architekturentscheidungen für das \texttt{FastAPI}-Backend fest. Sie gliedert sich in Framework-Wahl (Abschnitt~\ref{framework-wahl}), Interne Schichtstruktur (Abschnitt~\ref{interne-schichtstruktur}), API-Design und Endpunktstrategie (Abschnitt~\ref{api-design-und-endpunktstrategie}), Asynchronität und Robustheit (Abschnitt~\ref{asynchronituxe4t-nebenluxe4ufigkeit-und-performance}) sowie das Qualitätssicherungskonzept (Abschnitt~\ref{qualitätssicherungskonzept}).
+
+\subsection{Framework-Wahl}\label{framework-wahl}
+
+Als Backend-Framework wurde \texttt{FastAPI} gewählt (vgl. Abschnitt~\ref{backend-framework-und-persistenzschicht}). Für diese Entscheidung sprechen drei systemspezifische Eigenschaften: \texttt{FastAPI}s native Unterstützung für asynchrone I/O über Pythons \texttt{asyncio} ermöglicht die parallele Verarbeitung von LLM-Aufrufen, externen API-Abfragen und Medienverarbeitung ohne Worker-Blockierung. Die automatisch generierte OpenAPI-Spezifikation vereinfacht die n8n-Integration erheblich, da Webhook-Endpunkte maschinenlesbar beschrieben sind. Zudem reduziert die enge Pydantic-Integration Schnittstellenfehler durch typisierte Validierung aller Eingaben zwischen Frontend, Backend und n8n. Die Datenbankschicht setzt auf synchrones SQLAlchemy: Da Datenbankoperationen im vorliegenden System kurzläufig sind, würde ein asynchrones ORM Komplexität ohne messbaren Latenz-Vorteil hinzufügen.
+\subsection{Interne Schichtstruktur}\label{interne-schichtstruktur}
+
+Die interne Schichtstruktur folgt dem \textbf{Repository Pattern} (Fowler 2002, S.~322). Router übernehmen die HTTP-Schicht und orchestrieren Use Cases. Dedizierte Repositories kapseln den gesamten Datenbankzugriff, sodass die Anwendungslogik frei von SQL-Details bleibt. ORM-Modelle beschreiben die Persistenzstruktur, Pydantic-Schemas die API-Verträge. Diese Trennung ist zugleich Voraussetzung für transaktionale Testbarkeit. Einfache CRUD-Operationen folgen dem Muster Router \(\rightarrow\) Repository. Komplexere Generierungs- und Orchestrierungsabläufe durchlaufen zusätzlich eine Service-Schicht nach dem Muster Router \(\rightarrow\) Service \(\rightarrow\) Repository, realisiert durch dedizierte Service-Klassen.
+
+
+
+\subsection{API-Design und
+Endpunktstrategie}\label{api-design-und-endpunktstrategie}
+
+Die Backend-Schnittstelle ist als versionierte REST-API unter \texttt{/api/v1} ausgelegt (vgl. Fielding 2000, Kap.~5). Ressourcen wie \texttt{teams}, \texttt{matches}, \texttt{ticker} und \texttt{media} sind als eigenständige Endpunkte strukturiert und folgen konsistenten HTTP-Methodenregeln. \texttt{GET} dient lesenden Abfragen, \texttt{POST} dem Erzeugen und Triggern von Prozessen, \texttt{PATCH} partiellen Zustandsänderungen und \texttt{DELETE} kontrollierten Löschoperationen. Im Ticker-Kontext bildet \texttt{PATCH} den redaktionellen Lebenszyklus von \texttt{draft} zu \texttt{published} oder \texttt{rejected} explizit ab.
+
+Konzeptionell trennt das Design fachliche Datenendpunkte von prozessualen Triggerendpunkten, sodass Leseoperationen seiteneffektfrei bleiben und Import- sowie Generierungsprozesse gezielt ausgelöst werden. Fehlerfälle werden einheitlich über HTTP-Statuscodes und strukturierte Fehlermeldungen kommuniziert, damit Frontend und n8n-Workflows vorhersehbar reagieren können.
+
+
+
+\subsection{Asynchronität, Fehlerbehandlung und
+Robustheit}\label{asynchronituxe4t-nebenluxe4ufigkeit-und-performance}
+
+Das Backend setzt Asynchronität gezielt ein. I/O-intensive Pfade wie LLM-Generierung, Medienverarbeitung und WebSocket-Kommunikation sind als nicht-blockierend implementiert, während einfache CRUD-Endpunkte synchron bleiben. Ein konfigurierbarer \textbf{Semaphore-Mechanismus} begrenzt gleichzeitige LLM-Aufrufe und verhindert Lastspitzen sowie Rate-Limit-Probleme, auch bei mehreren parallel laufenden Spielen. Ergänzend behandelt ein \textbf{Retry-Mechanismus mit gestuftem Backoff} transiente Fehler und Rate-Limit-Antworten. Die konkreten Wartezeiten sind in Abschnitt~\ref{llm-service-prompt-aufbau-und-provider-dispatch} dokumentiert. Langlaufende Integrationslogik ist in n8n ausgelagert, was den API-Server als transaktionalen Kern entlastet.
+
+Für den Live-Betrieb ist das Backend auf kontrollierte Degradation ausgelegt: Bei Teilausfällen externer Dienste bleiben persistierte Daten verfügbar und redaktionelle Kernprozesse können fortgeführt werden. Transportschichtsicherheit über HTTPS, CORS-Whitelisting und Pydantic-basierte Eingabevalidierung bilden die Basisabsicherung. Benutzerauthentifizierung wurde ausgeklammert (vgl. Abschnitt~\ref{abgrenzung}). Datenbankoperationen sind durch den Primärschlüssel \texttt{match\_id} partitioniert, sodass das Backend alle konfigurierten Spiele gleichzeitig verwalten kann, ohne dass parallele Verarbeitungen interferieren. Eine architektonische Grenze bildet der WebSocket-Kanal für Medienupdates: Der zugehörige Verbindungsmanager ist als prozesslokaler Singleton konzipiert, sodass ein Multi-Prozess-Deployment eine Pub/Sub-Erweiterung erfordern würde (vgl. Abschnitt~\ref{technische-einordnung}).
+
+\subsection{Qualitätssicherungskonzept}\label{qualitätssicherungskonzept}
+
+Die Qualitätssicherung folgt dem Testpyramiden-Modell nach Cohn (2009): Schnelle, granulare Unit-Tests bilden die Basis. Integrationstests prüfen das Zusammenspiel über Komponentengrenzen. Eine schlanke E2E-Schicht validiert kritische Nutzerpfade im Browser. Das Verhältnis ist kostenbewusst gestaltet: Teure E2E-Tests decken nur Regressionsrisiken mit hoher Nutzerauswirkung ab, während die eigentliche Logik über Unit- und API-Tests gesichert ist. Das Pyramidenmodell gilt systemweit. Die frontend-spezifischen Testebenen und Werkzeuge sind in Abschnitt~\ref{frontend-teststrategie} beschrieben.
+
+Das Repository-Pattern (vgl. Abschnitt~\ref{interne-schichtstruktur}) ist die architektonische Voraussetzung für die Backend-Testbarkeit: Die Trennung von Router, Service und Repository erlaubt es, einzelne Schichten isoliert zu testen. API-Integrationstests nutzen eine transaktionale PostgreSQL-Testinstanz mit Rollback nach jedem Test, sodass Tests voneinander unabhängig und reproduzierbar sind. Auf einen Datenbank-Mock wurde bewusst verzichtet, da Mock-Implementierungen Divergenzen zu produktiven Schemaänderungen riskieren. Continuous Integration ist im Rahmen dieser Arbeit bewusst ausgeklammert. Die Einordnung als Limitation und Erweiterungspfad ist in Abschnitt~\ref{kritische-reflexion} dokumentiert.
+
+
+
+\section{Datenbankkonzeption}\label{datenbankkonzeption}
+
+Die Datenbankkonzeption legt Datenbankwahl, Schemadesign und Migrationsstrategie fest (Abschnitte~\ref{datenbankwahl}, \ref{schemadesign-prinzipien} und~\ref{migrationsstrategie}).
+
+\subsection{Datenbankwahl}\label{datenbankwahl}
+
+Als Datenbanksystem wurde PostgreSQL gewählt: Die Domänendaten sind stark strukturiert (Fremdschlüsselbeziehungen zwischen Teams, Wettbewerben, Spielen, Events und Ticker-Einträgen sind klar definiert und referenziell integer zu halten), was ein relationales Modell gegenüber dokumentenorientierten Alternativen begünstigt, die auf deklarative Join-Abfragen und striktes Fremdschlüssel-Constraint-Enforcement verzichten (vgl. Abschnitt~\ref{backend-framework-und-persistenzschicht}).
+
+\subsection{Schemadesign-Prinzipien}\label{schemadesign-prinzipien}
+
+Das Schema folgt einem hybriden Entwurfsansatz aus strukturierter Normalisierung und gezielter Schemaflexibilität. Abbildung~\ref{fig:er-diagramm} zeigt die zentralen Entitäten und ihre Beziehungen. Tabellen ohne FK-Bezug (\texttt{media\_queue}, \texttt{style\_references}, \texttt{settings}) sind nicht abgebildet. \texttt{style\_references} dient als Few-Shot-Datenquelle der LLM-Pipeline. \texttt{media\_queue} wird über die Media-Endpunkte verwaltet.
+
+\begin{figure}[H]
+  \centering
+  \DiagramDataModel
+  \caption{Vereinfachtes ER-Diagramm der zentralen Systemtabellen (konzeptionell)}
+  \label{fig:er-diagramm}
+\end{figure}
+
+\begin{itemize}\tightlist
+\item \textbf{Normalisierte Kernentitäten:} Das Schema modelliert zentrale Domänenobjekte wie \texttt{teams}, \texttt{matches}, \texttt{events}, \texttt{ticker\_entries}, \texttt{players} und \texttt{competitions} normalisiert (vgl. Codd 1970), um Redundanzen zu minimieren sowie Integrität und Auswertbarkeit im Live-Betrieb stabil zu halten.
+\item \textbf{Gezielter JSONB-Einsatz:} JSONB-Felder kommen nur dort zum Einsatz, wo sich Strukturen dynamisch ändern oder kontextabhängig sind, etwa das Feld \texttt{synthetic\_events.data} sowie Kontextfelder in \texttt{matches}. Statistiktabellen sind dagegen über explizite Spalten modelliert, um konsistente Abfragen und robuste Aggregationen zu ermöglichen.
+\item \textbf{Schlüsselstrategie:} Stammdaten-Entitäten (Teams, Wettbewerbe, Spielpläne) kombinieren numerische Primärschlüssel für performante Joins mit einem UUID-Feld als stabilem externen Referenzschlüssel. Ereignisentitäten (Events, Spieler) verwenden den Integer-\texttt{external\_id} der Football-API als externen Verweis.
+\item \textbf{Upsert-Strategie:} Wiederholte Imports führen durch Unique-Constraints nicht zu unkontrollierten Duplikaten: Stammdaten-Entitäten verwenden \texttt{ON CONFLICT (external\_id) DO UPDATE}; Ereignisentitäten setzen \texttt{ON CONFLICT DO NOTHING}, da bereits persistierte Events unverändert bleiben sollen. Lösch- und Nullsetz-Strategien halten abhängige Daten konsistent und bewahren fachlich relevante Historie.
+\end{itemize}
+
+\subsection{Migrationsstrategie}\label{migrationsstrategie}
+
+Schemaänderungen werden über \textbf{Alembic} versioniert, das als dediziertes Migrationswerkzeug für SQLAlchemy konzipiert ist. Jede Schemaänderung wird als versionierte Migrationsdatei abgelegt, die sequenziell anwendbar und rückrollbar ist. Dieses Vorgehen stellt sicher, dass Datenbankschema und ORM-Modelle konsistent bleiben und Deployments reproduzierbar sind.
+
+Das persistierte Datenmodell bildet die Grundlage für die darüberliegende Workflow-Schicht, die alle Datenimporte und Generierungsprozesse orchestriert.
+
+\section{Workflow-Konzeption (n8n)}\label{workflow-konzeption-n8n}
+
+Die Workflow-Schicht orchestriert alle Datenimporte und Generierungsprozesse als entkoppelte Ebene zwischen externen Quellen und Backend. Sie gliedert sich in die Technologiewahl (Abschnitt~\ref{n8n-technologiewahl}), die Workflow-Muster (Abschnitt~\ref{workflow-muster}) und die Workflow-Klassen (Abschnitt~\ref{workflow-klassen}).
+
+\subsection{Technologiewahl}\label{n8n-technologiewahl}
+
+Die Workflow-Schicht ist als entkoppelte Orchestrierungsebene zwischen externen Datenquellen und Backend konzipiert. n8n bietet Low-Code-Konfigurierbarkeit und integrierten Webhook-Support ohne zusätzliche Infrastruktur (vgl. Abschnitt~\ref{etl-prozesse-und-workflow-automatisierung}) und wurde gegenüber Batch-orientierten Alternativen wie Apache Airflow und Prefect bevorzugt, die prozedurale Python-Kenntnisse für jeden Workflow voraussetzen (vgl. Venkiteela 2025, S.~2). Zudem unterstützt n8n sowohl Webhook-getriggerte als auch zeitgesteuerte Workflows in derselben Umgebung, was die in Abschnitt~\ref{kommunikations--und-triggerarchitektur} beschriebene hybride Triggerarchitektur ohne zusätzliche Infrastruktur abbildet.
+
+n8n modelliert Workflows als gerichtete Graphen aus typisierten Knoten (vgl. Venkiteela 2025, S.~3). Die im System verwendeten Knotentypen sind:
+
+\begin{itemize}\tightlist
+\item \textbf{Webhook}-Knoten empfangen HTTP-Anfragen und starten die Verarbeitungskette.
+\item \textbf{Postgres}-Knoten führen parametrisierte SQL-Statements direkt gegen die Datenbank aus.
+\item \textbf{Code}-Knoten enthalten benutzerdefiniertes JavaScript für Transformations- und Validierungslogik.
+\item \textbf{HTTP-Request}-Knoten rufen externe REST-APIs oder das FastAPI-Backend auf.
+\item \textbf{Filter}-Knoten leiten den Datenfluss nur bei erfüllter Bedingung weiter.
+\end{itemize}
+
+\subsection{Workflow-Muster}\label{workflow-muster}
+
+Die 17 Workflows gliedern sich in zwei strukturell unterschiedliche Muster: Event-basierte Generierungs-Workflows prüfen zunächst, ob Ereignisdaten bereits persistiert sind, und triggern die LLM-Pipeline nur bei neuen Einträgen. Dieser Idempotenz-Mechanismus ist notwendig, weil das Frontend Events im 60-Sekunden-Takt bedingungslos triggert: Ohne Datenbankabgleich würden identische Events mehrfach verarbeitet, was redundante LLM-Aufrufe und inkonsistente Ticker-Inhalte erzeugen würde. Zusammenfassungs- und Monitoring-Workflows folgen einem direkteren Pfad und rufen den LLM-Dienst ohne vorherigen Datenbankabgleich auf, da sie einmalig pro Spielphase ausgelöst werden und keinen Event-Duplikat-Schutz benötigen.
+
+\subsection{Workflow-Klassen}\label{workflow-klassen}
+
+Die folgende Übersicht zeigt alle 17 Workflows gegliedert nach sechs funktionalen Klassen:
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.2727}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.4091}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3182}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Gruppe
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Workflows
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Trigger
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+\textbf{A) Stammdaten} & 01--04: Countries, Teams, Competitions, Matches
+& Bei leeren Daten \\
+\textbf{B) Matchdaten} & 04--07: Lineups, Match-/Player-Statistics,
+Prematch & Nach Matchauswahl; Statistiken periodisch im Live-Betrieb \\
+\textbf{C) KI-Generierung} & 09 Events-LLM, 13 Halftime/Aftertime, 14
+Anpfiff/Abpfiff & Modus- und Event-gesteuert \\
+\textbf{D) Medien \& Social} & 08 ScorePlay, 10 Twitter/X, 11 YouTube,
+12 Instagram & Medien-Suche \\
+\textbf{E) Monitoring} & 15 Live-Stats-Monitor & Spieltag-gesteuert \\
+\textbf{F) Spielzeit} & 16 Aktuelle-Minute-Update & Webhook (Spielminute ändern) \\
+\end{longtable}
+}
+
+Diese Trennung reduziert Kopplung und erlaubt es, einzelne Teilprozesse unabhängig anzupassen. Die konkreten Implementierungen sind in Abschnitt~\ref{n8n-workflow-implementierung} dokumentiert.
+
+
+
+
+
+
+\section{KI-Komponente}\label{ki-komponente}
+
+Die KI-Komponente übersetzt strukturierte Spielereignisse in natürlichsprachliche Ticker-Texte. Sie gliedert sich in die Multi-Provider-Architektur (Abschnitt~\ref{multi-provider-architektur}), die Prompt-Engineering-Strategie (Abschnitt~\ref{prompt-engineering-strategie}) und die mehrsprachige Textgenerierung (Abschnitt~\ref{mehrsprachige-textgenerierung-konzept}).
+
+\subsection{Multi-Provider-Architektur}\label{multi-provider-architektur}
+
+Die KI-Komponente ist als providerunabhängige Abstraktionsschicht konzipiert. Der LLM-Dienst kapselt mehrere Anbieter hinter einer einheitlichen Schnittstelle und unterstützt OpenAI, Anthropic, Google Gemini, OpenRouter sowie einen Mock-Modus für Fallbackszenarien ohne API-Key.
+
+Das System setzt primär \textbf{OpenRouter} als LLM-Gateway ein (vgl. Abschnitt~\ref{large-language-models}): Der Wechsel zwischen Modellen erfordert lediglich eine Konfigurationsänderung, was Modellvergleiche auf demselben Prompt erleichtert (vgl. Abschnitt~\ref{modell--und-provider-evaluation}) und ressourcenbegrenzten Vereinsredaktionen eine kostenoptimierte Modellwahl ermöglicht.
+
+Als Standardmodell im Deployment wurde \textbf{Gemini 2.0 Flash Lite} über OpenRouter gewählt. Die Entscheidung stützt sich auf drei Faktoren:
+
+\begin{itemize}\tightlist
+\item \textbf{Aufgabencharakteristik:} Liveticker-Texte sind kurz und faktenbasiert; kompakte Modelle erzielen vergleichbare Qualität bei deutlich niedrigerer Latenz, was die Latenzanalyse in Abschnitt~\ref{llm-latenz} zeigen wird.
+\item \textbf{Kosteneffizienz:} Das Modell zählt zu den kostengünstigsten kommerziell verfügbaren Optionen und macht den Dauerbetrieb über eine Saison für ressourcenbegrenzte Redaktionen wirtschaftlich darstellbar (vgl. Abschnitt~\ref{zeitdruck-und-fehleranfaelligkeit}).
+\item \textbf{Kontextfenster:} Das Modell unterstützt bis zu 1~Million~Token, sodass umfangreiche Pre-Match-Kontextinformationen und mehrere Few-Shot-Referenzen ohne Abschneidung eingebunden werden können.
+\end{itemize}
+
+Das Backend sieht eine \textbf{Fallback-Kette} vor: Beim Start wird in fester Prioritätsreihenfolge der erste verfügbare Provider aktiviert, von OpenRouter über weitere kommerzielle Anbieter bis zu einem Mock-Provider, der die Lauffähigkeit ohne API-Key für Entwicklung und Tests sichert. Die konkreten Provider und Reihenfolge sind in Abschnitt~\ref{llm-service-prompt-aufbau-und-provider-dispatch} dokumentiert.
+
+
+
+\subsection{Prompt-Engineering-Strategie}\label{prompt-engineering-strategie}
+
+Die in Abschnitt~\ref{linguistische-anforderungen-an-die-textgenerierung} hergeleiteten Merkmale des Liveticker-Genres (konzeptionelle Mündlichkeit, Ellipsen-Syntax, Präsenstempus, Graphostilistik und direkte Adressierung) definieren das Zielformat, auf das das LLM konditioniert wird. Der Regelblock des Prompts operationalisiert diese Vorgaben als explizite Modellanweisungen.
+
+Die Generierung verwendet ein modulares Prompt-Design mit sechs Bausteinen (Rolleninstruktion, Stilinstruktion, Faktenblock, Kontextblock, Few-Shot-Block und Regelblock), die dynamisch zusammengesetzt werden und deren Zusammenspiel Abbildung~\ref{fig:prompt-aufbau} zeigt. Der Few-Shot-Block ist instanzspezifisch: Er wird nur eingebettet, wenn für die aktive Instanz Stilreferenzen in der Datenbank hinterlegt sind. Im aktuellen Deployment ist dies ausschließlich für die \texttt{ef\_whitelabel}-Instanz der Fall. Für \texttt{generic}-Instanzen entfällt der Block, sodass der Prompt dort effektiv fünfteilig ist. Die Stilinstruktion parametrisiert eines von drei Stilprofilen: \textbf{neutral} (sachlicher, unparteiischer Reporter-Stil), \textbf{euphorisch} (leidenschaftlicher Fan-Stil, situationsadaptiv je nach Spielstand) und \textbf{kritisch} (analytischer Kommentator-Stil mit expliziter Fehlerbenennung).
+
+\begin{figure}[H]
+\centering
+\DiagramPromptPipeline
+\caption{Prompt-Aufbau: Eingaben, Prompt-Bausteine, LLM-Aufruf und Ticker-Text}
+\label{fig:prompt-aufbau}
+\end{figure}
+
+Der Few-Shot-Block wird aus manuell kuratierten Original-Tickertexten des Partnervereins gespeist. Pro LLM-Aufruf werden bis zu drei Referenzen zufällig aus dem nach Ereignistyp, Instanz und optional Liga gefilterten Pool selektiert; die Randomisierung verhindert die monotone Reproduktion identischer Formulierungen bei gleichartigen Events, während der stilistische Korridor gewahrt bleibt. Für Pre-Match-Typen enthält der Prompt zusätzliche Restriktionen, um Halluzinationen von Live-Szenen zu vermeiden und die Ausgabe auf Vorschau- und Analyseinhalte zu begrenzen. Die konkreten Inferenzparameter sind in Abschnitt~\ref{llm-service-prompt-aufbau-und-provider-dispatch} dokumentiert.
+
+\subsection{Mehrsprachige Textgenerierung}\label{mehrsprachige-textgenerierung-konzept}
+
+Mehrsprachigkeit ist als natives Designmerkmal der KI-Komponente konzipiert (F7, vgl. Abschnitt~\ref{mehrsprachigkeit-als-herausforderung}): Die Zielsprache wird vom Redakteur zur Laufzeit über einen Sprachwahlschalter im Frontend gewählt. Das System unterstützt Deutsch, Englisch, Spanisch und Französisch, der Standard ist Deutsch. Ein Sprachwechsel löst zwei Effekte aus: Bestehende Einträge des aktuellen Spiels (publizierte und Entwürfe) werden per Batch-Übersetzungsendpunkt in die Zielsprache übertragen; alle nachfolgenden Generierungsaufrufe verwenden die neue Sprache direkt als Prompt-Parameter. Derselbe Prompt-Mechanismus wird für alle Sprachen genutzt, ohne sprachspezifische Prompt-Varianten. Die konkrete Implementierung ist in Abschnitt~\ref{api-router-endpunktstruktur} dokumentiert.
+
+\section{Frontend-Konzeption}\label{frontend-konzeption}
+
+Das Frontend realisiert die Präsentationsschicht als React-Anwendung mit TypeScript und ist auf redaktionelle Arbeit im Live-Betrieb ausgelegt. Es gliedert sich in die Framework-Wahl (Abschnitt~\ref{frontend-framework-wahl}), Architektur und Zustandsmanagement (Abschnitt~\ref{architekturprinzipien}), Layout, Moduslogik und Kommunikation (Abschnitt~\ref{dreispalten-layout-und-redaktionsfluss}) sowie die Teststrategie (Abschnitt~\ref{frontend-teststrategie}).
+
+\subsection{Framework-Wahl}\label{frontend-framework-wahl}
+
+React wurde gegenüber Vue und Svelte bevorzugt. Das größere Ökosystem und die breitere Verbreitung reduzierten das Risiko bei der Integration von Drittbibliotheken (z.\,B. WebSocket-Hooks, Echtzeitstate). Das deklarative Komponentenmodell eignet sich für die komplexe Dreispalten-Ansicht mit vielen interaktiven Zuständen, da jedes Panel als eigenständige, wiederverwendbare Einheit modelliert werden kann. Die ausgereifte TypeScript-Integration unterstützt die typsichere Architektur aus Abschnitt~\ref{architekturprinzipien} und reduziert Laufzeitfehler an Komponentengrenzen. Die bestehende Projekterfahrung des Autors mit React vermied darüber hinaus unnötige Einarbeitungszeit.
+
+\subsection{Architektur und Zustandsmanagement}\label{architekturprinzipien}
+
+Das Frontend trennt UI-Komponenten, datenbezogene Hooks und API-Zugriffsschicht klar voneinander. Der Anwendungszustand wird überwiegend feature-nah gehalten. Gemeinsamer Zustand für tief verschachtelte Komponenten wird über dedizierte Context-Provider bereitgestellt, um Prop-Drilling zu vermeiden und Re-Renders zu kontrollieren. Die Zustands- und Interaktionslogik ist in wiederverwendbare Custom Hooks aufgeteilt, die Navigation, Polling, Echtzeitkommunikation und Redaktionsinteraktion abdecken. Die White-Label-Fähigkeit ist über eine Konfigurationsschicht konzipiert, die Farben, Team-Keyword und API-Endpunkte je Instanz variiert (vgl. Abschnitt~\ref{komponentenhierarchie}).
+
+\subsection{Layout, Moduslogik und Kommunikation}\label{dreispalten-layout-und-redaktionsfluss}
+
+Die Hauptansicht folgt einem Dreispalten-Ansatz mit klarer Aufgabenverteilung. Das linke Panel zeigt den chronologischen Feed publizierter Ticker-Einträge. Das mittlere Panel bildet die redaktionelle Kernarbeit ab: Event-Verarbeitung in Abhängigkeit vom Betriebsmodus, Draft-Prüfung und Freigabe, manuelle Eingabe sowie integrierte Media- und Social-Panels für Partnervereinsspiele. Das rechte Panel liefert Kontextinformationen: Matchstatistiken, Aufstellungen und spielerbezogene Leistungsdaten.
+
+Die Modusumschaltung ist mit Bestätigungsdialog und visueller Rückmeldung ausgestattet. Im kooperativen Modus sind Tastatur-Shortcuts für den Accept-/Reject-Flow verfügbar (vgl. Abschnitt~\ref{status-lifecycle-und-betriebsmodi}). Für die manuelle Eingabe ist ein \textbf{Slash-Command-Parser} konzipiert: Phase- und Event-Commands (\texttt{/anpfiff}, \texttt{/goal}, \texttt{/gelb} u.\,a.) werden über eine einheitliche Syntaxstruktur geparst und direkt in strukturierte Ticker-Einträge überführt, ohne Formularnavigation. Die Implementierung ist in Abschnitt~\ref{slash-command-parser-parsecommand.ts} dokumentiert. Die Kommunikationsarchitektur des Frontends ist in Abschnitt~\ref{kommunikations--und-triggerarchitektur} beschrieben. Die konkreten Intervalle, Shortcuts und Hook-Implementierungen sind in Abschnitt~\ref{frontend-implementierung} dokumentiert.
+
+\subsection{Teststrategie}\label{frontend-teststrategie}
+
+Das Frontend wird auf Utility-Ebene und Komponentenebene getestet. TypeScript-Typsicherheit ergänzt die Laufzeittests als statische Analyseschicht. \textbf{Jest} wurde für Frontend-Tests gegenüber Vitest bevorzugt, da die Create-React-App-Basiskonfiguration Jest nativ integriert und kein eigener Vite-Build-Stack eingeführt werden muss. Vitests Laufzeitvorteil wird erst bei deutlich größeren Test-Suites relevant. \textbf{Playwright} wurde für E2E-Tests gegenüber Cypress bevorzugt: Es benötigt keine Electron-Laufzeitabhängigkeit, ermöglicht Cross-Browser-Tests ohne Lizenzschranken und ist für responsive Mobile-Tests auf verschiedenen Viewports die geeignetere Wahl.
+
+
+
+\section{Deployment-Konzept}\label{deployment-konzept}
+
+Das System ist als Cloud-native Anwendung konzipiert, die auf PaaS-Infrastruktur (vgl. Abschnitt~\ref{cloud-deployment}) ohne eigene Serververwaltung betrieben werden kann. Das Deployment-Modell folgt dem Stateless-Design-Prinzip: Backend und Frontend werden als eigenständige Dienste deployt und teilen keinen prozesslokalen Zustand. Persistente Daten liegen vollständig in einer extern verwalteten Datenbankinstanz.
+
+Das \texttt{FastAPI}-Backend wird als Docker-Container auf Render.com deployt. Das React-Frontend wird als statische Seite über das Render-CDN bereitgestellt. Render ermöglicht Deployments direkt aus einem definierten Git-Branch und injiziert Konfiguration und Zugangsdaten ausschließlich als Umgebungsvariablen, sodass keine Secrets im Repository verbleiben. Die Datenbankschicht nutzt PostgreSQL als Managed Service über Supabase: Diese Auslagerung entlastet den Evaluationsbetrieb von Datenbankadministration (Backups, Patches, Verbindungspooling) und erlaubt die Integration über eine standardisierte externe Connection-URL, ohne die Portabilität einzuschränken.
+
+Die n8n-Workflow-Instanz ist für den Evaluationszeitraum lokal betrieben und über einen \texttt{ngrok}-Tunnel für eingehende Webhooks erreichbar. Diese Lösung ist bewusst auf den Evaluationszeitraum beschränkt: Sie eliminiert Hosting-Kosten und erlaubt schnelle Workflow-Iteration ohne Redeploy-Zyklen. Die Limitationen gegenüber einem Produktivbetrieb sind in Abschnitt~\ref{technische-einordnung} diskutiert.
+
+Mit dem Deployment-Konzept ist die systemweite Konzeption des Artefakts abgeschlossen. Die erarbeiteten Konzepte (Drei-Schichten-Architektur, Datenmodell, n8n-ETL-Workflows, LLM-Pipeline, React-Frontend, Deployment-Topologie und Teststrategie) bilden in ihrer Gesamtheit die konzeptionelle Grundlage für die Implementierung. Kapitel~\ref{implementierung} dokumentiert die technische Realisierung und zeigt, wie die in Kapitel~\ref{motivation-und-anforderungen} definierten Anforderungen in lauffähigen, getesteten Code überführt wurden.
+
+
+
+

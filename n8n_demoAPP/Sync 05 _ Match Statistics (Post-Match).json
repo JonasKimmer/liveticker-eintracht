@@ -1,0 +1,178 @@
+{
+  "name": "Sync 05 | Match Statistics (Post-Match)",
+  "nodes": [
+    {
+      "parameters": {
+        "url": "https://partner-api.stackwork-01-test.tech/cms/v1/matches",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "pageSize",
+              "value": "100"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer 52091AC14B524E59DEF531D0EA8F57EF0804D4CFADCF4A1A52CE842687D2D209-1"
+            },
+            {
+              "name": "et-partner-id",
+              "value": "4"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "0520842d-9a8a-41a4-ac00-3e38362f9006",
+      "name": "HTTP: GET Matches From CMS",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "return $input.all().flatMap(item =>\n  (item.json.items || [])\n    .filter(m => m.matchState === \"FullTime\")\n    .map(m => ({ json: { fixtureId: m.id } }))\n);"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        224,
+        0
+      ],
+      "id": "85fa525f-6339-419c-bc84-6f78f26a4ee8",
+      "name": "JS: Filter Finished Matches"
+    },
+    {
+      "parameters": {
+        "url": "https://v3.football.api-sports.io/fixtures/statistics",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "fixture",
+              "value": "=1388536"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        608,
+        0
+      ],
+      "id": "e3dc3e2c-3d5d-4704-aa6a-fa0ee0cc9a3c",
+      "name": "HTTP: Get Match Statistics",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "8TXlLPe7BeXnl0Ut",
+          "name": "Header Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const response = $input.all()[0].json.response;\n\nfunction mapStats(teamData) {\n  const s = {};\n  teamData.statistics.forEach(st => { s[st.type] = st.value; });\n  \n  return {\n    sport: \"Football\",\n    possessionPercentage: s[\"Ball Possession\"] ? s[\"Ball Possession\"].replace('%', '').trim() : null,\n    totalPass: s[\"Total passes\"] ?? null,\n    accuratePass: s[\"Passes accurate\"] ?? null,\n    totalOffside: s[\"Offsides\"] ?? null,\n    cornerTaken: s[\"Corner Kicks\"] ?? null,\n    goalScoringAttempt: s[\"Total Shots\"] ?? null,\n    goalOnTargetScoringAttempt: s[\"Shots on Goal\"] ?? null,\n    fouls: s[\"Fouls\"] ?? null,\n    yellowCards: s[\"Yellow Cards\"] ?? null,\n    duelWon: null,\n    duelLost: null,\n    airDuelWon: null,\n    airDuelLost: null,\n    blockedPass: null,\n    crossesInMatch: null,\n    crossesAccurate: null,\n    totalCrosses: null,\n    formationUsed: null\n  };\n}\n\nreturn [{\n  json: {\n    teamHomeStatistics: mapStats(response[0]),\n    teamAwayStatistics: mapStats(response[1])\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        848,
+        0
+      ],
+      "id": "2af262c9-3223-4c79-a396-16f183db83dc",
+      "name": "JS: Map Stats to CMS"
+    },
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "=https://partner-api.stackwork-01-test.tech/cms/v1/matches/{{ $node[\"HTTP: Get Match Statistics\"].json.parameters.fixture }}/statistics",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer 52091AC14B524E59DEF531D0EA8F57EF0804D4CFADCF4A1A52CE842687D2D209-1"
+            },
+            {
+              "name": "et-partner-id",
+              "value": "4"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"teamHomeStatistics\": {{ JSON.stringify($json.teamHomeStatistics) }},\n  \"teamAwayStatistics\": {{ JSON.stringify($json.teamAwayStatistics) }}\n}",
+        "options": {}
+      },
+      "id": "9b5926e5-ef55-4371-af1b-1fec9bd8c1b7",
+      "name": "HTTP: Patch Match Statistics",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        1056,
+        0
+      ],
+      "onError": "continueRegularOutput"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "HTTP: GET Matches From CMS": {
+      "main": [
+        [
+          {
+            "node": "JS: Filter Finished Matches",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP: Get Match Statistics": {
+      "main": [
+        [
+          {
+            "node": "JS: Map Stats to CMS",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "JS: Map Stats to CMS": {
+      "main": [
+        [
+          {
+            "node": "HTTP: Patch Match Statistics",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "0baf6ce2-2ee1-454e-8a69-6a19f4a23e37",
+  "meta": {
+    "instanceId": "8f356ecf824174491100e48f7fade606f544a76873378b03e211127fbec11c97"
+  },
+  "id": "pJBF7yq9ITGlGvTF",
+  "tags": []
+}

@@ -1,0 +1,135 @@
+# Kapitel 7 – Diskussion
+
+---
+
+## 7.1 Einordnung in den Stand der Technik
+
+### 7.1.1 Abgrenzung zu bestehenden Systemen
+
+Das in dieser Arbeit entwickelte System unterscheidet sich von bestehenden Ansätzen der automatisierten Sportberichterstattung (Kapitel 3.3) in mehreren Aspekten:
+
+**Gegenüber templatebasierten Systemen** (z. B. Retresco, vgl. Beils 2023, S. 207) bietet der LLM-basierte Ansatz eine höhere sprachliche Varianz und Anpassungsfähigkeit an unterschiedliche Stilprofile. Templatebasierte Systeme erzeugen deterministische, aber oft formelhaft wirkende Texte; LLM-generierte Texte sind sprachlich natürlicher, dafür nicht-deterministisch.
+
+**Gegenüber vollautonomen KI-Systemen** betont die vorliegende Arbeit bewusst den hybriden Ansatz mit Human-in-the-Loop-Kontrolle. Dies begründet sich durch die in Kapitel 3.1 beschriebene Halluzinationsproblematik, die im journalistischen Kontext besonders kritisch ist (Bluhm & Schäfer 2023, S. 33). Der `coop`-Modus repräsentiert damit einen Mittelweg, der die Effizienzgewinne der Automatisierung nutzt, ohne die publizistische Verantwortung an die KI zu delegieren.
+
+**Gegenüber reinen Übersetzungslösungen** für Mehrsprachigkeit bietet das System eine nativ multilinguale Generierung, bei der die Zielsprache als Prompt-Parameter übergeben wird. Die zusätzliche Batch-Übersetzungsfunktion mit reduzierter Temperatur (0,1) ergänzt dies für nachträgliche Lokalisierung bestehender Einträge.
+
+### 7.1.2 Beitrag zur Forschung
+
+Die Arbeit leistet drei Beiträge zum aktuellen Forschungsstand:
+
+1. **Architektonischer Beitrag**: Das System demonstriert eine produktionsnahe Referenzarchitektur für KI-gestützte Echtzeit-Textgenerierung mit modularer Provider-Abstraktion, Few-Shot-Prompting aus einer kuratierten Stilreferenz-Datenbank und dreistufigem Betriebsmodus-Konzept.
+
+2. **Methodischer Beitrag**: Die Evaluationsinfrastruktur mit Bulk-Generierungsendpunkt, Provider-Override und statistischen Vergleichsmetriken (Cliff's Delta, Bootstrap-CI, Cohen's Kappa) ermöglicht systematische, reproduzierbare Modellvergleiche.
+
+3. **Praktischer Beitrag**: Die White-Label-Architektur mit instanzspezifischer Stilsteuerung adressiert den in Kapitel 2.3 beschriebenen Bedarf von Vereinen als eigenständige Medienproduzenten.
+
+---
+
+## 7.2 Kritische Reflexion
+
+Die in Kapitel 6.12 dokumentierten Limitationen werden im Folgenden hinsichtlich ihrer Implikationen eingeordnet.
+
+### 7.2.1 Methodische Einordnung
+
+Die zentrale methodische Einschränkung betrifft die Selbstbewertung der Textqualität (vgl. Kapitel 6.12.1). Im Design Science Research ist die Evaluation durch den Entwickler ein verbreitetes Vorgehen bei initialen Artefaktiterationen (Hevner et al. 2004), begrenzt jedoch die externe Validität der qualitativen Ergebnisse. Die implementierte Cohen's-Kappa-Metrik ist bewusst als Infrastruktur für eine Folgestudie mit externen Ratern angelegt.
+
+Die eingeschränkte Stichprobengröße (vgl. Kapitel 6.12.2) relativiert die Generalisierbarkeit der quantitativen Ergebnisse. Insbesondere Randsituationen — torloses Unentschieden, Elfmeterschießen, Spielabbrüche — sind in der Datenbasis vermutlich unterrepräsentiert. Die Bulk-Evaluationsinfrastruktur ermöglicht jedoch eine systematische Erweiterung der Datenbasis ohne Codeänderung.
+
+### 7.2.2 Technische Einordnung
+
+Das Polling-Modell (vgl. Kapitel 6.12.6) stellt für den Einzelbetrieb keine Einschränkung dar, würde aber bei steigender Nutzerzahl (>50 gleichzeitige Clients) zu einer relevanten Serverlast führen. Die bestehende WebSocket-Infrastruktur für den Media-Kanal zeigt, dass eine Umstellung auf Server-Sent Events für den Ticker-Datenfluss technisch machbar ist.
+
+Die fehlende Authentifizierung (vgl. Kapitel 6.12.4) ist im Kontext eines internen Redaktionswerkzeugs vertretbar, schließt aber einen offenen Mehrbenutzerbetrieb ohne Netzwerkabsicherung aus. Die Architektur ist durch die saubere Middleware-Schichtung (FastAPI Dependencies) für eine nachträgliche JWT-Integration vorbereitet.
+
+Die 15 n8n-Workflows (vgl. Kapitel 6.12.8) stellen den größten nicht automatisiert getesteten Systemteil dar. Da sie die gesamte Datenversorgung des Systems verantworten, wäre eine Absicherung durch Integrationstests gegen eine Staging-Datenbank für den Produktivbetrieb prioritär.
+
+### 7.2.3 Inhaltliche Reflexion
+
+Die in Kapitel 2.5 hergeleiteten linguistischen Anforderungen an Liveticker — Ellipsen, konzeptionelle Mündlichkeit, Graphostilistik (z. B. „TOOOOR!") — stellen besondere Anforderungen an die Prompt-Gestaltung. Die Erfahrung zeigt, dass LLMs dazu neigen, in einem formelleren Register zu schreiben als es das Genre Liveticker erfordert. Die Few-Shot-Referenzen aus der `style_references`-Tabelle sind das primäre Mittel, um diese stilistische Lücke zu schließen.
+
+Die Evaluationsergebnisse (Kapitel 6.8) zeigen, dass die Few-Shot-Referenzen das Format zuverlässig konditionieren — Minutenangaben, TOOOOR-Konvention und Textkürze werden konsistent übernommen. Die stilistische Lücke ist damit teilweise geschlossen: Faktentreue (4,6 / 5) und Verständlichkeit (4,3 / 5) profitieren von der strukturierten Kontextübergabe, während Tonalität (4,1 / 5) als schwächste Dimension verbleibt. Die häufigste Fehlerklasse — Stil-Inkonsistenz (19 %) — tritt gerade dort auf, wo euphorische Few-Shot-Muster in den neutralen Stil bluten. Eine Trennung der Referenz-Pools nach Stilprofil wäre die naheliegende Korrektur.
+
+Der in Kapitel 3.1 beschriebene Halluzinationseffekt ist im Kontext von Livetickern besonders kritisch, da fehlerhafte Fakten (falscher Torschütze, falsches Ergebnis) unmittelbar die Glaubwürdigkeit zerstören. Die explizite Schutzregel für Pre-Match-Prompts und die niedrige Temperatur (vgl. Abschnitt 7.4.2) sind Gegenmaßnahmen, deren Wirksamkeit jedoch nur im `coop`-Modus durch die redaktionelle Kontrolle vollständig abgesichert ist. Im `auto`-Modus verbleibt ein Restrisiko fehlerhafter Veröffentlichungen.
+
+---
+
+## 7.3 Diskussion der Betriebsmodi
+
+Die drei Betriebsmodi (`auto`, `coop`, `manual`) wurden in Kapitel 4.3.3 konzipiert und in Kapitel 6.9 evaluiert. Im Folgenden werden die Implikationen der Evaluationsergebnisse für den praktischen Einsatz diskutiert.
+
+### 7.3.1 Auto-Modus: Geschwindigkeit auf Kosten der Kontrolle
+
+Der `auto`-Modus eliminiert die menschliche Latenz vollständig — Einträge werden direkt mit Status `published` erstellt. Die Stärke dieses Modus liegt in der Geschwindigkeit: Eine geschätzte Ø TTP von ≈ 3,4–5,9 s (vgl. Abschnitt 6.9.2) ist im Liveticker-Kontext kaum wahrnehmbar. Das Risiko besteht in unkontrollierten Halluzinationen, die ohne redaktionelle Prüfung veröffentlicht werden. Im journalistischen Kontext, in dem Glaubwürdigkeit eine zentrale Ressource darstellt (Beils 2023, S. 57), ist dieser Modus daher nur für unkritische Event-Typen (z. B. Phasenwechsel wie „Anpfiff" oder „Halbzeit") vertretbar.
+
+### 7.3.2 Coop-Modus: Der intendierte Produktivbetrieb
+
+Der `coop`-Modus (vgl. 4.3.3) bildet den Kern der Arbeit ab: Das Human-in-the-Loop-Design balanciert zwei gegenläufige Anforderungen: Die kognitive Last des Textverfassens entfällt, während jeder Eintrag vor der Veröffentlichung eine redaktionelle Kontrolle durchläuft. Im Optimalfall reduziert sich die Redakteursarbeit auf einen Tastendruck (TAB zur Freigabe).
+
+Im Evaluationszeitraum wurden im Coop-Modus keine Einträge nach Freigabe retrahiert — ein Hinweis darauf, dass die redaktionelle Prüfung als Qualitätsstufe wirksam ist. Ob einzelne Entwürfe vor der Freigabe inhaltlich editiert wurden, wurde nicht systematisch erfasst; Bearbeitungen sind über das Frontend jedoch jederzeit möglich.
+
+### 7.3.3 Manual-Modus: Status quo als Vergleichsbasis
+
+Der `manual`-Modus repräsentiert den redaktionellen Status quo und dient primär als Vergleichsbasis für die Effizienzgewinne der KI-gestützten Modi. Hier erstellt der Redakteur alle Ticker-Einträge selbst über den Slash-Command-Parser — ohne KI-Unterstützung, aber mit allen strukturellen Hilfen (Autocomplete, Formatierungsvorschau, Keyboard-Shortcuts). Die typische TTP wird auf Basis der in Kapitel 2.1 beschriebenen Produktionsbedingungen auf 30–120 Sekunden geschätzt, abhängig von Event-Typ und Erfahrungsstand.
+
+Dieser Modus ist nicht als Rückschritt zu verstehen, sondern als genuiner Betriebspfad für Situationen, in denen redaktionelle Eigenständigkeit bewusst priorisiert wird — etwa bei hochkritischen Ereignissen (Spielabbruch, Verletzung) oder bei Redakteuren, die zunächst Vertrauen in das System aufbauen möchten. Die Laufzeit-Umschaltbarkeit zwischen den Modi stellt sicher, dass der `manual`-Modus jederzeit als Rückfalloption verfügbar ist.
+
+### 7.3.4 Implikationen für die Praxis
+
+Die Koexistenz aller drei Modi in einem System — umschaltbar zur Laufzeit per API-Call — ermöglicht eine schrittweise Einführung in Redaktionen: Neue Nutzer können im `manual`-Modus beginnen, über den `coop`-Modus Vertrauen in die KI-Qualität aufbauen und für unkritische Standardereignisse schließlich den `auto`-Modus aktivieren. Diese Graduierung adressiert den in Kapitel 2.1 beschriebenen Akzeptanzbedarf bei der Einführung KI-gestützter Werkzeuge in redaktionelle Workflows.
+
+---
+
+## 7.4 Diskussion der Prompt-Architektur
+
+### 7.4.1 Few-Shot-Prompting als Stilsteuerung
+
+Die dynamische Einbindung von bis zu drei Stilreferenzen aus der `style_references`-Datenbanktabelle stellt einen zentralen Designentscheid dar. Im Vergleich zu einem statischen System-Prompt bietet dieser Ansatz zwei Vorteile:
+
+1. **Anpassbarkeit ohne Codeänderung**: Neue Stilbeispiele können über die Datenbank hinzugefügt werden, ohne den Prompt-Code zu modifizieren.
+2. **Instanzspezifik**: Die Filterung nach Event-Typ und Instanz (`ef_whitelabel` vs. `generic`) ermöglicht unterschiedliche Stilprofile für verschiedene Einsatzkontexte.
+
+Ein kontrollierter A/B-Test (mit vs. ohne Referenzen) war nicht durchführbar (vgl. Kapitel 6.7.5). Qualitativ zeigt die Evaluation konsistente Formatierungsmuster in der `ef_whitelabel`-Instanz — insbesondere bei TOOOOR-Konvention und Minutenformat. Der Effekt ist sichtbar, aber statistisch nicht isoliert messbar.
+
+### 7.4.2 Temperatur und Determinismus
+
+Die gewählte Temperatur von 0,3 für die Textgenerierung und 0,1 für Übersetzungen ist ein Kompromiss zwischen sprachlicher Varianz und Vorhersagbarkeit. Eine niedrigere Temperatur würde die Halluzinationsrate weiter senken, aber die Texte formelhafter machen — ein Zielkonflikt, der im Genre Liveticker (das von Überraschung und sprachlicher Kreativität lebt) besonders relevant ist.
+
+### 7.4.3 Kontext-Aufbereitung
+
+Die sieben spezialisierten Context-Builder (vgl. Abschnitt 5.2.8) strukturieren die Fakten vor der Übergabe an das LLM. Diese Vorverarbeitung reduziert die Wahrscheinlichkeit von Halluzinationen, da das Modell nicht aus unstrukturierten Rohdaten extrahieren muss, sondern bereits aufbereitete Faktenblöcke erhält. Die Wirksamkeit dieses Ansatzes zeigt sich insbesondere bei Pre-Match-Einträgen, wo die Faktengrundlage (z. B. Verletzungslisten, H2H-Statistiken) klar abgegrenzt ist.
+
+---
+
+## 7.5 Implikationen für den Sportjournalismus
+
+### 7.5.1 Veränderung der Redakteursrolle
+
+Das hybride System verschiebt die Rolle des Liveticker-Redakteurs von der **Textproduktion** zur **Textredaktion**: Statt unter Zeitdruck zu formulieren, prüft, editiert und kuratiert der Redakteur KI-generierte Vorschläge. Diese Verschiebung entspricht dem von Bluhm und Schäfer (2023, S. 35) beschriebenen Wandel hin zu einer „augmented authorship", bei der menschliche Expertise und maschinelle Effizienz komplementär zusammenwirken.
+
+Praktisch bedeutet dies, dass der kognitive Engpass der Liveticker-Produktion — die simultane Beobachtung des Spielgeschehens, Relevanzbewertung und Texterstellung unter extremem Zeitdruck (vgl. Kapitel 2.1) — durch das System aufgelöst wird. Die originäre Kompetenz des Redakteurs verlagert sich: Sprachliche Formulierungsfähigkeit tritt in den Hintergrund, während evaluative Kompetenz — das schnelle Erkennen von Stilbrüchen, Faktenfehlern und Tonalitätsabweichungen — zur Kernkompetenz wird. Dies stellt keine Dequalifizierung dar, sondern eine Neukalibrierung: Genre-Expertise und Faktensicherheit bleiben unabdingbar, da ohne sie eine valide Bewertung der KI-Entwürfe nicht möglich ist. Die publizistische Verantwortung — welcher Eintrag veröffentlicht wird — verbleibt vollständig beim Menschen.
+
+### 7.5.2 Skalierbarkeit und White-Label
+
+Die White-Label-Architektur (`ef_whitelabel` vs. `generic`) adressiert den in Kapitel 2.3 beschriebenen strukturellen Wandel der Vereine zu eigenständigen Medienproduzenten. Ein einzelnes System kann — durch Instanzkonfiguration, Stilprofile und Few-Shot-Referenzen — verschiedene redaktionelle Stimmen bedienen, ohne separate Codebases zu erfordern. Für Vereine mit begrenzten Redaktionsressourcen senkt dies die Einstiegshürde in eine professionelle Liveticker-Berichterstattung.
+
+Die Zukunftsperspektive wird im Experteninterview (vgl. Interviewleitfaden, Kap. 2.4) durch folgende Fragen adressiert:
+
+- _F13: Könnten Sie sich vorstellen, KI-generierte Ticker im Regelbetrieb zu nutzen?_
+- _F14: Für welche Spielkategorien wäre ein vollautonomer Modus denkbar — zum Beispiel Testspiele, Jugendspiele, Freundschaftsspiele?_
+
+**Ergebnisse** — Das Interview konnte im Abgabezeitraum nicht durchgeführt werden. Die Skalierbarkeits- und White-Label-Bewertung in diesem Abschnitt stützt sich daher ausschließlich auf die in Kapitel 5 dokumentierte Systemarchitektur und die Deployment-Erfahrung mit der bestehenden `ef_whitelabel`-Instanz. Eine externe Nutzerstudie ist als mittelfristige Erweiterung in Abschnitt 8.3.2 vorgesehen.
+
+### 7.5.3 Ethische Überlegungen
+
+Die automatisierte Generierung journalistischer Texte wirft die Frage der Transparenz auf: Sollten Leser wissen, ob ein Ticker-Eintrag von einem Menschen oder einer KI verfasst wurde? Das System speichert die Herkunft jedes Eintrags im Feld `source` (`"ai"`, `"manual"`), legt die Kennzeichnung gegenüber dem Endnutzer aber nicht offen. Für einen produktiven Einsatz wäre eine Kennzeichnungspflicht — etwa durch ein dezentes Label wie „KI-unterstützt" — zu diskutieren, insbesondere im Kontext der EU-KI-Verordnung (AI Act, EU 2024/1689), deren Transparenzpflichten für bestimmte KI-generierte Inhalte (Art. 50) ab August 2026 gelten.
+
+---
+
+## 7.6 Synthese
+
+Die Diskussion der Evaluationsergebnisse entlang der vier Dimensionen — Abgrenzung zum Stand der Technik, methodische und technische Limitationen, Betriebsmodi und Prompt-Architektur — ergibt ein konsistentes Gesamtbild: Das System löst die in Kapitel 1.1 identifizierten drei Problemdimensionen (Zeitdruck, Mehrsprachigkeit, White-Label-Bedarf) durch technisch nachweisbare Mechanismen; die verbleibenden Schwächen (Stil-Inkonsistenz, fehlende Authentifizierung, eingeschränkte Stichprobengröße) sind klar lokalisiert und lösbar.
+
+Die zentrale Designentscheidung — der `coop`-Modus als primärer Betriebsmodus — erweist sich aus dieser Diskussion heraus als strukturell richtig: Er balanciert die Effizienzgewinne der KI mit der publizistischen Verantwortung des Redakteurs und adressiert damit den in Kapitel 1.2 formulierten Zielkonflikt zwischen Geschwindigkeit und Qualität. Die Verschiebung der Redakteursrolle von der Textproduktion zur Textkuration ist keine Umgehung journalistischer Sorgfalt, sondern ihre Neukalibrierung unter den Bedingungen der Echtzeit-Berichterstattung.
+
+Die offenen Punkte — externe Nutzerstudie, Authentifizierungsschicht, A/B-Vergleich Few-Shot vs. ohne — definieren den nächsten Entwicklungsschritt, der in Kapitel 8.3 als konkreter Ausblick formuliert wird.

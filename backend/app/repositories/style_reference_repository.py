@@ -1,9 +1,27 @@
+"""
+StyleReferenceRepository
+========================
+Datenbankzugriff für Few-Shot Stilreferenzen.
+Liefert zufällige Beispieltexte nach Event-Typ und Instanz (generic / ef_whitelabel).
+"""
+
 from sqlalchemy.orm import Session
 from sqlalchemy.sql import func
 from app.models.style_reference import StyleReference
 
 
 class StyleReferenceRepository:
+    # Fallback: wenn für einen event_type keine Referenzen existieren,
+    # auf einen verwandten Typ zurückfallen.
+    _FALLBACK_MAP: dict[str, str] = {
+        "kick_off": "comment",
+        "halftime": "halftime_comment",
+        "fulltime": "post_match",
+        "extra_time_start": "comment",
+        "extra_halftime": "halftime_comment",
+        "penalty_shootout": "comment",
+    }
+
     def __init__(self, db: Session):
         self.db = db
 
@@ -28,35 +46,35 @@ class StyleReferenceRepository:
         ]
 
         if league:
-            results = (
-                self.db.query(StyleReference)
-                .filter(*base_filters, StyleReference.league == league)
-                .order_by(func.random())
-                .limit(limit)
-                .all()
+            results = self._random_sample(
+                base_filters + [func.lower(StyleReference.league) == league.lower()],
+                limit,
             )
             if len(results) >= limit:
                 return results
             # Fallback: ohne League-Filter
-            return (
-                self.db.query(StyleReference)
-                .filter(*base_filters)
-                .order_by(func.random())
-                .limit(limit)
-                .all()
-            )
 
+        results = self._random_sample(base_filters, limit)
+        if results:
+            return results
+
+        # Fallback auf verwandten event_type
+        fallback = self._FALLBACK_MAP.get(event_type)
+        if fallback:
+            fallback_filters = [
+                StyleReference.event_type == fallback,
+                StyleReference.instance == instance,
+                func.length(StyleReference.text) >= min_text_length,
+            ]
+            return self._random_sample(fallback_filters, limit)
+
+        return []
+
+    def _random_sample(self, filters: list, limit: int) -> list[StyleReference]:
         return (
             self.db.query(StyleReference)
-            .filter(*base_filters)
+            .filter(*filters)
             .order_by(func.random())
             .limit(limit)
             .all()
         )
-
-    def bulk_insert(self, records: list[dict]) -> int:
-        """Für n8n-Import: Liste von Dicts einfügen."""
-        objs = [StyleReference(**r) for r in records]
-        self.db.bulk_save_objects(objs)
-        self.db.commit()
-        return len(objs)

@@ -1,0 +1,65 @@
+\chapter{Einleitung}\label{einleitung}
+
+Ein Liveticker ist eine Form der Echtzeit-Berichterstattung, bei der Spielereignisse und redaktionelle Einordnungen eines Fußballspiels fortlaufend als kurze Texteinträge publiziert werden (vgl. Hauser 2008, S.~1; Bluhm \& Schäfer 2023, S.~24--27). Der Liveticker hat sich dabei zur zentralen Darstellungsform digitaler Sportkommunikation entwickelt: Vereine und Medien berichten in Echtzeit auf eigenen Plattformen, direkt und ohne klassischen Redaktionsumweg (vgl. Beils 2023, S.~8 u.~155). Dieser strukturelle Wandel erhöht den Tempo- und Qualitätsdruck auf Redakteure erheblich und macht technologische Unterstützung zu einer strukturellen Notwendigkeit.
+
+\section{Problemstellung und
+Zielsetzung}\label{problemstellung-und-zielsetzung}
+
+„Ein vernünftiger Live-Ticker ist fast unmöglich zu schreiben. Denn sein
+Konzept ist die komplette Überforderung. Des Autors. Des Schreibens. Und
+der Wirklichkeit.'' Mit diesen Worten beschreibt der Journalist
+Constantin Seibt das Grundproblem der Liveticker-Berichterstattung, eine
+Einschätzung, die im modernen digitalen Sportjournalismus bis heute
+nichts an Aktualität verloren hat (Seibt, zit. n. Beils 2023, S. 56). Der
+Liveticker hat sich zur prägenden Darstellungsform der
+Echtzeit-Berichterstattung im Profifußball entwickelt und stellt Redaktionen vor strukturelle Herausforderungen, die mit rein manuellen Mitteln nicht zu bewältigen sind.
+
+Daraus lassen sich drei strukturelle Herausforderungen ableiten, die den Einsatz technologischer Lösungen notwendig machen. Erstens zwingt der \textbf{operative Zeitdruck} Redakteure dazu, Spielereignisse in Echtzeit zu beobachten, einzuordnen und in stilistisch kohärente Kurztexte zu überführen, typischerweise in Abständen von ein bis drei Minuten (vgl. Walter 2020, S.~29; Bluhm \& Schäfer 2023, S.~27 u.~35). Zweitens stehen Redaktionen vor wachsenden \textbf{Internationalisierungsanforderungen}: Profifußballvereine bedienen zunehmend internationale Fanbases (vgl. Beils 2023, S.~219) und müssen Inhalte parallel in mehreren Sprachen bereitstellen, was in der redaktionellen Praxis ohne entsprechendes mehrsprachiges Personal kaum aufrechtzuerhalten ist. Drittens vollzieht sich ein \textbf{struktureller Wandel} der Vereine zu eigenständigen Medienproduzenten, die Redaktionswerkzeuge mit konfigurierbarem vereinsspezifischem Ton und CI-konformer Gestaltung benötigen (vgl. Beils 2023, S.~8 u.~155).
+
+Kapitel~2 vertieft diese Dimensionen literaturgestützt und leitet daraus konkrete Systemanforderungen ab.
+
+Ziel der Arbeit ist ein produktionsfähiges Redaktionssystem, das diesen Konflikt durch den Einsatz von \textbf{Large Language Models} auflöst, während Entscheidungshoheit und publizistische Verantwortung beim Menschen verbleiben. Das System wird in zwei Ausprägungen realisiert: einer generischen Instanz für beliebige Vereine sowie einer vereinsspezifischen White-Label-Instanz am Beispiel Eintracht Frankfurt.
+
+Um das Ziel zu operationalisieren, definiert und evaluiert die Arbeit drei Betriebsmodi: (1)~\texttt{manual} als vollmanuell erstellte Vergleichsbasis, (2)~\texttt{auto} mit KI-basierter Texterstellung und Publikation ohne menschliches Korrektiv sowie (3)~\texttt{coop} als hybrider Modus aus KI-Vorschlag und redaktioneller Prüfung vor Freigabe.
+
+
+
+\section{Forschungsfrage}\label{forschungsfrage}
+
+Aus der vorstehenden Zielsetzung ergibt sich folgende Forschungsfrage, die der vorliegenden Arbeit zugrunde liegt:
+
+\begin{quote}
+Lässt sich ein hybrides KI-gestütztes Redaktionssystem für die
+Liveticker-Erstellung im Profifußball realisieren, das
+Echtzeit-Verarbeitung, Mehrsprachigkeit und White-Label-Betrieb
+unterstützt, und inwiefern erfüllt ein solches System journalistische
+Qualitätsanforderungen hinsichtlich Korrektheit, Tonalität und
+Verständlichkeit?
+\end{quote}
+
+Die Arbeit leistet damit einen konstruktiven Design-Science-Beitrag (vgl. Hevner et al.~2004): Sie prüft, ob ein System realisierbar ist, das Echtzeitanforderungen, Mehrsprachigkeit und White-Label-Betrieb erfüllt und journalistische Qualitätskriterien einhält. Die Methodik beschreibt Abschnitt~\ref{methodisches-vorgehen}; die vollständige Beantwortung folgt in Kapitel~\ref{fazit-und-ausblick}.
+
+
+
+\section{Methodisches Vorgehen}\label{methodisches-vorgehen}
+
+Die Arbeit folgt einem konstruktiven Forschungsansatz im Sinne des
+\textbf{Design Science Research} (vgl. Hevner et al.~2004): Ein
+softwarebasiertes Artefakt wird als Antwort auf ein identifiziertes
+Praxisproblem entworfen, implementiert und evaluiert. Der
+Erkenntnisgewinn entsteht nicht nur aus der Evaluation, sondern
+auch aus dem Entwurfs- und Implementierungsprozess selbst. Einige Primärquellen zur Liveticker-Linguistik und zur journalistischen Praxis (insb. Seibt, Marx/Weidacher, Schwitalla, Burkhardt) sind in den zitierten Sekundärwerken (Beils 2023; Walter 2020; Bluhm \& Schäfer 2023) eingebettet. Eine direkte Einsicht in diese Primärquellen war im Rahmen dieser Arbeit nicht möglich. Die entsprechenden Zitate folgen den Sekundärquellen.
+
+Das methodische Vorgehen gliedert sich in fünf Phasen. Die \textbf{Problemanalyse und Anforderungserhebung} vertieft literaturgestützt die Problemdimensionen und leitet funktionale sowie nicht-funktionale Anforderungen ab. Die \textbf{Technologierecherche} arbeitet den Stand der Technik in den relevanten Bereichen auf und bewertet ihn hinsichtlich der Eignung für das identifizierte Problem. Die \textbf{Systemkonzeption} entwirft eine dreischichtige Systemarchitektur mit Datenmodell, LLM-Pipeline und Prompt-Design. Die \textbf{Implementierung} setzt das System als produktionsfähige Webanwendung mit vollständiger API, browserbasiertem Frontend, automatisiertem ETL-System (Extract-Transform-Load) und Cloud-Deployment um. Die \textbf{Evaluation} umfasst technische Qualitätssicherung, Bewertung der KI-Textgenerierung sowie einen systematischen Anforderungsabgleich.
+
+Die Evaluationsmethodik operationalisiert die Forschungsfrage anhand der drei Qualitätsdimensionen Korrektheit, Tonalität und Verständlichkeit: Eine manuelle Bewertung von 40 KI-generierten Ticker-Einträgen bildet die Hauptevaluation; eine ergänzende LLM-as-Judge-Evaluation (vgl. Zheng et al.~2023) erweitert die Datenbasis mit einem unabhängigen Bewertungsmodell. Ein strukturiertes Experteninterview mit einem Digitalverantwortlichen von Eintracht Frankfurt validiert die Systemeignung im Praxiskontext. Die vollständige Evaluationsmethodik ist in Kapitel~\ref{evaluation} beschrieben.
+
+\section{Abgrenzung}\label{abgrenzung}
+
+Die Praxisorientierung dieser Arbeit ergibt sich aus der Kooperation mit der Stackwork GmbH im IT-Bereich von Eintracht Frankfurt; die Anforderungen wurden iterativ mit professionellen Redakteuren und der Redaktionsleitung verfeinert. Bewusst ausgeklammert bleiben: systematische Nutzerstudien, eine Vollkostenanalyse, der systematische Vergleich mit kommerziellen Systemen, eine Authentifizierungsschicht sowie der Langzeitbetrieb über eine vollständige Spielsaison. Diese Einschränkungen werden nach der Evaluation in Abschnitt~\ref{kritische-reflexion} kritisch reflektiert.
+
+
+
+\section{Aufbau der Arbeit}\label{aufbau-der-arbeit}
+
+Die vorliegende Arbeit gliedert sich in acht Kapitel. Kapitel~\ref{motivation-und-anforderungen} vertieft die drei Problemdimensionen und leitet die formalen Systemanforderungen am Fallbeispiel Eintracht Frankfurt ab. Kapitel~\ref{stand-der-technik} arbeitet die technologischen Grundlagen auf: Large Language Models, Prompt Engineering, automatisierte Sportberichterstattung inkl. linguistischer Genremerkmale des Livetickers, Echtzeit-Technologien sowie Backend-, Frontend- und Deployment-Technologien. Kapitel~\ref{systemkonzeption} beschreibt die dreischichtige Systemarchitektur mit Datenmodell, LLM-Pipeline und Prompt-Design. Kapitel~\ref{implementierung} dokumentiert die Umsetzung als produktionsfähige Webanwendung mit TypeScript-Frontend, REST-API, n8n-ETL-System und Cloud-Deployment. Kapitel~\ref{evaluation} evaluiert die technische Qualität, die KI-Textgenerierung und gleicht alle Anforderungen systematisch ab. Kapitel~\ref{diskussion} ordnet die Ergebnisse in den Stand der Technik ein, reflektiert Limitationen, diskutiert Betriebsmodi und Prompt-Architektur, erörtert Implikationen für den Sportjournalismus und ordnet den KI-Einsatz ethisch sowie regulatorisch ein. Kapitel~\ref{fazit-und-ausblick} fasst die Erkenntnisse zusammen, beantwortet die Forschungsfrage und gibt einen Ausblick auf Erweiterungen.
