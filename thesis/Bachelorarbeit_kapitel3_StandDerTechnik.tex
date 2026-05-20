@@ -55,8 +55,6 @@ Ein weiterer zentraler Steuerungsparameter ist die \textbf{Temperature},
 die die Wahrscheinlichkeitsverteilung der Token-Auswahl beeinflusst
 (vgl. Brown et al.~2020). Niedrige Werte (z.\,B. 0,0--0,3) führen zu deterministischeren, faktentreueren Ausgaben; höhere Werte (z.\,B. 0,7--1,0) erhöhen die kreative Varianz. Für den Liveticker-Kontext, in dem formelhaft wirkende Texte die Rezeptionsqualität beeinträchtigen (vgl. Clerwall 2014, S.~529; Boisserée, zit. n. Beils 2023, S.~207), ist ein mittlerer Wert als Balance aus Faktentreue und sprachlicher Lebendigkeit geeignet. Für Übersetzungsaufgaben, bei denen semantische Abweichungen vom Originaltext minimiert werden sollen, sind niedrigere Werte geeignet. Die konkrete Parameterwahl des vorliegenden Systems wird in Abschnitt~\ref{prompt-engineering-strategie} begründet.
 
-Ein weiterer praktischer Constraint ist das \textbf{Kontextfenster} (Context Window): Jedes LLM kann nur eine begrenzte Token-Anzahl pro Aufruf verarbeiten, je nach Modell mehrere Tausend bis mehrere Hunderttausend Token. Jeder Few-Shot-Beispielblock, jeder Kontextbaustein und die Aufgabenbeschreibung verbrauchen Token und begrenzen damit die Anzahl sinnvoll einzubettender Stilreferenzen. Die optimale Anzahl von Few-Shot-Beispielen ist damit eine Abwägung zwischen Stilsteuerungstiefe und verfügbarem Kontextfenster.
-
 Abschnitt~\ref{prompt-engineering-strategie} erläutert die konkrete Prompt-Struktur, Few-Shot-Beispiele und Temperatur-Konfiguration des vorliegenden Systems.
 
 
