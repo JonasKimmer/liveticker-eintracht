@@ -229,7 +229,7 @@ Matchzustand, Spielminute und Liga.
 \texttt{call\_llm()} ist der zentrale, Semaphore-gesicherte LLM-Aufruf.
 Er lädt zunächst aus dem \texttt{StyleReferenceRepository} bis zu drei
 Stilbeispiele für \texttt{event\_type\ +\ instance\ +\ league} als
-Few-Shot-Kontext (vgl. Abschnitt~\ref{prompt-engineering} zur Token-Abwägung beim Few-Shot-Prompting) und delegiert dann an \texttt{generate\_ticker\_text()}:
+Few-Shot-Kontext und delegiert dann an \texttt{generate\_ticker\_text()}:
 
 \begin{Shaded}
 \begin{Highlighting}[]
