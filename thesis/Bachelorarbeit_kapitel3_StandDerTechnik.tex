@@ -43,7 +43,7 @@ vortrainierte Modell direkt und steuern dessen Verhalten ausschließlich
 Innerhalb des Prompting-Paradigmas lassen sich zwei wesentliche Techniken unterscheiden. Beim \textbf{Zero-Shot Prompting} erhält das Modell ausschließlich eine Aufgabenbeschreibung ohne Demonstrationsbeispiele (vgl. Brown et al.~2020, S.~7). Dieser Ansatz maximiert Flexibilität und eignet sich für generische Anwendungsfälle ohne spezifische Stilerwartungen. Beim \textbf{Few-Shot Prompting} werden dem Modell neben der Aufgabenbeschreibung zusätzlich wenige Beispiele als Stilreferenz bereitgestellt (vgl. Brown et al.~2020, S.~6), die das Modell auf eine gewünschte Tonalität konditionieren, ohne dass modellseitiges Fine-tuning erforderlich ist. 
 Ergänzend hat sich das \textbf{Role Prompting} als eigenständige Technik etabliert: Durch die explizite Zuweisung einer Persona (z.\,B. „Du bist ein Sportredakteur von Eintracht Frankfurt'') werden Modelle auf eine konsistente sprachliche Identität verpflichtet. Rollenbasierte Instruktionen verbessern nachweislich die Ausgabekonsistenz bei stilistisch definierten Aufgaben (vgl. Shanahan et al.~2023, S.~3).
 
-Moderne Chat-Modelle unterscheiden strukturell zwischen zwei
+Role Prompting wird dabei typischerweise im System Prompt verankert. Moderne Chat-Modelle unterscheiden strukturell zwischen zwei
 Prompt-Rollen (OpenAI 2024; Anthropic 2024): Der \textbf{System Prompt} legt die übergeordnete Persona
 und Constraints des Modells fest (z.\,B. Stilanforderungen, inhaltliche
 Grenzen, Ausgabeformat), während der \textbf{User Prompt} die konkrete
