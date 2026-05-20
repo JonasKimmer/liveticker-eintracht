@@ -92,10 +92,7 @@ Datenschutzeinschränkungen und eingeschränkter Kontrolle über
 Ausführungsumgebung und Kosten. Self-hostbare Plattformen wie n8n
 ermöglichen dagegen den Betrieb in der eigenen Infrastruktur, bieten
 volle Kontrolle über Datenflüsse (vgl. Nakavisute \& Sincharoonsak 2025)
-und erlauben den direkten Datenbankzugriff, ein entscheidender
-Vorteil, wenn Workflows transaktionale Schreiboperationen direkt in die
-Persistenzschicht ausführen sollen, ohne den Umweg über HTTP-Endpunkte
-nehmen zu müssen (vgl. Venkiteela 2025, S.~4).
+und erlauben den direkten Datenbankzugriff für transaktionale Schreiboperationen in die Persistenzschicht, ergänzend zu HTTP-basierten Integrationen für Dienste mit eigener API-Schicht (vgl. Venkiteela 2025, S.~4).
 
 Für Echtzeitanwendungen wie Liveticker ist zusätzlich die \textbf{Latenz
 der Orchestrierung} kritisch. Während klassische Batch-ETL-Prozesse mit
