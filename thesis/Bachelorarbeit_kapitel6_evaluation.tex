@@ -6,7 +6,7 @@ Dieses Kapitel evaluiert das in Kapitel~\ref{systemkonzeption} konzipierte und i
 \section{Evaluation der
 KI-Textgenerierung}\label{evaluation-der-ki-textgenerierung}
 
-Die Evaluation der KI-Textgenerierung bewertet, inwiefern das System journalistische Qualitätsanforderungen hinsichtlich Korrektheit, Tonalität und Verständlichkeit erfüllt. Sie gliedert sich in den Einfluss der Stilprofile (Abschnitt~\ref{einfluss-der-stilprofile}), die qualitative Textbewertung (Abschnitt~\ref{qualitative-analyse-der-generierten-texte}), die Experteninterview-Auswertung (Abschnitt~\ref{experteninterview-auswertung}) und die erweiterte LLM-as-Judge-Evaluation (Abschnitt~\ref{erweiterte-evaluation}).
+Die Evaluation der KI-Textgenerierung bewertet, inwiefern das System journalistische Qualitätsanforderungen hinsichtlich Korrektheit, Tonalität und Verständlichkeit erfüllt. Sie gliedert sich in den Einfluss der Stilprofile (Abschnitt~\ref{einfluss-der-stilprofile}), die qualitative Textbewertung (Abschnitt~\ref{qualitative-analyse-der-generierten-texte}), die Experteninterview-Auswertung (Abschnitt~\ref{experteninterview-auswertung}), die erweiterte LLM-as-Judge-Evaluation (Abschnitt~\ref{erweiterte-evaluation}) sowie die funktionale Verifikation der Mehrsprachigkeit (Abschnitt~\ref{mehrsprachige-verifikation}).
 
 \subsection{Einfluss der Stilprofile}\label{einfluss-der-stilprofile}
 
@@ -225,6 +225,20 @@ euphorisch  & 27 & 3{,}22 & 2{,}93 & 3{,}67 & 3{,}27 \\
 \emph{K = Korrektheit, T = Tonalität, V = Verständlichkeit (je 1--5). Bewerter: Claude Sonnet~4.5 via OpenRouter. Datenbasis: Football API~v3, Bundesliga Saison 2025/26, 30~Spiele.}
 
 Die LLM-as-Judge-Evaluation bestätigt Korrektheit (4{,}12) und Verständlichkeit (4{,}35) auf einem mit der Hauptevaluation konsistenten Niveau. Das neutrale Stilprofil erzielt den höchsten Gesamtwert (4{,}82), das kritische Profil liegt mit 4{,}32 im soliden Bereich. Das euphorische Profil bleibt mit 3{,}27 deutlich schwächer, insbesondere beim Tonalitätswert (2{,}93). Wechsel-Einträge erzielen im euphorischen Profil die schwächsten Werte (Korrektheit 2{,}92, Gesamt 3{,}21). Tore (Ø~4{,}33) und Rote Karten (Ø~4{,}75) erreichen hingegen konsistent hohe Werte. Ursachenanalyse und Einordnung der Diskrepanz zum Hauptevaluations-Tonalitätswert erfolgen in Abschnitt~\ref{diskussion-der-prompt-architektur}.
+
+
+\subsection{Funktionale Verifikation der Mehrsprachigkeit}\label{mehrsprachige-verifikation}
+
+Zur Verifikation von F7 (Mehrsprachige Textgenerierung) wurden 21 Einträge eines Pokalspiels (FV Engers~07 vs.\ Eintracht Frankfurt) mit dem Sprachparameter \texttt{es} (Spanisch) generiert. Alle 21 Aufrufe lieferten Status \texttt{ok} bei Modell \texttt{google/gemini-2.0-flash-lite-001} (Temperatur~0{,}5). Die Generierung verteilte sich auf drei Stilprofile (\texttt{neutral}, \texttt{euphorisch}, \texttt{kritisch}) und drei Event-Typen (Tore, Gelbe Karten, Wechsel).
+
+Die Ausgaben zeigen, dass sprachspezifische Ausdruckskonventionen im Prompt-Kontext adaptiert werden. Das deutsche Tor-Format \texttt{TOOOOR!} erscheint als \texttt{GOOOOL!}, die Minutenangabe als \texttt{Minuto~44:} statt \texttt{44.~Minute:}. Zwei Beispieltexte illustrieren die Generierung:
+
+\begin{itemize}\tightlist
+\item \textbf{Tor, Stilprofil \texttt{neutral}} (44.~Minute): \emph{„MINUTO 44: ¡¿QUÉ ESTÁ PASANDO?! ¡Bahoya! ¡SÍÍÍ! ¡GOOOOL! ¡Esto es un infierno! ¡0-1!"}
+\item \textbf{Gelbe Karte, Stilprofil \texttt{euphorisch}} (23.~Minute): \emph{„Minuto 23: ¡Amarilla para Kristensen! ¡El jugador del Frankfurt derriba a nuestro hombre! ¡Falta para el Engers!"}
+\end{itemize}
+
+Der Tor-Eintrag mit Stilprofil \texttt{neutral} weist eine euphorische Tonalität auf, konsistent mit dem in Abschnitt~\ref{einfluss-der-stilprofile} dokumentierten Muster der deutschsprachigen Evaluation. Eine qualitative Bewertung der spanischen Ausgaben liegt nicht vor (vgl.\ Abschnitt~\ref{technische-einordnung}).
 
 
 \section{Performance und
