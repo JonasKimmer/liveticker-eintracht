@@ -283,7 +283,7 @@ Mock & --- & regelbasiert (Templates) & 7 & \textless{} 10 & \textless{}
 
 \emph{Die Provider Gemini (direkt), OpenAI (\texttt{gpt-4o-mini}) und Anthropic (\texttt{claude-haiku-4-5-20251001}) sind architektonisch vollständig integriert, wurden jedoch mangels aktivierter API-Keys im Evaluationszeitraum nicht gemessen.}
 
-Die Latenzmessungen für OpenRouter zeigen eine bimodale Antwortzeit-Verteilung: Die Render-Messserie zeigt 44\,\%
+Die Latenzmessungen für OpenRouter zeigen eine bimodale Antwortzeit-Verteilung. Die Render-Messserie zeigt 44\,\%
 der Messungen unter 300\,ms (mutmaßlich Gemini-seitige Cache-Treffer) und
 56\,\% zwischen 859\,ms und 2\,128\,ms (Kaltgenerierung), Standardabweichung
 695 ms. Diese Bimodalität ist mutmaßlich auf OpenRouter-seitiges Prompt-Caching zurückzuführen. Die direkte Messserie (lokal, n\,=\,9) liegt enger zusammen (695--1\,348\,ms), was auf fehlende Cache-Treffer ohne Render-Warm-up hindeutet. Eine tiefere Diagnose würde OpenRouter-spezifische Latenz-Metriken erfordern, die über die Standard-API nicht zugänglich sind. Im Kontext
@@ -325,7 +325,7 @@ Die n8n-seitige Erkennungslatenz (Polling-Zyklus der Workflows gegen die Footbal
 \section{Anforderungsabgleich
 (Soll-Ist-Vergleich)}\label{anforderungsabgleich-soll-ist-vergleich}\label{technische-qualitätssicherung}
 
-23 der 24 in Abschnitt~\ref{zusammenfassung-der-systemanforderungen} hergeleiteten Anforderungen sind vollständig erfüllt; F7 ist funktional implementiert, eine qualitative Evaluation der Übersetzungsqualität steht als Folgestudie aus (vgl. Abschnitt~\ref{technische-einordnung}). Die folgende Tabelle dokumentiert den Nachweis je Anforderung:
+Der Anforderungsabgleich prüft, ob die 24 in Abschnitt~\ref{zusammenfassung-der-systemanforderungen} hergeleiteten Anforderungen erfüllt sind. 23 davon sind vollständig erfüllt. F7 ist funktional implementiert, eine qualitative Evaluation der Übersetzungsqualität steht als Folgestudie aus (vgl. Abschnitt~\ref{technische-einordnung}). Die folgende Tabelle dokumentiert den Nachweis je Anforderung:
 
 {\def\LTcaptype{none} % do not increment counter
 \begin{longtable}[]{@{}
