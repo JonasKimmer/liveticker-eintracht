@@ -193,10 +193,10 @@ Das Interview gliederte sich in einen Anforderungsvalidierungsteil (Produktionsp
 
 \subsection{Erweiterte Evaluation: LLM-as-Judge-Verfahren}\label{erweiterte-evaluation}
 
-Der \textbf{LLM-as-Judge}-Ansatz bewertet KI-generierte Ausgaben durch ein unabhängiges Sprachmodell anhand definierter Kriterien (Zheng et al.~2023). Voraussetzung ist, dass bewertendes und generierendes Modell verschieden sind, um Selbstreferenzialität zu vermeiden. N\,=\,80 Einträge wurden nach diesem Verfahren automatisiert evaluiert.
+Das \textbf{LLM-as-Judge}-Verfahren (Zheng et al.~2023) bewertet KI-generierte Ausgaben durch ein vom generierenden Modell verschiedenes Sprachmodell und vermeidet so Selbstreferenzialität. N\,=\,80 Einträge wurden nach diesem Verfahren automatisiert evaluiert.
 
 \paragraph{Datenbasis}
-Die Datenbasis umfasst reale Ereignisse aus 30 Bundesliga-Spielen der Saison~2025/26, abgefragt über die Football~API~v3. Die frischere Saison vermeidet Überschneidungen mit der in der Hauptevaluation verwendeten Saison~2024/25. Generierungsmodell: \texttt{google/gemini-2.0-flash-lite-001} (Temperatur~0{,}5). Bewertendes Modell: \texttt{anthropic/claude-sonnet-4-5} via OpenRouter. Abgedeckte Event-Typen: 25~Tore, 25~Gelbe Karten, 4~Rote Karten, 25~Wechsel, 1~Eigentor (je 27 bzw.\ 26~Einträge pro Stilprofil).
+Die Datenbasis umfasst reale Ereignisse aus 30 Bundesliga-Spielen der Saison~2025/26, abgefragt über die Football~API~v3. Die frischere Saison vermeidet Überschneidungen mit der in der Hauptevaluation verwendeten Saison~2024/25. Als Generierungsmodell diente \texttt{google/gemini-2.0-flash-lite-001} (Temperatur~0{,}5), als bewertendes Modell \texttt{anthropic/claude-sonnet-4-5} via OpenRouter. Abgedeckt wurden 25~Tore, 25~Gelbe Karten, 4~Rote Karten, 25~Wechsel und 1~Eigentor (je 27 bzw.\ 26~Einträge pro Stilprofil).
 
 \paragraph{Bewertungsprotokoll}
 \texttt{claude-sonnet-4-5} wurde per Systemprompt als unabhängiger Qualitätsbewerter instruiert. Bewertungsdimensionen (Korrektheit, Tonalität, Verständlichkeit, je 1--5) und operationale Definitionen sind identisch mit der manuellen Evaluation (vgl. Abschnitt~\ref{qualitative-analyse-der-generierten-texte}). Die Ausgabe erfolgte als strukturiertes JSON mit den drei Scores und einer einzeiligen Begründung.
