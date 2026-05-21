@@ -265,7 +265,7 @@ Die 26 LLM-Aufrufe liegen zwischen 876\,ms und 4\,226\,ms (Median 3\,338\,ms, Mi
 
 \section{Latenzpotenzial der Betriebsmodi}\label{evaluation-der-betriebsmodi}
 
-Die drei Betriebsmodi unterscheiden sich strukturell in ihrer erreichbaren Publikationslatenz. Auf Basis der gemessenen LLM-Latenzen (Median 3\,338~ms, P95 3\,698~ms, vgl. Abschnitt~\ref{llm-latenz}) und des 15-Sekunden-Polling-Intervalls im Live-Modus (vgl. Abschnitt~\ref{frontend-polling}) ergibt sich für den \texttt{auto}-Modus eine architekturbasierte Time-to-Publish von ≈ 4--19~s (LLM-Generierung: 3--4~s, Frontend-Polling: bis zu 15~s), verglichen mit der manuellen Baseline von 30--120~s (Abschnitt~\ref{zeitdruck-und-fehleranfaelligkeit}). Die folgende Tabelle schlüsselt die Latenzkomponenten auf:
+Die drei Betriebsmodi unterscheiden sich strukturell in ihrer erreichbaren Publikationslatenz. Auf Basis der gemessenen LLM-Latenzen (Median 3\,338~ms, P95 3\,698~ms, vgl. Abschnitt~\ref{llm-latenz}) und des 15-Sekunden-Polling-Intervalls im Live-Modus (vgl. Abschnitt~\ref{frontend-polling}) ergibt sich für den \texttt{auto}-Modus eine architekturbasierte Time-to-Publish von ≈ 5--30~s (Football-API-Aufruf 74~ms, n8n-Verarbeitung und Backend-HTTP ~1,3~s, LLM-Generierung 3,3~s, Erkennungsverzögerung bis 10~s, Frontend-Polling bis 15~s), verglichen mit der manuellen Baseline von 30--120~s (Abschnitt~\ref{zeitdruck-und-fehleranfaelligkeit}). Die folgende Tabelle schlüsselt die Latenzkomponenten auf:
 
 {\def\LTcaptype{none}
 \begin{longtable}[]{@{}llll@{}}
@@ -275,12 +275,12 @@ Komponente & Gemessen? & Typischer Wert & Quelle \\
 \endhead
 \bottomrule\noalign{}
 \endlastfoot
-n8n-Polling (Football-API) & Nein & $\sim$5--10~s & geschätzt \\
-n8n → Backend (HTTP) & Nein & $\sim$100--200~ms & geschätzt \\
+n8n-Polling (Football-API) & Teilw. & API: 74~ms; Erkennungsverzögerung: bis 10~s & gemessen / geschätzt \\
+n8n → Backend (HTTP) & Teilw. & $\sim$1\,300~ms & gemessen (äquiv. Netzwerkposition) \\
 Backend → LLM → Backend & Ja & 3\,338~ms Median & Abschnitt~\ref{llm-latenz} \\
 Backend → DB & Nein & $<$50~ms & geschätzt \\
 Frontend-Polling & Ja & bis 15~s & Abschnitt~\ref{frontend-polling} \\
-\textbf{Gesamt TTP (auto)} & Nein & $\approx$\,4--19~s & Potenzialschätzung \\
+\textbf{Gesamt TTP (auto)} & Nein & $\approx$\,5--30~s & Potenzialschätzung \\
 \end{longtable}
 }
 
