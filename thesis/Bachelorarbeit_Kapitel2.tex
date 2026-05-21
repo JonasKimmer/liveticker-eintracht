@@ -85,7 +85,7 @@ Diese Defizite spiegeln die drei in Abschnitt~\ref{problemstellung-und-zielsetzu
 \section{Zusammenfassung der
 Systemanforderungen}\label{zusammenfassung-der-systemanforderungen}
 
-Aus den vorangegangenen Problemdimensionen ergeben sich 24 formale Anforderungen. Sie gliedert sich in funktionale Anforderungen (Abschnitt~\ref{funktionale-anforderungen}), nicht-funktionale Anforderungen (Abschnitt~\ref{nicht-funktionale-anforderungen}) und Architektur-Anforderungen (Abschnitt~\ref{architektur-anforderungen}). Abschnitt~\ref{anforderungsabgleich-soll-ist-vergleich} überprüft jeden Punkt gegen den implementierten Stand.
+Die folgenden 24 Anforderungen fassen die aus den Problemdimensionen hergeleiteten sowie technisch und architektonisch motivierten Systemeigenschaften zusammen. Sie gliedern sich in funktionale Anforderungen (Abschnitt~\ref{funktionale-anforderungen}), nicht-funktionale Anforderungen (Abschnitt~\ref{nicht-funktionale-anforderungen}) und Architektur-Anforderungen (Abschnitt~\ref{architektur-anforderungen}). Abschnitt~\ref{anforderungsabgleich-soll-ist-vergleich} überprüft jeden Punkt gegen den implementierten Stand.
 
 \subsection{Funktionale Anforderungen}\label{funktionale-anforderungen}
 
@@ -108,10 +108,10 @@ Herleitung
 \endlastfoot
 F1 & Drei Betriebsmodi (\texttt{auto}, \texttt{coop}, \texttt{manual}) & Kap.~\ref{problemstellung-und-zielsetzung}, \ref{redaktioneller-aufwand-bei-livetickern} \\
 F2 & KI-Textgenerierung für alle Event-Typen & Kap.~\ref{redaktioneller-aufwand-bei-livetickern}, \ref{anforderungsanalyse-am-beispiel-eintracht-frankfurt} \\
-F3 & Drei Stilprofile (neutral, euphorisch, kritisch) & Kap.~\ref{white-label-bedarf-im-profisport}, \ref{anforderungsanalyse-am-beispiel-eintracht-frankfurt} \\
+F3 & Drei Stilprofile (neutral, euphorisch, kritisch) & Kap.~\ref{white-label-bedarf-im-profisport}, \ref{prompt-engineering-strategie} \\
 F4 & Few-Shot-Prompting mit Stilreferenzen & Kap.~\ref{white-label-bedarf-im-profisport}, \ref{prompt-engineering} \\
 F5 & Ticker-Lifecycle (draft → published / rejected / deleted) & Kap.~\ref{redaktioneller-aufwand-bei-livetickern} \\
-F6 & Slash-Command-Parser für manuellen Modus & Kap.~\ref{redaktioneller-aufwand-bei-livetickern} (Zeitdruck) \\
+F6 & Schnelle manuelle Ticker-Erstellung im \texttt{manual}-Modus & Kap.~\ref{redaktioneller-aufwand-bei-livetickern} (Zeitdruck) \\
 F7 & Mehrsprachige Textgenerierung (Deutsch, Englisch; erweiterbar auf
 weitere Sprachen) & Kap.~\ref{mehrsprachigkeit-als-herausforderung} \\
 F8 & Idempotenter Datenimport via n8n & Kap.~\ref{redaktioneller-aufwand-bei-livetickern} (Robustheit) \\
@@ -145,11 +145,8 @@ Herleitung
 \endlastfoot
 N1 & Concurrency-Begrenzung für LLM-Aufrufe & Kap.~\ref{redaktioneller-aufwand-bei-livetickern} (Zeitdruck) \\
 N2 & Retry-Logik mit Rate-Limit-Erkennung & Kap.~\ref{redaktioneller-aufwand-bei-livetickern} (Verfügbarkeit) \\
-N3 & Transaktionale Testisolierung & Technische Qualitätssicherung
-(Echtzeit-Produktionssysteme erfordern Testisolierung aufgrund der
-Datenbankkopplung) \\
-N4 & TypeScript-Typsicherheit & Technische Qualitätssicherung
-(Wartbarkeit und Fehlervermeidung im Team) \\
+N3 & Transaktionale Testisolierung & Kap.~\ref{redaktioneller-aufwand-bei-livetickern} (Echtzeit-Betrieb erfordert datenbankisolierte Tests zur Absicherung unter Produktionsbedingungen) \\
+N4 & TypeScript-Typsicherheit & Kap.~\ref{white-label-bedarf-im-profisport} (Mehrinstanz-Betrieb erfordert typsichere Konfigurationsschnittstellen zur Fehlervermeidung) \\
 N5 & Responsive UI (Mobile-tauglich) & Kap.~\ref{redaktioneller-aufwand-bei-livetickern} (Einsatzszenarien) \\
 N6 & Fehlerresistenz im Frontend & Kap.~\ref{redaktioneller-aufwand-bei-livetickern} (Robustheit) \\
 \end{longtable}
@@ -185,4 +182,4 @@ A5 & White-Label-Fähigkeit (vereinsspezifische und generische Instanz) & Kap.~\
 \end{longtable}
 }
 
-Die drei Problemdimensionen (operativer Zeitdruck, Mehrsprachigkeit und White-Label-Bedarf) sind keine isolierten Herausforderungen, sondern greifen strukturell ineinander: Zeitdruck macht menschliche Skalierung unmöglich, Mehrsprachigkeit multipliziert diesen Aufwand, und White-Label-Anforderungen verlangen eine stilistische Konsistenz, die wechselndes Personal nicht zuverlässig gewährleisten kann. Dies macht eine integrierte technologische Lösung notwendig, die KI-gestützte Textgenerierung, mehrsprachige Generierung und konfigurierbare Instanzlogik in einer gemeinsamen Architektur vereint. Die vorstehenden 24 Anforderungen bilden damit das vollständige Pflichtenheft für die Systemkonzeption in Kapitel~\ref{systemkonzeption}; die hierfür notwendigen technologischen Grundlagen werden in Kapitel~\ref{stand-der-technik} aufgearbeitet.
+Die drei Problemdimensionen (operativer Zeitdruck, Mehrsprachigkeit und White-Label-Bedarf) sind keine isolierten Herausforderungen, sondern greifen strukturell ineinander. Zeitdruck macht menschliche Skalierung unmöglich, Mehrsprachigkeit multipliziert diesen Aufwand, und White-Label-Anforderungen verlangen eine stilistische Konsistenz, die wechselndes Personal nicht zuverlässig gewährleisten kann. Eine integrierte Lösung ist daher erforderlich. Die vorstehenden 24 Anforderungen bilden das Pflichtenheft für die Systemkonzeption in Kapitel~\ref{systemkonzeption}. Die hierfür notwendigen technologischen Grundlagen arbeitet Kapitel~\ref{stand-der-technik} auf.
