@@ -49,6 +49,8 @@
   \draw[arrow] (api)  -- (db);
   \draw[arrow] (api)  -- (fe);
   \draw[arrow] (fe)   -- (api);
+  \draw[arrow] (fe.south) to[out=270, in=270, looseness=0.4]
+    node[below, font=\scriptsize] {Webhook-Trigger} (n8n.south);
 
   % Layer labels below boxes
   \node[below=0.25cm of ext_box,  font=\small\itshape] {Externe Dienste};
@@ -136,8 +138,12 @@
   \node[actor] (api) at (12,  0) {Football-API};
 
   % Frontend ↔ Backend (REST)
-  \draw[arrow] ([yshift= 3pt]fe.east)  -- node[above, font=\scriptsize] {GET /matches}   ([yshift= 3pt]be.west);
-  \draw[arrow] ([yshift=-3pt]be.west)  -- node[below, font=\scriptsize] {JSON response}  ([yshift=-3pt]fe.east);
+  \draw[arrow] ([yshift= 6pt]fe.east)  -- node[above, font=\scriptsize] {GET /matches}   ([yshift= 6pt]be.west);
+  \draw[arrow] ([yshift= 2pt]be.west)  -- node[below, font=\scriptsize] {JSON response}  ([yshift= 2pt]fe.east);
+
+  % Backend → Frontend (WebSocket)
+  \draw[arrow, dashed] ([yshift=-3pt]be.west) to[out=210, in=330]
+    node[below, font=\scriptsize, pos=0.5] {WebSocket (/ws/media)} ([yshift=-3pt]fe.east);
 
   % n8n ↔ Football-API
   \draw[arrow] ([yshift= 3pt]n8n.east) -- node[above, font=\scriptsize] {HTTP request}  ([yshift= 3pt]api.west);
@@ -146,6 +152,10 @@
   % n8n → Backend
   \draw[arrow] (n8n.south) to[out=240, in=300]
     node[below, font=\scriptsize, pos=0.5] {POST /api/v1} (be.south);
+
+  % Frontend → n8n (Webhook-Trigger)
+  \draw[arrow] (fe.south) to[out=270, in=270, looseness=0.35]
+    node[below, font=\scriptsize, pos=0.5] {Webhook-Trigger} (n8n.south);
 
 \end{tikzpicture}%
 }
@@ -210,7 +220,7 @@
   \draw[msg]    (1,7.2) -- node[above]{INSERT ticker\_entry (draft|published)} (2,7.2);
   \draw[retmsg] (1,7.9) -- node[above]{201 Created}          (0,7.9);
   % Polling
-  \draw[msg]    (4,8.6) -- node[above]{GET /ticker/\{id\} (Polling 15 s)} (1,8.6);
+  \draw[msg]    (4,8.6) -- node[above]{GET /ticker/\{id\} (Polling 15\,s Live / 20\,s PreMatch)} (1,8.6);
   \draw[retmsg] (1,9.3) -- node[above]{TickerEntry[]}        (4,9.3);
 \end{tikzpicture}%
 }
