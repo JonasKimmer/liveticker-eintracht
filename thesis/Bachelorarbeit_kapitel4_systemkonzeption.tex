@@ -34,11 +34,13 @@ Abbildung~\ref{fig:systemarchitektur} zeigt die drei Schichten mit ihren Technol
 \subsection{Kommunikations- und
 Triggerarchitektur}\label{kommunikations--und-triggerarchitektur}
 
-Der Kommunikationsfluss beginnt mit der Spielauswahl, bei der der Redakteur über Land, Team, Wettbewerb und Spieltag navigiert. Jede Navigationsebene löst einen n8n-Webhook aus, der die entsprechenden Stammdaten von der Football-API abruft und in der Datenbank speichert. Nach der Spielauswahl folgt der initiale Match-Load, der zwei komplementäre Muster kombiniert. Für Aufstellungen, Events und Spielstatistiken folgt das Frontend dem Prinzip \textbf{„read first, trigger if missing''}. Diese werden nur dann per n8n nachgeladen, wenn die REST-Abfrage einen leeren Datenbestand zurückgibt. Prematch-Daten und Spieler-Statistiken hingegen werden beim ersten Öffnen eines Matches stets neu abgerufen.
+Der Kommunikationsfluss gliedert sich in spielzustandsabhängige Phasen: Navigation und Match-Load gelten für jeden Spielaufruf unabhängig vom Status; der Live-Betrieb und die internen Workflow-Ketten sind auf laufende Spiele beschränkt.
 
-Im \textbf{Live-Betrieb} triggert das Frontend Events, Spielstatistiken und Minutenupdates bedingungslos im 60-Sekunden-Takt. Die zugehörigen n8n-Workflows führen serverseitig Upserts mit Konfliktbehandlung durch.
+\textbf{Match-Load: „read first, trigger if missing''.} Der Redakteur navigiert über Land, Team, Wettbewerb und Spieltag zur Spielauswahl, wobei jede Navigationsebene einen n8n-Webhook auslöst, der die zugehörigen Stammdaten von der Football-API abruft und speichert. Nach der Spielauswahl gilt für Aufstellungen, Events und Match-Statistiken das Prinzip \textbf{„read first, trigger if missing''}: Das Frontend fragt per REST ab und löst den n8n-Webhook nur aus, wenn die Datenbank keinen Bestand zurückgibt. Das Muster gilt unabhängig vom Spielstatus — auch für abgeschlossene Spiele, die erstmals geöffnet werden, erfolgt ein Nachladen, wenn die Daten noch nicht persistiert sind. Prematch-Daten und Spieler-Statistiken hingegen werden stets neu abgerufen, da sie zeitkritische Vorbereitungsinformationen enthalten.
 
-Einzelne Workflows rufen zudem intern weitere Workflows auf. Der Minuten-Update-Workflow löst bei erkannter Spielphasenänderung den Anpfiff/Abpfiff-Workflow aus, der seinerseits den Halbzeit-Zusammenfassungs-Workflow anstößt. Das Frontend ist an dieser Kette nicht beteiligt (vgl. Abbildung~\ref{fig:kommunikationsfluss}).
+\textbf{Live-Betrieb.} Das Frontend triggert Events, Spielstatistiken und Minutenupdates bedingungslos im 60-Sekunden-Takt. Die n8n-Workflows führen serverseitig Upserts mit Konfliktbehandlung durch, sodass Mehrfach-Trigger keine Duplikate erzeugen.
+
+\textbf{Phase 4 – Interne Workflow-Ketten.} Einzelne n8n-Workflows lösen intern weitere Workflows aus. Der Minuten-Update-Workflow erkennt Spielphasenänderungen und triggert daraufhin den Anpfiff- bzw. Abpfiff-Workflow, der seinerseits die Halbzeit- oder Abpfiff-Zusammenfassung anstößt. Das Frontend ist an dieser Kette nicht beteiligt (vgl. Abbildung~\ref{fig:kommunikationsfluss}).
 
 Die folgende Tabelle fasst die Trigger-Muster nach Datenquelle zusammen:
 
