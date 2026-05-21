@@ -230,7 +230,7 @@ Die LLM-as-Judge-Evaluation bestätigt Korrektheit (4{,}12) und Verständlichkei
 \section{Performance und
 Laufzeitverhalten}\label{performance-und-laufzeitverhalten}\label{llm-latenz}
 
-Die Concurrency- und Retry-Konfiguration der LLM-Aufrufe ist in Abschnitt~\ref{llm-service-prompt-aufbau-und-provider-dispatch} beschrieben. Erfasste Messgröße war die \textbf{End-to-End-Latenz} (Client → Backend → OpenRouter → Gemini → Backend → Client) als die für die TTP-Analyse relevante Kenngröße. Gemessen wurden 26 sequenzielle HTTP-Aufrufe an das Render-Deployment (\texttt{/api/v1/ticker/generate/\{event\_id\}}) über 13 Bundesliga-Spiele (Saison 2024/25, Eintracht Frankfurt).
+Erfasste Messgröße war die \textbf{End-to-End-Latenz} (Client → Backend → OpenRouter → Gemini → Backend → Client) als die für die TTP-Analyse relevante Kenngröße. Gemessen wurden 26 sequenzielle HTTP-Aufrufe an das Render-Deployment (\texttt{/api/v1/ticker/generate/\{event\_id\}}) über 13 Bundesliga-Spiele (Saison 2024/25, Eintracht Frankfurt).
 
 {\footnotesize\def\LTcaptype{none} % do not increment counter
 \begin{longtable}[]{@{}
