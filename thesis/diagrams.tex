@@ -114,12 +114,12 @@
   \node[entity, below of=match] (team) {Team};
   \node[entity, below of=event] (player) {Player};
   \node[entity, below of=ticker] (media) {Media};
-  
+
   \draw[arrow] (match) -- node[above] {1:N} (event);
   \draw[arrow] (event) -- node[above] {1:N} (ticker);
-  \draw[arrow] (match) -- node[left] {2:1} (team);
+  \draw[arrow] (match) -- node[left] {N:1} (team);
   \draw[arrow] (event) -- node[right] {M:1} (player);
-  \draw[arrow] (ticker) -- node[right] {1:N} (media);
+  \draw[arrow] (match) -- node[above, sloped] {1:N} (media);
 \end{tikzpicture}%
 }
 
@@ -152,30 +152,30 @@
 
 %% DIAGRAM 7: LLM Prompt Engineering Pipeline
 \newcommand{\DiagramPromptPipeline}{%
-\begin{tikzpicture}[node distance=2cm, auto]
-  \tikzset{input/.style={rectangle, draw, fill=orange!15, text width=1.5cm, text centered, minimum height=0.8cm, font=\small}}
-  \tikzset{process/.style={rectangle, draw, fill=blue!15, text width=1.5cm, text centered, minimum height=0.8cm, font=\small}}
-  
-  % Inputs
-  \node[input] (event) {Event\\Type};
-  \node[input, below of=event] (facts) {Facts\\(Player, Time)};
-  \node[input, below of=facts] (context) {Match\\Context};
-  \node[input, below of=context] (style) {Few-Shot\\Examples};
-  
-  % Process
-  \node[process, right of=facts, xshift=2cm] (prompt) {Build\\Prompt};
-  
-  % Output
-  \node[process, right of=prompt, xshift=2cm] (llm) {LLM\\Call};
-  \node[process, right of=llm] (output) {Ticker\\Text};
-  
+\begin{tikzpicture}
+  \tikzset{input/.style={rectangle, draw, fill=orange!15, text width=1.8cm, text centered, minimum height=0.8cm, font=\small}}
+  \tikzset{process/.style={rectangle, draw, fill=blue!15, text width=1.6cm, text centered, minimum height=0.8cm, font=\small}}
+
+  % Inputs (left column, 5 nodes, 1.5cm spacing)
+  \node[input] (event)     at (0,  0)    {Event-Typ};
+  \node[input] (facts)     at (0, -1.5)  {Fakten\\(Spieler, Min.)};
+  \node[input] (stilprofil)at (0, -3)    {Stilprofil};
+  \node[input] (context)   at (0, -4.5)  {Match-\\Kontext};
+  \node[input] (fewshot)   at (0, -6)    {Few-Shot\\Referenzen};
+
+  % Process (centered vertically at -3)
+  \node[process] (prompt) at (3.5, -3)   {Prompt-\\aufbau};
+  \node[process] (llm)    at (6,   -3)   {LLM\\Call};
+  \node[process] (output) at (8.5, -3)   {Ticker-\\Text};
+
   % Connections
-  \draw[arrow] (event) -- (prompt);
-  \draw[arrow] (facts) -- (prompt);
-  \draw[arrow] (context) -- (prompt);
-  \draw[arrow] (style) -- (prompt);
+  \draw[arrow] (event)      -- (prompt);
+  \draw[arrow] (facts)      -- (prompt);
+  \draw[arrow] (stilprofil) -- (prompt);
+  \draw[arrow] (context)    -- (prompt);
+  \draw[arrow] (fewshot)    -- (prompt);
   \draw[arrow] (prompt) -- (llm);
-  \draw[arrow] (llm) -- (output);
+  \draw[arrow] (llm)    -- (output);
 \end{tikzpicture}%
 }
 
