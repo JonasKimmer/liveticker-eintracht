@@ -84,14 +84,7 @@ Das System unterscheidet zwischen Spielen des Partner-Teams und allen übrigen S
 
 Alle übrigen Spiele durchlaufen die generische Instanz mit neutralem Stil. Die konkreten Instanzbezeichner und Implementierungsdetails sind in Kapitel~\ref{implementierung} dokumentiert.
 
-Für die Einrichtung einer neuen Instanz (z.\,B. für einen anderen Bundesligaverein) sind vier Konfigurationsschritte erforderlich:
-
-\begin{enumerate}\tightlist
-\item Vereinsname, Team-Keyword, Farbschema und API-Endpunkte in der Frontend-Konfiguration anpassen (vgl. Abschnitt~\ref{komponentenhierarchie}).
-\item Den vereinsspezifischen Instanzbezeichner in der Backend-Konfiguration registrieren.
-\item In der Few-Shot-Referenztabelle Beispieltexte mit dem neuen Instanzbezeichner anlegen, damit die instanzspezifische Stilkonditionierung greift.
-\item Die relevanten n8n-Workflows um das neue Team-Keyword ergänzen (vgl. Abschnitt~\ref{n8n-workflow-implementierung}).
-\end{enumerate}
+Für eine neue Instanz sind vier Konfigurationsbereiche anzupassen: Frontend-Branding, Backend-Instanzbezeichner, Few-Shot-Referenzen und n8n-Team-Keyword. Die konkrete Umsetzung ist in Kapitel~\ref{implementierung} dokumentiert.
 
 
 
