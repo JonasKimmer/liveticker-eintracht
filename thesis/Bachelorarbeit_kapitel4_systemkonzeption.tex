@@ -34,13 +34,11 @@ Abbildung~\ref{fig:systemarchitektur} zeigt die drei Schichten mit ihren Technol
 \subsection{Kommunikations- und
 Triggerarchitektur}\label{kommunikations--und-triggerarchitektur}
 
-Der Kommunikationsfluss gliedert sich in spielzustandsabhängige Phasen: Navigation und Match-Load gelten für jeden Spielaufruf unabhängig vom Status; der Live-Betrieb und die internen Workflow-Ketten sind auf laufende Spiele beschränkt.
-
-\textbf{Match-Load: „read first, trigger if missing''.} Der Redakteur navigiert über Land, Team, Wettbewerb und Spieltag zur Spielauswahl, wobei jede Navigationsebene einen n8n-Webhook auslöst, der die zugehörigen Stammdaten von der Football-API abruft und speichert. Nach der Spielauswahl gilt für Aufstellungen, Events und Match-Statistiken das Prinzip \textbf{„read first, trigger if missing''}: Das Frontend fragt per REST ab und löst den n8n-Webhook nur aus, wenn die Datenbank keinen Bestand zurückgibt. Das Muster gilt unabhängig vom Spielstatus — auch für abgeschlossene Spiele, die erstmals geöffnet werden, erfolgt ein Nachladen, wenn die Daten noch nicht persistiert sind. Prematch-Daten und Spieler-Statistiken hingegen werden stets neu abgerufen, da sie zeitkritische Vorbereitungsinformationen enthalten.
+\textbf{Match-Load.} Der Redakteur navigiert über Land, Team, Wettbewerb und Spieltag zur Spielauswahl, wobei jede Navigationsebene einen n8n-Webhook auslöst, der die zugehörigen Stammdaten von der Football-API abruft und speichert. Nach der Spielauswahl gilt für Aufstellungen, Events und Match-Statistiken das Prinzip \textbf{„read first, trigger if missing''}: Das Frontend fragt per REST ab und löst den n8n-Webhook nur aus, wenn die Datenbank keinen Bestand zurückgibt. Das Muster greift unabhängig vom Spielstatus, sodass auch erstmals geöffnete abgeschlossene Spiele nachgeladen werden, sofern die Daten noch nicht persistiert sind. Prematch-Daten und Spieler-Statistiken hingegen werden stets neu abgerufen, da sie zeitkritische Vorbereitungsinformationen enthalten.
 
 \textbf{Live-Betrieb.} Das Frontend triggert Events, Spielstatistiken und Minutenupdates bedingungslos im 60-Sekunden-Takt. Die n8n-Workflows führen serverseitig Upserts mit Konfliktbehandlung durch, sodass Mehrfach-Trigger keine Duplikate erzeugen.
 
-\textbf{Phase 4 – Interne Workflow-Ketten.} Einzelne n8n-Workflows lösen intern weitere Workflows aus. Der Minuten-Update-Workflow erkennt Spielphasenänderungen und triggert daraufhin den Anpfiff- bzw. Abpfiff-Workflow, der seinerseits die Halbzeit- oder Abpfiff-Zusammenfassung anstößt. Das Frontend ist an dieser Kette nicht beteiligt (vgl. Abbildung~\ref{fig:kommunikationsfluss}).
+\textbf{Interne Workflow-Ketten.} Einzelne n8n-Workflows lösen intern weitere Workflows aus. Der Minuten-Update-Workflow erkennt Spielphasenänderungen und triggert daraufhin den Anpfiff- bzw. Abpfiff-Workflow, der seinerseits die Halbzeit- oder Abpfiff-Zusammenfassung anstößt. Das Frontend ist an dieser Kette nicht beteiligt (vgl. Abbildung~\ref{fig:kommunikationsfluss}).
 
 Die folgende Tabelle fasst die Trigger-Muster nach Datenquelle zusammen:
 
@@ -71,7 +69,7 @@ Social-Media-Embeds (Twitter, YouTube, Instagram) & n8n-Webhook (on-demand, reda
 \label{fig:kommunikationsfluss}
 \end{figure}
 
-Das System koppelt über drei klar getrennte Schnittstellentypen. Die \textbf{REST-API} bildet den stabilen Kern für alle Lese- und Schreiboperationen: Ticker-CRUD, Statusübergänge und manuelle Eingaben. Das Backend antwortet ausschließlich reaktiv auf eingehende Aufrufe und initiiert selbst keine n8n-Workflows. \textbf{n8n-Webhooks} übernehmen Stammdaten, Match-Kontext und KI-Generierung, wie in der Tabelle unten zusammengefasst. Der \textbf{WebSocket-Kanal \texttt{/ws/media}} übernimmt den Echtzeit-Push für latenzkritische Medieninhalte.
+Das System koppelt über drei klar getrennte Schnittstellentypen. Die \textbf{REST-API} bildet den stabilen Kern für alle Lese- und Schreiboperationen: Ticker-CRUD, Statusübergänge und manuelle Eingaben. Das Backend antwortet ausschließlich reaktiv auf eingehende Aufrufe und initiiert selbst keine n8n-Workflows. \textbf{n8n-Webhooks} übernehmen Stammdaten, Match-Kontext und KI-Generierung, wie in der vorstehenden Tabelle zusammengefasst. Der \textbf{WebSocket-Kanal \texttt{/ws/media}} übernimmt den Echtzeit-Push für latenzkritische Medieninhalte.
 
 Diese hybride Triggerarchitektur bildet die technische Grundlage für die in Abschnitt~\ref{status-lifecycle-und-betriebsmodi} beschriebenen Betriebsmodi. Für den Ticker-Datenfluss wurde Polling gewählt, da die redaktionelle Latenztoleranz keinen Echtzeit-Push erfordert.
 
