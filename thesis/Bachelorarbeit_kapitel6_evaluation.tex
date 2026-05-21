@@ -284,7 +284,7 @@ Frontend-Polling & Ja & bis 15~s & Abschnitt~\ref{frontend-polling} \\
 \end{longtable}
 }
 
-Die n8n-seitige Erkennungslatenz (Polling-Zyklus der Workflows gegen die Football-API sowie HTTP-Overhead bis zum Backend-Aufruf) ist nicht gemessen und ist eine zusätzliche, nicht quantifizierte Komponente der Gesamtlatenz. Da ein kontrolliertes Feldexperiment mit echten Redakteuren nicht durchführbar war, ist dies eine Potenzialabschätzung, keine empirisch gemessene Größe.
+Die n8n-seitige Erkennungslatenz (Polling-Zyklus der Workflows gegen die Football-API sowie HTTP-Overhead bis zum Backend-Aufruf) ist nicht gemessen und ist eine zusätzliche, nicht quantifizierte Komponente der Gesamtlatenz. Da ein kontrolliertes Feldexperiment mit echten Redakteuren nicht durchführbar war, ist dies eine Potenzialabschätzung, keine empirisch gemessene Größe. Ein separater Textqualitätsvergleich zwischen \texttt{auto}- und \texttt{coop}-Modus ist methodisch nicht erforderlich: \texttt{coop}-Einträge durchlaufen dieselbe LLM-Generierung wie \texttt{auto}-Einträge und werden zusätzlich redaktionell geprüft, sodass ihre Qualität strukturell mindestens gleich ist.
 
 
 \section{Anforderungsabgleich
@@ -322,7 +322,7 @@ F13 & Medienintegration (ScorePlay, Social-Media-Panels) & MediaQueue-Architektu
 N1 & Concurrency-Begrenzung LLM & \texttt{asyncio.Semaphore(8)} in \texttt{ticker\_service.py} \\
 N2 & Retry mit Rate-Limit-Erkennung & 3 Versuche; 30\,s/60\,s bei Rate-Limit; 1\,s/2\,s sonst \\
 N3 & Transaktionale Testisolierung & Rollback-Fixtures; keine persistenten Testdaten \\
-N4 & TypeScript-Typsicherheit & 98{,}02\,\% type-coverage; 0 Compiler-Fehler \\
+N4 & TypeScript-Typsicherheit & Vollständige statische Typisierung; 0 Compiler-Fehler \\
 N5 & Responsive UI & Playwright-Test 375×812 (iPhone~X\,/\,XS\,/\,12\,mini u.\,a.); Mobile Tab Bar \\
 N6 & Fehlerresistenz Frontend & \texttt{ErrorBoundary} mit Fallback-UI; 4 Tests \\
 \midrule\noalign{}
