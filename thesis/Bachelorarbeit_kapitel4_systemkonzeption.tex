@@ -71,7 +71,7 @@ Social-Media-Embeds (Twitter, YouTube, Instagram) & n8n-Webhook (on-demand, reda
 
 Das System koppelt über drei klar getrennte Schnittstellentypen. Die \textbf{REST-API} bildet den stabilen Kern für alle Lese- und Schreiboperationen: Navigation, Ticker-CRUD, Statusübergänge und manuelle Eingaben. Das Backend antwortet dabei ausschließlich reaktiv auf eingehende Aufrufe und initiiert selbst keine n8n-Workflows. \textbf{n8n-Webhooks} werden vom Frontend in drei Klassen eingesetzt: Initialisierungs-Trigger bauen Stammdaten beim ersten Systemstart auf. Match-Kontext-Trigger laden spielbezogene Daten nach Matchauswahl und im Live-Takt nach. Generierungs-Trigger stoßen KI-Textprozesse für Events, Matchphasen und Zusammenfassungen an. Der \textbf{WebSocket-Kanal \texttt{/ws/media}} übernimmt den Echtzeit-Push für latenzkritische Medieninhalte. Ticker- und Matchdaten verbleiben im stabileren Polling-Modell.
 
-Diese hybride Triggerarchitektur bildet die technische Grundlage für die in Abschnitt~\ref{status-lifecycle-und-betriebsmodi} beschriebenen Betriebsmodi. Für den Ticker-Datenfluss wurde Polling gegenüber Server-Sent Events (SSE) bevorzugt, da die redaktionelle Latenztoleranz bei 15--20~Sekunden liegt (vgl. Abschnitt~\ref{zusammenfassung-der-systemanforderungen}) und das Polling-Modell einfacher zu implementieren, zu testen und bei Verbindungsunterbrechungen robuster ist. SSE bleibt als mögliche Erweiterung erhalten (vgl. Abschnitt~\ref{kurzfristige-erweiterungen}).
+Diese hybride Triggerarchitektur bildet die technische Grundlage für die in Abschnitt~\ref{status-lifecycle-und-betriebsmodi} beschriebenen Betriebsmodi. Für den Ticker-Datenfluss wurde Polling gewählt, da die redaktionelle Latenztoleranz keinen Echtzeit-Push erfordert.
 
 
 
