@@ -433,7 +433,7 @@ Hook & Paket & Verantwortlichkeit \\
 Die Polling-Hooks \texttt{useMatchCore}, \texttt{useMatchEvents} und \texttt{useMatchTicker} betreiben je einen eigenen \texttt{setInterval}-Zyklus. Das Intervall wird über \texttt{resolvePollingInterval} zustandsabhängig gesetzt: 15 Sekunden im Live- und FullTime-Betrieb, 20 Sekunden in allen anderen Zuständen (PreMatch, Cancelled u.\,a.) sowie 15 Sekunden als Standardwert, wenn der Spielstatus noch nicht geladen ist (\texttt{matchState === null}). \texttt{useMatchData} aggregiert die drei Hooks und stellt die Daten über \texttt{TickerDataContext} bereit.
 
 
-\subsection{Slash-Command-Parser (parseCommand.ts)}\label{slash-command-parser-parsecommand.ts}
+\subsection{Slash-Command-Parser}\label{slash-command-parser-parsecommand.ts}
 
 Der Slash-Command-Parser ermöglicht schnelle manuelle Texteingabe ohne
 Maus-Interaktion. Er übersetzt kurze Kommandos in formatierte
@@ -556,7 +556,7 @@ Die n8n-Implementierung realisiert die 17 Workflows als versionierte JSON-Export
 
 Abbildung~\ref{fig:workflow-timeline} zeigt die zeitliche Aktivität der Kernworkflows über einen Spieltag. WF07 (Prematch-Import) läuft einmalig vor Spielbeginn und baut den Vorberichtskontext aus fünf parallelen Football-API-Abfragen auf. Die Ergebnisse werden als \texttt{synthetic\_events} mit idempotenter \texttt{ON CONFLICT (match\_id, type) DO UPDATE}-Strategie persistiert. WF16 (Spielminuten-Update) und WF09 (Events-LLM) laufen während beider Halbzeiten kontinuierlich. WF14 (Matchphasen) wird bei jedem Phasenübergang einmalig ausgelöst. WF13 (Zusammenfassungen) wird von WF14 nur bei Halbzeit- und Vollzeit-Übergängen nachgelagert getriggert. WF15 (Live-Stats-Monitor) vergleicht aktuelle Football-API-Statistiken per JavaScript-Knoten gegen bereits publizierte Ticker-Einträge und löst nur bei inhaltlich neuen Fakten einen direkten OpenRouter-Aufruf aus. WF08 (ScorePlay-Medien) sucht bei Torereignissen nach Bild-Assets des Torschützen, normalisiert dabei Umlaute im Namen und gleicht ihn gegen vier ScorePlay-Namensfelder ab. Gefundene Asset-URLs überträgt WF08 an \texttt{POST /api/v1/media/incoming} im FastAPI-Backend, das sie über den WebSocket-Kanal (\texttt{/ws/media}) in Echtzeit an das Frontend-Media-Panel weiterleitet. WF10--12 importieren Social-Media-Inhalte aus X, YouTube und Instagram idempotent in die \texttt{media\_clips}-Tabelle. WF01--06 stellen den initialen Datenbasis-Import sicher. Diese beiden Gruppen sind nicht phasengebunden und im Diagramm nicht dargestellt.
 
-\subsection{Spielzeit-Kette: WF16 \texorpdfstring{$\to$}{->} WF14 \texorpdfstring{$\to$}{->} WF13}\label{spielzeit-kette}
+\subsection{Spielzeit-Kette}\label{spielzeit-kette}
 
 WF16 (Spielminuten-Update) fragt bei jedem Aufruf die Football-API nach aktuellem Spielstand und Spielphase und vergleicht das Ergebnis mit dem Datenbankstand. Erkennt er eine Phasenänderung, aktualisiert er Spielminute und Phase in der Datenbank und triggert WF14 (Matchphasen-Workflow) über einen internen Webhook-Aufruf.
 
@@ -564,7 +564,7 @@ WF14 validiert den Übergang gegen eine JavaScript-seitige Zustandsmatrix erlaub
 
 Am Ende eines WF14-Durchlaufs triggert ein HTTP-Request-Knoten WF13 (Zusammenfassung) — jedoch nur bei Halbzeit- (\texttt{HT}) und Vollzeit-Übergängen (\texttt{FT}), da ausschließlich diese Phasen eine redaktionelle Zusammenfassung erfordern. WF13 lädt sequenziell über vier HTTP-Request-Knoten Spieldaten (Backend-API), Spielereignisse, Teamstatistiken und Spieler-Ratings (Football-API) und bettet sie in einen umfangreicheren Prompt ein. Da das Datenvolumen die Eingabelimits des generischen Backend-Endpunkts überschreiten würde, ruft WF13 OpenRouter für den LLM-Aufruf direkt auf, ohne den FastAPI-LLM-Service einzubinden. Das generierte Ergebnis wird anschließend über \texttt{POST /api/v1/ticker/manual} im Backend persistiert, wobei \texttt{ticker\_mode} den initialen Status (\texttt{published} oder \texttt{draft}) bestimmt.
 
-\subsection{Events-LLM-Workflow (09)}\label{events-llm-workflow}
+\subsection{Events-LLM-Workflow}\label{events-llm-workflow}
 
 \begin{figure}[H]
 \centering
