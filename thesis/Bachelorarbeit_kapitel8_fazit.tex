@@ -30,6 +30,8 @@ Die modus-spezifische Betrachtung ergibt eine klare Empfehlung (vgl. Abschnitt~\
 
 \section{Ausblick}\label{ausblick}
 
+Die Evaluationsbefunde und die Diskussion legen folgende Erweiterungsrichtungen nahe, geordnet nach Umsetzungsnähe.
+
 \begin{itemize}\tightlist
 \item \textbf{Authentifizierung und Rollensystem:} Die Integration eines JWT- oder OAuth-2.0-basierten (Open Authorization) Authentifizierungsframeworks ist die wichtigste Voraussetzung für einen Mehrbenutzerbetrieb. Ein rollenbasiertes Zugriffskonzept (Redakteur, Chefredakteur, Administrator) würde die Freigabe-Workflows im \texttt{coop}-Modus um eine Vier-Augen-Prüfung erweitern.
 \item \textbf{Prompt-Optimierung für das euphorische Stilprofil:} Die systematische Schwäche bei Wechsel- und Karten-Events (LLM-as-Judge Tonalität~2{,}93/5) ist auf die fehlende Stilfilterung der Few-Shot-Referenzen und die Prompt-Asymmetrie zwischen den Stilprofilen zurückzuführen (vgl.\ Abschnitt~\ref{stilreferenzen}). Gezielte Anpassungen mit ereignistypspezifischen Stilinstruktionen und stilgefilterten Referenzen würden diesen Befund direkt adressieren.
