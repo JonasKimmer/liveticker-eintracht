@@ -110,7 +110,7 @@ Eng damit verknüpft ist das Feld \texttt{ticker\_mode} in \texttt{matches}. Es 
 
 \section{Backend-Konzeption}\label{backend-konzeption}
 
-Die Backend-Konzeption legt die Architekturentscheidungen für das \texttt{FastAPI}-Backend fest. Sie gliedert sich in Framework-Wahl (Abschnitt~\ref{framework-wahl}), Interne Schichtstruktur (Abschnitt~\ref{interne-schichtstruktur}), API-Design und Endpunktstrategie (Abschnitt~\ref{api-design-und-endpunktstrategie}), Asynchronität und Robustheit (Abschnitt~\ref{asynchronituxe4t-nebenluxe4ufigkeit-und-performance}) sowie das Qualitätssicherungskonzept (Abschnitt~\ref{qualitätssicherungskonzept}).
+Das \texttt{FastAPI}-Backend realisiert die Anwendungslogik des Systems. Die folgenden Abschnitte behandeln Framework-Wahl (Abschnitt~\ref{framework-wahl}), interne Schichtstruktur (Abschnitt~\ref{interne-schichtstruktur}), API-Design (Abschnitt~\ref{api-design-und-endpunktstrategie}), Asynchronität und Fehlerbehandlung (Abschnitt~\ref{asynchronituxe4t-nebenluxe4ufigkeit-und-performance}) sowie das Qualitätssicherungskonzept (Abschnitt~\ref{qualitätssicherungskonzept}).
 
 \subsection{Framework-Wahl}\label{framework-wahl}
 
@@ -147,7 +147,7 @@ Das Repository-Pattern (vgl. Abschnitt~\ref{interne-schichtstruktur}) ist die ar
 
 \section{Datenbankkonzeption}\label{datenbankkonzeption}
 
-Die Datenbankkonzeption legt die Entscheidungen für Persistenz und Schemadesign des Systems fest. Sie gliedert sich in Datenbankwahl (Abschnitt~\ref{datenbankwahl}), Schemadesign-Prinzipien (Abschnitt~\ref{schemadesign-prinzipien}) und Migrationsstrategie (Abschnitt~\ref{migrationsstrategie}).
+Die Persistenzschicht des Systems basiert auf PostgreSQL. Die folgenden Abschnitte begründen die Datenbankwahl (Abschnitt~\ref{datenbankwahl}), beschreiben die Schemadesign-Prinzipien (Abschnitt~\ref{schemadesign-prinzipien}) und erläutern die Migrationsstrategie (Abschnitt~\ref{migrationsstrategie}).
 
 \subsection{Datenbankwahl}\label{datenbankwahl}
 
@@ -178,7 +178,7 @@ Das persistierte Datenmodell bildet die Grundlage für die darüberliegende Work
 
 \section{Workflow-Konzeption (n8n)}\label{workflow-konzeption-n8n}
 
-Die Workflow-Konzeption legt die Architekturentscheidungen für die n8n-basierte Orchestrierungsschicht fest. Sie gliedert sich in die Technologiewahl (Abschnitt~\ref{n8n-technologiewahl}) und die Workflow-Klassen (Abschnitt~\ref{workflow-klassen}).
+n8n übernimmt als Orchestrierungsschicht alle Datenimport- und Generierungsprozesse. Abschnitt~\ref{n8n-technologiewahl} begründet die Technologiewahl, Abschnitt~\ref{workflow-klassen} beschreibt die resultierenden Workflow-Klassen.
 
 \subsection{Technologiewahl}\label{n8n-technologiewahl}
 
@@ -223,18 +223,13 @@ Diese Trennung reduziert Kopplung und erlaubt es, einzelne Teilprozesse unabhän
 
 \section{KI-Komponente}\label{ki-komponente}
 
-Die KI-Komponente beschreibt die Konzeptionsentscheidungen für die LLM-gestützte Textgenerierung. Sie gliedert sich in die Multi-Provider-Architektur (Abschnitt~\ref{multi-provider-architektur}), die Prompt-Engineering-Strategie (Abschnitt~\ref{prompt-engineering-strategie}) und die mehrsprachige Textgenerierung (Abschnitt~\ref{mehrsprachige-textgenerierung-konzept}).
+Die LLM-gestützte Textgenerierung ist als providerunabhängige Komponente mit konfigurierbarer Prompt-Strategie konzipiert. Sie umfasst die Multi-Provider-Architektur (Abschnitt~\ref{multi-provider-architektur}), die Prompt-Engineering-Strategie (Abschnitt~\ref{prompt-engineering-strategie}) und das Mehrsprachigkeitskonzept (Abschnitt~\ref{mehrsprachige-textgenerierung-konzept}).
 
 \subsection{Multi-Provider-Architektur}\label{multi-provider-architektur}
 
 Die KI-Komponente ist als providerunabhängige Abstraktionsschicht konzipiert, in der der LLM-Dienst OpenAI, Anthropic, Google Gemini, OpenRouter und einen Mock-Provider hinter einer einheitlichen internen Schnittstelle kapselt. Das System setzt primär \textbf{OpenRouter} als Gateway ein, weil es Modelle zahlreicher Anbieter über einen einzigen API-Zugang zugänglich macht und der Modellwechsel damit lediglich eine Konfigurationsänderung erfordert, was Modellvergleiche auf demselben Prompt erleichtert (vgl. Abschnitte~\ref{large-language-models} und~\ref{llm-service-prompt-aufbau-und-provider-dispatch}). Eine Fallback-Kette aktiviert beim Start den ersten verfügbaren Anbieter. Als direkter Anthropic-Fallback ohne OpenRouter-Intermediär dient Claude Haiku, das für Kurztext-Aufgaben kosteneffiziente Latenzen erzielt und Konfigurationsszenarien ohne OpenRouter-Zugang absichert. Ist kein API-Key konfiguriert, übernimmt der Mock-Provider und sichert die Lauffähigkeit für Entwicklung und Tests.
 
-Als Standardmodell im Deployment wurde \textbf{Gemini 2.0 Flash Lite} über OpenRouter gewählt. Die Entscheidung stützt sich auf zwei Faktoren:
-
-\begin{itemize}\tightlist
-\item \textbf{Aufgabencharakteristik:} Liveticker-Texte sind kurz und faktenbasiert; kompakte Modelle erzielen vergleichbare Qualität bei deutlich niedrigerer Latenz, was die Latenzanalyse in Abschnitt~\ref{llm-latenz} zeigen wird.
-\item \textbf{Kosteneffizienz:} Das Modell zählt zu den kostengünstigsten kommerziell verfügbaren Optionen und macht den Dauerbetrieb über eine Saison für ressourcenbegrenzte Redaktionen wirtschaftlich darstellbar (vgl. Abschnitt~\ref{redaktioneller-aufwand-bei-livetickern}).
-\end{itemize}
+Als Standardmodell im Deployment wurde \textbf{Gemini 2.0 Flash Lite} über OpenRouter gewählt. Die Entscheidung folgt aus Aufgabencharakteristik und Kosteneffizienz. Liveticker-Texte sind kurz und faktenbasiert, weshalb kompakte Modelle vergleichbare Qualität bei deutlich niedrigerer Latenz erzielen, was die Latenzanalyse in Abschnitt~\ref{llm-latenz} zeigen wird. Zudem zählt das Modell zu den kostengünstigsten kommerziell verfügbaren Optionen und macht den Dauerbetrieb über eine Saison für ressourcenbegrenzte Redaktionen wirtschaftlich darstellbar (vgl. Abschnitt~\ref{redaktioneller-aufwand-bei-livetickern}).
 
 
 
@@ -262,7 +257,7 @@ Das System unterstützt Deutsch, Englisch, Spanisch und Französisch, die Zielsp
 
 \section{Frontend-Konzeption}\label{frontend-konzeption}
 
-Die Frontend-Konzeption legt die Architekturentscheidungen für die React-basierte Präsentationsschicht fest. Sie gliedert sich in die Framework-Wahl (Abschnitt~\ref{frontend-framework-wahl}), Architektur und Zustandsmanagement (Abschnitt~\ref{architekturprinzipien}), Layout und Moduslogik (Abschnitt~\ref{dreispalten-layout-und-redaktionsfluss}) sowie die Teststrategie (Abschnitt~\ref{frontend-teststrategie}).
+Das React-Frontend ist auf mandantenfähigen White-Label-Betrieb ausgelegt. Framework-Wahl (Abschnitt~\ref{frontend-framework-wahl}), Architektur und Zustandsmanagement (Abschnitt~\ref{architekturprinzipien}), Layout und Moduslogik (Abschnitt~\ref{dreispalten-layout-und-redaktionsfluss}) sowie Teststrategie (Abschnitt~\ref{frontend-teststrategie}) werden in den folgenden Abschnitten dargestellt.
 
 \subsection{Framework-Wahl}\label{frontend-framework-wahl}
 
