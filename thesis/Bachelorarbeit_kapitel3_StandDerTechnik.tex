@@ -55,8 +55,6 @@ Ein weiterer zentraler Steuerungsparameter ist die \textbf{Temperature},
 die die Wahrscheinlichkeitsverteilung der Token-Auswahl beeinflusst
 (vgl. Brown et al.~2020). Niedrige Werte (z.\,B. 0,0--0,3) führen zu deterministischeren, faktentreueren Ausgaben; höhere Werte (z.\,B. 0,7--1,0) erhöhen die kreative Varianz. Für den Liveticker-Kontext, in dem formelhaft wirkende Texte die Rezeptionsqualität beeinträchtigen (vgl. Clerwall 2014, S.~529; Boisserée, zit. n. Beils 2023, S.~207), ist ein mittlerer Wert als Balance aus Faktentreue und sprachlicher Lebendigkeit geeignet. Für Übersetzungsaufgaben, bei denen semantische Abweichungen vom Originaltext minimiert werden sollen, sind niedrigere Werte geeignet. Die konkrete Parameterwahl des vorliegenden Systems wird in Abschnitt~\ref{prompt-engineering-strategie} begründet.
 
-Abschnitt~\ref{prompt-engineering-strategie} erläutert die konkrete Prompt-Struktur, Few-Shot-Beispiele und Temperatur-Konfiguration des vorliegenden Systems.
-
 
 
 \section{Automatisierte Sportberichterstattung}\label{automatisierte-sportberichterstattung}
@@ -161,6 +159,6 @@ Verknüpfte Spielentitäten & Relationale DB mit ACID-Garantien (Kap.~\ref{backe
 \end{tabular}
 \end{table}
 
-Die Literaturrecherche zeigt zugleich eine spezifische Forschungslücke: Bestehende Ansätze zur automatisierten Sportberichterstattung (Abschnitt~\ref{automatisierte-sportberichterstattung}) operieren entweder templatebasiert ohne adaptive Stilsteuerung (vgl.~Beils 2023, S.~207) oder vollständig autonom ohne redaktionelle Kontrollinstanz. Ein LLM-basiertes System, das konfigurierbares Few-Shot-Prompting, ein dreistufiges Human-in-the-Loop-Betriebsmodell und vereinsspezifische White-Label-Fähigkeit in einer produktionsreifen Architektur vereint, konnte in einer Recherche der einschlägigen Datenbanken (ACM Digital Library, Google Scholar, Springer Link; Suchbegriffe: \emph{automated sports reporting, LLM newsroom, live blog generation, NLG editorial system}) nicht identifiziert werden. Die vorliegende Arbeit schließt diese Lücke.
+Die Literaturrecherche zeigt zugleich eine spezifische Forschungslücke: Bestehende Ansätze zur automatisierten Sportberichterstattung (Abschnitt~\ref{automatisierte-sportberichterstattung}) operieren entweder templatebasiert ohne adaptive Stilsteuerung (vgl.~Beils 2023, S.~207) oder vollständig autonom ohne redaktionelle Kontrollinstanz. Ein LLM-basiertes System, das konfigurierbares Few-Shot-Prompting, ein dreistufiges Human-in-the-Loop-Betriebsmodell und vereinsspezifische White-Label-Fähigkeit in einer produktionsreifen Architektur vereint, konnte in einer Recherche der einschlägigen Datenbanken (ACM Digital Library, Google Scholar, Springer Link; Suchbegriffe: \emph{automated sports reporting, LLM newsroom, live blog generation, NLG editorial system}) nicht identifiziert werden. Die vorliegende Arbeit adressiert diese Lücke.
 
 Diese technologischen Grundlagen münden in die Systemkonzeption (Kapitel~\ref{systemkonzeption}) und deren Implementierung (Kapitel~\ref{implementierung}).
