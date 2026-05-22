@@ -6,7 +6,7 @@ Dieses Kapitel evaluiert das in Kapitel~\ref{systemkonzeption} konzipierte und i
 \section{Evaluation der
 KI-Textgenerierung}\label{evaluation-der-ki-textgenerierung}
 
-Die Evaluation der KI-Textgenerierung bewertet, inwiefern das System journalistische Qualitätsanforderungen hinsichtlich Korrektheit, Tonalität und Verständlichkeit erfüllt. Sie gliedert sich in den Einfluss der Stilprofile (Abschnitt~\ref{einfluss-der-stilprofile}), die qualitative Textbewertung (Abschnitt~\ref{qualitative-analyse-der-generierten-texte}), die Experteninterview-Auswertung (Abschnitt~\ref{experteninterview-auswertung}), die erweiterte LLM-as-Judge-Evaluation (Abschnitt~\ref{erweiterte-evaluation}) sowie die funktionale Verifikation der Mehrsprachigkeit (Abschnitt~\ref{mehrsprachige-verifikation}).
+Die Evaluation der KI-Textgenerierung bewertet, inwiefern das System journalistische Qualitätsanforderungen hinsichtlich Korrektheit, Tonalität und Verständlichkeit erfüllt. Sie gliedert sich in den Einfluss der Stilprofile (Abschnitt~\ref{einfluss-der-stilprofile}), die qualitative Textbewertung (Abschnitt~\ref{qualitative-analyse-der-generierten-texte}), die erweiterte LLM-as-Judge-Evaluation (Abschnitt~\ref{erweiterte-evaluation}) sowie die funktionale Verifikation der Mehrsprachigkeit (Abschnitt~\ref{mehrsprachige-verifikation}).
 
 \subsection{Einfluss der Stilprofile}\label{einfluss-der-stilprofile}
 
@@ -170,28 +170,6 @@ Liveticker-Kürze & Nicht aufgetreten \\
 Die häufigste Fehlerklasse ist die \textbf{Stil-Inkonsistenz} des neutralen Profils (20\,\%). Die Ursache sowie Verbesserungsansätze sind in Abschnitt~\ref{diskussion-der-prompt-architektur} eingeordnet. Das \texttt{kritisch}-Profil erzielt den niedrigsten Tonalitätswert (vgl. Abschnitt~\ref{erweiterte-evaluation}). Die Interpretation erfolgt ebenfalls in Abschnitt~\ref{diskussion-der-prompt-architektur}.
 
 Von den drei untersuchten Pre-Match-Einträgen enthielt einer eine Wettempfehlung, die nicht aus dem Datenbankkontext ableitbar war. Der Stichprobenumfang ist zu klein für eine statistische Aussage. Die systemseitige Schutzregel verhindert Spielszenen-Halluzinationen, schützt jedoch nicht gegen alle Formen der Kontextüberschreitung.
-
-
-\subsection{Experteninterview-Auswertung}\label{experteninterview-auswertung}
-
-Zur Validierung der Systemeignung im operativen Vereinskontext wurde ein strukturiertes Experteninterview mit einem Digitalverantwortlichen von Eintracht Frankfurt durchgeführt, der für die Weiterentwicklung des digitalen Angebots (einschließlich des Liveticker-Systems) zuständig ist (vgl. Abschnitt~\ref{experteninterview-leitfaden}). Das Interview ergänzt die quantitative Evaluation um eine praxisnahe Einschätzung zu Systemeignung, Workflow-Integration und strategischer Zukunftsperspektive.
-
-\paragraph{Methodik}
-Das Interview gliederte sich in einen Anforderungsvalidierungsteil (Produktionsprozess, Mehrsprachigkeit, Stilistik) und einen nach der Live-Demonstration durchgeführten Bewertungsteil (Systemeignung, Moduswahl, Zukunftsperspektive). Die Auswertung erfolgte durch thematische Kategorisierung der Antworten entlang der Fragenblöcke (vgl. Kuckartz 2018).
-
-\paragraph{Zentrale Erkenntnisse}
-
-\begin{itemize}\tightlist
-\item \textbf{KI als Unterstützer, nicht Ersatz:} Der Interviewpartner sieht KI im Sportjournalismus klar als Unterstützung für standardisierte, wiederkehrende Abläufe. Für Live-Einträge, die situative Wahrnehmung aus dem Stadion erfordern (Trainerverhalten, Fanstimmung, unvorhergesehene Ereignisse), bleibt der Mensch unverzichtbar. KI könne Inspiration geben und Fehler erkennen. Redaktionelle Qualität, Tonalität und Eintracht-Sprache seien menschliche Aufgaben. Auf die direkte Frage, ob KI-generierte Texte mit guten Prompts an die Qualität manuell verfasster Einträge heranreichen können, fiel die Antwort explizit negativ aus.
-\item \textbf{Textqualität und Markenwiedererkennung:} Die generierten Texte werden als eher generisch eingestuft. Der vereinseigene Ticker lebt von der Stadionperspektive, da Atmosphäre, Trainergestik, Fanstimmung und situative Wahrnehmung der Redakteure nicht aus strukturierten Ereignisdaten ableitbar sind. Ohne diesen Kontext riskiert die KI Halluzinationen. Vereinstypische Stilelemente allein reichen nicht für authentische Einträge.
-\item \textbf{Manuelle Fehlerrate als Kontrastbefund:} Als häufigste Fehlerquelle unter Zeitdruck benennt der Interviewpartner ausschließlich kleinere Rechtschreibfehler. Faktische Fehler wie falsche Spielernamen, Zahlendreher oder erfundene Spielzüge treten im manuellen Betrieb nach eigener Einschätzung nicht auf. Dieser Befund kontrastiert mit der gemessenen KI-Halluzinationsrate von 5\,\% (vgl.\ Abschnitt~\ref{qualitative-analyse-der-generierten-texte}) und stützt die Anforderung an redaktionelle Korrektheitsprüfung im \texttt{coop}-Modus.
-\item \textbf{Situative Kontextblindheit:} Bei unvorhergesehenen Ereignissen im Stadion versagt die rein datenbasierte Generierung. Als Beispiel wurde ein Notarzteinsatz bei gleichzeitiger 4:0-Führung genannt: Das System würde weiterhin euphorisch schreiben, da es nur den Spielstand kennt, nicht jedoch die Atmosphäre im Stadion. In solchen Situationen müsse der Mensch im Driverseat bleiben.
-\item \textbf{Coop-Modus als realistischer Kompromiss:} Der \texttt{coop}-Modus wird als sinnvoller und realistischer Betriebsmodus bestätigt, da die KI als Unterstützer fungiert und die redaktionelle Kontrolle erhalten bleibt. Ein vollautomatisierter Betrieb würde nicht zum Qualitäts- und Markenverständnis des Vereins passen.
-\item \textbf{Kein Regelbetrieb im Profifußball:} Für den Bereich Profi-Männer und Profi-Frauen schließt der Interviewpartner einen vollständig KI-gestützten Liveticker-Regelbetrieb explizit aus. Für den Jugendfußball, mit geringerer Reichweite und niedrigerem redaktionellem Anspruch, sieht er zumindest Diskussionspotenzial. Dieser Befund schränkt den unmittelbaren Produktionshorizont des Systems ein und deckt sich mit der im \texttt{coop}-Modus verankerten Human-in-the-Loop-Prämisse.
-\item \textbf{Benutzeroberfläche:} Das Interface wird als sehr intuitiv und nutzerfreundlich bewertet. Das bestehende Eintracht-System ist intern komplexer und würde ein Rechtesystem (Rollenverwaltung: wer darf welches Spiel bearbeiten) sowie parallele Redaktionsstreams erfordern.
-\item \textbf{Mehrsprachigkeit und stilistische Übertragbarkeit:} Für die internationale Fanbasis bestätigt der Interviewpartner Englisch als relevante Zielsprache. Er weist zugleich auf eine spezifische Herausforderung hin: Vereinstypische Stilmerkmale wie hessisch gefärbter Wortschatz, fußballidiomatische Begriffe und graphostilistisch langgezogene Ausrufe (\textit{Toooooooor}, \textit{Jaaaaaaaa}) sind durch maschinelle Übersetzung nur schwer adäquat zu übertragen. Diese Einschätzung stützt den Konzeptionsentscheid, Mehrsprachigkeit als natives Merkmal der Generierungspipeline zu realisieren statt als nachgelagerte Übersetzungsschicht (vgl.\ Abschnitt~\ref{mehrsprachige-textgenerierung-konzept}).
-\item \textbf{Transparenz und Vereinsidentität:} Transparenz gegenüber Lesern über den KI-Einsatz wird als wichtig erachtet, insbesondere da Eintracht Frankfurt dieses Thema aktiv adressiert und die Ultras als relevante Stakeholder-Gruppe eine klare Haltung dazu vertreten.
-\end{itemize}
 
 
 \subsection{Erweiterte Evaluation: LLM-as-Judge-Verfahren}\label{erweiterte-evaluation}
