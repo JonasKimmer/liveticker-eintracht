@@ -205,7 +205,7 @@ euphorisch  & 27 & 3{,}22 & 2{,}93 & 3{,}67 & 3{,}27 \\
 
 \emph{K = Korrektheit, T = Tonalität, V = Verständlichkeit (je 1--5). Bewerter: Claude Sonnet~4.5 via OpenRouter. Datenbasis: Football API~v3, Bundesliga Saison 2025/26, 30~Spiele.}
 
-Die LLM-as-Judge-Evaluation bestätigt Korrektheit (4{,}12) und Verständlichkeit (4{,}35) auf einem mit der Hauptevaluation konsistenten Niveau. Das neutrale Stilprofil erzielt den höchsten Gesamtwert (4{,}82), das kritische Profil liegt mit 4{,}32 im soliden Bereich. Das euphorische Profil bleibt mit 3{,}27 deutlich schwächer, insbesondere beim Tonalitätswert (2{,}93). Wechsel-Einträge erzielen im euphorischen Profil die schwächsten Werte (Korrektheit 2{,}92, Gesamt 3{,}21). Tore (Ø~4{,}33) und Rote Karten (Ø~4{,}75) erreichen hingegen konsistent hohe Werte. Ursachenanalyse und Einordnung der Diskrepanz zum Hauptevaluations-Tonalitätswert erfolgen in Abschnitt~\ref{diskussion-der-prompt-architektur}.
+Die LLM-as-Judge-Evaluation bestätigt Korrektheit (4{,}12) und Verständlichkeit (4{,}35) auf einem mit der Hauptevaluation konsistenten Niveau. Das neutrale Stilprofil erzielt den höchsten Gesamtwert (4{,}81), das kritische Profil liegt mit 4{,}32 im soliden Bereich. Das euphorische Profil bleibt mit 3{,}27 deutlich schwächer, insbesondere beim Tonalitätswert (2{,}93). Wechsel-Einträge erzielen im euphorischen Profil die schwächsten Werte (Korrektheit 2{,}92, Gesamt 3{,}21). Tore (Ø~4{,}33) und Rote Karten (Ø~4{,}75) erreichen hingegen konsistent hohe Werte. Ursachenanalyse und Einordnung der Diskrepanz zum Hauptevaluations-Tonalitätswert erfolgen in Abschnitt~\ref{diskussion-der-prompt-architektur}.
 
 
 \subsection{Funktionale Verifikation der Mehrsprachigkeit}\label{mehrsprachige-verifikation}
@@ -248,7 +248,7 @@ Mock & --- & regelbasiert (Templates) & --- & \textless{} 10 & \textless{} 10 \\
 
 \emph{Die Provider Gemini (direkt), OpenAI (\texttt{gpt-4o-mini}) und Anthropic (\texttt{claude-haiku-4-5-20251001}) sind architektonisch vollständig integriert, wurden jedoch mangels aktivierter API-Keys im Evaluationszeitraum nicht gemessen.}
 
-Die 26 LLM-Aufrufe liegen zwischen 876\,ms und 4\,226\,ms (Median 3\,338\,ms, Mittelwert 3\,136\,ms, Std.\ 641\,ms). Ein einzelner Ausreißer nach unten (876\,ms) deutet auf einen Gemini-seitigen Cache-Treffer hin. Alle übrigen Messungen entfallen auf die Kaltgenerierung (2\,413--4\,226\,ms). Die Fehlerrate beträgt 0\,\% (vgl. Abbildung~\ref{fig:latenzen-histogram}).
+Die 26 LLM-Aufrufe liegen zwischen 876\,ms und 4\,226\,ms (Median 3\,338\,ms, Mittelwert 3\,136\,ms, Std.\ 641\,ms). Die Standardabweichung von 641\,ms (Variationskoeffizient $\approx$\,20\,\%) reflektiert die erwartbare Antwortzeit-Variabilität der Gemini~API unter Produktionsbedingungen. Ein einzelner Ausreißer nach unten (876\,ms) deutet auf einen Gemini-seitigen Cache-Treffer hin. Alle übrigen Messungen entfallen auf die Kaltgenerierung (2\,413--4\,226\,ms). Die Fehlerrate beträgt 0\,\% (vgl. Abbildung~\ref{fig:latenzen-histogram}).
 
 \begin{figure}[H]
 \centering
@@ -279,7 +279,7 @@ Frontend-Polling & Ja & bis 15~s & Abschnitt~\ref{frontend-polling} \\
 \end{longtable}
 }
 
-Die n8n-seitige Erkennungslatenz (Polling-Zyklus der Workflows gegen die Football-API sowie HTTP-Overhead bis zum Backend-Aufruf) ist nicht gemessen und ist eine zusätzliche, nicht quantifizierte Komponente der Gesamtlatenz. Da ein kontrolliertes Feldexperiment mit echten Redakteuren nicht durchführbar war, ist dies eine Potenzialabschätzung, keine empirisch gemessene Größe. Der \texttt{coop}-Modus durchläuft dieselbe automatisierte Pipeline wie \texttt{auto} und erreicht daher eine vergleichbare Generierungslatenz; die Gesamtpublikationslatenz erhöht sich um die variable Redaktionszeit, die je nach Redaktionsaufwand nicht quantifizierbar ist. Ein separater Textqualitätsvergleich zwischen \texttt{auto}- und \texttt{coop}-Modus ist methodisch nicht erforderlich. \texttt{coop}-Einträge durchlaufen dieselbe LLM-Generierung wie \texttt{auto}-Einträge und werden zusätzlich redaktionell geprüft, sodass ihre Qualität strukturell mindestens gleich ist.
+Die n8n-seitige Erkennungslatenz (Polling-Zyklus der Workflows gegen die Football-API sowie HTTP-Overhead bis zum Backend-Aufruf) ist nicht gemessen und ist eine zusätzliche, nicht quantifizierte Komponente der Gesamtlatenz. Da ein kontrolliertes Feldexperiment mit echten Redakteuren nicht durchführbar war, ist dies eine Potenzialabschätzung, keine empirisch gemessene Größe. Der \texttt{coop}-Modus durchläuft dieselbe automatisierte Pipeline wie \texttt{auto} und erreicht daher eine vergleichbare Generierungslatenz; die Gesamtpublikationslatenz erhöht sich um die variable Redaktionszeit, die je nach Redaktionsaufwand nicht quantifizierbar ist.
 
 
 \section{Anforderungsabgleich
@@ -326,7 +326,7 @@ A1 & Schichtenbasierte Systemarchitektur mit klar getrennten Verantwortlichkeite
 A2 & Repository-Pattern & 13 Repository-Klassen \\
 A3 & 71 API-Endpunkte unter \texttt{/api/v1} & 13 Router-Dateien; 95 API-Integrationstests \\
 A4 & 17 ORM-Modelle / 17 Datenbanktabellen & 100\,\% Model-Coverage \\
-A5 & White-Label-Fähigkeit & Instanz-spezifische Kontextaufbereitung und Few-Shot-Filterung \\
+A5 & White-Label-Fähigkeit & \texttt{src/config/whitelabel.ts} (Frontend-Branding), \texttt{DEFAULT\_TICKER\_INSTANCE} in \texttt{constants.py} (Backend-Instanz), instanzspezifische Few-Shot-Filterung über \texttt{style\_references} (vgl. Abschnitt~\ref{white-label-konfiguration-impl}) \\
 \end{longtable}
 }
 
