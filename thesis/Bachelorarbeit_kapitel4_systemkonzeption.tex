@@ -257,7 +257,7 @@ Das System unterstützt Deutsch, Englisch, Spanisch und Französisch, die Zielsp
 
 \section{Frontend-Konzeption}\label{frontend-konzeption}
 
-Das React-Frontend ist auf mandantenfähigen White-Label-Betrieb ausgelegt. Framework-Wahl (Abschnitt~\ref{frontend-framework-wahl}), Architektur und Zustandsmanagement (Abschnitt~\ref{architekturprinzipien}), Layout und Moduslogik (Abschnitt~\ref{dreispalten-layout-und-redaktionsfluss}) sowie Teststrategie (Abschnitt~\ref{frontend-teststrategie}) werden in den folgenden Abschnitten dargestellt.
+Das React-Frontend ist auf mandantenfähigen White-Label-Betrieb ausgelegt. Die Konzeption gliedert sich in Framework-Wahl (Abschnitt~\ref{frontend-framework-wahl}), Architektur und Zustandsmanagement (Abschnitt~\ref{architekturprinzipien}), Layout und Moduslogik (Abschnitt~\ref{dreispalten-layout-und-redaktionsfluss}), UI-Design und visuelles Branding (Abschnitt~\ref{ui-design-branding}) sowie Teststrategie (Abschnitt~\ref{frontend-teststrategie}).
 
 \subsection{Framework-Wahl}\label{frontend-framework-wahl}
 
@@ -272,6 +272,19 @@ Das Frontend trennt UI-Komponenten, datenbezogene Hooks und API-Zugriffsschicht 
 Die Hauptansicht folgt einem Dreispalten-Ansatz mit klarer Aufgabenverteilung. Das linke Panel zeigt den chronologischen Feed publizierter Ticker-Einträge. Das mittlere Panel bildet die redaktionelle Kernarbeit ab, darunter Event-Verarbeitung in Abhängigkeit vom Betriebsmodus, Draft-Prüfung und Freigabe, manuelle Eingabe sowie integrierte Media- und Social-Panels für Partnervereinsspiele. Das rechte Panel liefert Kontextinformationen wie Matchstatistiken, Aufstellungen und spielerbezogene Leistungsdaten.
 
 Die Modusumschaltung ist mit Bestätigungsdialog und visueller Rückmeldung ausgestattet. Im kooperativen Modus sind Tastatur-Shortcuts für den Accept-/Reject-Flow verfügbar (vgl. Abschnitt~\ref{status-lifecycle-und-betriebsmodi}). Für die manuelle Eingabe ist ein \textbf{Slash-Command-Parser} konzipiert. Phase- und Event-Commands (\texttt{/anpfiff}, \texttt{/goal}, \texttt{/gelb} u.\,a.) werden über eine einheitliche Syntaxstruktur geparst und direkt in strukturierte Ticker-Einträge überführt, ohne Formularnavigation. Die Kommunikationsarchitektur des Frontends ist in Abschnitt~\ref{kommunikations--und-triggerarchitektur} beschrieben. Die konkreten Implementierungen sind in Abschnitt~\ref{frontend-implementierung} dokumentiert.
+
+\subsection{UI-Design und visuelles Branding}\label{ui-design-branding}
+
+Vor der Implementierung wurde die Benutzeroberfläche vollständig in \textbf{Figma} als interaktiver Prototyp entworfen. Die Wireframes definierten das Drei-Spalten-Layout, den Redaktionsfluss und die Zustandsdarstellungen der Ticker-Einträge, sodass Layoutentscheidungen bereits vor der ersten React-Komponente validiert waren. Abbildung~\ref{fig:figma-wireframe} zeigt den Prototyp-Stand, der als Vorlage für die Implementierung diente.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{figma_wireframe.png}
+\caption{Figma-Prototyp der Redaktionsoberfläche (Dreispalten-Layout)}
+\label{fig:figma-wireframe}
+\end{figure}
+
+Im Rahmen des White-Label-Konzepts wurde darüber hinaus ein eigenes Applikationslogo entworfen und in beide Instanzen (\texttt{ef\_whitelabel} und \texttt{generic}) integriert.
 
 \subsection{Teststrategie}\label{frontend-teststrategie}
 
