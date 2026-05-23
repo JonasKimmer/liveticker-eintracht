@@ -35,7 +35,7 @@ Vereine und Verbände kommunizieren heute zunehmend direkt mit ihrer Anhängersc
 
 Diese Variabilität konsistent einzuhalten stellt Redaktionen vor eine eigenständige Herausforderung. Die in Abschnitt~\ref{redaktioneller-aufwand-bei-livetickern} beschriebene personelle Fluktuation verschärft dies zusätzlich, da Liveticker-Stellen häufig mit wechselndem Personal besetzt werden. Im Kontext eines KI-gestützten Redaktionssystems wird diese Anforderung zur technischen Pflicht. Die Markenstimme muss systemseitig konfigurierbar sein.
 
-Dieses Konsistenzproblem lässt sich durch sogenannte White-Label-Architekturen technisch adressieren, bei denen ein generisches Kernsystem so konzipiert wird, dass es für verschiedene Abnehmer individuell konfigurierbar ist, ohne den Quellcode zu ändern (vgl. Pohl et al.\ 2005, S.~12). Auf die Liveticker-Produktion übertragen bedeutet dies, dass eine einzige Codebasis für beliebige Vereine instanziierbar sein muss, ohne dass für jeden Abnehmer eine separate Implementierung gepflegt wird. Datenquellen, mediale Einbindungen wie Social-Media-Panels, Bildmaterial und Videoclips sowie die KI-seitige Stilkonfiguration müssen dabei vollständig über Parameter steuerbar sein, nicht als separate Implementierung pro Verein.
+Dieses Konsistenzproblem lässt sich durch sogenannte White-Label-Architekturen technisch adressieren, bei denen ein generisches Kernsystem so konzipiert wird, dass es für verschiedene Abnehmer individuell konfigurierbar ist, ohne den Quellcode zu ändern (vgl. Pohl et al.\ 2005, S.~12). Auf die Liveticker-Produktion übertragen bedeutet dies, dass eine einzige Codebasis für beliebige Vereine instanziierbar sein muss, ohne dass für jeden Abnehmer eine separate Implementierung gepflegt wird. Datenquellen, Medieneinbindungen und Stilkonfiguration müssen dabei vollständig über Parameter steuerbar sein.
 
 Der folgende Abschnitt konkretisiert diese Anforderungen am Fallbeispiel Eintracht Frankfurt.
 
@@ -76,7 +76,7 @@ Die Systemanalyse zeigt sechs strukturelle Defizite, die den Handlungsbedarf fü
 \item \textbf{Systemkomplexität und Fehleranfälligkeit:} Das Backend besteht aus zahlreichen Sonderlösungen und ist entsprechend komplex. Für Redakteure, die das System nicht gut kennen, erhöht dies die Fehleranfälligkeit im laufenden Betrieb erheblich (vgl.\ Abschnitt~\ref{experteninterview-leitfaden}).
 \end{itemize}
 
-Diese Defizite spiegeln die drei in Abschnitt~\ref{problemstellung-und-zielsetzung} identifizierten Problemdimensionen direkt wider: operativer Zeitdruck durch vollständig manuelle Produktion, fehlende Mehrsprachigkeit und eingeschränkte White-Label-Fähigkeit. Das in dieser Arbeit entwickelte System adressiert alle sechs Punkte. Die fehlende KI-Unterstützung und Stilunterstützung werden durch eine konfigurierbare Textgenerierungskomponente adressiert (vgl.\ Abschnitt~\ref{ki-komponente}), die manuelle Score-Pflege und fehlenden Live-Statistiken durch automatisierte Datenimportprozesse (vgl.\ Abschnitt~\ref{workflow-konzeption-n8n}), die fehlende Medienintegration durch eine strukturierte Medienverwaltungsschicht (vgl.\ Abschnitt~\ref{n8n-workflow-implementierung}) und das Mehrsprachdefizit durch native mehrsprachige Textgenerierung (vgl.\ Abschnitt~\ref{mehrsprachige-textgenerierung-konzept}). Die erhöhte Systemkomplexität wird durch eine modulare Architektur mit klar getrennten Verantwortlichkeiten strukturell reduziert (vgl.\ Abschnitt~\ref{systemkonzeption}).
+Diese Defizite spiegeln die drei in Abschnitt~\ref{problemstellung-und-zielsetzung} identifizierten Anforderungsdimensionen direkt wider: operativer Zeitdruck durch vollständig manuelle Produktion, fehlende Mehrsprachigkeit und eingeschränkte White-Label-Fähigkeit. Das in dieser Arbeit entwickelte System adressiert alle sechs Punkte, wie die Systemkonzeption (Kapitel~\ref{systemkonzeption}) und der Anforderungsabgleich (Abschnitt~\ref{anforderungsabgleich-soll-ist-vergleich}) im Detail zeigen.
 
 
 
@@ -170,7 +170,7 @@ Herleitung
 \endhead
 \bottomrule\noalign{}
 \endlastfoot
-A1 & Drei-Schichten-Architektur & Kap.~\ref{redaktioneller-aufwand-bei-livetickern}, \ref{white-label-bedarf-im-profisport} (Modularität) \\
+A1 & Schichtenbasierte Systemarchitektur mit klar getrennten Verantwortlichkeiten & Kap.~\ref{redaktioneller-aufwand-bei-livetickern}, \ref{white-label-bedarf-im-profisport} (Modularität) \\
 A2 & Isolierte Datenzugriffsschicht: Persistenzlogik muss von
 API-Logik getrennt sein, sodass Datenbankzugriffe unabhängig testbar
 und austauschbar bleiben & Kap.~\ref{white-label-bedarf-im-profisport} (Wartbarkeit, Testbarkeit) \\
