@@ -22,7 +22,9 @@ insbesondere die Neigung zu \textbf{Halluzinationen}, also der
 Generierung von Inhalten, die sachlich unzutreffend oder erfunden sind
 (OpenAI 2023, S.~46). Halluzinationen lassen sich nach Typ differenzieren: \emph{Faktische} Halluzinationen erfinden Ereignisse, die nicht stattgefunden haben (z.\,B. ein nicht existentes Tor); \emph{kontextuale} Halluzinationen misinterpretieren vorhandene Eingabedaten (z.\,B. falsches Team bei korrektem Ereignis). Beide sind im journalistischen Kontext kritisch und gefährden die publizistische Glaubwürdigkeit nachhaltig (vgl. Thürbach, zit. n. Bluhm \& Schäfer 2023, S.~33). Erstere sind jedoch schwerer erkennbar, da kein Abgleich mit den Eingabedaten möglich ist. Dies erfordert Gegenmaßnahmen, etwa redaktionelle Kontrollinstanzen oder explizite Schutzregeln in der Prompt-Gestaltung (vgl. Abschnitt~\ref{prompt-engineering-strategie}).
 
-Für den produktiven Einsatz haben sich \textbf{LLM-API-Aggregatoren} als Zugriffsschicht etabliert: Sie bündeln Modelle verschiedener Anbieter hinter einer einheitlichen Schnittstelle und ermöglichen anbieterunabhängige Modellauswahl ohne Codeanpassungen.
+Für hochfrequente Echtzeit-Szenarien sind \textbf{kompakte Modelle} besonders relevant: Kurze, faktenbasierte Generierungsaufgaben mit strukturierten Eingabedaten erfordern keine umfangreiche Inferenz, sodass kompakte Modelle vergleichbare Ausgabequalität bei deutlich niedrigerer Latenz und geringeren Kosten erzielen (vgl. Brown et al.~2020; OpenAI 2023).
+
+Für den produktiven Einsatz haben sich \textbf{LLM-API-Aggregatoren} als Zugriffsschicht etabliert: Sie bündeln Modelle verschiedener Anbieter hinter einer einheitlichen Schnittstelle und ermöglichen anbieterunabhängige Modellauswahl ohne Codeanpassungen (vgl. Abschnitt~\ref{multi-provider-architektur}).
 
 
 
@@ -156,7 +158,7 @@ White-Label-Bedarf (Kap.~\ref{white-label-bedarf-im-profisport}) & Self-hostbare
 \addlinespace
 Echtzeit-Datenabruf & Polling/WebSocket je nach Latenzanforderung (Kap.~\ref{echtzeit-kommunikation-im-web}) \\
 \addlinespace
-Verknüpfte Spielentitäten & Relationale DB mit ACID-Garantien (Kap.~\ref{backend-frontend-und-deployment-technologien}) \\
+Verknüpfte Spielentitäten & Relationale DB mit ACID-Garantien (Kap.~\ref{backend-framework-und-persistenzschicht}) \\
 \bottomrule
 \end{tabular}
 \end{table}
