@@ -18,7 +18,7 @@ die Testabdeckung als Qualitätsmerkmale des Entwicklungsprozesses
 dokumentiert.
 
 Die Implementierung folgt dem Grundsatz \textbf{„so einfach wie nötig,
-so modular wie sinnvoll''}: Standardpfade (CRUD, Listabfragen) sind
+so modular wie sinnvoll''} — Standardpfade (CRUD, Listabfragen) sind
 bewusst direkt gehalten (Router → Repository), während die
 LLM-Generierung mit ihren Retry-, Semaphore- und Few-Shot-Mechanismen in
 einen dedizierten Service extrahiert ist.
@@ -52,7 +52,7 @@ backend/app/
 \end{verbatim}
 
 Diese Aufteilung entspricht dem klassischen
-Repository-Service-Router-Muster: Router delegieren an Repositories für
+Repository-Service-Router-Muster. Router delegieren an Repositories für
 einfache CRUD-Operationen und an Services für Logik, die mehrere
 Repositories oder externe Aufrufe koordiniert.
 
@@ -144,7 +144,7 @@ und \texttt{synthetic\_event\_id} (FK auf \texttt{synthetic\_events})
 den generierten Text mit seinem Auslöser. Die Felder \texttt{status}
 (\texttt{draft}/\texttt{published}/\texttt{rejected}) und
 \texttt{source} (\texttt{ai}/\texttt{manual}) bilden den
-Ticker-Lifecycle ab (vgl. Kap. 4.3.2). Drei zusammengesetzte Indizes
+Ticker-Lifecycle ab (vgl. Abschnitt~\ref{status-lifecycle-und-betriebsmodi}). Drei zusammengesetzte Indizes
 (\texttt{ix\_ticker\_match\_status}, \texttt{ix\_ticker\_match\_phase},
 \texttt{ix\_ticker\_event\_id}) optimieren die häufigsten Abfragen:
 publizierte Einträge je Spiel, Phase-Filter und den
@@ -183,7 +183,7 @@ Spielstandwerte aus der Partner-API widerspiegeln, erhalten explizite
 durch den globalen \texttt{alias\_generator=to\_camel} automatisch
 kanonisches camelCase (\texttt{homeTeamId}, \texttt{awayTeamId}). Die
 Koexistenz beider Konventionen in derselben Schema-Klasse ist eine
-bewusste Designentscheidung: Das Frontend konsumiert sowohl
+bewusste Designentscheidung. Das Frontend konsumiert sowohl
 Partner-API-Daten als auch eigenständig modellierte Beziehungen, und
 beide müssen ohne Feldumbenennungen im Frontend konsistent adressierbar
 sein.
@@ -511,7 +511,7 @@ Client-Seite übernimmt, ist in Abschnitt 5.4.5 beschrieben.
 
 \section{KI-Generierungspipeline}\label{ki-generierungspipeline}
 
-\subsection{Ablaufdiagramm}\label{ablaufdiagramm}
+\subsection{Ablaufdiagramm und Deduplizierung}\label{ablaufdiagramm}
 
 Die folgende Darstellung zeigt den vollständigen Ablauf von einem neuen
 Live-Ereignis bis zum publizierten Ticker-Eintrag:
@@ -523,11 +523,7 @@ Live-Ereignis bis zum publizierten Ticker-Eintrag:
 \label{fig:tickergenerationflow}
 \end{figure}
 
-\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
-
-\subsection{Deduplizierung}\label{deduplizierung}
-
-Ein zentrales Qualitätsmerkmal der Pipeline ist die Deduplizierung: Der
+Ein zentrales Qualitätsmerkmal der Pipeline ist die Deduplizierung. Der
 Generierungsendpunkt prüft vor jedem LLM-Aufruf, ob bereits ein
 Ticker-Eintrag für die \texttt{event\_id} existiert:
 
@@ -556,8 +552,7 @@ Modus-Steuerung}\label{statusentscheidung-und-modus-steuerung}
 
 Der initiale Status des erzeugten Ticker-Eintrags wird über den
 Aufrufparameter \texttt{auto\_publish} gesteuert, den n8n aus dem
-\texttt{ticker\_mode} des Spiels ableitet (vgl. Kap. 4.3.3 für die
-konzeptionelle Beschreibung der drei Betriebsmodi):
+\texttt{ticker\_mode} des Spiels ableitet (vgl. Abschnitt~\ref{status-lifecycle-und-betriebsmodi}):
 
 \begin{Shaded}
 \begin{Highlighting}[]
@@ -624,7 +619,7 @@ Ticker-Einträge}\label{zustandsautomat-der-ticker-eintruxe4ge}
 
 Das konzeptionelle Statusmodell (\texttt{draft} → \texttt{published} /
 \texttt{rejected}, Undo-Übergang \texttt{published\ →\ draft}) ist
-vollständig in Abschnitt 4.3.2 beschrieben. Implementierungsseitig sind
+vollständig in Abschnitt~\ref{status-lifecycle-und-betriebsmodi} beschrieben. Implementierungsseitig sind
 zwei Details hervorzuheben:
 
 Der Übergang \texttt{published\ →\ draft} (Undo) ist im Frontend als
@@ -938,8 +933,7 @@ unbeabsichtigten Reconnect-Versuch auslösen.
 Frontend}\label{modusimplementierung-im-frontend}
 
 Der aktive Modus (\texttt{auto} / \texttt{coop} / \texttt{manual})
-steuert das Verhalten mehrerer Frontend-Komponenten (vgl. Kap. 4.6.4 für
-die konzeptionelle Einordnung der Moduslogik und Interaktionsdesign).
+steuert das Verhalten mehrerer Frontend-Komponenten (vgl. Abschnitt~\ref{status-lifecycle-und-betriebsmodi} und~\ref{dreispalten-layout-und-redaktionsfluss}).
 Die Implementierung verteilt sich auf drei Ebenen:
 
 \textbf{Persistenz und Synchronisation} --- \texttt{useTickerMode}
@@ -1013,10 +1007,16 @@ definiert die gemeinsamen Domain-Interfaces:
 \end{Shaded}
 
 \textbf{Ergebnis} --- Nach der Migration erzielt das Projekt \textbf{0
-TypeScript-Compilerfehler} und eine \textbf{type-coverage von 95,84 \%}
+TypeScript-Compilerfehler} und eine \textbf{type-coverage von 97,44 \%}
 (gemessen mit \texttt{type-coverage\ -\/-strict}). Die detaillierte
 Darstellung der Migrationsergebnisse und die Analyse der verbleibenden
 untypisierten Stellen folgt in Abschnitt 6.2.5.
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsection{White-Label-Konfiguration}\label{white-label-konfiguration-impl}
+
+Für eine neue White-Label-Instanz sind vier Konfigurationsbereiche anzupassen, die sich auf alle Systemschichten verteilen. Das \textbf{Frontend-Branding} ist in \texttt{src/config/whitelabel.ts} als typisiertes \texttt{WhitelabelConfig}-Objekt zentralisiert. Es definiert \texttt{clubName}, \texttt{teamKeyword}, Farbpalette sowie API- und n8n-Endpunkte — eine einzige Datei konfiguriert das gesamte Erscheinungsbild der Instanz. Der \textbf{Backend-Instanzbezeichner} ist in \texttt{backend/app/core/constants.py} als \texttt{DEFAULT\_TICKER\_INSTANCE} hinterlegt (\texttt{"ef\_whitelabel"} oder \texttt{"generic"}) und wird bei jedem generierten Ticker-Eintrag im \texttt{instance}-Feld persistiert, das instanzspezifische Few-Shot-Filterung und Evaluationsauswertungen ermöglicht. Die \textbf{Few-Shot-Referenzen} werden als kuratierte Originaltexte des Partnervereins in die \texttt{style\_references}-Tabelle importiert; der LLM-Service filtert sie zur Laufzeit nach \texttt{instance} und \texttt{event\_type} (vgl. Abschnitt~\ref{llm-service-prompt-aufbau-und-provider-dispatch}). Das \textbf{n8n-Team-Keyword} entspricht dem \texttt{teamKeyword}-Wert aus \texttt{whitelabel.ts} und wird in den Workflow-Knoten gegen den Teamnamen des aktuellen Spiels abgeglichen, um die Instanzzuordnung bei Heim- und Auswärtsspielen korrekt zu treffen (vgl. Abschnitt~\ref{partner-team-konzept-und-white-label-steuerung}).
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
@@ -1024,10 +1024,10 @@ untypisierten Stellen folgt in Abschnitt 6.2.5.
 Workflow-Implementierung}\label{n8n-workflow-implementierung}
 
 Die n8n-Workflows bilden die Orchestrierungsschicht zwischen externen
-Datenquellen, dem FastAPI-Backend und dem LLM-Dienst. Alle 15
+Datenquellen, dem FastAPI-Backend und dem LLM-Dienst. Alle 17
 Workflow-Dateien liegen als versionierte JSON-Exporte im
 Projektverzeichnis \texttt{n8n/} vor und können direkt in eine
-n8n-Instanz importiert werden. Die Workflows gliedern sich in vier
+n8n-Instanz importiert werden. Die Workflows gliedern sich in sechs
 funktionale Gruppen:
 
 \textbf{A) Stammdaten und Matchstruktur} --- Die Workflows
@@ -1063,8 +1063,17 @@ das diese über WebSocket verteilt; die Social-Media-Workflows speichern
 Clips in der Datenbank. Diese Workflows dienen der Ingestion, nicht dem
 Publishing.
 
+\textbf{E) Monitoring} --- \texttt{15\_live\_stats\_monitor} überwacht
+konfigurierte Spieltage, erkennt aktive Live-Spiele und triggert bei
+Bedarf den Abruf aktueller Match-Statistiken. Er läuft zeitgesteuert und
+ergänzt die Webhook-getriggerten Workflows um eine aktive Überwachungsebene.
+
+\textbf{F) Spielzeit} --- \texttt{16\_aktuelle\_minute\_livespiel} liefert
+die aktuelle Spielminute im Live-Betrieb per periodischem Webhook-Aufruf
+und hält den Minutenzähler im Frontend aktuell.
+
 Dieser Abschnitt dokumentiert die Implementierungsdetails der fünf
-zentralen Workflows (Gruppen B--D).
+zentralen Workflows aus den Gruppen B bis D.
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
