@@ -12,7 +12,7 @@ Dieser Abschnitt beschreibt das Schichtenmodell (Abschnitt~\ref{schichtenmodell}
 
 \subsection{Schichtenmodell}\label{schichtenmodell}
 
-Das System folgt einem Drei-Schichten-Modell, das Integrationslogik, Anwendungslogik und Präsentation klar voneinander trennt.
+Das System folgt einem Drei-Schichten-Modell, das Integrationslogik, Anwendungslogik und Präsentation klar voneinander trennt. Gegenüber einer Microservices-Architektur reduziert dieses Modell betriebliche Komplexität und Deployment-Overhead — für ein intern betriebenes Redaktionswerkzeug mit überschaubaren Nutzerzahlen der adäquate Trade-off.
 
 Die \textbf{Integrationsschicht} wird durch n8n realisiert und bildet die Schnittstelle zu externen Datenquellen. Sie bindet Football-API, ScorePlay und Social-Feeds an, normalisiert die Rohdaten und kapselt die gesamte Integrationslogik so, dass Workflow-Anpassungen den Anwendungskern nicht berühren. Alle verarbeiteten Daten übergibt n8n ohne eigene Datenpersistenz entweder direkt in die Datenbank oder über REST-Endpunkte an die Anwendungsschicht.
 
@@ -57,7 +57,7 @@ Länder, Teams, Wettbewerbe, Spiele & n8n-Webhook (je Navigationsebene, einmalig
 Aufstellungen, Events, Match-Statistiken & „Read first, trigger if missing" (beim Match-Öffnen) & Keine (nur bei leerem Datenbestand) \\
 Prematch-Daten, Spieler-Statistiken & Immer beim Match-Öffnen & $<$30~s (redaktionelle Vorbereitung) \\
 Live-Events, Spielstatistiken, Minutenupdates & Periodisch, 60-Sekunden-Takt im Live-Betrieb & $<$60~s \\
-Medienupdates (ScorePlay) & WF08 per HTTP POST an \texttt{/media/incoming}; Backend pusht per WebSocket ans Frontend & $<$1~s (Echtzeit) \\
+Medienupdates (ScorePlay) & HTTP POST an \texttt{/media/incoming}; Backend pusht per WebSocket ans Frontend & $<$1~s (Echtzeit) \\
 Social-Media-Embeds (Twitter, YouTube, Instagram) & n8n-Webhook (on-demand, redakteurgetriggert) & Keine \\
 \end{longtable}
 }
@@ -69,7 +69,7 @@ Social-Media-Embeds (Twitter, YouTube, Instagram) & n8n-Webhook (on-demand, reda
 \label{fig:kommunikationsfluss}
 \end{figure}
 
-Das System koppelt über drei klar getrennte Schnittstellentypen. Die \textbf{REST-API} bildet den stabilen Kern für alle Lese- und Schreiboperationen: Ticker-CRUD, Statusübergänge und manuelle Eingaben. Das Backend antwortet ausschließlich reaktiv auf eingehende Aufrufe und initiiert selbst keine n8n-Workflows. \textbf{n8n-Webhooks} übernehmen Stammdaten, Match-Kontext und KI-Generierung, wie in der vorstehenden Tabelle zusammengefasst. Der \textbf{WebSocket-Kanal \texttt{/ws/media}} übernimmt den Echtzeit-Push für latenzkritische Medieninhalte.
+Das System koppelt über drei klar getrennte Schnittstellentypen. Die \textbf{REST-API} bildet den stabilen Kern für alle Lese- und Schreiboperationen — Ticker-CRUD, Statusübergänge und manuelle Eingaben. Das Backend antwortet ausschließlich reaktiv auf eingehende Aufrufe und initiiert selbst keine n8n-Workflows. \textbf{n8n-Webhooks} übernehmen Stammdaten, Match-Kontext und KI-Generierung, wie in der vorstehenden Tabelle zusammengefasst. Der \textbf{WebSocket-Kanal \texttt{/ws/media}} übernimmt den Echtzeit-Push für latenzkritische Medieninhalte.
 
 Diese hybride Triggerarchitektur bildet die technische Grundlage für die in Abschnitt~\ref{status-lifecycle-und-betriebsmodi} beschriebenen Betriebsmodi. Für den Ticker-Datenfluss wurde Polling gewählt, da die redaktionelle Latenztoleranz keinen Echtzeit-Push erfordert.
 
@@ -135,7 +135,7 @@ Robustheit}\label{asynchronituxe4t-nebenluxe4ufigkeit-und-performance}
 
 Aufbauend auf der in Abschnitt~\ref{framework-wahl} beschriebenen async-Architektur begrenzt ein konfigurierbarer \textbf{Semaphore-Mechanismus} gleichzeitige LLM-Aufrufe und verhindert Lastspitzen sowie Rate-Limit-Probleme, auch bei mehreren parallel laufenden Spielen. Ergänzend behandelt ein \textbf{Retry-Mechanismus mit gestuftem Backoff} transiente Fehler und Rate-Limit-Antworten. Die konkreten Wartezeiten sind in Abschnitt~\ref{llm-service-prompt-aufbau-und-provider-dispatch} dokumentiert. Langlaufende Integrationslogik ist in n8n ausgelagert, was den API-Server von Integrationsaufwand entlastet.
 
-Für den Live-Betrieb ist das Backend auf kontrollierte Degradation ausgelegt: Bei Teilausfällen externer Dienste bleiben persistierte Daten verfügbar und redaktionelle Kernprozesse können fortgeführt werden. Transportschichtsicherheit über HTTPS, CORS-Whitelisting und die in Abschnitt~\ref{framework-wahl} beschriebene Pydantic-Validierung bilden die Basisabsicherung. Benutzerauthentifizierung wurde ausgeklammert (vgl. Abschnitt~\ref{abgrenzung}). Datenbankoperationen sind durch \texttt{match\_id} logisch isoliert, sodass das Backend alle konfigurierten Spiele gleichzeitig verwalten kann, ohne dass parallele Verarbeitungen interferieren. Eine architektonische Grenze bildet der WebSocket-Kanal für Medienupdates: Der zugehörige Verbindungsmanager ist als prozesslokaler Singleton konzipiert, sodass ein Multi-Prozess-Deployment eine Pub/Sub-Erweiterung erfordern würde (vgl. Abschnitt~\ref{technische-einordnung}).
+Für den Live-Betrieb ist das Backend auf kontrollierte Degradation ausgelegt. Bei Teilausfällen externer Dienste bleiben persistierte Daten verfügbar und redaktionelle Kernprozesse können fortgeführt werden. Transportschichtsicherheit über HTTPS, CORS-Whitelisting und die in Abschnitt~\ref{framework-wahl} beschriebene Pydantic-Validierung bilden die Basisabsicherung. Benutzerauthentifizierung wurde ausgeklammert (vgl. Abschnitt~\ref{abgrenzung}). Datenbankoperationen sind durch \texttt{match\_id} logisch isoliert, sodass das Backend alle konfigurierten Spiele gleichzeitig verwalten kann, ohne dass parallele Verarbeitungen interferieren. Eine architektonische Grenze bildet der WebSocket-Kanal für Medienupdates — der zugehörige Verbindungsmanager ist als prozesslokaler Singleton konzipiert, sodass ein Multi-Prozess-Deployment eine Pub/Sub-Erweiterung erfordern würde (vgl. Abschnitt~\ref{technische-einordnung}).
 
 \subsection{Qualitätssicherungskonzept}\label{qualitätssicherungskonzept}
 
@@ -238,7 +238,7 @@ Als Standardmodell im Deployment wurde \textbf{Gemini 2.0 Flash Lite} über Open
 
 Die in Abschnitt~\ref{linguistische-anforderungen-an-die-textgenerierung} hergeleiteten Merkmale des Liveticker-Genres (konzeptionelle Mündlichkeit, Ellipsen-Syntax, Präsenstempus, Graphostilistik und direkte Adressierung) definieren das Zielformat, auf das das LLM konditioniert wird. Der Regelblock des Prompts operationalisiert diese Vorgaben als explizite Modellanweisungen.
 
-Die Generierung verwendet ein modulares Prompt-Design mit sechs Bausteinen (Rolleninstruktion, Stilinstruktion, Faktenblock, Kontextblock, Few-Shot-Block und Regelblock), die dynamisch zusammengesetzt werden und deren Zusammenspiel Abbildung~\ref{fig:prompt-aufbau} zeigt. Die Stilinstruktion parametrisiert eines von drei Stilprofilen — \textbf{neutral} (sachlicher, unparteiischer Reporter-Stil), \textbf{euphorisch} (leidenschaftlicher Fan-Stil, situationsadaptiv je nach Spielstand) und \textbf{kritisch} (analytischer Kommentator-Stil mit expliziter Fehlerbenennung). Der Few-Shot-Block ist instanzspezifisch: Er wird nur eingebettet, wenn für die aktive Instanz Stilreferenzen in der Datenbank hinterlegt sind.
+Die Generierung verwendet ein modulares Prompt-Design mit sechs Bausteinen (Rolleninstruktion, Stilinstruktion, Faktenblock, Kontextblock, Few-Shot-Block und Regelblock), die dynamisch zusammengesetzt werden und deren Zusammenspiel Abbildung~\ref{fig:prompt-aufbau} zeigt. Die Stilinstruktion parametrisiert eines von drei Stilprofilen — \textbf{neutral} (sachlicher, unparteiischer Reporter-Stil), \textbf{euphorisch} (leidenschaftlicher Fan-Stil, situationsadaptiv je nach Spielstand) und \textbf{kritisch} (analytischer Kommentator-Stil mit expliziter Fehlerbenennung). Der Few-Shot-Block ist instanzspezifisch und wird nur eingebettet, wenn für die aktive Instanz Stilreferenzen in der Datenbank hinterlegt sind.
 
 \begin{figure}[H]
 \centering
@@ -251,7 +251,7 @@ Der Few-Shot-Block wird aus manuell kuratierten Original-Tickertexten des Partne
 
 \subsection{Mehrsprachige Textgenerierung}\label{mehrsprachige-textgenerierung-konzept}
 
-Mehrsprachigkeit ist als eines der drei zentralen Systemziele in der Forschungsfrage verankert (vgl. Abschnitt~\ref{forschungsfrage}) und adressiert den internationalen Spielbetrieb des Partnervereins in europäischen Wettbewerben (vgl. Abschnitt~\ref{mehrsprachigkeit-als-herausforderung}). Die Designentscheidung lautet: Mehrsprachigkeit wird als natives Merkmal der Generierungspipeline konzipiert, nicht als nachträgliche Übersetzungsschicht. Das vermeidet eine separate Übersetzungsinfrastruktur und stellt sicher, dass stilistische Anforderungen direkt in der Zielsprache umgesetzt werden.
+Mehrsprachigkeit ist als eines der drei zentralen Systemziele in der Forschungsfrage verankert (vgl. Abschnitt~\ref{forschungsfrage}) und adressiert den internationalen Spielbetrieb des Partnervereins in europäischen Wettbewerben (vgl. Abschnitt~\ref{mehrsprachigkeit-als-herausforderung}). Mehrsprachigkeit wird als natives Merkmal der Generierungspipeline konzipiert, nicht als nachträgliche Übersetzungsschicht. Das vermeidet eine separate Übersetzungsinfrastruktur und stellt sicher, dass stilistische Anforderungen direkt in der Zielsprache umgesetzt werden.
 
 Das System unterstützt Deutsch, Englisch, Spanisch und Französisch, die Zielsprache wählt der Redakteur zur Laufzeit. Für bereits bestehende Einträge des aktiven Spiels greift ein Batch-Übersetzungsendpunkt. Derselbe Prompt-Mechanismus gilt für alle Sprachen ohne sprachspezifische Varianten. Die konkrete Implementierung ist in Abschnitt~\ref{api-router-endpunktstruktur} dokumentiert.
 
@@ -265,13 +265,13 @@ React wurde gegenüber Vue und Svelte bevorzugt. Das größere Ökosystem und di
 
 \subsection{Architektur und Zustandsmanagement}\label{architekturprinzipien}
 
-Das Frontend trennt UI-Komponenten, datenbezogene Hooks und API-Zugriffsschicht klar voneinander. Auf eine globale State-Management-Bibliothek wie Redux oder Zustand wurde bewusst verzichtet: Der Zustandsumfang des Redaktionsworkflows rechtfertigt keine zusätzliche Abstraktion. Gemeinsamer Zustand für tief verschachtelte Komponenten wird über dedizierte Context-Provider bereitgestellt, um Prop-Drilling zu vermeiden und Re-Renders zu kontrollieren. Die Zustands- und Interaktionslogik ist in wiederverwendbare Custom Hooks aufgeteilt, die Navigation, Polling, Echtzeitkommunikation und Redaktionsinteraktion abdecken. Die White-Label-Fähigkeit ist über eine Konfigurationsschicht konzipiert, die Farben, Team-Keyword und API-Endpunkte je Instanz variiert (vgl. Abschnitt~\ref{komponentenhierarchie}).
+Das Frontend trennt UI-Komponenten, datenbezogene Hooks und API-Zugriffsschicht klar voneinander. Auf eine globale State-Management-Bibliothek wie Redux oder Zustand wurde bewusst verzichtet, da der Zustandsumfang des Redaktionsworkflows keine zusätzliche Abstraktion rechtfertigt. Gemeinsamer Zustand für tief verschachtelte Komponenten wird über dedizierte Context-Provider bereitgestellt, um Prop-Drilling zu vermeiden und Re-Renders zu kontrollieren. Die Zustands- und Interaktionslogik ist in wiederverwendbare Custom Hooks aufgeteilt, die Navigation, Polling, Echtzeitkommunikation und Redaktionsinteraktion abdecken. Die White-Label-Fähigkeit ist über eine Konfigurationsschicht konzipiert, die Farben, Team-Keyword und API-Endpunkte je Instanz variiert (vgl. Abschnitt~\ref{komponentenhierarchie}).
 
 \subsection{Layout und Moduslogik}\label{dreispalten-layout-und-redaktionsfluss}
 
 Die Hauptansicht folgt einem Dreispalten-Ansatz mit klarer Aufgabenverteilung. Das linke Panel zeigt den chronologischen Feed publizierter Ticker-Einträge. Das mittlere Panel bildet die redaktionelle Kernarbeit ab, darunter Event-Verarbeitung in Abhängigkeit vom Betriebsmodus, Draft-Prüfung und Freigabe, manuelle Eingabe sowie integrierte Media- und Social-Panels für Partnervereinsspiele. Das rechte Panel liefert Kontextinformationen wie Matchstatistiken, Aufstellungen und spielerbezogene Leistungsdaten.
 
-Die Modusumschaltung ist mit Bestätigungsdialog und visueller Rückmeldung ausgestattet. Im kooperativen Modus sind Tastatur-Shortcuts für den Accept-/Reject-Flow verfügbar (vgl. Abschnitt~\ref{status-lifecycle-und-betriebsmodi}). Für die manuelle Eingabe ist ein \textbf{Slash-Command-Parser} konzipiert: Phase- und Event-Commands (\texttt{/anpfiff}, \texttt{/goal}, \texttt{/gelb} u.\,a.) werden über eine einheitliche Syntaxstruktur geparst und direkt in strukturierte Ticker-Einträge überführt, ohne Formularnavigation. Die Kommunikationsarchitektur des Frontends ist in Abschnitt~\ref{kommunikations--und-triggerarchitektur} beschrieben. Die konkreten Implementierungen sind in Abschnitt~\ref{frontend-implementierung} dokumentiert.
+Die Modusumschaltung ist mit Bestätigungsdialog und visueller Rückmeldung ausgestattet. Im kooperativen Modus sind Tastatur-Shortcuts für den Accept-/Reject-Flow verfügbar (vgl. Abschnitt~\ref{status-lifecycle-und-betriebsmodi}). Für die manuelle Eingabe ist ein \textbf{Slash-Command-Parser} konzipiert. Phase- und Event-Commands (\texttt{/anpfiff}, \texttt{/goal}, \texttt{/gelb} u.\,a.) werden über eine einheitliche Syntaxstruktur geparst und direkt in strukturierte Ticker-Einträge überführt, ohne Formularnavigation. Die Kommunikationsarchitektur des Frontends ist in Abschnitt~\ref{kommunikations--und-triggerarchitektur} beschrieben. Die konkreten Implementierungen sind in Abschnitt~\ref{frontend-implementierung} dokumentiert.
 
 \subsection{Teststrategie}\label{frontend-teststrategie}
 
@@ -287,7 +287,7 @@ Das System ist als Cloud-native Anwendung konzipiert, die auf PaaS-Infrastruktur
 
 Das \texttt{FastAPI}-Backend wird als Docker-Container auf Render.com deployt. Das React-Frontend wird als statische Seite über das Render-CDN bereitgestellt. Render ermöglicht Deployments direkt aus einem definierten Git-Branch und injiziert Konfiguration und Zugangsdaten ausschließlich als Umgebungsvariablen, sodass keine Secrets im Repository verbleiben. Die Datenbankschicht nutzt PostgreSQL als Managed Service über Supabase. Datenbankadministration, Backups und Verbindungspooling liegen damit außerhalb der Anwendungsverantwortung.
 
-Die n8n-Workflow-Instanz ist für den Evaluationszeitraum lokal betrieben und über einen \texttt{ngrok}-Tunnel für eingehende Webhooks erreichbar. Diese Lösung ist bewusst auf den Evaluationszeitraum beschränkt: Sie eliminiert Hosting-Kosten und erlaubt schnelle Workflow-Iteration ohne Redeploy-Zyklen. Die Limitationen gegenüber einem Produktivbetrieb sind in Abschnitt~\ref{technische-einordnung} diskutiert.
+Die n8n-Workflow-Instanz ist für den Evaluationszeitraum lokal betrieben und über einen \texttt{ngrok}-Tunnel für eingehende Webhooks erreichbar. Diese Lösung ist bewusst auf den Evaluationszeitraum beschränkt — sie eliminiert Hosting-Kosten und erlaubt schnelle Workflow-Iteration ohne Redeploy-Zyklen. Die Limitationen gegenüber einem Produktivbetrieb sind in Abschnitt~\ref{technische-einordnung} diskutiert.
 
 
 
