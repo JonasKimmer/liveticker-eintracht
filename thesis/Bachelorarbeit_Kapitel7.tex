@@ -48,9 +48,11 @@ Die Arbeit leistet drei Beiträge zum aktuellen Forschungsstand:
   dreistufigem Betriebsmodus-Konzept.
 \item
   \textbf{Methodischer Beitrag}: Die Evaluationsinfrastruktur mit
-  Bulk-Generierungsendpunkt, Provider-Override und statistischen
-  Vergleichsmetriken (Cliff's Delta, Bootstrap-CI, Cohen's Kappa)
-  ermöglicht systematische, reproduzierbare Modellvergleiche.
+  Bulk-Generierungsendpunkt und Provider-Override ermöglicht systematische,
+  reproduzierbare Modellvergleiche. Statistische Vergleichsmetriken
+  (Cliff's Delta, Bootstrap-CI, Cohen's Kappa) sind als Infrastruktur
+  implementiert und für externe Folgestudien mit mehreren Ratern ausgelegt
+  (vgl. Abschnitt~\ref{methodische-einordnung}).
 \item
   \textbf{Praktischer Beitrag}: Die White-Label-Architektur mit
   instanzspezifischer Stilsteuerung adressiert den in Kapitel 2.3
@@ -107,23 +109,11 @@ Laufzeit-Strategie. Für einen Produktivbetrieb mit mehreren
 gleichzeitigen Spielen wäre ein expliziter Konfigurationsmechanismus pro
 Spiel (z. B. ein Datenbankfeld) robuster.
 
-Der \texttt{useAutoPublisher}-Hook im Frontend enthält eine semantische
-Doppelung: Im Auto-Modus setzt n8n über \texttt{auto\_publish=True} den
-Status bereits beim Generieren; der Hook fängt Residualfälle auf. Diese
-Zweispurigkeit entstand durch inkrementelle Entwicklung und könnte auf
-eine definitive Strategie konsolidiert werden.
-
 Die WebSocket-Verbindung existiert als In-Memory-Singleton pro Prozess.
 Bei einem Multi-Prozess-Deployment (mehrere Uvicorn-Worker hinter einem
 Load-Balancer) würden Medien-Updates nur Clients des jeweiligen Workers
 erreichen; eine Redis-Pub/Sub-Erweiterung wäre die natürliche
 Skalierungsstufe.
-
-Der \texttt{strict}-Modus in \texttt{tsconfig.json} ist derzeit
-deaktiviert, um die inkrementelle TypeScript-Migration nicht zu
-blockieren. Eine schrittweise Aktivierung von \texttt{strictNullChecks}
-und \texttt{noImplicitAny} ist der naheliegende Folgeschritt zur
-weiteren Härtung der Codebasis.
 
 Eine automatisierte CI-Pipeline fehlt im aktuellen Systemstand. Die Testsuite ist lokal ausführbar, wird jedoch nicht bei jedem Commit automatisch verifiziert, was die Regressionssicherheit bei parallelen Entwicklungsaktivitäten einschränkt. Die Integration eines CI-Diensts wäre ein direkter Folgeschritt ohne architektonische Voraussetzungen.
 
@@ -180,14 +170,23 @@ unkritische Event-Typen (z. B. Phasenwechsel wie „Anpfiff'' oder
 \subsection{Coop-Modus: Der intendierte
 Produktivbetrieb}\label{coop-modus-der-intendierte-produktivbetrieb}
 
-Im Evaluationszeitraum wurden im Coop-Modus keine Einträge nach Freigabe
-zurückgezogen --- ein Hinweis darauf, dass die redaktionelle Prüfung als
-Qualitätsstufe wirksam ist. Ob einzelne Entwürfe vor der Freigabe
-inhaltlich editiert wurden, wurde nicht systematisch erfasst;
-Bearbeitungen sind über das Frontend jedoch jederzeit möglich. Die
-TAB/ESC-Tastatursteuerung erweist sich als zentrales Mittel, um den
-Entscheidungsdurchsatz zu sichern, ohne den Redakteur visuell zu
+Der \texttt{coop}-Modus ist der intendierte Produktivbetrieb, weil er
+die beiden zentralen Anforderungen balanciert: die Geschwindigkeit der
+KI-Generierung und die publizistische Verantwortung des Redakteurs.
+Der \texttt{auto}-Modus ist für journalistische Kontexte zu riskant, da
+Halluzinationen ohne Prüfung veröffentlicht werden. Der
+\texttt{manual}-Modus eliminiert den Zeitdruckvorteil der KI vollständig.
+Der \texttt{coop}-Modus kombiniert beides: Das LLM liefert den Entwurf
+innerhalb von Sekunden, der Redakteur prüft und gibt mit TAB frei oder
+verwirft mit ESC. Die Tastatursteuerung ist dabei entscheidend --- sie
+sichert den Entscheidungsdurchsatz, ohne den Redakteur visuell zu
 überlasten.
+
+Im Evaluationszeitraum wurden im \texttt{coop}-Modus keine Einträge nach
+Freigabe zurückgezogen, was auf eine wirksame Qualitätsstufe hindeutet.
+Ob Entwürfe vor der Freigabe inhaltlich editiert wurden, wurde nicht
+systematisch erfasst. Bearbeitungen sind über das Frontend jedoch
+jederzeit möglich.
 
 \subsection{Manual-Modus: Status quo als
 Vergleichsbasis}\label{manual-modus-status-quo-als-vergleichsbasis}
@@ -237,7 +236,9 @@ bietet dieser Ansatz zwei Vorteile:
 \end{enumerate}
 
 Ein kontrollierter A/B-Test (mit vs.~ohne Referenzen) war nicht
-durchführbar. Qualitativ zeigt die Evaluation
+durchführbar, da alle produktiv generierten Einträge mit aktiven
+Stilreferenzen erstellt wurden und eine Kontrollgruppe ex-post nicht
+konstruierbar ist. Qualitativ zeigt die Evaluation
 konsistente Formatierungsmuster in der \texttt{ef\_whitelabel}-Instanz
 --- insbesondere bei TOOOOR-Konvention und Minutenformat. Der Effekt ist
 sichtbar, aber statistisch nicht isoliert messbar.
@@ -245,7 +246,7 @@ sichtbar, aber statistisch nicht isoliert messbar.
 \subsection{Temperatur und
 Determinismus}\label{temperatur-und-determinismus}
 
-Die gewählte Temperatur von 0,3 für die Textgenerierung und 0,1 für
+Die gewählte Temperatur von 0,5 für die Textgenerierung und 0,1 für
 Übersetzungen ist ein Kompromiss zwischen sprachlicher Varianz und
 Vorhersagbarkeit. Eine niedrigere Temperatur würde die
 Halluzinationsrate weiter senken, aber die Texte formelhafter machen ---
@@ -254,7 +255,7 @@ sprachlicher Kreativität lebt) besonders relevant ist.
 
 \subsection{Kontext-Aufbereitung}\label{kontext-aufbereitung}
 
-Die sieben spezialisierten Context-Builder (vgl. Abschnitt 5.2.6)
+Die sieben spezialisierten Context-Builder (vgl. Abschnitt~\ref{llm-service-prompt-aufbau-und-provider-dispatch})
 strukturieren die Fakten vor der Übergabe an das LLM. Diese
 Vorverarbeitung reduziert die Wahrscheinlichkeit von Halluzinationen, da
 das Modell nicht aus unstrukturierten Rohdaten extrahieren muss, sondern
