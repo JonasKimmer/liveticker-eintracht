@@ -76,7 +76,7 @@ Die Systemanalyse zeigt sechs strukturelle Defizite, die den Handlungsbedarf fü
 \item \textbf{Systemkomplexität und Fehleranfälligkeit:} Das Backend besteht aus zahlreichen Sonderlösungen und ist entsprechend komplex. Für Redakteure, die das System nicht gut kennen, erhöht dies die Fehleranfälligkeit im laufenden Betrieb erheblich (vgl.\ Abschnitt~\ref{experteninterview-leitfaden}).
 \end{itemize}
 
-Diese Defizite spiegeln die drei in Abschnitt~\ref{problemstellung-und-zielsetzung} identifizierten Problemdimensionen direkt wider: operativer Zeitdruck durch vollständig manuelle Produktion, fehlende Mehrsprachigkeit und eingeschränkte White-Label-Fähigkeit. Das in dieser Arbeit entwickelte System adressiert alle sechs Punkte. Die fehlende KI-Unterstützung und Stilunterstützung werden durch die LLM-Pipeline mit konfigurierbaren Stilprofilen adressiert (vgl.\ Abschnitt~\ref{ki-komponente}), die manuelle Score-Pflege und fehlenden Live-Statistiken durch automatisierte n8n-ETL-Workflows (vgl.\ Abschnitt~\ref{workflow-konzeption-n8n}), die fehlende Medienintegration durch die MediaQueue-Architektur (vgl.\ Abschnitt~\ref{n8n-workflow-implementierung}) und das Mehrsprachdefizit durch die native LLM-Übersetzungsfunktion (vgl.\ Abschnitt~\ref{mehrsprachige-textgenerierung-konzept}). Die erhöhte Systemkomplexität wird durch eine Drei-Schichten-Architektur mit klar getrennten Verantwortlichkeiten strukturell reduziert (vgl.\ Abschnitt~\ref{systemkonzeption}).
+Diese Defizite spiegeln die drei in Abschnitt~\ref{problemstellung-und-zielsetzung} identifizierten Problemdimensionen direkt wider: operativer Zeitdruck durch vollständig manuelle Produktion, fehlende Mehrsprachigkeit und eingeschränkte White-Label-Fähigkeit. Das in dieser Arbeit entwickelte System adressiert alle sechs Punkte. Die fehlende KI-Unterstützung und Stilunterstützung werden durch eine konfigurierbare Textgenerierungskomponente adressiert (vgl.\ Abschnitt~\ref{ki-komponente}), die manuelle Score-Pflege und fehlenden Live-Statistiken durch automatisierte Datenimportprozesse (vgl.\ Abschnitt~\ref{workflow-konzeption-n8n}), die fehlende Medienintegration durch eine strukturierte Medienverwaltungsschicht (vgl.\ Abschnitt~\ref{n8n-workflow-implementierung}) und das Mehrsprachdefizit durch native mehrsprachige Textgenerierung (vgl.\ Abschnitt~\ref{mehrsprachige-textgenerierung-konzept}). Die erhöhte Systemkomplexität wird durch eine modulare Architektur mit klar getrennten Verantwortlichkeiten strukturell reduziert (vgl.\ Abschnitt~\ref{systemkonzeption}).
 
 
 
@@ -108,13 +108,13 @@ Herleitung
 F1 & Drei Betriebsmodi (\texttt{auto}, \texttt{coop}, \texttt{manual}) & Kap.~\ref{problemstellung-und-zielsetzung}, \ref{redaktioneller-aufwand-bei-livetickern} \\
 F2 & KI-Textgenerierung für alle Event-Typen & Kap.~\ref{redaktioneller-aufwand-bei-livetickern}, \ref{anforderungsanalyse-am-beispiel-eintracht-frankfurt} \\
 F3 & Drei Stilprofile (neutral, euphorisch, kritisch) & Kap.~\ref{white-label-bedarf-im-profisport}, \ref{prompt-engineering-strategie} \\
-F4 & Few-Shot-Prompting mit Stilreferenzen & Kap.~\ref{white-label-bedarf-im-profisport}, \ref{prompt-engineering} \\
+F4 & Stilkonfiguration über vereinsspezifische Referenztexte & Kap.~\ref{white-label-bedarf-im-profisport}, \ref{prompt-engineering} \\
 F5 & Ticker-Lifecycle (draft → published / rejected / deleted) & Kap.~\ref{redaktioneller-aufwand-bei-livetickern} \\
 F6 & Schnelle manuelle Ticker-Erstellung im \texttt{manual}-Modus & Kap.~\ref{redaktioneller-aufwand-bei-livetickern} (Zeitdruck) \\
 F7 & Mehrsprachige Textgenerierung (Deutsch, Englisch; erweiterbar auf
 weitere Sprachen) & Kap.~\ref{mehrsprachigkeit-als-herausforderung} \\
-F8 & Idempotenter Datenimport via n8n & Kap.~\ref{redaktioneller-aufwand-bei-livetickern} (Robustheit) \\
-F9 & Provider-Fallback-Kette & Kap.~\ref{redaktioneller-aufwand-bei-livetickern} (Verfügbarkeit) \\
+F8 & Idempotenter Datenimport & Kap.~\ref{redaktioneller-aufwand-bei-livetickern} (Robustheit) \\
+F9 & Anbieterunabhängige LLM-Integration mit Ausfallsicherheit & Kap.~\ref{redaktioneller-aufwand-bei-livetickern} (Verfügbarkeit) \\
 F10 & Deduplizierung von Ticker-Einträgen & Kap.~\ref{redaktioneller-aufwand-bei-livetickern} (Korrektheit) \\
 F11 & Pre-Match-Kontextgenerierung (Verletzungen, H2H, etc.) & Kap.~\ref{redaktioneller-aufwand-bei-livetickern} (Elaboration) \\
 F12 & Live-Statistik-Updates & Kap.~\ref{redaktioneller-aufwand-bei-livetickern} (Echtzeit) \\
@@ -144,8 +144,8 @@ Herleitung
 \endlastfoot
 N1 & Concurrency-Begrenzung für LLM-Aufrufe & Kap.~\ref{redaktioneller-aufwand-bei-livetickern} (Zeitdruck) \\
 N2 & Retry-Logik mit Rate-Limit-Erkennung & Kap.~\ref{redaktioneller-aufwand-bei-livetickern} (Verfügbarkeit) \\
-N3 & Transaktionale Testisolierung & Kap.~\ref{redaktioneller-aufwand-bei-livetickern} (Echtzeit-Betrieb erfordert datenbankisolierte Tests zur Absicherung unter Produktionsbedingungen) \\
-N4 & TypeScript-Typsicherheit & Kap.~\ref{white-label-bedarf-im-profisport} (Mehrinstanz-Betrieb erfordert typsichere Konfigurationsschnittstellen zur Fehlervermeidung) \\
+N3 & Reproduzierbare, isolierte Testausführung unter Produktionsbedingungen & Kap.~\ref{redaktioneller-aufwand-bei-livetickern} (Echtzeit-Betrieb erfordert Tests, die Produktionsbedingungen zuverlässig abbilden) \\
+N4 & Typsichere Konfigurationsschnittstellen zwischen Komponenten & Kap.~\ref{white-label-bedarf-im-profisport} (Mehrinstanz-Betrieb erfordert fehlertolerante Konfigurationsschnittstellen) \\
 N5 & Responsive UI (Mobile-tauglich) & Kap.~\ref{redaktioneller-aufwand-bei-livetickern} (Einsatzszenarien) \\
 N6 & Fehlerresistenz im Frontend & Kap.~\ref{redaktioneller-aufwand-bei-livetickern} (Robustheit) \\
 \end{longtable}
