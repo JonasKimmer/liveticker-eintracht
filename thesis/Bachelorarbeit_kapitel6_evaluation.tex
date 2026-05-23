@@ -65,7 +65,7 @@ eiskalt.'' \\
 \end{longtable}
 }
 
-Die drei Stilprofile unterscheiden sich deutlich in Ausrufezeichen-Dichte, Wortwahl und Perspektive. Die Einordnung der Stärken und Schwächen der einzelnen Profile erfolgt in Abschnitt~\ref{diskussion-der-prompt-architektur}.
+Die drei Stilprofile unterscheiden sich deutlich in Ausrufezeichen-Dichte, Wortwahl und Perspektive. Abbildung~\ref{fig:qualitaet-stilprofil} zeigt die quantitativen Bewertungsunterschiede aus der LLM-as-Judge-Evaluation (N\,=\,80, Datengrundlage: Abschnitt~\ref{erweiterte-evaluation}). Die Einordnung der Stärken und Schwächen der einzelnen Profile erfolgt in Abschnitt~\ref{diskussion-der-prompt-architektur}.
 
 \begin{figure}[H]
 \centering
@@ -78,7 +78,7 @@ Die drei Stilprofile unterscheiden sich deutlich in Ausrufezeichen-Dichte, Wortw
 
 Für die qualitative Analyse wurden 40 KI-generierte Ticker-Einträge (Modell: \texttt{google/gemini-2.0-flash-lite-001}, Sprache: Deutsch) aus 15 Bundesliga-Spielen der Saison~2024/25 ausgewählt, um die häufigsten Event-Typen (Tor, Gelbe Karte, Wechsel) sowie alle drei Stilprofile abzudecken. Rote Karten sind in der Stichprobe nicht vertreten, da kein entsprechendes Ereignis in den ausgewählten Spielen vorlag. Bewertet wurden drei Dimensionen auf einer Skala von 1 (ungenügend) bis 5 (exzellent): \textbf{Korrektheit} (Fakten korrekt, keine Halluzinationen), \textbf{Tonalität} (Konformität zum gewählten Stilprofil) und \textbf{Verständlichkeit} (sprachliche Flüssigkeit und Genrekonformität). Die Bewertung erfolgte durch den Entwickler als Einzelrater.
 
-Die Ergebnisse aufgeschlüsselt nach Event-Typ:
+Die Ergebnisse sind nach Event-Typ aufgeschlüsselt:
 
 {\def\LTcaptype{none} % do not increment counter
 \begin{longtable}[]{@{}
@@ -125,7 +125,7 @@ Pre-Match (Kontext) & 3 & 3{,}3 & 4{,}7 & 4{,}0 & 4{,}0 \\
 „81. Minute: WAS IST DENN HIER LOS?! Collins mit der butterweichen Flanke! DOAN! Der Ball ist drin! TOOOOR! 1:0! Die Hütte bebt!'' \emph{(R. Doan, Eintracht Frankfurt vs.~FSV Mainz 05, Vorlage Collins)}
 \end{quote}
 
-Alle Fakten (Minute, Torschütze, Vorlagengeber, Ergebnis) korrekt, das euphorische Stilprofil präzise getroffen, Länge genrekonform.
+Alle Fakten (Minute, Torschütze, Vorlagengeber, Ergebnis) sind korrekt, das euphorische Stilprofil ist präzise getroffen, die Länge ist genrekonform.
 
 Die qualitative Analyse identifizierte folgende wiederkehrende Fehlerklassen:
 
@@ -248,7 +248,7 @@ Mock & --- & regelbasiert (Templates) & --- & \textless{} 10 & \textless{} 10 \\
 
 \emph{Die Provider Gemini (direkt), OpenAI (\texttt{gpt-4o-mini}) und Anthropic (\texttt{claude-haiku-4-5-20251001}) sind architektonisch vollständig integriert, wurden jedoch mangels aktivierter API-Keys im Evaluationszeitraum nicht gemessen.}
 
-Die 26 LLM-Aufrufe liegen zwischen 876\,ms und 4\,226\,ms (Median 3\,338\,ms, Mittelwert 3\,136\,ms, Std.\ 641\,ms). Ein einzelner Ausreißer nach unten (876\,ms) deutet auf einen Gemini-seitigen Cache-Treffer hin; alle übrigen Messungen entfallen auf die Kaltgenerierung (2\,413--4\,226\,ms). Die Fehlerrate beträgt 0\,\% (vgl. Abbildung~\ref{fig:latenzen-histogram}).
+Die 26 LLM-Aufrufe liegen zwischen 876\,ms und 4\,226\,ms (Median 3\,338\,ms, Mittelwert 3\,136\,ms, Std.\ 641\,ms). Ein einzelner Ausreißer nach unten (876\,ms) deutet auf einen Gemini-seitigen Cache-Treffer hin. Alle übrigen Messungen entfallen auf die Kaltgenerierung (2\,413--4\,226\,ms). Die Fehlerrate beträgt 0\,\% (vgl. Abbildung~\ref{fig:latenzen-histogram}).
 
 \begin{figure}[H]
 \centering
@@ -260,7 +260,7 @@ Die 26 LLM-Aufrufe liegen zwischen 876\,ms und 4\,226\,ms (Median 3\,338\,ms, Mi
 
 \section{Latenzpotenzial der Betriebsmodi}\label{evaluation-der-betriebsmodi}
 
-Die drei Betriebsmodi unterscheiden sich strukturell in ihrer erreichbaren Publikationslatenz. Auf Basis der gemessenen LLM-Latenzen (Median 3\,338~ms, P95 3\,698~ms, vgl. Abschnitt~\ref{llm-latenz}) und des 15-Sekunden-Polling-Intervalls im Live-Modus (vgl. Abschnitt~\ref{frontend-polling}) ergibt sich für den \texttt{auto}-Modus eine architekturbasierte Time-to-Publish von ≈ 5--30~s (Football-API-Aufruf 74~ms, n8n-Verarbeitung und Backend-HTTP ~1,3~s, LLM-Generierung 3,3~s, Erkennungsverzögerung bis 10~s, Frontend-Polling bis 15~s), verglichen mit der manuellen Baseline von 30--120~s (Abschnitt~\ref{zeitdruck-und-fehleranfaelligkeit}; vom Interviewpartner für typische Ereignisse mit 30--90~s angegeben, vgl.\ Abschnitt~\ref{experteninterview-auswertung}). Die folgende Tabelle schlüsselt die Latenzkomponenten auf:
+Die drei Betriebsmodi unterscheiden sich strukturell in ihrer erreichbaren Publikationslatenz. Auf Basis der gemessenen LLM-Latenzen (Median 3\,338~ms, P95 3\,698~ms, vgl. Abschnitt~\ref{llm-latenz}) und des 15-Sekunden-Polling-Intervalls im Live-Modus (vgl. Abschnitt~\ref{frontend-polling}) ergibt sich für den \texttt{auto}-Modus eine architekturbasierte Time-to-Publish von $\approx$\,5--30~s: Football-API-Aufruf 74~ms, n8n-Verarbeitung und Backend-HTTP $\approx$1\,300~ms, LLM-Generierung 3\,338~ms, Erkennungsverzögerung bis 10~s, Frontend-Polling bis 15~s. Die manuelle Baseline liegt bei 30--120~s (vgl. Abschnitt~\ref{zeitdruck-und-fehleranfaelligkeit}). Der Interviewpartner nannte für typische Ereignisse 30--90~s (vgl. Abschnitt~\ref{experteninterview-auswertung}). Die folgende Tabelle schlüsselt die Latenzkomponenten auf:
 
 {\def\LTcaptype{none}
 \begin{longtable}[]{@{}llll@{}}
@@ -279,7 +279,7 @@ Frontend-Polling & Ja & bis 15~s & Abschnitt~\ref{frontend-polling} \\
 \end{longtable}
 }
 
-Die n8n-seitige Erkennungslatenz (Polling-Zyklus der Workflows gegen die Football-API sowie HTTP-Overhead bis zum Backend-Aufruf) ist nicht gemessen und ist eine zusätzliche, nicht quantifizierte Komponente der Gesamtlatenz. Da ein kontrolliertes Feldexperiment mit echten Redakteuren nicht durchführbar war, ist dies eine Potenzialabschätzung, keine empirisch gemessene Größe. Ein separater Textqualitätsvergleich zwischen \texttt{auto}- und \texttt{coop}-Modus ist methodisch nicht erforderlich: \texttt{coop}-Einträge durchlaufen dieselbe LLM-Generierung wie \texttt{auto}-Einträge und werden zusätzlich redaktionell geprüft, sodass ihre Qualität strukturell mindestens gleich ist.
+Die n8n-seitige Erkennungslatenz (Polling-Zyklus der Workflows gegen die Football-API sowie HTTP-Overhead bis zum Backend-Aufruf) ist nicht gemessen und ist eine zusätzliche, nicht quantifizierte Komponente der Gesamtlatenz. Da ein kontrolliertes Feldexperiment mit echten Redakteuren nicht durchführbar war, ist dies eine Potenzialabschätzung, keine empirisch gemessene Größe. Ein separater Textqualitätsvergleich zwischen \texttt{auto}- und \texttt{coop}-Modus ist methodisch nicht erforderlich. \texttt{coop}-Einträge durchlaufen dieselbe LLM-Generierung wie \texttt{auto}-Einträge und werden zusätzlich redaktionell geprüft, sodass ihre Qualität strukturell mindestens gleich ist.
 
 
 \section{Anforderungsabgleich
