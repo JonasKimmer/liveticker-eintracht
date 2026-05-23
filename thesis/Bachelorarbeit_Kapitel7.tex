@@ -16,7 +16,7 @@ bestehenden Ansätzen der automatisierten Sportberichterstattung (Kapitel
 Beils 2023, S. 207) bietet der LLM-basierte Ansatz eine höhere
 sprachliche Varianz und Anpassungsfähigkeit an unterschiedliche
 Stilprofile. Templatebasierte Systeme erzeugen deterministische, aber
-oft formelhaft wirkende Texte; LLM-generierte Texte sind sprachlich
+oft formelhaft wirkende Texte. LLM-generierte Texte sind sprachlich
 natürlicher, dafür nicht-deterministisch.
 
 \textbf{Gegenüber vollautonomen KI-Systemen} betont die vorliegende
@@ -62,22 +62,21 @@ Die Arbeit leistet drei Beiträge zum aktuellen Forschungsstand:
 
 \section{Kritische Reflexion}\label{kritische-reflexion}
 
-Die in Kapitel 6.7 dokumentierten Limitationen werden im Folgenden
-hinsichtlich ihrer Implikationen eingeordnet.
+Die folgenden Abschnitte ordnen die zentralen Limitationen des Systems
+hinsichtlich ihrer Implikationen ein.
 
 \subsection{Methodische Einordnung}\label{methodische-einordnung}
 
 Die zentrale methodische Einschränkung betrifft die Selbstbewertung der
-Textqualität (vgl. Kapitel 6.7, „Keine externe Nutzerstudie''). Im
-Design Science Research ist die Evaluation durch den Entwickler ein
-verbreitetes Vorgehen bei initialen Artefaktiterationen (Hevner et
-al.~2004), begrenzt jedoch die externe Validität der qualitativen
-Ergebnisse. Die implementierte Cohen's-Kappa-Metrik ist bewusst als
-Infrastruktur für eine Folgestudie mit externen Ratern angelegt.
+Textqualität. Im Design Science Research ist die Evaluation durch den
+Entwickler ein verbreitetes Vorgehen bei initialen Artefaktiterationen
+(Hevner et al.~2004), begrenzt jedoch die externe Validität der
+qualitativen Ergebnisse. Die implementierte Cohen's-Kappa-Metrik ist
+bewusst als Infrastruktur für eine Folgestudie mit externen Ratern
+angelegt.
 
-Die eingeschränkte Stichprobengröße (vgl. Kapitel 6.7, „Eingeschränkte
-Stichprobengröße'') relativiert die Generalisierbarkeit der
-quantitativen Ergebnisse. Insbesondere Randsituationen --- torloses
+Die eingeschränkte Stichprobengröße relativiert die Generalisierbarkeit
+der quantitativen Ergebnisse. Insbesondere Randsituationen --- torloses
 Unentschieden, Elfmeterschießen, Spielabbrüche --- sind in der
 Datenbasis vermutlich unterrepräsentiert. Die
 Bulk-Evaluationsinfrastruktur ermöglicht jedoch eine systematische
@@ -85,22 +84,19 @@ Erweiterung der Datenbasis ohne Codeänderung.
 
 \subsection{Technische Einordnung}\label{technische-einordnung}
 
-Das Polling-Modell (vgl. Kapitel 6.7, „Polling statt Push'') stellt für
-den Einzelbetrieb keine Einschränkung dar, würde aber bei steigender
+Das Polling-Modell stellt für den Einzelbetrieb keine Einschränkung dar, würde aber bei steigender
 Nutzerzahl (\textgreater50 gleichzeitige Clients) zu einer relevanten
 Serverlast führen. Die bestehende WebSocket-Infrastruktur für den
 Media-Kanal zeigt, dass eine Umstellung auf Server-Sent Events für den
 Ticker-Datenfluss technisch machbar ist.
 
-Die fehlende Authentifizierung (vgl. Kapitel 6.7, „Keine
-Authentifizierung'') ist im Kontext eines internen Redaktionswerkzeugs
-vertretbar, schließt aber einen offenen Mehrbenutzerbetrieb ohne
+Die fehlende Authentifizierung ist im Kontext eines internen
+Redaktionswerkzeugs vertretbar, schließt aber einen offenen Mehrbenutzerbetrieb ohne
 Netzwerkabsicherung aus. Die Architektur ist durch die saubere
 Middleware-Schichtung (FastAPI Dependencies) für eine nachträgliche
 JWT-Integration vorbereitet.
 
-Die 15 n8n-Workflows (vgl. Kapitel 6.7, „Keine Tests für
-n8n-Workflows'') stellen den größten nicht automatisiert getesteten
+Die 17 n8n-Workflows stellen den größten nicht automatisiert getesteten
 Systemteil dar. Da sie die gesamte Datenversorgung des Systems
 verantworten, wäre eine Absicherung durch Integrationstests gegen eine
 Staging-Datenbank für den Produktivbetrieb prioritär.
@@ -141,14 +137,14 @@ formelleren Register zu schreiben als es das Genre Liveticker erfordert.
 Die Few-Shot-Referenzen aus der \texttt{style\_references}-Tabelle sind
 das primäre Mittel, um diese stilistische Lücke zu schließen.
 
-Die Evaluationsergebnisse (Abschnitt 6.3.6) zeigen, dass die
+Die Evaluationsergebnisse (vgl. Abschnitt~\ref{qualitative-analyse-der-generierten-texte}) zeigen, dass die
 Few-Shot-Referenzen das Format zuverlässig konditionieren ---
 Minutenangaben, TOOOOR-Konvention und Textkürze werden konsistent
 übernommen. Die stilistische Lücke ist damit teilweise geschlossen:
 Faktentreue und Verständlichkeit profitieren von der strukturierten
 Kontextübergabe, während Tonalität als schwächste Dimension verbleibt.
 Die häufigste Fehlerklasse --- Stil-Inkonsistenz (vgl.
-Fehlerklassen-Tabelle in Abschnitt 6.3.6) --- tritt gerade dort auf, wo
+Fehlerklassen-Tabelle in Abschnitt~\ref{qualitative-analyse-der-generierten-texte}) --- tritt gerade dort auf, wo
 euphorische Few-Shot-Muster in den neutralen Stil bluten. Eine Trennung
 der Referenz-Pools nach Stilprofil wäre die naheliegende Korrektur.
 
@@ -174,7 +170,7 @@ praktischen Einsatz diskutiert.
 Kontrolle}\label{auto-modus-geschwindigkeit-auf-kosten-der-kontrolle}
 
 Die Stärke des \texttt{auto}-Modus liegt in der Geschwindigkeit (vgl.
-TTP-Messung in Abschnitt 6.4.2). Das Risiko besteht in unkontrollierten
+Abschnitt~\ref{evaluation-der-betriebsmodi}). Das Risiko besteht in unkontrollierten
 Halluzinationen, die ohne redaktionelle Prüfung veröffentlicht werden.
 Im journalistischen Kontext, in dem Glaubwürdigkeit eine zentrale
 Ressource darstellt (Beils 2023, S. 57), ist dieser Modus daher nur für
@@ -241,7 +237,7 @@ bietet dieser Ansatz zwei Vorteile:
 \end{enumerate}
 
 Ein kontrollierter A/B-Test (mit vs.~ohne Referenzen) war nicht
-durchführbar (vgl. Abschnitt 6.3.5). Qualitativ zeigt die Evaluation
+durchführbar. Qualitativ zeigt die Evaluation
 konsistente Formatierungsmuster in der \texttt{ef\_whitelabel}-Instanz
 --- insbesondere bei TOOOOR-Konvention und Minutenformat. Der Effekt ist
 sichtbar, aber statistisch nicht isoliert messbar.
@@ -338,7 +334,7 @@ Die Diskussion der Evaluationsergebnisse entlang der vier Dimensionen
 --- Abgrenzung zum Stand der Technik, methodische und technische
 Limitationen, Betriebsmodi und Prompt-Architektur --- ergibt ein
 konsistentes Gesamtbild: Das System löst die in Kapitel 1.1
-identifizierten drei Problemdimensionen (Zeitdruck, Mehrsprachigkeit,
+identifizierten drei Anforderungsdimensionen (Zeitdruck, Mehrsprachigkeit,
 White-Label-Bedarf) durch technisch nachweisbare Mechanismen; die
 verbleibenden Schwächen (Stil-Inkonsistenz, fehlende Authentifizierung,
 eingeschränkte Stichprobengröße) sind klar lokalisiert und lösbar.
