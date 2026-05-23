@@ -302,12 +302,12 @@ Nr. & Anforderung & Nachweis \\
 F1 & Drei Betriebsmodi (auto, coop, manual) & \texttt{PATCH /matches/\{id\}/ticker-mode}; 5 API-Tests \\
 F2 & KI-Generierung für alle Event-Typen & 24 Typen in \texttt{EVENT\_TYPE\_LABEL}; Bulk-Endpoint \\
 F3 & Drei Stilprofile & \texttt{STYLE\_DESC} im Prompt; per Match konfigurierbar \\
-F4 & Few-Shot-Prompting mit Stilreferenzen & Bis zu 3 Referenzen aus \texttt{style\_references}; nach Event-Typ gefiltert \\
+F4 & Stilkonfiguration über vereinsspezifische Referenztexte & Bis zu 3 Referenzen aus \texttt{style\_references}; nach Event-Typ gefiltert \\
 F5 & Ticker-Lifecycle (draft → published / rejected) & State-Machine mit publish/reject/retract; 21 API-Tests \\
 F6 & Slash-Command-Parser & 11 Phasen- und 14 Event-Commands (in \texttt{CMD\_MAP}); 36 Unit-Tests \\
 F7 & Mehrsprachige Textgenerierung & \texttt{translate\_text()} mit Temperatur 0{,}1; Batch-Endpoint; funktional verifiziert; Übersetzungsqualität qualitativ nicht benchmarkt (vgl. Abschnitt~\ref{technische-einordnung}) \\
-F8 & Idempotenter n8n-Import & UPSERT-Strategien für Events, Spieler, Teams \\
-F9 & Provider-Fallback-Kette & 5 Provider (openrouter → gemini → openai → anthropic → mock) \\
+F8 & Idempotenter Datenimport & UPSERT-Strategien für Events, Spieler, Teams \\
+F9 & Anbieterunabhängige LLM-Integration mit Ausfallsicherheit & 5 Provider (openrouter → gemini → openai → anthropic → mock) \\
 F10 & Deduplizierung & Prüfung auf bestehenden Eintrag per \texttt{event\_id} vor LLM-Aufruf \\
 F11 & Pre-Match-Kontextgenerierung & 7 Context-Builder in \texttt{llm\_context\_builders.py} \\
 F12 & Live-Statistik-Updates & \texttt{ctx\_live\_stats()} in \texttt{llm\_context\_builders.py}; automatische Zwischenstand-Texte; durch \texttt{test\_ticker\_service.py} (Context-Builder-Tests) abgedeckt \\
@@ -316,8 +316,8 @@ F13 & Medienintegration (ScorePlay, Social-Media-Panels) & MediaQueue-Architektu
 \multicolumn{3}{l}{\emph{Nicht-funktionale Anforderungen}} \\
 N1 & Concurrency-Begrenzung LLM & \texttt{asyncio.Semaphore(8)} in \texttt{ticker\_service.py} \\
 N2 & Retry mit Rate-Limit-Erkennung & 3 Versuche; 30\,s/60\,s bei Rate-Limit; 1\,s/2\,s sonst \\
-N3 & Transaktionale Testisolierung & Rollback-Fixtures; keine persistenten Testdaten \\
-N4 & TypeScript-Typsicherheit & 98{,}02\,\% type-coverage (\texttt{npx type-coverage}); 0 Compiler-Fehler \\
+N3 & Reproduzierbare, isolierte Testausführung unter Produktionsbedingungen & Rollback-Fixtures; keine persistenten Testdaten \\
+N4 & Typsichere Konfigurationsschnittstellen zwischen Komponenten & 98{,}02\,\% type-coverage (\texttt{npx type-coverage}); 0 Compiler-Fehler \\
 N5 & Responsive UI & Playwright-Test 375×812 (iPhone~X\,/\,XS\,/\,12\,mini u.\,a.); Mobile Tab Bar \\
 N6 & Fehlerresistenz Frontend & \texttt{ErrorBoundary} mit Fallback-UI; 4 Tests \\
 \midrule\noalign{}
