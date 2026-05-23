@@ -1,6 +1,6 @@
 \chapter{Einleitung}\label{einleitung}
 
-Ein Liveticker ist eine Form der Echtzeit-Berichterstattung, bei der Spielereignisse und redaktionelle Einordnungen eines Fußballspiels fortlaufend als kurze Texteinträge publiziert werden (vgl. Hauser 2008, S.~1; Bluhm \& Schäfer 2023, S.~24--27). Der Liveticker hat sich dabei zur zentralen Darstellungsform digitaler Sportkommunikation entwickelt. Vereine und Medien berichten in Echtzeit auf eigenen Plattformen, direkt und ohne klassischen Redaktionsumweg (vgl. Beils 2023, S.~8 u.~155). Dieser strukturelle Wandel erhöht den Tempo- und Qualitätsdruck auf Redakteure erheblich und begründet den Bedarf an technologischer Unterstützung.
+Ein Liveticker ist eine Form der Echtzeit-Berichterstattung, bei der Spielereignisse und redaktionelle Einordnungen eines Fußballspiels fortlaufend als kurze Texteinträge publiziert werden (vgl. Hauser 2008, S.~1; Bluhm \& Schäfer 2023, S.~24--27). Der Liveticker hat sich dabei zur zentralen Darstellungsform digitaler Sportkommunikation entwickelt. Vereine und Medien berichten in Echtzeit auf eigenen Plattformen, direkt und ohne klassischen Redaktionsumweg (vgl. Beils 2023, S.~8 u.~155). Dieser strukturelle Wandel erhöht den Tempo- und Qualitätsdruck auf Redakteure erheblich.
 
 \section{Problemstellung und
 Zielsetzung}\label{problemstellung-und-zielsetzung}
@@ -22,8 +22,6 @@ Um das Ziel zu operationalisieren, definiert und evaluiert die Arbeit drei Betri
 
 \section{Forschungsfrage}\label{forschungsfrage}
 
-Aus der vorstehenden Zielsetzung ergibt sich die Forschungsfrage, die der vorliegenden Arbeit zugrunde liegt.
-
 \begin{quote}
 \emph{Lässt sich ein hybrides KI-gestütztes Redaktionssystem für die
 Liveticker-Erstellung im Profifußball realisieren, das
@@ -44,7 +42,7 @@ Praxisproblem entworfen, implementiert und evaluiert. Der
 Erkenntnisgewinn entsteht nicht nur aus der Evaluation, sondern
 auch aus dem Entwurfs- und Implementierungsprozess selbst. Die generalisierbaren Beiträge sind eine übertragbare LLM-Redaktionsarchitektur sowie eine reproduzierbare Evaluationsinfrastruktur auf Basis des LLM-as-Judge-Verfahrens.
 
-Das methodische Vorgehen umfasst fünf aufeinander aufbauende Phasen, von der Problemanalyse über Technologierecherche und Systemkonzeption bis zu Implementierung und Evaluation. Deren Inhalte beschreibt Abschnitt~\ref{aufbau-der-arbeit} im Einzelnen.
+Das methodische Vorgehen umfasst fünf aufeinander aufbauende Phasen, von der Problemanalyse über Technologierecherche und Systemkonzeption bis zu Implementierung und Evaluation.
 
 Die Evaluationsmethodik operationalisiert die Forschungsfrage anhand der drei Qualitätsdimensionen Korrektheit, Tonalität und Verständlichkeit durch eine manuelle Bewertung von 40 KI-generierten Ticker-Einträgen sowie eine ergänzende LLM-as-Judge-Evaluation (vgl. Zheng et al.~2023). Ein strukturiertes Experteninterview mit einem Digitalverantwortlichen von Eintracht Frankfurt ergänzt die quantitativen Befunde um eine praxisnahe Außenperspektive und wird in Kapitel~\ref{diskussion} ausgewertet.
 
@@ -56,8 +54,8 @@ Die Praxisorientierung dieser Arbeit ergibt sich aus der Kooperation mit der Sta
 
 \section{Aufbau der Arbeit}\label{aufbau-der-arbeit}
 
-Die vorliegende Arbeit gliedert sich in acht Kapitel. Kapitel~\ref{motivation-und-anforderungen} vertieft die drei Problemdimensionen und leitet die formalen Systemanforderungen am Fallbeispiel Eintracht Frankfurt ab. Kapitel~\ref{stand-der-technik} arbeitet die technologischen Grundlagen auf, darunter Large Language Models, Prompt Engineering, automatisierte Sportberichterstattung, ETL-Prozesse sowie Echtzeit-, Backend-, Frontend- und Deployment-Technologien.
+Die vorliegende Arbeit gliedert sich in acht Kapitel. Kapitel~\ref{motivation-und-anforderungen} vertieft die drei Anforderungsdimensionen und leitet die formalen Systemanforderungen am Fallbeispiel Eintracht Frankfurt ab. Kapitel~\ref{stand-der-technik} arbeitet die technologischen Grundlagen auf, darunter Large Language Models, Prompt Engineering, automatisierte Sportberichterstattung, ETL-Prozesse sowie Echtzeit-, Backend-, Frontend- und Deployment-Technologien.
 
 Kapitel~\ref{systemkonzeption} entwirft die dreischichtige Systemarchitektur mit Datenmodell, LLM-Pipeline und Prompt-Design. Kapitel~\ref{implementierung} dokumentiert die Umsetzung als produktionsfähige Webanwendung mit TypeScript-Frontend, REST-API, n8n-ETL-System, Cloud-Deployment und automatisierter Qualitätssicherung.
 
-Kapitel~\ref{evaluation} evaluiert die technische Qualität, die KI-Textgenerierung und gleicht alle Anforderungen systematisch ab. Kapitel~\ref{diskussion} ordnet die Ergebnisse in den Stand der Technik ein, reflektiert Limitationen und diskutiert Betriebsmodi, Prompt-Architektur, Implikationen für den Sportjournalismus sowie die ethische Einordnung des KI-Einsatzes. Kapitel~\ref{fazit-und-ausblick} beantwortet die Forschungsfrage und gibt einen Ausblick auf Erweiterungen.
+Kapitel~\ref{evaluation} evaluiert die technische Qualität, die KI-Textgenerierung und gleicht alle Anforderungen systematisch ab. Kapitel~\ref{diskussion} ordnet die Ergebnisse in den Stand der Technik ein, reflektiert Limitationen, wertet das Experteninterview aus und diskutiert Betriebsmodi, Prompt-Architektur, Implikationen für den Sportjournalismus sowie die ethische Einordnung des KI-Einsatzes. Kapitel~\ref{fazit-und-ausblick} beantwortet die Forschungsfrage und gibt einen Ausblick auf Erweiterungen.
