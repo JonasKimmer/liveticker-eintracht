@@ -84,7 +84,7 @@ Diese Defizite spiegeln die drei in Abschnitt~\ref{problemstellung-und-zielsetzu
 \section{Zusammenfassung der
 Systemanforderungen}\label{zusammenfassung-der-systemanforderungen}
 
-Die folgenden 24 Anforderungen fassen die aus den Problemdimensionen hergeleiteten sowie technisch und architektonisch motivierten Systemeigenschaften zusammen. Sie gliedern sich in funktionale Anforderungen (Abschnitt~\ref{funktionale-anforderungen}), nicht-funktionale Anforderungen (Abschnitt~\ref{nicht-funktionale-anforderungen}) und Architektur-Anforderungen (Abschnitt~\ref{architektur-anforderungen}). Abschnitt~\ref{anforderungsabgleich-soll-ist-vergleich} überprüft jeden Punkt gegen den implementierten Stand.
+Die folgenden 24 Anforderungen fassen die aus den Anforderungsdimensionen hergeleiteten sowie technisch und architektonisch motivierten Systemeigenschaften zusammen. Sie gliedern sich in funktionale Anforderungen (Abschnitt~\ref{funktionale-anforderungen}), nicht-funktionale Anforderungen (Abschnitt~\ref{nicht-funktionale-anforderungen}) und Architektur-Anforderungen (Abschnitt~\ref{architektur-anforderungen}). Abschnitt~\ref{anforderungsabgleich-soll-ist-vergleich} überprüft jeden Punkt gegen den implementierten Stand.
 
 \subsection{Funktionale Anforderungen}\label{funktionale-anforderungen}
 
@@ -107,12 +107,11 @@ Herleitung
 \endlastfoot
 F1 & Drei Betriebsmodi (\texttt{auto}, \texttt{coop}, \texttt{manual}) & Kap.~\ref{problemstellung-und-zielsetzung}, \ref{redaktioneller-aufwand-bei-livetickern} \\
 F2 & KI-Textgenerierung für alle Event-Typen & Kap.~\ref{redaktioneller-aufwand-bei-livetickern}, \ref{anforderungsanalyse-am-beispiel-eintracht-frankfurt} \\
-F3 & Drei Stilprofile (neutral, euphorisch, kritisch) & Kap.~\ref{white-label-bedarf-im-profisport}, \ref{prompt-engineering-strategie} \\
+F3 & Drei Stilprofile (neutral, euphorisch, kritisch) & Kap.~\ref{white-label-bedarf-im-profisport} \\
 F4 & Stilkonfiguration über vereinsspezifische Referenztexte & Kap.~\ref{white-label-bedarf-im-profisport}, \ref{prompt-engineering} \\
 F5 & Ticker-Lifecycle (draft → published / rejected / deleted) & Kap.~\ref{redaktioneller-aufwand-bei-livetickern} \\
 F6 & Schnelle manuelle Ticker-Erstellung im \texttt{manual}-Modus & Kap.~\ref{redaktioneller-aufwand-bei-livetickern} (Zeitdruck) \\
-F7 & Mehrsprachige Textgenerierung (Deutsch, Englisch; erweiterbar auf
-weitere Sprachen) & Kap.~\ref{mehrsprachigkeit-als-herausforderung} \\
+F7 & Mehrsprachige Textgenerierung (Deutsch, Englisch, Spanisch, Französisch) & Kap.~\ref{mehrsprachigkeit-als-herausforderung} \\
 F8 & Idempotenter Datenimport & Kap.~\ref{redaktioneller-aufwand-bei-livetickern} (Robustheit) \\
 F9 & Anbieterunabhängige LLM-Integration mit Ausfallsicherheit & Kap.~\ref{redaktioneller-aufwand-bei-livetickern} (Verfügbarkeit) \\
 F10 & Deduplizierung von Ticker-Einträgen & Kap.~\ref{redaktioneller-aufwand-bei-livetickern} (Korrektheit) \\
