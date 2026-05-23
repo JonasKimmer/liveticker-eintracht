@@ -57,7 +57,7 @@ einfache CRUD-Operationen und an Services für Logik, die mehrere
 Repositories oder externe Aufrufe koordiniert.
 
 \texttt{app/main.py} ist der einzige Einstiegspunkt. Er registriert alle
-12 Router unter dem Pfad-Prefix \texttt{/api/v1}, konfiguriert
+13 Router unter dem Pfad-Prefix \texttt{/api/v1}, konfiguriert
 CORS-Middleware und bindet statische Dateien (Thumbnail-Cache) ein. Der
 WebSocket-Endpunkt \texttt{/ws/media} wird ohne API-Prefix eingehängt,
 da er kein REST-Ressourcenpfad ist. Beim Start führt
@@ -88,7 +88,7 @@ Endpunkt & Funktion \\
 API-Validierung}\label{datenmodelle-datenbankschema-und-api-validierung}
 
 \textbf{SQLAlchemy-Datenbankmodelle} --- Das Schema umfasst \textbf{17
-ORM-Modelle} (18 Datenbanktabellen, davon eine via Migration). Die
+ORM-Modelle} und \textbf{17 Datenbanktabellen}. Die
 zentralen Domänenobjekte sind:
 
 {\def\LTcaptype{none} % do not increment counter
@@ -316,7 +316,7 @@ Die wichtigsten Endpunkte gliedern sich in vier funktionale Bereiche:
 Batch-Generierung für Synthetic Events, Übersetzung), \textbf{Medien \&
 Clips} (ScorePlay-Import, Media-Queue, WebSocket) und
 \textbf{Spielkontext} (Lineups, Statistiken, Events). Insgesamt umfasst
-die API über 70 Routen; die vollständige Endpunktliste ist über die
+die API 71 Routen; die vollständige Endpunktliste ist über die
 automatisch generierte OpenAPI-Dokumentation unter \texttt{/api/docs}
 einsehbar.
 
@@ -439,7 +439,7 @@ voneinander, sodass fehlende Informationen (z. B. kein Spieler bei
 Phasenereignissen) den Prompt nicht invalidieren, sondern den
 entsprechenden Block auslassen.
 
-LLM-Parameter: \texttt{temperature=0.3} für konsistente Ausgaben,
+LLM-Parameter: \texttt{temperature=0.5} für konsistente Ausgaben,
 \texttt{max\_tokens} aus \texttt{LLM\_MAX\_TOKENS} (konfigurierbar). Bei
 Rate-Limit-Fehlern werden bis zu \texttt{LLM\_RETRY\_ATTEMPTS} (3)
 Versuche mit linearem Backoff (\texttt{30\ s\ /\ 60\ s\ /\ 90\ s})
@@ -1008,9 +1008,8 @@ definiert die gemeinsamen Domain-Interfaces:
 
 \textbf{Ergebnis} --- Nach der Migration erzielt das Projekt \textbf{0
 TypeScript-Compilerfehler} und eine \textbf{type-coverage von 97,44 \%}
-(gemessen mit \texttt{type-coverage\ -\/-strict}). Die detaillierte
-Darstellung der Migrationsergebnisse und die Analyse der verbleibenden
-untypisierten Stellen folgt in Abschnitt 6.2.5.
+(gemessen mit \texttt{type-coverage\ -\/-strict}). Die type-coverage dient als Nachweis für Anforderung N4 im
+Anforderungsabgleich (vgl. Abschnitt~\ref{anforderungsabgleich-soll-ist-vergleich}).
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
@@ -1259,16 +1258,13 @@ Qualitätsscores nach Gruppe (Stil, Ereignistyp, Instanz) \\
 \end{longtable}
 }
 
-Diese Funktionen werden in Kapitel 6.3--6.5 direkt genutzt:
-\texttt{cliffs\_delta} für den TTP-Vergleich, \texttt{cohens\_kappa} für
-die Bewertungsübereinstimmung und \texttt{aggregate\_quality\_by\_group}
-für die profilspezifische Qualitätsanalyse. Die Implementierung in einem
-dedizierten \texttt{utils}-Modul (statt im Test-Code) macht die
-Statistikfunktionen wiederverwendbar --- etwa für einen zukünftigen
-automatisierten Scoring-Dienst im Produktivbetrieb (vgl. Kap. 8.3.3).
+Diese Funktionen sind als Infrastruktur für systematische Folgestudien
+implementiert (vgl. Abschnitt~\ref{methodische-einordnung}). Die
+Implementierung in einem dedizierten \texttt{utils}-Modul (statt im
+Test-Code) macht die Statistikfunktionen wiederverwendbar --- etwa für
+einen zukünftigen automatisierten Scoring-Dienst im Produktivbetrieb.
 
-Die detaillierte Auswertung aller Testmetriken, Coverage-Verteilungen
-und konkreten Testbeispiele folgt in Abschnitt 6.2.
+Der Anforderungsabgleich in Abschnitt~\ref{anforderungsabgleich-soll-ist-vergleich} dokumentiert die Testabdeckung als Nachweis für die Anforderungen N1--N6.
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
@@ -1301,7 +1297,7 @@ privaten Render-Netzwerks. Beim ersten Start legt
 nachfolgende Schema-Änderungen werden via Alembic-Migrationen
 eingespielt. Da Free-Tier-Instanzen keinen persistenten Prozess-Storage
 vorhalten, ist alle Zustandshaltung in der Datenbank zentralisiert ---
-ein direktes Ergebnis des in Abschnitt 3.8.3 beschriebenen
+ein direktes Ergebnis des in Abschnitt~\ref{cloud-deployment} beschriebenen
 Stateless-Design-Prinzips.
 
 \textbf{Frontend (Static Site)} --- Das React/TypeScript-Frontend wird
