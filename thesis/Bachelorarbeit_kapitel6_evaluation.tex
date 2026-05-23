@@ -174,7 +174,7 @@ Von den drei untersuchten Pre-Match-Einträgen enthielt einer eine Wettempfehlun
 
 \subsection{Erweiterte Evaluation: LLM-as-Judge-Verfahren}\label{erweiterte-evaluation}
 
-Das \textbf{LLM-as-Judge}-Verfahren (Zheng et al.~2023) bewertet KI-generierte Ausgaben durch ein vom generierenden Modell verschiedenes Sprachmodell und vermeidet so Selbstreferenzialität. N\,=\,80 Einträge wurden nach diesem Verfahren automatisiert evaluiert.
+Das in Abschnitt~\ref{automatisierte-sportberichterstattung} beschriebene \textbf{LLM-as-Judge}-Verfahren (Zheng et al.~2023) wurde auf N\,=\,80 Einträge angewandt.
 
 \paragraph{Datenbasis}
 Die Datenbasis umfasst reale Ereignisse aus 30 Bundesliga-Spielen der Saison~2025/26, abgefragt über die Football~API~v3. Die frischere Saison vermeidet Überschneidungen mit der in der Hauptevaluation verwendeten Saison~2024/25. Als Generierungsmodell diente \texttt{google/gemini-2.0-flash-lite-001} (Temperatur~0{,}5), als bewertendes Modell \texttt{anthropic/claude-sonnet-4-5} via OpenRouter. Abgedeckt wurden 25~Tore, 25~Gelbe Karten, 4~Rote Karten, 25~Wechsel und 1~Eigentor (je 27 bzw.\ 26~Einträge pro Stilprofil).
@@ -285,7 +285,7 @@ Die n8n-seitige Erkennungslatenz (Polling-Zyklus der Workflows gegen die Footbal
 \section{Anforderungsabgleich
 (Soll-Ist-Vergleich)}\label{anforderungsabgleich-soll-ist-vergleich}\label{technische-qualitätssicherung}
 
-Der Anforderungsabgleich prüft, ob die 24 in Abschnitt~\ref{zusammenfassung-der-systemanforderungen} hergeleiteten Anforderungen erfüllt sind. 23 davon sind vollständig erfüllt. F7 ist funktional implementiert, eine qualitative Evaluation der Übersetzungsqualität steht als Folgestudie aus (vgl. Abschnitt~\ref{technische-einordnung}). Die folgende Tabelle dokumentiert den Nachweis je Anforderung:
+23 der 24 in Abschnitt~\ref{zusammenfassung-der-systemanforderungen} hergeleiteten Anforderungen sind vollständig erfüllt. F7 ist funktional implementiert, eine qualitative Evaluation der Übersetzungsqualität steht als Folgestudie aus (vgl. Abschnitt~\ref{technische-einordnung}). Die folgende Tabelle dokumentiert den Nachweis je Anforderung:
 
 {\def\LTcaptype{none} % do not increment counter
 \begin{longtable}[]{@{}
