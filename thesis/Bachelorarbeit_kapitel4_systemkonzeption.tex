@@ -227,7 +227,7 @@ Die LLM-gestützte Textgenerierung ist als providerunabhängige Komponente mit k
 
 \subsection{Multi-Provider-Architektur}\label{multi-provider-architektur}
 
-Die KI-Komponente ist als providerunabhängige Abstraktionsschicht konzipiert, in der der LLM-Dienst OpenAI, Anthropic, Google Gemini, OpenRouter und einen Mock-Provider hinter einer einheitlichen internen Schnittstelle kapselt. Das System setzt primär \textbf{OpenRouter} als Gateway ein, weil es Modelle zahlreicher Anbieter über einen einzigen API-Zugang zugänglich macht und der Modellwechsel damit lediglich eine Konfigurationsänderung erfordert, was Modellvergleiche auf demselben Prompt erleichtert (vgl. Abschnitte~\ref{large-language-models} und~\ref{llm-service-prompt-aufbau-und-provider-dispatch}). Eine Fallback-Kette aktiviert beim Start den ersten verfügbaren Anbieter. Als direkter Anthropic-Fallback ohne OpenRouter-Intermediär dient Claude Haiku, das für Kurztext-Aufgaben kosteneffiziente Latenzen erzielt und Konfigurationsszenarien ohne OpenRouter-Zugang absichert. Ist kein API-Key konfiguriert, übernimmt der Mock-Provider und sichert die Lauffähigkeit für Entwicklung und Tests.
+Die KI-Komponente ist als providerunabhängige Abstraktionsschicht konzipiert, in der der LLM-Dienst OpenRouter, Google Gemini, OpenAI, Anthropic und einen Mock-Provider hinter einer einheitlichen internen Schnittstelle kapselt. Das System setzt primär \textbf{OpenRouter} als Gateway ein, weil es Modelle zahlreicher Anbieter über einen einzigen API-Zugang zugänglich macht und der Modellwechsel damit lediglich eine Konfigurationsänderung erfordert, was Modellvergleiche auf demselben Prompt erleichtert (vgl. Abschnitte~\ref{large-language-models} und~\ref{llm-service-prompt-aufbau-und-provider-dispatch}). Eine Fallback-Kette aktiviert beim Start den ersten Anbieter mit konfiguriertem API-Key (openrouter $\rightarrow$ gemini $\rightarrow$ openai $\rightarrow$ anthropic $\rightarrow$ mock). Als direkter Anthropic-Fallback ohne OpenRouter-Intermediär dient Claude Haiku, das für Kurztext-Aufgaben kosteneffiziente Latenzen erzielt und Konfigurationsszenarien ohne OpenRouter-Zugang absichert. Ist kein API-Key konfiguriert, übernimmt der Mock-Provider und sichert die Lauffähigkeit für Entwicklung und Tests.
 
 Als Standardmodell im Deployment wurde \textbf{Gemini 2.0 Flash Lite} über OpenRouter gewählt. Die Entscheidung folgt aus Aufgabencharakteristik und Kosteneffizienz. Liveticker-Texte sind kurz und faktenbasiert, weshalb kompakte Modelle vergleichbare Qualität bei deutlich niedrigerer Latenz erzielen. Zudem zählt das Modell zu den kostengünstigsten kommerziell verfügbaren Optionen und macht den Dauerbetrieb über eine Saison für ressourcenbegrenzte Redaktionen wirtschaftlich darstellbar (vgl. Abschnitt~\ref{redaktioneller-aufwand-bei-livetickern}).
 
@@ -253,7 +253,7 @@ Der Few-Shot-Block wird aus manuell kuratierten Original-Tickertexten des Partne
 
 Mehrsprachigkeit ist als eines der drei zentralen Systemziele in der Forschungsfrage verankert (vgl. Abschnitt~\ref{forschungsfrage}) und adressiert den internationalen Spielbetrieb des Partnervereins in europäischen Wettbewerben (vgl. Abschnitt~\ref{mehrsprachigkeit-als-herausforderung}). Mehrsprachigkeit wird als natives Merkmal der Generierungspipeline konzipiert, nicht als nachträgliche Übersetzungsschicht. Das vermeidet eine separate Übersetzungsinfrastruktur und stellt sicher, dass stilistische Anforderungen direkt in der Zielsprache umgesetzt werden.
 
-Das System unterstützt Deutsch, Englisch, Spanisch und Französisch, die Zielsprache wählt der Redakteur zur Laufzeit. Für bereits bestehende Einträge des aktiven Spiels greift ein Batch-Übersetzungsendpunkt. Derselbe Prompt-Mechanismus gilt für alle Sprachen ohne sprachspezifische Varianten. Die konkrete Implementierung ist in Abschnitt~\ref{api-router-endpunktstruktur} dokumentiert.
+Das System unterstützt Deutsch, Englisch, Spanisch und Französisch, die Zielsprache wählt der Redakteur zur Laufzeit. Für bereits bestehende Einträge des aktiven Spiels greift ein Batch-Übersetzungsendpunkt. Derselbe Prompt-Mechanismus gilt für alle Sprachen ohne sprachspezifische Varianten. Die konkrete Implementierung ist in den Abschnitten~\ref{api-router-endpunktstruktur} und~\ref{llm-service-prompt-aufbau-und-provider-dispatch} dokumentiert.
 
 \section{Frontend-Konzeption}\label{frontend-konzeption}
 
@@ -280,8 +280,6 @@ Das Frontend wird auf drei Ebenen getestet — Utility-Funktionen (reine Transfo
 
 
 \section{Deployment-Konzept}\label{deployment-konzept}
-
-Das Deployment-Konzept legt die Infrastruktur- und Hosting-Entscheidungen für den Betrieb des Systems fest.
 
 Das System ist als Cloud-native Anwendung konzipiert, die auf PaaS-Infrastruktur (vgl. Abschnitt~\ref{cloud-deployment}) ohne eigene Serververwaltung betrieben werden kann. Das Deployment-Modell folgt dem Stateless-Design-Prinzip: Backend und Frontend werden als eigenständige Dienste deployt und teilen keinen prozesslokalen Zustand. Persistente Daten liegen vollständig in einer extern verwalteten Datenbankinstanz.
 

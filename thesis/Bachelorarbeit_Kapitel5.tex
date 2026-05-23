@@ -1288,11 +1288,10 @@ Umgebungsvariablen injiziert (Datenbankverbindungs-URL, API-Keys für
 LLM-Provider). Das Backend ist unter
 \texttt{https://liveticker-backend.onrender.com} erreichbar.
 
-\textbf{Datenbank (PostgreSQL 15)} --- Die Datenbankinstanz
-\texttt{liveticker-db} läuft auf einem Render-Managed-PostgreSQL-Dienst
-(Free Tier: \texttt{256\ MB\ RAM}, \texttt{1\ GB\ Storage}). Die
-Verbindung zum Backend erfolgt über den internen Hostnamen innerhalb des
-privaten Render-Netzwerks. Beim ersten Start legt
+\textbf{Datenbank (PostgreSQL)} --- Die Datenbankinstanz
+\texttt{liveticker-db} läuft auf \textbf{Supabase} (Free Tier:
+dauerhaft verfügbar, \texttt{500~MB Storage}). Die Verbindung zum
+Backend erfolgt über eine externe Datenbankverbindungs-URL. Beim ersten Start legt
 \texttt{Base.metadata.create\_all(bind=engine)} alle Tabellen an;
 nachfolgende Schema-Änderungen werden via Alembic-Migrationen
 eingespielt. Da Free-Tier-Instanzen keinen persistenten Prozess-Storage
