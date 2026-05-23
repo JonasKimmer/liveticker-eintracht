@@ -196,7 +196,7 @@ Stil & n & Korrektheit & Tonalität & Verständlichkeit & Gesamt \\
 \endhead
 \bottomrule\noalign{}
 \endlastfoot
-neutral     & 27 & 4{,}81 & 4{,}81 & 4{,}81 & 4{,}82 \\
+neutral     & 27 & 4{,}81 & 4{,}81 & 4{,}81 & 4{,}81 \\
 kritisch    & 26 & 4{,}35 & 4{,}04 & 4{,}58 & 4{,}32 \\
 euphorisch  & 27 & 3{,}22 & 2{,}93 & 3{,}67 & 3{,}27 \\
 \textbf{Gesamt} & \textbf{80} & \textbf{4{,}12} & \textbf{3{,}92} & \textbf{4{,}35} & \textbf{4{,}13} \\
@@ -279,7 +279,7 @@ Frontend-Polling & Ja & bis 15~s & Abschnitt~\ref{frontend-polling} \\
 \end{longtable}
 }
 
-Die n8n-seitige Erkennungslatenz (Polling-Zyklus der Workflows gegen die Football-API sowie HTTP-Overhead bis zum Backend-Aufruf) ist nicht gemessen und ist eine zusätzliche, nicht quantifizierte Komponente der Gesamtlatenz. Da ein kontrolliertes Feldexperiment mit echten Redakteuren nicht durchführbar war, ist dies eine Potenzialabschätzung, keine empirisch gemessene Größe. Ein separater Textqualitätsvergleich zwischen \texttt{auto}- und \texttt{coop}-Modus ist methodisch nicht erforderlich. \texttt{coop}-Einträge durchlaufen dieselbe LLM-Generierung wie \texttt{auto}-Einträge und werden zusätzlich redaktionell geprüft, sodass ihre Qualität strukturell mindestens gleich ist.
+Die n8n-seitige Erkennungslatenz (Polling-Zyklus der Workflows gegen die Football-API sowie HTTP-Overhead bis zum Backend-Aufruf) ist nicht gemessen und ist eine zusätzliche, nicht quantifizierte Komponente der Gesamtlatenz. Da ein kontrolliertes Feldexperiment mit echten Redakteuren nicht durchführbar war, ist dies eine Potenzialabschätzung, keine empirisch gemessene Größe. Der \texttt{coop}-Modus durchläuft dieselbe automatisierte Pipeline wie \texttt{auto} und erreicht daher eine vergleichbare Generierungslatenz; die Gesamtpublikationslatenz erhöht sich um die variable Redaktionszeit, die je nach Redaktionsaufwand nicht quantifizierbar ist. Ein separater Textqualitätsvergleich zwischen \texttt{auto}- und \texttt{coop}-Modus ist methodisch nicht erforderlich. \texttt{coop}-Einträge durchlaufen dieselbe LLM-Generierung wie \texttt{auto}-Einträge und werden zusätzlich redaktionell geprüft, sodass ihre Qualität strukturell mindestens gleich ist.
 
 
 \section{Anforderungsabgleich
