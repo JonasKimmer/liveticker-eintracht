@@ -22,6 +22,8 @@ insbesondere die Neigung zu \textbf{Halluzinationen}, also der
 Generierung von Inhalten, die sachlich unzutreffend oder erfunden sind
 (OpenAI 2023, S.~46). Halluzinationen lassen sich nach Typ differenzieren: \emph{Faktische} Halluzinationen erfinden Ereignisse, die nicht stattgefunden haben (z.\,B. ein nicht existentes Tor); \emph{kontextuale} Halluzinationen misinterpretieren vorhandene Eingabedaten (z.\,B. falsches Team bei korrektem Ereignis). Beide sind im journalistischen Kontext kritisch und gefährden die publizistische Glaubwürdigkeit nachhaltig (vgl. Thürbach, zit. n. Bluhm \& Schäfer 2023, S.~33). Erstere sind jedoch schwerer erkennbar, da kein Abgleich mit den Eingabedaten möglich ist. Dies erfordert Gegenmaßnahmen, etwa redaktionelle Kontrollinstanzen oder explizite Schutzregeln in der Prompt-Gestaltung (vgl. Abschnitt~\ref{prompt-engineering-strategie}).
 
+Für den produktiven Einsatz haben sich \textbf{LLM-API-Aggregatoren} als Zugriffsschicht etabliert: Sie bündeln Modelle verschiedener Anbieter hinter einer einheitlichen Schnittstelle und ermöglichen anbieterunabhängige Modellauswahl ohne Codeanpassungen (vgl. Abschnitt~\ref{multi-provider-architektur}).
+
 
 
 
@@ -62,6 +64,8 @@ die die Wahrscheinlichkeitsverteilung der Token-Auswahl beeinflusst
 Die automatisierte Erzeugung natürlichsprachlicher Texte aus strukturierten Daten (Data-to-Text Generation) bildet die technische Grundlage für KI-gestützte Berichterstattungssysteme (vgl. Puduppully \& Lapata 2021, S.~510). Die Systementwicklung verlief in drei Generationen: Regelbasierte Template-Architekturen lieferten vorhersagbare, aber stilistisch monotone Ausgaben. Neuronale End-to-End-Systeme überwanden die Monotonie durch datengetriebenes Lernen, erforderten jedoch umfangreiches domänenspezifisches Training und tendierten zu faktischen Inkonsistenzen (vgl. Puduppully \& Lapata 2021, S.~520; Boisserée, zit. n. Beils 2023, S.~207). LLM-basierte Systeme ermöglichen als dritte Generation eine flexible Stilkonditionierung durch Prompt-Design ohne domänenspezifisches Training und machen damit den stilistischen Vorteil neuronaler Systeme ohne deren Trainingsaufwand zugänglich. Das Halluzinationsrisiko bleibt als strukturelles Residualproblem beider Vorgänger erhalten (vgl. Abschnitt~\ref{large-language-models}). Trotz dieser Entwicklung dominieren in der redaktionellen Praxis templatebasierte Ansätze: \textit{Die Welt} etwa erzeugt automatisierte Spielberichte via Retresco (vgl. Beils 2023, S.~207), weil Zuverlässigkeit dort höher gewichtet wird als stilistische Varianz.
 
 Empirische Befunde zur automatisierten Sportberichterstattung zeigen, dass Leser KI-generierte Sporttexte in Lesbarkeit und Vertrauenswürdigkeit ähnlich wie menschlich verfasste Texte bewerten, diese jedoch in wahrgenommener Expertise und Stilqualität schlechter einschätzen (Clerwall 2014, S.~529). Graefe et al.\ (2018, S.~7) replizieren diesen Befund und zeigen, dass die wahrgenommene Qualitätslücke beim faktenintensiven Sportbericht schmaler ausfällt als bei allgemeinen Nachrichtentexten (ein Hinweis darauf, dass das strukturierte, datendichte Sportformat algorithmischer Generierung besonders entgegenkommt). Für das Genre Liveticker, das von sprachlicher Lebendigkeit, Ellipsen und situativer Einordnung lebt, ist dieser Stilnachteil besonders relevant: Formelhaft wirkende, templatebasierte Texte verstoßen gegen Genrekonventionen und senken die Leserbindung.
+
+Als komplementäre Evaluationsmethodik zu menschlichen Leserstudien hat sich das \textbf{LLM-as-Judge-Verfahren} (Zheng et al.~2023) etabliert: Ein vom generierenden Modell verschiedenes Sprachmodell bewertet KI-generierte Ausgaben automatisiert entlang definierter Qualitätsdimensionen. Das Verfahren ermöglicht skalierbare Qualitätsbewertungen ohne menschliche Annotationskosten und zeigt in Korrelationsstudien eine moderate Übereinstimmung mit menschlichen Urteilen (vgl. Zheng et al.~2023, S.~8). Es wird in der vorliegenden Arbeit zur ergänzenden Evaluation der Textgenerierung eingesetzt (vgl. Abschnitt~\ref{erweiterte-evaluation}).
 
 \phantomsection\label{linguistische-anforderungen-an-die-textgenerierung}Als linguistisch eigenständige Textgattung folgt der Liveticker spezifischen Konventionen (vgl. Hauser 2008, S.~1--2): Ellipsen und verblose Satzeinheiten dominieren die Syntax, das Präsens beschreibt simultane Ereignisse und konzeptionelle Mündlichkeit prägt den Ausdruck (vgl. Walter 2020, S.~52; Marx/Weidacher, zit. n. Smułczyński 2020, S.~54). Graphostilistische Mittel wie Großschreibung und Zeicheniterationen („TOOOOR!!!") sowie direkte Adressierung durch „wir" und „uns" simulieren dialogische Nähe zum Lesenden (vgl. Smułczyński 2020, S.~54; Ronkainen 2015, S.~44 u.~51). Diese Merkmale werden in der Prompt-Architektur (Abschnitt~\ref{prompt-engineering-strategie}) operationalisiert.
 
@@ -113,11 +117,9 @@ Für KI-gestützte Webanwendungen mit asynchronen Backend-Anfragen und interakti
 
 \subsection{Backend-Framework und Persistenzschicht}\label{backend-framework-und-persistenzschicht}
 
-Im Python-Backend-Ökosystem bieten Alternativen wie \texttt{Flask} (WSGI, kein nativer \texttt{asyncio}-Support) und \textbf{Django} (synchroner MVC-Stack) keinen nativen Async-Betrieb. \textbf{FastAPI} basiert auf dem ASGI-Standard und unterstützt \texttt{asyncio} nativ (vgl. Grigorev 2019); es generiert aus \texttt{Pydantic}-Schemata automatisch eine OpenAPI-konforme Dokumentation, die als maschinenlesbarer Vertrag für Frontend-Clients und externe Integratoren dient. Die konkrete Backend-Architektur und Schichtstruktur werden in Abschnitt~\ref{backend-konzeption} beschrieben.
+Im Python-Backend-Ökosystem stehen \texttt{Flask}, \textbf{Django} und \textbf{FastAPI} als etablierte Frameworks zur Verfügung. \texttt{Flask} ist ein schlankes WSGI-Mikro-Framework ohne nativen \texttt{asyncio}-Support. \textbf{Django} folgt einem synchronen MVC-Full-Stack-Ansatz mit umfangreichem ORM und Admin-Interface. \textbf{FastAPI} basiert auf dem ASGI-Standard, unterstützt \texttt{asyncio} nativ (vgl. Grigorev 2019) und generiert aus \texttt{Pydantic}-Schemata automatisch eine OpenAPI-konforme Dokumentation. Die konkrete Framework-Wahl und ihre Begründung sind in Abschnitt~\ref{framework-wahl} dokumentiert.
 
 Für die Persistenzschicht bieten sich relationale Datenbanksysteme (z.\,B. \textbf{PostgreSQL}, MySQL) und dokumentenorientierte Stores (z.\,B. \textbf{MongoDB}) als Hauptklassen an. Relationale Systeme erzwingen über Fremdschlüsselbeziehungen referenzielle Integrität und unterstützen Joins über normalisierte Schemata. Dokumentenorientierte Stores bieten höhere Schemaflexibilität auf Kosten von ACID-Garantien und deklarativer Join-Semantik (vgl. Fowler \& Sadalage 2012, S.~26--27).
-
-\textbf{LLM-API-Aggregatoren} bündeln Modelle verschiedener Anbieter unter einer einheitlichen API-Schicht und ermöglichen so anbieterunabhängige Modellauswahl (vgl. Abschnitt~\ref{multi-provider-architektur}).
 
 \subsection{Echtzeit-Kommunikationsmuster}\label{echtzeit-kommunikation-im-web}
 
@@ -140,21 +142,21 @@ Der Stand der Technik zeigt, dass die identifizierten Anforderungsdimensionen au
 
 \begin{table}[h]
 \centering
-\caption{Mapping: Problemdimension → Technologieentscheidung → Systemkomponente}
+\caption{Mapping: Anforderungsdimension → Technologieentscheidung}
 \label{tab:technik-mapping}
-\begin{tabular}{p{2.8cm}p{4.8cm}p{4.5cm}}
+\begin{tabular}{p{3.5cm}p{9cm}}
 \toprule
-\textbf{Problem\-dimension} & \textbf{Techno\-logie\-ent\-schei\-dung} & \textbf{System\-kom\-po\-nen\-te} \\
+\textbf{Anforderungs\-dimension} & \textbf{Techno\-logie\-ent\-schei\-dung} \\
 \midrule
-Operativer Zeitdruck (Kap.~\ref{zeitdruck-und-fehleranfaelligkeit}) & LLM-gestützte Textgenerierung + Few-Shot-Prompting (Abschnitte~\ref{large-language-models}--\ref{prompt-engineering}); hybrides NLG-Design mit menschlicher Kontrollinstanz (Kap.~\ref{automatisierte-sportberichterstattung}) & LLM-Pipeline mit \texttt{coop}-Modus (Abschnitte~\ref{status-lifecycle-und-betriebsmodi}, \ref{ki-komponente}) \\
+Operativer Zeitdruck (Kap.~\ref{zeitdruck-und-fehleranfaelligkeit}) & LLM-gestützte Textgenerierung + Few-Shot-Prompting (Abschnitte~\ref{large-language-models}--\ref{prompt-engineering}); hybrides NLG-Design mit menschlicher Kontrollinstanz (Kap.~\ref{automatisierte-sportberichterstattung}) \\
 \addlinespace
-Mehrsprachigkeit (Kap.~\ref{mehrsprachigkeit-als-herausforderung}) & Native LLM-Mehrsprachfähigkeit ohne proportionalen Personalaufwand (Kap.~\ref{large-language-models}) & LLM-Übersetzungsfunktion (Kap.~\ref{mehrsprachige-textgenerierung-konzept}) \\
+Mehrsprachigkeit (Kap.~\ref{mehrsprachigkeit-als-herausforderung}) & Native LLM-Mehrsprachfähigkeit ohne proportionalen Personalaufwand (Kap.~\ref{large-language-models}) \\
 \addlinespace
-White-Label-Bedarf (Kap.~\ref{white-label-bedarf-im-profisport}) & Self-hostbare Workflow-Plattform; konfigurierbare Instanzlogik (Abschnitte~\ref{etl-prozesse-und-workflow-automatisierung}--\ref{backend-frontend-und-deployment-technologien}) & n8n-ETL + White-Label-Instanzkonfiguration (Abschnitte~\ref{partner-team-konzept-und-white-label-steuerung} und~\ref{ki-komponente}) \\
+White-Label-Bedarf (Kap.~\ref{white-label-bedarf-im-profisport}) & Self-hostbare Workflow-Plattform; konfigurierbare Instanzlogik (Abschnitte~\ref{etl-prozesse-und-workflow-automatisierung}--\ref{backend-frontend-und-deployment-technologien}) \\
 \addlinespace
-Echtzeit-Datenabruf & Polling/WebSocket je nach Latenzanforderung (Kap.~\ref{echtzeit-kommunikation-im-web}) & Hybrides Muster: Polling für Ticker-/Matchdaten, WebSocket für Medien (Abschnitt~\ref{kommunikations--und-triggerarchitektur}) \\
+Echtzeit-Datenabruf & Polling/WebSocket je nach Latenzanforderung (Kap.~\ref{echtzeit-kommunikation-im-web}) \\
 \addlinespace
-Verknüpfte Spielentitäten & Relationale DB mit ACID-Garantien (Kap.~\ref{backend-frontend-und-deployment-technologien}) & PostgreSQL-Datenmodell (Kap.~\ref{datenbankkonzeption}) \\
+Verknüpfte Spielentitäten & Relationale DB mit ACID-Garantien (Kap.~\ref{backend-frontend-und-deployment-technologien}) \\
 \bottomrule
 \end{tabular}
 \end{table}
