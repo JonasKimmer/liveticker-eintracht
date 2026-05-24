@@ -1,21 +1,18 @@
 \chapter{Stand der Technik}\label{stand-der-technik}
 
-Dieses Kapitel arbeitet die technologischen Grundlagen auf, die das in Kapitel~\ref{motivation-und-anforderungen} beschriebene System erfordert. Es gliedert sich in sechs Abschnitte: Large Language Models (Abschnitt~\ref{large-language-models}), Prompt Engineering (Abschnitt~\ref{prompt-engineering}), automatisierte Sportberichterstattung inkl. linguistischer Genremerkmale des Livetickers (Abschnitt~\ref{automatisierte-sportberichterstattung}), ETL-Workflows (Abschnitt~\ref{etl-prozesse-und-workflow-automatisierung}), Backend-, Frontend- und Deployment-Technologien inkl. Echtzeit-Kommunikationsmuster (Abschnitt~\ref{backend-frontend-und-deployment-technologien}) sowie eine Synthese der Technologieentscheidungen (Abschnitt~\ref{synthese-technologische-konsequenzen-fuxfcr-das-systemdesign}).
+Dieses Kapitel arbeitet die technologischen Grundlagen auf, die das in Kapitel~\ref{motivation-und-anforderungen} beschriebene System erfordert. Es behandelt Large Language Models (Abschnitt~\ref{large-language-models}), Prompt Engineering (Abschnitt~\ref{prompt-engineering}), automatisierte Sportberichterstattung (Abschnitt~\ref{automatisierte-sportberichterstattung}), ETL-Workflows (Abschnitt~\ref{etl-prozesse-und-workflow-automatisierung}), Backend-, Frontend- und Deployment-Technologien (Abschnitt~\ref{backend-frontend-und-deployment-technologien}) sowie eine Synthese der Technologieentscheidungen (Abschnitt~\ref{synthese-technologische-konsequenzen-fuxfcr-das-systemdesign}).
 
 \section{Large Language Models}\label{large-language-models}
 
-Large Language Models (LLMs, dt. Große Sprachmodelle) werden auf umfangreichen Textkorpora trainiert und können natürliche Sprache verstehen und generieren. Ihr Einsatz hat sich in den
-vergangenen Jahren von der Forschung in die industrielle Anwendung
-verbreitet, unter anderem für automatisierte Textproduktion im
-Medienbereich (vgl. Bluhm \& Schäfer 2023, S.~36).
+Large Language Models (LLMs, dt. Große Sprachmodelle) werden auf umfangreichen Textkorpora trainiert und können natürliche Sprache verstehen und generieren.
 
-Den technischen Ausgangspunkt bildet die \textbf{Transformer-Architektur}
+Technisch basieren LLMs auf der \textbf{Transformer-Architektur}
 (Vaswani et al.~2017), die Text mithilfe von
 \textbf{Aufmerksamkeitsmechanismen} (Attention) verarbeitet: Das Modell
 gewichtet bei der Verarbeitung eines Wortes alle anderen Wörter im
-Kontext nach ihrer Relevanz, wodurch es semantische Zusammenhänge über lange Sequenzen erfasst. Text wird autoregressiv generiert: Jedes neue Wort entsteht auf Basis des bereits generierten Kontexts.
+Kontext nach ihrer Relevanz, wodurch es semantische Zusammenhänge über lange Sequenzen erfasst. Text wird autoregressiv generiert: Jedes neue Wort entsteht auf Basis des bereits generierten Kontexts. Ihr Einsatz hat sich in den vergangenen Jahren von der Forschung in die industrielle Anwendung verbreitet, unter anderem für automatisierte Textproduktion im Medienbereich (vgl. Bluhm \& Schäfer 2023, S.~36).
 
-LLMs unterstützen \textbf{In-Context Learning}: Modelle lassen sich über Beispiele im Prompt konditionieren, ohne ihre Gewichte anzupassen (vgl. Brown et al.~2020, S.~4). Instruction-optimierte Modelle folgen darüber hinaus Anweisungen zuverlässig ohne aufwändige Prompt-Konstruktion und liefern auch bei klar strukturierten Aufgaben mit kurzem Output nutzbare Ergebnisse (vgl. Ouyang et al.~2022, S.~3).
+LLMs unterstützen \textbf{In-Context Learning}: Modelle lassen sich über Beispiele im Prompt konditionieren, ohne ihre Gewichte anzupassen (vgl. Brown et al.~2020, S.~4).
 
 Trotz ihrer Leistungsfähigkeit weisen LLMs strukturelle Schwächen auf,
 insbesondere die Neigung zu \textbf{Halluzinationen}, also der
@@ -24,7 +21,6 @@ Generierung von Inhalten, die sachlich unzutreffend oder erfunden sind
 
 Für hochfrequente Echtzeit-Szenarien sind \textbf{kompakte Modelle} besonders relevant: Kurze, faktenbasierte Generierungsaufgaben mit strukturierten Eingabedaten erfordern keine umfangreiche Inferenz, sodass sie vergleichbare Ausgabequalität bei deutlich niedrigerer Latenz und geringeren Kosten erzielen (vgl. Brown et al.~2020; OpenAI 2023).
 
-Für den produktiven Einsatz haben sich \textbf{LLM-API-Aggregatoren} als Zugriffsschicht etabliert: Sie bündeln Modelle verschiedener Anbieter hinter einer einheitlichen Schnittstelle und ermöglichen anbieterunabhängige Modellauswahl ohne Codeanpassungen (vgl. Abschnitt~\ref{multi-provider-architektur}).
 
 
 
@@ -42,7 +38,7 @@ aufgabenspezifisches Nachtrainieren des Modells auf kuratierten
 Datensätzen und ist ressourcenintensiv (Rechenzeit, Infrastruktur,
 Datenkuration). \textbf{Prompting-basierte Ansätze} hingegen nutzen das
 vortrainierte Modell direkt und steuern dessen Verhalten ausschließlich
-über die Eingabeformulierung (vgl. Brown et al.~2020, S.~3 u.~6). Für Domänen mit kleinen oder nicht verfügbaren Trainingsdatensätzen ist Prompting methodisch vorzuziehen: Fine-tuning neigt unter diesen Bedingungen zu Overfitting, während Prompting-basierte Ansätze mit wenigen kuratierten Beispielen auskommen (vgl. ebd.).
+über die Eingabeformulierung (vgl. Brown et al.~2020, S.~3 u.~6). Für Domänen mit kleinen oder nicht verfügbaren Trainingsdatensätzen ist Prompting methodisch vorzuziehen: Fine-tuning neigt unter diesen Bedingungen zu Overfitting, während Prompting-basierte Ansätze mit wenigen kuratierten Beispielen auskommen (vgl. ebd.). Instruction-optimierte Modelle folgen Anweisungen darüber hinaus zuverlässig ohne aufwändige Prompt-Konstruktion und liefern auch bei klar strukturierten Aufgaben mit kurzem Output nutzbare Ergebnisse (vgl. Ouyang et al.~2022, S.~3).
 
 Innerhalb des Prompting-Paradigmas lassen sich zwei wesentliche Techniken unterscheiden. Beim \textbf{Zero-Shot Prompting} erhält das Modell ausschließlich eine Aufgabenbeschreibung ohne Demonstrationsbeispiele (vgl. Brown et al.~2020, S.~7). Dieser Ansatz maximiert Flexibilität und eignet sich für generische Anwendungsfälle ohne spezifische Stilerwartungen. Beim \textbf{Few-Shot Prompting} werden dem Modell neben der Aufgabenbeschreibung zusätzlich wenige Beispiele als Stilreferenz bereitgestellt (vgl. Brown et al.~2020, S.~6), die das Modell auf eine gewünschte Tonalität konditionieren, ohne dass modellseitiges Fine-tuning erforderlich ist. 
 Ergänzend hat sich das \textbf{Role Prompting} als eigenständige Technik etabliert: Durch die explizite Zuweisung einer Persona (z.\,B. „Du bist ein Sportredakteur von Eintracht Frankfurt'') werden Modelle auf eine konsistente sprachliche Identität verpflichtet. Rollenbasierte Instruktionen verbessern nachweislich die Ausgabekonsistenz bei stilistisch definierten Aufgaben (vgl. Shanahan et al.~2023, S.~3).
@@ -122,7 +118,7 @@ Für KI-gestützte Webanwendungen mit asynchronen Backend-Anfragen und interakti
 
 \subsection{Backend-Framework und Persistenzschicht}\label{backend-framework-und-persistenzschicht}
 
-Im Python-Backend-Ökosystem stehen \texttt{Flask}, \textbf{Django} und \textbf{FastAPI} als etablierte Frameworks zur Verfügung. \texttt{Flask} ist ein schlankes Web Server Gateway Interface (WSGI)-Mikro-Framework ohne nativen \texttt{asyncio}-Support. \textbf{Django} folgt einem synchronen MVC-Full-Stack-Ansatz mit umfangreichem ORM und Admin-Interface. \textbf{FastAPI} basiert auf dem ASGI-Standard, unterstützt \texttt{asyncio} nativ (vgl. Grigorev 2019) und generiert aus \texttt{Pydantic}-Schemata automatisch eine OpenAPI-konforme Dokumentation. Die konkrete Framework-Wahl und ihre Begründung sind in Abschnitt~\ref{framework-wahl} dokumentiert.
+Im Python-Backend-Ökosystem stehen \texttt{Flask}, \textbf{Django} und \textbf{FastAPI} als etablierte Frameworks zur Verfügung. \texttt{Flask} ist ein schlankes Web Server Gateway Interface (WSGI)-Mikro-Framework ohne nativen \texttt{asyncio}-Support. \textbf{Django} folgt einem synchronen MVC-Full-Stack-Ansatz mit umfangreichem Object-Relational Mapper (ORM) und Admin-Interface. \textbf{FastAPI} basiert auf dem ASGI-Standard, unterstützt \texttt{asyncio} nativ (vgl. Grigorev 2019) und generiert aus \texttt{Pydantic}-Schemata automatisch eine OpenAPI-konforme Dokumentation. Die konkrete Framework-Wahl und ihre Begründung sind in Abschnitt~\ref{framework-wahl} dokumentiert.
 
 Für die Persistenzschicht bieten sich relationale Datenbanksysteme (z.\,B. \textbf{PostgreSQL}, MySQL) und dokumentenorientierte Stores (z.\,B. \textbf{MongoDB}) als Hauptklassen an. Relationale Systeme erzwingen über Fremdschlüsselbeziehungen referenzielle Integrität und unterstützen Joins über normalisierte Schemata. Dokumentenorientierte Stores bieten höhere Schemaflexibilität auf Kosten von ACID-Garantien und deklarativer Join-Semantik (vgl. Fowler \& Sadalage 2012, S.~26--27).
 
