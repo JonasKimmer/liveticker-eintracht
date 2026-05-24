@@ -147,8 +147,7 @@ Der Batch-Endpunkt
 \texttt{POST\ /api/v1/ticker/translate-batch/\{match\_id\}} ruft für
 alle Einträge eines Spiels mit vorhandenem Text (publizierte und Entwürfe) den LLM-Service mit
 reduzierter Temperatur (\texttt{0.1}) auf, um sprachlich
-deterministische Übersetzungen zu erzeugen, eine gegenüber der
-Originalgenerierung abweichende Parametrisierung.
+deterministische Übersetzungen zu erzeugen. Diese niedrigere Temperatur weicht bewusst von der Originalgenerierung (0{,}5) ab.
 
 Die fünf kritischen Lifecycle-Endpunkte sind:
 
@@ -183,7 +182,7 @@ Er koordiniert Datenbankabfragen, Kontextaufbau und den LLM-Aufruf, hält
 aber die Schichten klar getrennt: \texttt{llm\_service.py} hat
 keine Datenbankabhängigkeit.
 
-Der Service umfasst vier zentrale Funktionen. \texttt{score\_at\_event()}
+Der Service umfasst fünf zentrale Funktionen. \texttt{score\_at\_event()}
 berechnet den Spielstand zum Zeitpunkt eines Torereignisses: Da die
 Football-API den kumulativen Stand liefert, muss der Stand \emph{vor}
 dem aktuellen Event rekonstruiert werden. Eigentore werden korrekt
@@ -243,7 +242,7 @@ Die Auswahl des aktiven Providers erfolgt zur Startzeit durch \texttt{\_build\_s
 
 Vorab normalisiert eine \texttt{EVENT\_TYPE\_MAP} externe API-Strings auf einheitliche interne Bezeichner (\texttt{goal}, \texttt{card} etc.). Unbekannte Typen fallen auf \texttt{"comment"} zurück. Der Prompt wird über vier modulare Hilfsmethoden (\texttt{\_build\_event\_lines}, \texttt{\_build\_context\_str}, \texttt{\_build\_few\_shot\_block}, \texttt{\_build\_prematch\_parts}) zusammengesetzt, die fehlende Parameter auslassen, statt den Prompt zu invalidieren. Der Regelblock (\texttt{\#\#\# REGELN}) ist direkt in \texttt{\_build\_prompt} eingebettet (vgl. Abschnitt~\ref{prompt-engineering-strategie}).
 
-Als Standardmodell im Deployment wird \texttt{google/gemini-2.0-flash-lite-001} über OpenRouter eingesetzt (vgl. Abschnitt~\ref{multi-provider-architektur} für die Begründung der Modellwahl). Die folgende Tabelle zeigt alle Provider der Prioritätskette mit ihren Standardmodellen. Temperatur für Textgenerierung ist einheitlich \texttt{LLM\_TEMPERATURE = 0.5}, für Übersetzungen \texttt{LLM\_TRANSLATION\_TEMPERATURE = 0.1}.
+Als Standardmodell im Deployment wird \texttt{google/gemini-2.0-flash-lite-001} über OpenRouter eingesetzt (vgl. Abschnitt~\ref{multi-provider-architektur} für die Begründung der Modellwahl). Die folgende Tabelle zeigt alle Provider der Prioritätskette mit ihren Standardmodellen. Die Temperatur für Textgenerierung ist einheitlich \texttt{LLM\_TEMPERATURE = 0.5}, für Übersetzungen \texttt{LLM\_TRANSLATION\_TEMPERATURE = 0.1}.
 
 {\def\LTcaptype{none}
 \begin{longtable}[]{@{}llll@{}}
@@ -308,7 +307,7 @@ werden gefiltert. Nach einer Ablehnung kann der Endpunkt daher erneut
 einen Text generieren.
 
 Dies macht \texttt{POST\ /generate/\{event\_id\}} für Standardfälle
-idempotent gegenüber Mehrfachaufrufen, ein wichtiges Merkmal, da
+idempotent gegenüber Mehrfachaufrufen, was besonders relevant ist, da
 n8n-Workflows bei Fehlern automatische Wiederholungsversuche ausführen.
 Wird ein abweichendes Stilprofil (\texttt{data.style}) übergeben, wird
 der bestehende Eintrag per Soft-Delete auf \texttt{status=deleted}
@@ -393,8 +392,8 @@ Das Frontend verwendet drei spezialisierte Contexts, die in \texttt{LiveTicker} 
 Die Trennung von Daten- und Aktions-Context hat einen konkreten
 Performance-Vorteil: Komponenten, die nur Actions konsumieren (z.\,B.
 \texttt{EntryEditor}), re-rendern nicht bei Änderungen an
-\texttt{tickerTexts}, relevant bei einem Live-Ticker mit
-15-Sekunden-Polling. Alle Contexts exportieren einen typsicheren
+\texttt{tickerTexts}, was bei einem Live-Ticker mit
+15-Sekunden-Polling besonders relevant ist. Alle Contexts exportieren einen typsicheren
 Zugriffs-Hook, der bei Verwendung außerhalb des Providers einen klaren
 Fehler wirft.
 
@@ -577,7 +576,7 @@ WF09 ist der kritischste Workflow im System. Er wird via Webhook (\texttt{POST /
 
 \subsection{Übergreifende Implementierungsmuster}\label{n8n-implementierungsmuster}
 
-Die n8n-Implementierung folgt vier konsistenten Implementierungsentscheidungen, die sich durch die Analyse der Workflow-JSON-Exporte identifizieren lassen:
+Die n8n-Implementierung folgt vier durchgängigen Mustern, die sich durch die Analyse der Workflow-JSON-Exporte identifizieren lassen:
 
 \begin{itemize}\tightlist
 \item \textbf{UPSERT-Strategien:} Alle Insert-Operationen verwenden \texttt{ON CONFLICT DO UPDATE} oder \texttt{DO NOTHING}, um Idempotenz bei Mehrfachausführung sicherzustellen.
@@ -626,7 +625,7 @@ Datei & Kategorie & Tests \\
 
 \subsection{Backend-Tests (pytest)}\label{impl-backend-tests}
 
-API-Integrationstests prüfen die Kern-Endpunkte gegen eine echte PostgreSQL-Testinstanz. Das \texttt{conftest.py}-Setup stellt über ein session-scoped \texttt{reset\_schema}-Fixture (\texttt{drop\_all + create\_all}) einen sauberen Tabellenzustand zu Beginn der Test-Session sicher. Jeder Test erhält eine eigene SQLAlchemy-Session. Nicht committete Änderungen werden nach dem Test zurückgerollt. Committete Stammdaten aus Fixtures bleiben innerhalb der Session erhalten. Repository-Integrationstests und Service-Unit-Tests ergänzen die Abdeckung auf Schichtebene (vgl. Abschnitt~\ref{qualitätssicherungskonzept}): Repository-Tests greifen über die \texttt{db}-Fixture auf die echte Testdatenbank zu. Service-Tests prüfen reine Domänenfunktionen (\texttt{score\_at\_event}, \texttt{build\_match\_context}, \texttt{make\_ai\_entry}) ohne Datenbankabhängigkeit. Der LLM-Service wird in Tests mit \texttt{provider="mock"} instanziiert, da externe LLM-Aufrufe nicht deterministisch und in automatisierten Läufen nicht reproduzierbar sind. Ergänzend enthält \texttt{evaluation\_metrics.py} statistische Hilfsfunktionen (Cliff's Delta, Bootstrap-Konfidenzintervall, Cohen's Kappa u.\,a.) als Evaluationsinfrastruktur für die KI-Textbewertung in Kapitel~\ref{evaluation}. Die folgende Übersicht zeigt die Coverage-Verteilung nach Architekturschicht (246 Tests, 3.230 Statements gesamt).
+API-Integrationstests prüfen die Kern-Endpunkte gegen eine echte PostgreSQL-Testinstanz. Das \texttt{conftest.py}-Setup stellt über ein session-scoped \texttt{reset\_schema}-Fixture (\texttt{drop\_all + create\_all}) einen sauberen Tabellenzustand zu Beginn der Test-Session sicher. Jeder Test erhält eine eigene SQLAlchemy-Session. Nicht committete Änderungen werden nach dem Test zurückgerollt. Committete Stammdaten aus Fixtures bleiben innerhalb der Session erhalten. Repository-Integrationstests und Service-Unit-Tests ergänzen die Abdeckung auf Schichtebene (vgl. Abschnitt~\ref{qualitätssicherungskonzept}): Repository-Tests greifen über die \texttt{db}-Fixture auf die echte Testdatenbank zu. Service-Tests prüfen reine Domänenfunktionen (\texttt{score\_at\_event}, \texttt{build\_match\_context}, \texttt{make\_ai\_entry}) ohne Datenbankabhängigkeit. Der LLM-Service wird in Tests mit \texttt{provider="mock"} instanziiert, da externe LLM-Aufrufe nicht deterministisch und in automatisierten Läufen nicht reproduzierbar sind. Ergänzend enthält \texttt{evaluation\_metrics.py} statistische Hilfsfunktionen (Cliff's Delta, Bootstrap-Konfidenzintervall, Cohen's Kappa u.\,a.) als Evaluationsinfrastruktur für die KI-Textbewertung in Kapitel~\ref{evaluation}. Die folgende Übersicht zeigt die Coverage-Verteilung nach Architekturschicht (246 Tests, 3\,230 Statements gesamt).
 
 {\small\def\LTcaptype{none}
 \begin{longtable}[]{@{}lr@{}}
