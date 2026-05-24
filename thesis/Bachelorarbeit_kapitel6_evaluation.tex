@@ -304,7 +304,7 @@ F2 & KI-Generierung für alle Event-Typen & 24 Typen in \texttt{EVENT\_TYPE\_LAB
 F3 & Drei Stilprofile & \texttt{STYLE\_DESC} im Prompt; per Match konfigurierbar \\
 F4 & Stilkonfiguration über vereinsspezifische Referenztexte & Bis zu 3 Referenzen aus \texttt{style\_references}; nach Event-Typ gefiltert \\
 F5 & Ticker-Lifecycle (draft → published / rejected) & State-Machine mit publish/reject/retract; 21 API-Tests \\
-F6 & Slash-Command-Parser & 11 Phasen- und 14 Event-Commands (in \texttt{CMD\_MAP}); 36 Unit-Tests \\
+F6 & Slash-Command-Parser & 11 Phasen- und 14 Event-Commands (in \texttt{CMD\_MAP}); 45 Unit-Tests \\
 F7 & Mehrsprachige Textgenerierung & \texttt{translate\_text()} mit Temperatur 0{,}1; Batch-Endpoint; funktional verifiziert; Übersetzungsqualität qualitativ nicht benchmarkt (vgl. Abschnitt~\ref{technische-einordnung}) \\
 F8 & Idempotenter Datenimport & UPSERT-Strategien für Events, Spieler, Teams \\
 F9 & Anbieterunabhängige LLM-Integration mit Ausfallsicherheit & 5 Provider (openrouter → gemini → openai → anthropic → mock) \\
@@ -325,7 +325,7 @@ N6 & Fehlerresistenz Frontend & \texttt{ErrorBoundary} mit Fallback-UI; 4 Tests 
 A1 & Schichtenbasierte Systemarchitektur mit klar getrennten Verantwortlichkeiten & n8n (Daten), FastAPI/PostgreSQL (Anwendung), React (Präsentation) \\
 A2 & Repository-Pattern & 13 Repository-Klassen \\
 A3 & 71 API-Endpunkte unter \texttt{/api/v1} & 13 Router-Dateien; 95 API-Integrationstests \\
-A4 & 17 ORM-Modelle / 17 Datenbanktabellen & 100\,\% Model-Coverage \\
+A4 & 17 ORM-Modelle / 18 Datenbanktabellen & 100\,\% Model-Coverage \\
 A5 & White-Label-Fähigkeit & \texttt{src/config/whitelabel.ts} (Frontend-Branding), \texttt{DEFAULT\_TICKER\_INSTANCE} in \texttt{constants.py} (Backend-Instanz), instanzspezifische Few-Shot-Filterung über \texttt{style\_references} (vgl. Abschnitt~\ref{white-label-konfiguration-impl}) \\
 \end{longtable}
 }
