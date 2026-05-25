@@ -43,7 +43,7 @@
   \draw[arrow] (fapi) -- (n8n);
   \draw[arrow] (sp)   -- (n8n);
   \draw[arrow] (llm)  -- (n8n);
-  \draw[arrow] (llm)  -- (api);
+  \draw[arrow] (llm.north) to[out=80, in=155] (api.north west);
   \draw[arrow] (n8n)  -- (api);
   \draw[arrow] (n8n)  -- (db);
   \draw[arrow] (api)  -- (db);
