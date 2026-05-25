@@ -31,8 +31,22 @@ from openai import OpenAI
 # Konfiguration  (Keys aus backend/.env)
 # ──────────────────────────────────────────────────────────────
 
-FOOTBALL_API_KEY    = "427640c46b2df039fa02972c68d184c0"
-OPENROUTER_API_KEY  = "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"
+def _load_env_key(name: str) -> str:
+    import os
+    from pathlib import Path
+    val = os.environ.get(name, "")
+    if val:
+        return val
+    env_path = Path(__file__).parent.parent / "backend" / ".env"
+    if env_path.exists():
+        for line in env_path.read_text().splitlines():
+            line = line.strip()
+            if line.startswith(f"{name}="):
+                return line.split("=", 1)[1].strip().strip('"').strip("'")
+    return ""
+
+FOOTBALL_API_KEY   = _load_env_key("API_FOOTBALL_KEY") or _load_env_key("FOOTBALL_API_KEY")
+OPENROUTER_API_KEY = _load_env_key("OPENROUTER_API_KEY")
 
 GEN_MODEL   = "google/gemini-2.0-flash-lite-001"   # Identisch zur Thesis
 JUDGE_MODEL = "anthropic/claude-sonnet-4-5"         # Unabhängiger Bewerter via OpenRouter
@@ -140,10 +154,10 @@ Bewerte den folgenden Ticker-Eintrag auf drei Dimensionen (je 1–5):
 
 - Korrektheit (1–5): Sind alle Fakten (Spieler, Team, Minute, Ergebnis) korrekt? Keine Halluzinationen?
 - Tonalität (1–5): Entspricht der Stil dem angeforderten Profil (neutral/euphorisch/kritisch)?
-- Verständlichkeit (1–5): Ist der Text sprachlich flüssig, grammatikalisch korrekt und genrekonform?
+- Vollständigkeit (1–5): Sind alle Schlüsselfakten (Spieler, Team, Ereignistyp, Spielstand) im Text enthalten? Fehlt ein relevantes Faktum?
 
 Antworte NUR mit validem JSON ohne weiteren Text:
-{"korrektheit": <1-5>, "tonalitaet": <1-5>, "verstaendlichkeit": <1-5>, "begruendung": "<max 1 Satz>"}"""
+{"korrektheit": <1-5>, "tonalitaet": <1-5>, "vollstaendigkeit": <1-5>, "begruendung": "<max 1 Satz>"}"""
 
 
 def judge_prompt(event_type: str, minute: int, player: str, team: str,
@@ -364,7 +378,7 @@ def evaluate(ev: dict, text: str) -> dict:
         end   = raw.rindex("}") + 1
         return json.loads(raw[start:end])
     except Exception:
-        return {"korrektheit": 0, "tonalitaet": 0, "verstaendlichkeit": 0, "begruendung": f"PARSE_ERROR: {raw[:80]}"}
+        return {"korrektheit": 0, "tonalitaet": 0, "vollstaendigkeit": 0, "begruendung": f"PARSE_ERROR: {raw[:80]}"}
 
 
 # ──────────────────────────────────────────────────────────────
@@ -415,7 +429,7 @@ def main():
 
             k = scores.get("korrektheit", 0)
             t = scores.get("tonalitaet", 0)
-            v = scores.get("verstaendlichkeit", 0)
+            v = scores.get("vollstaendigkeit", 0)
             avg = round((k + t + v) / 3, 2) if all([k, t, v]) else 0
 
             print(f"{latency_ms:5}ms  K={k} T={t} V={v} Ø={avg}")
@@ -437,7 +451,7 @@ def main():
                 "judge_model":   JUDGE_MODEL,
                 "korrektheit":   k,
                 "tonalitaet":    t,
-                "verstaendlichkeit": v,
+                "vollstaendigkeit": v,
                 "gesamt":        avg,
                 "begruendung":   scores.get("begruendung", ""),
                 "timestamp":     datetime.now().isoformat(),
@@ -457,7 +471,7 @@ def main():
     if results:
         fieldnames = ["nr", "match", "event_type", "minute", "player", "team", "score",
                       "style", "generated_text", "latency_ms", "gen_model", "judge_model",
-                      "korrektheit", "tonalitaet", "verstaendlichkeit", "gesamt", "begruendung"]
+                      "korrektheit", "tonalitaet", "vollstaendigkeit", "gesamt", "begruendung"]
         with open(out_csv, "w", newline="", encoding="utf-8-sig") as f:
             w = csv.DictWriter(f, fieldnames=fieldnames, extrasaction="ignore")
             w.writeheader()
@@ -468,7 +482,7 @@ def main():
     if valid:
         k_avg = round(sum(r["korrektheit"] for r in valid) / len(valid), 2)
         t_avg = round(sum(r["tonalitaet"]  for r in valid) / len(valid), 2)
-        v_avg = round(sum(r["verstaendlichkeit"] for r in valid) / len(valid), 2)
+        v_avg = round(sum(r.get("vollstaendigkeit", r.get("verstaendlichkeit", 0)) for r in valid) / len(valid), 2)
         g_avg = round(sum(r["gesamt"] for r in valid) / len(valid), 2)
 
         by_style: dict[str, list] = {}
@@ -487,14 +501,14 @@ def main():
         for style, rows in sorted(by_style.items()):
             sk = round(sum(r["korrektheit"] for r in rows) / len(rows), 2)
             st = round(sum(r["tonalitaet"]  for r in rows) / len(rows), 2)
-            sv = round(sum(r["verstaendlichkeit"] for r in rows) / len(rows), 2)
+            sv = round(sum(r.get("vollstaendigkeit", r.get("verstaendlichkeit", 0)) for r in rows) / len(rows), 2)
             sg = round(sum(r["gesamt"]      for r in rows) / len(rows), 2)
             print(f"  {style:12} n={len(rows):3}  K={sk} T={st} V={sv} Ø={sg}")
         print(f"\nNach Event-Typ:")
         for etype, rows in sorted(by_type.items()):
             sk = round(sum(r["korrektheit"] for r in rows) / len(rows), 2)
             st = round(sum(r["tonalitaet"]  for r in rows) / len(rows), 2)
-            sv = round(sum(r["verstaendlichkeit"] for r in rows) / len(rows), 2)
+            sv = round(sum(r.get("vollstaendigkeit", r.get("verstaendlichkeit", 0)) for r in rows) / len(rows), 2)
             sg = round(sum(r["gesamt"]      for r in rows) / len(rows), 2)
             print(f"  {etype:14} n={len(rows):3}  K={sk} T={st} V={sv} Ø={sg}")
         print(f"\nJSON: {out_json}")

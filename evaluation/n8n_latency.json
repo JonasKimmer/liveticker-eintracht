@@ -1,0 +1,96 @@
+{
+  "05_import_match_statistics": {
+    "n": 89,
+    "median_ms": 357,
+    "p95_ms": 1058,
+    "max_ms": 68542
+  },
+  "06_import_player_statistics": {
+    "n": 84,
+    "median_ms": 424,
+    "p95_ms": 1215,
+    "max_ms": 1623
+  },
+  "08_import_events": {
+    "n": 82,
+    "median_ms": 8047,
+    "p95_ms": 18269,
+    "max_ms": 83724
+  },
+  "04 Import Matches": {
+    "n": 64,
+    "median_ms": 332,
+    "p95_ms": 471,
+    "max_ms": 648
+  },
+  "15_live_stats_monitor": {
+    "n": 37,
+    "median_ms": 1517,
+    "p95_ms": 6559,
+    "max_ms": 7148
+  },
+  "07_import_lineups": {
+    "n": 20,
+    "median_ms": 410,
+    "p95_ms": 1435,
+    "max_ms": 1435
+  },
+  "15_Prematch": {
+    "n": 17,
+    "median_ms": 1017,
+    "p95_ms": 1478,
+    "max_ms": 1478
+  },
+  "03_import_competitions_and_matches": {
+    "n": 16,
+    "median_ms": 446,
+    "p95_ms": 989,
+    "max_ms": 989
+  },
+  "09_ScorePlay_Bilder": {
+    "n": 11,
+    "median_ms": 2212,
+    "p95_ms": 2460,
+    "max_ms": 2460
+  },
+  "13_Halftime_Aftermatch_Summary": {
+    "n": 7,
+    "median_ms": 4989,
+    "p95_ms": 6223,
+    "max_ms": 6223
+  },
+  "14_Game_Anpfiff_Abpfiff": {
+    "n": 1,
+    "median_ms": 8632,
+    "p95_ms": 8632,
+    "max_ms": 8632
+  },
+  "11_YouTube": {
+    "n": 1,
+    "median_ms": 1129,
+    "p95_ms": 1129,
+    "max_ms": 1129,
+    "source": "manuell"
+  },
+  "12_Insta": {
+    "n": 1,
+    "median_ms": 1500,
+    "p95_ms": 1500,
+    "max_ms": 1500,
+    "source": "manuell"
+  },
+  "10_Twitter_X": {
+    "n": 1,
+    "median_ms": 1500,
+    "p95_ms": 1500,
+    "max_ms": 1500,
+    "source": "manuell"
+  },
+  "Webhook Pre-Match LLM": {
+    "n": 1,
+    "median_ms": 972,
+    "p95_ms": 972,
+    "max_ms": 972,
+    "source": "manuell"
+  }
+}

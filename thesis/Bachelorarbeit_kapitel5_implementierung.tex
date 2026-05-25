@@ -249,11 +249,11 @@ Für die Fehlerbehandlung unterscheidet der Service zwei Backoff-Strategien: Bei
 
 \section{KI-Generierungspipeline}\label{ki-generierungspipeline}
 
-Die fünfstufige LLM-Pipeline verarbeitet eingehende Events vom Datenimport bis zum gespeicherten Ticker-Eintrag und gliedert sich in Pipeline-Stufen und Kontextanreicherung (Abschnitt~\ref{pipeline-mechanik-und-idempotenz}) sowie Idempotenz und Generierungssteuerung (Abschnitt~\ref{idempotenz-und-generierungssteuerung}).
+Die fünfstufige LLM-Pipeline verarbeitet eingehende Events vom Datenimport bis zum gespeicherten Ticker-Eintrag. Sie gliedert sich in Pipeline-Überblick (Abschnitt~\ref{pipeline-mechanik-und-idempotenz}), Kontextanreicherung (Abschnitt~\ref{kontextanreicherung-pipeline}), Idempotenz (Abschnitt~\ref{idempotenz-und-generierungssteuerung}) und Generierungssteuerung (Abschnitt~\ref{generierungssteuerung}).
 
-\subsection{Pipeline-Stufen und Kontextanreicherung}\label{pipeline-mechanik-und-idempotenz}
+\subsection{Pipeline-Überblick}\label{pipeline-mechanik-und-idempotenz}
 
-Die Pipeline durchläuft fünf Stufen: Event-Import, Kontextanreicherung, Prompt-Aufbau, LLM-Aufruf und Persistenz. Die Stufen~1 und~2 sind in \texttt{ticker\_service} (Abschnitt~\ref{ticker-service-domuxe4nenlogik}), Stufen~3 und~4 im \texttt{LLMService} (Abschnitt~\ref{llm-service-prompt-aufbau-und-provider-dispatch}) implementiert. Abbildung~\ref{fig:event-workflow} zeigt die Stufenabfolge im Überblick. Abbildung~\ref{fig:ki-generierungspipeline} stellt den vollständigen Ablauf vom Ereignis-Import bis zum gespeicherten Ticker-Eintrag dar.
+Die Pipeline durchläuft fünf Stufen: Event-Import, Kontextanreicherung, Prompt-Aufbau, LLM-Aufruf und Persistenz. Die Stufen~1 und~2 sind in \texttt{ticker\_service} (Abschnitt~\ref{ticker-service-domuxe4nenlogik}), Stufen~3 und~4 im \texttt{LLMService} (Abschnitt~\ref{llm-service-prompt-aufbau-und-provider-dispatch}) implementiert.
 
 \begin{figure}[H]
 \centering
@@ -262,14 +262,18 @@ Die Pipeline durchläuft fünf Stufen: Event-Import, Kontextanreicherung, Prompt
 \label{fig:event-workflow}
 \end{figure}
 
+\subsection{Kontextanreicherung}\label{kontextanreicherung-pipeline}
+
+Die Kontextanreicherung (Stufe~2) verläuft je nach Ereignistyp unterschiedlich. Für Live-Events (\texttt{goal}, \texttt{card} u.\,a.) erzeugt \texttt{build\_context\_data()} ein Dict aus Teamnamen und Spielstand, das \texttt{build\_context\_str()} anschließend als \texttt{ctx\_match\_info}-Block in den Prompt einbettet.
+
+Für synthetische Pre-Match-Events (z.\,B. \texttt{pre\_match\_h2h}) liefert \texttt{synthetic.data} die JSONB-Nutzdaten direkt — also exakt die Daten, die WF07 zuvor aus der Football-API importiert und in \texttt{synthetic\_events} persistiert hat. \texttt{build\_context\_str()} wählt anhand des \texttt{event\_type} den passenden Formatter (\texttt{ctx\_h2h}, \texttt{ctx\_injuries}, \texttt{ctx\_standings} u.\,a.) und übersetzt die strukturierten JSON-Daten in lesbare Prompt-Zeilen. Abbildung~\ref{fig:ki-generierungspipeline} zeigt den vollständigen Ablauf beider Pfade vom Ereignis-Import bis zum gespeicherten Ticker-Eintrag.
+
 \begin{figure}[H]
 \centering
 \DiagramTickerGenerationFlow
 \caption{Ablauf der KI-Generierungspipeline: Ereignis-Import bis publizierter Ticker-Eintrag}
 \label{fig:ki-generierungspipeline}
 \end{figure}
-
-Die Kontextanreicherung (Stufe~2 der Pipeline) verläuft je nach Ereignistyp unterschiedlich. Für Live-Events (\texttt{goal}, \texttt{card} u.\,a.) erzeugt \texttt{build\_context\_data()} ein Dict aus Teamnamen und Spielstand, das \texttt{build\_context\_str()} anschließend als \texttt{ctx\_match\_info}-Block in den Prompt einbettet. Für synthetische Pre-Match-Events (z.\,B. \texttt{pre\_match\_h2h}) liefert \texttt{synthetic.data} die JSONB-Nutzdaten direkt — also exakt die Daten, die WF07 zuvor aus der Football-API importiert und in \texttt{synthetic\_events} persistiert hat. \texttt{build\_context\_str()} wählt anhand des \texttt{event\_type} den passenden Formatter (\texttt{ctx\_h2h}, \texttt{ctx\_injuries}, \texttt{ctx\_standings} u.\,a.) und übersetzt die strukturierten JSON-Daten in lesbare Prompt-Zeilen.
 
 Das folgende Beispiel zeigt den assemblierten Prompt für ein Tor-Ereignis im euphorischen Stilprofil (Stufe~3):
 
@@ -306,7 +310,7 @@ Das folgende Beispiel zeigt den assemblierten Prompt für ein Tor-Ereignis im eu
 \end{Highlighting}
 \end{Shaded}
 
-\subsection{Idempotenz und Generierungssteuerung}\label{idempotenz-und-generierungssteuerung}
+\subsection{Idempotenz}\label{idempotenz-und-generierungssteuerung}
 
 Ein zentrales Qualitätsmerkmal der Pipeline ist die Deduplizierung für
 ereignisbasierte Generierung: \texttt{POST\ /generate/\{event\_id\}}
@@ -336,12 +340,13 @@ Aufrufe mit identischem Stil.
 
 Diese Schutzprüfung fehlt im Endpunkt \texttt{POST\ /generate-synthetic} für Spielphasen-Events bewusst (vgl. Abschnitt~\ref{prompt-engineering-strategie} zur asymmetrischen Idempotenz-Strategie).
 
-Der Endpunkt \texttt{POST\ /generate-match-phases/\{match\_id\}} ist ein Catch-up-Mechanismus: Während eines laufenden Spiels generiert n8n WF14 die Spielphasen-Einträge über \texttt{POST\ /generate-synthetic} bei jedem Phasenübergang. Öffnet ein Redakteur jedoch ein Spiel erstmalig, das sich bereits in der zweiten Halbzeit oder im Abpfiff-Zustand befindet, können einzelne Phasen-Drafts fehlen. In diesem Fall löst der Frontend-Hook \texttt{useMatchTriggers} \texttt{generate-match-phases} aus und gleicht fehlende Einträge mit Standardminuten nach. Das Phasenset ist spielzustandsabhängig: Im Standardfall werden vier Phasen erzeugt (Anpfiff, Halbzeit, zweite Halbzeit, Abpfiff). Bei Verlängerung ergänzt der Router \texttt{EXTRA\_PHASES}, bei Elfmeterschießen zusätzlich \texttt{PENALTY\_PHASES}. Bei laufenden Spielen (\texttt{match\_state="Live"}) wird der Abpfiff-Eintrag übersprungen, sodass kein vorzeitiger FullTime-Text entsteht. \texttt{get\_or\_create\_flush()} stellt sicher, dass jede Phase idempotent auf genau einem \texttt{SyntheticEvent}-Datensatz aufbaut.
+Der Endpunkt \texttt{POST /generate-match-phases/\{match\_id\}} ist ein Catch-up-Mechanismus: Während eines laufenden Spiels generiert n8n WF14 Spielphasen-Einträge über \texttt{POST /generate-synthetic} bei jedem Phasenübergang. Öffnet ein Redakteur jedoch ein Spiel erstmalig in einer späteren Phase, können einzelne Phasen-Drafts fehlen — der Frontend-Hook \texttt{useMatchTriggers} löst dann \texttt{generate-match-phases} aus und gleicht fehlende Einträge mit Standardminuten nach.
 
-Der initiale Status des erzeugten Ticker-Eintrags wird über den
-Aufrufparameter \texttt{auto\_publish} gesteuert, den n8n aus dem
-\texttt{ticker\_mode} des Spiels ableitet (vgl. Abschnitt~\ref{status-lifecycle-und-betriebsmodi} für die
-konzeptionelle Beschreibung der drei Betriebsmodi):
+Das erzeugte Phasenset ist spielzustandsabhängig: Im Standardfall werden vier Phasen erzeugt (Anpfiff, Halbzeit, zweite Halbzeit, Abpfiff); bei Verlängerung ergänzt der Router \texttt{EXTRA\_PHASES}, bei Elfmeterschießen zusätzlich \texttt{PENALTY\_PHASES}. Bei laufenden Spielen wird der Abpfiff-Eintrag übersprungen, um keinen vorzeitigen FullTime-Text zu erzeugen. \texttt{get\_or\_create\_flush()} stellt sicher, dass jede Phase idempotent auf genau einem \texttt{SyntheticEvent}-Datensatz aufbaut.
+
+\subsection{Generierungssteuerung}\label{generierungssteuerung}
+
+Der initiale Status des erzeugten Ticker-Eintrags wird über den Aufrufparameter \texttt{auto\_publish} gesteuert, den n8n aus dem konfigurierten Spielmodus ableitet (vgl. Abschnitt~\ref{status-lifecycle-und-betriebsmodi}):
 
 \begin{Shaded}
 \begin{Highlighting}[]

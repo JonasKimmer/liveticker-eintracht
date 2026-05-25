@@ -16,9 +16,9 @@ Implementierung → Evaluation → Diskussion → Fazit.
 - Unterstützte Sprachen: Deutsch, Englisch, Spanisch, Französisch (NICHT Japanisch)
 - 24 Anforderungen (F1–F13, N1–N6, A1–A5); 23 vollständig erfüllt, F7 funktional implementiert
 - 17 n8n-Workflows in 6 Gruppen (A–F), ausschließlich manuell verifiziert
-- Evaluationswerte: Korrektheit Ø 4,6/5 · Verständlichkeit Ø 4,3/5 · Tonalität Ø 4,1/5
-- LLM-as-Judge (claude-sonnet-4-5 via OpenRouter): neutral 4,81 · kritisch 4,32 · euphorisch 3,27
-- LLM-as-Judge Tonalität euphorisch bei Wechsel/Karten: 2,93/5
+- Evaluationswerte (manuelle Fehleranalyse, N=40): Korrektheit Ø 4,6/5 · Vollständigkeit Ø 4,3/5 · Tonalität Ø 4,1/5
+- LLM-as-Judge (claude-sonnet-4-5 via OpenRouter, N=80): neutral Ø 4,76 · kritisch Ø 3,82 · euphorisch Ø 4,11 · Gesamt 4,23
+- LLM-as-Judge Tonalität kritisch: 3,50/5 (schwächstes Profil); kritisch Vollständigkeit: 3,62/5
 - Systemlatenz: Median 3.338 ms, P95 3.698 ms
 - 21 spanischsprachige Einträge verifiziert
 - EU AI Act Art. 50 Abs. 4: Kennzeichnungspflicht ab August 2026

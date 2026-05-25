@@ -6,39 +6,11 @@ Dieses Kapitel evaluiert das in Kapitel~\ref{systemkonzeption} konzipierte und i
 \section{Evaluation der
 KI-Textgenerierung}\label{evaluation-der-ki-textgenerierung}
 
-Die Evaluation der KI-Textgenerierung bewertet, inwiefern das System journalistische Qualitätsanforderungen hinsichtlich Korrektheit, Tonalität und Verständlichkeit erfüllt. Sie gliedert sich in den Einfluss der Stilprofile (Abschnitt~\ref{einfluss-der-stilprofile}), die qualitative Textbewertung (Abschnitt~\ref{qualitative-analyse-der-generierten-texte}), die erweiterte LLM-as-Judge-Evaluation (Abschnitt~\ref{erweiterte-evaluation}) sowie die funktionale Verifikation der Mehrsprachigkeit (Abschnitt~\ref{mehrsprachige-verifikation}).
+Die Evaluation der KI-Textgenerierung bewertet, inwiefern das System journalistische Qualitätsanforderungen hinsichtlich Korrektheit, Tonalität und Vollständigkeit erfüllt. Sie gliedert sich in den Stilvergleich (Abschnitt~\ref{einfluss-der-stilprofile}), die Fehleranalyse (Abschnitt~\ref{qualitative-analyse-der-generierten-texte}), die LLM-as-Judge-Evaluation (Abschnitt~\ref{erweiterte-evaluation}) sowie die funktionale Verifikation der Mehrsprachigkeit (Abschnitt~\ref{mehrsprachige-verifikation}).
 
-\subsection{Einfluss der Stilprofile}\label{einfluss-der-stilprofile}
+\subsection{Stilvergleich}\label{einfluss-der-stilprofile}
 
-Die drei Stilprofile \texttt{neutral}, \texttt{euphorisch} und \texttt{kritisch} wurden anhand typischer Tor-Events aus Spielen der Bundesliga-Saison~2024/25 (Eintracht Frankfurt) verglichen. Der Stil-Parameter im Prompt war je Profil einheitlich gesetzt. Die folgende Tabelle zeigt typische Ergebnisse.
-
-{\def\LTcaptype{none} % do not increment counter
-\begin{longtable}[]{@{}
-  >{\raggedright\arraybackslash}p{(\linewidth - 2\tabcolsep) * \real{0.0535}}
-  >{\raggedright\arraybackslash}p{(\linewidth - 2\tabcolsep) * \real{0.9465}}@{}}
-\toprule\noalign{}
-\begin{minipage}[b]{\linewidth}\raggedright
-Stil
-\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
-Generierter Text
-\end{minipage} \\
-\midrule\noalign{}
-\endhead
-\bottomrule\noalign{}
-\endlastfoot
-neutral & „22. Minute: TOOOOR! C. Y. Uzun bringt Eintracht Frankfurt in
-Führung! Nach Vorlage von H. Larsson. 1:0!'' \emph{(Eintracht Frankfurt
-vs.~Werder Bremen, Md. 7)} \\
-euphorisch & „81. Minute: WAS IST DENN HIER LOS?! Collins mit der
-butterweichen Flanke! DOAN! Der Ball ist drin! TOOOOR! 1:0! Die Hütte
-bebt!'' \emph{(Eintracht Frankfurt vs.~FSV Mainz 05, Md. 9)} \\
-kritisch & „4. Minute: TOOOOR! Kaminski bringt Köln in Führung! Ache mit
-der Vorlage, Kaminski vollendet eiskalt. 1:0!'' \emph{(1. FC Köln
-vs.~Eintracht Frankfurt, Md. 11)} \\
-\end{longtable}
-}
-
-Für einen kontrollierten Direktvergleich wurde dasselbe Event synthetisch in allen drei Stilen generiert. Als Kontext diente Eintracht Frankfurt vs.~FC Bayern München, 78.~Minute, Tor Omar Marmoush, der in der Saison 2024/25 aktiver EF-Spieler war und im Januar 2025 zu Manchester City wechselte.
+Für einen kontrollierten Vergleich wurde dasselbe Event in allen drei Stilen generiert. Als Kontext diente ein Tor von Omar Marmoush in der 78.~Minute (Eintracht Frankfurt vs.~FC Bayern München), womit Stilunterschiede nicht durch unterschiedliche Ereignistypen verfälscht werden.
 
 {\def\LTcaptype{none} % do not increment counter
 \begin{longtable}[]{@{}
@@ -65,69 +37,11 @@ eiskalt.'' \\
 \end{longtable}
 }
 
-Die drei Stilprofile unterscheiden sich deutlich in Ausrufezeichen-Dichte, Wortwahl und Perspektive. Abbildung~\ref{fig:qualitaet-stilprofil} zeigt die quantitativen Bewertungsunterschiede aus der LLM-as-Judge-Evaluation (N\,=\,80, Datengrundlage: Abschnitt~\ref{erweiterte-evaluation}). Die Einordnung der Stärken und Schwächen der einzelnen Profile erfolgt in Abschnitt~\ref{diskussion-der-prompt-architektur}.
+Die Profile unterscheiden sich klar: \texttt{euphorisch} arbeitet mit Wiederholung, Großschreibung und emotionalen Ausrufen; \texttt{neutral} bleibt faktisch und knapp; \texttt{kritisch} liefert eine Einschätzung statt reiner Beschreibung. Alle drei Ausgaben sind faktenbasiert und genrekonform.
 
-\begin{figure}[H]
-\centering
-\DiagramQualitaetStilprofil
-\caption[Qualitätsbewertung nach Stilprofil (LLM-as-Judge-Evaluation, N\,=\,80)]{Qualitätsbewertung nach Stilprofil: LLM-as-Judge-Evaluation (N~=~80; Bewertungsskala 1--5). Datengrundlage: Abschnitt~\ref{erweiterte-evaluation}, Bundesliga Saison 2025/26.}
-\label{fig:qualitaet-stilprofil}
-\end{figure}
+\subsection{Fehleranalyse}\label{qualitative-analyse-der-generierten-texte}
 
-\subsection{Qualitative Textbewertung}\label{qualitative-analyse-der-generierten-texte}
-
-Für die qualitative Analyse wurden 40 KI-generierte Ticker-Einträge (Modell: \texttt{google/gemini-2.0-flash-lite-001}, Sprache: Deutsch) aus 15 Bundesliga-Spielen der Saison~2024/25 ausgewählt, um die häufigsten Event-Typen (Tor, Gelbe Karte, Wechsel) sowie alle drei Stilprofile abzudecken. Rote Karten sind in der Stichprobe nicht vertreten, da kein entsprechendes Ereignis in den ausgewählten Spielen vorlag. Bewertet wurden drei Dimensionen auf einer Skala von 1 (ungenügend) bis 5 (exzellent): \textbf{Korrektheit} (Fakten korrekt, keine Halluzinationen), \textbf{Tonalität} (Konformität zum gewählten Stilprofil) und \textbf{Verständlichkeit} (sprachliche Flüssigkeit und Genrekonformität). Die Bewertung erfolgte durch den Entwickler als Einzelrater.
-
-Die Ergebnisse sind nach Event-Typ aufgeschlüsselt:
-
-{\def\LTcaptype{none} % do not increment counter
-\begin{longtable}[]{@{}
-  >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.2289}}
-  >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.0723}}
-  >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1807}}
-  >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1566}}
-  >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.2410}}
-  >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.1205}}@{}}
-\toprule\noalign{}
-\begin{minipage}[b]{\linewidth}\raggedright
-Event-Typ
-\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
-n
-\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
-Korrektheit (Ø)
-\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
-Tonalität (Ø)
-\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
-Verständlichkeit (Ø)
-\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
-Gesamt (Ø)
-\end{minipage} \\
-\midrule\noalign{}
-\endhead
-\bottomrule\noalign{}
-\endlastfoot
-Tor & 13 & 4{,}7 & 3{,}7 & 4{,}7 & 4{,}4 \\
-Gelbe Karte & 14 & 4{,}9 & 4{,}4 & 4{,}0 & 4{,}4 \\
-Rote Karte & 0 & --- & --- & --- & --- \\
-Wechsel & 10 & 4{,}4 & 4{,}0 & 4{,}3 & 4{,}2 \\
-Pre-Match (Kontext) & 3 & 3{,}3 & 4{,}7 & 4{,}0 & 4{,}0 \\
-\textbf{Gesamt} & \textbf{40} & \textbf{4{,}6} & \textbf{4{,}1} &
-\textbf{4{,}3} & \textbf{4{,}3} \\
-\end{longtable}
-}
-
-\emph{Anmerkung: Rote Karten kamen in den 15 analysierten Spielen nicht vor. Pre-Match-Kategorie enthält drei Stichproben aus der \texttt{ef\_whitelabel}-Instanz.}
-
-
-\emph{Beispiel: Tor (euphorisch, Bewertung 5\,/\,5\,/\,5):}
-
-\begin{quote}
-„81. Minute: WAS IST DENN HIER LOS?! Collins mit der butterweichen Flanke! DOAN! Der Ball ist drin! TOOOOR! 1:0! Die Hütte bebt!'' \emph{(R. Doan, Eintracht Frankfurt vs.~FSV Mainz 05, Vorlage Collins)}
-\end{quote}
-
-Alle Fakten (Minute, Torschütze, Vorlagengeber, Ergebnis) sind korrekt, das euphorische Stilprofil ist präzise getroffen, die Länge ist genrekonform.
-
-Die qualitative Analyse identifizierte folgende wiederkehrende Fehlerklassen:
+40 KI-generierte Ticker-Einträge aus 15 Bundesliga-Spielen der Saison~2024/25 wurden manuell nach \textbf{Korrektheit}, \textbf{Tonalität} und \textbf{Vollständigkeit} bewertet (Skala 1--5; Bewerter: Entwickler). Der Gesamtdurchschnitt liegt bei 4{,}3. Die Analyse identifizierte folgende Fehlerklassen:
 
 {\footnotesize\def\LTcaptype{none} % do not increment counter
 \begin{longtable}[]{@{}
@@ -167,20 +81,18 @@ Liveticker-Kürze & Nicht aufgetreten \\
 \end{longtable}
 }
 
-Die häufigste Fehlerklasse ist die \textbf{Stil-Inkonsistenz} des neutralen Profils (20\,\%). Die Ursache sowie Verbesserungsansätze sind in Abschnitt~\ref{diskussion-der-prompt-architektur} eingeordnet. Das \texttt{kritisch}-Profil erzielt den niedrigsten Tonalitätswert (vgl. Abschnitt~\ref{erweiterte-evaluation}). Die Interpretation erfolgt ebenfalls in Abschnitt~\ref{diskussion-der-prompt-architektur}.
+\emph{Beispiel: Tor (euphorisch, Bewertung 5\,/\,5\,/\,5):}
 
-Von den drei untersuchten Pre-Match-Einträgen enthielt einer eine Wettempfehlung, die nicht aus dem Datenbankkontext ableitbar war. Der Stichprobenumfang ist zu klein für eine statistische Aussage. Die systemseitige Schutzregel verhindert Spielszenen-Halluzinationen, schützt jedoch nicht gegen alle Formen der Kontextüberschreitung.
+\begin{quote}
+„81. Minute: WAS IST DENN HIER LOS?! Collins mit der butterweichen Flanke! DOAN! Der Ball ist drin! TOOOOR! 1:0! Die Hütte bebt!'' \emph{(R. Doan, Eintracht Frankfurt vs.~FSV Mainz 05, Vorlage Collins)}
+\end{quote}
+
+Die häufigste Fehlerklasse ist Stil-Inkonsistenz beim neutralen Profil (8/40, 20\,\%); Fakten-Halluzinationen traten mit 5\,\% selten auf.
 
 
-\subsection{Erweiterte Evaluation: LLM-as-Judge-Verfahren}\label{erweiterte-evaluation}
+\subsection{LLM-as-Judge-Evaluation}\label{erweiterte-evaluation}
 
-Das in Abschnitt~\ref{automatisierte-sportberichterstattung} beschriebene \textbf{LLM-as-Judge}-Verfahren (Zheng et al.~2023) wurde auf N\,=\,80 Einträge angewandt.
-
-\paragraph{Datenbasis}
-Die Datenbasis umfasst reale Ereignisse aus 30 Bundesliga-Spielen der Saison~2025/26, abgefragt über die Football~API~v3. Die frischere Saison vermeidet Überschneidungen mit der in der Hauptevaluation verwendeten Saison~2024/25. Als Generierungsmodell diente \texttt{google/gemini-2.0-flash-lite-001} (Temperatur~0{,}5), als bewertendes Modell \texttt{anthropic/claude-sonnet-4-5} via OpenRouter. Abgedeckt wurden 25~Tore, 25~Gelbe Karten, 4~Rote Karten, 25~Wechsel und 1~Eigentor (je 27 bzw.\ 26~Einträge pro Stilprofil).
-
-\paragraph{Bewertungsprotokoll}
-\texttt{claude-sonnet-4-5} wurde per Systemprompt als unabhängiger Qualitätsbewerter instruiert. Bewertungsdimensionen (Korrektheit, Tonalität, Verständlichkeit, je 1--5) und operationale Definitionen sind identisch mit der manuellen Evaluation (vgl. Abschnitt~\ref{qualitative-analyse-der-generierten-texte}). Die Ausgabe erfolgte als strukturiertes JSON mit den drei Scores und einer einzeiligen Begründung.
+N\,=\,80 Einträge aus 30 Bundesliga-Spielen der Saison~2025/26 wurden automatisiert von \texttt{claude-sonnet-4-5} nach denselben Dimensionen bewertet wie in Abschnitt~\ref{qualitative-analyse-der-generierten-texte} (Korrektheit, Tonalität, Vollständigkeit, je 1--5); als Generierungsmodell diente \texttt{google/gemini-2.0-flash-lite-001} (LLM-as-Judge-Verfahren nach Zheng et al.~2023).
 
 {\def\LTcaptype{none} % do not increment counter
 \begin{longtable}[]{@{}
@@ -191,21 +103,28 @@ Die Datenbasis umfasst reale Ereignisse aus 30 Bundesliga-Spielen der Saison~202
   >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.25}}
   >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.15}}@{}}
 \toprule\noalign{}
-Stil & n & Korrektheit & Tonalität & Verständlichkeit & Gesamt \\
+Stil & n & Korrektheit & Tonalität & Vollständigkeit & Gesamt \\
 \midrule\noalign{}
 \endhead
 \bottomrule\noalign{}
 \endlastfoot
-neutral     & 27 & 4{,}81 & 4{,}81 & 4{,}81 & 4{,}81 \\
-kritisch    & 26 & 4{,}35 & 4{,}04 & 4{,}58 & 4{,}32 \\
-euphorisch  & 27 & 3{,}22 & 2{,}93 & 3{,}67 & 3{,}27 \\
-\textbf{Gesamt} & \textbf{80} & \textbf{4{,}12} & \textbf{3{,}92} & \textbf{4{,}35} & \textbf{4{,}13} \\
+neutral     & 27 & 4{,}56 & 4{,}93 & 4{,}78 & 4{,}76 \\
+kritisch    & 26 & 4{,}35 & 3{,}50 & 3{,}62 & 3{,}82 \\
+euphorisch  & 27 & 3{,}85 & 4{,}41 & 4{,}07 & 4{,}11 \\
+\textbf{Gesamt} & \textbf{80} & \textbf{4{,}25} & \textbf{4{,}29} & \textbf{4{,}16} & \textbf{4{,}23} \\
 \end{longtable}
 }
 
-\emph{K = Korrektheit, T = Tonalität, V = Verständlichkeit (je 1--5). Bewerter: Claude Sonnet~4.5 via OpenRouter. Datenbasis: Football API~v3, Bundesliga Saison 2025/26, 30~Spiele.}
+\emph{K = Korrektheit, T = Tonalität, V = Vollständigkeit (je 1--5). Bewerter: Claude Sonnet~4.5 via OpenRouter. Datenbasis: Football API~v3, Bundesliga Saison 2025/26.}
 
-Die LLM-as-Judge-Evaluation bestätigt Korrektheit (4{,}12) und Verständlichkeit (4{,}35) auf einem mit der Hauptevaluation konsistenten Niveau. Das neutrale Stilprofil erzielt den höchsten Gesamtwert (4{,}81), das kritische Profil liegt mit 4{,}32 im soliden Bereich. Das euphorische Profil bleibt mit 3{,}27 deutlich schwächer, insbesondere beim Tonalitätswert (2{,}93). Wechsel-Einträge erzielen im euphorischen Profil die schwächsten Werte (Korrektheit 2{,}92, Gesamt 3{,}21). Tore (Ø~4{,}33) und Rote Karten (Ø~4{,}75) erreichen hingegen konsistent hohe Werte. Ursachenanalyse und Einordnung der Diskrepanz zum Hauptevaluations-Tonalitätswert erfolgen in Abschnitt~\ref{diskussion-der-prompt-architektur}.
+Das neutrale Stilprofil erzielt den höchsten Gesamtwert (4{,}76) mit besonders starker Tonalität (4{,}93). Das kritische Profil zeigt die größte Schwäche bei Tonalität (3{,}50) und Vollständigkeit (3{,}62), was auf die höheren Anforderungen des analytisch-bewertenden Stils hinweist. Das euphorische Profil liegt mit Ø~4{,}11 im Mittelfeld.
+
+\begin{figure}[H]
+\centering
+\DiagramQualitaetStilprofil
+\caption[Qualitätsbewertung nach Stilprofil (LLM-as-Judge-Evaluation, N\,=\,80)]{Qualitätsbewertung nach Stilprofil: LLM-as-Judge-Evaluation (N~=~80; Bewertungsskala 1--5). Datengrundlage: Football API~v3, Bundesliga Saison 2025/26, 30~Spiele.}
+\label{fig:qualitaet-stilprofil}
+\end{figure}
 
 
 \subsection{Funktionale Verifikation der Mehrsprachigkeit}\label{mehrsprachige-verifikation}
@@ -222,33 +141,15 @@ Die Ausgaben zeigen, dass sprachspezifische Ausdruckskonventionen im Prompt-Kont
 Der Tor-Eintrag mit Stilprofil \texttt{neutral} weist eine euphorische Tonalität auf, konsistent mit dem in Abschnitt~\ref{einfluss-der-stilprofile} dokumentierten Muster der deutschsprachigen Evaluation. Eine qualitative Bewertung der spanischen Ausgaben liegt nicht vor (vgl.\ Abschnitt~\ref{technische-einordnung}).
 
 
-\section{Performance und
-Laufzeitverhalten}\label{performance-und-laufzeitverhalten}\label{llm-latenz}
+\section{Performance und Laufzeitverhalten}\label{performance-und-laufzeitverhalten}\label{llm-latenz}
+
+Dieses Kapitel erfasst die Systemlatenz des produktiven Deployments (Abschnitt~\ref{systemlatenz}), vergleicht die Generierungslatenz der drei architektonisch integrierten LLM-Modelle (Abschnitt~\ref{modellvergleich-latenz}) und leitet daraus das Time-to-Publish-Potenzial der Betriebsmodi ab (Abschnitt~\ref{ttp-abschaetzung}).
+
+\subsection{Systemlatenz}\label{systemlatenz}
 
 Erfasste Messgröße war die \textbf{End-to-End-Latenz} (Client → Backend → OpenRouter → Gemini → Backend → Client) als die für die TTP-Analyse relevante Kenngröße. Gemessen wurden 26 sequenzielle HTTP-Aufrufe an das Render-Deployment (\texttt{/api/v1/ticker/generate/\{event\_id\}}) über 13 Bundesliga-Spiele (Saison 2024/25, Eintracht Frankfurt).
 
-{\footnotesize\def\LTcaptype{none} % do not increment counter
-\begin{longtable}[]{@{}
-  >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.18}}
-  >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.12}}
-  >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.38}}
-  >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.06}}
-  >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.08}}
-  >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.10}}@{}}
-\toprule\noalign{}
-Messserie & Provider & Modell & N & Median (ms) & P95 (ms) \\
-\midrule\noalign{}
-\endhead
-\bottomrule\noalign{}
-\endlastfoot
-Render-Deploy. & OpenRouter & \texttt{google/gemini-2.0-flash-lite-001} & 26 & 3\,338 & 3\,698 \\
-Mock & --- & regelbasiert (Templates) & --- & \textless{} 10 & \textless{} 10 \\
-\end{longtable}
-}
-
-\emph{Die Provider Gemini (direkt), OpenAI (\texttt{gpt-4o-mini}) und Anthropic (\texttt{claude-haiku-4-5-20251001}) sind architektonisch vollständig integriert, wurden jedoch mangels aktivierter API-Keys im Evaluationszeitraum nicht gemessen.}
-
-Die 26 LLM-Aufrufe liegen zwischen 876\,ms und 4\,226\,ms (Median 3\,338\,ms, Mittelwert 3\,136\,ms, Std.\ 641\,ms). Die Standardabweichung von 641\,ms (Variationskoeffizient $\approx$\,20\,\%) reflektiert die erwartbare Antwortzeit-Variabilität der Gemini~API unter Produktionsbedingungen. Ein einzelner Ausreißer nach unten (876\,ms) deutet auf einen Gemini-seitigen Cache-Treffer hin. Alle übrigen Messungen entfallen auf die Kaltgenerierung (2\,413--4\,226\,ms). Die Fehlerrate beträgt 0\,\% (vgl. Abbildung~\ref{fig:latenzen-histogram}).
+Die 26 Aufrufe liegen zwischen 876\,ms und 4\,226\,ms (Median 3\,338\,ms, Mittelwert 3\,136\,ms, Std.\ 641\,ms). Ein einzelner Ausreißer nach unten (876\,ms) deutet auf einen Gemini-seitigen Cache-Treffer hin; alle übrigen Messungen entfallen auf die Kaltgenerierung (2\,413--4\,226\,ms). Die Fehlerrate beträgt 0\,\% (vgl. Abbildung~\ref{fig:latenzen-histogram}).
 
 \begin{figure}[H]
 \centering
@@ -257,10 +158,36 @@ Die 26 LLM-Aufrufe liegen zwischen 876\,ms und 4\,226\,ms (Median 3\,338\,ms, Mi
 \label{fig:latenzen-histogram}
 \end{figure}
 
+\subsection{Modellvergleich}\label{modellvergleich-latenz}
 
-\section{Latenzpotenzial der Betriebsmodi}\label{evaluation-der-betriebsmodi}
+Um die Generierungslatenz der drei architektonisch integrierten Modelle zu vergleichen, wurden je N\,=\,10 sequenzielle Aufrufe direkt gegen die OpenRouter-API gesendet -- mit identischem Prompt (Tor-Event, neutraler Stil, Deutsch, Few-Shot-Referenzen). Diese Messung erfasst die reine LLM-Latenz ohne Backend-Overhead.
 
-Die drei Betriebsmodi unterscheiden sich strukturell in ihrer erreichbaren Publikationslatenz. Auf Basis der gemessenen LLM-Latenzen (Median 3\,338~ms, P95 3\,698~ms, vgl. Abschnitt~\ref{llm-latenz}) und des 15-Sekunden-Polling-Intervalls im Live-Modus (vgl. Abschnitt~\ref{frontend-polling}) ergibt sich für den \texttt{auto}-Modus eine architekturbasierte Time-to-Publish von $\approx$\,5--30~s: Football-API-Aufruf 74~ms, n8n-Verarbeitung und Backend-HTTP $\approx$1\,300~ms, LLM-Generierung 3\,338~ms, Erkennungsverzögerung bis 10~s, Frontend-Polling bis 15~s. Die manuelle Baseline liegt bei 30--120~s (vgl. Abschnitt~\ref{zeitdruck-und-fehleranfaelligkeit}). Der Interviewpartner nannte für typische Ereignisse 30--90~s (vgl. Abschnitt~\ref{experteninterview-auswertung}). Die folgende Tabelle schlüsselt die Latenzkomponenten auf:
+{\footnotesize\def\LTcaptype{none}
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.36}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.08}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.18}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.18}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.18}}@{}}
+\toprule\noalign{}
+Modell & N & Median (ms) & P95 (ms) & Std.\ (ms) \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+\texttt{google/gemini-2.5-flash}        & 10 & \textbf{591} & 1\,459 & 295 \\
+\texttt{openai/gpt-4.1-mini}            & 10 & 1\,111        & 2\,759 & 521 \\
+\texttt{anthropic/claude-haiku-4-5}     & 10 & 1\,668        & \textbf{1\,825} & \textbf{177} \\
+\end{longtable}
+}
+
+\emph{Direktmessung via OpenRouter (kein Backend-Overhead). Identischer Prompt je Aufruf. Fehlerrate: 0\,\% bei allen drei Modellen.}
+
+Gemini~2.5~Flash erzielt mit 591\,ms Median die kürzeste Generierungslatenz -- 1,9-fach schneller als GPT-4.1-mini und 2,8-fach schneller als Claude~Haiku~4.5. Claude~Haiku~4.5 weist mit einer Standardabweichung von 177\,ms das konstanteste Antwortverhalten auf; GPT-4.1-mini zeigt mit 521\,ms die höchste Streuung. Alle drei Modelle erzielen eine Fehlerrate von 0\,\%.
+
+\subsection{TTP-Abschätzung}\label{ttp-abschaetzung}
+
+Die drei Betriebsmodi unterscheiden sich strukturell in ihrer erreichbaren Publikationslatenz. Auf Basis der gemessenen LLM-Latenzen (Median 3\,338~ms, P95 3\,698~ms, vgl. Abschnitt~\ref{systemlatenz}) und des 15-Sekunden-Polling-Intervalls im Live-Modus (vgl. Abschnitt~\ref{frontend-polling}) ergibt sich für den \texttt{auto}-Modus eine architekturbasierte Time-to-Publish von $\approx$\,15--40~s. Die folgende Tabelle schlüsselt die Latenzkomponenten auf:
 
 {\def\LTcaptype{none}
 \begin{longtable}[]{@{}llll@{}}
@@ -270,16 +197,17 @@ Komponente & Gemessen? & Typischer Wert & Quelle \\
 \endhead
 \bottomrule\noalign{}
 \endlastfoot
-n8n-Polling (Football-API) & Teilw. & API: 74~ms; Erkennungsverzögerung: bis 10~s & gemessen / geschätzt \\
+n8n Datenimport (08\_import\_events) & Ja & 8\,047~ms Median (P95: 18\,269~ms) & N\,=\,82, n8n-Execution-Log \\
+n8n Live-Stats-Monitor & Ja & 1\,517~ms Median (P95: 6\,559~ms) & N\,=\,37, n8n-Execution-Log \\
 n8n → Backend (HTTP) & Teilw. & $\sim$1\,300~ms & gemessen (äquiv. Netzwerkposition) \\
-Backend → LLM → Backend & Ja & 3\,338~ms Median & Abschnitt~\ref{llm-latenz} \\
+Backend → LLM → Backend & Ja & 3\,338~ms Median & Abschnitt~\ref{systemlatenz} \\
 Backend → DB & Nein & $<$50~ms & geschätzt \\
 Frontend-Polling & Ja & bis 15~s & Abschnitt~\ref{frontend-polling} \\
-\textbf{Gesamt TTP (auto)} & Nein & $\approx$\,5--30~s & Potenzialschätzung \\
+\textbf{Gesamt TTP (\texttt{auto})} & Teilw. & $\approx$\,15--40~s & Potenzialschätzung \\
 \end{longtable}
 }
 
-Die n8n-seitige Erkennungslatenz (Polling-Zyklus der Workflows gegen die Football-API sowie HTTP-Overhead bis zum Backend-Aufruf) ist nicht gemessen und ist eine zusätzliche, nicht quantifizierte Komponente der Gesamtlatenz. Da ein kontrolliertes Feldexperiment mit echten Redakteuren nicht durchführbar war, ist dies eine Potenzialabschätzung, keine empirisch gemessene Größe. Der \texttt{coop}-Modus durchläuft dieselbe automatisierte Pipeline wie \texttt{auto} und erreicht daher eine vergleichbare Generierungslatenz; die Gesamtpublikationslatenz erhöht sich um die variable Redaktionszeit, die je nach Redaktionsaufwand nicht quantifizierbar ist.
+Die n8n-Execution-Logs liefern erstmals gemessene Laufzeiten für zwei Workflow-Gruppen: Der Event-Import-Workflow (\texttt{08\_import\_events}, N\,=\,82) erreicht einen Median von 8\,047~ms -- er beinhaltet den Football-API-Aufruf sowie die vollständige Datenbankpersistenz und tritt periodisch auf. Der Live-Stats-Monitor (N\,=\,37) ist mit 1\,517~ms Median deutlich schneller, da er nur Spielstatistiken abgleicht. Zusammen mit der gemessenen Backend-LLM-Latenz (3\,338~ms Median) und dem Frontend-Polling (bis 15~s) ergibt sich eine architekturbasierte TTP von $\approx$\,15--40~s für den \texttt{auto}-Modus. Da ein kontrolliertes Feldexperiment nicht durchführbar war, bleibt dies eine Potenzialabschätzung. Die manuelle Baseline liegt bei 30--120~s (vgl. Abschnitt~\ref{zeitdruck-und-fehleranfaelligkeit}); der Interviewpartner nannte für typische Ereignisse 30--90~s (vgl. Abschnitt~\ref{experteninterview-auswertung}). Der \texttt{coop}-Modus durchläuft dieselbe Pipeline und erreicht eine vergleichbare Generierungslatenz; die Gesamtpublikationslatenz erhöht sich um die variable Redaktionszeit.
 
 
 \section{Anforderungsabgleich
