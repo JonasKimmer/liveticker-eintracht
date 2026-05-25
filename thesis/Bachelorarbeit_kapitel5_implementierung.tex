@@ -37,8 +37,7 @@ Diese Aufteilung setzt das in Abschnitt~\ref{interne-schichtstruktur} konzipiert
 Beim Start führt ein \texttt{lifespan}-Context-Manager \texttt{alembic upgrade head} aus und spielt ausstehende Migrationen automatisch ein, bevor der erste Request eintrifft. Die Datenbankverbindung wird per FastAPI Dependency Injection in jeden Router injiziert: \texttt{core/database.py} stellt einen \texttt{get\_db()}-Generator bereit, der pro Anfrage eine Session öffnet und am Anfrageende garantiert schließt.
 
 
-\subsection{Datenmodelle: Datenbankschema und
-API-Validierung}\label{datenmodelle-datenbankschema-und-api-validierung}
+\subsection{Datenmodelle, Schemas und Datenzugriff}\label{datenmodelle-datenbankschema-und-api-validierung}
 
 Das Schema umfasst 17 ORM-Modelle (18 Datenbanktabellen). Die
 zentralen Domänenobjekte sind:
@@ -173,7 +172,7 @@ Der \texttt{ticker\_service} kapselt die Domänenlogik für KI-Einträge und koo
 
 Der Service umfasst vier Kernfunktionen. \texttt{score\_at\_event()} berechnet den Spielstand zum Zeitpunkt eines Torereignisses: Da die Football-API den kumulativen Stand liefert, muss der Stand \emph{vor} dem aktuellen Event rekonstruiert werden. Eigentore werden korrekt verarbeitet, da API-Football \texttt{team\_id} stets auf den Nutznießer des Tores setzt.
 
-\texttt{build\_match\_context()} erstellt das Kontext-Dictionary für den LLM-Prompt aus Teamnamen, aktuellem Stand, Matchzustand, Spielminute und Liga. Wie die Kontextanreicherung (Stufe~2 der Pipeline) je nach Ereignistyp verläuft, ist in Abschnitt~\ref{pipeline-mechanik-und-idempotenz} beschrieben.
+\texttt{build\_match\_context()} erstellt das Kontext-Dictionary für den LLM-Prompt aus Teamnamen, aktuellem Stand, Matchzustand, Spielminute und Liga. Wie die Kontextanreicherung (Stufe~2 der Pipeline) je nach Ereignistyp verläuft, ist in Abschnitt~\ref{kontextanreicherung-pipeline} beschrieben.
 
 \texttt{call\_llm()} ist der zentrale, Semaphore-gesicherte LLM-Aufruf.
 Er lädt zunächst aus dem \texttt{StyleReferenceRepository} bis zu drei
@@ -205,7 +204,9 @@ Aufrufkontext festlegt (\texttt{draft} im Co-op-Modus,
 \subsection{LLM-Service: Prompt-Aufbau und
 Provider-Dispatch}\label{llm-service-prompt-aufbau-und-provider-dispatch}
 
-Der \texttt{ticker\_service} delegiert die eigentliche Textgenerierung an den \texttt{LLMService}. Dieser instanziiert beim Start den passenden Client und ruft ihn über ein Dispatch-Dictionary auf:
+Der \texttt{ticker\_service} delegiert die eigentliche Textgenerierung an den \texttt{LLMService}. Dieser instanziiert beim Start den passenden Client und ruft ihn über ein Dispatch-Dictionary auf.
+
+\paragraph{Provider-Dispatch.}
 
 \begin{Shaded}
 \begin{Highlighting}[]
@@ -222,6 +223,7 @@ Der \texttt{ticker\_service} delegiert die eigentliche Textgenerierung an den \t
 
 Die Auswahl des aktiven Providers erfolgt zur Startzeit durch \texttt{\_build\_singleton()}: Es durchläuft \texttt{\_PROVIDER\_KEY\_MAP} (vgl. Abschnitt~\ref{multi-provider-architektur}) in Insertion-Order und aktiviert den ersten Eintrag mit gesetztem API-Key. Die Reihenfolge im Dictionary bestimmt damit direkt die Fallback-Priorität.
 
+\paragraph{Prompt-Aufbau.}
 Vor dem Prompt-Aufbau normalisiert eine \texttt{EVENT\_TYPE\_MAP} externe API-Strings auf einheitliche interne Bezeichner (\texttt{goal}, \texttt{card} etc.). Unbekannte Typen fallen auf \texttt{"comment"} zurück. Der Prompt wird über vier modulare Hilfsmethoden (\texttt{\_build\_event\_lines}, \texttt{\_build\_context\_str}, \texttt{\_build\_few\_shot\_block}, \texttt{\_build\_prematch\_parts}) zusammengesetzt, die fehlende Parameter auslassen, statt den Prompt zu invalidieren. Der Regelblock (\texttt{\#\#\# REGELN}) ist direkt in \texttt{\_build\_prompt} eingebettet (vgl. Abschnitt~\ref{prompt-engineering-strategie}).
 
 Die folgende Tabelle zeigt alle Provider der Prioritätskette mit ihren konfigurierten Standardmodellen (vgl. Abschnitt~\ref{multi-provider-architektur}):
@@ -244,29 +246,19 @@ Priorität & Provider & Standard-Modell & Fallback \\
 
 Als LLM-Parameter werden \texttt{temperature=0.5} und \texttt{max\_tokens} aus \texttt{LLM\_MAX\_TOKENS} gesetzt; die Zielsprache wird als \texttt{language}-Parameter direkt im Prompt übergeben (vgl. Abschnitt~\ref{prompt-engineering-strategie}).
 
+\paragraph{Fehlerbehandlung.}
 Für die Fehlerbehandlung unterscheidet der Service zwei Backoff-Strategien: Bei Rate-Limit-Fehlern (HTTP~429) greift lineares Backoff (\texttt{30\,s / 60\,s}), bei transienten Fehlern exponentielles Backoff (\texttt{1\,s / 2\,s}), jeweils bis zu \texttt{LLM\_RETRY\_ATTEMPTS} (3) Wiederholungen. Danach wird die ursprüngliche Ausnahme weitergereicht. Unabhängig vom Provider überschreibt \texttt{call\_llm()} für \texttt{ef\_whitelabel}-Instanzen das Stilprofil \texttt{neutral} intern auf \texttt{euphorisch} (vgl. Abschnitt~\ref{partner-team-konzept-und-white-label-steuerung}).
 
 
 \section{KI-Generierungspipeline}\label{ki-generierungspipeline}
 
-Die fünfstufige LLM-Pipeline verarbeitet eingehende Events vom Datenimport bis zum gespeicherten Ticker-Eintrag. Sie gliedert sich in Pipeline-Überblick (Abschnitt~\ref{pipeline-mechanik-und-idempotenz}), Kontextanreicherung (Abschnitt~\ref{kontextanreicherung-pipeline}), Idempotenz (Abschnitt~\ref{idempotenz-und-generierungssteuerung}) und Generierungssteuerung (Abschnitt~\ref{generierungssteuerung}).
+Die fünfstufige LLM-Pipeline verarbeitet eingehende Events vom Datenimport bis zum gespeicherten Ticker-Eintrag (Event-Import, Kontextanreicherung, Prompt-Aufbau, LLM-Aufruf, Persistenz). Sie gliedert sich in Spielstandberechnung und Kontextanreicherung (Abschnitt~\ref{kontextanreicherung-pipeline}), Prompt-Design und Stilkonditionierung (Abschnitt~\ref{prompt-design-stilkonditionierung}) sowie Idempotenz und Generierungssteuerung (Abschnitt~\ref{idempotenz-und-generierungssteuerung}).
 
-\subsection{Pipeline-Überblick}\label{pipeline-mechanik-und-idempotenz}
+\subsection{Spielstandberechnung und Kontextanreicherung}\label{kontextanreicherung-pipeline}
 
-Die Pipeline durchläuft fünf Stufen: Event-Import, Kontextanreicherung, Prompt-Aufbau, LLM-Aufruf und Persistenz. Die Stufen~1 und~2 sind in \texttt{ticker\_service} (Abschnitt~\ref{ticker-service-domuxe4nenlogik}), Stufen~3 und~4 im \texttt{LLMService} (Abschnitt~\ref{llm-service-prompt-aufbau-und-provider-dispatch}) implementiert.
+Eine nicht-triviale Aufgabe der Pipeline ist die korrekte Spielstandberechnung zum Zeitpunkt eines Torereignisses. Die Football-API liefert ausschließlich den kumulativen Endstand; \texttt{score\_at\_event()} rekonstruiert den Stand \emph{vor} dem aktuellen Tor, indem es alle Torereignisse bis zur \texttt{position} des aktuellen Eintrags in der Event-Sequenz des Spiels zählt. Jedes Goal-Event trägt im Feld \texttt{description} ein JSON-serialisiertes Objekt mit Torschütze und Team; fehlerhafte oder leere Einträge werden per \texttt{try/except} übersprungen, ohne die Pipeline zu unterbrechen. Eigentore werden korrekt verarbeitet, da API-Football \texttt{team\_id} stets auf den Nutznießer setzt — nicht auf den Verursacher.
 
-\begin{figure}[H]
-\centering
-\DiagramEventWorkflow
-\caption{LLM-Pipeline: Event \textrightarrow{} Enrich \textrightarrow{} Prompt \textrightarrow{} LLM \textrightarrow{} Store}
-\label{fig:event-workflow}
-\end{figure}
-
-\subsection{Kontextanreicherung}\label{kontextanreicherung-pipeline}
-
-Die Kontextanreicherung (Stufe~2) verläuft je nach Ereignistyp unterschiedlich. Für Live-Events (\texttt{goal}, \texttt{card} u.\,a.) erzeugt \texttt{build\_context\_data()} ein Dict aus Teamnamen und Spielstand, das \texttt{build\_context\_str()} anschließend als \texttt{ctx\_match\_info}-Block in den Prompt einbettet.
-
-Für synthetische Pre-Match-Events (z.\,B. \texttt{pre\_match\_h2h}) liefert \texttt{synthetic.data} die JSONB-Nutzdaten direkt — also exakt die Daten, die WF07 zuvor aus der Football-API importiert und in \texttt{synthetic\_events} persistiert hat. \texttt{build\_context\_str()} wählt anhand des \texttt{event\_type} den passenden Formatter (\texttt{ctx\_h2h}, \texttt{ctx\_injuries}, \texttt{ctx\_standings} u.\,a.) und übersetzt die strukturierten JSON-Daten in lesbare Prompt-Zeilen. Abbildung~\ref{fig:ki-generierungspipeline} zeigt den vollständigen Ablauf beider Pfade vom Ereignis-Import bis zum gespeicherten Ticker-Eintrag.
+Die Kontextanreicherung (Stufe~2) dispatcht über \texttt{build\_context\_str()} zu sechs ereignistypspezifischen Formattern. Für Live-Events greift ein Fast-Path: Ist \texttt{home\_team} im Kontext-Dictionary vorhanden, wird \texttt{ctx\_match\_info()} direkt aufgerufen, ohne den Typ-Lookup zu durchlaufen. Für Pre-Match-Events werden Variantennamen (z.\,B. \texttt{pre\_match\_injuries\_home} und \texttt{pre\_match\_injuries\_away}) vor dem Dispatch normalisiert, sodass ein einziger Formatter \texttt{ctx\_injuries()} beide Varianten verarbeitet. Abbildung~\ref{fig:ki-generierungspipeline} zeigt den vollständigen Ablauf beider Pfade vom Ereignis-Import bis zum gespeicherten Ticker-Eintrag.
 
 \begin{figure}[H]
 \centering
@@ -310,7 +302,13 @@ Das folgende Beispiel zeigt den assemblierten Prompt für ein Tor-Ereignis im eu
 \end{Highlighting}
 \end{Shaded}
 
-\subsection{Idempotenz}\label{idempotenz-und-generierungssteuerung}
+\subsection{Prompt-Design und Stilkonditionierung}\label{prompt-design-stilkonditionierung}
+
+Die Few-Shot-Referenzen fungieren nicht als bloße Beispieltexte, sondern als stylometrische Zielvorgaben. Die Injektionsanweisung weist das Modell an, den redaktionellen Stil zu reverse-engineeren: Rhythmus, Wortwahl, Satzlänge und Emotionalität sollen exakt übernommen werden, nicht nur das Format imitiert. Diese Differenzierung schränkt den Interpretationsspielraum des Modells gezielt ein und ist für die Qualität der Stilkonditionierung zentral (vgl. Abschnitt~\ref{stilreferenzen} zur Evaluation dieser Entscheidung).
+
+Für Pre-Match-Events implementiert der Prompt eine Content-Firewall: Ein eigener Regelblock verbietet explizit alle Live-Aktionsbegriffe (u.\,a. Spielszenen, Angriffe, Abschlüsse, Tore, Pässe, Zweikämpfe). Der \texttt{event\_type.startswith("pre\_match")}-Check aktiviert diesen Block einheitlich für alle Vorberichts-Ereignistypen und verhindert, dass das Modell im Vorberichtskontext Live-Kommentar halluziniert — ein strukturelles Anti-Halluzinations-Maßnahme auf Prompt-Ebene, die das in Abschnitt~\ref{temperatur-context} beschriebene Temperaturregime ergänzt.
+
+\subsection{Idempotenz und Generierungssteuerung}\label{idempotenz-und-generierungssteuerung}\label{generierungssteuerung}
 
 Ein zentrales Qualitätsmerkmal der Pipeline ist die Deduplizierung für
 ereignisbasierte Generierung: \texttt{POST\ /generate/\{event\_id\}}
@@ -338,23 +336,15 @@ der bestehende Eintrag per Soft-Delete auf \texttt{status=deleted}
 gesetzt und neu generiert. Der idempotente Pfad gilt damit nur für
 Aufrufe mit identischem Stil.
 
-Diese Schutzprüfung fehlt im Endpunkt \texttt{POST\ /generate-synthetic} für Spielphasen-Events bewusst (vgl. Abschnitt~\ref{prompt-engineering-strategie} zur asymmetrischen Idempotenz-Strategie).
+Diese Schutzprüfung fehlt im Endpunkt \texttt{POST\ /generate-synthetic} für Spielphasen-Events bewusst: Phasentexte sollen bei Bedarf überschreibbar bleiben.
 
-Der Endpunkt \texttt{POST /generate-match-phases/\{match\_id\}} ist ein Catch-up-Mechanismus: Während eines laufenden Spiels generiert n8n WF14 Spielphasen-Einträge über \texttt{POST /generate-synthetic} bei jedem Phasenübergang. Öffnet ein Redakteur jedoch ein Spiel erstmalig in einer späteren Phase, können einzelne Phasen-Drafts fehlen — der Frontend-Hook \texttt{useMatchTriggers} löst dann \texttt{generate-match-phases} aus und gleicht fehlende Einträge mit Standardminuten nach.
-
-Das erzeugte Phasenset ist spielzustandsabhängig: Im Standardfall werden vier Phasen erzeugt (Anpfiff, Halbzeit, zweite Halbzeit, Abpfiff); bei Verlängerung ergänzt der Router \texttt{EXTRA\_PHASES}, bei Elfmeterschießen zusätzlich \texttt{PENALTY\_PHASES}. Bei laufenden Spielen wird der Abpfiff-Eintrag übersprungen, um keinen vorzeitigen FullTime-Text zu erzeugen. \texttt{get\_or\_create\_flush()} stellt sicher, dass jede Phase idempotent auf genau einem \texttt{SyntheticEvent}-Datensatz aufbaut.
-
-\subsection{Generierungssteuerung}\label{generierungssteuerung}
-
-Der initiale Status des erzeugten Ticker-Eintrags wird über den Aufrufparameter \texttt{auto\_publish} gesteuert, den n8n aus dem konfigurierten Spielmodus ableitet (vgl. Abschnitt~\ref{status-lifecycle-und-betriebsmodi}):
+Der initiale Publikationsstatus ergibt sich aus dem Aufrufparameter \texttt{auto\_publish}, den n8n aus dem konfigurierten Spielmodus ableitet (vgl. Abschnitt~\ref{status-lifecycle-und-betriebsmodi}):
 
 \begin{Shaded}
 \begin{Highlighting}[]
 \NormalTok{status}\OperatorTok{=}\NormalTok{TickerStatus.published }\ControlFlowTok{if}\NormalTok{ data.auto\_publish }\ControlFlowTok{else}\NormalTok{ TickerStatus.draft}
 \end{Highlighting}
 \end{Shaded}
-
-Damit wird die Modus-Logik zu einem reinen Aufrufparameter des Backends (vgl. Abschnitt~\ref{n8n-designprinzipien}).
 
 Alle Generierungs-Endpunkte messen die LLM-Aufrufzeit per \texttt{time.monotonic()} und persistieren sie als \texttt{generation\_ms} im Ticker-Eintrag — die Rohdatenbasis für die Latenzauswertung in Abschnitt~\ref{performance-und-laufzeitverhalten}.
 

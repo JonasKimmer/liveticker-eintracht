@@ -41,7 +41,7 @@ Die Profile unterscheiden sich klar: \texttt{euphorisch} arbeitet mit Wiederholu
 
 \subsection{Fehleranalyse}\label{qualitative-analyse-der-generierten-texte}
 
-40 KI-generierte Ticker-Einträge aus 15 Bundesliga-Spielen der Saison~2024/25 wurden manuell nach \textbf{Korrektheit}, \textbf{Tonalität} und \textbf{Vollständigkeit} bewertet (Skala 1--5; Bewerter: Entwickler). Der Gesamtdurchschnitt liegt bei 4{,}3. Die Analyse identifizierte folgende Fehlerklassen:
+40 KI-generierte Ticker-Einträge aus 15 Bundesliga-Spielen der Saison~2024/25 wurden manuell nach \textbf{Korrektheit}, \textbf{Tonalität} und \textbf{Vollständigkeit} bewertet (Skala 1--5; Bewerter: Entwickler). Der Gesamtdurchschnitt liegt bei 4{,}3 (Korrektheit Ø~4{,}6, Tonalität Ø~4{,}1, Vollständigkeit Ø~4{,}3). Die Analyse identifizierte folgende Fehlerklassen:
 
 {\footnotesize\def\LTcaptype{none} % do not increment counter
 \begin{longtable}[]{@{}
@@ -162,7 +162,7 @@ Modell & N & Median (ms) & P95 (ms) & Std.\ (ms) \\
 
 \emph{Direktmessung via OpenRouter (kein Backend-Overhead). Identischer Prompt je Aufruf. Fehlerrate: 0\,\% bei allen drei Modellen.}
 
-Gemini~2.5~Flash erzielt mit 591\,ms Median die kürzeste Generierungslatenz -- 1,9-fach schneller als GPT-4.1-mini und 2,8-fach schneller als Claude~Haiku~4.5. Claude~Haiku~4.5 weist mit einer Standardabweichung von 177\,ms das konstanteste Antwortverhalten auf; GPT-4.1-mini zeigt mit 521\,ms die höchste Streuung.
+Gemini~2.5~Flash erzielt mit 591\,ms Median die kürzeste Generierungslatenz -- 1,9-fach schneller als GPT-4.1-mini und 2,8-fach schneller als Claude~Haiku~4.5. Claude~Haiku~4.5 weist mit einer Standardabweichung von 177\,ms das konstanteste Antwortverhalten auf. GPT-4.1-mini zeigt mit 521\,ms die höchste Streuung.
 
 Ergänzend zur Latenz wurde die Textqualität der drei Modelle mit dem LLM-as-Judge-Verfahren bewertet (Bewerter: \texttt{claude-sonnet-4-5}). Dazu wurden N\,=\,10 abgeschlossene Bundesliga- und Champions-League-Spiele mit je drei Stilprofilen generiert (30 Einträge je Modell). Ereignisse mit einer durchschnittlichen Korrektheitsbewertung unter 3{,}5 wurden ausgeschlossen.
 
@@ -188,7 +188,7 @@ Modell & N & Korrektheit & Tonalität & Vollständigkeit & Gesamt \\
 
 \emph{LLM-as-Judge (claude-sonnet-4-5 via OpenRouter). N\,=\,30 je Modell (10 Events $\times$ 3 Stile). Skala 1--5.}
 
-GPT-4.1-mini erzielt die höchste Gesamtqualität (Ø~4{,}48), insbesondere bei Tonalität (4{,}73). Claude~Haiku~4.5 zeigt die stärkste Vollständigkeit (4{,}57) bei konsistentem Gesamtniveau (Ø~4{,}41). Gemini~2.5~Flash liegt qualitativ zurück (Ø~4{,}20), ist jedoch mit 591\,ms Median das mit Abstand schnellste Modell. Der Modellvergleich offenbart damit einen Speed-Quality-Trade-off: Geschwindigkeit und Textqualität korrelieren invers -- das schnellste Modell ist das qualitativ schwächste, das langsamste das qualitativ stärkste bei Tonalität.
+GPT-4.1-mini erzielt die höchste Gesamtqualität (Ø~4{,}48), insbesondere bei Tonalität (4{,}73). Claude~Haiku~4.5 zeigt die stärkste Vollständigkeit (4{,}57) bei konsistentem Gesamtniveau (Ø~4{,}41). Gemini~2.5~Flash liegt qualitativ zurück (Ø~4{,}20), ist jedoch mit 591\,ms Median das mit Abstand schnellste Modell. Der Modellvergleich offenbart damit einen Speed-Quality-Trade-off: Geschwindigkeit und Textqualität korrelieren invers -- das schnellste Modell (Gemini~2.5~Flash) erzielt die niedrigste Gesamtqualität (Ø~4{,}20), während GPT-4.1-mini bei mittlerer Latenz die stärkste Tonalität (4{,}73) und Gesamtqualität (Ø~4{,}48) erreicht.
 
 \subsection{TTP-Abschätzung}\label{ttp-abschaetzung}
 
