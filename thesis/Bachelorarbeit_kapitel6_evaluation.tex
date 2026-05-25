@@ -1,6 +1,6 @@
 \chapter{Evaluation}\label{evaluation}
 
-Dieses Kapitel evaluiert das in Kapitel~\ref{systemkonzeption} konzipierte und in Kapitel~\ref{implementierung} realisierte System empirisch und liefert damit die Grundlage zur Beantwortung der Forschungsfrage (vgl. Abschnitt~\ref{forschungsfrage}). Es gliedert sich in die Evaluation der KI-Textgenerierung (Abschnitt~\ref{evaluation-der-ki-textgenerierung}), Performance und Laufzeitverhalten (Abschnitt~\ref{performance-und-laufzeitverhalten}), das Latenzpotenzial der Betriebsmodi (Abschnitt~\ref{evaluation-der-betriebsmodi}) sowie den Anforderungsabgleich als Soll-Ist-Vergleich (Abschnitt~\ref{anforderungsabgleich-soll-ist-vergleich}).
+Dieses Kapitel evaluiert das in Kapitel~\ref{systemkonzeption} konzipierte und in Kapitel~\ref{implementierung} realisierte System empirisch und liefert damit die Grundlage zur Beantwortung der Forschungsfrage (vgl. Abschnitt~\ref{forschungsfrage}). Es gliedert sich in die Evaluation der KI-Textgenerierung (Abschnitt~\ref{evaluation-der-ki-textgenerierung}), Performance und Laufzeitverhalten (Abschnitt~\ref{performance-und-laufzeitverhalten}), das Latenzpotenzial der Betriebsmodi (Abschnitt~\ref{ttp-abschaetzung}) sowie den Anforderungsabgleich als Soll-Ist-Vergleich (Abschnitt~\ref{anforderungsabgleich-soll-ist-vergleich}).
 
 
 \section{Evaluation der
@@ -119,14 +119,6 @@ euphorisch  & 27 & 3{,}85 & 4{,}41 & 4{,}07 & 4{,}11 \\
 
 Das neutrale Stilprofil erzielt den höchsten Gesamtwert (4{,}76) mit besonders starker Tonalität (4{,}93). Das kritische Profil zeigt die größte Schwäche bei Tonalität (3{,}50) und Vollständigkeit (3{,}62), was auf die höheren Anforderungen des analytisch-bewertenden Stils hinweist. Das euphorische Profil liegt mit Ø~4{,}11 im Mittelfeld.
 
-\begin{figure}[H]
-\centering
-\DiagramQualitaetStilprofil
-\caption[Qualitätsbewertung nach Stilprofil (LLM-as-Judge-Evaluation, N\,=\,80)]{Qualitätsbewertung nach Stilprofil: LLM-as-Judge-Evaluation (N~=~80; Bewertungsskala 1--5). Datengrundlage: Football API~v3, Bundesliga Saison 2025/26, 30~Spiele.}
-\label{fig:qualitaet-stilprofil}
-\end{figure}
-
-
 \subsection{Funktionale Verifikation der Mehrsprachigkeit}\label{mehrsprachige-verifikation}
 
 Zur Verifikation von F7 (Mehrsprachige Textgenerierung) wurden 21 Einträge eines Pokalspiels (FV Engers~07 vs.\ Eintracht Frankfurt) mit dem Sprachparameter \texttt{es} (Spanisch) generiert. Alle 21 Aufrufe lieferten Status \texttt{ok} bei Modell \texttt{google/gemini-2.0-flash-lite-001} (Temperatur~0{,}5). Die Generierung verteilte sich auf drei Stilprofile (\texttt{neutral}, \texttt{euphorisch}, \texttt{kritisch}) und drei Event-Typen (Tore, Gelbe Karten, Wechsel).
@@ -143,24 +135,11 @@ Der Tor-Eintrag mit Stilprofil \texttt{neutral} weist eine euphorische Tonalitä
 
 \section{Performance und Laufzeitverhalten}\label{performance-und-laufzeitverhalten}\label{llm-latenz}
 
-Dieses Kapitel erfasst die Systemlatenz des produktiven Deployments (Abschnitt~\ref{systemlatenz}), vergleicht die Generierungslatenz der drei architektonisch integrierten LLM-Modelle (Abschnitt~\ref{modellvergleich-latenz}) und leitet daraus das Time-to-Publish-Potenzial der Betriebsmodi ab (Abschnitt~\ref{ttp-abschaetzung}).
+Dieses Kapitel vergleicht die Generierungslatenz der drei architektonisch integrierten LLM-Modelle (Abschnitt~\ref{modellvergleich-latenz}) und leitet daraus das Time-to-Publish-Potenzial der Betriebsmodi ab (Abschnitt~\ref{ttp-abschaetzung}).
 
-\subsection{Systemlatenz}\label{systemlatenz}
+\subsection{Modellvergleich}\label{modellvergleich-latenz}\label{systemlatenz}
 
-Erfasste Messgröße war die \textbf{End-to-End-Latenz} (Client → Backend → OpenRouter → Gemini → Backend → Client) als die für die TTP-Analyse relevante Kenngröße. Gemessen wurden 26 sequenzielle HTTP-Aufrufe an das Render-Deployment (\texttt{/api/v1/ticker/generate/\{event\_id\}}) über 13 Bundesliga-Spiele (Saison 2024/25, Eintracht Frankfurt).
-
-Die 26 Aufrufe liegen zwischen 876\,ms und 4\,226\,ms (Median 3\,338\,ms, Mittelwert 3\,136\,ms, Std.\ 641\,ms). Ein einzelner Ausreißer nach unten (876\,ms) deutet auf einen Gemini-seitigen Cache-Treffer hin; alle übrigen Messungen entfallen auf die Kaltgenerierung (2\,413--4\,226\,ms). Die Fehlerrate beträgt 0\,\% (vgl. Abbildung~\ref{fig:latenzen-histogram}).
-
-\begin{figure}[H]
-\centering
-\DiagramLatenzenHistogram
-\caption[LLM-Latenzmessungen: Render-Deployment (N\,=\,26)]{Verteilung der 26 LLM-Latenzmessungen (Render-Deployment, 13 Bundesliga-Spiele): Kaltgenerierung 2\,413--4\,226\,ms, ein Cache-Treffer bei 876\,ms. Median: 3\,338\,ms, P95: 3\,698\,ms.}
-\label{fig:latenzen-histogram}
-\end{figure}
-
-\subsection{Modellvergleich}\label{modellvergleich-latenz}
-
-Um die Generierungslatenz der drei architektonisch integrierten Modelle zu vergleichen, wurden je N\,=\,10 sequenzielle Aufrufe direkt gegen die OpenRouter-API gesendet -- mit identischem Prompt (Tor-Event, neutraler Stil, Deutsch, Few-Shot-Referenzen). Diese Messung erfasst die reine LLM-Latenz ohne Backend-Overhead.
+Je N\,=\,10 sequenzielle Aufrufe wurden direkt gegen die OpenRouter-API gesendet -- mit identischem Prompt (Tor-Event, neutraler Stil, Deutsch, Few-Shot-Referenzen). Diese Messung erfasst die reine LLM-Latenz ohne Backend-Overhead.
 
 {\footnotesize\def\LTcaptype{none}
 \begin{longtable}[]{@{}
@@ -183,11 +162,75 @@ Modell & N & Median (ms) & P95 (ms) & Std.\ (ms) \\
 
 \emph{Direktmessung via OpenRouter (kein Backend-Overhead). Identischer Prompt je Aufruf. Fehlerrate: 0\,\% bei allen drei Modellen.}
 
-Gemini~2.5~Flash erzielt mit 591\,ms Median die kürzeste Generierungslatenz -- 1,9-fach schneller als GPT-4.1-mini und 2,8-fach schneller als Claude~Haiku~4.5. Claude~Haiku~4.5 weist mit einer Standardabweichung von 177\,ms das konstanteste Antwortverhalten auf; GPT-4.1-mini zeigt mit 521\,ms die höchste Streuung. Alle drei Modelle erzielen eine Fehlerrate von 0\,\%.
+Gemini~2.5~Flash erzielt mit 591\,ms Median die kürzeste Generierungslatenz -- 1,9-fach schneller als GPT-4.1-mini und 2,8-fach schneller als Claude~Haiku~4.5. Claude~Haiku~4.5 weist mit einer Standardabweichung von 177\,ms das konstanteste Antwortverhalten auf; GPT-4.1-mini zeigt mit 521\,ms die höchste Streuung.
+
+Ergänzend zur Latenz wurde die Textqualität der drei Modelle mit dem LLM-as-Judge-Verfahren bewertet (Bewerter: \texttt{claude-sonnet-4-5}). Dazu wurden N\,=\,10 abgeschlossene Bundesliga- und Champions-League-Spiele mit je drei Stilprofilen generiert (30 Einträge je Modell). Ereignisse mit einer durchschnittlichen Korrektheitsbewertung unter 3{,}5 wurden ausgeschlossen.
+
+{\footnotesize\def\LTcaptype{none}
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.36}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.08}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.14}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.14}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.14}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.14}}@{}}
+\toprule\noalign{}
+Modell & N & Korrektheit & Tonalität & Vollständigkeit & Gesamt \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+\texttt{google/gemini-2.5-flash}    & 30 & 4{,}33 & 4{,}03 & 4{,}23 & 4{,}20 \\
+\texttt{anthropic/claude-haiku-4-5} & 30 & 4{,}37 & 4{,}30 & \textbf{4{,}57} & 4{,}41 \\
+\texttt{openai/gpt-4.1-mini}        & 30 & \textbf{4{,}60} & \textbf{4{,}73} & 4{,}10 & \textbf{4{,}48} \\
+\end{longtable}
+}
+
+\emph{LLM-as-Judge (claude-sonnet-4-5 via OpenRouter). N\,=\,30 je Modell (10 Events $\times$ 3 Stile). Skala 1--5.}
+
+GPT-4.1-mini erzielt die höchste Gesamtqualität (Ø~4{,}48), insbesondere bei Tonalität (4{,}73). Claude~Haiku~4.5 zeigt die stärkste Vollständigkeit (4{,}57) bei konsistentem Gesamtniveau (Ø~4{,}41). Gemini~2.5~Flash liegt qualitativ zurück (Ø~4{,}20), ist jedoch mit 591\,ms Median das mit Abstand schnellste Modell. Der Modellvergleich offenbart damit einen Speed-Quality-Trade-off: Geschwindigkeit und Textqualität korrelieren invers -- das schnellste Modell ist das qualitativ schwächste, das langsamste das qualitativ stärkste bei Tonalität.
 
 \subsection{TTP-Abschätzung}\label{ttp-abschaetzung}
 
-Die drei Betriebsmodi unterscheiden sich strukturell in ihrer erreichbaren Publikationslatenz. Auf Basis der gemessenen LLM-Latenzen (Median 3\,338~ms, P95 3\,698~ms, vgl. Abschnitt~\ref{systemlatenz}) und des 15-Sekunden-Polling-Intervalls im Live-Modus (vgl. Abschnitt~\ref{frontend-polling}) ergibt sich für den \texttt{auto}-Modus eine architekturbasierte Time-to-Publish von $\approx$\,15--40~s. Die folgende Tabelle schlüsselt die Latenzkomponenten auf:
+Die drei Betriebsmodi unterscheiden sich strukturell in ihrer erreichbaren Publikationslatenz. Grundlage der Abschätzung sind die Execution-Logs der n8n-Workflows sowie die gemessene LLM-Latenz aus Abschnitt~\ref{modellvergleich-latenz}. Die folgende Tabelle dokumentiert die gemessenen Laufzeiten aller 14 erfassten n8n-Workflows, gegliedert nach Funktionsgruppe:
+
+{\footnotesize\def\LTcaptype{none}
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.52}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.10}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.19}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.19}}@{}}
+\toprule\noalign{}
+Workflow & N & Median (ms) & P95 (ms) \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+\multicolumn{4}{l}{\emph{Stammdatenimport}} \\
+\texttt{04\_import\_matches}                  & 64 & 332    & 471    \\
+\texttt{05\_import\_match\_statistics}        & 89 & 357    & 1\,058 \\
+\texttt{06\_import\_player\_statistics}       & 84 & 424    & 1\,215 \\
+\texttt{07\_import\_lineups}                  & 20 & 410    & 1\,435 \\
+\texttt{03\_import\_competitions\_and\_matches} & 16 & 446  & 989    \\
+\multicolumn{4}{l}{\emph{Live-Betrieb}} \\
+\texttt{08\_import\_events}                   & 82 & 8\,047 & 18\,269 \\
+\texttt{15\_live\_stats\_monitor}             & 37 & 1\,517 & 6\,559  \\
+\multicolumn{4}{l}{\emph{Spielphasen \& Content-Generierung}} \\
+\texttt{14\_game\_anpfiff\_abpfiff}           & 1\,* & 8\,632 & --   \\
+\texttt{13\_halftime\_aftermatch\_summary}    & 7  & 4\,989 & 6\,223  \\
+\texttt{09\_scoreplay\_bilder}                & 11 & 2\,212 & 2\,460  \\
+\texttt{15\_prematch}                         & 17 & 1\,017 & 1\,478  \\
+\texttt{Webhook Pre-Match LLM}                & 1\,* & 972  & --      \\
+\multicolumn{4}{l}{\emph{Social Media}} \\
+\texttt{10\_twitter\_x}                       & 1\,* & 1\,500 & --   \\
+\texttt{11\_youtube}                          & 1\,* & 1\,129 & --   \\
+\texttt{12\_insta}                            & 1\,* & 1\,500 & --   \\
+\end{longtable}
+}
+
+\emph{*\,Einzelmessung aus n8n-Dashboard (manuell). Alle übrigen Werte: n8n-Execution-Log via REST-API.}
+
+Auf Basis dieser Laufzeiten schlüsselt die folgende Tabelle den kritischen TTP-Pfad des \texttt{auto}-Modus auf (Polling-Intervall: 15~s, vgl. Abschnitt~\ref{frontend-polling}):
 
 {\def\LTcaptype{none}
 \begin{longtable}[]{@{}llll@{}}
@@ -197,17 +240,14 @@ Komponente & Gemessen? & Typischer Wert & Quelle \\
 \endhead
 \bottomrule\noalign{}
 \endlastfoot
-n8n Datenimport (08\_import\_events) & Ja & 8\,047~ms Median (P95: 18\,269~ms) & N\,=\,82, n8n-Execution-Log \\
-n8n Live-Stats-Monitor & Ja & 1\,517~ms Median (P95: 6\,559~ms) & N\,=\,37, n8n-Execution-Log \\
-n8n → Backend (HTTP) & Teilw. & $\sim$1\,300~ms & gemessen (äquiv. Netzwerkposition) \\
+n8n Live-Betrieb (08 + 15) & Ja & 8\,047 + 1\,517~ms & s.\,Tabelle oben \\
 Backend → LLM → Backend & Ja & 3\,338~ms Median & Abschnitt~\ref{systemlatenz} \\
-Backend → DB & Nein & $<$50~ms & geschätzt \\
 Frontend-Polling & Ja & bis 15~s & Abschnitt~\ref{frontend-polling} \\
 \textbf{Gesamt TTP (\texttt{auto})} & Teilw. & $\approx$\,15--40~s & Potenzialschätzung \\
 \end{longtable}
 }
 
-Die n8n-Execution-Logs liefern erstmals gemessene Laufzeiten für zwei Workflow-Gruppen: Der Event-Import-Workflow (\texttt{08\_import\_events}, N\,=\,82) erreicht einen Median von 8\,047~ms -- er beinhaltet den Football-API-Aufruf sowie die vollständige Datenbankpersistenz und tritt periodisch auf. Der Live-Stats-Monitor (N\,=\,37) ist mit 1\,517~ms Median deutlich schneller, da er nur Spielstatistiken abgleicht. Zusammen mit der gemessenen Backend-LLM-Latenz (3\,338~ms Median) und dem Frontend-Polling (bis 15~s) ergibt sich eine architekturbasierte TTP von $\approx$\,15--40~s für den \texttt{auto}-Modus. Da ein kontrolliertes Feldexperiment nicht durchführbar war, bleibt dies eine Potenzialabschätzung. Die manuelle Baseline liegt bei 30--120~s (vgl. Abschnitt~\ref{zeitdruck-und-fehleranfaelligkeit}); der Interviewpartner nannte für typische Ereignisse 30--90~s (vgl. Abschnitt~\ref{experteninterview-auswertung}). Der \texttt{coop}-Modus durchläuft dieselbe Pipeline und erreicht eine vergleichbare Generierungslatenz; die Gesamtpublikationslatenz erhöht sich um die variable Redaktionszeit.
+Da ein kontrolliertes Feldexperiment nicht durchführbar war, bleibt die architekturbasierte TTP von $\approx$\,15--40~s eine Potenzialabschätzung. Die manuelle Baseline liegt bei 30--120~s (vgl. Abschnitt~\ref{redaktioneller-aufwand-bei-livetickern}); der Interviewpartner nannte für typische Ereignisse 30--90~s (vgl. Abschnitt~\ref{experteninterview-auswertung}). Im \texttt{coop}-Modus erhöht sich die Gesamtpublikationslatenz um die variable Redaktionszeit.
 
 
 \section{Anforderungsabgleich
