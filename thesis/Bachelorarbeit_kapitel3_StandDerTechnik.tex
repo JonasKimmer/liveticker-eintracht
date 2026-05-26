@@ -4,22 +4,11 @@ Dieses Kapitel arbeitet die technologischen Grundlagen auf, die das in Kapitel~\
 
 \section{Large Language Models}\label{large-language-models}
 
-Large Language Models (LLMs, dt. Große Sprachmodelle) werden auf umfangreichen Textkorpora trainiert und können natürliche Sprache verstehen und generieren.
+Large Language Models (LLMs, dt. Große Sprachmodelle) werden auf umfangreichen Textkorpora trainiert und können natürliche Sprache verstehen und generieren. Technisch basieren sie auf der \textbf{Transformer-Architektur} (Vaswani et al.~2017), die Text mithilfe von \textbf{Aufmerksamkeitsmechanismen} (Attention) verarbeitet: Das Modell gewichtet bei der Verarbeitung eines Tokens alle anderen Token im Kontext nach ihrer Relevanz, wodurch es semantische Zusammenhänge über lange Sequenzen erfasst. Text wird autoregressiv generiert — jedes neue Token entsteht auf Basis des bereits generierten Kontexts. LLMs unterstützen zudem \textbf{In-Context Learning}: Modelle lassen sich über Beispiele im Prompt konditionieren, ohne ihre Gewichte anzupassen (vgl. Brown et al.~2020, S.~4).
 
-Technisch basieren LLMs auf der \textbf{Transformer-Architektur}
-(Vaswani et al.~2017), die Text mithilfe von
-\textbf{Aufmerksamkeitsmechanismen} (Attention) verarbeitet: Das Modell
-gewichtet bei der Verarbeitung eines Wortes alle anderen Wörter im
-Kontext nach ihrer Relevanz, wodurch es semantische Zusammenhänge über lange Sequenzen erfasst. Text wird autoregressiv generiert: Jedes neue Wort entsteht auf Basis des bereits generierten Kontexts. Ihr Einsatz hat sich in den vergangenen Jahren von der Forschung in die industrielle Anwendung verbreitet, unter anderem für automatisierte Textproduktion im Medienbereich (vgl. Bluhm \& Schäfer 2023, S.~36).
+Trotz ihrer Leistungsfähigkeit weisen LLMs strukturelle Schwächen auf, insbesondere die Neigung zu \textbf{Halluzinationen}, also der Generierung von Inhalten, die sachlich unzutreffend oder erfunden sind (OpenAI 2023, S.~46). Halluzinationen lassen sich nach Typ differenzieren: \emph{Faktische} Halluzinationen erfinden Sachverhalte, die nicht stattgefunden haben; \emph{kontextuale} Halluzinationen misinterpretieren vorhandene Eingabedaten. Faktische Halluzinationen sind schwerer erkennbar, da kein Abgleich mit den Eingabedaten möglich ist, und gefährden im journalistischen Kontext die publizistische Glaubwürdigkeit (vgl. Thürbach, zit. n. Bluhm \& Schäfer 2023, S.~33). Gegenmaßnahmen umfassen redaktionelle Kontrollinstanzen und explizite Schutzregeln in der Prompt-Gestaltung (vgl. Abschnitt~\ref{prompt-engineering-strategie}).
 
-LLMs unterstützen \textbf{In-Context Learning}: Modelle lassen sich über Beispiele im Prompt konditionieren, ohne ihre Gewichte anzupassen (vgl. Brown et al.~2020, S.~4).
-
-Trotz ihrer Leistungsfähigkeit weisen LLMs strukturelle Schwächen auf,
-insbesondere die Neigung zu \textbf{Halluzinationen}, also der
-Generierung von Inhalten, die sachlich unzutreffend oder erfunden sind
-(OpenAI 2023, S.~46). Halluzinationen lassen sich nach Typ differenzieren: \emph{Faktische} Halluzinationen erfinden Ereignisse, die nicht stattgefunden haben (z.\,B. ein nicht existentes Tor); \emph{kontextuale} Halluzinationen misinterpretieren vorhandene Eingabedaten (z.\,B. falsches Team bei korrektem Ereignis). Beide sind im journalistischen Kontext kritisch und gefährden die publizistische Glaubwürdigkeit nachhaltig (vgl. Thürbach, zit. n. Bluhm \& Schäfer 2023, S.~33). Erstere sind jedoch schwerer erkennbar, da kein Abgleich mit den Eingabedaten möglich ist. Dies erfordert Gegenmaßnahmen, etwa redaktionelle Kontrollinstanzen oder explizite Schutzregeln in der Prompt-Gestaltung (vgl. Abschnitt~\ref{prompt-engineering-strategie}).
-
-Für hochfrequente Echtzeit-Szenarien sind \textbf{kompakte Modelle} besonders relevant: Kurze, faktenbasierte Generierungsaufgaben mit strukturierten Eingabedaten erfordern keine umfangreiche Inferenz, sodass sie vergleichbare Ausgabequalität bei deutlich niedrigerer Latenz und geringeren Kosten erzielen (vgl. Brown et al.~2020; OpenAI 2023).
+\textbf{Kompakte Modelle} erzielen bei kurzen, faktenbasierten Generierungsaufgaben mit strukturierten Eingabedaten vergleichbare Ausgabequalität bei deutlich niedrigerer Latenz und geringeren Kosten als große Modelle (vgl. Brown et al.~2020; OpenAI 2023).
 
 
 
