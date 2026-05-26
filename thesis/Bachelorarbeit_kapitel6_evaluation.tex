@@ -92,7 +92,7 @@ Die häufigste Fehlerklasse ist Stil-Inkonsistenz beim neutralen Profil (8/40, 2
 
 \subsection{LLM-as-Judge-Evaluation}\label{erweiterte-evaluation}
 
-Das \textbf{LLM-as-Judge-Verfahren} (Zheng et al.~2023) bewertet KI-generierte Ausgaben automatisiert durch ein vom generierenden Modell verschiedenes Sprachmodell entlang definierter Qualitätsdimensionen. Es ermöglicht skalierbare Qualitätsbewertungen ohne menschliche Annotationskosten und zeigt in Korrelationsstudien eine moderate Übereinstimmung mit menschlichen Urteilen (vgl. Zheng et al.~2023, S.~8).
+Beim \textbf{LLM-as-Judge-Verfahren} (Zheng et al.~2023) übernimmt ein vom generierenden Modell verschiedenes Sprachmodell die Rolle des Bewerters: Es beurteilt KI-generierte Ausgaben automatisiert entlang definierter Qualitätsdimensionen. Korrelationsstudien zeigen eine moderate Übereinstimmung mit menschlichen Urteilen bei deutlich geringerem Annotationsaufwand (vgl. Zheng et al.~2023, S.~8).
 
 N\,=\,80 Einträge aus 30 Bundesliga-Spielen der Saison~2025/26 wurden automatisiert von \texttt{claude-sonnet-4-5} nach denselben Dimensionen bewertet wie in Abschnitt~\ref{qualitative-analyse-der-generierten-texte} (Korrektheit, Tonalität, Vollständigkeit, je 1--5); als Generierungsmodell diente \texttt{google/gemini-2.0-flash-lite-001}.
 
