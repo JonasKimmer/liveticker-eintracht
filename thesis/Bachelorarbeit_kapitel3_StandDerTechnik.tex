@@ -53,7 +53,7 @@ und den User Prompt auf die jeweilige Aufgabe zu beschränken.
 
 Ein weiterer zentraler Steuerungsparameter ist die \textbf{Temperature},
 die die Wahrscheinlichkeitsverteilung der Token-Auswahl beeinflusst
-(vgl. Brown et al.~2020). Niedrige Werte (z.\,B. 0{,}0--0{,}3) führen zu deterministischeren, faktentreueren Ausgaben; höhere Werte (z.\,B. 0{,}7--1{,}0) erhöhen die kreative Varianz. Für den Liveticker-Kontext, in dem formelhaft wirkende Texte die Rezeptionsqualität beeinträchtigen (vgl. Clerwall 2014, S.~529; Boisserée, zit. n. Beils 2023, S.~207), ist ein mittlerer Wert als Balance aus Faktentreue und sprachlicher Lebendigkeit geeignet. Für Übersetzungsaufgaben, bei denen semantische Abweichungen vom Originaltext minimiert werden sollen, sind niedrigere Werte geeignet. Die konkrete Parameterwahl des vorliegenden Systems wird in Abschnitt~\ref{prompt-engineering-strategie} begründet.
+(vgl. Brown et al.~2020). Niedrige Werte (z.\,B. 0{,}0--0{,}3) führen zu deterministischeren, faktentreueren Ausgaben. Höhere Werte (z.\,B. 0{,}7--1{,}0) erhöhen die kreative Varianz. Je nach Aufgabentyp ist daher ein unterschiedlicher Temperaturbereich geeignet: Generierungsaufgaben mit Stilanforderungen profitieren von mittleren Werten, Übersetzungsaufgaben mit strengen Treuekriterien von niedrigen. Die konkrete Parameterwahl des vorliegenden Systems wird in Abschnitt~\ref{prompt-engineering-strategie} begründet.
 
 
 
@@ -80,7 +80,7 @@ Mit zunehmender Automatisierung stellt sich im Kontext der Sportberichterstattun
 \section{ETL-Prozesse und
 Workflow-Automatisierung}\label{etl-prozesse-und-workflow-automatisierung}
 
-Die Datenbeschaffung in datengetriebenen Anwendungen folgt überwiegend dem \textbf{Extract-Transform-Load-Prinzip (ETL)}: Daten werden aus heterogenen Quellen extrahiert, in ein einheitliches Zielformat transformiert und in den Datenspeicher geladen (vgl. Freitas et al.~2025, S.~807). Für Sport-Liveticker umfasst das die Integration von Spielereignissen, Statistiken, Aufstellungen und Mediendaten aus unterschiedlichen APIs oder Datenfeeds.
+Die Datenbeschaffung in datengetriebenen Anwendungen folgt überwiegend dem \textbf{Extract-Transform-Load-Prinzip (ETL)}: Daten werden aus heterogenen Quellen extrahiert, in ein einheitliches Zielformat transformiert und in den Datenspeicher geladen (vgl. Freitas et al.~2025, S.~807).
 
 Workflow-Orchestrierungsplattformen modellieren ETL-Logik als konfigurierbare DAG-Prozesse, die Abhängigkeiten zwischen Verarbeitungsschritten explizit machen (vgl. Venkiteela 2025, S.~3). Low-Code-Varianten dieser Plattformen reduzieren die Einstiegshürde gegenüber prozeduralem ETL-Code und erlauben bei Bedarf die Einbettung von Custom-Code-Blöcken (vgl. Venkiteela 2025, S.~2).
 
