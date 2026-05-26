@@ -118,17 +118,23 @@ Für KI-gestützte Webanwendungen mit asynchronen Backend-Anfragen und interakti
 
 \subsection{Backend-Framework und Persistenzschicht}\label{backend-framework-und-persistenzschicht}
 
-Im Python-Backend-Ökosystem stehen \texttt{Flask}, \textbf{Django} und \textbf{FastAPI} als etablierte Frameworks zur Verfügung. \texttt{Flask} ist ein schlankes Web Server Gateway Interface (WSGI)-Mikro-Framework ohne nativen \texttt{asyncio}-Support. \textbf{Django} folgt einem synchronen MVC-Full-Stack-Ansatz mit umfangreichem Object-Relational Mapper (ORM) und Admin-Interface. \textbf{FastAPI} basiert auf dem ASGI-Standard, unterstützt \texttt{asyncio} nativ (vgl. Grigorev 2019) und generiert aus \texttt{Pydantic}-Schemata automatisch eine OpenAPI-konforme Dokumentation. Die konkrete Framework-Wahl und ihre Begründung sind in Abschnitt~\ref{framework-wahl} dokumentiert.
+Im Python-Backend-Ökosystem stehen drei etablierte Frameworks zur Verfügung. \textbf{Flask} ist ein schlankes WSGI-Mikro-Framework ohne nativen \texttt{asyncio}-Support. \textbf{Django} folgt einem synchronen MVC-Full-Stack-Ansatz mit umfangreichem ORM und Admin-Interface. \textbf{FastAPI} basiert auf dem ASGI-Standard und unterstützt \texttt{asyncio} nativ (vgl. Grigorev 2019). Die Frameworks unterscheiden sich damit primär in Asynchronitätsmodell, Funktionsumfang und Entwicklungsgeschwindigkeit. Die konkrete Framework-Wahl und ihre Begründung sind in Abschnitt~\ref{framework-wahl} dokumentiert.
 
-Für die Persistenzschicht bieten sich relationale Datenbanksysteme (z.\,B. \textbf{PostgreSQL}, MySQL) und dokumentenorientierte Stores (z.\,B. \textbf{MongoDB}) als Hauptklassen an. Relationale Systeme erzwingen über Fremdschlüsselbeziehungen referenzielle Integrität und unterstützen Joins über normalisierte Schemata. Dokumentenorientierte Stores bieten höhere Schemaflexibilität auf Kosten von ACID-Garantien und deklarativer Join-Semantik (vgl. Fowler \& Sadalage 2012, S.~26--27).
+Für die Persistenzschicht bieten sich relationale Datenbanksysteme (z.\,B. \textbf{PostgreSQL}, MySQL) und dokumentenorientierte Stores (z.\,B. \textbf{MongoDB}) als Hauptklassen an. Relationale Systeme erzwingen über Fremdschlüsselbeziehungen referenzielle Integrität und unterstützen Joins über normalisierte Schemata. Dokumentenorientierte Stores bieten höhere Schemaflexibilität auf Kosten von ACID-Garantien und deklarativer Join-Semantik (vgl. Fowler \& Sadalage 2012, S.~26--27). Die Datenbankwahl und das Schemadesign sind in Abschnitt~\ref{schemadesign-prinzipien} begründet.
 
 \subsection{Echtzeit-Kommunikationsmuster}\label{echtzeit-kommunikation-im-web}
 
-Für Echtzeitanwendungen wie Liveticker existieren drei etablierte Kommunikationsmuster. \textbf{HTTP-Polling} ist einfach und kompatibel, erzeugt aber inhärente Latenz und Overhead bei leeren Antworten (vgl. de la Torre et al.~2019, S.~261). \textbf{Server-Sent Events (SSE)} ermöglichen einen HTTP-basierten unidirektionalen Push vom Server ohne Protokollwechsel und sind effizienter als Polling (vgl. ebd., S.~261--262). \textbf{WebSocket} bietet eine bidirektionale, persistente Verbindung mit minimalem Overhead nach initialem Handshake und ist latenzoptimal, aber ressourcenintensiver (vgl. RFC 6455; de la Torre et al.~2019, S.~262). Hybridansätze kombinieren mehrere Muster für unterschiedliche Datenströme (vgl. Abschnitt~\ref{kommunikations--und-triggerarchitektur}).
+Für Echtzeitanwendungen wie Liveticker existieren drei etablierte Kommunikationsmuster. \textbf{HTTP-Polling} ist einfach und kompatibel, erzeugt aber inhärente Latenz und Overhead bei leeren Antworten (vgl. de la Torre et al.~2019, S.~261). \textbf{Server-Sent Events (SSE)} ermöglichen einen HTTP-basierten unidirektionalen Push vom Server ohne Protokollwechsel und sind ressourceneffizienter als Polling (vgl. ebd., S.~261--262). \textbf{WebSocket} bietet eine bidirektionale, persistente Verbindung mit minimalem Overhead nach initialem Handshake, ist latenzoptimal, aber ressourcenintensiver (vgl. RFC 6455; de la Torre et al.~2019, S.~262).
+
+Die Muster unterscheiden sich damit primär in Latenz, Ressourcenverbrauch und Übertragungsrichtung. Hybridansätze kombinieren mehrere Muster für unterschiedliche Datenströme eines Systems. Die konkrete Kommunikationsarchitektur und ihre Begründung sind in Abschnitt~\ref{kommunikations--und-triggerarchitektur} dokumentiert.
 
 \subsection{Frontend-Framework}\label{frontend-framework}
 
-Im Frontend-Ökosystem konkurrieren mehrere komponentenbasierte Bibliotheken und Frameworks: \textbf{React} (Meta) setzt auf eine unidirektionale Datenflussmechanik mit virtuellem DOM. \textbf{Vue} bietet ein vergleichbares Komponentenmodell mit reaktivem Datenbindungsansatz. \textbf{Svelte} kompiliert Komponenten zu nativem JavaScript ohne Laufzeit-Framework-Overhead. Alle drei sind für interaktive Single-Page-Applications geeignet. Für Echtzeit-Anwendungen mit häufigen asynchronen State-Updates eignet sich die unidirektionale Datenflussmechanik von React besonders: Sie minimiert unerwartete Seiteneffekte bei gleichzeitigen Polling-Zyklen und WebSocket-Events. \textbf{TypeScript} ergänzt JavaScript um ein statisches Typsystem, das Schnittstellenfehler zwischen Komponenten, API-Responses und Zustandsobjekten zur Kompilierzeit statt zur Laufzeit aufdeckt. Bei state-intensiven Echtzeit-Frontends mit vielen asynchronen Datenpfaden ist diese Eigenschaft besonders relevant (vgl. Microsoft 2023). Die konkrete Frontend-Architektur wird in Abschnitt~\ref{frontend-konzeption} beschrieben.
+Im Frontend-Ökosystem konkurrieren mehrere komponentenbasierte Bibliotheken und Frameworks. \textbf{React} (Meta) setzt auf eine unidirektionale Datenflussmechanik mit virtuellem DOM. \textbf{Vue} bietet ein vergleichbares Komponentenmodell mit reaktivem Datenbindungsansatz. \textbf{Svelte} kompiliert Komponenten zu nativem JavaScript ohne Laufzeit-Framework-Overhead. Alle drei eignen sich für interaktive Single-Page-Applications und unterscheiden sich primär in Reaktivitätsmodell, Lernkurve und Ökosystemgröße.
+
+Für Echtzeit-Anwendungen mit gleichzeitigen asynchronen Event-Quellen (Polling-Zyklen, WebSocket-Events) bietet die unidirektionale Datenflussmechanik strukturelle Vorteile: Da Zustandsänderungen nur in einer Richtung propagieren, lassen sich Seiteneffekte bei parallelen Updates leichter nachvollziehen und isolieren. Die konkrete Framework-Wahl und ihre Begründung sind in Abschnitt~\ref{frontend-konzeption} dokumentiert.
+
+\textbf{TypeScript} ergänzt JavaScript um ein statisches Typsystem, das Schnittstellenfehler zwischen Komponenten, API-Responses und Zustandsobjekten zur Kompilierzeit statt zur Laufzeit aufdeckt (vgl. Microsoft 2023). Bei Frontends mit vielen asynchronen Datenpfaden und komplexen Zustandsobjekten reduziert diese Eigenschaft die Fehlerrate an Systemgrenzen.
 
 \subsection{Cloud-Deployment}\label{cloud-deployment}
 
@@ -139,7 +145,7 @@ Im Frontend-Ökosystem konkurrieren mehrere komponentenbasierte Bibliotheken und
 \section{Synthese: Technologische Konsequenzen für das
 Systemdesign}\label{synthese-technologische-konsequenzen-fuxfcr-das-systemdesign}
 
-Der Stand der Technik zeigt, dass die identifizierten Anforderungsdimensionen aus Kapitel~\ref{motivation-und-anforderungen} jeweils konkrete Technologieentscheidungen nach sich ziehen. Tabelle~\ref{tab:technik-mapping} fasst diese Zuordnung kompakt zusammen.
+Die identifizierten Anforderungsdimensionen aus Kapitel~\ref{motivation-und-anforderungen} ziehen jeweils konkrete Technologieentscheidungen nach sich, die Tabelle~\ref{tab:technik-mapping} kompakt zusammenfasst.
 
 \begin{table}[h]
 \centering
@@ -153,7 +159,7 @@ Operativer Zeitdruck (Kap.~\ref{zeitdruck-und-fehleranfaelligkeit}) & LLM-gestü
 \addlinespace
 Mehrsprachigkeit (Kap.~\ref{mehrsprachigkeit-als-herausforderung}) & Native LLM-Mehrsprachfähigkeit ohne proportionalen Personalaufwand (Kap.~\ref{large-language-models}) \\
 \addlinespace
-White-Label-Bedarf (Kap.~\ref{white-label-bedarf-im-profisport}) & Self-hostbare Workflow-Plattform; konfigurierbare Instanzlogik (Abschnitte~\ref{etl-prozesse-und-workflow-automatisierung}--\ref{backend-frontend-und-deployment-technologien}) \\
+White-Label-Bedarf (Kap.~\ref{white-label-bedarf-im-profisport}) & Self-hostbare Workflow-Automatisierung (n8n) mit instanzspezifischer Konfigurationslogik auf DB- und Prompt-Ebene (Abschnitte~\ref{etl-prozesse-und-workflow-automatisierung}, \ref{backend-framework-und-persistenzschicht}) \\
 \addlinespace
 Echtzeit-Datenabruf & Polling/WebSocket je nach Latenzanforderung (Kap.~\ref{echtzeit-kommunikation-im-web}) \\
 \addlinespace
