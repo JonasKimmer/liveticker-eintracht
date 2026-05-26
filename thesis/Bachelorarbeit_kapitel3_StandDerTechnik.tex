@@ -80,35 +80,13 @@ Mit zunehmender Automatisierung stellt sich im Kontext der Sportberichterstattun
 \section{ETL-Prozesse und
 Workflow-Automatisierung}\label{etl-prozesse-und-workflow-automatisierung}
 
-Die Datenbeschaffung in datengetriebenen Anwendungen folgt überwiegend
-dem \textbf{Extract-Transform-Load-Prinzip (ETL)}. Daten werden aus
-heterogenen Quellen extrahiert, in ein einheitliches Zielformat
-transformiert und in den Datenspeicher geladen (vgl. Freitas et al.~2025, S.~807). Für Sport-Liveticker bedeutet dies die Integration von Live-Spielereignissen, Statistiken, Aufstellungen und Mediendaten aus unterschiedlichen Application Programming Interfaces (APIs) oder Datenfeeds.
+Die Datenbeschaffung in datengetriebenen Anwendungen folgt überwiegend dem \textbf{Extract-Transform-Load-Prinzip (ETL)}: Daten werden aus heterogenen Quellen extrahiert, in ein einheitliches Zielformat transformiert und in den Datenspeicher geladen (vgl. Freitas et al.~2025, S.~807). Für Sport-Liveticker umfasst das die Integration von Spielereignissen, Statistiken, Aufstellungen und Mediendaten aus unterschiedlichen APIs oder Datenfeeds.
 
-Workflow-Orchestrierungsplattformen modellieren ETL-Logik als konfigurierbare DAG-Prozesse, die Abhängigkeiten zwischen Verarbeitungsschritten explizit machen (vgl. Venkiteela 2025, S.~3). Low-Code-Plattformen reduzieren die Einstiegshürde gegenüber prozeduralem ETL-Code erheblich und erlauben bei Bedarf die Einbettung von Custom-Code-Blöcken (vgl. Venkiteela 2025, S.~2).
+Workflow-Orchestrierungsplattformen modellieren ETL-Logik als konfigurierbare DAG-Prozesse, die Abhängigkeiten zwischen Verarbeitungsschritten explizit machen (vgl. Venkiteela 2025, S.~3). Low-Code-Varianten dieser Plattformen reduzieren die Einstiegshürde gegenüber prozeduralem ETL-Code und erlauben bei Bedarf die Einbettung von Custom-Code-Blöcken (vgl. Venkiteela 2025, S.~2).
 
-Innerhalb dieser Klasse lassen sich cloud-basierte iPaaS-Dienste (z.\,B.
-Zapier, Make) von self-hostbaren Open-Source-Plattformen (z.\,B. n8n, eine Workflow-Automatisierungsplattform)
-unterscheiden (vgl. Venkiteela 2025, S.~2). Cloud-Dienste bieten
-sofortige Verfügbarkeit ohne Infrastrukturaufwand, unterliegen jedoch
-Datenschutzeinschränkungen und eingeschränkter Kontrolle über
-Ausführungsumgebung und Kosten. Self-hostbare Plattformen wie n8n
-ermöglichen dagegen den Betrieb in der eigenen Infrastruktur, bieten
-volle Kontrolle über Datenflüsse (vgl. Nakavisute \& Sincharoonsak 2025)
-und erlauben den direkten Datenbankzugriff für transaktionale Schreiboperationen in die Persistenzschicht, ergänzend zu HTTP-basierten Integrationen für Dienste mit eigener API-Schicht (vgl. Venkiteela 2025, S.~4).
+Innerhalb dieser Klasse lassen sich cloud-basierte iPaaS-Dienste (z.\,B. Zapier, Make) von self-hostbaren Open-Source-Plattformen (z.\,B. n8n) unterscheiden (vgl. Venkiteela 2025, S.~2). Cloud-Dienste bieten sofortige Verfügbarkeit ohne Infrastrukturaufwand, unterliegen jedoch Datenschutzeinschränkungen und eingeschränkter Kontrolle über Ausführungsumgebung und Kosten. Self-hostbare Plattformen ermöglichen dagegen den Betrieb in der eigenen Infrastruktur mit voller Kontrolle über Datenflüsse (vgl. Nakavisute \& Sincharoonsak 2025).
 
-Für Echtzeitanwendungen wie Liveticker ist zusätzlich die \textbf{Latenz
-der Orchestrierung} kritisch. Während klassische Batch-ETL-Prozesse mit
-Stunden- oder Minutentakten arbeiten (vgl. Pfandzelter \& Bermbach, zit. n. Freitas et al.~2025, S.~808),
-müssen Sport-Events innerhalb von Sekunden verarbeitet werden. Das
-erfordert Orchestrierungsplattformen mit niedrigem Overhead, asynchroner
-Verarbeitung und effizienten Webhook-Mechanismen, um auf externe
-Ereignisse sofort reagieren zu können (vgl. Nakavisute \& Sincharoonsak
-2025).
-
-
-Die konkrete Umsetzung der ETL-Architektur im vorliegenden System wird
-in Abschnitt~\ref{workflow-konzeption-n8n} beschrieben.
+Für Echtzeitanwendungen wie Liveticker ist die Latenz der Orchestrierung ein zusätzliches Kriterium. Während klassische Batch-ETL-Prozesse mit Stunden- oder Minutentakten arbeiten (vgl. Pfandzelter \& Bermbach, zit.~n. Freitas et al.~2025, S.~808), müssen Sport-Events innerhalb von Sekunden verarbeitet werden. Das erfordert Plattformen mit niedrigem Overhead, asynchroner Verarbeitung und effizienten Webhook-Mechanismen (vgl. Nakavisute \& Sincharoonsak 2025). Die konkrete ETL-Architektur des vorliegenden Systems ist in Abschnitt~\ref{workflow-konzeption-n8n} beschrieben.
 
 
 
