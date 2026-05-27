@@ -250,13 +250,13 @@ Für die Fehlerbehandlung unterscheidet der Service zwei Backoff-Strategien: Bei
 
 \section{KI-Generierungspipeline}\label{ki-generierungspipeline}
 
-Die fünfstufige LLM-Pipeline verarbeitet eingehende Events vom Datenimport bis zum gespeicherten Ticker-Eintrag (Event-Import, Kontextanreicherung, Prompt-Aufbau, LLM-Aufruf, Persistenz). Datenimport und LLM-Aufruf sind in Abschnitt~\ref{api-router-endpunktstruktur} bzw.\ Abschnitt~\ref{ticker-service-domuxe4nenlogik} beschrieben. Dieser Abschnitt vertieft die pipeline-spezifischen Aspekte: Spielstandberechnung und Kontextanreicherung (Abschnitt~\ref{kontextanreicherung-pipeline}), Prompt-Design und Stilkonditionierung (Abschnitt~\ref{prompt-design-stilkonditionierung}) sowie Idempotenz und Generierungssteuerung (Abschnitt~\ref{idempotenz-und-generierungssteuerung}).
+Die fünfstufige LLM-Pipeline verarbeitet eingehende Events vom Datenimport bis zum gespeicherten Ticker-Eintrag (Event-Import, Kontextanreicherung, Prompt-Aufbau, LLM-Aufruf, Persistenz). Ereignis-Persistenz und LLM-Aufruf sind in Abschnitt~\ref{api-router-endpunktstruktur} bzw.\ Abschnitt~\ref{ticker-service-domuxe4nenlogik} beschrieben. Dieser Abschnitt vertieft die pipeline-spezifischen Aspekte: Spielstandberechnung und Kontextanreicherung (Abschnitt~\ref{kontextanreicherung-pipeline}), Prompt-Design und Stilkonditionierung (Abschnitt~\ref{prompt-design-stilkonditionierung}) sowie Idempotenz und Generierungssteuerung (Abschnitt~\ref{idempotenz-und-generierungssteuerung}).
 
 \subsection{Spielstandberechnung und Kontextanreicherung}\label{kontextanreicherung-pipeline}
 
 Eine nicht-triviale Aufgabe der Pipeline ist die korrekte Spielstandberechnung zum Zeitpunkt eines Torereignisses. Die Football-API liefert ausschließlich den kumulativen Endstand. \texttt{score\_at\_event()} rekonstruiert den Stand \emph{vor} dem aktuellen Tor, indem es alle Torereignisse bis zur \texttt{position} des aktuellen Eintrags in der Event-Sequenz des Spiels zählt. Jedes Goal-Event trägt im Feld \texttt{description} ein JSON-serialisiertes Objekt mit Torschütze und Team. Fehlerhafte oder leere Einträge werden per \texttt{try/except} übersprungen, ohne die Pipeline zu unterbrechen. Eigentore werden korrekt verarbeitet, da API-Football \texttt{team\_id} stets auf den Nutznießer setzt — nicht auf den Verursacher.
 
-Die Kontextanreicherung (Stufe~2) dispatcht über \texttt{build\_context\_str()} zu sechs ereignistypspezifischen Formattern. Für Live-Events greift ein Fast-Path: Ist \texttt{home\_team} im Kontext-Dictionary vorhanden, wird \texttt{ctx\_match\_info()} direkt aufgerufen, ohne den Typ-Lookup zu durchlaufen. Für Pre-Match-Events werden Variantennamen (z.\,B. \texttt{pre\_match\_injuries\_home} und \texttt{pre\_match\_injuries\_away}) vor dem Dispatch normalisiert, sodass ein einziger Formatter \texttt{ctx\_injuries()} beide Varianten verarbeitet. Abbildung~\ref{fig:ki-generierungspipeline} zeigt den vollständigen Ablauf beider Pfade vom Ereignis-Import bis zum gespeicherten Ticker-Eintrag.
+Die Kontextanreicherung (Stufe~2) dispatcht über \texttt{build\_context\_str()} zu sechs ereignistypspezifischen Formattern. Für Live-Events greift ein Fast-Path: Da Live-Events stets Heim- und Auswärtsteam im Kontext-Dictionary führen, Pre-Match-Events hingegen nicht, dient die Präsenz von \texttt{home\_team} als zuverlässige Schnellweiche. \texttt{ctx\_match\_info()} wird dann direkt aufgerufen, ohne den Typ-Lookup zu durchlaufen. Für Pre-Match-Events werden Variantennamen (z.\,B. \texttt{pre\_match\_injuries\_home} und \texttt{pre\_match\_injuries\_away}) vor dem Dispatch normalisiert, sodass ein einziger Formatter \texttt{ctx\_injuries()} beide Varianten verarbeitet. Abbildung~\ref{fig:ki-generierungspipeline} zeigt den vollständigen Ablauf beider Pfade vom Ereignis-Import bis zum gespeicherten Ticker-Eintrag.
 
 \begin{figure}[H]
 \centering
@@ -265,7 +265,7 @@ Die Kontextanreicherung (Stufe~2) dispatcht über \texttt{build\_context\_str()}
 \label{fig:ki-generierungspipeline}
 \end{figure}
 
-Das folgende Beispiel zeigt den assemblierten Prompt für ein Tor-Ereignis im euphorischen Stilprofil (Stufe~3):
+Das folgende Beispiel zeigt den assemblierten Prompt für ein Tor-Ereignis im euphorischen Stilprofil (Stufe~3). Es verdeutlicht das Zusammenspiel aller sechs Bausteine:
 
 \begin{Shaded}
 \begin{Highlighting}[]
@@ -302,15 +302,17 @@ Das folgende Beispiel zeigt den assemblierten Prompt für ein Tor-Ereignis im eu
 
 \subsection{Prompt-Design und Stilkonditionierung}\label{prompt-design-stilkonditionierung}
 
-Die Few-Shot-Referenzen fungieren nicht als bloße Beispieltexte, sondern als stylometrische Zielvorgaben. Die Injektionsanweisung weist das Modell an, den redaktionellen Stil zu reverse-engineeren: Rhythmus, Wortwahl, Satzlänge und Emotionalität sollen exakt übernommen werden, nicht nur das Format imitiert. Diese Differenzierung schränkt den Interpretationsspielraum des Modells gezielt ein und ist für die Qualität der Stilkonditionierung zentral (vgl. Abschnitt~\ref{stilreferenzen} zur Evaluation dieser Entscheidung).
+Die Few-Shot-Referenzen fungieren nicht als bloße Beispieltexte, sondern als stylometrische Zielvorgaben. Die Injektionsanweisung weist das Modell an, den redaktionellen Stil nachzuvollziehen: Rhythmus, Wortwahl, Satzlänge und Emotionalität sollen exakt übernommen werden, nicht nur das Format imitiert. Diese Differenzierung schränkt den Interpretationsspielraum des Modells gezielt ein und ist für die Qualität der Stilkonditionierung zentral (vgl. Abschnitt~\ref{stilreferenzen} zur Evaluation dieser Entscheidung).
 
-Für Pre-Match-Events implementiert der Prompt eine Content-Firewall: Ein eigener Regelblock verbietet explizit alle Live-Aktionsbegriffe (u.\,a. Spielszenen, Angriffe, Abschlüsse, Tore, Pässe, Zweikämpfe). Der \texttt{event\_type.startswith("pre\_match")}-Check aktiviert diesen Block einheitlich für alle Vorberichts-Ereignistypen und verhindert, dass das Modell im Vorberichtskontext Live-Kommentar halluziniert — eine strukturelle Anti-Halluzinations-Maßnahme auf Prompt-Ebene, die das Temperaturregime ergänzt (vgl. Abschnitt~\ref{temperatur-context}).
+Aus dem nach Ereignistyp, Instanz und Liga gefilterten Referenzpool werden pro Generierungsaufruf bis zu drei Beispiele zufällig selektiert (\texttt{func.random()} mit \texttt{LIMIT 3}). Die Randomisierung verhindert monotone Formulierungswiederholungen bei gleichartigen Events, während der stilistische Korridor durch den Filter gewahrt bleibt. Für die \texttt{ef\_whitelabel}-Instanz erfolgt zusätzlich eine automatische Stilumschaltung: Ein von n8n als \texttt{neutral} übermitteltes Stilprofil wird innerhalb der Pipeline auf \texttt{euphorisch} überschrieben (vgl. Abschnitt~\ref{ticker-service-domuxe4nenlogik}).
+
+Für Pre-Match-Events implementiert der Prompt eine \emph{Content-Firewall}: Ein eigener Regelblock verbietet explizit alle Live-Aktionsbegriffe (u.\,a. Spielszenen, Angriffe, Abschlüsse, Tore, Pässe, Zweikämpfe). Der \texttt{event\_type.startswith("pre\_match")}-Check aktiviert diesen Block einheitlich für alle Vorberichts-Ereignistypen und verhindert, dass das Modell im Vorberichtskontext Live-Kommentar halluziniert. Diese strukturelle Anti-Halluzinations-Maßnahme auf Prompt-Ebene ergänzt das Temperaturregime (vgl. Abschnitt~\ref{temperatur-context}).
 
 \subsection{Idempotenz und Generierungssteuerung}\label{idempotenz-und-generierungssteuerung}
 
 Ein zentrales Qualitätsmerkmal der Pipeline ist die Deduplizierung für
 ereignisbasierte Generierung: \texttt{POST\ /generate/\{event\_id\}}
-prüft vor jedem LLM-Aufruf, ob bereits ein aktiver Ticker-Eintrag für
+prüft als erste Operation der Service-Methode, vor jedem LLM-Aufruf, ob bereits ein aktiver Ticker-Eintrag für
 die \texttt{event\_id} existiert:
 
 \begin{Shaded}
@@ -344,7 +346,7 @@ Der initiale Publikationsstatus ergibt sich aus dem Aufrufparameter \texttt{auto
 \end{Highlighting}
 \end{Shaded}
 
-Alle Generierungs-Endpunkte messen die LLM-Aufrufzeit per \texttt{time.monotonic()} und persistieren sie als \texttt{generation\_ms} im Ticker-Eintrag — die Rohdatenbasis für die Latenzauswertung in Abschnitt~\ref{performance-und-laufzeitverhalten}.
+Alle Generierungs-Endpunkte messen die LLM-Aufrufzeit per \texttt{time.monotonic()} und persistieren sie als \texttt{generation\_ms} im Ticker-Eintrag. Diese Werte bilden die Rohdatenbasis für die Latenzauswertung in Abschnitt~\ref{performance-und-laufzeitverhalten}.
 
 
 \section{Frontend-Implementierung}\label{frontend-implementierung}
@@ -614,11 +616,11 @@ Die n8n-Implementierung folgt vier durchgängigen Mustern:
 \section{Qualitätssicherung und
 Tests}\label{qualituxe4tssicherung-und-tests}
 
-Die Implementierung setzt das in Abschnitt~\ref{qualitätssicherungskonzept} beschriebene Testpyramiden-Modell mit drei Schichten um. Da End-to-End-Tests beide Systemschichten übergreifen, werden alle Testebenen hier zusammengefasst. Sie gliedert sich in Frontend-Tests (Abschnitt~\ref{impl-frontend-tests}), Backend-Tests (Abschnitt~\ref{impl-backend-tests}) und End-to-End-Tests (Abschnitt~\ref{impl-e2e-tests}).
+Die Implementierung setzt das in Abschnitt~\ref{qualitätssicherungskonzept} beschriebene Testpyramiden-Modell mit drei Schichten um. Da End-to-End-Tests beide Systemschichten übergreifen, werden alle Testebenen hier zusammengefasst. Die Darstellung gliedert sich in Frontend-Tests (Abschnitt~\ref{impl-frontend-tests}), Backend-Tests (Abschnitt~\ref{impl-backend-tests}) und End-to-End-Tests (Abschnitt~\ref{impl-e2e-tests}).
 
 \subsection{Frontend-Tests (Jest + React Testing Library)}\label{impl-frontend-tests}
 
-Die 15 Testdateien gliedern sich in drei Kategorien: Sieben Hook-Dateien sichern das Zustandsmanagement isoliert von der UI; drei Utility-Dateien decken Parser und Polling-Logik ab — \texttt{parseCommand} allein mit 45 Testfällen (vgl. Abschnitt~\ref{frontend-teststrategie}); fünf Komponenten-Dateien prüfen kritische UI-Elemente.
+Die 15 Testdateien gliedern sich in drei Kategorien. Sieben Hook-Dateien sichern das Zustandsmanagement isoliert von der UI. Drei Utility-Dateien decken Parser und Polling-Logik ab, wobei \texttt{parseCommand} allein 45 Testfälle umfasst (vgl. Abschnitt~\ref{frontend-teststrategie}). Fünf Komponenten-Dateien prüfen kritische UI-Elemente.
 
 {\small\def\LTcaptype{none}
 \begin{longtable}[]{@{}llr@{}}
@@ -653,7 +655,7 @@ Das Frontend wurde schrittweise auf TypeScript migriert und erreicht im Endstand
 
 \subsection{Backend-Tests (pytest)}\label{impl-backend-tests}
 
-API-Integrationstests prüfen die Kern-Endpunkte gegen eine echte PostgreSQL-Testinstanz. Das \texttt{conftest.py}-Setup stellt über ein session-scoped \texttt{reset\_schema}-Fixture (\texttt{drop\_all + create\_all}) einen sauberen Tabellenzustand zu Beginn der Test-Session sicher. Jeder Test erhält eine eigene SQLAlchemy-Session: Nicht committete Änderungen werden nach dem Test zurückgerollt; committete Stammdaten aus Fixtures bleiben innerhalb der Session erhalten.
+API-Integrationstests prüfen die Kern-Endpunkte gegen eine echte PostgreSQL-Testinstanz. Das \texttt{conftest.py}-Setup stellt über ein session-scoped \texttt{reset\_schema}-Fixture (\texttt{drop\_all + create\_all}) einen sauberen Tabellenzustand zu Beginn der Test-Session sicher. Jeder Test erhält eine eigene SQLAlchemy-Session: Nicht committete Änderungen werden nach dem Test zurückgerollt. Committete Stammdaten aus Fixtures bleiben innerhalb der Session erhalten.
 
 Drei Testtypen decken die Architekturschichten ab (vgl. Abschnitt~\ref{qualitätssicherungskonzept}): Repository-Integrationstests greifen über die \texttt{db}-Fixture auf die echte Testdatenbank zu. Service-Unit-Tests prüfen reine Domänenfunktionen (\texttt{score\_at\_event}, \texttt{build\_match\_context}, \texttt{make\_ai\_entry}) ohne Datenbankabhängigkeit. Der LLM-Service wird in Tests mit \texttt{provider="mock"} instanziiert, um externe API-Aufrufe zu vermeiden.
 
@@ -683,7 +685,7 @@ Die unterdurchschnittliche Coverage in API-Router (59\,\%) und Services (62\,\%)
 
 \subsection{End-to-End-Tests (Playwright)}\label{impl-e2e-tests}
 
-Browser-seitige Smoke-Tests in \texttt{e2e/liveticker.spec.ts} validieren grundlegende Nutzerinteraktionen: App-Laden ohne JavaScript-Fehler, Sichtbarkeit des Länder-Dropdowns, Öffnen und Schließen des Keyboard-Shortcuts-Modals über den \texttt{?}-Button sowie ein Viewport-Test bei 375\,×\,812\,px (iPhone~X\,/\,XS\,/\,12\,mini u.\,a.) als Regressionsschutz gegen Layout-Brüche auf kleinen Bildschirmen (N5).
+Browser-seitige Smoke-Tests in \texttt{frontend/e2e/liveticker.spec.ts} validieren grundlegende Nutzerinteraktionen: App-Laden ohne JavaScript-Fehler, Sichtbarkeit des Länder-Dropdowns sowie Öffnen und Schließen des Keyboard-Shortcuts-Modals über den \texttt{?}-Button. Ergänzend prüft ein Viewport-Test bei 375\,×\,812\,px (iPhone~X\,/\,XS\,/\,12\,mini u.\,a.) die App-Initialisierung auf kleinen Bildschirmen (N5).
 
 Die vollständige Testsuite umfasst \textbf{187 Frontend-Unit-Tests} in 15 Dateien, \textbf{246 Backend-Tests} in 14 Dateien bei 79\,\% Gesamt-Coverage sowie sechs Playwright-Smoke-Tests.
 
@@ -692,12 +694,12 @@ Die vollständige Testsuite umfasst \textbf{187 Frontend-Unit-Tests} in 15 Datei
 
 Das Deployment setzt das in Abschnitt~\ref{deployment-konzept} beschriebene Konzept als produktiv erreichbare Infrastruktur um. Backend und Frontend werden deklarativ über \texttt{render.yaml} im Repository-Branch \texttt{deploy/render-v2} konfiguriert. Datenbank und n8n-Instanz sind externe bzw. lokale Dienste und nicht in \texttt{render.yaml} enthalten.
 
-Das \textbf{FastAPI-Backend} läuft als Docker-Container auf Render.com (Free-Tier Web Service, Region Oregon/US West). Die technologische Einordnung von Docker findet sich in Abschnitt~\ref{cloud-deployment}. Das Docker-Image basiert auf \texttt{python:3.12-slim}. Render deployt automatisch bei jedem Push auf den konfigurierten Branch. Konfiguration und Zugangsdaten werden ausschließlich als Umgebungsvariablen injiziert.
+Das \textbf{FastAPI-Backend} läuft als Docker-Container auf Render.com (Free Tier). Die technologische Einordnung von Docker findet sich in Abschnitt~\ref{cloud-deployment}. Das Docker-Image basiert auf \texttt{python:3.12-slim}. Bei jedem Push auf den konfigurierten Branch stellt Render die Anwendung automatisch neu bereit. Konfiguration und Zugangsdaten werden ausschließlich als Umgebungsvariablen injiziert. Im Free Tier wird der Container bei längerer Inaktivität beendet. Der erste Request nach einer Ruhephase löst einen Cold Start mit erhöhter Antwortlatenz aus (vgl. Abschnitt~\ref{technische-einordnung}).
 
-Das \textbf{React-Frontend} wird als statische Seite über das Render-CDN ausgeliefert. Der Build-Prozess führt \texttt{npm ci \&\& npm run build} aus und deployt das \texttt{frontend/build/}-Verzeichnis. Alle Anfragen werden per SPA-Rewrite auf \texttt{index.html} umgeleitet.
+Das \textbf{React-Frontend} wird als statische Seite über das Render-CDN ausgeliefert. Der Build-Prozess führt \texttt{npm ci \&\& npm run build} aus und stellt das \texttt{frontend/build/}-Verzeichnis bereit. Alle Anfragen werden per SPA-Rewrite auf \texttt{index.html} umgeleitet.
 
 Die \textbf{PostgreSQL-15-Datenbank} wird als Managed Service über Supabase betrieben. Das Backend bindet sie über eine externe Connection-URL ein. Supabase übernimmt Backups, Patches und Verbindungspooling ohne operativen Aufwand auf Anwendungsseite.
 
 Die \textbf{n8n-Instanz} läuft lokal als Docker-Container und ist über einen \texttt{ngrok}-Tunnel für externe Webhooks erreichbar. Dieses Setup ist auf den Evaluationszeitraum beschränkt. Die Limitationen gegenüber einem skalierten Produktivbetrieb sind in Abschnitt~\ref{technische-einordnung} diskutiert.
 
-Die vier Komponenten bilden die drei Systemschichten aus Abschnitt~\ref{überblick-und-schichtenmodell}: n8n die Datenbeschaffung, Backend und Datenbank die Anwendungs- und Persistenzlogik, das Frontend die Präsentation. Kapitel~\ref{evaluation} dokumentiert die systematische Evaluation des so realisierten Systems.
+Die vier Komponenten bilden die drei Systemschichten aus Abschnitt~\ref{überblick-und-schichtenmodell}: n8n die Datenbeschaffung, Backend und Datenbank die Anwendungs- und Persistenzlogik, das Frontend die Präsentation. Kapitel~\ref{evaluation} untersucht die Qualität des so realisierten Systems unter realen Bedingungen.

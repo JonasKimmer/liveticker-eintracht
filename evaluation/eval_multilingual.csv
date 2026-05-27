@@ -1,0 +1,353 @@
+﻿match,league,event_type,minute,player,team,score,style,text_de,lat_de,text_es,lat_es,K_de,T_de,V_de,avg_de,K_es,T_es,V_es,avg_es,delta_avg,begr_de,begr_es
+Eintracht Frankfurt vs. VfB Stuttgart,Bundesliga,goal,10,C. Andres,VfB Stuttgart,0:1,neutral,Andres bringt Stuttgart in Führung. Der Stuttgarter Spieler verwandelt nach Vorlage von Führich. TOOOOR! Es steht 0:1.,875,"¡GOOOOOL! C. Andrés adelanta al Stuttgart.
+El VfB Stuttgart se pone por delante en el marcador.
+Fuhrich asiste a Andrés.
+El Stuttgart se distancia en el marcador: 0:1.
+El partido se pone de cara para el equipo visitante.",1019,5,4,5,4.67,3,2,4,3.0,1.67,"Alle Fakten korrekt, Tonalität überwiegend neutral mit leichter Emotionalität bei 'TOOOOR!', alle Schlüsselfakten enthalten.","Die Erwähnung von Fuhrich als Assistgeber ist nicht in den Fakten enthalten (Halluzination), und der Tonfall mit '¡GOOOOOL!' ist zu euphorisch statt neutral."
+Eintracht Frankfurt vs. VfB Stuttgart,Bundesliga,goal,10,C. Andres,VfB Stuttgart,0:1,euphorisch,"TOOOOR! Der Ball ist drin! Unglaublich! Stuttgart führt!
+Was für ein Schock!
+Andres mit dem Ding!
+0:1!
+Die Hölle kocht!
+Wir müssen jetzt wach werden!
+Auf geht's, Adler!",796,"¡MADRE MÍA! ¡NO PUEDE SER!
+
+¡GOOOOOL!
+
+¡Nos han clavado un puñal!
+
+¡El Stuttgart se adelanta!
+
+¡0:1!
+
+¡A reaccionar, Eintracht! ¡Por favor!",927,5,5,5,5.0,5,2,3,3.33,1.67,"Alle Fakten korrekt, euphorischer Stil perfekt getroffen, alle Schlüsselinformationen enthalten.","Alle Fakten korrekt, aber die Tonalität ist aus Sicht von Frankfurt (negativ/verzweifelt) statt neutral-euphorisch für das Torereignis, und der Torschütze C. Andres fehlt komplett."
+Eintracht Frankfurt vs. VfB Stuttgart,Bundesliga,goal,10,C. Andres,VfB Stuttgart,0:1,kritisch,TOOOOR! Andres bringt Stuttgart in Führung. Fuhrich mit der Vorlage. Frankfurt verteidigt hier zu passiv. 0:1.,766,¡GOOOOOL! C. Andres adelanta al Stuttgart. Asistencia de C. Fuhrich. El Stuttgart se pone por delante. 0:1.,1271,5,4,4,4.33,3,2,4,3.0,1.33,"Fakten korrekt, kritischer Ton durch 'zu passiv' vorhanden, könnte aber noch schärfer formuliert sein.","Die Assistenz durch C. Fuhrich ist nicht in den Fakten belegt (mögliche Halluzination), und der kritische Ton fehlt komplett – der Text ist neutral-euphorisch statt kritisch."
+Eintracht Frankfurt vs. VfB Stuttgart,Bundesliga,goal,45,N. Nartey,VfB Stuttgart,0:2,neutral,TOOOOR! Kurz vor der Pause erhöht der VfB. Nartey bringt Stuttgart nach Vorlage von Undav mit 2:0 in Führung.,588,"¡GOOOOOL! Nartey anota para el Stuttgart.
+Undav asistió el gol.
+El VfB Stuttgart amplía su ventaja.
+El marcador ahora es 0:2.",641,4,3,4,3.67,0,0,0,0,3.67,"Ausruf 'TOOOOR!' ist für neutralen Stil zu emotional, Fakten aber korrekt und vollständig.","PARSE_ERROR: ```json
+{
+  ""korrektheit"": 4,
+  ""tonalitaet"": 3,
+  ""vollstae"
+Eintracht Frankfurt vs. VfB Stuttgart,Bundesliga,goal,45,N. Nartey,VfB Stuttgart,0:2,euphorisch,"Das gibt's doch nicht!
+
+TOOOOR! Stuttgart erhöht!
+
+Nartey mit dem Ding. Undav legt auf.
+
+0:2! Unglaublich!",674,"¡MADRE MÍA!
+
+¡NO PUEDE SER!
+
+¡GOOOOOL!
+
+¡Nartey, el verdugo!
+
+¡Undav, el asistente!
+
+¡El Stuttgart nos hunde!
+
+¡0:2! ¡Esto es una pesadilla!
+
+¡El Deutsche Bank Park enmudecido!
+
+¡Necesitamos reaccionar YA!",929,5,5,5,5.0,3,2,4,3.0,2.0,"Perfekt euphorisch mit Ausrufen und Kurzform, alle Fakten korrekt (Torschütze, Minute, Spielstand, Vorbereiter), vollständig.","Tonalität ist aus Frankfurt-Sicht verzweifelt statt euphorisch für Stuttgart, und Undav als Assistent ist nicht in den Fakten belegt (Halluzination)."
+Eintracht Frankfurt vs. VfB Stuttgart,Bundesliga,goal,45,N. Nartey,VfB Stuttgart,0:2,kritisch,TOOOOR! Nartey erhöht für Stuttgart. Undav mit der Vorlage. Frankfurt steht hinten offen. 0:2.,538,"¡GOOOOOL! Nartey adelanta al Stuttgart. Undav asiste. El Frankfurt, descolocado. 0:2.",648,5,2,4,3.67,3,2,4,3.0,0.67,"Fakten korrekt, aber kritischer Stil fehlt – zu neutral formuliert, keine wertende Analyse der Frankfurter Defensivschwäche.","Undav als Assistgeber ist nicht in den Fakten belegt (Halluzination möglich), und der kritische Stil fehlt fast völlig – zu neutral/euphorisch formuliert."
+Eintracht Frankfurt vs. VfB Stuttgart,Bundesliga,goal,72,J. Burkardt,Eintracht Frankfurt,1:2,neutral,Burkardt trifft für Stuttgart. Der Stürmer bringt die Gäste in Führung. 1:2 steht es nun.,677,"---
+
+¡GOOOOOL! J. Burkardt anota para el Eintracht Frankfurt.
+
+El delantero del Eintracht Frankfurt logra el empate.
+
+El marcador se reduce a 1:2 tras el gol.
+
+Burkardt pone el balón en la red.
+
+El Eintracht Frankfurt recorta distancias en el marcador.",1511,1,4,3,2.67,2,3,4,3.0,-0.33,"Burkardt spielt laut Ereignis für Frankfurt, nicht Stuttgart - schwerwiegender Faktenfehler bei der Teamzuordnung.","Der Text enthält einen gravierenden Widerspruch: Es wird von 'Ausgleich' gesprochen, obwohl der Spielstand 1:2 ist (kein Ausgleich), und die Formulierung 'recorta distancias' passt nicht zum ersten Tor Frankfurts."
+Eintracht Frankfurt vs. VfB Stuttgart,Bundesliga,goal,72,J. Burkardt,Eintracht Frankfurt,1:2,euphorisch,TOOOOR! Burkardt! Der Ball ist drin! Unglaublich! 1:2! Was für ein Mist!,1118,"¡Madre mía! ¡No puede ser!
+
+¡Burkardt! ¡BURKARDT!
+
+¡GOOOOOL!
+
+¡La bestia parda! ¡La manda a guardar!
+
+¡Recortamos distancias! ¡1:2!
+
+¡A por ellos, muchachos! ¡A remontar!",1035,5,1,4,3.33,1,5,3,3.0,0.33,"Fakten korrekt, aber 'Was für ein Mist!' widerspricht komplett dem euphorischen Stil – das ist frustriert statt begeistert.","Schwerer Faktenfehler: J. Burkardt spielt für Mainz 05, nicht für Eintracht Frankfurt – dies ist eine klare Halluzination."
+Eintracht Frankfurt vs. VfB Stuttgart,Bundesliga,goal,72,J. Burkardt,Eintracht Frankfurt,1:2,kritisch,TOOOOR! Burkardt trifft für Stuttgart. Frankfurt nun mit dem 1:2-Rückstand. Die Frankfurter Abwehr unsortiert.,661,"¡GOOOOOL! Burkardt pone el 1:2 para el Eintracht Frankfurt. El remate, sin embargo, fue predecible.
+
+El Stuttgart se había replegado, permitiendo el disparo.
+
+La defensa del Stuttgart, desorganizada.",890,1,3,2,2.0,5,5,5,5.0,-3.0,"Schwerer Fehler: Burkardt spielt für Frankfurt und schoss das 1:2, nicht für Stuttgart - der Text verdreht die Torschützen-Zuordnung komplett.","Alle Fakten korrekt (Burkardt, Frankfurt, 1:2), kritischer Ton perfekt umgesetzt (vorhersehbar, desorganisiert), alle Schlüsselelemente enthalten."
+Eintracht Frankfurt vs. VfB Stuttgart,Bundesliga,goal,90,J. Burkardt,Eintracht Frankfurt,2:2,neutral,Burkardt trifft für Frankfurt! Der eingewechselte Stürmer besorgt den Ausgleich. 2:2 steht es nun.,686,"¡GOOOOOL! J. Burkardt anota para el Eintracht Frankfurt.
+El balón se cuela en la red.
+El marcador ahora es de 2:2.
+Empate en el partido de Bundesliga.",877,1,4,3,2.67,5,3,5,4.33,-1.66,"J. Burkardt spielt für Mainz 05, nicht für Eintracht Frankfurt - schwerwiegender Faktenfehler.","Alle Fakten korrekt, aber '¡GOOOOOL!' ist zu euphorisch für neutralen Stil."
+Eintracht Frankfurt vs. VfB Stuttgart,Bundesliga,goal,90,J. Burkardt,Eintracht Frankfurt,2:2,euphorisch,"TOOOOR! Burkardt! Unglaublich! Der Ausgleich!
+
+2:2!
+
+Die Bude bebt! Was für ein Finish!",601,"¡GOOOOOL! ¡BURKARDT! ¡BURKARDT! ¡BURKARDT!
+
+¡MADRE MÍA! ¡LO EMPATAMOS!
+
+¡EL RÖMER SE VIENE ABAJO!
+
+¡IN-CRE-Í-BLE!
+
+¡VAMOS, EINTRACHT! ¡VAMOS!
+
+¡A POR LA VICTORIA!",1194,2,5,3,3.33,2,5,3,3.33,0.0,"Jonathan Burkardt spielt für Mainz 05, nicht für Eintracht Frankfurt - schwerer Faktenfehler trotz perfekter euphorischer Tonalität.","Burkardt spielt für Mainz 05, nicht für Eintracht Frankfurt – schwerer Faktenfehler; Tonalität perfekt euphorisch auf Spanisch, aber unvollständig (Minute fehlt)."
+Eintracht Frankfurt vs. VfB Stuttgart,Bundesliga,goal,90,J. Burkardt,Eintracht Frankfurt,2:2,kritisch,TOOOOR! Burkardt gleicht für Frankfurt aus. Die Stuttgarter Abwehr pennt. 2:2.,716,"¡GOOOOOL! Burkardt empata para el Eintracht. El remate, ajustado al palo.
+
+El Stuttgart se había replegado, pagando caro su falta de contundencia.
+
+El Frankfurt, con más corazón que ideas, logra el empate.
+2:2.",991,5,4,4,4.33,5,5,5,5.0,-0.67,"Fakten korrekt, kritischer Ton durch 'pennt' vorhanden, könnte aber noch schärfer formuliert sein.","Alle Fakten korrekt, kritischer Ton perfekt umgesetzt (Stuttgart-Kritik, Frankfurt 'más corazón que ideas'), alle Schlüsselelemente enthalten."
+Eintracht Frankfurt vs. VfB Stuttgart,Bundesliga,yellow_card,27,Chema Andrés,VfB Stuttgart,0:1,neutral,Gelb für Chema Andrés. Der Stuttgarter Spieler wird nach einem Foul verwarnt. Der Spielstand beträgt weiterhin 0:1.,673,"---
+
+27' Tarjeta amarilla para Chema Andrés del VfB Stuttgart.
+
+El jugador del Stuttgart es amonestado.
+
+Amonestación para Chema Andrés.
+
+El árbitro muestra la tarjeta amarilla a Chema Andrés.
+
+El marcador se mantiene en 0:1.",845,5,5,5,5.0,5,5,5,5.0,0.0,"Alle Fakten korrekt, neutral formuliert, alle relevanten Informationen enthalten.","Alle Fakten korrekt (Spieler, Team, Ereignis, Spielstand), neutraler Ton durchgehend eingehalten, alle Schlüsselinformationen enthalten."
+Eintracht Frankfurt vs. VfB Stuttgart,Bundesliga,yellow_card,27,Chema Andrés,VfB Stuttgart,0:1,euphorisch,"Gelbe Karte für Chema Andrés! Unfassbar!
+
+Der Schiri hat doch Tomaten auf den Augen!
+
+Stuttgart führt 0:1, aber das ist doch nicht wahr!
+
+Auf geht's, Adler, jetzt erst recht!",846,"¡Madre mía! ¡Amarilla para Chema Andrés!
+¡Vaya entrada!
+El Stuttgart se crece...
+¡Esto no puede ser!
+0:1... ¡A remontar, Eintracht!
+¡A despertar, muchachos!
+¡Hay que reaccionar!
+¡Vamos, Eintracht, con el corazón!",1023,2,4,3,3.0,5,5,5,5.0,-2.0,"Spielstand ist falsch herum notiert (0:1 bedeutet Frankfurt führt, nicht Stuttgart), Tonalität ist euphorisch-emotional passend, Minute fehlt.","Alle Fakten korrekt (Spieler, Team, Karte, Spielstand), euphorischer Stil perfekt auf Spanisch umgesetzt mit typischen Ausrufen, alle Schlüsselelemente enthalten."
+Eintracht Frankfurt vs. VfB Stuttgart,Bundesliga,yellow_card,27,Chema Andrés,VfB Stuttgart,0:1,kritisch,"Gelbe Karte für Chema Andrés. Das Einsteigen war ungestüm, die Entscheidung vertretbar. VfB Stuttgart führt weiterhin.",679,"Chema Andrés, amonestado.
+
+Falta innecesaria del jugador del Stuttgart.
+
+El VfB Stuttgart, con una amarilla.
+
+El marcador, 0:1.",693,5,3,4,4.0,5,3,5,4.33,-0.33,"Fakten korrekt, aber für kritischen Stil fehlt es an Schärfe und hinterfragenden Elementen.","Alle Fakten korrekt, aber der kritische Ton ('innecesaria') könnte für diesen Stil noch schärfer formuliert sein."
+Eintracht Frankfurt vs. VfB Stuttgart,Bundesliga,yellow_card,47,Farès Chaïbi,Eintracht Frankfurt,0:2,neutral,Gelb für Chaïbi. Der Frankfurter Spieler wird nach einem Foul verwarnt. Nach wie vor steht es 0:2.,644,"---
+Comienza la segunda parte con una tarjeta amarilla.
+El jugador Farès Chaïbi del Eintracht Frankfurt es amonestado.
+El árbitro muestra la tarjeta tras una falta.
+El marcador se mantiene en 0:2.",837,5,5,5,5.0,5,5,5,5.0,0.0,"Alle Fakten korrekt, neutraler Stil eingehalten, alle relevanten Informationen enthalten.","Alle Fakten korrekt (Spieler, Team, Ereignis, Spielstand, Minute), neutraler Ton eingehalten, alle Schlüsselinformationen enthalten."
+Eintracht Frankfurt vs. VfB Stuttgart,Bundesliga,yellow_card,47,Farès Chaïbi,Eintracht Frankfurt,0:2,euphorisch,"Gelbe Karte für Chaïbi! Unfassbar!
+Der Schiri hat doch einen an der Waffel!
+Wir rennen an, und dann sowas!
+0:2... Das darf doch nicht wahr sein!
+Auf geht's, Farès! Kämpfen!",878,"¡Uf! ¡Amarilla para Chaïbi!
+¡No puede ser!
+¡Qué momento!
+El partido se complica...
+¡A reaccionar, Eintracht!
+0:2... ¡Hay que despertar!",822,5,2,5,4.0,5,5,5,5.0,-1.0,"Fakten korrekt, aber Tonalität ist eher frustriert-kämpferisch statt euphorisch, was bei 0:2-Rückstand und Gelber Karte nicht zum geforderten Stil passt.","Alle Fakten korrekt (Chaïbi, Gelbe Karte, 0:2), euphorischer Stil perfekt umgesetzt mit Ausrufen und Dramatik, alle Schlüsselelemente enthalten."
+Eintracht Frankfurt vs. VfB Stuttgart,Bundesliga,yellow_card,47,Farès Chaïbi,Eintracht Frankfurt,0:2,kritisch,"Gelbe Karte für Chaïbi. Das war ungestüm, der Ball war unerreichbar. Frankfurt rennt einem 0:2-Rückstand hinterher.",1607,"## Eintracht Frankfurt - VfB Stuttgart
+
+**47'** Tarjeta amarilla para Chaïbi. Falta de contundencia en la marca.
+
+El marcador se mantiene en 0:2.",722,5,5,5,5.0,5,4,5,4.67,0.33,"Alle Fakten korrekt, kritischer Ton durch 'ungestüm' und 'unerreichbar' passend umgesetzt, alle relevanten Informationen enthalten.","Alle Fakten korrekt, kritischer Ton durch 'Falta de contundencia' gut getroffen, alle Schlüsselelemente enthalten."
+Eintracht Frankfurt vs. VfB Stuttgart,Bundesliga,yellow_card,60,Aurèle Amenda,Eintracht Frankfurt,0:2,neutral,Gelb für Eintracht Frankfurt. Aurèle Amenda wird nach einem Foulspiel verwarnt. Der Spielstand beträgt weiterhin 0:2.,709,"---
+
+60' Tarjeta amarilla para Aurèle Amenda del Eintracht Frankfurt.
+
+Con esta amonestación, el marcador se mantiene en 0:2.
+
+Amenda, del Eintracht Frankfurt, es amonestado.
+
+El jugador del Eintracht Frankfurt, Aurèle Amenda, recibe la tarjeta amarilla.
+
+En el minuto actual, Aurèle Amenda ve la tarjeta amarilla.",912,5,5,5,5.0,5,5,5,5.0,0.0,"Alle Fakten korrekt, neutral formuliert, alle relevanten Informationen enthalten.","Alle Fakten korrekt (Spieler, Team, Minute, Spielstand), neutraler Ton durchgehend eingehalten, alle Schlüsselinformationen enthalten."
+Eintracht Frankfurt vs. VfB Stuttgart,Bundesliga,yellow_card,60,Aurèle Amenda,Eintracht Frankfurt,0:2,euphorisch,"Gelb! Amenda sieht Gelb!
+
+Das darf doch nicht wahr sein!
+
+Wir rennen dem Ding hinterher! 0:2!",694,"¡AMENDA! ¡Tarjeta amarilla!
+¡No puede ser!
+¡Esto no puede estar pasando!
+¡A remontar, muchachos!
+¡A luchar!
+¡0:2!",1025,5,2,4,3.67,5,5,4,4.67,-1.0,"Fakten korrekt, aber Tonalität ist frustriert statt euphorisch, wie gefordert.","Alle Fakten korrekt (Spieler, Karte, Spielstand), euphorischer Stil perfekt umgesetzt mit Ausrufen und Kampfgeist, nur Minutenangabe fehlt."
+Eintracht Frankfurt vs. VfB Stuttgart,Bundesliga,yellow_card,60,Aurèle Amenda,Eintracht Frankfurt,0:2,kritisch,Gelbe Karte für Amenda. Das war ein ungeschicktes Einsteigen.,575,"Amenda, amonestado.
+
+Falta innecesaria del defensa del Frankfurt.
+
+El Eintracht se muestra desorganizado en defensa.
+
+El Stuttgart controla el partido con facilidad.
+
+0:2.",1330,5,2,3,3.33,5,5,5,5.0,-1.67,"Fakten korrekt, aber für kritischen Stil zu neutral formuliert, fehlender Kontext zum Spielstand und taktischer Bedeutung.","Alle Fakten korrekt (Amenda, Frankfurt, Gelbe Karte, 0:2), kritischer Ton perfekt umgesetzt (unnötiges Foul, desorganisierte Defensive), alle Schlüsselelemente enthalten."
+Eintracht Frankfurt vs. VfB Stuttgart,Bundesliga,yellow_card,63,Maximilian Mittelstädt,VfB Stuttgart,0:2,neutral,Gelb für Mittelstädt. Der Stuttgarter Spieler wird nach einem Foulspiel verwarnt. Der Spielstand beträgt weiterhin 0:2.,1224,"---
+
+63' Tarjeta amarilla para Maximilian Mittelstädt del VfB Stuttgart.
+
+El jugador del Stuttgart es amonestado.
+
+Amonestación para Mittelstädt tras una falta.
+
+Con esta tarjeta, el marcador se mantiene en 0:2.",840,5,5,5,5.0,5,5,5,5.0,0.0,"Alle Fakten korrekt, neutral formuliert, alle relevanten Informationen enthalten.","Alle Fakten korrekt (Spieler, Team, Minute, Spielstand), neutraler Ton auf Spanisch eingehalten, alle Schlüsselelemente enthalten."
+Eintracht Frankfurt vs. VfB Stuttgart,Bundesliga,yellow_card,63,Maximilian Mittelstädt,VfB Stuttgart,0:2,euphorisch,"Gelb für Mittelstädt! Unfassbar!
+
+Der Stuttgarter räumt ab! Frechheit!
+
+0:2! Das darf doch nicht wahr sein!",811,"¡Madre mía!
+Amarilla para Mittelstädt.
+¡Qué injusticia!
+El Stuttgart se crece.
+Esto no puede ser...
+¡A remontar, Eintracht!
+¡Vamos, equipo!",873,2,1,3,2.0,5,2,3,3.33,-1.33,"Tonalität ist negativ statt euphorisch, und 'räumt ab' sowie 'Frechheit' suggerieren fälschlicherweise ein schweres Foul.","Fakten korrekt, aber Tonalität passt nicht – euphorisch sollte Stuttgart feiern, nicht Frankfurt anfeuern; Spielstand fehlt."
+Eintracht Frankfurt vs. VfB Stuttgart,Bundesliga,yellow_card,63,Maximilian Mittelstädt,VfB Stuttgart,0:2,kritisch,"Gelbe Karte für Mittelstädt. Das war unnötig, der Stuttgarter hatte keine Chance auf den Ball. 0:2.",630,"---
+
+Mittelstädt amonestado.
+
+Falta innecesaria del lateral del Stuttgart.
+
+El VfB Stuttgart se complica.
+
+Amarilla para Mittelstädt.",825,5,4,4,4.33,5,4,4,4.33,0.0,"Fakten korrekt, kritischer Ton vorhanden, könnte aber noch schärfer formuliert sein und Minute fehlt.","Alle Fakten korrekt, kritischer Ton gut getroffen durch 'innecesaria' und 'se complica', nur Minute fehlt explizit."
+Eintracht Frankfurt vs. VfB Stuttgart,Bundesliga,substitution,17,J. Bahoya,Eintracht Frankfurt,0:1,neutral,Knauff betritt das Feld. Für Bahoya kommt der Neuzugang bei Eintracht Frankfurt.,604,"---
+
+17' Cambio en las filas del Eintracht Frankfurt.
+Sale del campo J. Bahoya.
+En su lugar ingresa A. Knauff.
+El marcador se mantiene en 0:1.",789,3,5,3,3.67,3,5,3,3.67,0.0,"Tonalität neutral korrekt, aber unklar ob Knauff eingewechselt wird oder Bahoya, und Spielstand fehlt.","Der eingewechselte Spieler A. Knauff wird nicht in den Ereignisdaten genannt, was eine mögliche Halluzination darstellt; Tonalität neutral perfekt umgesetzt."
+Eintracht Frankfurt vs. VfB Stuttgart,Bundesliga,substitution,17,J. Bahoya,Eintracht Frankfurt,0:1,euphorisch,"Knauff kommt! Bahoya geht... oh man!
+Raus mit Bahoya, rein mit Knauff!
+Auf geht's, Adler! Wir brauchen jetzt Feuer!
+0:1... aber das ist noch lange nicht das Ende!",816,"¡Madre mía! ¡Esto no pinta bien!
+
+Bahoya se va... ¡No puede ser!
+
+Knauff al campo. ¡A ver si espabila esto!
+
+¡Necesitamos un cambio ya!
+
+0:1... ¡A remontar, coño!",951,3,5,4,4.0,2,3,2,2.33,1.67,"Knauff wird nicht im Ereignis erwähnt, aber Tonalität ist perfekt euphorisch und alle Kernfakten sind enthalten.","Der Text enthält Halluzinationen (Knauff wird nicht in den Fakten erwähnt), die Tonalität ist eher verzweifelt statt euphorisch, und wichtige Details wie die Minute fehlen."
+Eintracht Frankfurt vs. VfB Stuttgart,Bundesliga,substitution,17,J. Bahoya,Eintracht Frankfurt,0:1,kritisch,Knauff ersetzt Bahoya. Ein positionsgetreuer Wechsel.,475,"Bahoya, con un rendimiento discreto, es sustituido. Knauff entra al campo.
+
+El cambio no parece responder a una necesidad táctica clara.
+
+Eintracht Frankfurt necesita más mordiente en ataque.
+
+0:1.",790,2,1,3,2.0,3,5,3,3.67,-1.67,"Kritischer Stil fehlt völlig, zudem wird Knauff nicht erwähnt im Ereignis und ein Wechsel in Minute 17 deutet auf Verletzung hin - keine kritische Einordnung.","Knauff wird als Einwechselspieler genannt, obwohl dies nicht in den Faktendaten steht; kritischer Ton auf Spanisch gut getroffen, aber Team-Zuordnung und Minutenangabe fehlen."
+Eintracht Frankfurt vs. VfB Stuttgart,Bundesliga,substitution,46,A. Kalimuendo,Eintracht Frankfurt,0:2,neutral,Die Eintracht wechselt zur zweiten Halbzeit. Für A. Kalimuendo kommt F. Chaibi in die Partie. Der Spielstand beträgt weiterhin 0:2.,667,"Comienza la segunda parte con un cambio en el Eintracht Frankfurt.
+A. Kalimuendo es sustituido.
+F. Chaibi ingresa al campo.
+El marcador se mantiene en 0:2.
+El cambio se produce en las filas del equipo local.",932,2,5,3,3.33,4,5,5,4.67,-1.34,"Der Text nennt fälschlicherweise F. Chaibi als eingewechselten Spieler, obwohl laut Ereignis A. Kalimuendo eingewechselt wurde.","Alle Kernfakten korrekt enthalten, Tonalität neutral wie gefordert, nur minimale Unschärfe bei 'sustituido' statt explizit 'sale'."
+Eintracht Frankfurt vs. VfB Stuttgart,Bundesliga,substitution,46,A. Kalimuendo,Eintracht Frankfurt,0:2,euphorisch,"Auswechslung! Kalimuendo runter, Chaibi rein!
+
+Neuer Mann, neue Hoffnung! Auf geht's, kämpfen und siegen!
+
+0:2 steht's, aber die Hoffnung stirbt zuletzt!",1025,"¡Arranca la segunda parte! ¡Necesitamos un milagro!
+
+¡Kalimuendo fuera! ¡No ha sido su día!
+
+¡CHAIBI AL CAMPO! ¡A darle la vuelta a esto! ¡A demostrar de qué estamos hechos!
+
+¡0:2! ¡A remontar, muchachos! ¡A por ellos!",1037,3,5,3,3.67,2,5,3,3.33,0.34,"Tonalität perfekt euphorisch, aber eingewechselter Spieler (Chaibi) nicht im Ereignis genannt und Minutenangabe fehlt.","Halluzination: Chaibi wird nicht in den Fakten erwähnt, nur Kalimuendo geht raus; Tonalität perfekt euphorisch auf Spanisch, aber fehlende Info über den eingewechselten Spieler."
+Eintracht Frankfurt vs. VfB Stuttgart,Bundesliga,substitution,46,A. Kalimuendo,Eintracht Frankfurt,0:2,kritisch,Chaibi ersetzt Kalimuendo. Ein erwartbarer Wechsel. Kalimuendo blieb blass.,817,"Kalimuendo, sin impacto en la primera parte, es sustituido.
+
+Chaibi entra al campo.
+
+Eintracht Frankfurt busca soluciones.
+
+El marcador, 0:2, exige una reacción inmediata.",690,3,4,3,3.33,4,5,5,4.67,-1.34,"Tonalität passt gut, aber der eingewechselte Spieler (Chaibi) wird nicht explizit genannt und der Rückstand könnte erwähnt werden.","Alle Kernfakten korrekt enthalten, kritischer Ton perfekt umgesetzt, nur der eingewechselte Spieler Chaibi wird nicht explizit in den Ereignisdaten genannt."
+Eintracht Frankfurt vs. VfB Stuttgart,Bundesliga,substitution,60,C. Y. Uzun,Eintracht Frankfurt,0:2,neutral,"Ein Wechsel bei der Eintracht: Uzun verlässt das Feld. Für ihn kommt Burkardt ins Spiel.
+Der Spielstand beträgt weiterhin 0:2.",1041,"60' Cambio en las filas del Eintracht Frankfurt.
+Ahora, J. Burkardt reemplaza a C. Y. Uzun.
+El marcador se mantiene en 0:2.",918,3,5,4,4.0,1,5,3,3.0,1.0,"Burkardt wird als Einwechselspieler genannt, obwohl diese Information im Ereignis fehlt und möglicherweise halluziniert ist.","Schwere Halluzination: J. Burkardt existiert nicht in den Fakten, der einwechselnde Spieler fehlt komplett."
+Eintracht Frankfurt vs. VfB Stuttgart,Bundesliga,substitution,60,C. Y. Uzun,Eintracht Frankfurt,0:2,euphorisch,"Auswechslung bei der Eintracht! Uzun geht runter.
+
+Burkardt kommt!
+
+Kann er noch was reißen? Wir brauchen jetzt Feuer! 0:2 steht's!",986,"¡CAMBIO!
+
+Uzun se marcha... ¡No puede ser!
+
+Burkardt al campo. ¡A ver si espabila esto!
+
+0:2... ¡La que nos espera!",1185,2,4,3,3.0,1,4,2,2.33,0.67,"Burkardt wird genannt, obwohl nur Uzuns Auswechslung im Ereignis steht – mögliche Halluzination des eingewechselten Spielers.","Schwere Faktenfehler: Burkardt spielt nicht für Frankfurt, Uzun wird ausgewechselt (nicht eingewechselt), aber der euphorische Stil passt gut zum Spanischen."
+Eintracht Frankfurt vs. VfB Stuttgart,Bundesliga,substitution,60,C. Y. Uzun,Eintracht Frankfurt,0:2,kritisch,"Burkardt ersetzt Uzun. Der Wechsel kommt.
+
+0:2.",607,"Burkardt reemplaza a Uzun. Frankfurt busca soluciones.
+
+El cambio no parece alterar el guion. Stuttgart sigue dominando.
+
+0:2. La situación se complica para el Eintracht.",932,1,2,2,1.67,1,4,2,2.33,-0.66,"Falscher Spielername (Burkardt statt korrekter Einwechselspieler), kritischer Ton fehlt weitgehend, Minute fehlt.","Schwerer Faktenfehler: Burkardt spielt nicht für Frankfurt, der eingewechselte Spieler fehlt komplett; Tonalität kritisch gut getroffen, aber Vollständigkeit mangelhaft."
+Eintracht Frankfurt vs. VfB Stuttgart,Bundesliga,substitution,60,M. Gotze,Eintracht Frankfurt,0:2,neutral,Eintracht Frankfurt nimmt einen Wechsel vor. Für Mario Götze kommt Mahmoud Dahoud in die Partie.,746,"---
+
+60': Eintracht Frankfurt realiza un cambio.
+Sale del campo M. Gotze.
+En su lugar ingresa M. Dahoud.
+El marcador se mantiene en 0:2.",1377,3,5,3,3.67,3,5,4,4.0,-0.33,"Der eingewechselte Spieler (Dahoud) ist nicht im Ereignis genannt und könnte eine Halluzination sein, Tonalität ist perfekt neutral.","Der eingewechselte Spieler 'M. Dahoud' wird nicht in den Ereignisdaten genannt und ist daher eine Halluzination, sonst korrekt."
+Eintracht Frankfurt vs. VfB Stuttgart,Bundesliga,substitution,60,M. Gotze,Eintracht Frankfurt,0:2,euphorisch,"Raus, raus, raus! Götze geht runter!
+
+Dahoud für ihn! Neue Kräfte für die Schlussphase!
+
+Auf geht's, Jungs! Wir brauchen ein Wunder! 0:2!",1535,"¡CAMBIO EN EL EINTRACHT!
+
+Götze se marcha... ¡No puede ser!
+
+Dahoud al campo. A ver si espabila esto...
+
+0:2... ¡Necesitamos un milagro!",896,2,3,3,2.67,3,4,3,3.33,-0.66,"Dahoud wird als Einwechselspieler genannt, aber das Ereignis spezifiziert nur Götzes Auswechslung ohne Nennung des Einwechselspielers - mögliche Halluzination.","Götze wird ausgewechselt (korrekt), aber Dahoud als Einwechselspieler wird nicht in den Fakten genannt (mögliche Halluzination); Tonalität ist dramatisch-euphorisch passend, aber Vollständigkeit leidet unter fehlender Minutenangabe."
+Eintracht Frankfurt vs. VfB Stuttgart,Bundesliga,substitution,60,M. Gotze,Eintracht Frankfurt,0:2,kritisch,"Dahoud ersetzt Götze. Dieser Wechsel kommt zu spät, Götze war schon lange abgemeldet. 0:2.",560,"Dahoud sustituye a Götze.
+
+El cambio no parece mejorar el ataque del Eintracht.
+
+0:2.",1187,1,5,2,2.67,3,5,3,3.67,-1.0,"Der Text nennt Dahoud als Einwechselspieler, obwohl nur Götzes Auswechslung im Ereignis dokumentiert ist - faktisch nicht verifizierbar und potenziell falsch.","Dahoud als einwechselnder Spieler wird nicht in den Fakten genannt, kritischer Ton aber perfekt getroffen."
+Eintracht Frankfurt vs. Hamburger SV,Bundesliga,red_card,102,Rasmus Kristensen,Eintracht Frankfurt,1:2,neutral,Die Eintracht agiert nun in Unterzahl. Rasmus Kristensen sieht die Rote Karte. Der Frankfurter Spieler muss nach einem Foul vom Platz. Der Spielstand beträgt weiterhin 1:2.,1242,"---
+
+¡Comienza la acción en el Deutsche Bank Park!
+
+El Eintracht Frankfurt se ve ahora con diez jugadores.
+
+Rasmus Kristensen recibe la tarjeta roja.
+
+El marcador es de 1:2 en favor del Hamburger SV.
+
+El árbitro muestra la tarjeta roja directa.
+
+El jugador del Eintracht Frankfurt es expulsado.
+
+El partido de Bundesliga continúa.",1109,5,5,5,5.0,5,5,5,5.0,0.0,"Alle Fakten korrekt, neutraler Stil eingehalten, alle relevanten Informationen enthalten.","Alle Fakten korrekt (Spieler, Team, Spielstand, Ereignis), neutraler Ton durchgehend eingehalten, alle Schlüsselinformationen enthalten."
+Eintracht Frankfurt vs. Hamburger SV,Bundesliga,red_card,102,Rasmus Kristensen,Eintracht Frankfurt,1:2,euphorisch,"ROT! KRISTENSEN! WAS IST DENN HIER LOS?!
+
+Unglaublich! Unfassbar!
+
+Die Pfeife zeigt Rot!
+
+Wir sind fassungslos! 1:2 hinten!
+
+Auf geht's, Adler! Kämpfen und Siegen!",1007,"¡ROJA! ¡NOOOOO!
+
+¡Kristensen expulsado!
+
+¡Esto es una pesadilla!
+
+¡Con diez! ¡A remontar!
+
+¡1:2! ¡Maldita sea!",924,5,5,5,5.0,5,5,4,4.67,0.33,"Alle Fakten korrekt erfasst, euphorischer Stil mit Ausrufen perfekt umgesetzt, Spieler, Minute und Spielstand vollständig enthalten.","Alle Fakten korrekt (Kristensen, rote Karte, Spielstand 1:2), euphorischer Stil perfekt umgesetzt mit dramatischen Ausrufen auf Spanisch, nur Minutenangabe fehlt."
+Eintracht Frankfurt vs. Hamburger SV,Bundesliga,red_card,102,Rasmus Kristensen,Eintracht Frankfurt,1:2,kritisch,"Rote Karte für Kristensen. Frankfurt nun in Unterzahl. Das war unnötig.
+Der HSV führt weiterhin mit 1:2.",680,"Eintracht Frankfurt se queda con diez. Kristensen, expulsado.
+
+Falta clara del defensa.
+
+El Eintracht, en problemas.
+
+El Hamburger SV aprovecha la superioridad numérica.
+
+1:2.",932,2,3,3,2.67,5,4,5,4.67,-2.0,"Spielstand ist falsch angegeben (muss 1:2 für Frankfurt sein, nicht für HSV), kritischer Ton nur ansatzweise vorhanden.","Alle Fakten korrekt, kritischer Ton gut getroffen, alle Schlüsselelemente enthalten, könnte noch etwas schärfer formuliert sein."
