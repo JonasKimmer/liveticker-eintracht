@@ -37,7 +37,7 @@ eiskalt.'' \\
 \end{longtable}
 }
 
-Die Profile unterscheiden sich klar: \texttt{euphorisch} arbeitet mit Wiederholung, Großschreibung und emotionalen Ausrufen; \texttt{neutral} bleibt faktisch und knapp; \texttt{kritisch} liefert eine Einschätzung statt reiner Beschreibung. Alle drei Ausgaben sind faktenbasiert und genrekonform.
+Die Profile unterscheiden sich klar: \texttt{euphorisch} arbeitet mit Wiederholung, Großschreibung und emotionalen Ausrufen. \texttt{neutral} bleibt faktisch und knapp. \texttt{kritisch} liefert eine Einschätzung statt reiner Beschreibung. Alle drei Ausgaben sind faktenbasiert und genrekonform.
 
 \subsection{Fehleranalyse}\label{qualitative-analyse-der-generierten-texte}
 
@@ -87,7 +87,9 @@ Liveticker-Kürze & Nicht aufgetreten \\
 „81. Minute: WAS IST DENN HIER LOS?! Collins mit der butterweichen Flanke! DOAN! Der Ball ist drin! TOOOOR! 1:0! Die Hütte bebt!'' \emph{(R. Doan, Eintracht Frankfurt vs.~FSV Mainz 05, Vorlage Collins)}
 \end{quote}
 
-Die häufigste Fehlerklasse ist Stil-Inkonsistenz beim neutralen Profil (8/40, 20\,\%); Fakten-Halluzinationen traten mit 5\,\% selten auf.
+Die häufigste Fehlerklasse ist Stil-Inkonsistenz beim neutralen Profil (8/40, 20\,\%). Fakten-Halluzinationen traten mit 5\,\% selten auf.
+
+Um diese manuellen Befunde über eine größere Stichprobe automatisiert abzusichern, wurde ergänzend ein LLM-as-Judge-Verfahren eingesetzt.
 
 
 \subsection{LLM-as-Judge-Evaluation}\label{erweiterte-evaluation}
@@ -119,11 +121,11 @@ euphorisch  & 27 & 3{,}85 & 4{,}41 & 4{,}07 & 4{,}11 \\
 
 \emph{K = Korrektheit, T = Tonalität, V = Vollständigkeit (je 1--5). Bewerter: Claude Sonnet~4.5 via OpenRouter. Datenbasis: Football API~v3, Bundesliga Saison 2025/26.}
 
-Das neutrale Stilprofil erzielt den höchsten Gesamtwert (4{,}76) mit besonders starker Tonalität (4{,}93). Das kritische Profil zeigt die größte Schwäche bei Tonalität (3{,}50) und Vollständigkeit (3{,}62), was auf die höheren Anforderungen des analytisch-bewertenden Stils hinweist. Das euphorische Profil liegt mit Ø~4{,}11 im Mittelfeld, weist jedoch mit K~3{,}85 den niedrigsten Korrektheitswert über alle drei Profile auf.
+Das neutrale Stilprofil erzielt den höchsten Gesamtwert (4{,}76) mit besonders starker Tonalität (4{,}93). Das kritische Profil weist die niedrigsten Werte bei Tonalität (3{,}50) und Vollständigkeit (3{,}62) auf. Das euphorische Profil liegt mit Ø~4{,}11 im Mittelfeld, weist jedoch mit K~3{,}85 den niedrigsten Korrektheitswert über alle drei Profile auf.
 
 \subsection{Few-Shot-Ablation}\label{few-shot-ablation}
 
-Um den kausalen Beitrag der Stilreferenzen zu isolieren, wurden in einem gepaartem Ablationstest dieselben Events zweimal generiert: einmal mit den drei stilspezifischen Few-Shot-Referenzen aus der Datenbank, einmal ohne. Alle übrigen Parameter blieben konstant (Modell: \texttt{google/gemini-2.0-flash-lite-001}, Temperatur~0{,}5, N\,=\,40 Paare, Saison~2025/26, Bundesliga und Champions League).
+Um den kausalen Beitrag der Stilreferenzen zu isolieren, wurden in einem gepaarten Ablationstest dieselben Events zweimal generiert: einmal mit den drei stilspezifischen Few-Shot-Referenzen aus der Datenbank, einmal ohne. Alle übrigen Parameter blieben konstant (Modell: \texttt{google/gemini-2.0-flash-lite-001}, Temperatur~0{,}5, N\,=\,40 Paare, Saison~2025/26, Bundesliga und Champions League).
 
 {\def\LTcaptype{none}
 \begin{longtable}[]{@{}lrrrrrrrr@{}}
@@ -143,9 +145,9 @@ kritisch   & 3{,}85 & 3{,}54 & 3{,}46 & 3{,}62 & 3{,}46 & 3{,}69 & 3{,}46 & 3{,}
 
 \emph{K\,=\,Korrektheit, T\,=\,Tonalität, V\,=\,Vollständigkeit (je 1--5). Gepaartes Design: gleiche Events, N\,=\,40 Paare. Bewerter: Claude Sonnet~4.5.}
 
-Few-Shot-Referenzen verbessern die Gesamtqualität um $\Delta$\,=\,+0{,}16. Der Effekt ist stilabhängig: Beim \texttt{euphorisch}-Profil steigt die Tonalität um +0{,}85 — der stärkste Einzeleffekt des Experiments. Beim \texttt{neutral}-Profil verbessert sich ebenfalls die Tonalität (+0{,}42), während die Vollständigkeit leicht zurückgeht ($-$0{,}43). Beim \texttt{kritisch}-Profil kehrt sich der Tonalitätseffekt um ($-$0{,}15): Die euphorisch geprägten Referenztexte ziehen das analytisch-bewertende Stilprofil in eine unpassende Richtung. Die Korrektheit verbessert sich mit Few-Shot bei allen drei Profilen (+0{,}22 bis +0{,}39), da die Referenzen vereinsspezifische Formatkonventionen vermitteln, die das Modell ohne Beispiele nicht zuverlässig reproduziert.
+Few-Shot-Referenzen verbessern die Gesamtqualität um $\Delta$\,=\,+0{,}16. Der Effekt ist stilabhängig: Beim \texttt{euphorisch}-Profil steigt die Tonalität um +0{,}85 — der stärkste Einzeleffekt des Experiments. Beim \texttt{neutral}-Profil verbessert sich ebenfalls die Tonalität (+0{,}42), während die Vollständigkeit leicht zurückgeht ($-$0{,}43). Beim \texttt{kritisch}-Profil kehrt sich der Tonalitätseffekt um ($-$0{,}15): Die euphorisch geprägten Referenztexte ziehen das analytisch-bewertende Stilprofil in eine unpassende Richtung. Die Korrektheit verbessert sich mit Few-Shot bei allen drei Profilen (+0{,}22 bis +0{,}39).
 
-Die absoluten Gesamtwerte dieser Ablation liegen durchgehend unter denen der Hauptevaluation (Abschnitt~\ref{erweiterte-evaluation}). Der Eventpool umfasst auch Champions-League-Auswärtsspiele, in denen Eintracht Frankfurt Gegentore kassiert. \texttt{euphorisch}-Texte zu Gegentoren erzielen aus Eintracht-Fan-Perspektive erwartungsgemäß niedrige Tonalitätswerte; dieser Effekt drückt den \texttt{euphorisch}-Gesamtwert der Ablation (Ø~2{,}92) gegenüber der Hauptevaluation (Ø~4{,}11). Der gepaartem Charakter des Designs stellt jedoch sicher, dass der gemessene Ablationseffekt ($\Delta$ Tonalität +0{,}85) intern valide bleibt.
+Die absoluten Gesamtwerte dieser Ablation liegen durchgehend unter denen der Hauptevaluation (Abschnitt~\ref{erweiterte-evaluation}). Der Eventpool umfasst auch Champions-League-Auswärtsspiele, in denen Eintracht Frankfurt Gegentore kassiert. \texttt{euphorisch}-Texte zu Gegentoren erzielen aus Eintracht-Fan-Perspektive niedrige Tonalitätswerte. Dieser Effekt drückt den \texttt{euphorisch}-Gesamtwert der Ablation (Ø~2{,}92) gegenüber der Hauptevaluation (Ø~4{,}11). Die Einordnung des Ablationseffekts findet sich in Abschnitt~\ref{stilreferenzen}.
 
 
 \subsection{Temperaturvergleich}\label{temperaturvergleich}
@@ -168,7 +170,7 @@ $T\,=\,0{,}7$ & 4{,}05 & 3{,}95 & 4{,}00 & 4{,}00 & 4{,}29 & 3{,}24 & 4{,}56 \\
 
 \emph{K\,=\,Korrektheit, T\,=\,Tonalität, V\,=\,Vollständigkeit (je 1--5). N\,=\,20 je Temperatur. Letzte drei Spalten: Gesamtwert Ø nach Stilprofil.}
 
-$T\,=\,0{,}7$ erzielt den höchsten Gesamtwert (Ø~4{,}00), $T\,=\,0{,}5$ den niedrigsten (Ø~3{,}58). Das Ergebnis ist stilabhängig: Für \texttt{neutral} und \texttt{kritisch} schneidet $T\,=\,0{,}7$ am besten ab (4{,}29 bzw.\ 4{,}56); für \texttt{euphorisch} liefert $T\,=\,0{,}3$ den höchsten Wert (3{,}52), da niedrigere Varianz bei emotionalen Stilen weniger Abweichung vom Stilprofil produziert. Die Ergebnisse legen nahe, dass eine stilspezifische Temperaturkonfiguration — statt eines einheitlichen Werts — die Gesamtqualität weiter verbessern könnte. Die Implikationen für die Produktionskonfiguration werden in Abschnitt~\ref{temperatur-context} diskutiert.
+$T\,=\,0{,}7$ erzielt den höchsten Gesamtwert (Ø~4{,}00), $T\,=\,0{,}5$ den niedrigsten (Ø~3{,}58). Das Ergebnis ist stilabhängig: Für \texttt{neutral} und \texttt{kritisch} schneidet $T\,=\,0{,}7$ am besten ab (4{,}29 bzw.\ 4{,}56). Für \texttt{euphorisch} liefert $T\,=\,0{,}3$ den höchsten Wert (3{,}52). Die Implikationen für die Produktionskonfiguration werden in Abschnitt~\ref{temperatur-context} diskutiert.
 
 
 \subsection{Mehrsprachige Qualitätsevaluation}\label{mehrsprachige-verifikation}
@@ -195,7 +197,9 @@ kritisch   & 3{,}46 & 3{,}23 & 3{,}31 & 3{,}33 & 4{,}00 & 4{,}08 & 4{,}23 & 4{,}
 
 \emph{K\,=\,Korrektheit, T\,=\,Tonalität, V\,=\,Vollständigkeit (je 1--5). N\,=\,38 Paare. DE: $T\,=\,0{,}5$, mit Few-Shot. ES: $T\,=\,0{,}1$, ohne Few-Shot. Bewerter: Claude Sonnet~4.5.}
 
-Die spanischen Ausgaben erzielen einen höheren Gesamtwert als die deutschen (Ø~3{,}96 vs.\ 3{,}70). Beim \texttt{kritisch}-Profil ist der Unterschied besonders ausgeprägt ($\Delta\,=\,-0{,}77$, ES deutlich besser): Die spanische Generierung erfolgt ohne euphorisch geprägte Few-Shot-Referenzen, die im deutschen \texttt{kritisch}-Prompt die Tonalität beeinträchtigen — ein Befund, der die Few-Shot-Ablation (Abschnitt~\ref{few-shot-ablation}) sprachübergreifend bestätigt. Bei \texttt{neutral} und \texttt{euphorisch} sind die Werte weitgehend vergleichbar ($|\Delta| \leq 0{,}08$). Die Ergebnisse belegen, dass die Prompt-Parametrisierung eine qualitativ stabile mehrsprachige Generierung ermöglicht.
+Die spanischen Ausgaben erzielen einen höheren Gesamtwert als die deutschen (Ø~3{,}96 vs.\ 3{,}70). Beim \texttt{kritisch}-Profil ist der Unterschied besonders ausgeprägt ($\Delta\,=\,-0{,}77$, ES deutlich besser). Bei \texttt{neutral} und \texttt{euphorisch} sind die Werte weitgehend vergleichbar ($|\Delta| \leq 0{,}08$). Die Einordnung dieser Befunde im Zusammenhang mit der Few-Shot-Architektur findet sich in Abschnitt~\ref{stilreferenzen}.
+
+Das Laufzeitverhalten des Systems wird im folgenden Abschnitt anhand von Latenzmessungen und einem Modellvergleich analysiert.
 
 
 \section{Performance und Laufzeitverhalten}\label{performance-und-laufzeitverhalten}\label{llm-latenz}
@@ -204,7 +208,7 @@ Dieses Kapitel vergleicht die Generierungslatenz und Textqualität der drei eval
 
 \subsection{Modellvergleich}\label{modellvergleich-latenz}\label{systemlatenz}
 
-Je N\,=\,10 sequenzielle Aufrufe wurden direkt gegen die OpenRouter-API gesendet -- mit identischem Prompt (Tor-Event, neutraler Stil, Deutsch, Few-Shot-Referenzen). Diese Messung erfasst die reine LLM-Latenz ohne Backend-Overhead.
+Je N\,=\,10 sequenzielle Aufrufe wurden direkt gegen die OpenRouter-API gesendet, mit identischem Prompt (Tor-Event, neutraler Stil, Deutsch, Few-Shot-Referenzen). Diese Messung erfasst die reine LLM-Latenz ohne Backend-Overhead.
 
 {\footnotesize\def\LTcaptype{none}
 \begin{longtable}[]{@{}
@@ -227,9 +231,9 @@ Modell & N & Median (ms) & P95 (ms) & Std.\ (ms) \\
 
 \emph{Direktmessung via OpenRouter (kein Backend-Overhead). Identischer Prompt je Aufruf. Fehlerrate: 0\,\% bei allen drei Modellen.}
 
-Gemini~2.5~Flash erzielt mit 591\,ms Median die kürzeste Generierungslatenz -- 1,9-fach schneller als GPT-4.1-mini und 2,8-fach schneller als Claude~Haiku~4.5. Claude~Haiku~4.5 weist mit einer Standardabweichung von 177\,ms das konstanteste Antwortverhalten auf. GPT-4.1-mini zeigt mit 521\,ms die höchste Streuung.
+Gemini~2.5~Flash erzielt mit 591\,ms Median die kürzeste Generierungslatenz und ist damit 1{,}9-fach schneller als GPT-4.1-mini und 2{,}8-fach schneller als Claude~Haiku~4.5. Claude~Haiku~4.5 weist mit einer Standardabweichung von 177\,ms das konstanteste Antwortverhalten auf. GPT-4.1-mini zeigt mit 521\,ms die höchste Streuung.
 
-Ergänzend zur Latenz wurde die Textqualität der drei Modelle mit dem LLM-as-Judge-Verfahren bewertet (Bewerter: \texttt{claude-sonnet-4-5}). Dazu wurden N\,=\,10 abgeschlossene Bundesliga- und Champions-League-Spiele mit je drei Stilprofilen generiert (30 Einträge je Modell). Ereignisse mit einer durchschnittlichen Korrektheitsbewertung unter 3{,}5 wurden ausgeschlossen.
+Ergänzend zur Latenz wurde die Textqualität der drei Modelle mit dem LLM-as-Judge-Verfahren bewertet (vgl. Abschnitt~\ref{erweiterte-evaluation}; Bewerter: \texttt{claude-sonnet-4-5}). Dazu wurden N\,=\,10 abgeschlossene Bundesliga- und Champions-League-Spiele mit je drei Stilprofilen generiert (30 Einträge je Modell). Ereignisse, deren durchschnittliche Korrektheitsbewertung unter 3{,}5 lag, schloss die Auswertung aus.
 
 {\footnotesize\def\LTcaptype{none}
 \begin{longtable}[]{@{}
@@ -253,7 +257,7 @@ Modell & N & Korrektheit & Tonalität & Vollständigkeit & Gesamt \\
 
 \emph{LLM-as-Judge (claude-sonnet-4-5 via OpenRouter). N\,=\,30 je Modell (10 Events $\times$ 3 Stile). Skala 1--5.}
 
-GPT-4.1-mini erzielt die höchste Gesamtqualität (Ø~4{,}48), insbesondere bei Tonalität (4{,}73). Claude~Haiku~4.5 zeigt die stärkste Vollständigkeit (4{,}57) bei konsistentem Gesamtniveau (Ø~4{,}41). Gemini~2.5~Flash liegt qualitativ zurück (Ø~4{,}20), ist jedoch mit 591\,ms Median das mit Abstand schnellste Modell. Der Modellvergleich offenbart damit einen Speed-Quality-Trade-off: Geschwindigkeit und Textqualität korrelieren invers -- das schnellste Modell (Gemini~2.5~Flash) erzielt die niedrigste Gesamtqualität (Ø~4{,}20), während GPT-4.1-mini bei mittlerer Latenz die stärkste Tonalität (4{,}73) und Gesamtqualität (Ø~4{,}48) erreicht.
+GPT-4.1-mini erzielt die höchste Gesamtqualität (Ø~4{,}48), insbesondere bei Tonalität (4{,}73). Claude~Haiku~4.5 zeigt die stärkste Vollständigkeit (4{,}57) bei konsistentem Gesamtniveau (Ø~4{,}41). Gemini~2.5~Flash liegt qualitativ zurück (Ø~4{,}20), ist jedoch mit 591\,ms Median das mit Abstand schnellste Modell. Der Modellvergleich offenbart damit einen Speed-Quality-Trade-off: Geschwindigkeit und Textqualität korrelieren invers. Das schnellste Modell (Gemini~2.5~Flash) erzielt die niedrigste Gesamtqualität (Ø~4{,}20). GPT-4.1-mini erreicht bei mittlerer Latenz die stärkste Tonalität (4{,}73) und Gesamtqualität (Ø~4{,}48).
 
 \subsection{TTP-Abschätzung}\label{ttp-abschaetzung}
 
@@ -359,7 +363,7 @@ A1 & Schichtenbasierte Systemarchitektur mit klar getrennten Verantwortlichkeite
 A2 & Repository-Pattern & 13 Repository-Klassen \\
 A3 & 71 API-Endpunkte unter \texttt{/api/v1} & 13 Router-Dateien; 95 API-Integrationstests \\
 A4 & 17 ORM-Modelle / 18 Datenbanktabellen & 100\,\% Model-Coverage \\
-A5 & White-Label-Fähigkeit & \texttt{src/config/whitelabel.ts} (Frontend-Branding), \texttt{DEFAULT\_TICKER\_INSTANCE} in \texttt{constants.py} (Backend-Instanz), instanzspezifische Few-Shot-Filterung über \texttt{style\_references} (vgl. Abschnitt~\ref{white-label-konfiguration-impl}) \\
+A5 & White-Label-Fähigkeit & \texttt{src/config/whitelabel.ts} (Frontend-Branding), \texttt{DEFAULT\_TICKER\_INSTANCE} in \texttt{constants.py} (Backend-Instanz), instanzspezifische Few-Shot-Filterung über \texttt{style\_references} (vgl. Abschnitt~\ref{prompt-design-stilkonditionierung}) \\
 \end{longtable}
 }
 
