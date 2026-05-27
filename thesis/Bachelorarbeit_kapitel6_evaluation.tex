@@ -177,7 +177,7 @@ $T\,=\,0{,}7$ erzielt den höchsten Gesamtwert (Ø~4{,}00), $T\,=\,0{,}5$ den ni
 
 Zur Verifikation von F7 (Mehrsprachige Textgenerierung) wurden zunächst 21 Einträge eines Pokalspiels (FV Engers~07 vs.\ Eintracht Frankfurt) mit dem Sprachparameter \texttt{es} (Spanisch) generiert und funktional verifiziert. Alle 21 Aufrufe lieferten Status \texttt{ok}; sprachspezifische Ausdruckskonventionen wurden korrekt adaptiert (\texttt{TOOOOR!} $\to$ \texttt{GOOOOL!}, Minutenformat \texttt{Minuto~44:}).
 
-Ergänzend wurde eine qualitative LLM-as-Judge-Evaluation durchgeführt: N\,=\,38 Paare aus Bundesliga- und Champions-League-Spielen der Saison~2025/26 wurden parallel auf Deutsch ($T\,=\,0{,}5$, mit Few-Shot) und Spanisch ($T\,=\,0{,}1$) generiert und von \texttt{claude-sonnet-4-5} nach denselben Dimensionen bewertet.
+Ergänzend wurde eine qualitative LLM-as-Judge-Evaluation durchgeführt: N\,=\,38 Paare aus Bundesliga- und Champions-League-Spielen der Saison~2025/26 wurden parallel auf Deutsch ($T\,=\,0{,}5$, mit Few-Shot) und Spanisch ($T\,=\,0{,}1$, ohne Few-Shot) generiert und von \texttt{claude-sonnet-4-5} nach denselben Dimensionen bewertet.
 
 {\def\LTcaptype{none}
 \begin{longtable}[]{@{}lrrrrrrrr@{}}
@@ -197,7 +197,27 @@ kritisch   & 3{,}46 & 3{,}23 & 3{,}31 & 3{,}33 & 4{,}00 & 4{,}08 & 4{,}23 & 4{,}
 
 \emph{K\,=\,Korrektheit, T\,=\,Tonalität, V\,=\,Vollständigkeit (je 1--5). N\,=\,38 Paare. DE: $T\,=\,0{,}5$, mit Few-Shot. ES: $T\,=\,0{,}1$, ohne Few-Shot. Bewerter: Claude Sonnet~4.5.}
 
-Die spanischen Ausgaben erzielen einen höheren Gesamtwert als die deutschen (Ø~3{,}96 vs.\ 3{,}70). Beim \texttt{kritisch}-Profil ist der Unterschied besonders ausgeprägt ($\Delta\,=\,-0{,}77$, ES deutlich besser). Bei \texttt{neutral} und \texttt{euphorisch} sind die Werte weitgehend vergleichbar ($|\Delta| \leq 0{,}08$). Die Einordnung dieser Befunde im Zusammenhang mit der Few-Shot-Architektur findet sich in Abschnitt~\ref{stilreferenzen}.
+Die spanischen Ausgaben erzielen einen höheren Gesamtwert als die deutschen (Ø~3{,}96 vs.\ 3{,}70). Beim \texttt{kritisch}-Profil ist der Unterschied besonders ausgeprägt ($\Delta\,=\,0{,}77$, ES deutlich besser). Bei \texttt{neutral} und \texttt{euphorisch} sind die Werte weitgehend vergleichbar ($|\Delta| \leq 0{,}08$). Da dieser Vergleich Temperatur ($T\,=\,0{,}5$ vs.\ $T\,=\,0{,}1$) und Few-Shot-Einsatz konfundiert, wurde ein kontrollierter Vergleich unter identischen Bedingungen durchgeführt (T\,=\,0{,}5, kein Few-Shot für beide Sprachen, N\,=\,19 Paare, Bundesliga und Champions League, Saison~2025/26).
+
+{\def\LTcaptype{none}
+\begin{longtable}[]{@{}lrrrrrrrr@{}}
+\toprule\noalign{}
+Stil & \multicolumn{4}{c}{Deutsch} & \multicolumn{4}{c}{Spanisch} \\
+     & K & T & V & Ø & K & T & V & Ø \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+neutral    & 3{,}83 & 4{,}50 & 4{,}00 & 4{,}11 & 4{,}50 & 4{,}67 & 4{,}67 & 4{,}61 \\
+euphorisch & 3{,}57 & 2{,}86 & 3{,}86 & 3{,}43 & 4{,}14 & 4{,}57 & 3{,}86 & 4{,}19 \\
+kritisch   & 4{,}33 & 3{,}83 & 3{,}67 & 3{,}94 & 4{,}00 & 3{,}83 & 4{,}33 & 4{,}05 \\
+\textbf{Gesamt} & \textbf{3{,}89} & \textbf{3{,}68} & \textbf{3{,}84} & \textbf{3{,}81} & \textbf{4{,}21} & \textbf{4{,}37} & \textbf{4{,}26} & \textbf{4{,}28} \\
+\end{longtable}
+}
+
+\emph{K\,=\,Korrektheit, T\,=\,Tonalität, V\,=\,Vollständigkeit (je 1--5). N\,=\,19 Paare. DE und ES: $T\,=\,0{,}5$, kein Few-Shot. Bewerter: Claude Sonnet~4.5.}
+
+Unter kontrollierten Bedingungen kollabiert der \texttt{kritisch}-Vorteil der spanischen Ausgaben von $\Delta\,=\,0{,}77$ auf $\Delta\,=\,0{,}11$. Der Gesamtvorsprung (Ø~4{,}28 vs.\ 3{,}81) verbleibt auch ohne Konfound, getragen von \texttt{neutral} ($\Delta\,=\,0{,}50$) und \texttt{euphorisch} ($\Delta\,=\,0{,}76$). Die Einordnung beider Befunde findet sich in Abschnitt~\ref{stilreferenzen}.
 
 Das Laufzeitverhalten des Systems wird im folgenden Abschnitt anhand von Latenzmessungen und einem Modellvergleich analysiert.
 
