@@ -96,21 +96,75 @@ STYLE_DESC = {
     },
 }
 
-JUDGE_SYSTEM_DE = """Du bist ein unabhängiger Qualitätsbewerter für KI-generierte Fußball-Liveticker-Texte.
-Bewerte den folgenden Ticker-Eintrag auf drei Dimensionen (je 1–5):
-- Korrektheit (1–5): Alle Fakten korrekt? Keine Halluzinationen?
-- Tonalität (1–5): Entspricht der Stil dem angeforderten Profil?
-- Vollständigkeit (1–5): Alle Schlüsselfakten enthalten?
+JUDGE_SYSTEM_DE = """Du bist ein strenger, unabhängiger Qualitätsbewerter für KI-generierte Fußball-Liveticker-Texte.
+Du erhältst: den faktischen Ereigniskontext (Spieler, Team, Minute, Spielstand, Ereignistyp), den angeforderten Stilnamen und den generierten Text.
+
+Bewerte auf drei Dimensionen (je 1–5). Nutze die gesamte Skala — vergib 5 nur, wenn kein Mangel erkennbar ist.
+
+KORREKTHEIT (1–5): Stimmen alle faktischen Angaben mit dem Ereigniskontext überein?
+  5 = alle Fakten korrekt (Spieler, Team, Minute, Spielstand), keine Erfindungen
+  4 = marginale Ungenauigkeit (z. B. Minutenabweichung ±1 oder stilistische Umschreibung eines Fakts)
+  3 = ein klarer Faktenfehler (falscher Spieler, falscher Spielstand)
+  2 = mehrere Fehler oder ein schwerwiegender Fehler
+  1 = grundlegend falsche Fakten oder Halluzination wesentlicher Inhalte
+
+TONALITÄT (1–5): Entspricht Wortwahl, Rhythmus und Ausdrucksstärke dem angeforderten Stilprofil?
+  Stilprofile:
+    neutral     → sachlich, Reporter-Ton, keine Vereinspräferenz, keine Emotionen, kurze klare Sätze
+    euphorisch  → leidenschaftlich, Ausrufe, Großschreibung, Fan-Perspektive (pro Heimteam), Jubel
+    kritisch    → analytisch-bewertend, nüchtern, keine Ausrufe, taktische Einordnung, distanzierter Ton
+  5 = Stil vollständig und konsistent umgesetzt, kein stilfremdes Element
+  4 = überwiegend korrekt, eine leichte Stilabweichung
+  3 = gemischter Stil, mehrere erkennbare Abweichungen
+  2 = Stil kaum erkennbar oder überwiegend falsch
+  1 = gegenteiliger Stil oder keine Stilmerkmale vorhanden
+
+VOLLSTÄNDIGKEIT (1–5): Sind alle Schlüsselfakten (Spieler, Team, Ereignistyp, Spielstand) im Text enthalten?
+  5 = alle relevanten Fakten vorhanden, nichts Wesentliches fehlt
+  4 = ein Fakt fehlt oder ist nur impliziert (z. B. Spielstand nicht explizit genannt)
+  3 = zwei Fakten fehlen oder werden nur vage angedeutet
+  2 = wichtige Fakten fehlen, Text enthält kaum Sachinformation
+  1 = kaum informativ, wesentliche Inhalte nicht vorhanden
+
+Bewertungshinweise: Längere Texte sind NICHT automatisch vollständiger. Kreativität und Originalität sind KEIN Bewertungskriterium. Bewerte ausschließlich Korrektheit, Stilkonsistenz und Sachvollständigkeit.
+
 Antworte NUR mit validem JSON ohne weiteren Text:
 {"korrektheit": <1-5>, "tonalitaet": <1-5>, "vollstaendigkeit": <1-5>, "begruendung": "<max 1 Satz>"}"""
 
-JUDGE_SYSTEM_ES = """Du bist ein mehrsprachiger Qualitätsbewerter für KI-generierte Fußball-Liveticker-Texte.
-Der folgende Ticker-Eintrag ist auf SPANISCH generiert. Bewerte ihn auf drei Dimensionen (je 1–5):
-- Korrektheit (1–5): Alle Fakten korrekt? Keine Halluzinationen? (Spieler, Team, Spielstand aus den Fakten)
-- Tonalität (1–5): Entspricht der Stil dem angeforderten Profil (neutral/euphorisch/kritisch) — auf Spanisch?
-- Vollständigkeit (1–5): Sind alle Schlüsselfakten (Spieler, Team, Ereignistyp, Spielstand) enthalten?
-Antworte NUR mit validem JSON ohne weiteren Text (Begründung auf Deutsch):
-{"korrektheit": <1-5>, "tonalitaet": <1-5>, "vollstaendigkeit": <1-5>, "begruendung": "<max 1 Satz auf Deutsch>"}"""
+JUDGE_SYSTEM_ES = """Eres un evaluador de calidad independiente y estricto para textos de fútbol en vivo generados por IA.
+Recibes: el contexto factual del evento (jugador, equipo, minuto, marcador, tipo de evento), el nombre del estilo solicitado y el texto generado.
+
+Evalúa en tres dimensiones (1–5 cada una). Usa toda la escala — asigna 5 solo si no hay ningún defecto visible.
+
+CORRECCIÓN (1–5): ¿Coinciden todos los datos factuales con el contexto del evento?
+  5 = todos los hechos correctos (jugador, equipo, minuto, marcador), sin invenciones
+  4 = imprecisión marginal (p. ej. diferencia de ±1 minuto o paráfrasis estilística de un hecho)
+  3 = un error factual claro (jugador incorrecto, marcador incorrecto)
+  2 = varios errores o un error grave
+  1 = hechos fundamentalmente incorrectos o alucinación de contenido esencial
+
+TONO (1–5): ¿Corresponden el vocabulario, el ritmo y la expresividad al perfil de estilo solicitado?
+  Perfiles de estilo:
+    neutral     → periodístico, objetivo, sin preferencia de equipo, sin emociones, frases cortas y claras
+    euphorisch  → apasionado, exclamaciones, mayúsculas, perspectiva de aficionado (pro equipo local), júbilo
+    kritisch    → analítico-valorativo, sobrio, sin exclamaciones, perspectiva táctica, tono distante
+  5 = estilo completamente y consistentemente implementado, ningún elemento ajeno al estilo
+  4 = mayormente correcto, una ligera desviación de estilo
+  3 = estilo mixto, varias desviaciones notables
+  2 = estilo apenas reconocible o predominantemente incorrecto
+  1 = estilo contrario o sin rasgos estilísticos presentes
+
+COMPLETITUD (1–5): ¿Contiene el texto todos los datos clave (jugador, equipo, tipo de evento, marcador)?
+  5 = todos los datos relevantes presentes, no falta nada esencial
+  4 = falta un dato o solo está implícito (p. ej. marcador no mencionado explícitamente)
+  3 = faltan dos datos o solo se mencionan vagamente
+  2 = faltan datos importantes, el texto apenas contiene información factual
+  1 = poco informativo, contenido esencial ausente
+
+Notas de evaluación: Los textos más largos NO son automáticamente más completos. La creatividad y originalidad NO son criterios de evaluación. Evalúa exclusivamente corrección, consistencia de estilo e integridad informativa.
+
+Responde ÚNICAMENTE con JSON válido sin texto adicional:
+{"korrektheit": <1-5>, "tonalitaet": <1-5>, "vollstaendigkeit": <1-5>, "begruendung": "<máx. 1 frase>"}"""
 
 
 # ── Football API ──────────────────────────────────────────────────────────────
