@@ -10,7 +10,7 @@ Die Evaluation der KI-Textgenerierung bewertet, inwiefern das System journalisti
 
 \subsection{Stilvergleich}\label{einfluss-der-stilprofile}
 
-Für einen kontrollierten Vergleich wurde dasselbe Event in allen drei Stilen generiert. Als Kontext diente ein Tor von Omar Marmoush in der 78.~Minute (Eintracht Frankfurt vs.~FC Bayern München), womit Stilunterschiede nicht durch unterschiedliche Ereignistypen verfälscht werden.
+Die drei Stilprofile (\texttt{neutral}, \texttt{euphorisch}, \texttt{kritisch}) erzeugen für dasselbe Ereignis klar unterscheidbare Texte. Als qualitatives Illustrationsbeispiel dienen drei reale Ausgaben für ein Tor von C.~Uzun in der 2.~Minute (Borussia Dortmund vs.\ Eintracht Frankfurt, 0:1, Vorlage Dahoud), generiert mit Few-Shot-Referenzen ($T\,=\,0{,}5$, \texttt{google/gemini-2.0-flash-lite-001}). Die Texte stammen aus dem Datensatz der Few-Shot-Ablation (vgl.\ Abschnitt~\ref{few-shot-ablation}).
 
 {\def\LTcaptype{none} % do not increment counter
 \begin{longtable}[]{@{}
@@ -26,22 +26,17 @@ Generierter Text
 \endhead
 \bottomrule\noalign{}
 \endlastfoot
-euphorisch & „78. Minute: MARMOOOSH! Der Ball zappelt im Netz!
-Unglaublich! Die Hütte explodiert! Was für ein Strahl! Eintracht führt!
-TOOOOR!'' \\
-neutral & „78. Minute: TOOOOR! Omar Marmoush bringt Eintracht Frankfurt
-in Führung!'' \\
-kritisch & „78. Minute: TOOOOR! Marmoush mit dem Ausgleich für die
-Eintracht! Die Bayern-Abwehr pennt. Frankfurt nutzt die Chance
-eiskalt.'' \\
+neutral    & „Früh klingelt es im Dortmunder Kasten. Uzun bringt Frankfurt in Führung. Dahoud mit der Vorlage. 0:1.'' \\
+euphorisch & „TOOOOR! Uzun! Was ein Start! Dahoud mit dem Traumpass! Die Kiste brennt! 0:1!'' \\
+kritisch   & „Uzun. 0:1. Dahoud mit der Vorlage. Dortmunds Abwehr unsortiert. Frankfurt eiskalt.'' \\
 \end{longtable}
 }
 
-Die Profile unterscheiden sich klar: \texttt{euphorisch} arbeitet mit Wiederholung, Großschreibung und emotionalen Ausrufen. \texttt{neutral} bleibt faktisch und knapp. \texttt{kritisch} liefert eine Einschätzung statt reiner Beschreibung. Alle drei Ausgaben sind faktenbasiert und genrekonform.
+\texttt{neutral} beschreibt das Ereignis sachlich und vollständig (LLM-as-Judge: K/T/V\,=\,5/5/5). \texttt{euphorisch} setzt auf Ausrufe, Großschreibung und emotionale Verkürzung (T\,=\,5). \texttt{kritisch} benennt nüchtern Ergebnis, Vorlage und taktische Einschätzung ohne Jubel (T\,=\,4). Die quantitative Bewertung aller drei Profile folgt in den Abschnitten~\ref{qualitative-analyse-der-generierten-texte} und~\ref{erweiterte-evaluation}.
 
 \subsection{Fehleranalyse}\label{qualitative-analyse-der-generierten-texte}
 
-40 KI-generierte Ticker-Einträge aus 15 Bundesliga-Spielen der Saison~2024/25 wurden manuell nach \textbf{Korrektheit}, \textbf{Tonalität} und \textbf{Vollständigkeit} bewertet (Skala 1--5; Bewerter: Entwickler). Der Gesamtdurchschnitt liegt bei 4{,}3 (Korrektheit Ø~4{,}6, Tonalität Ø~4{,}1, Vollständigkeit Ø~4{,}3). Die Analyse identifizierte folgende Fehlerklassen:
+40 KI-generierte Ticker-Einträge aus 15 Bundesliga-Spielen der Saison~2025/26 wurden manuell nach \textbf{Korrektheit}, \textbf{Tonalität} und \textbf{Vollständigkeit} bewertet (Skala 1--5; Bewerter: Entwickler). Der Gesamtdurchschnitt liegt bei 4{,}3 (Korrektheit Ø~4{,}6, Tonalität Ø~4{,}1, Vollständigkeit Ø~4{,}3). Die Analyse identifizierte folgende Fehlerklassen:
 
 {\footnotesize\def\LTcaptype{none} % do not increment counter
 \begin{longtable}[]{@{}
