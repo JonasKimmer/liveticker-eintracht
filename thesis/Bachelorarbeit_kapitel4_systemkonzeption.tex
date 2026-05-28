@@ -128,7 +128,7 @@ Das Backend setzt auf ein hybrides Nebenläufigkeitsmodell. Die Service-Schicht 
 
 Stammdaten-Operationen folgen dem direkten Muster Router \(\rightarrow\) Repository. KI-Generierungsabläufe durchlaufen die Service-Schicht: Router \(\rightarrow\) TickerService \(\rightarrow\) Repository + LLMService. Die Schnittstelle ist als versionierte REST-API ausgelegt (vgl. Fielding 2000, Kap.~5). Leseoperationen bleiben seiteneffektfrei; KI-Generierung und Datenimport erfolgen über dedizierte Triggerendpunkte. Die vollständige Endpunktstruktur ist in Abschnitt~\ref{api-router-endpunktstruktur} dokumentiert.
 
-Zwei Robustheitsprinzipien durchziehen das Backend. Triggerendpunkte sind idempotent ausgelegt: Wiederholte n8n-Aufrufe erzeugen keine Duplikate. Ticker-Einträge werden nicht physisch gelöscht, sondern erhalten den Soft-Delete-Status, sodass abgelehnte Einträge für spätere Qualitätsauswertungen erhalten bleiben.
+Triggerendpunkte sind idempotent ausgelegt: Wiederholte n8n-Aufrufe erzeugen keine Duplikate.
 
 
 
@@ -139,11 +139,11 @@ Die Backend-Qualitätssicherung gliedert sich in drei Testebenen. Reine Unit-Tes
 
 \section{Datenbankkonzeption}\label{datenbankkonzeption}
 
-Die Persistenzschicht basiert auf PostgreSQL, da die Domänendaten eine stark relationale Struktur mit referenzieller Integrität und ACID-konformen Zustandsübergängen erfordern (vgl. Abschnitt~\ref{backend-framework-und-persistenzschicht}). PostgreSQL bietet zudem native JSONB-Unterstützung und upsertfähige Konfliktbehandlung. Als ORM kommt SQLAlchemy im synchronen Betriebsmodus zum Einsatz. Die folgenden Abschnitte beschreiben die Schemadesign-Prinzipien (Abschnitt~\ref{schemadesign-prinzipien}) und die Migrationsstrategie (Abschnitt~\ref{migrationsstrategie}).
+Die Persistenzschicht basiert auf PostgreSQL, da die Domänendaten eine stark relationale Struktur mit referenzieller Integrität und ACID-konformen Zustandsübergängen erfordern (vgl. Abschnitt~\ref{backend-framework-und-persistenzschicht}). PostgreSQL bietet zudem native JSONB-Unterstützung und upsertfähige Konfliktbehandlung. Als ORM kommt SQLAlchemy im synchronen Betriebsmodus zum Einsatz. Die folgenden Abschnitte beschreiben das Datenmodell (Abschnitt~\ref{schemadesign-prinzipien}), die Persistenzstrategie (Abschnitt~\ref{persistenzstrategie}) und die Migrationsstrategie (Abschnitt~\ref{migrationsstrategie}).
 
-\subsection{Schemadesign-Prinzipien}\label{schemadesign-prinzipien}
+\subsection{Datenmodell}\label{schemadesign-prinzipien}
 
-Das Schema folgt einem hybriden Entwurfsansatz aus strukturierter Normalisierung und gezielter Schemaflexibilität. Abbildung~\ref{fig:er-diagramm} zeigt die zentralen Entitäten und ihre Beziehungen. Das Diagramm zeigt die FK-verbundenen Kerntabellen; \texttt{media\_queue}, \texttt{style\_references} und \texttt{settings} sind aus Übersichtlichkeitsgründen nicht dargestellt.
+Das Schema folgt einem hybriden Entwurfsansatz aus strukturierter Normalisierung und gezielter Schemaflexibilität. Abbildung~\ref{fig:er-diagramm} zeigt die zentralen Entitäten und ihre Beziehungen. Hilfs- und Konfigurationstabellen sind aus Übersichtlichkeitsgründen nicht dargestellt.
 
 \begin{figure}[H]
   \centering
@@ -152,23 +152,25 @@ Das Schema folgt einem hybriden Entwurfsansatz aus strukturierter Normalisierung
   \label{fig:er-diagramm}
 \end{figure}
 
-Die zentralen Domänenobjekte (\texttt{teams}, \texttt{matches}, \texttt{events}, \texttt{ticker\_entries}, \texttt{players}, \texttt{competitions}) sind normalisiert modelliert, um Redundanzen zu minimieren sowie Integrität und Auswertbarkeit im Live-Betrieb stabil zu halten. Statistiktabellen sind über explizite Spalten modelliert, um konsistente Abfragen und robuste Aggregationen zu ermöglichen.
+\paragraph{Normalisierung.} Die zentralen Domänenobjekte sind normalisiert modelliert, um Redundanzen zu minimieren sowie Integrität und Auswertbarkeit im Live-Betrieb stabil zu halten. Statistiktabellen verwenden explizite Spalten für konsistente Abfragen und robuste Aggregationen.
 
-Die zentralen Stammdaten-Entitäten (Matches, Teams, Wettbewerbe, Spielzeiten) führen drei Schlüsselfelder: einen numerischen Primärschlüssel für performante Datenbankjoins, einen numerischen Fremdbezeichner der Football-API für idempotentes Upsert-Matching bei Reimports sowie eine UUID als stabilen Referenzschlüssel für externe API-Konsumenten. Diese Trennung entkoppelt interne Datenbankidentität, Datenquellen-Matching und externe Exposition voneinander.
+\paragraph{Schlüsselstrategie.} Stammdaten-Entitäten führen drei Schlüsselfelder: einen internen Primärschlüssel für performante Joins, einen externen Bezeichner der Football-API für idempotentes Upsert-Matching bei Reimports sowie eine UUID als stabilen Referenzschlüssel für externe API-Konsumenten. Diese Trennung entkoppelt interne Datenbankidentität, Datenquellen-Matching und externe Exposition voneinander.
 
-Die FK-Bindungen folgen zwei differenzierten Löschstrategien. Ereignisse, Synthetic Events, Lineups, Match-Statistiken und Ticker-Einträge tragen \texttt{ondelete="CASCADE"}: Ihre Existenz ist ohne das übergeordnete Spiel bedeutungslos, daher entfernt das Löschen eines Spiels alle zugehörigen Daten konsistent. Match selbst trägt gegenüber Season, Competition und Teams \texttt{SET NULL}-Bindungen: Wird eine Saison oder ein Wettbewerb gelöscht, bleibt der historische Spieldatensatz erhalten und verliert lediglich seinen Kontextbezug.
+\paragraph{Referenzielle Integrität.} Die Fremdschlüssel-Bindungen folgen zwei Löschstrategien. Abhängige Entitäten wie Events, Lineups und Ticker-Einträge werden bei Spiellöschung kaskadierend entfernt, da ihre Existenz ohne das übergeordnete Spiel bedeutungslos ist. Übergeordnete Kontextentitäten wie Saisons und Wettbewerbe erhalten Null-Bindungen, sodass historische Spieldatensätze beim Löschen eines Wettbewerbs erhalten bleiben. Zusammengesetzte Unique Constraints sichern zusätzlich referenzielle Eindeutigkeit auf Datenbankebene und bilden die Grundlage des Idempotenz-Prinzips (vgl. Abschnitt~\ref{n8n-designprinzipien}).
 
-Zusammengesetzte Unique Constraints sichern referenzielle Eindeutigkeit auf Datenbankebene: \texttt{CompetitionTeam} erlaubt jede Kombination aus Saison, Wettbewerb und Team nur einmal; \texttt{MatchStatistic} und \texttt{PlayerStatistic} erzwingen jeweils genau einen Eintrag pro Spiel und Mannschaft bzw. Spieler. Diese Constraints bilden die datenbanknahe Grundlage des Idempotenz-Prinzips aus Abschnitt~\ref{n8n-designprinzipien}.
+\paragraph{JSONB.} JSONB wird für zwei Kategorien eingesetzt: mehrsprachige Anzeigefelder mit variablen Sprachschlüsseln sowie externe Strukturen mit variablem Schema, die nicht sinnvoll normalisiert werden können. Damit bleibt JSONB auf begründete Ausnahmen beschränkt, während der Großteil des Schemas typisiert und abfrageoptimiert bleibt.
 
-JSONB wird für zwei Kategorien von Feldern eingesetzt: mehrsprachige Anzeigefelder mit variablen Sprachschlüsseln (z.\,B. \texttt{localized\_title} in Matches und Wettbewerben) sowie externe Strukturen mit variablem Schema, die nicht sinnvoll normalisiert werden können (z.\,B. Trikotdaten, Broadcast-Arrays und dynamische Kontextstrukturen in \texttt{synthetic\_events}). Damit bleibt JSONB auf begründete Ausnahmen beschränkt, während der Großteil des Schemas typisiert und abfrageoptimiert bleibt.
+\subsection{Persistenzstrategie}\label{persistenzstrategie}
 
-Sowohl Stammdaten- als auch Ereignisentitäten werden bei wiederholtem Import idempotent per Upsert nach ihrer jeweiligen externen Kennung geschrieben. Stammdaten werden dabei inhaltlich aktualisiert; Ereignisentitäten bilden den unveränderlichen historischen Spielverlauf ab, sodass Upserts bei bereits persistierten Events keine inhaltliche Änderung bewirken. Die konkreten Implementierungsdetails sind in Abschnitt~\ref{datenmodelle-datenbankschema-und-api-validierung} dokumentiert.
+Die Datenpersistenz folgt zwei Schreibpfaden. Ticker-Generierung, Statusübergänge und manuelle Eingaben durchlaufen den ORM-Layer des Backends mit typsicherer Validierung und Transaktionskontrolle. Datenimporte über n8n schreiben dagegen direkt per SQL in die Datenbank, um HTTP-Overhead zu vermeiden und Upsert-Operationen nah an der Datenbankebene auszuführen.
+
+Alle Importoperationen sind idempotent ausgelegt. Stammdaten und Ereignisdaten werden per Upsert nach ihrer externen Football-API-Kennung geschrieben und bei wiederholtem Import inhaltlich aktualisiert, sodass kein Reimport Duplikate erzeugt.
+
+Physische Löschungen sind im System bewusst minimiert. Ticker-Einträge erhalten bei Entfernung einen Soft-Delete-Status und verbleiben in der Datenbank, sodass der Datenbestand für nachträgliche Qualitätsauswertungen vollständig erhalten bleibt (vgl. Abschnitt~\ref{status-lifecycle-und-betriebsmodi}).
 
 \subsection{Migrationsstrategie}\label{migrationsstrategie}
 
-Schemaänderungen werden über \textbf{Alembic} versioniert, das als SQLAlchemy-natives Migrationswerkzeug ORM-Modell und Datenbankschema konsistent hält. Als SQLAlchemy-natives Migrationswerkzeug stellt Alembic sicher, dass ORM-Modell und Datenbankschema dieselbe Modellierungsgrundlage teilen und konsistent versioniert bleiben. Jede Schemaänderung wird als versionierte, rückrollbare Migrationsdatei abgelegt; neue Instanzen und Deployment-Umgebungen erreichen so ohne manuelle Eingriffe den aktuellen Schemastand.
-
-Das persistierte Datenmodell bildet die Grundlage für die darüberliegende Workflow-Schicht, die alle Datenimporte und Generierungsprozesse orchestriert.
+Schemaänderungen werden über \textbf{Alembic} versioniert. Als SQLAlchemy-natives Migrationswerkzeug stellt Alembic sicher, dass ORM-Modell und Datenbankschema konsistent versioniert bleiben. Jede Schemaänderung wird als rückrollbare Migrationsdatei abgelegt, sodass neue Instanzen ohne manuelle Eingriffe den aktuellen Schemastand erreichen.
 
 \section{Workflow-Konzeption (n8n)}\label{workflow-konzeption-n8n}
 
