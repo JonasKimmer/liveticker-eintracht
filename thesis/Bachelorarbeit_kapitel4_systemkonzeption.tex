@@ -34,15 +34,17 @@ Abbildung~\ref{fig:systemarchitektur} zeigt die drei Schichten mit ihren Technol
 \subsection{Kommunikations- und
 Triggerarchitektur}\label{kommunikations--und-triggerarchitektur}
 
-Das System koppelt über drei Schnittstellentypen: \textbf{REST-API} für alle Lese- und Schreiboperationen (Ticker-CRUD, Statusübergänge, manuelle Eingaben), \textbf{n8n-Webhooks} für Stammdaten-Import, Match-Kontext und KI-Generierung sowie einen \textbf{WebSocket-Kanal} für latenzkritische Medieninhalte. Je nach Datenquelle und Betriebskontext unterscheidet die Triggerarchitektur mehrere Muster:
+Frontend und n8n-Workflows kommunizieren mit dem Backend über HTTP-Endpunkte. Die Triggerarchitektur folgt je nach Datenquelle und Betriebskontext unterschiedlichen Mustern:
 
 \textbf{Match-Load:} Der Redakteur navigiert über Land, Team, Wettbewerb und Spieltag zur Spielauswahl, wobei jede Navigationsebene einen n8n-Webhook auslöst, der die zugehörigen Stammdaten von der Football-API abruft und in der Datenbank speichert. Das Frontend liest die Daten anschließend über die REST-API aus der Datenbank aus.
 
-\textbf{Initialdaten:} Nach der Spielauswahl gilt für Aufstellungen, Events und Match-Statistiken das Prinzip \textbf{Read first, trigger if missing}: Das Frontend liest zunächst den aktuellen Datenbankstand über die REST-API; sind die Daten leer, löst es den zugehörigen n8n-Import-Webhook aus. Das Muster greift unabhängig vom Spielstatus, sodass auch abgeschlossene Spiele beim ersten Öffnen vollständig nachgeladen werden. Prematch-Daten und Spieler-Statistiken werden davon abweichend bei jeder Matchauswahl neu importiert, da sie sich bis zum Anpfiff ändern können.
+\textbf{Initialdaten:} Nach der Spielauswahl löst das Frontend die Import-Webhooks für Aufstellungen, Events und Match-Statistiken aus. Ein n8n-Filterknoten stoppt die Verarbeitung, wenn keine neuen Daten vorliegen. Das Muster greift unabhängig vom Spielstatus, sodass auch abgeschlossene Spiele beim ersten Öffnen vollständig nachgeladen werden. Prematch-Daten folgen demselben Filterprinzip. Spieler-Statistiken werden dagegen bei jeder Matchauswahl neu abgerufen, da Kader und Verfügbarkeiten sich kurzfristig ändern können.
 
-\textbf{Catch-up:} Beim erstmaligen Öffnen eines Spiels in einer späteren Phase prüft das Frontend zusätzlich, ob Phasen-Drafts für bereits abgeschlossene Spielphasen vorhanden sind. Bei Fehlen löst es einen Catch-up-Endpunkt aus, der die fehlenden Entwürfe nachgeneriert. So findet ein Redakteur, der ein laufendes Spiel erst in der zweiten Halbzeit öffnet, alle Phasen-Drafts vor, ohne manuelle Eingriffe.
+\textbf{Catch-up:} Beim erstmaligen Öffnen eines Spiels in einer späteren Phase löst das Frontend einen Generierungsendpunkt aus, der prüft, ob Phasen-Drafts für bereits abgeschlossene Spielphasen vorliegen, und fehlende Entwürfe nachgeneriert. Ein Redakteur, der ein laufendes Spiel erst in der zweiten Halbzeit öffnet, findet damit alle Phasen-Drafts vor, ohne manuell eingreifen zu müssen.
 
 \textbf{Live-Betrieb:} Das Frontend triggert Events, Spielstatistiken, Spieler-Statistiken und Minutenupdates bedingungslos im 60-Sekunden-Takt. Die n8n-Workflows führen serverseitig Upserts mit Konfliktbehandlung durch, sodass Mehrfach-Trigger keine Duplikate erzeugen.
+
+\textbf{Medien-Push:} Über einen Importbutton im Mediapanel lädt der Redakteur Social-Media-Inhalte (X, Instagram, YouTube) und ScorePlay-Bilder on-demand per n8n-Webhook nach. ScorePlay sendet darüber hinaus neue Bilder per HTTP POST ans Backend, das sie per WebSocket unmittelbar ans Frontend pusht.
 
 \textbf{Interne Workflow-Ketten:} Einzelne n8n-Workflows lösen intern weitere Workflows aus. Der Minuten-Update-Workflow erkennt Spielphasenänderungen und triggert daraufhin den Anpfiff- bzw. Abpfiff-Workflow, der seinerseits die Halbzeit- oder Abpfiff-Zusammenfassung anstößt. Das Frontend ist an dieser Kette nicht beteiligt.
 
@@ -62,10 +64,11 @@ Datenquelle & Trigger-Muster & Latenz-Anforderung \\
 \bottomrule\noalign{}
 \endlastfoot
 Länder, Teams, Wettbewerbe, Spiele & n8n-Webhook (je Navigationsebene, einmalige Initialisierung) & Keine \\
-Aufstellungen, Events, Match-Statistiken & „Read first, trigger if missing" (beim Match-Öffnen) & Keine (nur bei leerem Datenbestand) \\
-Prematch-Daten, Spieler-Statistiken & Einmalig bei Matchauswahl (unabhängig vom Datenzustand) & $<$30~s (redaktionelle Vorbereitung) \\
+Aufstellungen, Events, Match-Statistiken & Webhook (beim Match-Öffnen); n8n-Filter stoppt wenn keine neuen Daten & Keine \\
+Prematch-Daten & Webhook (beim Match-Öffnen); n8n-Filter stoppt wenn keine neuen Daten & $<$30~s (redaktionelle Vorbereitung) \\
+Spieler-Statistiken & Webhook, bei jeder Matchauswahl neu abgerufen & $<$30~s (redaktionelle Vorbereitung) \\
 Live-Events, Spielstatistiken, Spieler-Statistiken, Minutenupdates & Periodisch, 60-Sekunden-Takt im Live-Betrieb & $<$60~s \\
-Medienupdates (ScorePlay) & HTTP POST an \texttt{/media/incoming}; Backend pusht per WebSocket ans Frontend & $<$1~s (Echtzeit) \\
+Medienupdates (ScorePlay) & HTTP POST ans Backend, das per WebSocket ans Frontend pusht & $<$1~s (Echtzeit) \\
 Social-Media-Embeds (Twitter, YouTube, Instagram) & n8n-Webhook (on-demand, redakteurgetriggert) & Keine \\
 \end{longtable}
 }
@@ -84,13 +87,12 @@ White-Label-Steuerung}\label{partner-team-konzept-und-white-label-steuerung}
 
 Das System unterscheidet zwischen Spielen des Partner-Teams und allen übrigen Spielen. Es erkennt das Partner-Team über ein konfigurierbares Keyword, das in n8n-Workflows und Frontend gegen den Teamnamen abgeglichen wird, unabhängig davon, ob der Verein Heim- oder Auswärtsteam ist. Spiele des Partner-Teams werden der vereinsspezifischen White-Label-Instanz zugeordnet und verwenden standardmäßig den euphorischen Stilmodus (vgl. Abschnitt~\ref{prompt-engineering-strategie}). Dabei werden vereinsspezifische UI-Bereiche eingeblendet, darunter Social-Media-Panels für YouTube, X und Instagram sowie die ScorePlay-Mediensuche für Bildmaterial.
 
-Alle übrigen Spiele durchlaufen die generische Instanz mit neutralem Stil. Für eine neue Instanz sind vier Konfigurationsbereiche anzupassen: \textbf{Frontend-Branding} (Farben, Logo und vereinsspezifische UI-Bereiche), \textbf{Backend-Instanzbezeichner} (interne Kennung für instanzspezifische Filterung und Evaluationsauswertung), \textbf{Few-Shot-Referenzen} (kuratierte Beispieltexte im Zielstil des Vereins) sowie \textbf{n8n-Team-Keyword} (Schlüsselwort zur automatischen Partner-Team-Erkennung in Workflow-Logik und Frontend). Die Implementierungsdetails sind in Kapitel~\ref{implementierung} dokumentiert.
-
+Alle übrigen Spiele durchlaufen die generische Instanz mit neutralem Stil. Für eine neue Instanz sind vier Konfigurationsbereiche anzupassen: \textbf{Frontend-Branding} (Farben, Logo und vereinsspezifische UI-Bereiche), \textbf{Backend-Instanzbezeichner} (interne Kennung für instanzspezifische Filterung und Evaluationsauswertung), \textbf{Few-Shot-Referenzen} (kuratierte Beispieltexte im Zielstil des Vereins) sowie \textbf{n8n-Team-Keyword} (Schlüsselwort zur automatischen Partner-Team-Erkennung in Workflow-Logik und Frontend). 
 
 
 \subsection{Status-Lifecycle und Betriebsmodi}\label{status-lifecycle-und-betriebsmodi}
 
-Jeder Ticker-Eintrag folgt einem Statusmodell mit vier möglichen Zuständen: \texttt{draft} (Entwurf), \texttt{published} (veröffentlicht), \texttt{rejected} (verworfen, terminal) und \texttt{deleted} (weich gelöscht, bleibt in der Datenbank erhalten). Abbildung~\ref{fig:zustandsautomat} zeigt diese Übergänge als Zustandsdiagramm.
+Jeder Ticker-Eintrag durchläuft ein Statusmodell mit vier Zuständen. Als \texttt{draft} gilt ein noch nicht veröffentlichter Entwurf, der entweder KI-generiert oder manuell erstellt wurde. \texttt{published} bezeichnet einen im Ticker sichtbaren Eintrag. Ein vom Redakteur abgelehnter Entwurf erhält den Status \texttt{rejected} und kehrt nicht in den Workflow zurück. \texttt{deleted} bezeichnet einen per Soft-Delete aus dem Feed entfernten Eintrag, dessen Datensatz in der Datenbank erhalten bleibt. Abbildung~\ref{fig:zustandsautomat} zeigt diese Übergänge.
 
 \begin{figure}[H]
 \centering
@@ -99,9 +101,11 @@ Jeder Ticker-Eintrag folgt einem Statusmodell mit vier möglichen Zuständen: \t
 \label{fig:zustandsautomat}
 \end{figure}
 
-Eine Rückstufung von \texttt{published} auf \texttt{draft} ist auf drei Wegen möglich. Unmittelbar nach jeder Publikation steht im \texttt{coop}- und \texttt{manual}-Modus eine zeitlich begrenzte Widerruf-Aktion zur Verfügung. Phasen- und Zusammenfassungs-Einträge lassen sich darüber hinaus jederzeit über einen einklappbaren Abschnitt im Redaktionspanel zurückziehen. Zusätzlich setzt ein Re-Trigger von Matchphasen-Workflows bestehende Phasen-Einträge automatisch auf \texttt{draft} zurück. In allen Fällen kehrt der Eintrag in die redaktionelle Warteschlange zurück und steht zur erneuten Prüfung bereit. Der Übergang \texttt{published} → \texttt{deleted} steht jederzeit zur Verfügung und führt zu einem Soft-Delete. Der Zustand \texttt{rejected} ist terminal und führt nicht zu einem physischen Datenbankdeletion. Abgelehnte Einträge verbleiben mit ihrem Status in der Datenbank, um die Reproduzierbarkeit späterer Qualitätsauswertungen zu gewährleisten. Das Feld \texttt{source} (\texttt{ai} vs.~\texttt{manual}) und das Feld \texttt{instance} (\texttt{ef\_whitelabel} / \texttt{generic}) ergänzen jeden Eintrag um Herkunfts- und Instanzattributierung, die für instanzspezifische Few-Shot-Filterung und reproduzierbare Evaluationsauswertungen genutzt wird.
+Ein publizierter Eintrag kann auf \texttt{draft} zurückgestuft werden. Unmittelbar nach der Publikation steht zeitlich begrenzt ein Widerruf-Button bereit. Darüber hinaus lassen sich alle publizierten Einträge jederzeit über das Redaktionspanel zurückziehen. In beiden Fällen kehrt der Eintrag in die redaktionelle Warteschlange zurück. Davon zu unterscheiden ist der Übergang \texttt{published} → \texttt{deleted}, der einen Eintrag per Soft-Delete aus dem sichtbaren Feed entfernt. Abgelehnte Entwürfe (\texttt{rejected}) werden nicht physisch gelöscht.
 
-Der konfigurierbare Spielmodus steuert das Verhalten der Generierungspipeline pro Spiel und ist zur Laufzeit umschaltbar. Im Modus \textbf{\texttt{auto}} (vollautomatisch) läuft die Triggerkette ohne redaktionellen Eingriff. KI-Ergebnisse werden direkt veröffentlicht. Für Robustheit sind zwei parallele Publikationspfade konzipiert: Der primäre Pfad verläuft über n8n, der sekundäre Pfad ist ein Frontend-seitiger Fallback, der neu eintreffende Entwürfe unmittelbar publiziert — etwa bei verzögerten n8n-Webhooks oder bei Modusumschaltung im Frontend ohne n8n-Neustart. Im Modus \textbf{\texttt{coop}} (kooperativ, Human-in-the-Loop) erzeugt die KI Entwürfe, über deren Freigabe oder Ablehnung die Redaktion entscheidet. Dieser Modus bildet das primäre Zielbild des Systems. Im Modus \textbf{\texttt{manual}} (rein redaktionell) werden Einträge ausschließlich manuell erstellt. Eingehende Events lösen nur die Datenpersistenz aus, nicht die LLM-Pipeline. Abbildung~\ref{fig:betriebsmodi} stellt alle drei Modi vergleichend gegenüber.
+Das Feld \texttt{source} (\texttt{ai} vs.\ \texttt{manual}) und das Feld \texttt{instance} (\texttt{ef\_whitelabel} / \texttt{generic}) ergänzen jeden Eintrag um Herkunfts- und Instanzattributierung für instanzspezifische Few-Shot-Filterung und Evaluationsauswertung.
+
+Der konfigurierbare Spielmodus steuert das Verhalten der Generierungspipeline und ist zur Laufzeit umschaltbar. Im Modus \textbf{\texttt{auto}} werden KI-Ergebnisse ohne redaktionellen Eingriff direkt veröffentlicht. Für Robustheit sind zwei parallele Publikationspfade konzipiert, wobei n8n den primären Pfad bildet und ein Frontend-seitiger Fallback neu eintreffende Entwürfe unmittelbar publiziert. Im Modus \textbf{\texttt{coop}} erzeugt die KI Entwürfe, die der Redakteur freigeben, ablehnen, bearbeiten, im Stil wechseln oder als Vorlage für einen eigenen Text verwenden kann. Im Modus \textbf{\texttt{manual}} werden Einträge ausschließlich manuell erstellt. Eingehende Events lösen nur die Datenpersistenz aus, nicht die LLM-Pipeline. Abbildung~\ref{fig:betriebsmodi} stellt alle drei Modi gegenüber.
 
 \begin{figure}[H]
 \centering
@@ -114,11 +118,7 @@ Der konfigurierbare Spielmodus steuert das Verhalten der Generierungspipeline pr
 
 \section{Backend-Konzeption}\label{backend-konzeption}
 
-Das \texttt{FastAPI}-Backend realisiert die Anwendungslogik des Systems. Die folgenden Abschnitte behandeln Framework-Wahl (Abschnitt~\ref{framework-wahl}), interne Schichtstruktur (Abschnitt~\ref{interne-schichtstruktur}) sowie das Qualitätssicherungskonzept (Abschnitt~\ref{qualitätssicherungskonzept}).
-
-\subsection{Framework-Wahl}\label{framework-wahl}
-
-Als Backend-Framework wurde \texttt{FastAPI} gewählt (vgl. Abschnitt~\ref{backend-framework-und-persistenzschicht}). Die native \texttt{asyncio}-Unterstützung ermöglicht parallele LLM- und API-Aufrufe ohne Thread-Blockierung. Die \texttt{Pydantic}-Integration sichert typisierte Schnittstellen zwischen Frontend, Backend und n8n und bildet die Grundlage der automatisch generierten OpenAPI-Dokumentation.
+Das Backend basiert auf \texttt{FastAPI}, dessen native \texttt{asyncio}-Unterstützung parallele LLM- und API-Aufrufe ohne Thread-Blockierung ermöglicht und dessen \texttt{Pydantic}-Integration typisierte Schnittstellen zwischen Frontend, Backend und n8n sichert (vgl. Abschnitt~\ref{backend-framework-und-persistenzschicht}). Die folgenden Abschnitte beschreiben die interne Schichtstruktur (Abschnitt~\ref{interne-schichtstruktur}) und das Qualitätssicherungskonzept (Abschnitt~\ref{qualitätssicherungskonzept}).
 
 \subsection{Interne Schichtstruktur}\label{interne-schichtstruktur}
 
@@ -139,11 +139,7 @@ Die Backend-Qualitätssicherung gliedert sich in drei Testebenen. Reine Unit-Tes
 
 \section{Datenbankkonzeption}\label{datenbankkonzeption}
 
-Die Persistenzschicht des Systems basiert auf PostgreSQL. Die folgenden Abschnitte begründen die Datenbankwahl (Abschnitt~\ref{datenbankwahl}), beschreiben die Schemadesign-Prinzipien (Abschnitt~\ref{schemadesign-prinzipien}) und erläutern die Migrationsstrategie (Abschnitt~\ref{migrationsstrategie}).
-
-\subsection{Datenbankwahl}\label{datenbankwahl}
-
-Als Datenbanksystem wurde PostgreSQL gewählt. Die Domänendaten weisen eine stark relationale Struktur auf: Die zentralen Entitäten sind durch Fremdschlüsselbeziehungen verbunden und erfordern referenzielle Integrität sowie ACID-konforme Zustandsübergänge, weshalb relationale Systeme gegenüber dokumentenorientierten Alternativen bevorzugt werden (vgl. Abschnitt~\ref{backend-framework-und-persistenzschicht}). PostgreSQL bietet darüber hinaus native JSONB-Unterstützung und upsertfähige Konfliktbehandlung, die für die Schemadesign-Entscheidungen in Abschnitt~\ref{schemadesign-prinzipien} genutzt werden. Als ORM kommt SQLAlchemy zum Einsatz; die Wahl des synchronen Betriebsmodus ist in Abschnitt~\ref{framework-wahl} begründet.
+Die Persistenzschicht basiert auf PostgreSQL, da die Domänendaten eine stark relationale Struktur mit referenzieller Integrität und ACID-konformen Zustandsübergängen erfordern (vgl. Abschnitt~\ref{backend-framework-und-persistenzschicht}). PostgreSQL bietet zudem native JSONB-Unterstützung und upsertfähige Konfliktbehandlung. Als ORM kommt SQLAlchemy im synchronen Betriebsmodus zum Einsatz. Die folgenden Abschnitte beschreiben die Schemadesign-Prinzipien (Abschnitt~\ref{schemadesign-prinzipien}) und die Migrationsstrategie (Abschnitt~\ref{migrationsstrategie}).
 
 \subsection{Schemadesign-Prinzipien}\label{schemadesign-prinzipien}
 
@@ -170,17 +166,13 @@ Sowohl Stammdaten- als auch Ereignisentitäten werden bei wiederholtem Import id
 
 \subsection{Migrationsstrategie}\label{migrationsstrategie}
 
-Schemaänderungen werden über \textbf{Alembic} versioniert, das als dediziertes Migrationswerkzeug für SQLAlchemy (vgl. Abschnitt~\ref{datenbankwahl}) konzipiert ist. Als SQLAlchemy-natives Migrationswerkzeug stellt Alembic sicher, dass ORM-Modell und Datenbankschema dieselbe Modellierungsgrundlage teilen und konsistent versioniert bleiben. Jede Schemaänderung wird als versionierte, rückrollbare Migrationsdatei abgelegt; neue Instanzen und Deployment-Umgebungen erreichen so ohne manuelle Eingriffe den aktuellen Schemastand.
+Schemaänderungen werden über \textbf{Alembic} versioniert, das als SQLAlchemy-natives Migrationswerkzeug ORM-Modell und Datenbankschema konsistent hält. Als SQLAlchemy-natives Migrationswerkzeug stellt Alembic sicher, dass ORM-Modell und Datenbankschema dieselbe Modellierungsgrundlage teilen und konsistent versioniert bleiben. Jede Schemaänderung wird als versionierte, rückrollbare Migrationsdatei abgelegt; neue Instanzen und Deployment-Umgebungen erreichen so ohne manuelle Eingriffe den aktuellen Schemastand.
 
 Das persistierte Datenmodell bildet die Grundlage für die darüberliegende Workflow-Schicht, die alle Datenimporte und Generierungsprozesse orchestriert.
 
 \section{Workflow-Konzeption (n8n)}\label{workflow-konzeption-n8n}
 
-n8n übernimmt als Orchestrierungsschicht alle Datenimport- und Generierungsprozesse. Abschnitt~\ref{n8n-technologiewahl} begründet die Technologiewahl, Abschnitt~\ref{n8n-designprinzipien} legt die übergreifenden Designprinzipien fest und Abschnitt~\ref{workflow-klassen} beschreibt die resultierenden Workflow-Klassen.
-
-\subsection{Technologiewahl}\label{n8n-technologiewahl}
-
-Gegenüber Batch-orientierten Alternativen wie Apache Airflow und Prefect, die prozedurale Python-Kenntnisse für jeden Workflow voraussetzen, ermöglicht n8n die grafische Komposition aus typisierten Knoten (vgl. Abschnitt~\ref{etl-prozesse-und-workflow-automatisierung}; Venkiteela 2025, S.~2--3). Native Postgres-Knoten und Code-Knoten für benutzerdefiniertes JavaScript decken den Bedarf an direktem Datenbankzugriff und Transformationslogik ab. Alle 17 realisierten Workflows verwenden Webhook-Trigger — ausgelöst vom Frontend-Polling-Takt, von anderen Workflows oder manuell — und lassen sich damit in einer einzigen n8n-Umgebung ohne zusätzliche Infrastruktur orchestrieren (vgl. Abschnitt~\ref{kommunikations--und-triggerarchitektur}).
+n8n übernimmt als Orchestrierungsschicht alle Datenimport- und Generierungsprozesse. Gegenüber Batch-orientierten Alternativen wie Apache Airflow ermöglicht n8n die grafische Komposition aus typisierten Knoten ohne prozedurale Python-Kenntnisse. Native Postgres- und JavaScript-Code-Knoten decken den Bedarf an direktem Datenbankzugriff und Transformationslogik ab (vgl. Abschnitt~\ref{etl-prozesse-und-workflow-automatisierung}; Venkiteela 2025, S.~2--3). Die folgenden Abschnitte legen die Designprinzipien fest (Abschnitt~\ref{n8n-designprinzipien}) und beschreiben die Workflow-Klassen (Abschnitt~\ref{workflow-klassen}).
 
 \subsection{Designprinzipien}\label{n8n-designprinzipien}
 
@@ -264,11 +256,7 @@ Mehrsprachigkeit ist als natives Merkmal der Pipeline konzipiert, nicht als nach
 
 \section{Frontend-Konzeption}\label{frontend-konzeption}
 
-Das React-Frontend ist auf mandantenfähigen White-Label-Betrieb ausgelegt. Die Konzeption gliedert sich in Framework-Wahl (Abschnitt~\ref{frontend-framework-wahl}), Architektur und Zustandsmanagement (Abschnitt~\ref{architekturprinzipien}), Layout und Moduslogik (Abschnitt~\ref{dreispalten-layout-und-redaktionsfluss}), UI-Design und visuelles Branding (Abschnitt~\ref{ui-design-branding}) sowie Teststrategie (Abschnitt~\ref{frontend-teststrategie}).
-
-\subsection{Framework-Wahl}\label{frontend-framework-wahl}
-
-React wurde gegenüber Vue und Svelte bevorzugt (vgl. Abschnitt~\ref{frontend-framework}). Das Hook-Modell ermöglicht die Auslagerung von Zustand, Seiteneffekten und Echtzeitkommunikation aus Komponenten in wiederverwendbare Custom Hooks und bildet damit die Grundlage der in Abschnitt~\ref{architekturprinzipien} beschriebenen Hook-Architektur.
+Das Frontend basiert auf React, dessen Hook-Modell die Auslagerung von Zustand, Seiteneffekten und Echtzeitkommunikation in wiederverwendbare Custom Hooks ermöglicht und damit die Grundlage der beschriebenen Hook-Architektur bildet (vgl. Abschnitt~\ref{frontend-framework}). Die Konzeption gliedert sich in Architektur und Zustandsmanagement (Abschnitt~\ref{architekturprinzipien}), Layout und Moduslogik (Abschnitt~\ref{dreispalten-layout-und-redaktionsfluss}), UI-Design und visuelles Branding (Abschnitt~\ref{ui-design-branding}) sowie Teststrategie (Abschnitt~\ref{frontend-teststrategie}).
 
 \subsection{Architektur und Zustandsmanagement}\label{architekturprinzipien}
 

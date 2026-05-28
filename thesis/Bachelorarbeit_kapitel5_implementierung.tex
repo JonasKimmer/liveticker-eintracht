@@ -486,7 +486,7 @@ Keyboard-Shortcuts steuern die Modusumschaltung auf zwei Ebenen: Die \texttt{Mod
 
 Im Auto-Modus existieren zwei parallele Automatisierungspfade: Der primäre Pfad verläuft über n8n, das \texttt{auto\_publish=True} an den Backend-Endpunkt übergibt, woraufhin der Eintrag direkt mit \texttt{status=published} angelegt wird. Der sekundäre Pfad ist \texttt{useAutoPublisher} im Frontend: Dieser Hook pollt die Draft-Queue und publiziert neu eintreffende Entwürfe unmittelbar (vgl. Abschnitt~\ref{status-lifecycle-und-betriebsmodi}).
 
-In der \texttt{ef\_whitelabel}-Instanz ergänzen vier Media-Panels die Draft-Queue: \texttt{MediaPickerPanel} zeigt Torjubel-Videos und Bilder des Torschützen, die per Doppelklick direkt als Ticker-Eintrag veröffentlicht werden können; YouTube-, Twitter/X- und Instagram-Panels folgen darunter.
+In der \texttt{ef\_whitelabel}-Instanz ergänzen vier Media-Panels die Draft-Queue: \texttt{MediaPickerPanel} zeigt Torjubel-Videos und Bilder des Torschützen, die per Doppelklick direkt als Ticker-Eintrag veröffentlicht werden können. Dabei wählt der Redakteur Spielphase (Prematch, Halbzeit, Nachspielzeit) oder gibt eine explizite Spielminute mit optionalem Freitext an. YouTube-, Twitter/X- und Instagram-Panels folgen darunter und laden Inhalte on-demand über einen Importbutton nach.
 
 \begin{figure}[H]
 \centering
