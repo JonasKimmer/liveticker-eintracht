@@ -627,42 +627,32 @@ Die Implementierung umfasst 439 automatisierte Tests in drei Schichten und setzt
 
 \subsection{Frontend-Tests (Jest + React Testing Library)}\label{impl-frontend-tests}
 
-187 Tests in 15 Dateien decken drei Kategorien ab. Hook-Tests nutzen \texttt{renderHook} mit gemockten API-Antworten, um Zustandsübergänge isoliert von der UI zu prüfen. Komponenten-Tests rendern mit React Testing Library und prüfen sichtbare Elemente sowie Interaktionsverhalten. \texttt{parseCommand} allein umfasst 45 Testfälle für alle Slash-Command-Varianten (vgl. Abschnitt~\ref{frontend-teststrategie}).
+Die 187 Tests in 15 Dateien gliedern sich in drei Kategorien. Hook-Tests nutzen \texttt{renderHook} mit gemockten API-Antworten, um Zustandsübergänge — etwa Polling-Intervallwechsel bei Phasenübergängen oder Modus-Umschaltungen — isoliert von der UI zu prüfen: Da Hooks keine eigene Renderebene haben, sind Seiteneffekte durch Framework-Rendering nicht reproduzierbar isolierbar. Komponenten-Tests mit React Testing Library verifizieren sichtbare Elemente und Interaktionsverhalten gegen den gerenderten DOM. Die Utility-Kategorie testet zustandslose Transformationsfunktionen; \texttt{parseCommand} umfasst allein 45 Testfälle, weil seine Ausgabe direkt die API-Payload der Slash-Command-Interaktion bestimmt (vgl. Abschnitt~\ref{slash-command-parser-parsecommand.ts}).
 
 {\small\def\LTcaptype{none}
-\begin{longtable}[]{@{}llr@{}}
+\begin{longtable}[]{@{}lrr@{}}
 \toprule\noalign{}
-Datei & Kategorie & Tests \\
+Kategorie & Dateien & Tests \\
 \midrule\noalign{}
 \endhead
 \bottomrule\noalign{}
 \endlastfoot
-\texttt{useClickOutside.test.ts} & Hook & 5 \\
-\texttt{useListKeyboard.test.tsx} & Hook & 9 \\
-\texttt{useMatchEvents.test.ts} & Hook & 6 \\
-\texttt{useMatchTicker.test.ts} & Hook & 5 \\
-\texttt{useLiveMinute.test.ts} & Hook & 10 \\
-\texttt{useRightPanelData.test.ts} & Hook & 10 \\
-\texttt{useSearchableDropdown.test.ts} & Hook & 10 \\
-\texttt{resolvePollingInterval.test.ts} & Utility & 6 \\
-\texttt{roundLabel.test.ts} & Utility & 16 \\
-\texttt{parseCommand.test.ts} & Utility (Parser) & 45 \\
-\texttt{ErrorBoundary.test.tsx} & Komponente & 4 \\
-\texttt{CommandPalette.test.ts} & Komponente & 7 \\
-\texttt{EntryEditor.test.tsx} & Komponente & 19 \\
-\texttt{PublishedEntry.test.tsx} & Komponente & 17 \\
-\texttt{RightPanelComponents.test.tsx} & Komponente & 18 \\
+Hook-Tests & 7 & 55 \\
+Utility-Tests (inkl. Parser) & 3 & 67 \\
+Komponenten-Tests & 5 & 65 \\
 \midrule\noalign{}
-\textbf{Gesamt} & & \textbf{187} \\
+\textbf{Gesamt} & \textbf{15} & \textbf{187} \\
 \end{longtable}
 }
 
-Die \texttt{type-coverage} beträgt \textbf{98{,}02\,\%} bei null Compilerfehlern (18\,665 von 19\,041 Ausdrücken explizit getypt).
+Ergänzend zur Laufzeit-Testabdeckung beträgt die statische Typenabdeckung (\texttt{type-coverage}) \textbf{98{,}02\,\%} bei null TypeScript-Compilerfehlern (18\,665 von 19\,041 Ausdrücken explizit getypt).
 
 
 \subsection{Backend-Tests (pytest)}\label{impl-backend-tests}
 
-246 Tests in 14 Dateien decken drei Testtypen ab (vgl. Abschnitt~\ref{qualitätssicherungskonzept}); 214 Testfunktionen werden durch \texttt{@pytest.mark.parametrize} auf 246 ausgeweitet (u.\,a. vier Zielsprachen im LLM-Service, mehrere Event-Typen im Ticker-Service). Repository-Integrationstests laufen gegen eine isolierte PostgreSQL-Testinstanz, die ein session-scoped Fixture zu Beginn zurücksetzt und jeden Test in einer eigenen, nicht committeten Session isoliert. Service-Unit-Tests prüfen Domänenfunktionen (\texttt{score\_at\_event}, \texttt{build\_match\_context}, \texttt{make\_ai\_entry}) ohne Datenbankabhängigkeit. Der LLM-Service wird mit \texttt{provider="mock"} instanziiert, um externe API-Aufrufe zu vermeiden. \texttt{evaluation\_metrics.py} stellt statistische Hilfsfunktionen (Cliff's Delta, Bootstrap-Konfidenzintervall, Cohen's Kappa) als Evaluationsinfrastruktur für Kapitel~\ref{evaluation} bereit.
+214 Testfunktionen in 14 Dateien decken drei Testtypen ab; \texttt{@pytest.mark.parametrize} weitet sie auf 246 Testfälle aus — unter anderem für vier Zielsprachen im LLM-Service und mehrere Event-Typen im Ticker-Service — um Kombinationen ohne Testduplikate abzudecken (vgl. Abschnitt~\ref{qualitätssicherungskonzept}).
+
+Repository-Integrationstests laufen gegen eine isolierte PostgreSQL-Testinstanz: Ein session-scoped Fixture setzt die Datenbank zu Beginn zurück, jeder Test läuft in einer eigenen nicht committeten Session, die nach dem Test automatisch zurückgerollt wird. Service-Unit-Tests prüfen Domänenfunktionen wie \texttt{score\_at\_event}, \texttt{build\_match\_context} und \texttt{make\_ai\_entry} ohne Datenbankabhängigkeit. Der LLM-Service wird dafür mit \texttt{provider="mock"} instanziiert, sodass keine externen API-Aufrufe entstehen. Das Modul \texttt{evaluation\_metrics.py} stellt statistische Hilfsfunktionen (Cliff's~Delta, Bootstrap-Konfidenzintervall, Cohen's~Kappa) bereit, die in Kapitel~\ref{evaluation} als Evaluationsinfrastruktur eingesetzt werden.
 
 {\small\def\LTcaptype{none}
 \begin{longtable}[]{@{}lr@{}}
@@ -688,7 +678,9 @@ Die niedrigere Coverage in API-Router (59\,\%) und Services (62\,\%) ist erwartb
 
 \subsection{End-to-End-Tests (Playwright)}\label{impl-e2e-tests}
 
-Sechs Smoke-Tests in \texttt{frontend/e2e/liveticker.spec.ts} validieren grundlegende Nutzerinteraktionen in Chromium (Desktop Chrome). Die Tests sind für den Betrieb ohne erreichbares Backend ausgelegt: Interaktive Elemente wie das Länder-Dropdown und das Keyboard-Shortcuts-Modal werden nur geprüft, wenn sie nach dem Laden sichtbar sind. Der JS-Fehler-Test filtert erwartete Fehlermeldungen (ResizeObserver-Kollisionen, Netzwerkfehler ohne Backend) explizit heraus, um falsch-negative Ergebnisse in CI zu vermeiden. Ein Viewport-Test bei 375\,×\,812\,px verifiziert die App-Initialisierung auf mobilen Bildschirmgrößen (N5).
+Sechs Smoke-Tests in \texttt{frontend/e2e/liveticker.spec.ts} validieren grundlegende Nutzerinteraktionen in Chromium (Desktop Chrome). Da die E2E-Testsuite ohne erreichbares Backend laufen muss, werden interaktive Elemente wie das Länder-Dropdown und das Keyboard-Shortcuts-Modal nur geprüft, wenn sie nach dem Laden im DOM sichtbar sind.
+
+Zwei Tests adressieren CI-spezifische Randbedingungen: Der JS-Fehler-Test filtert erwartete Meldungen (ResizeObserver-Kollisionen, Netzwerkfehler ohne Backend) explizit heraus, um falsch-negative Ergebnisse zu vermeiden. Ein Viewport-Test bei 375\,×\,812\,px verifiziert die App-Initialisierung auf mobilen Bildschirmgrößen (N5).
 
 
 \section{Deployment}\label{deployment}
