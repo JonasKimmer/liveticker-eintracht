@@ -1,6 +1,6 @@
 \chapter{Stand der Technik}\label{stand-der-technik}
 
-Dieses Kapitel arbeitet die technologischen Grundlagen auf, die das in Kapitel~\ref{motivation-und-anforderungen} beschriebene System erfordert. Es behandelt Large Language Models (Abschnitt~\ref{large-language-models}), Prompt Engineering (Abschnitt~\ref{prompt-engineering}), automatisierte Sportberichterstattung (Abschnitt~\ref{automatisierte-sportberichterstattung}), ETL-Workflows (Abschnitt~\ref{etl-prozesse-und-workflow-automatisierung}), Webanwendungs-Stack (Abschnitt~\ref{backend-frontend-und-deployment-technologien}) sowie eine Synthese der Technologieentscheidungen (Abschnitt~\ref{synthese-technologische-konsequenzen-fuxfcr-das-systemdesign}).
+Dieses Kapitel arbeitet die technologischen Grundlagen auf, die das in Kapitel~\ref{motivation-und-anforderungen} beschriebene System erfordert. Es behandelt Large Language Models (Abschnitt~\ref{large-language-models}), Prompt Engineering (Abschnitt~\ref{prompt-engineering}), automatisierte Sportberichterstattung (Abschnitt~\ref{automatisierte-sportberichterstattung}), ETL-Workflows (Abschnitt~\ref{etl-prozesse-und-workflow-automatisierung}) und den Webanwendungs-Stack (Abschnitt~\ref{backend-frontend-und-deployment-technologien}).
 
 \section{Large Language Models}\label{large-language-models}
 
@@ -98,33 +98,3 @@ Für Echtzeit-Anwendungen mit gleichzeitigen asynchronen Event-Quellen (Polling-
 
 \textbf{Platform-as-a-Service (PaaS)} abstrahiert die Infrastrukturverwaltung und ermöglicht Deployments direkt aus Git-Branches. Es setzt jedoch ein \textbf{Stateless-Design} voraus: Persistente Daten werden in externe Dienste ausgelagert, sodass zusätzliche Instanzen ohne Zustandskonsistenzprobleme gestartet werden können. Als Deployment-Einheit hat sich \textbf{Docker} als Standard etabliert (vgl. Merkel 2014): Container kapseln Anwendung und Laufzeitumgebung in einem reproduzierbaren Image, das plattformunabhängig lauffähig ist und von PaaS-Anbietern direkt aus einem Dockerfile bereitgestellt werden kann. PaaS-Anbieter unterscheiden sich dabei primär in Kostenmodell, Free-Tier-Umfang und nativer Docker-Unterstützung. Die konkrete Plattformwahl ist in Abschnitt~\ref{deployment-konzept} begründet.
 
-
-
-\section{Synthese der Technologieentscheidungen}\label{synthese-technologische-konsequenzen-fuxfcr-das-systemdesign}
-
-Die identifizierten Anforderungsdimensionen aus Kapitel~\ref{motivation-und-anforderungen} ziehen jeweils konkrete Technologieentscheidungen nach sich, die Tabelle~\ref{tab:technik-mapping} kompakt zusammenfasst.
-
-\begin{table}[h]
-\centering
-\caption{Mapping: Anforderungsdimension → Technologieentscheidung}
-\label{tab:technik-mapping}
-\begin{tabular}{p{3.5cm}p{9cm}}
-\toprule
-\textbf{Anforderungs\-dimension} & \textbf{Techno\-logie\-ent\-schei\-dung} \\
-\midrule
-Operativer Zeitdruck (Kap.~\ref{redaktioneller-aufwand-bei-livetickern}) & LLM-gestützte Textgenerierung + Few-Shot-Prompting (Abschnitte~\ref{large-language-models}--\ref{prompt-engineering}); hybrides NLG-Design mit menschlicher Kontrollinstanz (Kap.~\ref{automatisierte-sportberichterstattung}) \\
-\addlinespace
-Mehrsprachigkeit (Kap.~\ref{mehrsprachigkeit-als-herausforderung}) & Native LLM-Mehrsprachfähigkeit ohne proportionalen Personalaufwand (Kap.~\ref{large-language-models}) \\
-\addlinespace
-White-Label-Bedarf (Kap.~\ref{white-label-bedarf-im-profisport}) & Self-hostbare Workflow-Automatisierung (n8n) mit instanzspezifischer Konfigurationslogik auf DB- und Prompt-Ebene (Abschnitte~\ref{etl-prozesse-und-workflow-automatisierung}, \ref{backend-framework-und-persistenzschicht}) \\
-\addlinespace
-Echtzeit-Datenabruf & Polling/WebSocket je nach Latenzanforderung (Kap.~\ref{echtzeit-kommunikation-im-web}) \\
-\addlinespace
-Verknüpfte Spielentitäten & Relationale DB mit ACID-Garantien (Kap.~\ref{backend-framework-und-persistenzschicht}) \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-Die Literaturrecherche zeigt zugleich eine spezifische Forschungslücke: Bestehende Ansätze zur automatisierten Sportberichterstattung (Abschnitt~\ref{automatisierte-sportberichterstattung}) operieren entweder templatebasiert ohne adaptive Stilsteuerung (vgl.~Beils 2023, S.~207) oder vollständig autonom ohne redaktionelle Kontrollinstanz. Ein LLM-basiertes System, das konfigurierbares Few-Shot-Prompting, ein dreistufiges Human-in-the-Loop-Betriebsmodell und vereinsspezifische White-Label-Fähigkeit in einer produktionsreifen Architektur vereint, konnte in einer Recherche der einschlägigen Datenbanken (ACM Digital Library, Google Scholar, Springer Link; Suchbegriffe: \emph{automated sports reporting, LLM newsroom, live blog generation, NLG editorial system}) nicht identifiziert werden. Die vorliegende Arbeit adressiert diese Lücke.
-
-Diese technologischen Grundlagen münden in die Systemkonzeption (Kapitel~\ref{systemkonzeption}) und deren Implementierung (Kapitel~\ref{implementierung}).
