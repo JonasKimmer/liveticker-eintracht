@@ -31,7 +31,7 @@ Profisport}\label{white-label-bedarf-im-profisport}
 
 Vereine kommunizieren heute zunehmend direkt mit ihrer Anhängerschaft und haben eigene Redaktionen aufgebaut (vgl. Beils 2023, S.~155). Anders als überregionale Medien betrachten Vereinsticker die Partie aus der Perspektive der eigenen Fans (vgl. Canalp, zit. n. Beils 2023, S.~57), weshalb Ereignisse je nach Kanal unterschiedlich getönt sein müssen. Der Vereinskanal spricht emotionale Fanbindung an, während neutrale Plattformen sachliche Information priorisieren. Bei anhaltenden Rückständen oder schwachen Leistungen des eigenen Teams kann darüber hinaus ein kritisch-analysierender Stil angemessener sein als unkritische Euphorie. Da jeder Verein einen eigenen Kommunikationsstil pflegt, ist die stilistische Ausprägung vereinsindividuell und lässt sich nicht auf eine universelle Vorlage reduzieren.
 
-Diese Variabilität konsistent einzuhalten stellt Redaktionen vor eine eigenständige Herausforderung. Die in Abschnitt~\ref{redaktioneller-aufwand-bei-livetickern} beschriebene personelle Fluktuation verschärft dies zusätzlich, da Liveticker-Stellen häufig mit wechselndem Personal besetzt werden. Die Markenstimme muss systemseitig konfigurierbar sein.
+Diese Variabilität konsistent einzuhalten stellt Redaktionen vor eine eigenständige Herausforderung. Die in Abschnitt~\ref{redaktioneller-aufwand-bei-livetickern} beschriebene personelle Fluktuation verschärft dies zusätzlich. Die Markenstimme muss systemseitig konfigurierbar sein.
 
 Dieses Konsistenzproblem lässt sich durch \textbf{White-Label-Architekturen} technisch adressieren (vgl. Pohl et al.\ 2005, S.~12). Ein generisches Kernsystem wird so konzipiert, dass es für verschiedene Abnehmer individuell konfigurierbar ist, ohne den Quellcode zu ändern. Auf die Liveticker-Produktion übertragen bedeutet dies, dass eine einzige Codebasis für beliebige Vereine instanziierbar sein muss, ohne dass für jeden Verein eine separate Implementierung gepflegt wird. Datenquellen, Medieneinbindungen und Stilkonfiguration müssen dabei vollständig über Parameter steuerbar sein.
 
@@ -74,7 +74,7 @@ Die Systemanalyse zeigt sechs strukturelle Defizite, die den Handlungsbedarf fü
 \item \textbf{Systemkomplexität und Fehleranfälligkeit:} Das Backend besteht aus zahlreichen Sonderlösungen und ist entsprechend komplex. Für Redakteure, die das System nicht gut kennen, erhöht dies die Fehleranfälligkeit im laufenden Betrieb erheblich (vgl.\ Abschnitt~\ref{experteninterview-leitfaden}).
 \end{itemize}
 
-Diese Defizite spiegeln die drei in Abschnitt~\ref{problemstellung-und-zielsetzung} identifizierten Anforderungsdimensionen direkt wider: operativer Zeitdruck durch vollständig manuelle Produktion, fehlende Mehrsprachigkeit und eingeschränkte White-Label-Fähigkeit. Das in dieser Arbeit entwickelte System adressiert alle sechs Punkte, wie die Systemkonzeption (Kapitel~\ref{systemkonzeption}) und der Anforderungsabgleich (Abschnitt~\ref{anforderungsabgleich-soll-ist-vergleich}) im Detail zeigen.
+Diese Defizite spiegeln die drei in Abschnitt~\ref{problemstellung-und-zielsetzung} identifizierten Anforderungsdimensionen direkt wider: operativer Zeitdruck durch vollständig manuelle Produktion, fehlende Mehrsprachigkeit und eingeschränkte White-Label-Fähigkeit. Wie Kapitel~\ref{systemkonzeption} und Abschnitt~\ref{anforderungsabgleich-soll-ist-vergleich} zeigen, adressiert das entwickelte System alle sechs Defizite.
 
 
 
@@ -113,7 +113,7 @@ F7 & Mehrsprachige Textgenerierung (Deutsch, Englisch, Spanisch, Französisch) &
 F8 & Idempotenter Datenimport & Kap.~\ref{redaktioneller-aufwand-bei-livetickern} (Robustheit) \\
 F9 & Anbieterunabhängige LLM-Integration mit Ausfallsicherheit & Kap.~\ref{redaktioneller-aufwand-bei-livetickern} (Verfügbarkeit) \\
 F10 & Deduplizierung von Ticker-Einträgen & Kap.~\ref{redaktioneller-aufwand-bei-livetickern} (Korrektheit) \\
-F11 & Pre-Match-Kontextgenerierung (Verletzungen, H2H, etc.) & Kap.~\ref{redaktioneller-aufwand-bei-livetickern} (Elaboration) \\
+F11 & Pre-Match-Kontextgenerierung (Verletzungen, H2H-Daten, Spielortinformationen) & Kap.~\ref{redaktioneller-aufwand-bei-livetickern} (Elaboration) \\
 F12 & Live-Statistik-Updates & Kap.~\ref{redaktioneller-aufwand-bei-livetickern} (Echtzeit) \\
 F13 & Medienintegration (ScorePlay-Bildmaterial, Social-Media-Panels für YouTube, X, Instagram) & Kap.~\ref{ist-zustand-bestehendes-system} (Defizit: fehlende Medienintegration im Altsystem) \\
 \end{longtable}
