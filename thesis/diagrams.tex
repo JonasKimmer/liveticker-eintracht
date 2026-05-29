@@ -285,19 +285,20 @@
 \end{tikzpicture}%
 }
 
-%% ─── DIAGRAM 13: Qualitätsbewertung nach Stilprofil (pgfplots) ───────────
+%% ─── DIAGRAM 13: LLM-as-Judge – Qualitätsbewertung nach Stilprofil (pgfplots) ───────────
+%% Datenbasis: N=80, Kap6 §6.1.3 (neutral n=27, euphorisch n=27, kritisch n=26)
 \newcommand{\DiagramQualitaetStilprofil}{%
 \begin{tikzpicture}
 \begin{axis}[
-  ybar, bar width=0.45cm,
-  width=10cm, height=6.5cm,
-  ymin=1.5, ymax=5.4,
-  ytick={2.0,2.5,3.0,3.5,4.0,4.5,5.0},
+  ybar, bar width=0.42cm,
+  width=10.5cm, height=6.5cm,
+  ymin=2.5, ymax=5.4,
+  ytick={2.5,3.0,3.5,4.0,4.5,5.0},
   ylabel={Bewertung (1\,--\,5)},
-  symbolic x coords={euphorisch, neutral, kritisch},
+  symbolic x coords={neutral, euphorisch, kritisch},
   xtick=data,
-  xticklabels={euphorisch\\{\scriptsize (n\,=\,27)},
-               neutral\\{\scriptsize (n\,=\,27)},
+  xticklabels={neutral\\{\scriptsize (n\,=\,27)},
+               euphorisch\\{\scriptsize (n\,=\,27)},
                kritisch\\{\scriptsize (n\,=\,26)}},
   xticklabel style={align=center},
   legend style={at={(0.5,1.03)}, anchor=south, legend columns=3,
@@ -309,15 +310,15 @@
   every axis/.append style={font=\small},
 ]
 \addplot+[fill=blue!40, draw=blue!70] coordinates {
-  (euphorisch,3.22) (neutral,4.81) (kritisch,4.35)
+  (neutral,4.56) (euphorisch,3.85) (kritisch,4.35)
 };
 \addplot+[fill=red!40, draw=red!70] coordinates {
-  (euphorisch,2.93) (neutral,4.81) (kritisch,4.04)
+  (neutral,4.93) (euphorisch,4.41) (kritisch,3.50)
 };
 \addplot+[fill=green!40, draw=green!70] coordinates {
-  (euphorisch,3.67) (neutral,4.81) (kritisch,4.58)
+  (neutral,4.78) (euphorisch,4.07) (kritisch,3.62)
 };
-\legend{Korrektheit, Tonalit\"at, Verst\"andlichkeit}
+\legend{Korrektheit, Tonalit\"at, Vollst\"andigkeit}
 \end{axis}
 \end{tikzpicture}%
 }

@@ -1,6 +1,6 @@
 \chapter{Evaluation}\label{evaluation}
 
-Dieses Kapitel evaluiert das in Kapitel~\ref{systemkonzeption} konzipierte und in Kapitel~\ref{implementierung} realisierte System empirisch und liefert damit die Grundlage zur Beantwortung der Forschungsfrage (vgl. Abschnitt~\ref{forschungsfrage}). Es gliedert sich in die Evaluation der KI-Textgenerierung (Abschnitt~\ref{evaluation-der-ki-textgenerierung}), Performance und Laufzeitverhalten (Abschnitt~\ref{performance-und-laufzeitverhalten}), das Latenzpotenzial der Betriebsmodi (Abschnitt~\ref{ttp-abschaetzung}) sowie den Anforderungsabgleich als Soll-Ist-Vergleich (Abschnitt~\ref{anforderungsabgleich-soll-ist-vergleich}).
+Dieses Kapitel evaluiert das in Kapitel~\ref{systemkonzeption} konzipierte und in Kapitel~\ref{implementierung} realisierte System empirisch und liefert damit die Grundlage zur Beantwortung der Forschungsfrage (vgl. Abschnitt~\ref{forschungsfrage}). Es gliedert sich in die Evaluation der KI-Textgenerierung (Abschnitt~\ref{evaluation-der-ki-textgenerierung}), Performance und Laufzeitverhalten (Abschnitt~\ref{performance-und-laufzeitverhalten}) sowie den Anforderungsabgleich als Soll-Ist-Vergleich (Abschnitt~\ref{anforderungsabgleich-soll-ist-vergleich}).
 
 
 \section{Evaluation der
@@ -33,7 +33,7 @@ kritisch   & „Uzun. 0:1. Dahoud mit der Vorlage. Dortmunds Abwehr unsortiert. 
 }
 
 \texttt{neutral} beschreibt das Ereignis sachlich und vollständig (LLM-as-Judge: K/T/V\,=\,5/5/5). \texttt{euphorisch} setzt auf Ausrufe, Großschreibung und emotionale Verkürzung (T\,=\,5). \texttt{kritisch} benennt nüchtern Ergebnis, Vorlage und taktische Einschätzung ohne Jubel (T\,=\,4).
-\subsection{Fehleranalyse}\label{qualitative-analyse-der-generierten-texte}
+\subsection{Manuelle Fehleranalyse}\label{qualitative-analyse-der-generierten-texte}
 
 40 KI-generierte Ticker-Einträge aus 15 Bundesliga-Spielen der Saison~2025/26 wurden manuell nach \textbf{Korrektheit}, \textbf{Tonalität} und \textbf{Vollständigkeit} bewertet (Skala 1--5; Bewerter: Entwickler). Der Gesamtdurchschnitt liegt bei 4{,}3 (Korrektheit Ø~4{,}6, Tonalität Ø~4{,}1, Vollständigkeit Ø~4{,}3). Die Analyse identifizierte folgende Fehlerklassen:
 
@@ -81,14 +81,14 @@ Liveticker-Kürze & Nicht aufgetreten \\
 „81. Minute: WAS IST DENN HIER LOS?! Collins mit der butterweichen Flanke! DOAN! Der Ball ist drin! TOOOOR! 1:0! Die Hütte bebt!'' \emph{(R. Doan, Eintracht Frankfurt vs.~FSV Mainz 05, Vorlage Collins)}
 \end{quote}
 
-Die häufigste Fehlerklasse ist Stil-Inkonsistenz beim neutralen Profil (8/40, 20\,\%). Fakten-Halluzinationen traten mit 5\,\% selten auf. Als Gegengewicht blieben zwei Fehlerklassen vollständig aus: Team-Verwechslung (0\,\%) und Überlänge (0\,\%) traten in keinem der 40 bewerteten Einträge auf -- das System ordnete Tore konsistent dem richtigen Team zu und hielt die genretypische Textlänge zuverlässig ein.
+Die häufigste Fehlerklasse ist Stil-Inkonsistenz beim neutralen Profil (8/40, 20\,\%). Fakten-Halluzinationen traten mit 5\,\% selten auf. Als Gegengewicht blieben zwei Fehlerklassen vollständig aus: Team-Verwechslung (0\,\%) und Überlänge (0\,\%) traten in keinem der 40 bewerteten Einträge auf.
 
 Um diese manuellen Befunde über eine größere Stichprobe automatisiert abzusichern, wurde ergänzend ein LLM-as-Judge-Verfahren eingesetzt.
 
 
 \subsection{LLM-as-Judge-Evaluation}\label{erweiterte-evaluation}
 
-Beim \textbf{LLM-as-Judge-Verfahren} (Zheng et al.~2023) übernimmt ein vom generierenden Modell verschiedenes Sprachmodell die Rolle des Bewerters: Es beurteilt KI-generierte Ausgaben automatisiert entlang definierter Qualitätsdimensionen. Korrelationsstudien zeigen eine moderate Übereinstimmung mit menschlichen Urteilen bei deutlich geringerem Annotationsaufwand (vgl. Zheng et al.~2023, S.~8).
+Das LLM-as-Judge-Verfahren ist in Abschnitt~\ref{automatisierte-sportberichterstattung} grundlegend beschrieben. Im vorliegenden Evaluationsdesign bewertet \texttt{claude-sonnet-4-5} als unabhängiger Judge die Ausgaben des Generierungsmodells \texttt{google/gemini-2.0-flash-lite-001} entlang der drei Qualitätsdimensionen.
 
 N\,=\,80 Einträge aus 30 Bundesliga-Spielen der Saison~2025/26 wurden automatisiert von \texttt{claude-sonnet-4-5} nach denselben Dimensionen bewertet wie in Abschnitt~\ref{qualitative-analyse-der-generierten-texte} (Korrektheit, Tonalität, Vollständigkeit, je 1--5); als Generierungsmodell diente \texttt{google/gemini-2.0-flash-lite-001}. Der Bewertungsprompt operationalisiert jede Dimension durch explizite Ankerskalen und stilspezifische Definitionen. Ausschnitt aus dem Systemprompt:
 
@@ -127,11 +127,18 @@ euphorisch  & 27 & 3{,}85 & 4{,}41 & 4{,}07 & 4{,}11 \\
 
 \emph{K = Korrektheit, T = Tonalität, V = Vollständigkeit (je 1--5). Bewerter: Claude Sonnet~4.5 via OpenRouter. Datenbasis: Football API~v3, Bundesliga Saison 2025/26.}
 
+\begin{figure}[H]
+\centering
+\DiagramQualitaetStilprofil
+\caption{LLM-as-Judge-Ergebnisse nach Stilprofil: Korrektheit, Tonalität und Vollständigkeit (je 1--5, N\,=\,80)}
+\label{fig:llm-judge-stilprofil}
+\end{figure}
+
 Das neutrale Stilprofil erzielt den höchsten Gesamtwert (4{,}76) mit besonders starker Tonalität (4{,}93). Das kritische Profil weist die niedrigsten Werte bei Tonalität (3{,}50) und Vollständigkeit (3{,}62) auf. Das euphorische Profil liegt mit Ø~4{,}11 im Mittelfeld, weist jedoch mit K~3{,}85 den niedrigsten Korrektheitswert über alle drei Profile auf.
 
-\subsection{Few-Shot-Ablation}\label{few-shot-ablation}
+\subsection{Few-Shot-Ablationsstudie}\label{few-shot-ablation}
 
-Um den kausalen Beitrag der Stilreferenzen zu isolieren, wurden in einem gepaarten Ablationstest dieselben Events zweimal generiert: einmal mit den drei stilspezifischen Few-Shot-Referenzen aus der Datenbank, einmal ohne. Alle übrigen Parameter blieben konstant (Modell: \texttt{google/gemini-2.0-flash-lite-001}, Temperatur~0{,}5, N\,=\,40 Paare, Saison~2025/26, Bundesliga und Champions League).
+Um den kausalen Beitrag der Stilreferenzen zu isolieren, wurden in einem gepaarten Ablationstest dieselben Events zweimal generiert: einmal mit den drei stilspezifischen Few-Shot-Referenzen aus der Datenbank, einmal ohne. Alle übrigen Parameter blieben konstant (Modell: \texttt{google/gemini-2.0-flash-lite-001}, Temperatur~0{,}5, N\,=\,40 Paare, Saison~2025/26, Bundesliga und Champions League). Da der Eventpool Champions-League-Auswärtsspiele mit Gegentoren einschließt, sind \texttt{euphorisch}-Texte zu solchen Events aus Eintracht-Fan-Perspektive strukturell niedriger bewertet; die absoluten Profilwerte sind daher nicht direkt mit der Hauptevaluation vergleichbar.
 
 {\def\LTcaptype{none}
 \begin{longtable}[]{@{}lrrrrrrrr@{}}
@@ -151,48 +158,34 @@ kritisch   & 3{,}85 & 3{,}54 & 3{,}46 & 3{,}62 & 3{,}46 & 3{,}69 & 3{,}46 & 3{,}
 
 \emph{K\,=\,Korrektheit, T\,=\,Tonalität, V\,=\,Vollständigkeit (je 1--5). Gepaartes Design: gleiche Events, N\,=\,40 Paare. Bewerter: Claude Sonnet~4.5.}
 
-Few-Shot-Referenzen verbessern die Gesamtqualität um $\Delta$\,=\,+0{,}16. Der Effekt ist stilabhängig: Beim \texttt{euphorisch}-Profil steigt die Tonalität um +0{,}85 -- der stärkste Einzeleffekt des Experiments. Beim \texttt{neutral}-Profil verbessert sich ebenfalls die Tonalität (+0{,}42), während die Vollständigkeit leicht zurückgeht ($-$0{,}43). Beim \texttt{kritisch}-Profil kehrt sich der Tonalitätseffekt um ($-$0{,}15): Die euphorisch geprägten Referenztexte ziehen das analytisch-bewertende Stilprofil in eine unpassende Richtung. Die Korrektheit verbessert sich mit Few-Shot bei allen drei Profilen (+0{,}22 bis +0{,}39).
+Few-Shot-Referenzen verbessern die Gesamtqualität um $\Delta$\,=\,+0{,}16. Der Effekt ist stilabhängig: Beim \texttt{euphorisch}-Profil steigt die Tonalität um +0{,}85: der stärkste Einzeleffekt des Experiments. Beim \texttt{neutral}-Profil verbessert sich ebenfalls die Tonalität (+0{,}42), während die Vollständigkeit leicht zurückgeht ($-$0{,}43). Beim \texttt{kritisch}-Profil kehrt sich der Tonalitätseffekt um ($-$0{,}15): Die euphorisch geprägten Referenztexte verlagern das Stilprofil in Richtung emotionaler Wertungen. Die Korrektheit verbessert sich mit Few-Shot bei allen drei Profilen (+0{,}22 bis +0{,}39).
 
-Die absoluten Gesamtwerte liegen durchgehend unter denen der Hauptevaluation, da der Eventpool auch Champions-League-Auswärtsspiele mit Gegentoren enthält: \texttt{euphorisch}-Texte zu Gegentoren erzielen aus Eintracht-Fan-Perspektive niedrige Tonalitätswerte und drücken den Profilwert auf Ø~2{,}92 (Hauptevaluation: Ø~4{,}11). Die Einordnung des Ablationseffekts folgt in Abschnitt~\ref{stilreferenzen}.
+Die Einordnung des Ablationseffekts folgt in Abschnitt~\ref{stilreferenzen}.
 
 
 \subsection{Temperaturvergleich}\label{temperaturvergleich}
 
 Der Temperaturparameter steuert die stochastische Varianz der LLM-Ausgabe. Die Produktionskonfiguration verwendet $T\,=\,0{,}5$ als Kompromiss zwischen sprachlicher Variation und faktischer Präzision (vgl.\ Abschnitt~\ref{temperatur-context}). Zur empirischen Validierung wurden drei Temperaturwerte verglichen (N\,=\,60, je 20 pro Temperatur, Modell: \texttt{google/gemini-2.0-flash-lite-001}, mit Few-Shot-Referenzen, Saison~2025/26).
 
-{\def\LTcaptype{none}
-\begin{longtable}[]{@{}lrrrr@{}}
+{\footnotesize\def\LTcaptype{none}
+\begin{longtable}[]{@{}lrrrrrrrrrrrr@{}}
 \toprule\noalign{}
-Temperatur & Korrektheit & Tonalität & Vollständigkeit & Gesamt \\
+Stil & \multicolumn{4}{c}{$T\,=\,0{,}3$} & \multicolumn{4}{c}{$T\,=\,0{,}5$} & \multicolumn{4}{c}{$T\,=\,0{,}7$} \\
+     & K & T & V & Ø & K & T & V & Ø & K & T & V & Ø \\
 \midrule\noalign{}
 \endhead
 \bottomrule\noalign{}
 \endlastfoot
-$T\,=\,0{,}3$ & 4{,}15 & 3{,}60 & 3{,}85 & 3{,}87 \\
-$T\,=\,0{,}5$ & 3{,}55 & 3{,}70 & 3{,}50 & 3{,}58 \\
-$T\,=\,0{,}7$ & 4{,}05 & 3{,}95 & 4{,}00 & 4{,}00 \\
+neutral    & 3{,}86 & 4{,}71 & 3{,}86 & 4{,}14 & 3{,}57 & 4{,}71 & 3{,}29 & 3{,}86 & 4{,}00 & 4{,}86 & 4{,}00 & 4{,}29 \\
+euphorisch & 3{,}86 & 3{,}00 & 3{,}71 & 3{,}52 & 2{,}86 & 2{,}71 & 3{,}43 & 3{,}00 & 3{,}43 & 2{,}71 & 3{,}57 & 3{,}24 \\
+kritisch   & 4{,}83 & 3{,}00 & 4{,}00 & 3{,}95 & 4{,}33 & 3{,}67 & 3{,}83 & 3{,}95 & 4{,}83 & 4{,}33 & 4{,}50 & 4{,}56 \\
+\textbf{Gesamt} & \textbf{4{,}15} & \textbf{3{,}60} & \textbf{3{,}85} & \textbf{3{,}87} & \textbf{3{,}55} & \textbf{3{,}70} & \textbf{3{,}50} & \textbf{3{,}58} & \textbf{4{,}05} & \textbf{3{,}95} & \textbf{4{,}00} & \textbf{4{,}00} \\
 \end{longtable}
 }
 
-\emph{Mittelwerte über alle drei Stilprofile. N\,=\,20 je Temperatur (je N\,=\,60 gesamt). Skala 1--5.}
+\emph{K\,=\,Korrektheit, T\,=\,Tonalität, V\,=\,Vollständigkeit (je 1--5). N\,=\,20 je Temperatur (N\,=\,60 gesamt). Bewerter: Claude Sonnet~4.5.}
 
-{\def\LTcaptype{none}
-\begin{longtable}[]{@{}lrrr@{}}
-\toprule\noalign{}
-Temperatur & neutral & euphorisch & kritisch \\
-\midrule\noalign{}
-\endhead
-\bottomrule\noalign{}
-\endlastfoot
-$T\,=\,0{,}3$ & 4{,}14 & 3{,}52 & 3{,}95 \\
-$T\,=\,0{,}5$ & 3{,}86 & 3{,}00 & 3{,}95 \\
-$T\,=\,0{,}7$ & 4{,}29 & 3{,}24 & 4{,}56 \\
-\end{longtable}
-}
-
-\emph{Gesamtwert Ø je Stilprofil nach Temperatur. N\,=\,20 je Temperatur. Skala 1--5.}
-
-$T\,=\,0{,}7$ erzielt den höchsten Gesamtwert (Ø~4{,}00), $T\,=\,0{,}5$ den niedrigsten (Ø~3{,}58). Das Ergebnis ist stilabhängig: Für \texttt{neutral} und \texttt{kritisch} schneidet $T\,=\,0{,}7$ am besten ab (4{,}29 bzw.\ 4{,}56). Für \texttt{euphorisch} liefert $T\,=\,0{,}3$ den höchsten Wert (3{,}52). Die Implikationen für die Produktionskonfiguration werden in Abschnitt~\ref{temperatur-context} diskutiert.
+$T\,=\,0{,}7$ erzielt den höchsten Gesamtwert (Ø~4{,}00), $T\,=\,0{,}5$ den niedrigsten (Ø~3{,}58). Das Ergebnis ist stilabhängig: Für \texttt{neutral} und \texttt{kritisch} schneidet $T\,=\,0{,}7$ am besten ab (4{,}29 bzw.\ 4{,}56). Für \texttt{euphorisch} liefert $T\,=\,0{,}3$ den höchsten Wert (3{,}52). Bei N\,=\,20 Einträgen je Temperatur entfallen je Stilprofil etwa sieben Datenpunkte pro Zelle; die beobachteten Unterschiede sind daher als Tendenzwerte zu verstehen, nicht als statistisch belastbare Aussagen. Die Einordnung des Befunds für die Produktionskonfiguration $T\,=\,0{,}5$ folgt in Abschnitt~\ref{temperatur-context}.
 
 
 \subsection{Mehrsprachige Qualitätsevaluation}\label{mehrsprachige-verifikation}
@@ -241,7 +234,6 @@ kritisch   & 4{,}33 & 3{,}83 & 3{,}67 & 3{,}94 & 4{,}00 & 3{,}83 & 4{,}33 & 4{,}
 
 Unter kontrollierten Bedingungen kollabiert der \texttt{kritisch}-Vorteil der spanischen Ausgaben von $\Delta\,=\,0{,}77$ auf $\Delta\,=\,0{,}11$. Der Gesamtvorsprung (Ø~4{,}28 vs.\ 3{,}81) verbleibt auch ohne Konfound, getragen von \texttt{neutral} ($\Delta\,=\,0{,}50$) und \texttt{euphorisch} ($\Delta\,=\,0{,}76$). Die Einordnung beider Befunde findet sich in Abschnitt~\ref{stilreferenzen}.
 
-Das Laufzeitverhalten des Systems wird im folgenden Abschnitt anhand von Latenzmessungen und einem Modellvergleich analysiert.
 
 
 \section{Performance und Laufzeitverhalten}\label{performance-und-laufzeitverhalten}\label{llm-latenz}
@@ -303,7 +295,7 @@ Modell & N & Korrektheit & Tonalität & Vollständigkeit & Gesamt \\
 
 GPT-4.1-mini erzielt die höchste Gesamtqualität (Ø~4{,}48), insbesondere bei Tonalität (4{,}73). Claude~Haiku~4.5 zeigt die stärkste Vollständigkeit (4{,}57) bei konsistentem Gesamtniveau (Ø~4{,}41). Gemini~2.5~Flash liegt qualitativ zurück (Ø~4{,}20), ist jedoch mit 591\,ms Median das mit Abstand schnellste Modell. Der Modellvergleich offenbart damit einen Speed-Quality-Trade-off: Geschwindigkeit und Textqualität korrelieren invers. Das schnellste Modell (Gemini~2.5~Flash) erzielt die niedrigste Gesamtqualität (Ø~4{,}20). GPT-4.1-mini erreicht bei mittlerer Latenz die stärkste Tonalität (4{,}73) und Gesamtqualität (Ø~4{,}48).
 
-\subsection{Time-to-Publish-Abschätzung}\label{ttp-abschaetzung}
+\subsection{Veröffentlichungslatenz der Betriebsmodi}\label{ttp-abschaetzung}
 
 Die drei Betriebsmodi unterscheiden sich strukturell in ihrer erreichbaren Publikationslatenz. Grundlage der Abschätzung sind die Execution-Logs der n8n-Workflows sowie die gemessene LLM-Latenz aus Abschnitt~\ref{modellvergleich-latenz}. Die folgende Tabelle dokumentiert die gemessenen Laufzeiten aller 14 erfassten n8n-Workflows, gegliedert nach Funktionsgruppe:
 
@@ -343,7 +335,7 @@ Workflow & N & Median (ms) & P95 (ms) \\
 
 \emph{*\,Einzelmessung aus n8n-Dashboard (manuell). Alle übrigen Werte: n8n-Execution-Log via REST-API.}
 
-Auf Basis dieser Laufzeiten schlüsselt die folgende Tabelle den kritischen TTP-Pfad des \texttt{auto}-Modus auf (Polling-Intervall: 15~s, vgl. Abschnitt~\ref{frontend-polling}):
+WF14 ist mit einer Einzelmessung (N\,=\,1) erfasst; der Wert von 8\,632\,ms ist damit nicht als repräsentativer Median zu verstehen, sondern dokumentiert lediglich den einzigen protokollierten Ausführungslauf. Auf Basis dieser Laufzeiten schlüsselt die folgende Tabelle den kritischen TTP-Pfad des \texttt{auto}-Modus auf (Polling-Intervall: 15~s, vgl. Abschnitt~\ref{frontend-polling}):
 
 {\def\LTcaptype{none}
 \begin{longtable}[]{@{}llll@{}}
@@ -354,7 +346,7 @@ Komponente & Gemessen? & Typischer Wert & Quelle \\
 \bottomrule\noalign{}
 \endlastfoot
 n8n Live-Betrieb (08 + 15) & Ja & 8\,047 + 1\,517~ms & s.\,Tabelle oben \\
-Backend → LLM → Backend & Ja & 3\,338~ms Median & Abschnitt~\ref{systemlatenz} \\
+Backend → LLM → Backend & Ja & 3\,338~ms Median & Datenbankfeld \texttt{generation\_ms} (vgl. Abschnitt~\ref{idempotenz-und-generierungssteuerung}) \\
 Frontend-Polling & Ja & bis 15~s & Abschnitt~\ref{frontend-polling} \\
 \textbf{Gesamt TTP (\texttt{auto})} & Teilw. & $\approx$\,15--40~s & Potenzialschätzung \\
 \end{longtable}
@@ -363,8 +355,7 @@ Frontend-Polling & Ja & bis 15~s & Abschnitt~\ref{frontend-polling} \\
 Da ein kontrolliertes Feldexperiment nicht durchführbar war, bleibt die architekturbasierte TTP von $\approx$\,15--40~s eine Potenzialabschätzung. Die manuelle Baseline liegt bei 30--120~s (vgl. Abschnitt~\ref{redaktioneller-aufwand-bei-livetickern}); der Interviewpartner nannte für typische Ereignisse 30--90~s (vgl. Abschnitt~\ref{experteninterview-auswertung}). Im \texttt{coop}-Modus erhöht sich die Gesamtpublikationslatenz um die variable Redaktionszeit.
 
 
-\section{Anforderungsabgleich
-(Soll-Ist-Vergleich)}\label{anforderungsabgleich-soll-ist-vergleich}\label{technische-qualitätssicherung}
+\section{Anforderungsabgleich}\label{anforderungsabgleich-soll-ist-vergleich}\label{technische-qualitätssicherung}
 
 18 der 19 in Abschnitt~\ref{zusammenfassung-der-systemanforderungen} hergeleiteten Anforderungen sind vollständig erfüllt. F7 ist funktional implementiert; die LLM-as-Judge-Evaluation (Abschnitt~\ref{mehrsprachige-verifikation}) liefert eine erste qualitative Einschätzung der Übersetzungsqualität, ersetzt jedoch keinen Muttersprachler-Test (vgl. Abschnitt~\ref{technische-einordnung}). Die folgende Tabelle dokumentiert den Nachweis je Anforderung:
 
@@ -387,13 +378,13 @@ F4 & Stilkonfiguration über vereinsspezifische Referenztexte & Bis zu 3 Referen
 F5 & Ticker-Lifecycle (draft → published / rejected) & State-Machine mit publish/reject/retract; 21 API-Tests \\
 F6 & Slash-Command-gestützte manuelle Ticker-Erstellung & 11 Phasen- und 14 Event-Commands (in \texttt{CMD\_MAP}); 45 Unit-Tests \\
 F7 & Mehrsprachige Textgenerierung & \texttt{translate\_text()} mit Temperatur 0{,}1; Batch-Endpoint; funktional verifiziert (N\,=\,21 Einträge); LLM-as-Judge-Qualitätsevaluation vgl. Abschnitt~\ref{mehrsprachige-verifikation}; kein Muttersprachler-Test (vgl. Abschnitt~\ref{technische-einordnung}) \\
-F8 & Automatischer, idempotenter ETL-Datenimport & 17 n8n-Workflows in 6 Gruppen (WF01--WF17); UPSERT-Strategien für Events, Spieler, Teams \\
+F8 & Automatischer, idempotenter ETL-Datenimport & 17 n8n-Workflows in 6 Gruppen (WF01--WF16, inkl. zwei WF04-Varianten); UPSERT-Strategien für Events, Spieler, Teams \\
 F9 & Anbieterunabhängige LLM-Integration mit Ausfallsicherheit & 5 Provider (openrouter → gemini → openai → anthropic → mock) \\
 F10 & Deduplizierung & Prüfung auf bestehenden Eintrag per \texttt{event\_id} vor LLM-Aufruf \\
 F11 & Pre-Match-Kontextgenerierung & 7 Context-Builder in \texttt{llm\_context\_builders.py} \\
 F12 & Live-Statistik-Updates & \texttt{ctx\_live\_stats()} in \texttt{llm\_context\_builders.py}; automatische Zwischenstand-Texte; durch \texttt{test\_ticker\_service.py} (Context-Builder-Tests) abgedeckt \\
 F13 & Medienintegration (ScorePlay, Social-Media-Panels) & MediaQueue-Architektur; n8n-Workflows 08, 10--12 (ScorePlay, X, YouTube, Instagram); instanzspezifische Panel-Einblendung im Frontend \\
-F14 & Spielphasen-Management & WF16 erkennt Phasenänderungen; triggert Halbzeit- und Abpfiff-Generierung \\
+F14 & Spielphasen-Management & WF16 erkennt Phasenänderungen; löst Halbzeit- und Abpfiff-Generierung aus \\
 F15 & Undo nach Publikation & Undo-Option nach Publikation; setzt Eintrag auf \texttt{draft} zurück \\
 F16 & REST-API zur vollständigen Systemsteuerung & 71 Endpunkte unter \texttt{/api/v1}; 13 Router-Dateien; 95 API-Integrationstests \\
 F17 & White-Label-Fähigkeit & \texttt{src/config/whitelabel.ts} (Frontend-Branding), \texttt{DEFAULT\_TICKER\_INSTANCE} in \texttt{constants.py} (Backend-Instanz), instanzspezifische Few-Shot-Filterung über \texttt{style\_references} (vgl. Abschnitt~\ref{prompt-design-stilkonditionierung}) \\
