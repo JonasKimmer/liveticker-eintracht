@@ -385,7 +385,7 @@ F2 & KI-Generierung für alle Event-Typen & 24 Typen in \texttt{EVENT\_TYPE\_LAB
 F3 & Drei Stilprofile & \texttt{STYLE\_DESC} im Prompt; per Match konfigurierbar \\
 F4 & Stilkonfiguration über vereinsspezifische Referenztexte & Bis zu 3 Referenzen aus \texttt{style\_references}; nach Event-Typ gefiltert \\
 F5 & Ticker-Lifecycle (draft → published / rejected) & State-Machine mit publish/reject/retract; 21 API-Tests \\
-F6 & Slash-Command-Parser & 11 Phasen- und 14 Event-Commands (in \texttt{CMD\_MAP}); 45 Unit-Tests \\
+F6 & Slash-Command-gestützte manuelle Ticker-Erstellung & 11 Phasen- und 14 Event-Commands (in \texttt{CMD\_MAP}); 45 Unit-Tests \\
 F7 & Mehrsprachige Textgenerierung & \texttt{translate\_text()} mit Temperatur 0{,}1; Batch-Endpoint; funktional verifiziert (N\,=\,21 Einträge); LLM-as-Judge-Qualitätsevaluation vgl. Abschnitt~\ref{mehrsprachige-verifikation}; kein Muttersprachler-Test (vgl. Abschnitt~\ref{technische-einordnung}) \\
 F8 & Automatischer, idempotenter ETL-Datenimport & 17 n8n-Workflows in 6 Gruppen (WF01--WF17); UPSERT-Strategien für Events, Spieler, Teams \\
 F9 & Anbieterunabhängige LLM-Integration mit Ausfallsicherheit & 5 Provider (openrouter → gemini → openai → anthropic → mock) \\
