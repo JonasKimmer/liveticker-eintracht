@@ -366,7 +366,7 @@ Da ein kontrolliertes Feldexperiment nicht durchführbar war, bleibt die archite
 \section{Anforderungsabgleich
 (Soll-Ist-Vergleich)}\label{anforderungsabgleich-soll-ist-vergleich}\label{technische-qualitätssicherung}
 
-19 der 20 in Abschnitt~\ref{zusammenfassung-der-systemanforderungen} hergeleiteten Anforderungen sind vollständig erfüllt. F7 ist funktional implementiert; die LLM-as-Judge-Evaluation (Abschnitt~\ref{mehrsprachige-verifikation}) liefert eine erste qualitative Einschätzung der Übersetzungsqualität, ersetzt jedoch keinen Muttersprachler-Test (vgl. Abschnitt~\ref{technische-einordnung}). Die folgende Tabelle dokumentiert den Nachweis je Anforderung:
+18 der 19 in Abschnitt~\ref{zusammenfassung-der-systemanforderungen} hergeleiteten Anforderungen sind vollständig erfüllt. F7 ist funktional implementiert; die LLM-as-Judge-Evaluation (Abschnitt~\ref{mehrsprachige-verifikation}) liefert eine erste qualitative Einschätzung der Übersetzungsqualität, ersetzt jedoch keinen Muttersprachler-Test (vgl. Abschnitt~\ref{technische-einordnung}). Die folgende Tabelle dokumentiert den Nachweis je Anforderung:
 
 {\def\LTcaptype{none} % do not increment counter
 \begin{longtable}[]{@{}
@@ -387,23 +387,20 @@ F4 & Stilkonfiguration über vereinsspezifische Referenztexte & Bis zu 3 Referen
 F5 & Ticker-Lifecycle (draft → published / rejected) & State-Machine mit publish/reject/retract; 21 API-Tests \\
 F6 & Slash-Command-Parser & 11 Phasen- und 14 Event-Commands (in \texttt{CMD\_MAP}); 45 Unit-Tests \\
 F7 & Mehrsprachige Textgenerierung & \texttt{translate\_text()} mit Temperatur 0{,}1; Batch-Endpoint; funktional verifiziert (N\,=\,21 Einträge); LLM-as-Judge-Qualitätsevaluation vgl. Abschnitt~\ref{mehrsprachige-verifikation}; kein Muttersprachler-Test (vgl. Abschnitt~\ref{technische-einordnung}) \\
-F8 & Idempotenter Datenimport & UPSERT-Strategien für Events, Spieler, Teams \\
+F8 & Automatischer, idempotenter ETL-Datenimport & 17 n8n-Workflows in 6 Gruppen (WF01--WF17); UPSERT-Strategien für Events, Spieler, Teams \\
 F9 & Anbieterunabhängige LLM-Integration mit Ausfallsicherheit & 5 Provider (openrouter → gemini → openai → anthropic → mock) \\
 F10 & Deduplizierung & Prüfung auf bestehenden Eintrag per \texttt{event\_id} vor LLM-Aufruf \\
 F11 & Pre-Match-Kontextgenerierung & 7 Context-Builder in \texttt{llm\_context\_builders.py} \\
 F12 & Live-Statistik-Updates & \texttt{ctx\_live\_stats()} in \texttt{llm\_context\_builders.py}; automatische Zwischenstand-Texte; durch \texttt{test\_ticker\_service.py} (Context-Builder-Tests) abgedeckt \\
 F13 & Medienintegration (ScorePlay, Social-Media-Panels) & MediaQueue-Architektur; n8n-Workflows 08, 10--12 (ScorePlay, X, YouTube, Instagram); instanzspezifische Panel-Einblendung im Frontend \\
-F14 & Automatischer ETL-Datenimport & 17 n8n-Workflows in 6 Gruppen (WF01--WF17); Polling-basiert \\
-F15 & Spielphasen-Management & WF16 erkennt Phasenänderungen; triggert Halbzeit- und Abpfiff-Generierung \\
-F16 & Undo nach Publikation & Undo-Option nach Publikation; setzt Eintrag auf \texttt{draft} zurück \\
+F14 & Spielphasen-Management & WF16 erkennt Phasenänderungen; triggert Halbzeit- und Abpfiff-Generierung \\
+F15 & Undo nach Publikation & Undo-Option nach Publikation; setzt Eintrag auf \texttt{draft} zurück \\
+F16 & REST-API zur vollständigen Systemsteuerung & 71 Endpunkte unter \texttt{/api/v1}; 13 Router-Dateien; 95 API-Integrationstests \\
+F17 & White-Label-Fähigkeit & \texttt{src/config/whitelabel.ts} (Frontend-Branding), \texttt{DEFAULT\_TICKER\_INSTANCE} in \texttt{constants.py} (Backend-Instanz), instanzspezifische Few-Shot-Filterung über \texttt{style\_references} (vgl. Abschnitt~\ref{prompt-design-stilkonditionierung}) \\
 \midrule\noalign{}
-\multicolumn{3}{l}{\emph{Nicht-funktionale Anforderungen}} \\
+\multicolumn{3}{l}{\emph{Qualitätsanforderungen}} \\
 N1 & Responsive UI & Playwright-Test 375×812 (iPhone~X\,/\,XS\,/\,12\,mini u.\,a.); Mobile Tab Bar \\
 N2 & Fehlerresistenz Frontend & \texttt{ErrorBoundary} mit Fallback-UI; 4 Tests \\
-\midrule\noalign{}
-\multicolumn{3}{l}{\emph{Architektur-Anforderungen}} \\
-A1 & REST-API zur vollständigen Systemsteuerung & 71 Endpunkte unter \texttt{/api/v1}; 13 Router-Dateien; 95 API-Integrationstests \\
-A2 & White-Label-Fähigkeit & \texttt{src/config/whitelabel.ts} (Frontend-Branding), \texttt{DEFAULT\_TICKER\_INSTANCE} in \texttt{constants.py} (Backend-Instanz), instanzspezifische Few-Shot-Filterung über \texttt{style\_references} (vgl. Abschnitt~\ref{prompt-design-stilkonditionierung}) \\
 \end{longtable}
 }
 

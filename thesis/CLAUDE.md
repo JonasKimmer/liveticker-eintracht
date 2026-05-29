@@ -14,7 +14,7 @@ Implementierung → Evaluation → Diskussion → Fazit.
 - Standardmodell: `google/gemini-2.0-flash-lite-001` via OpenRouter
 - LLM_TEMPERATURE = 0,5 (Generierung), LLM_TRANSLATION_TEMPERATURE = 0,1 (Übersetzung)
 - Unterstützte Sprachen: Deutsch, Englisch, Spanisch, Französisch (NICHT Japanisch)
-- 20 Anforderungen (F1–F16, N1–N2, A1–A2); 19 vollständig erfüllt, F7 funktional implementiert
+- 19 Anforderungen (F1–F17, N1–N2); 18 vollständig erfüllt, F7 funktional implementiert
 - 17 n8n-Workflows in 6 Gruppen (A–F), ausschließlich manuell verifiziert
 - Evaluationswerte (manuelle Fehleranalyse, N=40): Korrektheit Ø 4,6/5 · Vollständigkeit Ø 4,3/5 · Tonalität Ø 4,1/5
 - LLM-as-Judge (claude-sonnet-4-5 via OpenRouter, N=80): neutral Ø 4,76 · kritisch Ø 3,82 · euphorisch Ø 4,11 · Gesamt 4,23
