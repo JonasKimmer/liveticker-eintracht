@@ -76,7 +76,7 @@ Weitere Stammdaten-Modelle (Country, Team, Competition, Lineup, MatchStatistic, 
 
 Stammdaten-Entitäten kombinieren drei Schlüsselfelder (\texttt{id}, \texttt{external\_id}, \texttt{uid}) und werden bei Reimports idempotent per Upsert nach ihrer externen Kennung aktualisiert. Ereignisentitäten nutzen \texttt{source\_id} als Upsert-Schlüssel (vgl. Abschnitt~\ref{schemadesign-prinzipien}). Die FK-Löschstrategie folgt zwei Mustern: Events, Synthetic Events, Lineups, Match-Statistiken und Ticker-Einträge tragen \texttt{ondelete="CASCADE"} gegenüber dem übergeordneten Spiel. Match selbst trägt \texttt{ondelete="SET NULL"} gegenüber Season und Competition, sodass historische Spieldatensätze bei Kontextlöschungen erhalten bleiben.
 
-Das \texttt{TickerEntry}-Modell ist zentral für den Lifecycle des Systems. Es verknüpft über \texttt{event\_id} (FK auf \texttt{events}) und \texttt{synthetic\_event\_id} (FK auf \texttt{synthetic\_events}) den generierten Text mit seinem Auslöser. Die Felder \texttt{status} (\texttt{draft}/\allowbreak\texttt{published}/\allowbreak\texttt{rejected}/\allowbreak\texttt{deleted}) und \texttt{source} (\texttt{ai}/\texttt{manual}) bilden den Ticker-Lifecycle ab (vgl. Abschnitt~\ref{status-lifecycle-und-betriebsmodi}). Beide Enums werden als nicht-nativ gespeichert (\texttt{native\_enum=False}), damit Migrationen ohne PostgreSQL-seitige Enum-Typ-Änderungen auskommen.
+Das \texttt{TickerEntry}-Modell ist zentral für den Lifecycle des Systems. Es verknüpft über \texttt{event\_id} (FK auf \texttt{events}) und \texttt{synthetic\_event\_id} (FK auf \texttt{synthetic\_events}) den generierten Text mit seinem Auslöser. Die Felder \texttt{status} (\texttt{draft}/\allowbreak\texttt{published}/\allowbreak\texttt{rejected}/\allowbreak\texttt{deleted}), \texttt{source} (\texttt{ai}/\texttt{manual}) und \texttt{instance} (\texttt{ef\_whitelabel}/\texttt{generic}) bilden den Ticker-Lifecycle ab und ermöglichen die instanzspezifische Filterung der Few-Shot-Referenzen (vgl. Abschnitt~\ref{status-lifecycle-und-betriebsmodi}). Beide Enums werden als nicht-nativ gespeichert (\texttt{native\_enum=False}), damit Migrationen ohne PostgreSQL-seitige Enum-Typ-Änderungen auskommen.
 
 Drei zusammengesetzte Indizes optimieren die häufigsten Abfragen: \texttt{ix\_ticker\_match\_status} für publizierte Einträge je Spiel, \texttt{ix\_ticker\_match\_phase} für Phase-Filter und \texttt{ix\_ticker\_event\_id} für den Deduplizierungs-Check per Event. Zusammengesetzte Unique Constraints sichern referenzielle Eindeutigkeit auf Datenbankebene: \texttt{CompetitionTeam} erlaubt jede Kombination aus Saison, Wettbewerb und Team nur einmal. \texttt{MatchStatistic} und \texttt{PlayerStatistic} erzwingen je einen Eintrag pro Spiel und Mannschaft bzw. Spieler (vgl. Abschnitt~\ref{schemadesign-prinzipien}).
 
@@ -497,7 +497,7 @@ Im Auto-Modus existieren zwei parallele Automatisierungspfade. Der primäre Pfad
 Die \texttt{ef\_whitelabel}-Instanz erweitert die generische Redaktionsoberfläche um instanzspezifische Komponenten. Im generischen Betrieb werden diese Komponenten nicht geladen.
 
 \paragraph{Media-Panels.}
-Das \texttt{MediaPickerPanel} lädt ScorePlay-Bilder von Lineup-Spielern per Namenssuche und zeigt sie als anklickbare Kacheln. Per Doppelklick öffnet ein Modal, in dem der Redakteur Spielminute und optionalen Freitext ergänzt und den Eintrag direkt publiziert. YouTube-, Twitter/X- und Instagram-Panels folgen darunter und laden Social-Media-Inhalte on-demand über einen Importbutton nach.
+Das \texttt{MediaPickerPanel} steht ausschließlich in der \texttt{ef\_whitelabel}-Instanz zur Verfügung. Der Redakteur importiert ScorePlay-Bilder manuell über einen Importbutton; eine optionale Suchleiste erlaubt die Filterung nach Spielernamen, ist aber nicht zwingend erforderlich. Die geladenen Bilder erscheinen als anklickbare Kacheln; per Doppelklick lassen sich Spielphase, Spielminute und ein Freitext ergänzen, bevor der Eintrag direkt publiziert wird. YouTube-, Twitter/X- und Instagram-Panels folgen darunter und laden Social-Media-Inhalte on-demand über einen Importbutton nach.
 
 \paragraph{EF-Header-Badge.}
 Ist die \texttt{ef\_whitelabel}-Instanz aktiv, zeigt die Kopfzeile einen \texttt{EF}-Indikator, der den aktiven EF-Schreibstil mit euphorischen Stilreferenzen aus der Datenbank signalisiert.
@@ -543,9 +543,11 @@ Davon getrennt berechnet \texttt{useLiveMinute} die angezeigte Spielminute. Er l
 
 \section{n8n Workflow-Implementierung}\label{n8n-workflow-implementierung}
 
-Die n8n-Implementierung realisiert die 17 Workflows als versionierte JSON-Exporte unter \texttt{n8n/} und setzt die in Abschnitt~\ref{n8n-designprinzipien} konzipierten Designprinzipien (Idempotenz, Datenzugriffsstrategie, Modus-Übergabe, Parameterübergabe, Fehlerbehandlung) um. Sie gliedert sich in einen Workflow-Überblick (Abschnitt~\ref{workflow-ueberblick}), die Spielzeit-Kette (Abschnitt~\ref{spielzeit-kette}), den Events-LLM-Workflow (Abschnitt~\ref{events-llm-workflow}), weitere Workflows (Abschnitt~\ref{weitere-workflows}) sowie übergreifende Implementierungsmuster (Abschnitt~\ref{n8n-implementierungsmuster}).
+Die n8n-Implementierung umfasst 17 Workflows als versionierte JSON-Exporte unter \texttt{n8n/} und setzt die in Abschnitt~\ref{n8n-designprinzipien} konzipierten Designprinzipien um. Sie gliedert sich in Workflow-Überblick (Abschnitt~\ref{workflow-ueberblick}), Spielzeit-Kette (Abschnitt~\ref{spielzeit-kette}), Events-LLM-Workflow (Abschnitt~\ref{events-llm-workflow}), weitere Workflows (Abschnitt~\ref{weitere-workflows}) und übergreifende Implementierungsmuster (Abschnitt~\ref{n8n-implementierungsmuster}).
 
 \subsection{Workflow-Überblick}\label{workflow-ueberblick}
+
+Die 17 Workflows gliedern sich nach Auslösung und Laufzeitverhalten in phasengebundene Spieltag-Workflows, Monitoring- und Medien-Workflows sowie einmalige Datenbasis-Importer.
 
 \begin{figure}[H]
 \centering
@@ -554,11 +556,9 @@ Die n8n-Implementierung realisiert die 17 Workflows als versionierte JSON-Export
 \label{fig:workflow-timeline}
 \end{figure}
 
-Abbildung~\ref{fig:workflow-timeline} zeigt die zeitliche Aktivität der Kernworkflows über einen Spieltag. Die phasengebundenen Spieltag-Workflows bilden die Kernkette: WF07 (Prematch-Import) läuft einmalig vor Spielbeginn und baut den Vorberichtskontext aus fünf parallelen Football-API-Abfragen auf. Die Ergebnisse werden als \texttt{synthetic\_events} mit idempotenter \texttt{ON CONFLICT (match\_id, type) DO UPDATE}-Strategie persistiert. WF16 (Spielminuten-Update) und WF09 (Events-LLM) laufen während beider Halbzeiten kontinuierlich. WF14 (Matchphasen) wird bei jedem Phasenübergang einmalig ausgelöst und triggert bei Halbzeit- und Vollzeit-Übergängen nachgelagert WF13 (Zusammenfassungen).
+Abbildung~\ref{fig:workflow-timeline} zeigt die zeitliche Aktivität der Kernworkflows über einen Spieltag. WF07 läuft einmalig vor Spielbeginn, WF16 und WF09 laufen während beider Halbzeiten kontinuierlich, WF14 wird bei jedem Phasenübergang einmalig ausgelöst und triggert nachgelagert WF13 bei Halbzeit- und Vollzeit-Übergängen. WF01--06 (Datenbasis-Import) und WF10--12 (Social Media) sind nicht phasengebunden und im Diagramm nicht dargestellt.
 
-Parallel laufen Monitoring- und Medien-Workflows: WF15 (Live-Stats-Monitor) vergleicht aktuelle Football-API-Statistiken per JavaScript-Knoten gegen bereits publizierte Ticker-Einträge und löst nur bei inhaltlich neuen Fakten einen direkten OpenRouter-Aufruf aus. WF08 (ScorePlay-Medien) sucht bei Torereignissen nach Bild-Assets des Torschützen, normalisiert Umlaute im Namen und gleicht ihn gegen vier ScorePlay-Namensfelder ab. Gefundene Asset-URLs leitet WF08 über \texttt{POST /api/v1/media/incoming} in Echtzeit an das Frontend-Media-Panel weiter (zur WebSocket-Weitergabe an das Frontend vgl. Abschnitt~\ref{backend-implementierung}). WF10--12 importieren Social-Media-Inhalte aus X, YouTube und Instagram idempotent in die \texttt{media\_clips}-Tabelle. WF01--06 realisieren den initialen Datenbasis-Import als \texttt{postgres}-Knoten mit \texttt{ON CONFLICT DO NOTHING}-Strategie; sie werden manuell via Webhook vor Saisonbeginn ausgelöst. Diese Gruppen sind nicht phasengebunden und im Diagramm nicht dargestellt.
-
-Die folgende Tabelle listet alle 17 Workflows als Schnellreferenz für die nachfolgenden Abschnitte:
+Die folgende Tabelle listet alle 17 Workflows als Schnellreferenz:
 
 {\small\def\LTcaptype{none}
 \begin{longtable}[]{@{}
@@ -587,13 +587,11 @@ WF16 & Spielminuten-Update & API-Polling; triggert WF14 bei Phasenänderung \\
 
 \subsection{Spielzeit-Kette}\label{spielzeit-kette}
 
-WF16 (Spielminuten-Update) fragt bei jedem Aufruf die Football-API nach aktuellem Spielstand und Spielphase und vergleicht das Ergebnis mit dem Datenbankstand. Erkennt er eine Phasenänderung, aktualisiert er Spielminute und Phase in der Datenbank und triggert WF14 (Matchphasen-Workflow) über einen internen Webhook-Aufruf.
+WF16 (Spielminuten-Update) fragt bei jedem Aufruf die Football-API nach aktuellem Spielstatus und Spielminute und vergleicht das Ergebnis mit dem Datenbankstand. Liegt keine Phasenänderung vor, trägt WF16 ausschließlich die neue Spielminute in der Datenbank nach. Bei einer Phasenänderung übergibt WF16 die neuen Zustandsdaten per HTTP-POST an WF14 (Matchphasen-Workflow) und delegiert die weitere Verarbeitung.
 
-WF14 validiert den Übergang gegen eine JavaScript-seitige Zustandsmatrix erlaubter Vorzustände, um inkonsistente Wechsel abzufangen. Jeder Übergang erzeugt genau ein synthetisches Event für die neue Phase (z.\,B. \texttt{match\_kickoff} bei Anpfiff, \texttt{match\_fulltime} bei Abpfiff) und aktualisiert den Spielzustand in der Datenbank. Eine \texttt{demote}-CTE setzt bereits publizierte Phasen-Texte bei Re-Triggern auf \texttt{draft} zurück, sodass Korrekturen jederzeit möglich bleiben.
+WF14 empfängt die Zustandsdaten und validiert den Übergang gegen eine JavaScript-seitige Zustandsmatrix (\texttt{validFromStates}), die erlaubte Vorzustände je Zielphase definiert. Valide Übergänge erzeugen genau ein synthetisches Event für die neue Phase (z.\,B. \texttt{match\_kickoff} bei Anpfiff, \texttt{match\_fulltime} bei Abpfiff), aktualisieren Spielzustand und Phase in der Datenbank und triggern über \texttt{POST /api/v1/ticker/generate-synthetic} den LLM-Eintrag für das synthetische Event. Eine \texttt{demote}-CTE setzt bereits publizierte Phasen-Texte bei Re-Triggern auf \texttt{draft} zurück. WF14 verzweigt parallel in zwei weitere Zweige: Der Zusammenfassungs-Zweig triggert WF13 ausschließlich bei Halbzeit- (\texttt{HT}) und Vollzeit-Übergängen (\texttt{FT}); der Elfmeter-Zweig greift bei Status~\texttt{P} (Elfmeterschießen), fragt den aktuellen Elfmeterstand ab und persistiert ihn über \texttt{POST /api/v1/ticker/manual}.
 
-Am Ende eines WF14-Durchlaufs triggert ein HTTP-Request-Knoten WF13 (Zusammenfassung), jedoch ausschließlich bei Halbzeit- (\texttt{HT}) und Vollzeit-Übergängen (\texttt{FT}), da nur diese Phasen eine redaktionelle Zusammenfassung erfordern. WF13 lädt sequenziell über vier HTTP-Request-Knoten Spieldaten (Backend-API), Spielereignisse, Teamstatistiken und Spieler-Ratings (Football-API) und bettet sie in einen umfangreicheren Prompt ein.
-
-WF13 ruft OpenRouter für den LLM-Aufruf direkt auf, ohne den FastAPI-LLM-Service einzubinden (vgl. Abschnitt~\ref{n8n-designprinzipien}). Das generierte Ergebnis wird über \texttt{POST /api/v1/ticker/manual} im Backend persistiert, wobei \texttt{ticker\_mode} den initialen Status (\texttt{published} oder \texttt{draft}) bestimmt.
+WF13 (Zusammenfassungen) lädt sequenziell über vier HTTP-Request-Knoten Spieldaten vom Backend sowie Spielereignisse, Teamstatistiken und Spieler-Ratings von der Football-API. Ein JavaScript-Knoten bündelt daraus einen umfangreicheren Prompt mit Toren, Karten, Ballbesitz, Schüssen, Expected Goals, Ecken, Fouls sowie den drei besten Spielern nach Rating. WF13 ruft OpenRouter direkt auf, ohne den FastAPI-LLM-Service einzubinden (vgl. Abschnitt~\ref{n8n-designprinzipien}), und persistiert das Ergebnis über \texttt{POST /api/v1/ticker/manual}, wobei \texttt{ticker\_mode} den initialen Status (\texttt{published} oder \texttt{draft}) bestimmt.
 
 \subsection{Events-LLM-Workflow}\label{events-llm-workflow}
 
