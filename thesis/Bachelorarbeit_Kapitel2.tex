@@ -82,7 +82,7 @@ Diese Defizite spiegeln die drei in Abschnitt~\ref{problemstellung-und-zielsetzu
 \section{Zusammenfassung der
 Systemanforderungen}\label{zusammenfassung-der-systemanforderungen}
 
-Die folgenden 22 Anforderungen fassen die aus den Anforderungsdimensionen hergeleiteten sowie technisch und architektonisch motivierten Systemeigenschaften zusammen. Sie gliedern sich in funktionale Anforderungen (Abschnitt~\ref{funktionale-anforderungen}), nicht-funktionale Anforderungen (Abschnitt~\ref{nicht-funktionale-anforderungen}) und Architektur-Anforderungen (Abschnitt~\ref{architektur-anforderungen}). Abschnitt~\ref{anforderungsabgleich-soll-ist-vergleich} gleicht jeden Punkt mit dem implementierten Stand ab.
+Die folgenden 20 Anforderungen fassen die aus den Anforderungsdimensionen hergeleiteten Systemeigenschaften zusammen. Sie gliedern sich in funktionale Anforderungen (Abschnitt~\ref{funktionale-anforderungen}), nicht-funktionale Anforderungen (Abschnitt~\ref{nicht-funktionale-anforderungen}) und Architektur-Anforderungen (Abschnitt~\ref{architektur-anforderungen}). Abschnitt~\ref{anforderungsabgleich-soll-ist-vergleich} gleicht jeden Punkt mit dem implementierten Stand ab.
 
 \subsection{Funktionale Anforderungen}\label{funktionale-anforderungen}
 
@@ -116,6 +116,9 @@ F10 & Deduplizierung von Ticker-Einträgen & Kap.~\ref{redaktioneller-aufwand-be
 F11 & Pre-Match-Kontextgenerierung (Verletzungen, H2H-Daten, Spielortinformationen) & Kap.~\ref{redaktioneller-aufwand-bei-livetickern} (Elaboration) \\
 F12 & Live-Statistik-Updates & Kap.~\ref{redaktioneller-aufwand-bei-livetickern} (Echtzeit) \\
 F13 & Medienintegration (ScorePlay-Bildmaterial, Social-Media-Panels für YouTube, X, Instagram) & Kap.~\ref{ist-zustand-bestehendes-system} (Defizit: fehlende Medienintegration im Altsystem) \\
+F14 & Automatischer ETL-Datenimport aus externen Sportdatenquellen & Kap.~\ref{redaktioneller-aufwand-bei-livetickern}, \ref{anforderungsanalyse-am-beispiel-eintracht-frankfurt} (Echtzeit-Betrieb) \\
+F15 & Spielphasen-Management (Anpfiff, Halbzeit, Abpfiff) & Kap.~\ref{redaktioneller-aufwand-bei-livetickern} (Echtzeit-Betrieb) \\
+F16 & Undo nach Publikation & Kap.~\ref{redaktioneller-aufwand-bei-livetickern} (Fehleranfälligkeit unter Zeitdruck) \\
 \end{longtable}
 }
 
@@ -139,10 +142,8 @@ Herleitung
 \endhead
 \bottomrule\noalign{}
 \endlastfoot
-N1 & Concurrency-Begrenzung für LLM-Aufrufe & Kap.~\ref{redaktioneller-aufwand-bei-livetickern} (Zeitdruck) \\
-N2 & Retry-Logik mit Rate-Limit-Erkennung & Kap.~\ref{redaktioneller-aufwand-bei-livetickern} (Verfügbarkeit) \\
-N3 & Responsive UI (Mobile-tauglich) & Kap.~\ref{redaktioneller-aufwand-bei-livetickern} (Einsatzszenarien) \\
-N4 & Fehlerresistenz im Frontend & Kap.~\ref{redaktioneller-aufwand-bei-livetickern} (Robustheit) \\
+N1 & Responsive UI (Mobile-tauglich) & Kap.~\ref{redaktioneller-aufwand-bei-livetickern} (Einsatzszenarien) \\
+N2 & Fehlerresistenz im Frontend & Kap.~\ref{redaktioneller-aufwand-bei-livetickern} (Robustheit) \\
 \end{longtable}
 }
 
@@ -165,15 +166,9 @@ Herleitung
 \endhead
 \bottomrule\noalign{}
 \endlastfoot
-A1 & Schichtenbasierte Systemarchitektur mit klar getrennten Verantwortlichkeiten & Kap.~\ref{redaktioneller-aufwand-bei-livetickern}, \ref{white-label-bedarf-im-profisport} (Modularität) \\
-A2 & Isolierte Datenzugriffsschicht: Persistenzlogik muss von
-API-Logik getrennt sein, sodass Datenbankzugriffe unabhängig testbar
-und austauschbar bleiben & Kap.~\ref{white-label-bedarf-im-profisport} (Wartbarkeit, Testbarkeit) \\
-A3 & Representational State Transfer (REST)-API zur vollständigen Systemsteuerung und
-Mandantenkonfiguration & Kap.~\ref{white-label-bedarf-im-profisport} (White-Label) \\
-A4 & Vollständiges Datenmodell & Kap.~\ref{redaktioneller-aufwand-bei-livetickern}, \ref{anforderungsanalyse-am-beispiel-eintracht-frankfurt} \\
-A5 & White-Label-Fähigkeit (vereinsspezifische und generische Instanz) & Kap.~\ref{white-label-bedarf-im-profisport}, \ref{anforderungsanalyse-am-beispiel-eintracht-frankfurt} \\
+A1 & REST-API zur vollständigen Systemsteuerung und Mandantenkonfiguration & Kap.~\ref{white-label-bedarf-im-profisport} (White-Label) \\
+A2 & White-Label-Fähigkeit (vereinsspezifische und generische Instanz) & Kap.~\ref{white-label-bedarf-im-profisport}, \ref{anforderungsanalyse-am-beispiel-eintracht-frankfurt} \\
 \end{longtable}
 }
 
-Die drei Anforderungsdimensionen (operativer Zeitdruck, Mehrsprachigkeit und White-Label-Bedarf) sind keine isolierten Herausforderungen, sondern greifen strukturell ineinander. Zeitdruck macht rein menschliche Skalierung kaum darstellbar, Mehrsprachigkeit multipliziert diesen Aufwand, und White-Label-Anforderungen verlangen eine stilistische Konsistenz, die wechselndes Personal nicht zuverlässig gewährleisten kann. Eine integrierte Lösung ist daher erforderlich. Die vorstehenden 22 Anforderungen bilden das Pflichtenheft für die Systemkonzeption in Kapitel~\ref{systemkonzeption}. Die hierfür notwendigen technologischen Grundlagen erschließt Kapitel~\ref{stand-der-technik}.
+Die drei Anforderungsdimensionen (operativer Zeitdruck, Mehrsprachigkeit und White-Label-Bedarf) sind keine isolierten Herausforderungen, sondern greifen strukturell ineinander. Zeitdruck macht rein menschliche Skalierung kaum darstellbar, Mehrsprachigkeit multipliziert diesen Aufwand, und White-Label-Anforderungen verlangen eine stilistische Konsistenz, die wechselndes Personal nicht zuverlässig gewährleisten kann. Eine integrierte Lösung ist daher erforderlich. Die vorstehenden 20 Anforderungen bilden das Pflichtenheft für die Systemkonzeption in Kapitel~\ref{systemkonzeption}. Die hierfür notwendigen technologischen Grundlagen erschließt Kapitel~\ref{stand-der-technik}.
