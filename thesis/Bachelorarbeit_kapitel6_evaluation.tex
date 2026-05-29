@@ -366,7 +366,7 @@ Da ein kontrolliertes Feldexperiment nicht durchführbar war, bleibt die archite
 \section{Anforderungsabgleich
 (Soll-Ist-Vergleich)}\label{anforderungsabgleich-soll-ist-vergleich}\label{technische-qualitätssicherung}
 
-23 der 24 in Abschnitt~\ref{zusammenfassung-der-systemanforderungen} hergeleiteten Anforderungen sind vollständig erfüllt. F7 ist funktional implementiert; die LLM-as-Judge-Evaluation (Abschnitt~\ref{mehrsprachige-verifikation}) liefert eine erste qualitative Einschätzung der Übersetzungsqualität, ersetzt jedoch keinen Muttersprachler-Test (vgl. Abschnitt~\ref{technische-einordnung}). Die folgende Tabelle dokumentiert den Nachweis je Anforderung:
+21 der 22 in Abschnitt~\ref{zusammenfassung-der-systemanforderungen} hergeleiteten Anforderungen sind vollständig erfüllt. F7 ist funktional implementiert; die LLM-as-Judge-Evaluation (Abschnitt~\ref{mehrsprachige-verifikation}) liefert eine erste qualitative Einschätzung der Übersetzungsqualität, ersetzt jedoch keinen Muttersprachler-Test (vgl. Abschnitt~\ref{technische-einordnung}). Die folgende Tabelle dokumentiert den Nachweis je Anforderung:
 
 {\def\LTcaptype{none} % do not increment counter
 \begin{longtable}[]{@{}
@@ -397,10 +397,8 @@ F13 & Medienintegration (ScorePlay, Social-Media-Panels) & MediaQueue-Architektu
 \multicolumn{3}{l}{\emph{Nicht-funktionale Anforderungen}} \\
 N1 & Concurrency-Begrenzung LLM & \texttt{asyncio.Semaphore(8)} in \texttt{ticker\_service.py} \\
 N2 & Retry mit Rate-Limit-Erkennung & 3 Versuche; 30\,s/60\,s bei Rate-Limit; 1\,s/2\,s sonst \\
-N3 & Reproduzierbare, isolierte Testausführung unter Produktionsbedingungen & Rollback-Fixtures; keine persistenten Testdaten \\
-N4 & Typsichere Konfigurationsschnittstellen zwischen Komponenten & 98{,}02\,\% type-coverage (\texttt{npx type-coverage}); 0 Compiler-Fehler \\
-N5 & Responsive UI & Playwright-Test 375×812 (iPhone~X\,/\,XS\,/\,12\,mini u.\,a.); Mobile Tab Bar \\
-N6 & Fehlerresistenz Frontend & \texttt{ErrorBoundary} mit Fallback-UI; 4 Tests \\
+N3 & Responsive UI & Playwright-Test 375×812 (iPhone~X\,/\,XS\,/\,12\,mini u.\,a.); Mobile Tab Bar \\
+N4 & Fehlerresistenz Frontend & \texttt{ErrorBoundary} mit Fallback-UI; 4 Tests \\
 \midrule\noalign{}
 \multicolumn{3}{l}{\emph{Architektur-Anforderungen}} \\
 A1 & Schichtenbasierte Systemarchitektur mit klar getrennten Verantwortlichkeiten & n8n (Daten), FastAPI/PostgreSQL (Anwendung), React (Präsentation) \\
