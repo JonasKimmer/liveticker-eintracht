@@ -1,6 +1,6 @@
 \chapter{Einleitung}\label{einleitung}
 
-Ein Liveticker ist eine Form der Echtzeit-Berichterstattung, bei der Spielereignisse und redaktionelle Einordnungen eines Fußballspiels fortlaufend als kurze Texteinträge publiziert werden (vgl. Hauser 2008, S.~1; Bluhm \& Schäfer 2023, S.~24--27). Der Liveticker hat sich dabei zur zentralen Darstellungsform digitaler Sportkommunikation entwickelt. Vereine und Medien berichten in Echtzeit auf eigenen Plattformen, direkt und ohne klassischen Redaktionsumweg (vgl. Beils 2023, S.~8 u.~155). Dieser strukturelle Wandel erhöht den Tempo- und Qualitätsdruck auf Redakteure erheblich.
+Ein Liveticker ist eine Form der Echtzeit-Berichterstattung, bei der Spielereignisse und redaktionelle Einordnungen eines Fußballspiels fortlaufend als kurze Texteinträge publiziert werden (vgl. Hauser 2008, S.~1; Bluhm \& Schäfer 2023, S.~24--27). Der Liveticker hat sich zur zentralen Darstellungsform digitaler Sportkommunikation entwickelt. Vereine und Medien berichten in Echtzeit auf eigenen Plattformen, direkt und ohne klassischen Redaktionsumweg (vgl. Beils 2023, S.~8 u.~155). Dieser strukturelle Wandel erhöht den Tempo- und Qualitätsdruck auf Redakteure erheblich.
 
 \section{Problemstellung und
 Zielsetzung}\label{problemstellung-und-zielsetzung}
@@ -22,7 +22,7 @@ Um den Mehrwert unterschiedlicher Automatisierungsgrade vergleichbar zu machen, 
 
 \section{Forschungsfrage}\label{forschungsfrage}
 
-Die Forschungsfrage verbindet eine Realisierbarkeits- mit einer Qualitätsdimension und wird in Kapitel~\ref{fazit-und-ausblick} beantwortet.
+Die Forschungsfrage verbindet eine Realisierbarkeits- mit einer Qualitätsdimension:
 
 \begin{quote}
 \emph{Lässt sich ein hybrides KI-gestütztes Redaktionssystem für die
@@ -33,6 +33,8 @@ Qualitätsanforderungen hinsichtlich Korrektheit, Tonalität und
 Vollständigkeit?}
 \end{quote}
 
+Der erste Teil ist im Sinne des Design Science Research (vgl. Hevner et al.~2004) konstruktiv angelegt: Konzeption, Architekturentscheid und prototypische Implementierung eines produktionsfähigen Systems. Der zweite Teil ist evaluativ: die empirische Prüfung, ob das System journalistische Mindestanforderungen an Korrektheit, Tonalität und Vollständigkeit erfüllt. Die Forschungsfrage wird in Kapitel~\ref{fazit-und-ausblick} beantwortet.
+
 
 
 \section{Methodisches Vorgehen}\label{methodisches-vorgehen}
@@ -41,8 +43,7 @@ Die Arbeit folgt einem konstruktiven Forschungsansatz im Sinne des
 \textbf{Design Science Research} (vgl. Hevner et al.~2004). Ein
 softwarebasiertes Artefakt wird als Antwort auf ein identifiziertes
 Praxisproblem entworfen, implementiert und evaluiert. Der
-Erkenntnisgewinn entsteht nicht nur aus der Evaluation, sondern
-auch aus dem Entwurfs- und Implementierungsprozess selbst. Die generalisierbaren Beiträge sind eine übertragbare LLM-Redaktionsarchitektur sowie eine reproduzierbare Evaluationsinfrastruktur zur systematischen Textqualitätsbewertung.
+Erkenntnisgewinn entsteht nicht nur aus der Evaluation, sondern auch aus dem Entwurfs- und Implementierungsprozess selbst.
 
 Das methodische Vorgehen umfasst fünf aufeinander aufbauende Phasen, von der Problemanalyse über Technologierecherche und Systemkonzeption bis zu Implementierung und Evaluation.
 
@@ -58,7 +59,7 @@ Bewusst ausgeklammert bleiben: systematische Nutzerstudien mit externen Probande
 
 \section{Aufbau der Arbeit}\label{aufbau-der-arbeit}
 
-Die vorliegende Arbeit gliedert sich in acht Kapitel. Kapitel~\ref{motivation-und-anforderungen} vertieft die drei Anforderungsdimensionen und leitet die formalen Systemanforderungen am Fallbeispiel Eintracht Frankfurt ab. Kapitel~\ref{stand-der-technik} arbeitet die technologischen Grundlagen auf, darunter Large Language Models, Prompt Engineering, automatisierte Sportberichterstattung, ETL-Prozesse sowie den Webanwendungs-Stack (Backend, Echtzeit-Kommunikation, Frontend und Deployment).
+Die vorliegende Arbeit gliedert sich in acht Kapitel. Kapitel~\ref{motivation-und-anforderungen} vertieft die drei Anforderungsdimensionen und leitet die formalen Systemanforderungen am Fallbeispiel Eintracht Frankfurt ab. Kapitel~\ref{stand-der-technik} erschließt die technologischen Grundlagen, darunter Large Language Models, Prompt Engineering, automatisierte Sportberichterstattung, ETL-Prozesse sowie den Webanwendungs-Stack (Backend, Echtzeit-Kommunikation, Frontend und Deployment).
 
 Kapitel~\ref{systemkonzeption} entwirft die dreischichtige Systemarchitektur mit Datenmodell, LLM-Pipeline und Prompt-Design. Kapitel~\ref{implementierung} dokumentiert die Umsetzung als produktionsfähige Webanwendung mit TypeScript-Frontend, REST-API, n8n-ETL-System, Cloud-Deployment und automatisierter Qualitätssicherung.
 
