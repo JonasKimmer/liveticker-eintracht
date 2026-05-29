@@ -304,10 +304,10 @@ Das Frontend wird in drei Kategorien getestet. Utility-Funktionen prüfen reine 
 
 \section{Deployment-Konzept}\label{deployment-konzept}
 
-Das Deployment-Modell folgt dem Stateless-Design-Prinzip: Backend, Frontend und Datenbank laufen als voneinander unabhängige Dienste ohne gemeinsamen prozesslokalen Zustand (vgl. Abschnitt~\ref{cloud-deployment}). Konfiguration und Zugangsdaten werden ausschließlich als Umgebungsvariablen injiziert, sodass keine Secrets im Repository verbleiben. Die gesamte Infrastruktur ist deklarativ im Repository beschrieben, sodass Deployments reproduzierbar und versionierbar sind.
+Das Deployment-Modell folgt einem Stateless-Design-Prinzip, nach dem Backend, Frontend und Datenbank als voneinander unabhängige Dienste ohne gemeinsamen prozesslokalen Zustand betrieben werden (vgl. Abschnitt~\ref{cloud-deployment}). Konfiguration und Zugangsdaten werden ausschließlich als Umgebungsvariablen injiziert, sodass keine Secrets im Repository verbleiben. Die White-Label-Trennung der beiden Instanzen erfolgt auf dieser Basis ausschließlich durch Umgebungsvariablen, ohne dass eine eigene Infrastruktur pro Instanz erforderlich ist. Die gesamte Infrastruktur ist deklarativ im Repository beschrieben, sodass Deployments reproduzierbar und versionierbar sind.
 
 \paragraph{PaaS-Hosting.}
-Als Hosting-Plattform wurde \textbf{Render} gewählt, da PaaS-Betrieb den Infrastrukturaufwand auf Konfiguration reduziert und automatische Deployments bei jedem Git-Push ohne eigene CI/CD-Pipeline ermöglicht. Gegenüber Alternativen wie Railway und Fly.io bietet Render eine einfachere Konfiguration für das kombinierte Backend-Frontend-Setup. Backend und Frontend laufen als zwei unabhängige Dienste.
+Als Hosting-Plattform wurde \textbf{Render} gewählt, da PaaS-Betrieb den Infrastrukturaufwand auf Konfiguration reduziert und automatische Deployments bei jedem Git-Push ohne eigene CI/CD-Pipeline ermöglicht. Gegenüber Alternativen wie Railway und Fly.io bietet Render eine einfachere Konfiguration für das kombinierte Backend-Frontend-Setup.
 
 \paragraph{Containerisierung.}
 Das Backend wird als Docker-Container betrieben. Containerisierung stellt sicher, dass Laufzeitumgebung, Python-Version und Abhängigkeiten in lokaler Entwicklung und Produktion identisch sind, und eliminiert damit umgebungsbedingte Fehlerquellen. Das Frontend wird als statischer Build ausgeliefert, der keine Laufzeitumgebung erfordert.
