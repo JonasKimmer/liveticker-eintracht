@@ -380,7 +380,7 @@ F6 & Slash-Command-gestützte manuelle Ticker-Erstellung & 11 Phasen- und 14 Eve
 F7 & Mehrsprachige Textgenerierung & \texttt{translate\_text()} mit Temperatur 0{,}1; Batch-Endpoint; funktional verifiziert (N\,=\,21 Einträge); LLM-as-Judge-Qualitätsevaluation vgl. Abschnitt~\ref{mehrsprachige-verifikation}; kein Muttersprachler-Test (vgl. Abschnitt~\ref{technische-einordnung}) \\
 F8 & Automatischer, idempotenter ETL-Datenimport & 17 n8n-Workflows in 6 Gruppen (WF01--WF16, inkl. zwei WF04-Varianten); UPSERT-Strategien für Events, Spieler, Teams \\
 F9 & Anbieterunabhängige LLM-Integration mit Ausfallsicherheit & 5 Provider (openrouter → gemini → openai → anthropic → mock) \\
-F10 & Deduplizierung & Prüfung auf bestehenden Eintrag per \texttt{event\_id} vor LLM-Aufruf \\
+F10 & Idempotente Generierung und Deduplizierung & Prüfung auf bestehenden Eintrag per \texttt{event\_id} vor LLM-Aufruf \\
 F11 & Pre-Match-Kontextgenerierung & 7 Context-Builder in \texttt{llm\_context\_builders.py} \\
 F12 & Live-Statistik-Updates & \texttt{ctx\_live\_stats()} in \texttt{llm\_context\_builders.py}; automatische Zwischenstand-Texte; durch \texttt{test\_ticker\_service.py} (Context-Builder-Tests) abgedeckt \\
 F13 & Medienintegration (ScorePlay, Social-Media-Panels) & MediaQueue-Architektur; n8n-Workflows 08, 10--12 (ScorePlay, X, YouTube, Instagram); instanzspezifische Panel-Einblendung im Frontend \\
