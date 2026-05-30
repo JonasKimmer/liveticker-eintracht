@@ -32,7 +32,7 @@ backend/app/
 
 Die Datenbankanbindung stellt \texttt{core/database.py} bereit. Die Datenbankschicht basiert auf synchronem SQLAlchemy, da Datenbankoperationen kurzlaufend sind und ein Wechsel auf SQLAlchemy-async zusätzliche Komplexität ohne nachgewiesenen Latenzvorteil verursachen würde. LLM-Aufrufe und externe API-Anfragen werden dagegen asynchron ausgeführt. Zwei Health-Endpunkte (\texttt{GET /health} und \texttt{GET /health/db}) ermöglichen Verfügbarkeits- und Datenbankverbindungsprüfungen.
 
-Beim Start führt ein \texttt{lifespan}-Context-Manager \texttt{alembic upgrade head} aus und spielt ausstehende Migrationen automatisch ein, bevor die erste Anfrage eintrifft. Migrationsdateien werden mit \texttt{alembic revision -{}-autogenerate} aus den ORM-Modellen erzeugt, manuell geprüft und versioniert im Repository abgelegt. Sie laufen über eine direkte Datenbankverbindung (\texttt{DIRECT\_URL}), da der vorgelagerte Connection-Pooler pgbouncer Schema-Änderungen nicht zuverlässig verarbeitet. 
+Beim Start führt ein \texttt{lifespan}-Context-Manager \texttt{alembic upgrade head} aus und versucht, ausstehende Migrationen vor dem ersten Request einzuspielen. Migrationsdateien werden im Entwicklungsprozess per \texttt{alembic revision -{}-autogenerate} aus den ORM-Modellen erzeugt, manuell geprüft und versioniert im Repository abgelegt. Für Migrationen wird eine direkte Datenbankverbindung über \texttt{DIRECT\_URL} verwendet, um Einschränkungen des vorgeschalteten Connection-Poolers PgBouncer bei Schema-Änderungen zu umgehen.
 
 \subsection{Datenmodelle, Schemas und Datenzugriff}\label{datenmodelle-datenbankschema-und-api-validierung}
 
