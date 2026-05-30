@@ -1,6 +1,6 @@
 \chapter{Einleitung}\label{einleitung}
 
-Ein Liveticker ist eine Form der Echtzeit-Berichterstattung, bei der Spielereignisse und redaktionelle Einordnungen eines Fußballspiels fortlaufend als kurze Texteinträge publiziert werden (vgl. Hauser 2008, S.~1; Bluhm \& Schäfer 2023, S.~24--27). Der Liveticker hat sich zur zentralen Darstellungsform digitaler Sportkommunikation entwickelt. Vereine und Medien berichten in Echtzeit auf eigenen Plattformen, direkt und ohne klassischen Redaktionsumweg (vgl. Beils 2023, S.~8 u.~155). Dieser strukturelle Wandel erhöht den Tempo- und Qualitätsdruck auf Redakteure erheblich.
+Ein Liveticker ist eine Form der Echtzeit-Berichterstattung, bei der Spielereignisse und redaktionelle Einordnungen eines Fußballspiels fortlaufend als kurze Texteinträge publiziert werden (vgl. Hauser 2008, S.~1; Bluhm \& Schäfer 2023, S.~24--27). Der Liveticker hat sich zur zentralen Darstellungsform digitaler Sportkommunikation entwickelt (vgl. Beils 2023, S.~8). Vereine und Medien berichten in Echtzeit auf eigenen Plattformen, direkt und ohne klassischen Redaktionsumweg (vgl. Beils 2023, S.~155). Dieser strukturelle Wandel erhöht den Tempo- und Qualitätsdruck auf Redakteure erheblich.
 
 \section{Problemstellung und
 Zielsetzung}\label{problemstellung-und-zielsetzung}
@@ -14,9 +14,9 @@ nichts an Aktualität verloren hat (Seibt, zit.~n. Beils 2023, S.~56). Drei stru
 
 Erstens zwingt der \textbf{operative Zeitdruck} Redakteure dazu, Spielereignisse in Echtzeit zu beobachten, einzuordnen und in stilistisch kohärente Kurztexte zu überführen, typischerweise in Abständen von ein bis drei Minuten (vgl. Walter 2020, S.~29; Bluhm \& Schäfer 2023, S.~27 u.~35). Zweitens stehen Redaktionen vor wachsenden \textbf{Internationalisierungsanforderungen}, da Profifußballvereine zunehmend internationale Fanbases bedienen (vgl. Beils 2023, S.~219) und Inhalte parallel in mehreren Sprachen bereitstellen müssen, was ohne entsprechendes mehrsprachiges Personal kaum aufrechtzuerhalten ist. Drittens begründet der \textbf{strukturelle Wandel} der Vereine zu eigenständigen Medienproduzenten einen konkreten Produktbedarf an Redaktionswerkzeugen mit konfigurierbarem vereinsspezifischem Ton und CI-konformer Gestaltung (vgl. Beils 2023, S.~8 u.~155).
 
-Ziel der Arbeit ist ein produktionsfähiges Redaktionssystem, das diese Anforderungen durch den Einsatz von \textbf{Large Language Models} adressiert, während Entscheidungshoheit und publizistische Verantwortung beim Menschen verbleiben. Das System wird in zwei Ausprägungen realisiert, einer generischen Instanz mit KI-gestützter Textgenerierung und mehrsprachiger Ausgabe für beliebige Vereine sowie einer vereinsspezifischen White-Label-Instanz mit konfiguriertem Vereinsstil am Beispiel Eintracht Frankfurt.
+Ziel der Arbeit ist ein produktionsfähiges Redaktionssystem, das diese Anforderungen durch den Einsatz von \textbf{Large Language Models} adressiert, während Entscheidungshoheit und publizistische Verantwortung beim Menschen verbleiben. Das System wird am Fallbeispiel Eintracht Frankfurt als vereinsspezifische White-Label-Instanz realisiert sowie als generische Instanz für beliebige Vereine ausgelegt.
 
-Um den Mehrwert unterschiedlicher Automatisierungsgrade vergleichbar zu machen, definiert und evaluiert die Arbeit drei Betriebsmodi, die das vollständige Spektrum von manueller bis vollautomatischer Erstellung abdecken: \texttt{manual} bildet die vollmanuell erstellte Vergleichsbasis, \texttt{auto} realisiert KI-basierte Texterstellung und Publikation ohne menschliches Korrektiv als Kontrollbedingung, und \texttt{coop} verbindet als hybrider Primärmodus KI-Vorschlag mit redaktioneller Prüfung vor Freigabe.
+Um den Mehrwert unterschiedlicher Automatisierungsgrade vergleichbar zu machen, definiert und evaluiert die Arbeit drei Betriebsmodi, die das vollständige Spektrum von manueller bis vollautomatischer Erstellung abdecken: \texttt{manual} bildet die Vergleichsbasis, \texttt{auto} realisiert KI-basierte Texterstellung und Publikation ohne menschliches Korrektiv als Kontrollbedingung, und \texttt{coop} verbindet als hybrider Primärmodus KI-Vorschlag mit redaktioneller Prüfung vor Freigabe.
 
 
 
@@ -42,10 +42,9 @@ Der erste Teil ist im Sinne des Design Science Research (vgl. Hevner et al.~2004
 Die Arbeit folgt einem konstruktiven Forschungsansatz im Sinne des
 \textbf{Design Science Research} (vgl. Hevner et al.~2004). Ein
 softwarebasiertes Artefakt wird als Antwort auf ein identifiziertes
-Praxisproblem entworfen, implementiert und evaluiert. Der
-Erkenntnisgewinn entsteht nicht nur aus der Evaluation, sondern auch aus dem Entwurfs- und Implementierungsprozess selbst.
+Praxisproblem entworfen, implementiert und evaluiert.
 
-Das methodische Vorgehen umfasst fünf aufeinander aufbauende Phasen, von der Problemanalyse über Technologierecherche und Systemkonzeption bis zu Implementierung und Evaluation.
+Das methodische Vorgehen umfasst fünf aufeinander aufbauende Phasen: Problemanalyse, Technologierecherche, Systemkonzeption, Implementierung und Evaluation.
 
 Die Evaluationsmethodik operationalisiert die Forschungsfrage anhand der drei Qualitätsdimensionen Korrektheit, Tonalität und Vollständigkeit durch eine manuelle Bewertung von 40 KI-generierten Ticker-Einträgen sowie eine ergänzende LLM-as-Judge-Evaluation (vgl. Zheng et al.~2023). Ein leitfadengestütztes Experteninterview mit einem Digitalverantwortlichen von Eintracht Frankfurt ergänzt die quantitativen Befunde um eine praxisnahe Außenperspektive und wird in Kapitel~\ref{diskussion} ausgewertet.
 
@@ -53,14 +52,10 @@ Die Evaluationsmethodik operationalisiert die Forschungsfrage anhand der drei Qu
 
 Die Praxisorientierung dieser Arbeit ergibt sich aus der Kooperation mit der Stackwork GmbH im IT-Bereich von Eintracht Frankfurt. Die Anforderungen wurden iterativ mit professionellen Redakteuren und der Redaktionsleitung verfeinert.
 
-Bewusst ausgeklammert bleiben: systematische Nutzerstudien mit externen Probanden, eine Vollkostenanalyse, der systematische Vergleich mit kommerziellen Systemen sowie eine Authentifizierungsschicht für den Mehrbenutzerbetrieb. Inhaltlich begrenzt sich die Arbeit auf Fußball-Liveticker im Live-Spielbetrieb; Nicht-Spielinhalte (Pressekonferenz-, Trainingsberichterstattung) und andere Sportarten bleiben ebenso ausgeklammert wie ein Muttersprachler-Test der mehrsprachigen Textgenerierung und ein Langzeitbetrieb über eine vollständige Spielsaison. Diese Entscheide werden in Abschnitt~\ref{kritische-reflexion} kritisch reflektiert.
+Bewusst ausgeklammert bleiben: systematische Nutzerstudien mit externen Probanden, eine Vollkostenanalyse, der systematische Vergleich mit kommerziellen Systemen sowie eine Authentifizierungsschicht für den Mehrbenutzerbetrieb, da der Einsatz auf ein netzwerkisoliertes internes Werkzeug beschränkt ist. Inhaltlich begrenzt sich die Arbeit auf Fußball-Liveticker im Live-Spielbetrieb; Nicht-Spielinhalte (Pressekonferenz-, Trainingsberichterstattung) und andere Sportarten bleiben ebenso ausgeklammert wie ein Muttersprachler-Test der mehrsprachigen Textgenerierung und ein Langzeitbetrieb über eine vollständige Spielsaison. Diese Entscheidungen werden in Abschnitt~\ref{kritische-reflexion} kritisch reflektiert.
 
 
 
 \section{Aufbau der Arbeit}\label{aufbau-der-arbeit}
 
-Die vorliegende Arbeit gliedert sich in acht Kapitel. Kapitel~\ref{motivation-und-anforderungen} vertieft die drei Anforderungsdimensionen und leitet die formalen Systemanforderungen am Fallbeispiel Eintracht Frankfurt ab. Kapitel~\ref{stand-der-technik} erschließt die technologischen Grundlagen, darunter Large Language Models, Prompt Engineering, automatisierte Sportberichterstattung, ETL-Prozesse sowie den Webanwendungs-Stack (Backend, Echtzeit-Kommunikation, Frontend und Deployment).
-
-Kapitel~\ref{systemkonzeption} entwirft die dreischichtige Systemarchitektur mit Datenmodell, LLM-Pipeline und Prompt-Design. Kapitel~\ref{implementierung} dokumentiert die Umsetzung als produktionsfähige Webanwendung mit TypeScript-Frontend, REST-API, n8n-ETL-System, Cloud-Deployment und automatisierter Qualitätssicherung.
-
-Kapitel~\ref{evaluation} evaluiert die technische Qualität, die KI-Textgenerierung und gleicht alle Anforderungen systematisch ab. Kapitel~\ref{diskussion} ordnet die Ergebnisse in den Stand der Technik ein, diskutiert Betriebsmodi und Prompt-Architektur, reflektiert methodische und technische Limitationen, wertet das Experteninterview aus und schließt mit einer ethischen Einordnung des KI-Einsatzes. Kapitel~\ref{fazit-und-ausblick} beantwortet die Forschungsfrage und gibt einen Ausblick auf Erweiterungen.
+Die vorliegende Arbeit gliedert sich in acht Kapitel. Kapitel~\ref{motivation-und-anforderungen} vertieft die drei Anforderungsdimensionen und leitet die formalen Systemanforderungen am Fallbeispiel Eintracht Frankfurt ab. Kapitel~\ref{stand-der-technik} erschließt die technologischen Grundlagen, darunter Large Language Models, Prompt Engineering, automatisierte Sportberichterstattung, ETL-Prozesse sowie den Webanwendungs-Stack. Kapitel~\ref{systemkonzeption} entwirft die dreischichtige Systemarchitektur mit Datenmodell, LLM-Pipeline und Prompt-Design. Kapitel~\ref{implementierung} dokumentiert die Umsetzung als produktionsfähige Webanwendung mit TypeScript-Frontend, REST-API, n8n-ETL-System, Cloud-Deployment und automatisierter Qualitätssicherung. Kapitel~\ref{evaluation} evaluiert die technische Qualität, die KI-Textgenerierung und gleicht alle Anforderungen systematisch ab. Kapitel~\ref{diskussion} ordnet die Ergebnisse in den Stand der Technik ein, diskutiert Betriebsmodi und Prompt-Architektur, reflektiert Limitationen und wertet das Experteninterview aus. Kapitel~\ref{fazit-und-ausblick} beantwortet die Forschungsfrage und gibt einen Ausblick auf Erweiterungen.
