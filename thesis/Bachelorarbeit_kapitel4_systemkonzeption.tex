@@ -34,15 +34,15 @@ Triggerarchitektur}\label{kommunikations--und-triggerarchitektur}
 
 Je nach Datenquelle und Betriebskontext unterscheidet die Triggerarchitektur sechs Auslösemuster, die den Datenfluss zwischen Frontend, Backend und n8n steuern:
 
-\textbf{Spielnavigation:} Der Redakteur navigiert über Land, Team, Wettbewerb und Spieltag zur Spielauswahl. Jede Navigationsebene löst einen Webhook aus, der die zugehörigen Stammdaten von der Football-API lädt und in der Datenbank speichert. Das Frontend liest sie anschließend per REST-API aus.
+\textbf{Spielnavigation:} Der Redakteur navigiert über Land, Team, Wettbewerb und Spieltag zur Spielauswahl. Jede Navigationsebene löst einen Webhook aus, der die zugehörigen Stammdaten von der Football-API (externer Sportdaten-Anbieter) lädt und in der Datenbank speichert. Das Frontend liest sie anschließend per REST-API aus.
 
-\textbf{Spiel-Import:} Nach der Spielauswahl importiert das Frontend per Webhook Aufstellungen, Events, Match-Statistiken und Prematch-Daten. Bereits vorhandene Daten werden nicht erneut importiert. Das Muster gilt unabhängig vom Spielstatus, sodass auch abgeschlossene Spiele beim ersten Öffnen vollständig nachgeladen werden. Spieler-Statistiken werden bei jeder Spielauswahl neu abgerufen, da Kader und Verfügbarkeiten sich jederzeit ändern können.
+\textbf{Spiel-Import:} Nach der Spielauswahl löst das Frontend Webhooks aus, die spielspezifische Daten laden. Der Importumfang richtet sich nach dem Spielstatus: Vor Spielbeginn werden Prematch-Daten geladen; bei laufenden und abgeschlossenen Spielen kommen Aufstellungen, Ereignisse und Statistiken hinzu. Statische Daten werden idempotent importiert. Spieler-Statistiken werden bei jeder Spielauswahl aktualisiert, da Kader und Leistungsdaten sich regelmäßig ändern.
 
 \textbf{Phasennachholung:} Beim erstmaligen Öffnen eines laufenden Spiels prüft das Frontend, ob KI-Entwürfe für bereits vergangene Spielphasen fehlen, und löst deren Nachgenerierung aus.
 
 \textbf{Live-Betrieb:} Das Frontend ruft Events, Spielstatistiken, Spieler-Statistiken und Minutenupdates periodisch ab.
 
-\textbf{Medienimport:} Medieninhalte (X, Instagram, YouTube, ScorePlay) importiert der Redakteur bei Bedarf über einen Importbutton im Mediapanel. In der \texttt{ef\_whitelabel}-Instanz wird bei Frankfurter Toren darüber hinaus automatisch ein Torjubel-Videoeintrag ergänzt und per WebSocket unmittelbar ans Frontend übertragen.
+\textbf{Medienimport:} Medieninhalte aus sozialen Netzwerken (X, Instagram, YouTube) sowie aus ScorePlay (vereinsinterne Medienbibliothek) importiert der Redakteur bei Bedarf über einen Importbutton im Mediapanel. In der \texttt{ef\_whitelabel}-Instanz wird bei Frankfurter Toren darüber hinaus automatisch ein Torjubel-Videoeintrag ergänzt und per WebSocket unmittelbar ans Frontend übertragen.
 
 \textbf{Phasenkaskaden:} Phasenübergänge lösen automatisch Folgeprozesse aus, die ohne Frontend-Beteiligung Phasenwechsel-Einträge, Zusammenfassungen und weitere Einträge erzeugen.
 
