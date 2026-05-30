@@ -28,7 +28,7 @@ backend/app/
 \label{fig:backend-schichten}
 \end{figure}
 
-\texttt{core/config.py} bündelt die gesamte Konfiguration (LLM-API-Keys, Datenbankverbindung, Parallelitätsgrenzen und Deployment-Modus) und liest sie per Pydantic \texttt{BaseSettings} aus Umgebungsvariablen (lokal per \texttt{.env}-Datei, im Deployment als Plattform-Secrets). Fehlende Pflichtfelder führen bereits beim Start zu einem validierten Fehler.
+\texttt{core/config.py} bündelt die gesamte Konfiguration (Datenbankverbindung, LLM-API-Keys, Parallelitätsgrenzen und weitere App-Einstellungen) und liest sie per Pydantic \texttt{BaseSettings} aus Umgebungsvariablen (lokal per \texttt{.env}-Datei, im Deployment als Plattform-Secrets). \texttt{DATABASE\_URL} ist das einzige Pflichtfeld ohne Default-Wert; fehlt es, bricht die Anwendung beim Start mit einem Validierungsfehler ab.
 
 Die Datenbankanbindung stellt \texttt{core/database.py} bereit. Die Datenbankschicht ist synchron implementiert: Datenbankoperationen sind kurzläufig und werden von FastAPI automatisch in einem Thread-Pool ausgeführt, sodass der Event-Loop nicht blockiert wird. SQLAlchemy-async würde hier zusätzliche Komplexität ohne messbaren Latenzvorteil einbringen. LLM-Aufrufe und externe API-Anfragen verwenden dagegen asyncio-basierte Clients (vgl.\ Abschnitt~\ref{interne-schichtstruktur}). Der Verbindungspool ist für den vorgelagerten Connection-Pooler konfiguriert (\texttt{pool\_pre\_ping=True}, konfigurierbare Größe über \texttt{DB\_POOL\_SIZE}). Zwei Health-Endpunkte (\texttt{GET /health} und \texttt{GET /health/db}) ermöglichen Verfügbarkeits- und Datenbankverbindungsprüfungen.
 
