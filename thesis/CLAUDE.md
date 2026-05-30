@@ -15,7 +15,7 @@ Implementierung → Evaluation → Diskussion → Fazit.
 - LLM_TEMPERATURE = 0,5 (Generierung), LLM_TRANSLATION_TEMPERATURE = 0,1 (Übersetzung)
 - Unterstützte Sprachen: Deutsch, Englisch, Spanisch, Französisch (NICHT Japanisch)
 - 19 Anforderungen (F1–F17, N1–N2); 18 vollständig erfüllt, F7 funktional implementiert
-- 17 n8n-Workflows in 6 Gruppen (A–F), ausschließlich manuell verifiziert
+- 17 n8n-Workflows in 7 Gruppen (A–G), ausschließlich manuell verifiziert
 - Evaluationswerte (manuelle Fehleranalyse, N=40): Korrektheit Ø 4,6/5 · Vollständigkeit Ø 4,3/5 · Tonalität Ø 4,1/5
 - LLM-as-Judge (claude-sonnet-4-5 via OpenRouter, N=80): neutral Ø 4,76 · kritisch Ø 3,82 · euphorisch Ø 4,11 · Gesamt 4,23
 - LLM-as-Judge Tonalität kritisch: 3,50/5 (schwächstes Profil); kritisch Vollständigkeit: 3,62/5

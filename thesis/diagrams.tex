@@ -109,19 +109,19 @@
 \newcommand{\DiagramDataModel}{%
 \begin{tikzpicture}[node distance=3cm, auto]
   \tikzset{entity/.style={rectangle, draw, fill=green!15, text width=1.5cm, text centered, minimum height=1cm}}
-  
-  \node[entity] (match) {Match};
-  \node[entity, right of=match] (event) {Event};
-  \node[entity, right of=event] (ticker) {Ticker};
-  \node[entity, below of=match] (team) {Team};
-  \node[entity, below of=event] (player) {Player};
-  \node[entity, below of=ticker] (media) {Media};
 
-  \draw[arrow] (match) -- node[above] {1:N} (event);
-  \draw[arrow] (event) -- node[above] {1:N} (ticker);
-  \draw[arrow] (match) -- node[left] {N:1} (team);
-  \draw[arrow] (event) -- node[right] {M:1} (player);
-  \draw[arrow] (match) -- node[above, sloped] {1:N} (media);
+  \node[entity] (team)   {Team};
+  \node[entity, right of=team]  (match)  {Match};
+  \node[entity, right of=match] (event)  {Event};
+  \node[entity, right of=event] (ticker) {Ticker};
+  \node[entity, below of=match] (media)  {Media};
+  \node[entity, below of=event] (player) {Player};
+
+  \draw[arrow] (match)  -- node[above] {N:1} (team);
+  \draw[arrow] (match)  -- node[above] {1:N} (event);
+  \draw[arrow] (event)  -- node[above] {1:N} (ticker);
+  \draw[arrow] (match)  -- node[left]  {1:N} (media);
+  \draw[arrow] (event)  -- node[right] {M:1} (player);
 \end{tikzpicture}%
 }
 

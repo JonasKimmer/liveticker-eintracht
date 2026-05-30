@@ -357,7 +357,7 @@ Da ein kontrolliertes Feldexperiment nicht durchführbar war, bleibt die archite
 
 \section{Anforderungsabgleich}\label{anforderungsabgleich-soll-ist-vergleich}\label{technische-qualitätssicherung}
 
-18 der 19 in Abschnitt~\ref{zusammenfassung-der-systemanforderungen} hergeleiteten Anforderungen sind vollständig erfüllt. F7 ist funktional implementiert; die LLM-as-Judge-Evaluation (Abschnitt~\ref{mehrsprachige-verifikation}) liefert eine erste qualitative Einschätzung der Übersetzungsqualität, ersetzt jedoch keinen Muttersprachler-Test (vgl. Abschnitt~\ref{technische-einordnung}). Die folgende Tabelle dokumentiert den Nachweis je Anforderung:
+21 der 22 in Abschnitt~\ref{zusammenfassung-der-systemanforderungen} hergeleiteten Anforderungen sind vollständig erfüllt. F7 ist funktional implementiert; die LLM-as-Judge-Evaluation (Abschnitt~\ref{mehrsprachige-verifikation}) liefert eine erste qualitative Einschätzung der Übersetzungsqualität, ersetzt jedoch keinen Muttersprachler-Test (vgl. Abschnitt~\ref{technische-einordnung}). Die folgende Tabelle dokumentiert den Nachweis je Anforderung:
 
 {\def\LTcaptype{none} % do not increment counter
 \begin{longtable}[]{@{}
@@ -392,6 +392,9 @@ F17 & White-Label-Fähigkeit & \texttt{src/config/whitelabel.ts} (Frontend-Brand
 \multicolumn{3}{l}{\emph{Qualitätsanforderungen}} \\
 N1 & Responsive UI & Playwright-Test 375×812 (iPhone~X\,/\,XS\,/\,12\,mini u.\,a.); Mobile Tab Bar \\
 N2 & Fehlerresistenz Frontend & \texttt{ErrorBoundary} mit Fallback-UI; 4 Tests \\
+N3 & Keyboard-First-Bedienung & \texttt{Ctrl+1/2/3}, \texttt{TAB}/\texttt{ESC}, \texttt{?}-Modal; vgl. Abschnitt~\ref{modusimplementierung-im-frontend} \\
+N4 & LLM-Antwortlatenz & Backend-to-LLM-to-Backend Median 3\,338\,ms; Modell-P95 unter 2\,800\,ms (vgl. Abschnitt~\ref{performance-und-laufzeitverhalten}); Anforderung P95\,$<$\,30\,s erfüllt \\
+N5 & Systemverfügbarkeit & Lifespan-Migrationen, Health-Check-Endpoint, automatisches WebSocket-Reconnect; kein manueller Eingriff im Spielbetrieb erforderlich \\
 \end{longtable}
 }
 

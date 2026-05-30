@@ -82,7 +82,7 @@ Diese Defizite spiegeln die drei in Abschnitt~\ref{problemstellung-und-zielsetzu
 \section{Zusammenfassung der
 Systemanforderungen}\label{zusammenfassung-der-systemanforderungen}
 
-Die folgenden 19 Anforderungen fassen die aus den Anforderungsdimensionen hergeleiteten Systemeigenschaften zusammen. Sie gliedern sich in funktionale Anforderungen (Abschnitt~\ref{funktionale-anforderungen}) und Qualitätsanforderungen (Abschnitt~\ref{nicht-funktionale-anforderungen}). Abschnitt~\ref{anforderungsabgleich-soll-ist-vergleich} gleicht jeden Punkt mit dem implementierten Stand ab.
+Die folgenden 22 Anforderungen fassen die aus den Anforderungsdimensionen hergeleiteten Systemeigenschaften zusammen. Sie gliedern sich in funktionale Anforderungen (Abschnitt~\ref{funktionale-anforderungen}) und Qualitätsanforderungen (Abschnitt~\ref{nicht-funktionale-anforderungen}). Abschnitt~\ref{anforderungsabgleich-soll-ist-vergleich} gleicht jeden Punkt mit dem implementierten Stand ab.
 
 \subsection{Funktionale Anforderungen}\label{funktionale-anforderungen}
 
@@ -112,14 +112,14 @@ F6 & Slash-Command-gestützte manuelle Ticker-Erstellung & Kap.~\ref{redaktionel
 F7 & Mehrsprachige Textgenerierung (Deutsch, Englisch, Spanisch, Französisch) & Kap.~\ref{mehrsprachigkeit-als-herausforderung} \\
 F8 & Automatischer, idempotenter ETL-Datenimport aus externen Sportdatenquellen & Kap.~\ref{redaktioneller-aufwand-bei-livetickern}, \ref{anforderungsanalyse-am-beispiel-eintracht-frankfurt} (Echtzeit-Betrieb) \\
 F9 & Anbieterunabhängige LLM-Integration mit Ausfallsicherheit & Kap.~\ref{redaktioneller-aufwand-bei-livetickern} (Verfügbarkeit) \\
-F10 & Deduplizierung von Ticker-Einträgen & Kap.~\ref{redaktioneller-aufwand-bei-livetickern} (Korrektheit) \\
+F10 & Idempotente Generierung und Deduplizierung von Ticker-Einträgen & Kap.~\ref{redaktioneller-aufwand-bei-livetickern} (Korrektheit, Echtzeit-Betrieb) \\
 F11 & Pre-Match-Kontextgenerierung (Verletzungen, H2H-Daten, Spielortinformationen) & Kap.~\ref{redaktioneller-aufwand-bei-livetickern} (Kontextanreicherung) \\
 F12 & Live-Statistik-Updates & Kap.~\ref{redaktioneller-aufwand-bei-livetickern} (Echtzeit) \\
 F13 & Medienintegration (ScorePlay-Bildmaterial, Social-Media-Panels für YouTube, X, Instagram) & Kap.~\ref{ist-zustand-bestehendes-system} (Defizit: fehlende Medienintegration im Altsystem) \\
 F14 & Spielphasen-Management (Anpfiff, Halbzeit, Abpfiff) & Kap.~\ref{redaktioneller-aufwand-bei-livetickern} (Echtzeit-Betrieb) \\
 F15 & Undo nach Publikation & Kap.~\ref{redaktioneller-aufwand-bei-livetickern} (Fehleranfälligkeit unter Zeitdruck) \\
-F16 & REST-API zur vollständigen Systemsteuerung und Mandantenkonfiguration & Kap.~\ref{white-label-bedarf-im-profisport} (White-Label) \\
-F17 & White-Label-Fähigkeit (vereinsspezifische und generische Instanz) & Kap.~\ref{white-label-bedarf-im-profisport}, \ref{anforderungsanalyse-am-beispiel-eintracht-frankfurt} \\
+F16 & REST-API zur vollständigen Systemsteuerung (Modus, Ticker-Lifecycle, Spielverwaltung) & Kap.~\ref{redaktioneller-aufwand-bei-livetickern} (Echtzeit-Betrieb) \\
+F17 & White-Label-Fähigkeit (vereinsspezifische Instanzkonfiguration über Umgebungsvariablen ohne Quellcodeänderung) & Kap.~\ref{white-label-bedarf-im-profisport}, \ref{anforderungsanalyse-am-beispiel-eintracht-frankfurt} \\
 \end{longtable}
 }
 
@@ -144,8 +144,11 @@ Herleitung
 \endlastfoot
 N1 & Responsive UI (Mobile-tauglich) & Kap.~\ref{redaktioneller-aufwand-bei-livetickern} (Einsatzszenarien) \\
 N2 & Fehlerresistenz im Frontend & Kap.~\ref{redaktioneller-aufwand-bei-livetickern} (Robustheit) \\
+N3 & Keyboard-First-Bedienung: Kernoperationen (Freigabe, Ablehnung, Modusumschaltung) per Tastatur ohne Mauseinsatz & Kap.~\ref{redaktioneller-aufwand-bei-livetickern} (Zeitdruck) \\
+N4 & LLM-Antwortlatenz: P95 unter 30\,s im produktiven Betrieb & Kap.~\ref{redaktioneller-aufwand-bei-livetickern} (Echtzeit-Betrieb) \\
+N5 & Systemverfügbarkeit: kein manueller Eingriff erforderlich während eines laufenden Spiels & Kap.~\ref{redaktioneller-aufwand-bei-livetickern} (Echtzeit-Betrieb) \\
 \end{longtable}
 }
 
 
-Die drei Anforderungsdimensionen (operativer Zeitdruck, Mehrsprachigkeit und White-Label-Bedarf) sind keine isolierten Herausforderungen, sondern greifen strukturell ineinander. Zeitdruck macht rein menschliche Skalierung kaum darstellbar, Mehrsprachigkeit multipliziert diesen Aufwand, und White-Label-Anforderungen verlangen eine stilistische Konsistenz, die wechselndes Personal nicht zuverlässig gewährleisten kann. Eine integrierte Lösung ist daher erforderlich. Die vorstehenden 19 Anforderungen bilden das Pflichtenheft für die Systemkonzeption in Kapitel~\ref{systemkonzeption}. Die hierfür notwendigen technologischen Grundlagen erschließt Kapitel~\ref{stand-der-technik}.
+Die drei Anforderungsdimensionen (operativer Zeitdruck, Mehrsprachigkeit und White-Label-Bedarf) sind keine isolierten Herausforderungen, sondern greifen strukturell ineinander. Zeitdruck macht rein menschliche Skalierung kaum darstellbar, Mehrsprachigkeit multipliziert diesen Aufwand, und White-Label-Anforderungen verlangen eine stilistische Konsistenz, die wechselndes Personal nicht zuverlässig gewährleisten kann. Eine integrierte Lösung ist daher erforderlich. Die vorstehenden 22 Anforderungen bilden das Pflichtenheft für die Systemkonzeption in Kapitel~\ref{systemkonzeption}. Die hierfür notwendigen technologischen Grundlagen erschließt Kapitel~\ref{stand-der-technik}.
