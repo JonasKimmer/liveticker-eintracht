@@ -150,7 +150,7 @@ Für die Fehlerbehandlung unterscheidet der Service zwei Backoff-Strategien: Bei
 
 \section{KI-Generierungspipeline: Kontextaufbau und Steuerung}\label{ki-generierungspipeline}
 
-Die KI-Generierungspipeline baut auf dem in Abschnitt~\ref{ticker-service-domuxe4nenlogik} beschriebenen Ticker-Service auf und gliedert sich in zwei Stufen: \texttt{make\_ai\_entry()} ruft zunächst \texttt{build\_match\_context()} für die Kontextanreicherung auf; \texttt{call\_llm()} lädt Stilreferenzen und delegiert dann an \texttt{generate\_ticker\_text()}, das \texttt{\_build\_prompt()} aufruft. Der Abschnitt beschreibt beide Stufen im Detail: Kontextanreicherung (Abschnitt~\ref{kontextanreicherung-pipeline}) und Prompt-Design (Abschnitt~\ref{prompt-design-stilkonditionierung}).
+Die KI-Generierungspipeline baut auf dem in Abschnitt~\ref{ticker-service-domuxe4nenlogik} beschriebenen Ticker-Service auf: \texttt{call\_llm()} ruft \texttt{build\_match\_context()} und \texttt{\_build\_prompt()} auf, bevor der LLM-Aufruf erfolgt. Der Abschnitt beschreibt beide Schritte im Detail: Kontextanreicherung (Abschnitt~\ref{kontextanreicherung-pipeline}) und Prompt-Design (Abschnitt~\ref{prompt-design-stilkonditionierung}).
 
 \subsection{Spielstandberechnung und Kontextanreicherung}\label{kontextanreicherung-pipeline}
 
