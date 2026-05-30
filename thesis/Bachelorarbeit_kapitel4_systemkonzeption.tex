@@ -98,7 +98,7 @@ Das Backend realisiert die in Abschnitt~\ref{schichtenmodell} beschriebene Anwen
 
 \subsection{Schichtstruktur}\label{interne-schichtstruktur}
 
-Das Backend folgt einem geschichteten Aufbau aus Router-, Service- und Repository-Schicht. Die \textbf{Router-Schicht} nimmt HTTP-Anfragen entgegen und delegiert an die Fachlogik. Der Ticker-Bereich ist nach funktionalen Verantwortlichkeiten in eigenständige Sub-Router aufgeteilt. Die \textbf{Service-Schicht} bündelt die Fachlogik in zwei Kernkomponenten. Der \texttt{TickerService} koordiniert Kontextaufbau, Spielstandberechnung und LLM-Aufrufe. Der \texttt{LLMService} abstrahiert die Provider-Kommunikation und ist in Abschnitt~\ref{llm-service-architektur} beschrieben. Die \textbf{Repository-Schicht} kapselt den Datenbankzugriff je Entität hinter einer einheitlichen Schnittstelle.
+Das Backend folgt einem geschichteten Aufbau aus Router-, Service- und Repository-Schicht. Der Ticker-Bereich ist nach funktionalen Verantwortlichkeiten in eigenständige Sub-Router aufgeteilt. Die \textbf{Service-Schicht} bündelt die Fachlogik in zwei Kernkomponenten. Der \texttt{TickerService} koordiniert Kontextaufbau, Spielstandberechnung und LLM-Aufrufe. Der \texttt{LLMService} abstrahiert die Provider-Kommunikation und ist in Abschnitt~\ref{llm-service-architektur} beschrieben.
 
 Für I/O-intensive Operationen wie LLM-Aufrufe und externe API-Anfragen ist asynchrone Verarbeitung konzipiert, um den Programmfluss nicht zu blockieren. Die Datenbankschicht arbeitet dagegen synchron, da die anfallenden Operationen kurzlaufend sind und eine asynchrone Variante Komplexität ohne messbaren Vorteil hinzufügen würde.
 
@@ -112,15 +112,15 @@ Der \texttt{LLMService} hat keine Datenbankabhängigkeit und ist dadurch unabhä
 
 \subsection{Teststrategie}\label{qualitätssicherungskonzept}
 
-Die Backend-Qualitätssicherung gliedert sich in drei Testebenen. Unit-Tests prüfen zustandslose Logikfunktionen ohne Datenbankabhängigkeit. \textbf{Pytest}-Integrationstests bilden die zentrale Schicht. Sie prüfen Backend-Endpunkte und Repositories gegen eine echte PostgreSQL-Testinstanz, um Abweichungen zwischen ORM-Modell und realem Datenbankverhalten frühzeitig zu erkennen. LLM-Provider werden dabei durch einen deterministischen Mock-Provider ersetzt, da echte Aufrufe in automatisierten Läufen nicht reproduzierbar sind. Eine E2E-Schicht per \textbf{Playwright} validiert grundlegende Nutzerpfade im Browser. Die konkreten Testzahlen dokumentiert Abschnitt~\ref{impl-backend-tests}.
+Die Backend-Qualitätssicherung gliedert sich in drei Testebenen. \textbf{Pytest}-Integrationstests bilden die zentrale Schicht. Sie prüfen Backend-Endpunkte und Repositories gegen eine echte PostgreSQL-Testinstanz, um Abweichungen zwischen ORM-Modell und realem Datenbankverhalten frühzeitig zu erkennen. LLM-Provider werden dabei durch einen deterministischen Mock-Provider ersetzt, da echte Aufrufe in automatisierten Läufen nicht reproduzierbar sind. Eine E2E-Schicht per \textbf{Playwright} validiert grundlegende Nutzerpfade im Browser. Die konkreten Testzahlen dokumentiert Abschnitt~\ref{impl-backend-tests}.
 
 \section{Datenbankkonzeption}\label{datenbankkonzeption}
 
-Die Datenbankkonzeption legt fest, welche Entitäten das System persistiert, wie Schreiboperationen organisiert sind und wie das Schema über Deployments hinweg konsistent bleibt. Die Domänendaten des Systems -- Stammdaten, Spielereignisse, Ticker-Einträge und Stilreferenzen -- sind inhärent relational strukturiert. PostgreSQL deckt diese Anforderungen durch referenzielle Integrität, ACID-konforme Zustandsübergänge, upsertfähige Konfliktbehandlung und native JSONB-Unterstützung ab (vgl.\ Abschnitt~\ref{backend-framework-und-persistenzschicht}). Die folgenden Abschnitte beschreiben das Datenmodell (Abschnitt~\ref{schemadesign-prinzipien}) sowie Persistenz- und Migrationsstrategie (Abschnitt~\ref{persistenzstrategie}).
+Die Datenbankkonzeption legt fest, welche Entitäten das System persistiert, wie Schreiboperationen organisiert sind und wie das Schema über Deployments hinweg konsistent bleibt. Die Domänendaten des Systems (Stammdaten, Spielereignisse, Ticker-Einträge und Stilreferenzen) sind inhärent relational strukturiert. PostgreSQL deckt diese Anforderungen durch referenzielle Integrität, ACID-konforme Zustandsübergänge, upsertfähige Konfliktbehandlung und native JSONB-Unterstützung ab (vgl.\ Abschnitt~\ref{backend-framework-und-persistenzschicht}). Die folgenden Abschnitte beschreiben das Datenmodell (Abschnitt~\ref{schemadesign-prinzipien}) sowie Schreibpfade und Migrationsstrategie (Abschnitt~\ref{persistenzstrategie}).
 
 \subsection{Datenmodell}\label{schemadesign-prinzipien}
 
-Das Schema gliedert sich in drei Entitätsgruppen: Stammdaten (Saisons, Wettbewerbe, Teams, Spieler), Spieldaten (Spiele, Ereignisse, Lineups, Statistiken) und Redaktionsdaten (Ticker-Einträge, Stilreferenzen, Evaluationsdaten). Das Datenmodell orientiert sich an fünf Gestaltungsprinzipien: Normalisierung für Integrität und Auswertbarkeit, dreischichtige Schlüsselstrategie für idempotente Importe, referenzielle Integrität, gezielte JSONB-Nutzung für schemaflexible Felder und Instanzkodierung für White-Label-Trennung.
+Das Schema gliedert sich in drei Entitätsgruppen: Stammdaten (Saisons, Wettbewerbe, Teams, Spieler), Spieldaten (Spiele, Ereignisse, Lineups, Statistiken) und Redaktionsdaten (Ticker-Einträge, Stilreferenzen, Evaluationsdaten). Das Datenmodell orientiert sich an vier Gestaltungsprinzipien: dreischichtige Schlüsselstrategie für idempotente Importe, referenzielle Integrität, gezielte JSONB-Nutzung für schemaflexible Felder und Instanzkodierung für White-Label-Trennung.
 
 \begin{figure}[H]
   \centering
@@ -128,8 +128,6 @@ Das Schema gliedert sich in drei Entitätsgruppen: Stammdaten (Saisons, Wettbewe
   \caption{Vereinfachtes ER-Diagramm der zentralen Systemtabellen (konzeptionell)}
   \label{fig:er-diagramm}
 \end{figure}
-
-\paragraph{Normalisierung.} Die zentralen Domänenobjekte sind normalisiert modelliert, um Redundanzen zu minimieren sowie Integrität und Auswertbarkeit dauerhaft zu gewährleisten.
 
 \paragraph{Schlüsselstrategie.} Stammdaten-Entitäten führen drei Schlüsselfelder: einen internen Primärschlüssel für performante Joins, einen externen Bezeichner der Football-API für idempotentes Upsert-Matching bei Reimports sowie eine UUID als stabilen Referenzschlüssel für externe API-Konsumenten.
 
@@ -139,7 +137,7 @@ Das Schema gliedert sich in drei Entitätsgruppen: Stammdaten (Saisons, Wettbewe
 
 \paragraph{Instanzkodierung.} Jeder Ticker-Eintrag und jede Stilreferenz trägt ein \texttt{instance}-Feld, das die Instanzzugehörigkeit (\texttt{ef\_whitelabel} oder \texttt{generic}) direkt im Datensatz kodiert. Diese Entscheidung ermöglicht die White-Label-Trennung ohne separate Datenbankschemata. Abfragen filtern per Instanzparameter, und die Few-Shot-Referenzauswahl greift auf dieselbe Filterlogik zurück (vgl.\ Abschnitt~\ref{partner-team-konzept-und-white-label-steuerung}).
 
-\subsection{Persistenz- und Migrationsstrategie}\label{persistenzstrategie}
+\subsection{Schreibpfade und Migrationsstrategie}\label{persistenzstrategie}
 
 Die Datenpersistenz folgt zwei Schreibpfaden. Ticker-Generierung, Statusübergänge und manuelle Eingaben durchlaufen den ORM-Layer mit typsicherer Validierung und Transaktionskontrolle. Datenimporte über n8n schreiben direkt per SQL, um HTTP-Overhead zu vermeiden und Upsert-Operationen nah an der Datenbankebene auszuführen.
 
@@ -147,7 +145,7 @@ Alle Importoperationen sind idempotent ausgelegt. Stammdaten und Ereignisdaten w
 
 Wird ein Ticker-Eintrag entfernt, erhält er einen Soft-Delete-Status und verbleibt in der Datenbank, sodass der Datenbestand für nachträgliche Qualitätsauswertungen vollständig erhalten bleibt (vgl.\ Abschnitt~\ref{status-lifecycle-und-betriebsmodi}).
 
-Schemaänderungen werden über \textbf{Alembic} versioniert. Jede Änderung wird als rückrollbare Migrationsdatei abgelegt, sodass neue Instanzen ohne manuelle Eingriffe den aktuellen Schemastand erreichen.
+Schemaänderungen werden mit \textbf{Alembic} als versionierte, rückrollbare Migrationsdateien verwaltet.
 
 \section{n8n-Workflow-Konzeption}\label{workflow-konzeption-n8n}
 
@@ -155,7 +153,7 @@ n8n realisiert die Integrationsschicht des Systems und ist als einzige Schicht d
 
 \subsection{Designprinzipien}\label{n8n-designprinzipien}
 
-Die in Abschnitt~\ref{systemfunktionen} beschriebenen Systemfunktionen werden durch n8n-Workflows realisiert, die vier Designprinzipien folgen, um stabilen Betrieb über mehrere Instanzen, Spieltage und erneute Auslösungen sicherzustellen.
+Die in Abschnitt~\ref{systemfunktionen} beschriebenen Systemfunktionen werden durch n8n-Workflows realisiert, die fünf Designprinzipien folgen, um stabilen Betrieb über mehrere Instanzen, Spieltage und erneute Auslösungen sicherzustellen.
 
 \paragraph{Idempotenz.}
 Alle Workflows sind auf wiederholten Aufruf ausgelegt. Datenimport-Workflows realisieren das über duplikatfreie Upsert-Operationen (vgl.\ Abschnitt~\ref{persistenzstrategie}), Generierungs-Workflows über eine Existenzprüfung vor jedem LLM-Aufruf, die den Aufruf bei vorhandenem Eintrag überspringt.
@@ -283,11 +281,7 @@ Eine versehentliche Publikation lässt sich innerhalb eines kurzen Zeitfensters 
 \paragraph{Modusspezifisches Layout.}
 Im Auto-Modus wird das mittlere Panel ausgeblendet und das Layout wechselt auf zwei Spalten, da ohne redaktionellen Eingriff kein Editierbereich benötigt wird. Zusätzlich ist ein Frontend-seitiger Auto-Publisher konzipiert, der die Draft-Queue pollt und neu eintreffende Entwürfe unmittelbar publiziert. Er bildet den redundanten Publikationspfad zum primären n8n-Pfad und stellt sicher, dass kein Entwurf im Auto-Modus unverarbeitet bleibt (vgl.\ Abschnitt~\ref{status-lifecycle-und-betriebsmodi}).
 
-\subsection{White-Label-Branding}\label{ui-design-branding}
-
-Das Frontend setzt das in Abschnitt~\ref{partner-team-konzept-und-white-label-steuerung} beschriebene White-Label-Konzept auf UI-Ebene um. Vereinsfarben, Logo und instanzspezifische UI-Bereiche wie Social-Media-Panels und ScorePlay-Mediensuche werden über eine zentrale Konfigurationsschicht je Instanz gesteuert, ohne Codeduplikation zu erfordern. Ticker-Einträge sind statusabhängig visuell kodiert, sodass Entwurfs-, veröffentlichte und abgelehnte Einträge auf einen Blick unterscheidbar sind.
-
-Das Layout wird vorab als interaktiver Figma-Prototyp validiert, sodass Layoutentscheidungen vor Implementierungsbeginn feststehen.
+Ticker-Einträge sind statusabhängig visuell kodiert, sodass Entwurfs-, veröffentlichte und abgelehnte Einträge auf einen Blick unterscheidbar sind. Das Layout wird vorab als interaktiver Figma-Prototyp validiert, sodass Layoutentscheidungen vor Implementierungsbeginn feststehen.
 
 \begin{figure}[H]
 \centering
@@ -295,6 +289,10 @@ Das Layout wird vorab als interaktiver Figma-Prototyp validiert, sodass Layouten
 \caption{Figma-Prototyp der Redaktionsoberfläche (Dreispalten-Layout)}
 \label{fig:figma-wireframe}
 \end{figure}
+
+\subsection{White-Label-Branding}\label{ui-design-branding}
+
+Das Frontend setzt das in Abschnitt~\ref{partner-team-konzept-und-white-label-steuerung} beschriebene White-Label-Konzept auf UI-Ebene um. Vereinsfarben, Logo und instanzspezifische UI-Bereiche wie Social-Media-Panels und ScorePlay-Mediensuche werden über eine zentrale Konfigurationsschicht je Instanz gesteuert, ohne Codeduplikation zu erfordern.
 
 \subsection{Teststrategie}\label{frontend-teststrategie}
 
