@@ -597,39 +597,39 @@ Die n8n-Workflows bilden die Orchestrierungsschicht zwischen externen Datenquell
 
 **C) KI-Generierung** — `09_events_llm_workflow`, `13_Halftime_aftertime` und `14_Game_ANpfiff_ABpfiff` importieren Live-Ereignisse, erzeugen synthetische Phasenereignisse und delegieren die Textgenerierung an das Backend. Der Zusammenfassungs-Workflow (`13`) ruft den LLM-Provider direkt auf, da Halbzeit-/Abpfiff-Zusammenfassungen einen umfangreicheren Prompt mit Statistiken erfordern.
 
-**D) Medien und Social Media** — `08_scoreplay_media_workflow`, `10_Twitter`, `11_youtube` und `12_insta` importieren Medien- und Social-Media-Inhalte. Der Media-Workflow übergibt Bilder an das Backend, das diese über WebSocket verteilt; die Social-Media-Workflows speichern Clips in der Datenbank. Diese Workflows dienen der Ingestion, nicht dem Publishing.
+**D) Medien und Social Media** — `09_scoreplay_media_workflow`, `11_Twitter`, `12_youtube` und `13_insta` importieren Medien- und Social-Media-Inhalte. Der Media-Workflow übergibt Bilder an das Backend, das diese über WebSocket verteilt; die Social-Media-Workflows speichern Clips in der Datenbank. Diese Workflows dienen der Ingestion, nicht dem Publishing.
 
 Dieser Abschnitt dokumentiert die Implementierungsdetails der fünf zentralen Workflows (Gruppen B–D).
 
 ---
 
-### Events-LLM-Workflow (`09_events_llm_workflow.json`)
+### Events-LLM-Workflow (`10_events_llm_workflow.json`)
 
-Workflow `09` ist der kritischste im System: Er importiert Live-Ereignisse via Webhook (`POST /Events`), persistiert sie per UPSERT (`ON CONFLICT (source_id) DO NOTHING`) und triggert die KI-Generierung für jeden neuen Event. Eine initiale SQL-Abfrage bestimmt anhand der Teamzugehörigkeit, ob die Instanz `ef_whitelabel` oder `generic` ist; `auto_publish` wird direkt aus `ticker_mode` des Spiels gesetzt. Der Stil wird als `neutral` übergeben — das Backend übernimmt die automatische Hochstufung auf `euphorisch` für `ef_whitelabel`-Instanzen (vgl. Abschnitt 5.2.4). Nur Events mit erfolgreicher Datenbankzeile (zurückgegebene `id`, kein `DO NOTHING`-Konflikt) passieren den Filter-Knoten und triggern den Backend-Endpunkt. Ein zusätzlicher EF-spezifischer Zweig liest Spielerdaten von `profis.eintracht.de`, baut S3-Video-URLs aus neunstellig aufgefüllten Spieler-IDs auf und persistiert Torjubel-Videos als Ticker-Einträge.
-
----
-
-### Prematch-Import-Workflow (`07_import_prematch.json`)
-
-Workflow `07` baut den Vorberichtskontext aus fünf parallelen Football-API-Abfragen auf (Verletzungen, Head-to-Head, Teamstatistiken Heim/Gast, Tabellenstand) und persistiert die Ergebnisse als `synthetic_events` mit idempotenter `ON CONFLICT (match_id, type) DO UPDATE`-Strategie. Ein LLM-Trigger wird nur ausgelöst, wenn noch kein nicht-verworfener Ticker-Eintrag für das jeweilige synthetische Event existiert (`WHERE te.id IS NULL`) — bereits generierte und eventuell publizierte Texte werden damit nicht überschrieben.
+Workflow `10` ist der kritischste im System: Er importiert Live-Ereignisse via Webhook (`POST /Events`), persistiert sie per UPSERT (`ON CONFLICT (source_id) DO NOTHING`) und triggert die KI-Generierung für jeden neuen Event. Eine initiale SQL-Abfrage bestimmt anhand der Teamzugehörigkeit, ob die Instanz `ef_whitelabel` oder `generic` ist; `auto_publish` wird direkt aus `ticker_mode` des Spiels gesetzt. Der Stil wird als `neutral` übergeben — das Backend übernimmt die automatische Hochstufung auf `euphorisch` für `ef_whitelabel`-Instanzen (vgl. Abschnitt 5.2.4). Nur Events mit erfolgreicher Datenbankzeile (zurückgegebene `id`, kein `DO NOTHING`-Konflikt) passieren den Filter-Knoten und triggern den Backend-Endpunkt. Ein zusätzlicher EF-spezifischer Zweig liest Spielerdaten von `profis.eintracht.de`, baut S3-Video-URLs aus neunstellig aufgefüllten Spieler-IDs auf und persistiert Torjubel-Videos als Ticker-Einträge.
 
 ---
 
-### Matchphasen-Workflow (`14_Game_ANpfiff_ABpfiff.json`)
+### Prematch-Import-Workflow (`08_import_prematch.json`)
 
-Workflow `14` verarbeitet Spielzustands-Übergänge (Anpfiff, Halbzeit, Abpfiff etc.) via Webhook (`POST /match-status`). Ein JavaScript-Knoten validiert Zustandsübergänge gegen eine Matrix erlaubter Vorzustände — ungültige Übergänge (z. B. direkt von `PreMatch` zu `2H`) werden zurückgewiesen. Für Vollzeit-Ereignisse (`FT`, `AET`, `PEN`) generiert der Workflow die gesamte Phasensequenz rückwirkend: Ein `FT`-Signal erzeugt vier synthetische Events (Anstoß, Halbzeit, 2. Halbzeit, Abpfiff). Das zentrale SQL-Statement kombiniert Match-Update, Event-Insert und eine `demote`-CTE in einer einzigen Transaktion — Letztere stuft bereits publizierte Phasen-Texte bei Re-Triggers auf `draft` zurück, sodass die Redaktion sie erneut prüfen kann.
-
----
-
-### Halbzeit/Abpfiff-Zusammenfassung (`13_Halftime_aftertime.json`)
-
-Workflow `13` erzeugt narrative Zusammenfassungen für Halbzeit und Abpfiff. Im Gegensatz zu `09` ruft er OpenRouter (`google/gemini-2.0-flash-lite-001`) **direkt** auf, da Zusammenfassungen einen umfangreicheren Prompt mit parallel geladenen Statistiken (Ballbesitz, Schüsse, Pässe, Spieler-Ratings) erfordern. Der Prompt enthält die volle Stil-Beschreibung (`STYLE_DESC`) inklusive situationsadaptiver Emotion und erkennt Eintracht-Spiele anhand der Teamnamen, um den Stil automatisch auf `euphorisch` zu setzen. Das Ergebnis wird über `POST /api/v1/ticker/manual` als Ticker-Eintrag gespeichert — je nach `ticker_mode` direkt als `published` oder als `draft`.
+Workflow `08` baut den Vorberichtskontext aus fünf parallelen Football-API-Abfragen auf (Verletzungen, Head-to-Head, Teamstatistiken Heim/Gast, Tabellenstand) und persistiert die Ergebnisse als `synthetic_events` mit idempotenter `ON CONFLICT (match_id, type) DO UPDATE`-Strategie. Ein LLM-Trigger wird nur ausgelöst, wenn noch kein nicht-verworfener Ticker-Eintrag für das jeweilige synthetische Event existiert (`WHERE te.id IS NULL`) — bereits generierte und eventuell publizierte Texte werden damit nicht überschrieben.
 
 ---
 
-### ScorePlay-Medien-Workflow (`08_scoreplay_media_workflow.json`)
+### Matchphasen-Workflow (`15_Game_ANpfiff_ABpfiff.json`)
 
-Workflow `08` sucht Medien-Assets bei ScorePlay für Spieler eines Torereignisses. Die Spieler-Suche (`GET /v1/tag/search`) normalisiert Umlaute (ä→a, ö→o, ü→u, ß→ss) und matcht gegen vier Namensfelder (`full_name`, `first_name`, `last_name`, `ai_name`). Gefundene Thumbnail-, Compressed- und Original-URLs werden an `POST /api/v1/media/incoming` übertragen und vom Backend per WebSocket an verbundene Frontend-Clients verteilt.
+Workflow `15` verarbeitet Spielzustands-Übergänge (Anpfiff, Halbzeit, Abpfiff etc.) via Webhook (`POST /match-status`). Ein JavaScript-Knoten validiert Zustandsübergänge gegen eine Matrix erlaubter Vorzustände — ungültige Übergänge (z. B. direkt von `PreMatch` zu `2H`) werden zurückgewiesen. Für Vollzeit-Ereignisse (`FT`, `AET`, `PEN`) generiert der Workflow die gesamte Phasensequenz rückwirkend: Ein `FT`-Signal erzeugt vier synthetische Events (Anstoß, Halbzeit, 2. Halbzeit, Abpfiff). Das zentrale SQL-Statement kombiniert Match-Update, Event-Insert und eine `demote`-CTE in einer einzigen Transaktion — Letztere stuft bereits publizierte Phasen-Texte bei Re-Triggers auf `draft` zurück, sodass die Redaktion sie erneut prüfen kann.
+
+---
+
+### Halbzeit/Abpfiff-Zusammenfassung (`14_Halftime_aftertime.json`)
+
+Workflow `14` erzeugt narrative Zusammenfassungen für Halbzeit und Abpfiff. Im Gegensatz zu `10` ruft er OpenRouter (`google/gemini-2.0-flash-lite-001`) **direkt** auf, da Zusammenfassungen einen umfangreicheren Prompt mit parallel geladenen Statistiken (Ballbesitz, Schüsse, Pässe, Spieler-Ratings) erfordern. Der Prompt enthält die volle Stil-Beschreibung (`STYLE_DESC`) inklusive situationsadaptiver Emotion und erkennt Eintracht-Spiele anhand der Teamnamen, um den Stil automatisch auf `euphorisch` zu setzen. Das Ergebnis wird über `POST /api/v1/ticker/manual` als Ticker-Eintrag gespeichert — je nach `ticker_mode` direkt als `published` oder als `draft`.
+
+---
+
+### ScorePlay-Medien-Workflow (`09_scoreplay_media_workflow.json`)
+
+Workflow `09` sucht Medien-Assets bei ScorePlay für Spieler eines Torereignisses. Die Spieler-Suche (`GET /v1/tag/search`) normalisiert Umlaute (ä→a, ö→o, ü→u, ß→ss) und matcht gegen vier Namensfelder (`full_name`, `first_name`, `last_name`, `ai_name`). Gefundene Thumbnail-, Compressed- und Original-URLs werden an `POST /api/v1/media/incoming` übertragen und vom Backend per WebSocket an verbundene Frontend-Clients verteilt.
 
 ---
 

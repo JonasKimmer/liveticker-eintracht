@@ -413,11 +413,11 @@ Damit wird die Modus-Logik zu einem reinen Aufrufparameter des Backends — die 
 
 Die drei Modi übersetzen sich auf Implementierungsebene in drei verschiedene Pfade:
 
-| Modus | `auto_publish` | Ergebnis | Redakteurs-Eingriff |
-| ------- | -------------- | ---------- | ------------------- |
-| `auto` | `True` | `published` | — |
-| `coop` | `False` | `draft` | TAB (accept) / ESC (reject) |
-| `manual` | — | — | Slash-Command → `POST /manual` |
+| Modus    | `auto_publish` | Ergebnis    | Redakteurs-Eingriff            |
+| -------- | -------------- | ----------- | ------------------------------ |
+| `auto`   | `True`         | `published` | —                              |
+| `coop`   | `False`        | `draft`     | TAB (accept) / ESC (reject)    |
+| `manual` | —              | —           | Slash-Command → `POST /manual` |
 
 Im `manual`-Modus wird der Generierungs-Endpunkt gar nicht aufgerufen: n8n importiert zwar weiterhin Ereignisse, triggert aber keinen LLM-Aufruf. Ticker-Einträge entstehen ausschließlich über den `POST /api/v1/ticker/manual`-Endpunkt, den das Frontend aus dem Slash-Command-Parser heraus bedient. Der Eintrag wird dort direkt mit `status=published` angelegt, da die Redakteurin den Text selbst verfasst hat und keine weitere Freigabe erforderlich ist.
 
@@ -712,14 +712,14 @@ test("vollstaendiger Command ist valid", () => {
 
 **Evaluations-Infrastruktur** — Ergänzend zur Testsuite enthält `backend/app/utils/evaluation_metrics.py` sechs statistische Hilfsfunktionen, die speziell für die Qualitätsevaluation der KI-Textgenerierung implementiert wurden:
 
-| Funktion | Aufgabe |
-| -------- | ------- |
-| `compute_ttp_stats(entries)` | Berechnet TTP-Statistiken (Mean, Median, Perzentile) aus gemessenen Latenzen |
-| `cliffs_delta(group_a, group_b)` | Effektstärkemaß nach Cliff (1993) für ordinal-skalierte Vergleiche (z. B. auto vs. manual TTP) |
-| `bootstrap_ci(data, n_resamples)` | Bootstrap-Konfidenzintervall (95 %) über nichtparametrisches Resampling |
-| `cohens_kappa(rater_a, rater_b)` | Inter-Rater-Übereinstimmungsmaß nach Cohen (1960) für die Qualitätsbewertung |
-| `distribution_summary(scores)` | Deskriptive Zusammenfassung (Mean, SD, Min, Max) für Bewertungslisten |
-| `aggregate_quality_by_group(entries)` | Aggregiert Qualitätsscores nach Gruppe (Stil, Ereignistyp, Instanz) |
+| Funktion                              | Aufgabe                                                                                        |
+| ------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| `compute_ttp_stats(entries)`          | Berechnet TTP-Statistiken (Mean, Median, Perzentile) aus gemessenen Latenzen                   |
+| `cliffs_delta(group_a, group_b)`      | Effektstärkemaß nach Cliff (1993) für ordinal-skalierte Vergleiche (z. B. auto vs. manual TTP) |
+| `bootstrap_ci(data, n_resamples)`     | Bootstrap-Konfidenzintervall (95 %) über nichtparametrisches Resampling                        |
+| `cohens_kappa(rater_a, rater_b)`      | Inter-Rater-Übereinstimmungsmaß nach Cohen (1960) für die Qualitätsbewertung                   |
+| `distribution_summary(scores)`        | Deskriptive Zusammenfassung (Mean, SD, Min, Max) für Bewertungslisten                          |
+| `aggregate_quality_by_group(entries)` | Aggregiert Qualitätsscores nach Gruppe (Stil, Ereignistyp, Instanz)                            |
 
 Diese Funktionen werden in Kapitel 6.7–6.10 direkt genutzt: `cliffs_delta` für den TTP-Vergleich, `cohens_kappa` für die Bewertungsübereinstimmung und `aggregate_quality_by_group` für die profilspezifische Qualitätsanalyse. Die Implementierung in einem dedizierten `utils`-Modul (statt im Test-Code) macht die Statistikfunktionen wiederverwendbar — etwa für einen zukünftigen automatisierten Scoring-Dienst im Produktivbetrieb (vgl. Kap. 8.3.3).
 
@@ -743,9 +743,9 @@ Dieser Abschnitt dokumentiert die Implementierungsdetails der fünf zentralen Wo
 
 ---
 
-### 5.7.1 Events-LLM-Workflow (`09_events_llm_workflow.json`)
+### 5.7.1 Events-LLM-Workflow (`10_events_llm_workflow.json`)
 
-Der Workflow `09` ist der kritischste im System: Er importiert Live-Ereignisse, persistiert sie und triggert für jedes neue Ereignis die KI-Generierung. Er wird via Webhook (`POST /Events`) mit einer `fixture_id` aufgerufen.
+Der Workflow `10` ist der kritischste im System: Er importiert Live-Ereignisse, persistiert sie und triggert für jedes neue Ereignis die KI-Generierung. Er wird via Webhook (`POST /Events`) mit einer `fixture_id` aufgerufen.
 
 **Instanz- und Stil-Bestimmung**
 
@@ -824,9 +824,9 @@ Anschließend wird ein Ticker-Eintrag mit der Video-URL erzeugt — im Co-op-Mod
 
 ---
 
-### 5.7.2 Prematch-Import-Workflow (`07_import_prematch.json`)
+### 5.7.2 Prematch-Import-Workflow (`08_import_prematch.json`)
 
-Workflow `07` baut den Vorberichtskontext aus fünf parallelen Football-API-Abfragen auf:
+Workflow `08` baut den Vorberichtskontext aus fünf parallelen Football-API-Abfragen auf:
 
 | Datenquelle            | API-Endpunkt                                            |
 | ---------------------- | ------------------------------------------------------- |
@@ -859,9 +859,9 @@ Die WHERE-Bedingung am Ende ist ein wichtiges Implementierungsdetail: Das synthe
 
 ---
 
-### 5.7.3 Matchphasen-Workflow (`14_Game_ANpfiff_ABpfiff.json`)
+### 5.7.3 Matchphasen-Workflow (`15_Game_ANpfiff_ABpfiff.json`)
 
-Workflow `14` verarbeitet Spielzustands-Übergänge (Anpfiff, Halbzeit, Abpfiff etc.) via Webhook (`POST /match-status`). Ein JavaScript-Knoten implementiert eine Übergangsprüfung:
+Workflow `15` verarbeitet Spielzustands-Übergänge (Anpfiff, Halbzeit, Abpfiff etc.) via Webhook (`POST /match-status`). Ein JavaScript-Knoten implementiert eine Übergangsprüfung:
 
 ```javascript
 const validFromStates = {
@@ -911,9 +911,9 @@ Die `demote`-CTE ist besonders relevant: Wenn ein Status-Signal erneut gesendet 
 
 ---
 
-### 5.7.4 Halbzeit/Abpfiff-Zusammenfassung (`13_Halftime_aftertime.json`)
+### 5.7.4 Halbzeit/Abpfiff-Zusammenfassung (`14_Halftime_aftertime.json`)
 
-Workflow `13` erzeugt narrative Zusammenfassungen für Halbzeit und Abpfiff. Im Gegensatz zu `09` — der das Backend-LLM-Service nutzt — ruft `13` OpenRouter **direkt** auf, da Zusammenfassungen keinen Few-Shot-Stil aus der Datenbank benötigen, sondern einen umfangreicheren Prompt mit Statistiken erfordern.
+Workflow `14` erzeugt narrative Zusammenfassungen für Halbzeit und Abpfiff. Im Gegensatz zu `10` — der das Backend-LLM-Service nutzt — ruft `14` OpenRouter **direkt** auf, da Zusammenfassungen keinen Few-Shot-Stil aus der Datenbank benötigen, sondern einen umfangreicheren Prompt mit Statistiken erfordern.
 
 Der Workflow lädt parallel Ereignisse, Statistiken und Spieler-Ratings von der Football-API, baut daraus einen deutschen Prompt zusammen:
 
@@ -934,9 +934,9 @@ Der LLM-Aufruf geht an OpenRouter (`google/gemini-2.0-flash-lite-001`, `max_toke
 
 ---
 
-### 5.7.5 ScorePlay-Medien-Workflow (`08_scoreplay_media_workflow.json`)
+### 5.7.5 ScorePlay-Medien-Workflow (`09_scoreplay_media_workflow.json`)
 
-Workflow `08` sucht Medien-Assets bei ScorePlay und übergibt sie an das Backend. Die Spieler-Suche (`GET /v1/tag/search?query={lastName}`) gibt mehrere Treffer zurück; ein JavaScript-Knoten implementiert Fuzzy-Matching mit Normalisierung:
+Workflow `09` sucht Medien-Assets bei ScorePlay und übergibt sie an das Backend. Die Spieler-Suche (`GET /v1/tag/search?query={lastName}`) gibt mehrere Treffer zurück; ein JavaScript-Knoten implementiert Fuzzy-Matching mit Normalisierung:
 
 ```javascript
 // Normalisierung für robusteres Matching
@@ -987,30 +987,30 @@ Ergänzend zu den fünf Kernworkflows existieren **12 Sync-Workflows** im Verzei
 
 **A) Stammdaten-Synchronisation** — Vier Workflows synchronisieren die Basisdaten:
 
-| Workflow | Inhalt |
-| -------- | ------ |
-| `Sync_01_Seasons_Competitions` | Wettbewerbe und Saisonen |
-| `Sync_02_Matches_Fixtures` | Spielplan und Fixture-IDs |
-| `Sync_03_Squads_Players` | Kader-Einträge pro Verein |
-| `Sync_12_Spieler_Herkunft` | Spieler-Metadaten (Geburtstag, Herkunft) |
+| Workflow                       | Inhalt                                   |
+| ------------------------------ | ---------------------------------------- |
+| `Sync_01_Seasons_Competitions` | Wettbewerbe und Saisonen                 |
+| `Sync_02_Matches_Fixtures`     | Spielplan und Fixture-IDs                |
+| `Sync_03_Squads_Players`       | Kader-Einträge pro Verein                |
+| `Sync_12_Spieler_Herkunft`     | Spieler-Metadaten (Geburtstag, Herkunft) |
 
 **B) Matchdaten-Export** — Vier Workflows exportieren spielbezogene Zusatzdaten nach Spielende:
 
-| Workflow | Inhalt |
-| -------- | ------ |
-| `Sync_04_Match_Lineups` | Aufstellungen (Post-Match) |
-| `Sync_05_Match_Statistics` | Spielstatistiken (Post-Match) |
-| `Sync_06_League_Standings` | Tabellenstand der Liga |
+| Workflow                            | Inhalt                           |
+| ----------------------------------- | -------------------------------- |
+| `Sync_04_Match_Lineups`             | Aufstellungen (Post-Match)       |
+| `Sync_05_Match_Statistics`          | Spielstatistiken (Post-Match)    |
+| `Sync_06_League_Standings`          | Tabellenstand der Liga           |
 | `Sync_11_Spieler_Saisonstatistiken` | Individuelle Spieler-Saisonwerte |
 
 **C) Liveticker-Export** — Vier Workflows übertragen die Ticker-Einträge in Echtzeit:
 
-| Workflow | Inhalt |
-| -------- | ------ |
-| `Sync_07_Liveticker` | Tore, Karten, Auswechslungen — ereignisgesteuert |
-| `Sync_08_Prematch_Liveticker` | Vorberichts-Einträge |
-| `Sync_09_Halbzeit_Aftermatch` | Halbzeit- und Abschlussbericht |
-| `Sync_10_Spielphasen` | Phasen-Einträge (Anpfiff, Halbzeit etc.) |
+| Workflow                      | Inhalt                                           |
+| ----------------------------- | ------------------------------------------------ |
+| `Sync_07_Liveticker`          | Tore, Karten, Auswechslungen — ereignisgesteuert |
+| `Sync_08_Prematch_Liveticker` | Vorberichts-Einträge                             |
+| `Sync_09_Halbzeit_Aftermatch` | Halbzeit- und Abschlussbericht                   |
+| `Sync_10_Spielphasen`         | Phasen-Einträge (Anpfiff, Halbzeit etc.)         |
 
 Das Übertragungsprinzip ist bei allen Liveticker-Workflows identisch: Ein Webhook im Produktiv-Backend empfängt ein `publish`-Event, sobald ein Ticker-Eintrag den Status `published` erhält. Der Sync-Workflow liest den vollständigen Eintrag aus dem Backend (`GET /api/v1/ticker/{id}`), transformiert ihn in das CMS-Schema der Demo App und schreibt ihn über deren REST-API. Das One-Way-Push-Modell (Liveticker-Backend → Demo App) stellt sicher, dass keine bidirektionalen Konflikte entstehen — die Demo App ist ausschließlich Konsument.
 
@@ -1030,6 +1030,6 @@ Fünf Aspekte verdienen eine kritische Einordnung:
 
 **Viertens** ist der `strict`-Modus in `tsconfig.json` derzeit deaktiviert (vgl. Kap. 5.5 zur Migrationsstrategie). Eine schrittweise Aktivierung von `strictNullChecks` und `noImplicitAny` ist der naheliegende Folgeschritt zur weiteren Härtung der Codebasis.
 
-**Fünftens** ist die Few-Shot-Infrastruktur vollständig implementiert — der Scraping-Workflow befüllt `style_references` mit echten EF-Liveticker-Texten, `StyleReferenceRepository.get_samples()` lädt sie mit liga-spezifischer Suche und automatischem Fallback, und `_build_few_shot_block()` bettet sie in den Prompt ein. In der Praxis greifen jedoch zwei Einschränkungen: (a) Die Demo-App-Workflows (`13_Halftime_aftertime.json`) rufen OpenRouter direkt auf und umgehen das Backend-LLM-Service, sodass Few-Shot dort nicht wirksam wird. (b) Der liga-spezifische Filter (`func.lower(style_references.league) == league.lower()`) fällt auf die liga-agnostische Suche zurück, wenn zu wenige Beispieleinträge für die konkrete Liga in der Datenbank vorhanden sind — was bei kleinen Stildatenbeständen häufig der Fall ist. Beide Punkte sind behebbar, beeinträchtigen aber die grundsätzliche Funktionsfähigkeit der Stilgenerierung nicht.
+**Fünftens** ist die Few-Shot-Infrastruktur vollständig implementiert — der Scraping-Workflow befüllt `style_references` mit echten EF-Liveticker-Texten, `StyleReferenceRepository.get_samples()` lädt sie mit liga-spezifischer Suche und automatischem Fallback, und `_build_few_shot_block()` bettet sie in den Prompt ein. In der Praxis greifen jedoch zwei Einschränkungen: (a) Die Demo-App-Workflows (`14_Halftime_aftertime.json`) rufen OpenRouter direkt auf und umgehen das Backend-LLM-Service, sodass Few-Shot dort nicht wirksam wird. (b) Der liga-spezifische Filter (`func.lower(style_references.league) == league.lower()`) fällt auf die liga-agnostische Suche zurück, wenn zu wenige Beispieleinträge für die konkrete Liga in der Datenbank vorhanden sind — was bei kleinen Stildatenbeständen häufig der Fall ist. Beide Punkte sind behebbar, beeinträchtigen aber die grundsätzliche Funktionsfähigkeit der Stilgenerierung nicht.
 
 Insgesamt belegen die Metriken — 0 TypeScript-Fehler, 95,84 % type-coverage, 187 Frontend-Tests, 198 Backend-Tests mit 75 % Coverage, 6 E2E-Tests — einen konsistenten Qualitätsanspruch, der über den Rahmen eines typischen akademischen Projekts hinausgeht. Die vollständige Implementierung bildet damit die Grundlage für die systematische Evaluation in Kapitel 6, die sowohl die technischen Qualitätsmetriken als auch die KI-Textgenerierung gegen die in Kapitel 2.6 definierten Anforderungen prüft und die Forschungsfrage aus Kapitel 1.2 quantitativ beantwortet.

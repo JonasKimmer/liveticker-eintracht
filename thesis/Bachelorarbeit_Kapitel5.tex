@@ -1077,9 +1077,9 @@ zentralen Workflows aus den Gruppen B bis D.
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
 \subsection{\texorpdfstring{Events-LLM-Workflow
-(\texttt{09\_events\_llm\_workflow.json})}{Events-LLM-Workflow (09\_events\_llm\_workflow.json)}}\label{events-llm-workflow-09_events_llm_workflow.json}
+(\texttt{10\_events\_llm\_workflow.json})}{Events-LLM-Workflow (10\_events\_llm\_workflow.json)}}\label{events-llm-workflow-10_events_llm_workflow.json}
 
-Workflow \texttt{09} ist der kritischste im System: Er importiert
+Workflow \texttt{10} ist der kritischste im System: Er importiert
 Live-Ereignisse via Webhook (\texttt{POST\ /Events}), persistiert sie
 per UPSERT (\texttt{ON\ CONFLICT\ (source\_id)\ DO\ NOTHING}) und
 triggert die KI-Generierung für jeden neuen Event. Eine initiale
@@ -1099,9 +1099,9 @@ als Ticker-Einträge.
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
 \subsection{\texorpdfstring{Prematch-Import-Workflow
-(\texttt{07\_import\_prematch.json})}{Prematch-Import-Workflow (07\_import\_prematch.json)}}\label{prematch-import-workflow-07_import_prematch.json}
+(\texttt{08\_import\_prematch.json})}{Prematch-Import-Workflow (08\_import\_prematch.json)}}\label{prematch-import-workflow-08_import_prematch.json}
 
-Workflow \texttt{07} baut den Vorberichtskontext aus fünf parallelen
+Workflow \texttt{08} baut den Vorberichtskontext aus fünf parallelen
 Football-API-Abfragen auf (Verletzungen, Head-to-Head, Teamstatistiken
 Heim/Gast, Tabellenstand) und persistiert die Ergebnisse als
 \texttt{synthetic\_events} mit idempotenter
@@ -1114,9 +1114,9 @@ publizierte Texte werden damit nicht überschrieben.
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
 \subsection{\texorpdfstring{Matchphasen-Workflow
-(\texttt{14\_Game\_ANpfiff\_ABpfiff.json})}{Matchphasen-Workflow (14\_Game\_ANpfiff\_ABpfiff.json)}}\label{matchphasen-workflow-14_game_anpfiff_abpfiff.json}
+(\texttt{15\_Game\_ANpfiff\_ABpfiff.json})}{Matchphasen-Workflow (15\_Game\_ANpfiff\_ABpfiff.json)}}\label{matchphasen-workflow-15_game_anpfiff_abpfiff.json}
 
-Workflow \texttt{14} verarbeitet Spielzustands-Übergänge (Anpfiff,
+Workflow \texttt{15} verarbeitet Spielzustands-Übergänge (Anpfiff,
 Halbzeit, Abpfiff etc.) via Webhook (\texttt{POST\ /match-status}). Ein
 JavaScript-Knoten validiert Zustandsübergänge gegen eine Matrix
 erlaubter Vorzustände --- ungültige Übergänge (z. B. direkt von
@@ -1133,10 +1133,10 @@ erneut prüfen kann.
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
 \subsection{\texorpdfstring{Halbzeit/Abpfiff-Zusammenfassung
-(\texttt{13\_Halftime\_aftertime.json})}{Halbzeit/Abpfiff-Zusammenfassung (13\_Halftime\_aftertime.json)}}\label{halbzeitabpfiff-zusammenfassung-13_halftime_aftertime.json}
+(\texttt{14\_Halftime\_aftertime.json})}{Halbzeit/Abpfiff-Zusammenfassung (14\_Halftime\_aftertime.json)}}\label{halbzeitabpfiff-zusammenfassung-14_halftime_aftertime.json}
 
-Workflow \texttt{13} erzeugt narrative Zusammenfassungen für Halbzeit
-und Abpfiff. Im Gegensatz zu \texttt{09} ruft er OpenRouter
+Workflow \texttt{14} erzeugt narrative Zusammenfassungen für Halbzeit
+und Abpfiff. Im Gegensatz zu \texttt{10} ruft er OpenRouter
 (\texttt{google/gemini-2.0-flash-lite-001}) \textbf{direkt} auf, da
 Zusammenfassungen einen umfangreicheren Prompt mit parallel geladenen
 Statistiken (Ballbesitz, Schüsse, Pässe, Spieler-Ratings) erfordern. Der
@@ -1150,9 +1150,9 @@ Ticker-Eintrag gespeichert --- je nach \texttt{ticker\_mode} direkt als
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
 \subsection{\texorpdfstring{ScorePlay-Medien-Workflow
-(\texttt{08\_scoreplay\_media\_workflow.json})}{ScorePlay-Medien-Workflow (08\_scoreplay\_media\_workflow.json)}}\label{scoreplay-medien-workflow-08_scoreplay_media_workflow.json}
+(\texttt{09\_scoreplay\_media\_workflow.json})}{ScorePlay-Medien-Workflow (09\_scoreplay\_media\_workflow.json)}}\label{scoreplay-medien-workflow-09_scoreplay_media_workflow.json}
 
-Workflow \texttt{08} sucht Medien-Assets bei ScorePlay für Spieler eines
+Workflow \texttt{09} sucht Medien-Assets bei ScorePlay für Spieler eines
 Torereignisses. Die Spieler-Suche (\texttt{GET\ /v1/tag/search})
 normalisiert Umlaute (ä→a, ö→o, ü→u, ß→ss) und matcht gegen vier
 Namensfelder (\texttt{full\_name}, \texttt{first\_name},
