@@ -5,3 +5,6 @@ node_modules/
 .claude/
 frontend/playwright-report/
 frontend/test-results/
+.DS_Store
+backend/.venv311/
+*.zip
