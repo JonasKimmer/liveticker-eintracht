@@ -28,7 +28,7 @@ backend/app/
 \label{fig:backend-schichten}
 \end{figure}
 
-Die Konfiguration ist in einer zentralen Settings-Schicht gebündelt, die ihre Werte aus Umgebungsvariablen liest -- lokal per \texttt{.env}-Datei, im Deployment als Plattform-Secrets. Für den Systemstart ist eine gültige Datenbankverbindung erforderlich. Fehlt sie, schlägt der Start mit einem Validierungsfehler fehl (Fail-fast).
+Die Konfiguration ist in einer zentralen Settings-Schicht gebündelt, die ihre Werte aus Umgebungsvariablen liest, lokal per \texttt{.env}-Datei und im Deployment als Plattform-Secrets. Für den Systemstart ist eine gültige Datenbankverbindung erforderlich. Fehlt sie, schlägt der Start mit einem Validierungsfehler fehl (Fail-fast).
 
 Die Datenbankschicht basiert auf synchronem SQLAlchemy, da Datenbankoperationen kurzlaufend sind und ein Wechsel auf SQLAlchemy-async zusätzliche Komplexität ohne nachgewiesenen Latenzvorteil verursachen würde. LLM-Aufrufe und externe API-Anfragen werden dagegen asynchron ausgeführt. Da die dominanten Wartezeiten im kritischen Pfad aus externen I/O-Aufrufen stammen und die Datenbanktransaktionen kurz bleiben, ergab sich im beobachteten Lastprofil kein relevanter Parallelitätsengpass durch die synchrone Persistenzschicht. Zwei Health-Endpunkte (\texttt{GET /health} und \texttt{GET /health/db}) ermöglichen Verfügbarkeits- und Datenbankverbindungsprüfungen.
 
@@ -470,7 +470,7 @@ Die Workflows WF04 bis WF08 implementieren den Import von Matchdaten, Aufstellun
 WF09 implementiert den Medienimport für die \texttt{ef\_whitelabel}-Instanz. Der Workflow wird redaktionell über das \texttt{MediaPickerPanel} ausgelöst. Für die Asset-Suche normalisiert ein JavaScript-Knoten den Spielernamen und gleicht ihn gegen die relevanten ScorePlay-Namensfelder ab. Treffer werden über \texttt{POST /api/v1/media/incoming} an das Backend übergeben und per WebSocket an das Frontend verteilt (vgl. Abschnitt~\ref{backend-implementierung}).
 
 \paragraph{WF16 (Live-Stats-Monitor).}
-WF16 ist zustandsabhängig ausgelegt und verarbeitet nur laufende Spiele. Im Live-Zustand löst der Workflow einen direkten OpenRouter-Aufruf nur bei inhaltlich neuen Statistikfakten aus; die Duplikaterkennung erfolgt vollständig workflow-intern.
+WF16 ist zustandsabhängig ausgelegt und verarbeitet nur laufende Spiele. Im Live-Zustand löst der Workflow einen direkten OpenRouter-Aufruf nur bei inhaltlich neuen Statistikfakten aus. Die Duplikaterkennung erfolgt vollständig workflow-intern.
 
 \paragraph{WF11–13 (Social-Media-Feeds).}
 WF11 (Twitter/X), WF12 (YouTube) und WF13 (Instagram) importieren Social-Media-Inhalte idempotent per UPSERT in \texttt{media\_clips}. Die Auslösung erfolgt manuell über die Frontend-Importbuttons (vgl. Abschnitt~\ref{frontend-whitelabel}).
