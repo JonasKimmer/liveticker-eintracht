@@ -141,7 +141,7 @@
 \newunicodechar{═}{\texttt{=}}
 \newunicodechar{║}{\texttt{||}}
 
-\geometry{inner=3.5cm, outer=2.5cm, top=2.5cm, bottom=2.5cm}
+\geometry{inner=4cm, outer=2.5cm, top=2.5cm, bottom=2.5cm}
 \onehalfspacing
 \emergencystretch 3em
 
@@ -169,23 +169,23 @@
 % TITLEPAGE
 \begin{titlepage}
 \centering
-\vspace*{2cm}
-{\Large \textbf{Bachelorarbeit}}\\[2cm]
+\vspace*{1cm}
+Hochschule RheinMain\\
+Fachbereich Design Informatik Medien\\
+Studiengang Wirtschaftsinformatik\\[1.5cm]
+Bachelor-Arbeit\\
+zur Erlangung des akademischen Grades\\
+Bachelor of Science -- B.Sc.\\[2cm]
 {\LARGE \textbf{KI-gestütztes Liveticker-Redaktionssystem für den Profifußball}}\\[0.5cm]
 {\large Automatisierte Textgenerierung für Echtzeit-Sportjournalismus mit Human-in-the-Loop-Kontrolle}\\[3cm]
-{\large \textbf{Autor}}\\
-Jonas Kimmer\\
-Matrikelnummer: 1296369\\[3cm]
-{\large \textbf{Hochschule}}\\
-Hochschule RheinMain\\[0.5cm]
-Fachbereich Wirtschaftsinformatik\\[2cm]
-{\large \textbf{Betreuung}}\\
-Prof. Dr. Nikolay Tcholtchev\\[3cm]
-{\large \textbf{Firmenbetreuung}}\\
-Stackwork GmbH\\
-IT-Bereich, Eintracht Frankfurt\\[3cm]
-{\large \textbf{Datum}}\\
-April 2026
+vorgelegt von\\[0.3cm]
+{\large Jonas Kimmer}\\
+Matrikelnummer: 1296369\\[1cm]
+am\\[0.3cm]
+April 2026\\[2cm]
+Referent/Referentin: Prof. Dr. Nikolay Tcholtchev\\[0.5cm]
+Korreferent/Korreferentin: M.Sc. Yasmina Tajja\\[2cm]
+{\small Stackwork GmbH / IT-Bereich, Eintracht Frankfurt}
 \end{titlepage}
 
 % SPERRVERMERK
@@ -217,7 +217,7 @@ Die manuelle Erstellung von Liveticker-Einträgen im Profifußball ist ein kogni
 
 Die Arbeit folgt dem Design-Science-Research-Ansatz nach Hevner et al.\ (2004): Das Artefakt wird iterativ konzipiert, implementiert und evaluiert. Das entwickelte System kombiniert eine mehrsprachige LLM-Pipeline mit einem webbasierten Redaktionsfrontend und automatisierter Sportdaten-Versorgung. Die drei Betriebsmodi \textit{auto} (vollautomatisch), \textit{coop} (Human-in-the-Loop) und \textit{manual} (klassisch) ermöglichen einen graduellen Übergang zwischen autonomer KI-Generierung und redaktioneller Kontrolle.
 
-Die Evaluation umfasst 439 automatisierte Tests sowie eine qualitative Bewertung von 40 KI-generierten Ticker-Einträgen (Korrektheit 4{,}6\,/\,5, Tonalität 4{,}1\,/\,5, Vollständigkeit 4{,}3\,/\,5). Eine ergänzende LLM-as-Judge-Evaluation (N~=~80) bestätigt diese Ergebnisse (Ø~4{,}1\,/\,5) und identifiziert die Tonalitätsschwäche des euphorischen Profils bei ereignisarmen Event-Typen als konsistente Fehlerklasse. Alle 24 definierten Anforderungen werden erfüllt.
+Die Evaluation umfasst 439 automatisierte Tests sowie eine qualitative Bewertung von 40 KI-generierten Ticker-Einträgen (Korrektheit 4{,}6\,/\,5, Tonalität 4{,}1\,/\,5, Vollständigkeit 4{,}3\,/\,5). Eine ergänzende LLM-as-Judge-Evaluation (N~=~80) bestätigt diese Ergebnisse (Ø~4{,}1\,/\,5) und identifiziert die Tonalitätsschwäche des euphorischen Profils bei ereignisarmen Event-Typen als konsistente Fehlerklasse. 21 der 22 definierten Anforderungen sind vollständig erfüllt; F7 (Mehrsprachige Textgenerierung) ist funktional umgesetzt, jedoch noch nicht durch eine muttersprachliche Qualitätsevaluation abgesichert.
 
 Die Arbeit zeigt, dass eine produktionstaugliche KI-Assistenz bei der Liveticker-Erstellung mit einem Kompakt-Modell und Few-Shot-Prompting realisierbar ist. Der \textit{coop}-Modus erweist sich als empfohlener Betriebsmodus: Die KI übernimmt die zeitkritische Textproduktion, der Redakteur die publizistische Verantwortung.
 
