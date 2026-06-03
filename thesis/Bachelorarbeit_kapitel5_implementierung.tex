@@ -556,4 +556,4 @@ Das \textbf{React-Frontend} wird als statische Seite über ein CDN ausgeliefert.
 
 Die \textbf{PostgreSQL-Datenbank} wird als Managed Service über Supabase betrieben. Supabase übernimmt Backups und Systemaktualisierungen ohne operativen Aufwand auf Anwendungsseite. Die Verbindung wird über eine \texttt{DATABASE\_URL}-Umgebungsvariable eingebunden.
 
-Die \textbf{n8n-Instanz} läuft als lokaler Docker-Container und ist über einen \texttt{ngrok}-Tunnel für eingehende Football-API-Webhooks erreichbar. Dieses Setup bietet keine Redundanz und ist nicht für den Mehrbenutzerbetrieb ausgelegt; hinzu kommt das Risiko tunnelbedingter Verbindungsabbrüche bei längeren Sessions. Die Limitationen gegenüber einem skalierten Produktivbetrieb sind in Abschnitt~\ref{technische-einordnung} diskutiert.
+Die \textbf{n8n-Instanz} läuft als lokaler Docker-Container und ist über einen \texttt{ngrok}-Tunnel für eingehende Football-API-Webhooks erreichbar. Die Limitationen dieses Betriebsmodells sind in Abschnitt~\ref{technische-einordnung} diskutiert.

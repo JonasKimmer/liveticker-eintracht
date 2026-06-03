@@ -1,6 +1,6 @@
 \chapter{Motivation und Anforderungen}\label{motivation-und-anforderungen}
 
-Kapitel~\ref{einleitung} hat Problemstellung und Zielsetzung des Systems eingeführt. Dieses Kapitel leitet daraus formale Anforderungen ab. Es analysiert die drei Anforderungsdimensionen redaktioneller Aufwand (Abschnitt~\ref{redaktioneller-aufwand-bei-livetickern}), Mehrsprachigkeit (Abschnitt~\ref{mehrsprachigkeit-als-herausforderung}) und White-Label-Bedarf (Abschnitt~\ref{white-label-bedarf-im-profisport}), konkretisiert diese am Fallbeispiel Eintracht Frankfurt (Abschnitt~\ref{anforderungsanalyse-am-beispiel-eintracht-frankfurt}) und fasst alle Anforderungen in einem formalen Pflichtenheft zusammen (Abschnitt~\ref{zusammenfassung-der-systemanforderungen}).
+Dieses Kapitel leitet aus der Problemstellung formale Anforderungen ab. Es analysiert die drei Anforderungsdimensionen redaktioneller Aufwand (Abschnitt~\ref{redaktioneller-aufwand-bei-livetickern}), Mehrsprachigkeit (Abschnitt~\ref{mehrsprachigkeit-als-herausforderung}) und White-Label-Bedarf (Abschnitt~\ref{white-label-bedarf-im-profisport}), konkretisiert diese am Fallbeispiel Eintracht Frankfurt (Abschnitt~\ref{anforderungsanalyse-am-beispiel-eintracht-frankfurt}) und fasst alle Anforderungen in einem formalen Pflichtenheft zusammen (Abschnitt~\ref{zusammenfassung-der-systemanforderungen}).
 
 \section{Redaktioneller Aufwand bei Livetickern}\label{redaktioneller-aufwand-bei-livetickern}
 
@@ -9,7 +9,7 @@ Im Liveticker müssen in Abständen von einer bis drei Minuten Ereignisse unter 
 
 Schreiben und Publizieren fallen in einem einzigen Schritt zusammen (vgl. Walter 2020, S.~29). Ticker-Autoren müssen daneben häufig weitere Aufgaben übernehmen, etwa die Erstellung des abschließenden Spielberichts (vgl. Bluhm \& Schäfer 2023, S.~35). Die Fehleranfälligkeit steigt unter diesen Bedingungen deutlich. Zahlendreher bei Spielminuten, falsch zugeordnete Spielernamen oder stilistische Brüche innerhalb eines Tickers sind unter hohem Produktionsdruck erwartbare Fehlerbilder (vgl. Walter 2020, S.~29, Bluhm \& Schäfer 2023, S.~35).
 
-Das Skalierungsproblem verschärft sich an Spieltagen mit Parallelspielen erheblich. An einem typischen Bundesliga-Samstag finden bis zu sechs Partien zeitgleich statt (vgl. DFL 2024). Redaktionen, die für mehrere Spiele Ticker anbieten, müssen entweder entsprechend viele Autoren gleichzeitig einsetzen oder einzelne Autoren mehrere Ticker parallel betreuen lassen, mit absehbaren Qualitätseinbußen (vgl. Bluhm \& Schäfer 2023, S.~32, 35). Erschwerend kommt hinzu, dass Liveticker-Stellen häufig mit wechselndem freien Personal besetzt werden (vgl. Bluhm \& Schäfer 2023, S.~32). Konsistente Tonalität und sprachliches Niveau sind unter diesen Bedingungen manuell nur eingeschränkt zu gewährleisten. Für Vereinsredaktionen mit kleinen Teams ist eine rein manuelle Skalierung damit personell und wirtschaftlich kaum darstellbar. Dass diese strukturellen Grenzen selbst bei professionell aufgestellten Vereinsredaktionen spürbar werden, zeigt Abschnitt~\ref{anforderungsanalyse-am-beispiel-eintracht-frankfurt}.
+Das Skalierungsproblem verschärft sich an Spieltagen mit Parallelspielen erheblich, wenn mehrere Partien zeitgleich stattfinden. Redaktionen, die für mehrere Spiele Ticker anbieten, müssen entweder entsprechend viele Autoren gleichzeitig einsetzen oder einzelne Autoren mehrere Ticker parallel betreuen lassen, mit absehbaren Qualitätseinbußen (vgl. Bluhm \& Schäfer 2023, S.~32, 35). Erschwerend kommt hinzu, dass Liveticker-Stellen häufig mit wechselndem freien Personal besetzt werden (vgl. Bluhm \& Schäfer 2023, S.~32). Konsistente Tonalität und sprachliches Niveau sind unter diesen Bedingungen manuell nur eingeschränkt zu gewährleisten. Für Vereinsredaktionen mit kleinen Teams ist eine rein manuelle Skalierung damit personell und wirtschaftlich kaum darstellbar. Dass diese strukturellen Grenzen selbst bei professionell aufgestellten Vereinsredaktionen spürbar werden, zeigt Abschnitt~\ref{anforderungsanalyse-am-beispiel-eintracht-frankfurt}.
 
 
 
@@ -41,9 +41,9 @@ Die Analyse basiert auf einem leitfadengestützten Experteninterview mit dem Dig
 
 \subsection{Betriebskontext}\label{fallstudie-eintracht-frankfurt}
 
-Eintracht Frankfurt bestreitet pro Saison bis zu 60 Pflichtspiele. Pro Spiel fallen typischerweise 60--120 Ticker-Einträge an, wobei die genaue Zahl von der Ereignisdichte abhängt (vgl.\ Abschnitt~\ref{experteninterview-leitfaden}). Die Liveticker-Produktion übernimmt ein zweiköpfiges Team aus Redakteur und technischem Administrator. Das Team arbeitet stets vor Ort im Stadion, auch bei Auswärtsspielen. Der Redakteur fokussiert sich ausschließlich auf Ticker-Inhalte einschließlich Bildauswahl und Medieneinbettung. Als explizites Geschwindigkeitsziel gilt, früher als konkurrierende Medien wie Kicker oder Bundesliga.de zu publizieren (vgl.\ Abschnitt~\ref{experteninterview-leitfaden}). Im Interview wurde Englisch als primäre Zielsprache für die internationale Fanbasis bestätigt. Für die Systemauslegung wird daraus für KI-gestützte Generierung ein Zielwert von P95 unter 30\,s abgeleitet, damit innerhalb des redaktionellen Echtzeitfensters ausreichend Zeit für Sichtprüfung und Freigabe verbleibt.
+Eintracht Frankfurt bestreitet pro Saison bis zu 60 Pflichtspiele. Pro Spiel fallen typischerweise 60--120 Ticker-Einträge an, wobei die genaue Zahl von der Ereignisdichte abhängt. Die Liveticker-Produktion übernimmt ein zweiköpfiges Team aus Redakteur und technischem Administrator. Das Team arbeitet stets vor Ort im Stadion, auch bei Auswärtsspielen. Der Redakteur fokussiert sich ausschließlich auf Ticker-Inhalte einschließlich Bildauswahl und Medieneinbettung. Als explizites Geschwindigkeitsziel gilt, früher als konkurrierende Medien wie Kicker oder Bundesliga.de zu publizieren. Im Interview wurde Englisch als primäre Zielsprache für die internationale Fanbasis bestätigt.
 
-Der vereinsspezifische Ticker-Stil ist emotional und parteiisch zugunsten Eintrachts, jedoch nicht unsachlich. Er ist fan-nah, mit klarer Eintracht-Sprache und typisch hessischer Färbung (vgl.\ Abschnitt~\ref{experteninterview-leitfaden}). Klare Stilrichtlinien für den Eintracht-Ton sind vorhanden, werden vom bestehenden System jedoch nicht durchgesetzt.
+Der vereinsspezifische Ticker-Stil ist emotional und parteiisch zugunsten Eintrachts, jedoch nicht unsachlich. Er ist fan-nah, mit klarer Eintracht-Sprache und typisch hessischer Färbung. Vereinsspezifische Schreibkonventionen für einzelne Begriffe (z.\,B. TOOOOR-Schreibweise, Vereinskürzel SGE) sind gelebte Praxis; einen allgemeinen Stilguide für Wortwahl gibt es hingegen nicht. Das bestehende System setzt auch die vorhandenen Konventionen nicht durch.
 
 
 
@@ -60,19 +60,18 @@ Abbildung~\ref{fig:altsystem} illustriert den Ist-Zustand anhand des im Projektz
 
 Die Systemanalyse zeigt sechs strukturelle Defizite, die den Handlungsbedarf für das in dieser Arbeit entwickelte System begründen.
 
-Erstens bietet der Ticker-Editor weder KI-Unterstützung noch technische Stilführung. Trotz vorhandener redaktioneller Richtlinien für den Eintracht-Ton kann das System diese weder einfordern noch vorschlagen (vgl. Abschnitt~\ref{experteninterview-leitfaden}).
+Erstens bietet der Ticker-Editor weder KI-Unterstützung noch technische Stilführung. Trotz vorhandener redaktioneller Richtlinien für den Eintracht-Ton kann das System diese weder einfordern noch vorschlagen.
 
-Zweitens wird der Spielstand über numerische Eingabefelder manuell gepflegt (Abbildung~\ref{fig:altsystem}, links unten). Obwohl der Verein externe Datenquellen (Opta, DFBnet) für Livedaten nutzt, fehlt eine automatische Synchronisation dieser Feeds mit der Liveticker-Oberfläche. Die Daten sind grundsätzlich zuverlässig, bleiben aber anfällig für Verzögerungen und Fehlzuordnungen, etwa bei kurzfristigen Aufstellungsänderungen oder instabiler Internetverbindung im Auswärtsstadion. Dadurch bleiben manuelle Korrekturen durch Redakteure essenziell (vgl. Abschnitt~\ref{experteninterview-leitfaden}).
+Zweitens wird der Spielstand über numerische Eingabefelder manuell gepflegt. Obwohl der Verein externe Livedatenquellen (Opta, DFBnet) nutzt, fehlt eine automatische Synchronisation dieser Feeds mit der Liveticker-Oberfläche. Die Feeds sind grundsätzlich zuverlässig, bleiben aber anfällig für Verzögerungen und Fehlzuordnungen, etwa bei instabiler Verbindung im Auswärtsstadion.
 
-Drittens fehlt eine strukturierte Medienintegration. Das System bietet lediglich einen einfachen „Bild auswählen"-Button ohne Social-Media-Anbindung, Galeriefunktion oder automatischen Medien-Import (z.\,B. ScorePlay, YouTube, Instagram).
+Drittens fehlt eine strukturierte Medienintegration. Das System bietet lediglich einen einfachen „Bild auswählen" Button ohne Social-Media-Anbindung, Galeriefunktion oder automatischen Medien-Import.
 
 Viertens ist das System ausschließlich deutschsprachig ausgelegt. Eine Übersetzungsfunktion oder mehrsprachige Textgenerierung ist nicht vorgesehen.
 
-Fünftens sind Live-Statistiken und audiovisuelle Einbettungen im Altsystem nicht vorhanden, obwohl Aufstellungsdaten laut Experteninterview bereits automatisiert übertragen werden. Im Experteninterview wurde hierzu berichtet, dass audiovisuelle Inhalte und Live-Statistiken im Altsystem derzeit nicht darstellbar sind (vgl. Abschnitt~\ref{experteninterview-leitfaden}).
+Fünftens fehlen Live-Statistiken und audiovisuelle Inhalte, obwohl Aufstellungsdaten bereits automatisiert übertragen werden.
 
-Sechstens erhöht die hohe Systemkomplexität durch zahlreiche Sonderlösungen die Fehleranfälligkeit im laufenden Betrieb, insbesondere für Redakteure mit geringerer Systemroutine (vgl. Abschnitt~\ref{experteninterview-leitfaden}).
+Sechstens erhöht die gewachsene Systemkomplexität durch technische Schulden die Fehleranfälligkeit im laufenden Betrieb, insbesondere für Redakteure mit geringerer Systemroutine.
 
-Diese Defizite spiegeln die drei in Abschnitt~\ref{problemstellung-und-zielsetzung} identifizierten Anforderungsdimensionen direkt wider: operativer Zeitdruck durch vollständig manuelle Produktion, fehlende Mehrsprachigkeit und eingeschränkte White-Label-Fähigkeit. Wie Kapitel~\ref{systemkonzeption} und Abschnitt~\ref{anforderungsabgleich-soll-ist-vergleich} zeigen, adressiert das entwickelte System diese sechs Defizitbereiche systematisch.
 
 
 
@@ -148,4 +147,4 @@ N5 & Systemverfügbarkeit: kein manueller Eingriff erforderlich während eines l
 }
 
 
-Die drei Anforderungsdimensionen (operativer Zeitdruck, Mehrsprachigkeit und White-Label-Bedarf) sind keine isolierten Herausforderungen, sondern greifen strukturell ineinander. Zeitdruck macht rein menschliche Skalierung kaum darstellbar, Mehrsprachigkeit multipliziert diesen Aufwand, und White-Label-Anforderungen verlangen eine stilistische Konsistenz, die wechselndes Personal nicht zuverlässig gewährleisten kann. Eine integrierte Lösung ist daher erforderlich. Die vorstehenden 22 Anforderungen bilden das Pflichtenheft für die Systemkonzeption in Kapitel~\ref{systemkonzeption}. Die Einlösung dieser Anforderungen prüft Kapitel~\ref{evaluation} im Soll-Ist-Abgleich empirisch.
+Die drei Anforderungsdimensionen operativer Zeitdruck, Mehrsprachigkeit und White-Label-Bedarf sind keine isolierten Herausforderungen, sondern greifen strukturell ineinander. Zeitdruck begrenzt die Kapazität manueller Produktion, Mehrsprachigkeit multipliziert diesen Aufwand, und White-Label-Betrieb verlangt eine stilistische Konsistenz, die personalabhängige Produktion allein nicht zuverlässig sicherstellen kann. Eine integrierte Lösung ist daher erforderlich. Der Soll-Ist-Abgleich in Abschnitt~\ref{anforderungsabgleich-soll-ist-vergleich} prüft die Einlösung dieser Anforderungen empirisch.

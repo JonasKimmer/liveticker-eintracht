@@ -60,38 +60,30 @@ Beispiel
 \endhead
 \bottomrule\noalign{}
 \endlastfoot
-\textbf{Stil-Inkonsistenz} & 8 / 40 (20\,\%) & Neutraler Stil enthält
-emotionale Formulierungen & „33. Minute: Oh nein! Lienhart sieht Gelb!
-\ldots{} Aber Kopf hoch, Jungs! Kämpfen!'' \emph{(angefordert:
-neutral)} \\
-\textbf{Fakten-Halluzination} & 2 / 40 (5\,\%) & Das LLM erfindet
-Details, die nicht im Kontext stehen & Pre-Match-Text erfand eine
-Wettempfehlung: „Wir tippen auf Double Chance: Sieg \ldots{} oder
-Remis.'' \\
-\textbf{Team-Verwechslung} & 0 / 40 (0\,\%) & Tor wird dem falschen Team
-zugeordnet & Nicht aufgetreten \\
-\textbf{Wiederholung} & 5 / 40 (13\,\%) & Aufeinanderfolgende Texte
-ähneln sich stark im Satzbau & Mehrere Tore mit identischer Formel „X
-bringt Y in Führung! Nach Vorlage von Z. 1:0.'' \\
-\textbf{Überlänge} & 0 / 40 (0\,\%) & Text überschreitet die typische
-Liveticker-Kürze & Nicht aufgetreten \\
+\textbf{Stil-Inkonsistenz} & 8 / 40 (20\,\%) & Neutraler Stil enthält euphorische Formulierungen & „31.~Minute: TOOOOR! R.~Bensebaini erhöht für Borussia Dortmund! \ldots{} Der Ball zappelt im Netz. 3:0.'' \emph{(angefordert: neutral)} \\
+\textbf{Wiederholung} & 5 / 40 (13\,\%) & Aufeinanderfolgende Einträge verwenden identische Satzbausteine & Kritisch-Tore wiederholen stereotyp „[Abwehr] unsortiert. Zu viel Raum für [Spieler].'' \\
+\textbf{Fakten-Halluzination} & 2 / 40 (5\,\%) & Das LLM weist Spieler oder Ereignisse dem falschen Verein zu & „95.~Minute: Janis Blaswich sieht die Gelbe Karte. Bayer Leverkusen: Der Torwart wird verwarnt.'' \emph{(Blaswich spielt für RB Leipzig)} \\
+\textbf{Team-Verwechslung} & 0 / 40 (0\,\%) & Tor wird dem falschen Team zugeordnet & Nicht aufgetreten \\
+\textbf{Überlänge} & 0 / 40 (0\,\%) & Text überschreitet die typische Liveticker-Kürze & Nicht aufgetreten \\
 \end{longtable}
 }
 
 \emph{Beispiel: Tor (euphorisch, Bewertung 5\,/\,5\,/\,5):}
 
 \begin{quote}
-„81. Minute: WAS IST DENN HIER LOS?! Collins mit der butterweichen Flanke! DOAN! Der Ball ist drin! TOOOOR! 1:0! Die Hütte bebt!'' \emph{(R. Doan, Eintracht Frankfurt vs.~FSV Mainz 05, Vorlage Collins)}
+„87. Minute: SILVA! WAS EIN DING! Der Ball zappelt im Netz! 4:0! TOOOOR!'' \emph{(F. Silva, Borussia Dortmund vs.~SC Freiburg, 87.~Minute)}
 \end{quote}
 
-Die häufigste Fehlerklasse ist Stil-Inkonsistenz beim neutralen Profil (8/40, 20\,\%). Fakten-Halluzinationen traten mit 5\,\% selten auf. Zugleich blieben zwei kritische Fehlerklassen vollständig aus: Weder Team-Verwechslungen noch Überlängen wurden in den 40 bewerteten Einträgen beobachtet.
+Die häufigste Fehlerklasse ist Stil-Inkonsistenz beim neutralen Profil (8/40, 20\,\%), gefolgt von Wiederholungen stereotyper Satzbausteine (5/40, 13\,\%). Fakten-Halluzinationen traten mit 5\,\% selten auf. Zwei Fehlerklassen traten in keinem der 40 bewerteten Einträge auf: Weder Team-Verwechslungen noch Überlängen wurden beobachtet.
 
 Um diese manuellen Befunde über eine größere Stichprobe automatisiert abzusichern, wurde ergänzend ein LLM-as-Judge-Verfahren eingesetzt.
 
 
 \subsection{LLM-as-Judge-Evaluation}\label{erweiterte-evaluation}
 
-Das LLM-as-Judge-Verfahren ist in Abschnitt~\ref{automatisierte-sportberichterstattung} grundlegend beschrieben. Im vorliegenden Evaluationsdesign bewertet \texttt{claude-sonnet-4-5} als unabhängiges Judge-Modell die N\,=\,80 Einträge aus 30 Bundesliga-Spielen der Saison~2025/26, generiert mit \texttt{google/gemini-2.0-flash-lite-001}, entlang derselben Dimensionen wie in Abschnitt~\ref{qualitative-analyse-der-generierten-texte} (Korrektheit, Tonalität, Vollständigkeit, je 1--5). Der Bewertungsprompt operationalisiert jede Dimension über explizite Ankerskalen und stilspezifische Definitionen. Ausschnitt aus dem Systemprompt:
+Das LLM-as-Judge-Verfahren setzt ein vom generierenden Modell verschiedenes Sprachmodell als automatisierten Bewerter ein, der KI-generierte Ausgaben entlang definierter Qualitätsdimensionen beurteilt ohne dass menschliche Annotationen für jeden Bewertungsschritt erforderlich sind (vgl. Zheng et al.~2023, S.~8). Korrelationsstudien zeigen eine moderate Übereinstimmung mit menschlichen Urteilen bei deutlich geringerem Annotationsaufwand (vgl. Zheng et al.~2023, S.~8). Mögliche Bewerterverzerrungen sind dabei zu berücksichtigen und werden in Abschnitt~\ref{methodische-einordnung} diskutiert.
+
+Im vorliegenden Evaluationsdesign bewertet \texttt{claude-sonnet-4-5} als unabhängiges Judge-Modell die N\,=\,80 Einträge aus 30 Bundesliga-Spielen der Saison~2025/26, generiert mit \texttt{google/gemini-2.0-flash-lite-001}, entlang derselben Dimensionen wie in Abschnitt~\ref{qualitative-analyse-der-generierten-texte} (Korrektheit, Tonalität, Vollständigkeit, je 1--5). Der Bewertungsprompt operationalisiert jede Dimension über explizite Ankerskalen und stilspezifische Definitionen. Ausschnitt aus dem Systemprompt:
 
 \begin{quote}\small
 \textbf{KORREKTHEIT (1--5):} 5\,=\,alle Fakten korrekt (Spieler, Team, Minute, Spielstand), 3\,=\,ein klarer Faktenfehler, 1\,=\,grundlegend falsche Fakten oder Halluzination.
@@ -103,7 +95,7 @@ Das LLM-as-Judge-Verfahren ist in Abschnitt~\ref{automatisierte-sportberichterst
 \textbf{Anti-Bias:} Längere Texte sind NICHT automatisch vollständiger. Kreativität und Originalität sind KEIN Bewertungskriterium.
 \end{quote}
 
-Das neutrale Referenzbeispiel aus Abschnitt~\ref{einfluss-der-stilprofile} (K/T/V\,=\,5/5/5) illustriert eine optimale Bewertung: sachliche Faktennennung, vollständige Schlüsselangaben, stilkonsistenter Reporter-Ton ohne emotionale Elemente.
+Das neutrale Referenzbeispiel aus Abschnitt~\ref{einfluss-der-stilprofile} (K/T/V\,=\,5/5/5) illustriert eine Bewertung mit maximalen Werten je Dimension: sachliche Faktennennung, vollständige Schlüsselangaben, stilkonsistenter Reporter-Ton ohne emotionale Elemente.
 
 {\def\LTcaptype{none} % do not increment counter
 \begin{longtable}[]{@{}
@@ -136,6 +128,8 @@ euphorisch  & 27 & 3{,}22 & 2{,}93 & 3{,}67 & 3{,}27 \\
 \end{figure}
 
 Das neutrale Stilprofil erzielt den höchsten Gesamtwert (4{,}82). Das kritische Profil liegt mit Ø~4{,}32 im Mittelfeld und erreicht insbesondere bei der Vollständigkeit hohe Werte (4{,}58). Das euphorische Profil weist mit Ø~3{,}27 die niedrigsten Werte auf. Die größten Abstände zeigen sich bei Tonalität (2{,}93) und Korrektheit (3{,}22). Die größere Stichprobe bestätigt damit den Befund der manuellen Analyse: Sachlich-neutrale Ausgaben sind am robustesten, stark emotionalisierte Profile fehleranfälliger.
+
+Eine ereignistypspezifische Analyse zeigt, dass Wechsel-Ereignisse den Tonalitätswert des euphorischen Profils strukturell belasten. Von den euphorisch generierten Wechsel-Einträgen erzielen 59\,\% einen Tonalitätswert T\,\(\leq\)\,3; sechs Einträge erhalten T\,=\,1. Das LLM generiert für Einwechslungen — insbesondere in späten Spielminuten oder bei ungünstigem Spielstand — konsistent skeptisch-resignierte Texte (\emph{„Na, ob das noch was ändert?''}, \emph{„Hoffentlich wird das nix''}) statt des angeforderten euphorischen Stils. Ursache ist eine Übergewichtung des Spielkontexts gegenüber der Stilanweisung: Das Modell bewertet einen Wechsel implizit als Indikator für eine schwierige Spielsituation und wählt einen kontextuell \emph{plausiblen}, aber stilverletzenden Ton. Dieser Befund verweist auf eine strukturelle Grenze kontextsensibler Stilsteuerung, die in Abschnitt~\ref{stilreferenzen} weiter eingeordnet wird.
 
 \subsection{Few-Shot-Ablationsstudie}\label{few-shot-ablation}
 
@@ -399,4 +393,4 @@ N5 & Systemverfügbarkeit & Lifespan-Migrationen, Health-Check-Endpoint, automat
 \end{longtable}
 }
 
-Insgesamt zeigt die Evaluation einen belastbaren Realisierbarkeitsnachweis bei differenzierter Qualitätslage: Korrektheit und Vollständigkeit sind überwiegend robust, Tonalität bleibt profil- und kontextabhängig und begründet den zentralen Optimierungsbedarf für den weiteren Ausbau.
+Die Evaluation belegt die technische Realisierbarkeit des Systems. Korrektheit und Vollständigkeit sind überwiegend robust; Tonalität bleibt profil- und kontextabhängig und begründet den zentralen Optimierungsbedarf für den weiteren Ausbau.
