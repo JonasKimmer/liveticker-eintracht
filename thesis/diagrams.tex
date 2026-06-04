@@ -137,25 +137,25 @@
   \node[actor] (n8n) at (8,   0) {n8n\\Workflows};
   \node[actor] (api) at (12,  0) {Football-API};
 
-  % Frontend ↔ Backend (REST)
-  \draw[arrow] ([yshift= 6pt]fe.east)  -- node[above, font=\scriptsize] {GET /matches}   ([yshift= 6pt]be.west);
-  \draw[arrow] ([yshift= 2pt]be.west)  -- node[below, font=\scriptsize] {JSON response}  ([yshift= 2pt]fe.east);
+  % Frontend ↔ Backend (REST) — leicht versetzt für saubere Pfeile
+  \draw[arrow] ([yshift= 8pt]fe.east)  -- node[above, font=\scriptsize] {GET /matches}   ([yshift= 8pt]be.west);
+  \draw[arrow] ([yshift=-2pt]be.west)  -- node[below, font=\scriptsize] {JSON response}  ([yshift=-2pt]fe.east);
 
-  % Backend → Frontend (WebSocket)
-  \draw[arrow, dashed] ([yshift=-3pt]be.west) to[out=210, in=330]
-    node[below, font=\scriptsize, pos=0.5] {WebSocket (/ws/media)} ([yshift=-3pt]fe.east);
+  % Backend → Frontend (WebSocket) — gestrichelt, Bogen oben
+  \draw[arrow, dashed] ([yshift=3pt]be.north) to[out=140, in=40]
+    node[above, font=\scriptsize, pos=0.5] {WebSocket (/ws/media)} ([yshift=3pt]fe.north);
 
   % n8n ↔ Football-API
   \draw[arrow] ([yshift= 3pt]n8n.east) -- node[above, font=\scriptsize] {HTTP request}  ([yshift= 3pt]api.west);
   \draw[arrow] ([yshift=-3pt]api.west) -- node[below, font=\scriptsize] {JSON response} ([yshift=-3pt]n8n.east);
 
-  % n8n → Backend
-  \draw[arrow] (n8n.south) to[out=240, in=300]
-    node[below, font=\scriptsize, pos=0.5] {POST /api/v1} (be.south);
+  % n8n → Backend (POST) — Bogen unten, klar getrennt
+  \draw[arrow] ([yshift=-6pt]n8n.west) to[out=200, in=340]
+    node[below, font=\scriptsize, pos=0.5] {POST /api/v1} ([yshift=-6pt]be.east);
 
-  % Frontend → n8n (Webhook-Trigger)
-  \draw[arrow] (fe.south) to[out=270, in=270, looseness=0.35]
-    node[below, font=\scriptsize, pos=0.5] {Webhook-Trigger} (n8n.south);
+  % Frontend → n8n (Webhook-Trigger) — Bogen oben, klar sichtbar
+  \draw[arrow] (fe.north) to[out=50, in=130]
+    node[above, font=\scriptsize, pos=0.5] {Webhook-Trigger} (n8n.north);
 
 \end{tikzpicture}%
 }
@@ -203,25 +203,24 @@
   % Participants (top row)
   \foreach \x/\lbl in {0/n8n,1/FastAPI,2/PostgreSQL,3/LLM,4/Frontend}{
     \node[actor] at (\x,0) {\lbl};
-    \draw[gray!50, thin] (\x,0.35) -- (\x,9.5);
+    \draw[gray!50, thin] (\x,0.35) -- (\x,8.8);
   }
   % Messages
-  \draw[msg]    (0,1)   -- node[above]{POST /events}         (1,1);
-  \draw[msg]    (1,1.8) -- node[above]{INSERT events}        (2,1.8);
-  \draw[msg]    (0,2.6) -- node[above]{POST /ticker/generate/\{id\}} (1,2.6);
-  \draw[msg]    (1,3.4) -- node[above]{SELECT (Dedup-Check)} (2,3.4);
+  \draw[msg]    (0,1)   -- node[above]{UPSERT event (SQL direkt)} (2,1);
+  \draw[msg]    (0,1.8) -- node[above]{POST /ticker/generate/\{id\}} (1,1.8);
+  \draw[msg]    (1,2.6) -- node[above]{SELECT (Dedup-Check)} (2,2.6);
   % Alt box: Neues Ereignis
-  \draw[altbox] (0.05,3.9) rectangle (3.95,7.6);
-  \node[font=\tiny, text=blue!70, anchor=north west] at (0.05,3.9) {[Neues Ereignis]};
-  \draw[msg]    (1,4.4) -- node[above]{SELECT match + teams} (2,4.4);
-  \draw[msg]    (1,5.1) -- node[above]{SELECT style\_refs}   (2,5.1);
-  \draw[msg]    (1,5.8) -- node[above]{Prompt (Fakten+Kontext+Few-Shot)} (3,5.8);
-  \draw[retmsg] (3,6.5) -- node[above]{Generierter Text}     (1,6.5);
-  \draw[msg]    (1,7.2) -- node[above]{INSERT ticker\_entry (draft|published)} (2,7.2);
-  \draw[retmsg] (1,7.9) -- node[above]{201 Created}          (0,7.9);
+  \draw[altbox] (0.05,3.1) rectangle (3.95,6.8);
+  \node[font=\tiny, text=blue!70, anchor=north west] at (0.05,3.1) {[Neues Ereignis]};
+  \draw[msg]    (1,3.6) -- node[above]{SELECT match + teams} (2,3.6);
+  \draw[msg]    (1,4.3) -- node[above]{SELECT style\_refs}   (2,4.3);
+  \draw[msg]    (1,5.0) -- node[above]{Prompt (Fakten+Kontext+Few-Shot)} (3,5.0);
+  \draw[retmsg] (3,5.7) -- node[above]{Generierter Text}     (1,5.7);
+  \draw[msg]    (1,6.4) -- node[above]{INSERT ticker\_entry (draft|published)} (2,6.4);
+  \draw[retmsg] (1,7.1) -- node[above]{201 Created}          (0,7.1);
   % Polling
-  \draw[msg]    (4,8.6) -- node[above]{GET /ticker/\{id\} (Polling 15\,s Live / 20\,s PreMatch)} (1,8.6);
-  \draw[retmsg] (1,9.3) -- node[above]{TickerEntry[]}        (4,9.3);
+  \draw[msg]    (4,7.9) -- node[above]{GET /ticker/\{id\} (Polling 15\,s Live / 20\,s PreMatch)} (1,7.9);
+  \draw[retmsg] (1,8.6) -- node[above]{TickerEntry[]}        (4,8.6);
 \end{tikzpicture}%
 }
 
