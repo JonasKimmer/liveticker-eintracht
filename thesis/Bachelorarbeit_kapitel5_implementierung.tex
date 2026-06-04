@@ -1,6 +1,6 @@
 \chapter{Implementierung}\label{implementierung}
 
-Dieses Kapitel beschreibt die Umsetzung der in Kapitel~\ref{systemkonzeption} entwickelten Architekturentscheidungen in ein lauffähiges Gesamtsystem. Im Mittelpunkt steht der methodisch nachvollziehbare Nachweis, dass die konzeptionellen Entwurfsprinzipien unter realen Betriebsrandbedingungen tragfähig implementiert sind. Dargestellt werden Implementierungsentscheidungen mit unmittelbarer Relevanz für die in Kapitel~\ref{motivation-und-anforderungen} hergeleiteten Anforderungen und für die Qualitätsdimensionen der Evaluation in Kapitel~\ref{evaluation}. Kapitel~\ref{implementierung} gliedert sich in Backend-Implementierung, KI-Generierungspipeline, Frontend-Implementierung, n8n-Workflow-Implementierung, Qualitätssicherung und Tests sowie Deployment.
+Dieses Kapitel beschreibt die Umsetzung der in Kapitel~\ref{systemkonzeption} entwickelten Architekturentscheidungen in ein lauffähiges Gesamtsystem. Im Mittelpunkt steht der methodisch nachvollziehbare Nachweis, dass die konzeptionellen Entwurfsprinzipien unter realen Betriebsrandbedingungen tragfähig implementiert sind. Dargestellt werden Implementierungsentscheidungen mit unmittelbarer Relevanz für die in Kapitel~\ref{motivation-und-anforderungen} hergeleiteten Anforderungen und für die Qualitätsdimensionen der Evaluation in Kapitel~\ref{evaluation}. Das Kapitel gliedert sich in Backend-Implementierung (Abschnitt~\ref{backend-implementierung}), KI-Generierungspipeline (Abschnitt~\ref{ki-generierungspipeline}), Frontend-Implementierung (Abschnitt~\ref{frontend-implementierung}), n8n-Workflow-Implementierung (Abschnitt~\ref{n8n-workflow-implementierung}), Qualitätssicherung und Tests (Abschnitt~\ref{qualituxe4tssicherung-und-tests}) sowie Deployment (Abschnitt~\ref{deployment}).
 
 \section{Backend-Implementierung}\label{backend-implementierung}
 
@@ -478,7 +478,7 @@ WF11 (Twitter/X), WF12 (YouTube) und WF13 (Instagram) importieren Social-Media-I
 
 \section{Qualitätssicherung und Tests}\label{qualituxe4tssicherung-und-tests}
 
-Die Implementierung umfasst 439 automatisierte Tests in drei Schichten und setzt damit die in Abschnitt~\ref{qualitätssicherungskonzept} und~\ref{frontend-teststrategie} beschriebene Teststrategie um. Die Tests sichern die Implementierung methodisch ab und belegen die Erfüllung der in Kapitel~\ref{motivation-und-anforderungen} hergeleiteten Anforderungen. Sie gliedern sich in Frontend-Tests (Abschnitt~\ref{impl-frontend-tests}), Backend-Tests (Abschnitt~\ref{impl-backend-tests}) und End-to-End-Tests (Abschnitt~\ref{impl-e2e-tests}).
+Die Implementierung umfasst 439 automatisierte Tests in drei Schichten und setzt damit die in Abschnitt~\ref{qualitätssicherungskonzept} und~\ref{frontend-teststrategie} beschriebene Teststrategie um. Die Tests sichern die Implementierung methodisch ab und belegen die Erfüllung der in Kapitel~\ref{motivation-und-anforderungen} hergeleiteten Anforderungen. Sie gliedern sich in n8n-Workflow-Verifikation (Abschnitt~\ref{impl-n8n-verifikation}), Frontend-Tests (Abschnitt~\ref{impl-frontend-tests}), Backend-Tests (Abschnitt~\ref{impl-backend-tests}) und End-to-End-Tests (Abschnitt~\ref{impl-e2e-tests}).
 
 \subsection{n8n-Workflow-Verifikation}\label{impl-n8n-verifikation}
 
