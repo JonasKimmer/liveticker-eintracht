@@ -1,6 +1,6 @@
 \chapter{Diskussion}\label{diskussion}
 
-Die Evaluation in Kapitel~\ref{evaluation} hat die empirische Grundlage gelegt. Während das vorige Kapitel Befunde dokumentiert, ordnet dieses Kapitel deren Bedeutung, Grenzen und Konsequenzen ein. Die Argumentation folgt dabei einer triangulierenden Logik aus quantitativen Befunden, qualitativer Fehleranalyse und externer Praxisperspektive. Die folgenden Abschnitte behandeln Betriebsmodi, Prompt-Architektur und Modellwahl, Einordnung in den Stand der Technik, Experteninterview, Limitationen sowie ethische und regulatorische Anforderungen.
+Die Evaluation in Kapitel~\ref{evaluation} hat die empirische Grundlage gelegt. Während das vorige Kapitel Befunde dokumentiert, ordnet dieses Kapitel deren Bedeutung, Grenzen und Konsequenzen ein. Die Argumentation folgt dabei einer triangulierenden Logik aus quantitativen Befunden, qualitativer Fehleranalyse und externer Praxisperspektive. Die folgenden Abschnitte interpretieren die Ergebnisse im Hinblick auf Betriebsmodi (Abschnitt~\ref{diskussion-der-betriebsmodi}), Prompt-Architektur und Modellwahl (Abschnitt~\ref{diskussion-der-prompt-architektur}), Einordnung in den Stand der Technik (Abschnitt~\ref{einordnung-in-den-stand-der-technik}), Experteninterview (Abschnitt~\ref{experteninterview-auswertung}), Limitationen (Abschnitt~\ref{kritische-reflexion}) sowie ethische und regulatorische Anforderungen (Abschnitt~\ref{ethik}).
 
 
 \section{Diskussion der Betriebsmodi}\label{diskussion-der-betriebsmodi}
@@ -18,11 +18,7 @@ Der empfohlene Produktivbetrieb kombiniert \texttt{coop} für strukturierte API-
 
 \section{Diskussion der Prompt-Architektur}\label{diskussion-der-prompt-architektur}
 
-Die Evaluationsbefunde lassen sich auf drei Designentscheidungen der Prompt-Architektur zurückführen: Stilreferenzen, Temperaturparameter und Context-Builder sowie Modellauswahl.
-
-Querschnittlich zeigt sich dabei ein konsistentes Muster. Robustheit entsteht immer dann, wenn Modellfreiheitsgrade durch domänenspezifische Leitplanken begrenzt werden. Fehler häufen sich dort, wo solche Leitplanken stilistisch oder kontextuell konkurrieren.
-
-Ergänzend ist für die Interpretation relevant, dass in der Implementierung einzelne Abweichungen trotz regelbasierter Prompt-Struktur beobachtet wurden, insbesondere unbelegte Zeitangaben ohne explizite Zeitreferenz im Prompt.
+Die Befunde aus Kapitel~\ref{evaluation} lassen sich auf drei Designentscheidungen der Prompt-Architektur zurückführen: Stilreferenzen (Abschnitt~\ref{stilreferenzen}), Temperaturparameter und Context-Builder (Abschnitt~\ref{temperatur-context}) sowie Modellauswahl (Abschnitt~\ref{modellauswahl}).
 
 \subsection{Stilreferenzen}\label{stilreferenzen}
 
