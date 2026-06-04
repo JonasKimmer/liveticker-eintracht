@@ -134,7 +134,7 @@ Das Datenmodell folgt fünf Gestaltungsprinzipien:
 
 \paragraph{Referenzielle Integrität.} Die Fremdschlüssel-Bindungen folgen zwei Löschstrategien. Abhängige Entitäten wie Events und Ticker-Einträge werden bei Spiellöschung kaskadierend entfernt. Übergeordnete Kontextentitäten wie Wettbewerbe erhalten Null-Bindungen, sodass historische Spieldatensätze erhalten bleiben. Zusammengesetzte Unique Constraints sichern referenzielle Eindeutigkeit auf Datenbankebene.
 
-\paragraph{JSONB.} JSONB kommt für mehrsprachige Anzeigefelder mit variablen Sprachschlüsseln sowie für externe Strukturen mit variablem Schema zum Einsatz. Der Großteil des Schemas bleibt dadurch vollständig typisiert und abfrageoptimiert (vgl.\ Abschnitt~\ref{mehrsprachigkeit-ki}).
+\paragraph{JSONB.} JSONB kommt für mehrsprachige Anzeigefelder mit variablen Sprachschlüsseln sowie für externe Strukturen mit variablem Schema zum Einsatz. Der Großteil des Schemas bleibt dadurch vollständig typisiert und abfrageoptimiert.
 
 \paragraph{Instanzkodierung.} Jeder Ticker-Eintrag und jede Stilreferenz trägt ein \texttt{instance}-Feld, das die Instanzzugehörigkeit (\texttt{ef\_whitelabel} oder \texttt{generic}) direkt im Datensatz kodiert. Diese Entscheidung ermöglicht die White-Label-Trennung ohne separate Datenbankschemata. Abfragen filtern per Instanzparameter, und die Few-Shot-Referenzauswahl greift auf dieselbe Filterlogik zurück (vgl.\ Abschnitt~\ref{partner-team-konzept-und-white-label-steuerung}).
 
@@ -150,7 +150,7 @@ Die n8n-Integrationsschicht orchestriert Datenflüsse zwischen externen Schnitts
 
 \subsection{Designprinzipien}\label{n8n-designprinzipien}
 
-Die in Abschnitt~\ref{systemfunktionen} beschriebenen Systemfunktionen werden durch n8n-Workflows realisiert, die fünf Designprinzipien folgen, um stabilen Betrieb über mehrere Instanzen, Spieltage und erneute Auslösungen sicherzustellen.
+Die n8n-Workflows realisieren die Systemfunktionen und folgen fünf Designprinzipien, um stabilen Betrieb über mehrere Instanzen, Spieltage und erneute Auslösungen sicherzustellen.
 
 \paragraph{Idempotenz.}
 Die Idempotenz ist nicht in allen Workflow-Klassen identisch umgesetzt. Für ereignisgetriebene Import- und Generierungspfade wird sie jedoch mehrstufig abgesichert: Der Workflow speichert Ereignisse per Upsert idempotent (Ebene~1). In Generierungspfaden mit vorgelagerter Datenbankselektion wird vor dem LLM-Aufruf zusätzlich geprüft, ob bereits ein aktiver Eintrag existiert (Ebene~2). Der Backend-Endpunkt führt denselben Check schichtenunabhängig nochmals durch (Ebene~3). Datenimport-Workflows sichern Idempotenz überwiegend über Upsert-Operationen (vgl.\ Abschnitt~\ref{persistenzstrategie}).

@@ -14,8 +14,6 @@ Trotz ihrer Leistungsfähigkeit weisen LLMs strukturelle Schwächen auf, insbeso
 
 \section{Prompt Engineering}\label{prompt-engineering}
 
-\section{Prompt Engineering}\label{prompt-engineering}
-
 Die Qualität der Ausgaben eines LLM hängt maßgeblich vom \textbf{Prompt} ab. Prompt Engineering bezeichnet die systematische Gestaltung dieser Eingaben, um das Modell ohne Änderung seiner Gewichte zu einem gewünschten Verhalten zu lenken (vgl. Brown et al.~2020, S.~6).
 
 Für die Anwendung von LLMs auf spezifische Aufgaben existieren grundsätzlich zwei Ansätze: \textbf{Fine-tuning} erfordert ein aufgabenspezifisches Nachtrainieren des Modells auf kuratierten Datensätzen und ist ressourcenintensiv (Rechenzeit, Infrastruktur, Datenkuration). \textbf{Prompting-basierte Ansätze} hingegen nutzen das vortrainierte Modell direkt und steuern dessen Verhalten ausschließlich über die Eingabeformulierung (vgl. Brown et al.~2020, S.~3 u.~6). Für Domänen mit fehlenden oder unzureichenden Trainingsdaten ist Prompting in der Regel methodisch vorzuziehen: Fine-tuning ist dann häufig mit erhöhtem Risiko eingeschränkter Generalisierbarkeit verbunden, während Prompting-basierte Ansätze mit wenigen kuratierten Beispielen auskommen und schneller iterierbar bleiben (vgl. Brown et al.~2020, S.~6).
@@ -50,7 +48,7 @@ Die Datenbeschaffung in datengetriebenen Anwendungen folgt überwiegend dem Extr
 
 Workflow-Orchestrierungsplattformen modellieren ETL-Logik als konfigurierbare DAG-Prozesse, die Abhängigkeiten zwischen Verarbeitungsschritten explizit machen (vgl. Venkiteela 2025, S.~3). Low-Code-Varianten dieser Plattformen reduzieren die Einstiegshürde gegenüber prozeduralem ETL-Code und erlauben bei Bedarf die Einbettung von Custom-Code-Blöcken (vgl. Venkiteela 2025, S.~2). Neben cloud-basierten Diensten existieren self-hostbare Open-Source-Plattformen, die den Betrieb in der eigenen Infrastruktur mit voller Kontrolle über Datenflüsse ermöglichen (vgl. Nakavisute \& Sincharoonsak 2025).
 
-Für Echtzeitanwendungen wie Liveticker ist die Latenz der Orchestrierung ein zusätzliches Kriterium. Während klassische Batch-ETL-Prozesse mit Stunden- oder Minutentakten arbeiten (vgl. Pfandzelter \& Bermbach, zit. n. Freitas et al.~2025, S.~808), müssen Sport-Events innerhalb von Sekunden verarbeitet werden. Dies korrespondiert mit der in Kapitel~2 formulierten Qualitätsanforderung N4 (P95 unter 30~s) und erfordert Plattformen mit niedrigem Overhead, asynchroner Verarbeitung und effizienten Webhook-Mechanismen (vgl. Nakavisute \& Sincharoonsak 2025). Wie diese Anforderungen im System umgesetzt werden, erläutert Abschnitt~\ref{n8n-workflow-konzeption}.
+Für Echtzeitanwendungen wie Liveticker ist die Latenz der Orchestrierung ein zusätzliches Kriterium. Während klassische Batch-ETL-Prozesse mit Stunden- oder Minutentakten arbeiten (vgl. Pfandzelter \& Bermbach, zit. n. Freitas et al.~2025, S.~808), müssen Sport-Events innerhalb von Sekunden verarbeitet werden. Dies korrespondiert mit der in Kapitel~2 formulierten Qualitätsanforderung N4 (P95 unter 30~s) und erfordert Plattformen mit niedrigem Overhead, asynchroner Verarbeitung und effizienten Webhook-Mechanismen (vgl. Nakavisute \& Sincharoonsak 2025). Wie diese Anforderungen im System umgesetzt werden, erläutert Abschnitt~\ref{workflow-konzeption-n8n}.
 
 
 \section{Webanwendungs- und Infrastruktur-Stack}\label{backend-frontend-und-deployment-technologien}
