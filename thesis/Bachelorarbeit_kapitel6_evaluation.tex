@@ -6,7 +6,8 @@ Dieses Kapitel evaluiert das entwickelte System empirisch und schafft damit die 
 \section{Evaluation der
 KI-Textgenerierung}\label{evaluation-der-ki-textgenerierung}
 
-Die Evaluation der KI-Textgenerierung untersucht, inwiefern das System journalistische Qualitätsanforderungen hinsichtlich Korrektheit, Tonalität und Vollständigkeit erfüllt. Alle Bewertungen erfolgen auf einer Skala von 1 bis 5, wobei 5 eine fehlerfreie, stilkonsistente Ausgabe kennzeichnet und 1 grundlegende Fehler oder Halluzinationen anzeigt. Als Evaluationskorpus dienen Bundesliga-Spiele der Saison~2025/26 mit Ereignissen wie Toren, Wechseln und Karten. Als Judge-Modell kommt durchgehend \texttt{claude-sonnet-4-5} zum Einsatz, sofern nicht anders angegeben.
+Die Evaluation der KI-Textgenerierung untersucht, inwiefern das System journalistische Qualitätsanforderungen hinsichtlich Korrektheit, Tonalität und Vollständigkeit erfüllt. Alle Bewertungen erfolgen auf einer Skala von 1 bis 5, wobei 5 eine fehlerfreie, stilkonsistente Ausgabe kennzeichnet und 1 grundlegende Fehler oder Halluzinationen anzeigt. Als Evaluationskorpus dienen Bundesliga-Spiele der Saison~2025/26 mit Ereignissen wie Toren, Wechseln und Karten. Als Judge-Modell kommt durchgehend \texttt{claude-sonnet-4-5} zum Einsatz, sofern nicht anders angegeben. Abschnitt~\ref{einfluss-der-stilprofile} veranschaulicht die Stilprofile anhand realer Ausgaben, Abschnitt~\ref{erweiterte-evaluation} dokumentiert die quantitative LLM-as-Judge-Bewertung.
+
 \subsection{Stilvergleich}\label{einfluss-der-stilprofile}
 
 Zur qualitativen Veranschaulichung werden die Stilprofile \texttt{neutral}, \texttt{euphorisch} und \texttt{kritisch} anhand realer Ausgaben für dasselbe Ereignis verglichen. Als Grundlage dienen drei generierte Einträge für das Tor von C.~Uzun in der 2.~Spielminute des Spiels Borussia Dortmund gegen Eintracht Frankfurt, Endstand 0:1, mit Vorlage von Dahoud.
