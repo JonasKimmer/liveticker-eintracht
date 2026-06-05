@@ -216,13 +216,13 @@ Jonas Kimmer & Stackwork GmbH
 % ABSTRACT
 \chapter*{Abstract}
 
-Die manuelle Erstellung von Liveticker-Einträgen im Profifußball ist ein kognitiv anspruchsvoller, zeitkritischer Prozess. Redakteure müssen Spielereignisse in Echtzeit beobachten, einordnen und in kurze, stilistisch kohärente Texte überführen, typischerweise in Abständen von ein bis drei Minuten. Diese Arbeit untersucht, ob ein hybrides KI-gestütztes Redaktionssystem für die Liveticker-Erstellung realisierbar ist, das Echtzeit-Verarbeitung, Mehrsprachigkeit und White-Label-Betrieb unterstützt, und welche journalistische Textqualität ein solches System hinsichtlich Korrektheit, Tonalität und Vollständigkeit erbringt.
+Die manuelle Erstellung von Liveticker-Einträgen im Profifußball stellt Redakteure vor einen strukturellen Zielkonflikt: Spielereignisse müssen in Echtzeit beobachtet, eingeordnet und in stilistisch kohärente Kurztexte überführt werden, typischerweise in Abständen von ein bis drei Minuten. Die vorliegende Arbeit untersucht, ob ein hybrides KI-gestütztes Redaktionssystem für die Liveticker-Erstellung realisierbar ist, das Echtzeit-Verarbeitung, Mehrsprachigkeit und White-Label-Betrieb unterstützt, und inwiefern ein solches System journalistische Qualitätsanforderungen hinsichtlich Korrektheit, Tonalität und Vollständigkeit erfüllt.
 
-Die Arbeit folgt dem Design-Science-Research-Ansatz nach Hevner et al.\ (2004). Das entwickelte System verbindet eine mehrsprachige LLM-Pipeline mit einem webbasierten Redaktionsfrontend und automatisierter Sportdatenversorgung. Die drei Betriebsmodi \textit{auto}, \textit{coop} und \textit{manual} ermöglichen einen abgestuften Übergang von vollautomatischer KI-Generierung bis zur rein redaktionellen Arbeit ohne KI-Unterstützung.
+Die Arbeit folgt dem Design-Science-Research-Ansatz nach Hevner et al.\ (2004). Das entwickelte System integriert eine mehrsprachige LLM-Pipeline, ein webbasiertes Redaktionsfrontend und eine automatisierte Sportdatenversorgung. Drei Betriebsmodi (\textit{manual}, \textit{auto}, \textit{coop}) realisieren unterschiedliche Automatisierungsgrade und ermöglichen eine flexible Aufgabenteilung zwischen System und Redakteur.
 
-Die Evaluation umfasst 439 automatisierte Tests sowie eine qualitative Bewertung von 40 KI-generierten Ticker-Einträgen (Korrektheit 4{,}6\,/\,5, Tonalität 4{,}1\,/\,5, Vollständigkeit 4{,}3\,/\,5). Eine ergänzende LLM-as-Judge-Evaluation (N~=~80) bestätigt diese Ergebnisse (Ø~4{,}1\,/\,5) und identifiziert die Tonalitätsschwäche des euphorischen Profils bei ereignisarmen Event-Typen als konsistente Fehlerklasse. F7 (Mehrsprachige Textgenerierung) ist funktional umgesetzt, jedoch noch nicht durch eine muttersprachliche Qualitätsevaluation abgesichert. Insgesamt sind 21 der 22 definierten Anforderungen vollständig erfüllt.
+Die Evaluation umfasst 439 automatisierte Tests sowie eine LLM-as-Judge-Evaluation von $N\,=\,140$ Ticker-Einträgen (Korrektheit Ø~4{,}48\,/\,5, Tonalität Ø~3{,}87\,/\,5, Vollständigkeit Ø~4{,}30\,/\,5). Die Tonalitätsschwäche des euphorischen Profils bei semantisch negativen Ereignistypen wird als konsistente Fehlerklasse identifiziert. Insgesamt sind 21 der 22 definierten Anforderungen vollständig erfüllt.
 
-Die Arbeit zeigt, dass eine produktionstaugliche KI-Assistenz bei der Liveticker-Erstellung mit einem Modell der Flash-Klasse (\texttt{gemini-2.0-flash-lite}) und Few-Shot-Prompting realisierbar ist. Als empfohlener Betriebsmodus erweist sich \textit{coop}, bei dem die KI die zeitkritische Erstformulierung übernimmt, während der Redakteur Qualitätsprüfung und publizistische Verantwortung behält.
+Die Ergebnisse belegen, dass produktionstaugliche KI-Assistenz bei der Liveticker-Erstellung mit Few-Shot-Prompting und einem schlanken Sprachmodell realisierbar ist. Als empfohlener Betriebsmodus erweist sich \textit{coop}, bei dem das System die zeitkritische Erstformulierung übernimmt, während Qualitätsprüfung und publizistische Verantwortung beim Redakteur verbleiben.
 
 \noindent\textbf{Schlüsselwörter:} Large Language Models, Liveticker, Natural Language Generation, Human-in-the-Loop, Few-Shot Prompting, Sportjournalismus, Workflow-Automatisierung, White-Label, n8n
 
@@ -294,6 +294,10 @@ VLM       \> Vision-Language Model \\
 
 % CHAPTER 8: FAZIT UND AUSBLICK
 \input{Bachelorarbeit_kapitel8_fazit}
+
+% ANHANG
+\appendix
+\input{Bachelorarbeit_Appendix}
 
 % SELBSTSTÄNDIGKEITSERKLÄRUNG
 \chapter*{Eigenständigkeitserklärung}

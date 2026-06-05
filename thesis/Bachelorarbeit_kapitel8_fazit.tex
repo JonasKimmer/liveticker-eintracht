@@ -14,50 +14,32 @@ Qualitätsanforderungen hinsichtlich Korrektheit, Tonalität und
 Vollständigkeit?}
 \end{quote}
 
-Das System ist realisierbar und erfüllt journalistische Qualitätsanforderungen — vollständig bei Korrektheit und Vollständigkeit, profilabhängig bei der Tonalität.
+Das System ist realisierbar und erfüllt journalistische Qualitätsanforderungen, vollständig bei Korrektheit und Vollständigkeit, profilabhängig bei der Tonalität.
 
-\textbf{Realisierbarkeit:} Das System ist vollständig implementiert und produktionsnah bereitgestellt. 21 der 22 definierten Anforderungen sind vollständig erfüllt. F7 (Mehrsprachige Textgenerierung) ist funktional umgesetzt, jedoch noch nicht durch eine muttersprachliche Qualitätsevaluation abgesichert (vgl. Abschnitt~\ref{mehrsprachige-verifikation} sowie Abschnitt~\ref{ausblick}). Die technische Absicherung ist durch automatisierte Tests und den dokumentierten Anforderungsabgleich belegt (vgl. Abschnitt~\ref{technische-qualitätssicherung}). Im Sinne des Design Science Research (vgl. Hevner et al.~2004) leistet die Arbeit einen architektonischen, einen methodischen und einen praktischen Beitrag (vgl. Abschnitt~\ref{beitrag-zur-forschung}).
+\textbf{Realisierbarkeit:} Das System ist vollständig implementiert und produktionsnah bereitgestellt. 21 der 22 definierten Anforderungen sind erfüllt. Die Mehrsprachigkeitsanforderung ist funktional umgesetzt, die externe Qualitätssicherung für nicht-deutschsprachige Märkte steht noch aus. Im Sinne des Design Science Research (vgl. Hevner et al.~2004) leistet die Arbeit einen architektonischen, einen methodischen und einen praktischen Beitrag.
 
-\textbf{Journalistische Qualität:} Korrektheit und Vollständigkeit sind im evaluierten Kontext als weitgehend erfüllt zu bewerten (vgl.\ Abschnitt~\ref{qualitative-analyse-der-generierten-texte}). Bei der Tonalität ist das Bild profilabhängig und damit nur bedingt erfüllt. Das \texttt{neutral}-Profil zeigt die robustesten Ergebnisse; \texttt{euphorisch} weist die größte Fehleranfälligkeit auf, weil die Stilkonditionierung bei semantisch negativen Ereignistypen wie Gelben Karten strukturell versagt. Davon unabhängig zeigen die Ablationsbefunde ein zweites Tonalitätsproblem: euphorisch geprägte Stilreferenzen konterkarieren das \texttt{kritisch}-Profil, weil der Referenzkorpus nicht stilprofilspezifisch kuratiert ist. Das Prompt-Design bleibt insbesondere für das kritische Stilprofil verbesserungswürdig (vgl. Abschnitt~\ref{ausblick}). Die Prüfaufgabe des Redakteurs verschiebt sich von der Formulierung zur Beurteilung — Entscheidungshoheit und publizistische Verantwortung verbleiben beim Menschen. Ein kontrollierter Feldvergleich mit externen Ratern wäre als Folgestudie wünschenswert (vgl. Abschnitt~\ref{ausblick}).
+\textbf{Journalistische Qualität:} Korrektheit und Vollständigkeit sind im evaluierten Kontext als weitgehend erfüllt zu bewerten. Die Tonalität ist profilabhängig und nur bedingt erfüllt. Das \texttt{neutral}-Profil ist das robusteste, \texttt{euphorisch} und \texttt{kritisch} weisen jeweils profilspezifische Schwächen auf, die in Kapitel~\ref{diskussion} eingeordnet sind. Die Prüfaufgabe des Redakteurs verschiebt sich von der Formulierung zur Beurteilung, während Entscheidungshoheit und publizistische Verantwortung beim Menschen verbleiben.
 
-Für den Produktivbetrieb empfiehlt sich die Kombination aus \texttt{coop} für strukturierte API-Ereignisse und \texttt{manual} für situativen Kommentar: operative Beschleunigung dort, wo Daten strukturiert vorliegen, und menschliche Letztentscheidung dort, wo Kontext und publizistische Abwägung dominieren.
 
 \section{Ausblick}\label{ausblick}
 
-Die Evaluationsbefunde und die Diskussion legen folgende Erweiterungsrichtungen nahe, geordnet nach Umsetzungsnähe.
+Die Limitationen der Arbeit legen folgende Erweiterungsrichtungen nahe, geordnet nach Umsetzungsnähe.
 
 \paragraph{Kurzfristig}
 \begin{itemize}\tightlist
-\item \textbf{Authentifizierung und Rollensystem:} Ein JWT-basiertes Rollenkonzept (Redakteur, Chefredakteur, Administrator) ist Voraussetzung für den Mehrbenutzerbetrieb und kann \texttt{coop}-Freigabe-Workflows um eine Vier-Augen-Prüfung erweitern.
-\item \textbf{Prompt-Optimierung für das kritische Stilprofil:} Stilgefilterte kritische Referenzen und präzisierte Stilinstruktionen würden den in der Few-Shot-Ablation belegten Interferenzeffekt euphorischer Referenzen auf das \texttt{kritisch}-Profil direkt adressieren (vgl. Abschnitt~\ref{diskussion-fewshot}).
-\item \textbf{Diversitätsmechanismen gegen Phrasenwiederholung:} Negatives Prompting oder eine ereignistypspezifische Varianten-Bibliothek würden die in 13\,\% der Einträge beobachteten Phrasenwiederholungen unterbinden (vgl. Abschnitt~\ref{qualitative-analyse-der-generierten-texte}).
-\item \textbf{Stilspezifische Temperaturkonfiguration:} $T\,=\,0{,}3$ für \texttt{euphorisch} und $T\,=\,0{,}7$ für \texttt{neutral} und \texttt{kritisch} liefern die jeweils besten Qualitätswerte und sind ohne Architekturänderung umsetzbar (vgl. Abschnitt~\ref{temperaturvergleich}).
-\item \textbf{Kontextabhängige Modellauswahl:} Für zeitunkritische Szenarien wie Spielzusammenfassungen erlaubt die Multi-Provider-Architektur den Wechsel auf qualitätsstärkere Modelle ohne Architekturänderung (vgl. Abschnitt~\ref{modellauswahl}).
+\item \textbf{Produktionsvorbereitung:} Ein verwaltetes n8n-Deployment, ein JWT-basiertes Rollenkonzept sowie eine Kennzeichnungsstrategie nach Art.~50 Abs.~4 EU AI Act und datenschutzkonforme Verarbeitungsvereinbarungen nach Art.~28 DSGVO sind gemeinsam Voraussetzung für einen öffentlichen Produktivbetrieb.
+\item \textbf{Generierungsqualität:} Eine stilprofilspezifische Temperaturkonfiguration ist ohne Architekturänderung umsetzbar und adressiert die belegte Profilabhängigkeit direkt. Stilgefilterte Referenzen und präzisierte Stilinstruktionen würden zusätzlich den Interferenzeffekt euphorischer Referenzen auf das \texttt{kritisch}-Profil beseitigen.
 \end{itemize}
 
 \paragraph{Mittelfristig}
 \begin{itemize}\tightlist
-\item \textbf{Kontrollierter Feldvergleich mit externer Qualitätsevaluation:} Eine Folgestudie mit professionellen Sportredakteuren unter Echtbedingungen würde empirisch belastbare Aussagen zu Time-to-Publish, Fehlerrate und Redakteurszufriedenheit je Betriebsmodus liefern. Sie würde die Textqualität durch unabhängige Rater extern validieren. Die implementierte Evaluationsinfrastruktur (TTP-Messung, Cliff's~Delta, Bootstrap-Konfidenzintervall) ist dafür bereits vorbereitet.
-\item \textbf{Evaluation der Mehrsprachigkeit:} Eine separate Qualitätsevaluation der mehrsprachigen Textgenerierung, insbesondere für Englisch als im Kontext von Eintracht Frankfurt relevanter Sprache, würde die in Abschnitt~\ref{mehrsprachigkeit-als-herausforderung} motivierte Internationalisierungsanforderung empirisch absichern.
-\item \textbf{Fine-Tuning statt Few-Shot:} Für vereinsspezifische Instanzen könnte ein Fine-Tuning auf einem hinreichend großen Korpus historischer Vereinsticker die stilistische Konsistenz über den Few-Shot-Ansatz hinaus verbessern. Damit wird der in Kapitel~\ref{stand-der-technik} diskutierte Zielkonflikt nicht aufgehoben, sondern unter veränderten Datenvoraussetzungen neu bewertet: Bei kleinen Datensätzen bleibt Prompting methodisch vorzugswürdig, bei wachsendem Korpus kann Fine-Tuning als Ergänzung sinnvoll werden. Die \texttt{style\_references}-Tabelle bildet bereits eine aufgebaute Datenbasis, die als Ausgangspunkt für ein Fine-Tuning-Dataset dienen könnte.
-\end{itemize}
-
-\paragraph{Langfristig}
-\begin{itemize}\tightlist
-\item \textbf{Multimodale Ticker:} Eine Folgestudie könnte klären, ob Vision-Language-Modelle aus Spielszenenbildern (z.\,B. über die bestehende ScorePlay-Integration) ereignisrelevante Bildbeschreibungen generieren, die mit den strukturierten API-Ereignisdaten kohärent kombinierbar sind. Ein kontrollierter Vergleich zwischen faktenbasierter Textgenerierung (aktueller Ansatz) und VLM-basierter Bildauswertung würde erstmals die Qualitätsdifferenz beider Ansätze anhand der drei Qualitätsdimensionen dieser Arbeit messen.
-\item \textbf{Autonomes Scoring der Textqualität:} Die Ablösung der manuellen Qualitätsbewertung durch ein trainiertes Scoring-Modell, das Korrektheit, Tonalität und Vollständigkeit automatisch bewertet, würde eine kontinuierliche Qualitätsüberwachung im Produktivbetrieb ermöglichen. Die implementierte \texttt{aggregate\_quality\_by\_group}-Funktion deckt die erforderliche Aggregationslogik bereits ab.
-\item \textbf{Generalisierung über den Fußball hinaus:} Die Provider-agnostische LLM-Architektur und das Event-basierte Generierungsmodell sind nicht fußballspezifisch. Eine Erweiterung auf andere Sportarten (Handball, Basketball, Eishockey) erforderte primär die Anpassung der Event-Typ-Mappings, der Phasendefinitionen und der Kontextbuilder. Die Kernarchitektur würde unverändert bleiben.
+\item \textbf{Kontrollierter Feldvergleich:} Eine Folgestudie mit professionellen Sportredakteuren würde Textqualität und Time-to-Publish je Betriebsmodus extern validieren.
+\item \textbf{Evaluation der Mehrsprachigkeit:} Eine Muttersprachler-Evaluation, insbesondere für Englisch, ist vor dem Einsatz in nicht-deutschsprachigen Märkten erforderlich.
+\item \textbf{Erweiterung des Referenzkorpus:} Ein stilprofilspezifisch aufgebauter Korpus historischer Vereinsticker würde die stilistische Konsistenz über den aktuellen Few-Shot-Ansatz hinaus verbessern.
 \end{itemize}
 
 
 
 \section{Schlusswort}\label{schlusswort}
 
-Die vorliegende Arbeit zeigt, dass ein hybrides KI-gestütztes
-Redaktionssystem den operativen Zeitdruck bei der Liveticker-Erstellung
-bewältigen kann, ohne die redaktionelle Kontrolle aufzugeben. Der
-\texttt{coop}-Modus realisiert das in Abschnitt~\ref{problemstellung-und-zielsetzung} formulierte Zielbild
-eines Systems, in dem die finale Entscheidungshoheit und publizistische
-Verantwortung beim Menschen verbleiben. Die White-Label-Architektur adressiert den Bedarf an vereinsspezifischer Identität ohne Systemduplizierung. Die mehrsprachige Generierungskomponente legt die technische Basis für die Internationalisierung. Ihre empirische Qualitätssicherung ist der nächste notwendige Schritt vor dem produktiven Einsatz in nicht-deutschsprachigen Märkten.
-
-Die KI-gestützte Liveticker-Generierung ersetzt den Redakteur nicht. Sie reduziert den kognitiven Engpass der simultanen Textproduktion unter Echtzeit-Bedingungen und schafft damit Kapazität für journalistische Kernleistungen wie kontextuelle Einordnung, kritische Bewertung und redaktionelle Verantwortung. Die zu Beginn der Arbeit zitierte Einschätzung Seibts zur „kompletten Überforderung" des Liveticker-Autors (Seibt, zit.~n. Beils 2023, S.~56) bleibt damit als strukturelle Bedingung des Genres bestehen — das System mildert sie, ohne sie aufzulösen.
+Das realisierte System adressiert die drei in Kapitel~\ref{einleitung} identifizierten Anforderungsdimensionen, nämlich operativen Zeitdruck, Internationalisierung und vereinsspezifischen Ton. Es ersetzt den Redakteur dabei nicht, sondern reduziert den kognitiven Engpass der simultanen Textproduktion und schafft damit Kapazität für journalistische Kernleistungen wie kontextuelle Einordnung und redaktionelle Verantwortung. Die zu Beginn der Arbeit zitierte Einschätzung Seibts zur „kompletten Überforderung" des Liveticker-Autors (Seibt, zit.~n. Beils 2023, S.~56) bleibt als strukturelle Bedingung des Genres bestehen. Das System mildert sie, ohne sie aufzulösen.

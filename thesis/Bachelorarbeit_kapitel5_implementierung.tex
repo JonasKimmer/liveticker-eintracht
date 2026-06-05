@@ -30,7 +30,7 @@ backend/app/
 
 Die Konfiguration ist in einer zentralen Settings-Schicht gebündelt, die ihre Werte aus Umgebungsvariablen bezieht, lokal per \texttt{.env}-Datei und im Deployment als Plattform-Secrets. Fehlt beim Start eine gültige Datenbankverbindung, wird der Start mit einem Validierungsfehler abgebrochen, um inkonsistenten Betriebszustand zu verhindern.
 
-Die Datenbankschicht basiert auf synchronem SQLAlchemy, da Datenbankoperationen kurzlaufend sind und ein Wechsel auf asynchrone Persistenz ohne nachgewiesenen Latenzvorteil zusätzliche Komplexität verursachen würde. LLM-Aufrufe und externe API-Anfragen werden dagegen asynchron ausgeführt, da dort die dominanten Latenzen entstehen. Schema-Migrationen werden beim Start kontrolliert angewendet, sodass ein konsistenter Datenbankschema-Stand über Entwicklungs- und Produktionsumgebungen hinweg sichergestellt ist.
+Die Datenbankschicht basiert auf synchronem SQLAlchemy, da Datenbankoperationen kurzlaufend sind und ein Wechsel auf asynchrone Persistenz ohne nachgewiesenen Latenzvorteil zusätzliche Komplexität verursachen würde. LLM-Aufrufe und externe API-Aufrufe werden dagegen asynchron ausgeführt, da dort die dominanten Latenzen entstehen. Schema-Migrationen werden beim Start kontrolliert angewendet, sodass ein konsistenter Datenbankschema-Stand über Entwicklungs- und Produktionsumgebungen hinweg sichergestellt ist.
 
 \subsection{Datenmodelle, Schemas und Datenzugriff}\label{datenmodelle-datenbankschema-und-api-validierung}
 
@@ -166,7 +166,7 @@ Für Ereignisse mit dem Präfix \texttt{pre\_match} wird dem Prompt ein zusätzl
 
 \section{Frontend-Implementierung}\label{frontend-implementierung}
 
-Die Frontend-Implementierung überführt die konzeptionellen Entscheidungen zu Architektur, Zustandsmanagement und Redaktionsfluss in lauffähigen TypeScript-Code. Der Abschnitt gliedert sich in Komponentenhierarchie und Zustandsarchitektur (Abschnitt~\ref{komponentenhierarchie}), Hook-Architektur und Polling (Abschnitt~\ref{hook-architektur}), Slash-Command-Parser (Abschnitt~\ref{slash-command-parser-parsecommand.ts}), Modusimplementierung (Abschnitt~\ref{modusimplementierung-im-frontend}) sowie White-Label-Erweiterungen (Abschnitt~\ref{frontend-whitelabel}).
+Die Frontend-Implementierung überführt die konzeptionellen Entscheidungen zu Architektur, Zustandsmanagement und Redaktionsfluss in lauffähigen TypeScript-Code. Der Abschnitt gliedert sich in Komponentenhierarchie und Zustandsarchitektur (Abschnitt~\ref{komponentenhierarchie}), Hook-Architektur und Polling (Abschnitt~\ref{hook-architektur}), Kommandoeingabe-Parser (Abschnitt~\ref{slash-command-parser-parsecommand.ts}), Modusimplementierung (Abschnitt~\ref{modusimplementierung-im-frontend}) sowie White-Label-Erweiterungen (Abschnitt~\ref{frontend-whitelabel}).
 
 \subsection{Komponentenhierarchie und Zustandsarchitektur}\label{komponentenhierarchie}
 
@@ -245,9 +245,9 @@ Statistiken, Spielminuten-Sync & 60\,s & Live, PreMatch, ToBeConfirmed \\
 \texttt{useLiveMinute} leitet die angezeigte Spielminute primär aus \texttt{match.minute} ab, das von n8n bei Spielminuten-Aktualisierungen gesetzt wird. Fehlt dieser Wert, berechnet der Hook die Minute aus der Anstoßzeit. In der ersten Halbzeit entspricht sie den seit Anpfiff vergangenen Minuten, in der zweiten wird der Halbzeitblock herausgerechnet und der Zähler fortgesetzt.
 
 
-\subsection{Slash-Command-Parser}\label{slash-command-parser-parsecommand.ts}
+\subsection{Kommandoeingabe-Parser}\label{slash-command-parser-parsecommand.ts}
 
-Der Slash-Command-Parser verarbeitet Kommandoeingaben vollständig clientseitig und wandelt sie ohne Backend-Aufruf in strukturierte Ticker-Texte um, wodurch im zeitkritischen Live-Betrieb keine Netzwerklatenz entsteht. Das Ergebnisobjekt enthält Typ, formatierten Text, Warnungen und Gültigkeitsstatus sowie Metadaten zu Icon, Phase und Minute. Die Kommandos gliedern sich in zwei Typen:
+Der Kommandoeingabe-Parser verarbeitet Kommandoeingaben vollständig clientseitig und wandelt sie ohne Backend-Aufruf in strukturierte Ticker-Texte um, wodurch im zeitkritischen Live-Betrieb keine Netzwerklatenz entsteht. Das Ergebnisobjekt enthält Typ, formatierten Text, Warnungen und Gültigkeitsstatus sowie Metadaten zu Icon, Phase und Minute. Die Kommandos gliedern sich in zwei Typen:
 
 \begin{itemize}\tightlist
 \item \textbf{Phasenkommandos} erzeugen vordefinierte Texte mit optionaler Minutenangabe. Die folgende Tabelle zeigt eine Auswahl:
@@ -293,18 +293,16 @@ Für unvollständige Eingaben gibt der Parser gezielte Hinweise zurück, die im 
 \begin{figure}[H]
 \centering
 \includegraphics[width=\textwidth]{frontend_slash_command.png}
-\caption[Slash-Command-Parser]{Slash-Command-Parser: Eingabe \texttt{/g Marmoush SGE} erzeugt einen strukturierten Ticker-Eintrag mit Icon, Minute und formatiertem Text ohne Backend-Aufruf.}
+\caption[Kommandoeingabe-Parser]{Kommandoeingabe-Parser: Eingabe \texttt{/g Marmoush SGE} erzeugt einen strukturierten Ticker-Eintrag mit Icon, Minute und formatiertem Text ohne Backend-Aufruf.}
 \label{fig:frontend-slash-command}
 \end{figure}
 
 
 \subsection{Modusimplementierung}\label{modusimplementierung-im-frontend}
 
-Der aktive Modus (\texttt{auto} / \texttt{coop} / \texttt{manual}) wird von \texttt{useTicker} orchestriert, das \texttt{useTickerMode} intern kapselt und beim Laden eines Spiels mit dem in der Datenbank gespeicherten \texttt{ticker\_mode} initialisiert. Modusänderungen werden unmittelbar lokal gesetzt, bevor die Backend-Anfrage abgeschlossen ist, sodass der angezeigte Modus bei fehlschlagender Anfrage beim nächsten Spielladen aus der Datenbank korrigiert wird.
+Der aktive Modus (\texttt{auto} / \texttt{coop} / \texttt{manual}) wird von \texttt{useTicker} orchestriert, das \texttt{useTickerMode} intern kapselt und beim Laden eines Spiels mit dem in der Datenbank gespeicherten \texttt{ticker\_mode} initialisiert. Modusänderungen werden unmittelbar lokal gesetzt, bevor die Backend-Anfrage abgeschlossen ist, sodass der angezeigte Modus bei fehlschlagender Anfrage beim nächsten Spielladen aus der Datenbank korrigiert wird. Inhaltlich unterscheiden sich die drei Modi im Publikationsverhalten. Im Auto-Modus werden KI-generierte Einträge direkt publiziert, wobei ein ergänzender Frontend-Pfad die Nachsteuerung offener Entwürfe übernimmt und durch Deduplikationslogik gegen Mehrfachverarbeitung abgesichert ist. Im Coop-Modus legt die KI einen Entwurf an, der per \texttt{TAB} freigegeben oder per \texttt{ESC} abgelehnt werden kann. Im manuellen Modus werden Einträge ohne KI-Unterstützung direkt als publiziert angelegt.
 
-\texttt{Ctrl+1} bis \texttt{Ctrl+3} schalten den aktiven Modus. \texttt{?} öffnet ein Kürzel-Modal mit einer Übersicht aller verfügbaren Kombinationen, sodass eine vollständige Tastatursteuerung ohne externe Dokumentation möglich ist.
-
-Die drei Modi unterscheiden sich im Publikationsverhalten. Im Auto-Modus werden KI-generierte Einträge direkt publiziert, wobei ein ergänzender Frontend-Pfad die Nachsteuerung offener Entwürfe übernimmt und durch Deduplikationslogik gegen Mehrfachverarbeitung abgesichert ist. Im Coop-Modus legt die KI einen Entwurf an, der per \texttt{TAB} freigegeben oder per \texttt{ESC} abgelehnt werden kann. Im manuellen Modus werden Einträge ohne KI-Unterstützung direkt als publiziert angelegt.
+Das System ist vollständig per Tastatur bedienbar. \texttt{Ctrl+1} bis \texttt{Ctrl+3} schalten den aktiven Modus, und \texttt{?} öffnet ein Kürzel-Modal mit einer Übersicht aller verfügbaren Kombinationen, ohne dass externe Dokumentation erforderlich ist.
 
 \begin{figure}[H]
 \centering
@@ -313,9 +311,9 @@ Die drei Modi unterscheiden sich im Publikationsverhalten. Im Auto-Modus werden 
 \label{fig:frontend-coop}
 \end{figure}
 
-\texttt{useNameAutocomplete} prüft beim Tippen das zuletzt eingegebene Wort gegen die geladene Aufstellungsliste und schlägt Treffer präfixbasiert inline vor. Da die Aufstellung beim Öffnen des Spiels vollständig vorgeladen ist, sind keine zusätzlichen API-Aufrufe nötig, wodurch Tippfehler bei ungewöhnlichen Spielernamen im Live-Betrieb verhindert werden.
+Für die Eingabe von Spielernamen bietet der Editor eine Autovervollständigung. \texttt{useNameAutocomplete} prüft beim Tippen das zuletzt eingegebene Wort gegen die geladene Aufstellungsliste und schlägt Treffer präfixbasiert inline vor. Da die Aufstellung beim Öffnen des Spiels vollständig vorgeladen ist, sind keine zusätzlichen API-Aufrufe nötig, wodurch Tippfehler bei ungewöhnlichen Spielernamen im Live-Betrieb verhindert werden.
 
-Das Frontend bietet drei Wege, publizierte Einträge nachzubearbeiten: ein 5-Sekunden-Rückgängig-Hinweis direkt nach der Publikation, ein Drei-Punkte-Menü pro Eintrag für direkte Bearbeitung und nicht-destruktives Löschen sowie einen Stornieren-Button, der einen Eintrag jederzeit in den Entwurfsstatus zurücksetzt. Alle drei Wege führen zu keiner irreversiblen Löschung von Datenbankeinträgen.
+Für die Nachbearbeitung publizierter Einträge stehen drei Wege bereit. Ein 5-Sekunden-Rückgängig-Hinweis direkt nach der Publikation ermöglicht das schnelle Zurücknehmen, ein Drei-Punkte-Menü pro Eintrag erlaubt direkte Bearbeitung und nicht-destruktives Löschen, und ein Stornieren-Button setzt einen Eintrag jederzeit in den Entwurfsstatus zurück. Alle drei Wege führen zu keiner irreversiblen Löschung von Datenbankeinträgen.
 
 Rendering-Fehler werden pro Panel durch \texttt{ErrorBoundary}-Instanzen abgefangen, sodass ein Absturz einer Komponente die übrigen Panels arbeitsfähig lässt. API-Fehler werden in zwei Stufen behandelt: Kritische Operationen wie Publikation und Generierung geben einen Toast mit Fehlermeldung aus, während Hintergrundfehler aus Polling- und Auto-Import-Prozessen still geloggt werden, um den Redaktionsfluss nicht zu unterbrechen. \texttt{useApiStatus} überwacht \texttt{GET /health} und zeigt einen persistenten Statusindikator (\texttt{ok} / \texttt{degraded} / \texttt{offline}), der Konnektivitätsprobleme frühzeitig sichtbar macht.
 
@@ -353,7 +351,7 @@ WF01--03 & Stammdaten & Länder-, Teams-, Competitions-Import per UPSERT \\
 WF04 & Matches & Spieldaten per UPSERT \\
 WF05 & Lineups & Aufstellungen per DELETE+Neuinsert \\
 WF06--07 & Statistiken & Match- und Spieler-Statistiken, periodisch im Live-Betrieb \\
-WF08 & Prematch-Import & 5 parallele Football-API-Calls, \texttt{synthetic\_events} per UPSERT \\
+WF08 & Prematch-Import & 5 parallele Football-API-Aufrufe, \texttt{synthetic\_events} per UPSERT \\
 WF09 & ScorePlay-Medien & Asset-Suche bei Toren, WebSocket-Push via \texttt{/api/v1/media/incoming} \\
 WF10 & Events-LLM & KI-Generierung, Instanz-Routing, Deduplikation, EF-Torjubel- und Elfmeter-Zweig \\
 WF11--13 & Social Media & Twitter/X, YouTube, Instagram → \texttt{media\_clips}, idempotent \\
@@ -386,7 +384,7 @@ WF10 übernimmt die Echtzeitverarbeitung neuer Spielereignisse. Nach dem Webhook
 \label{fig:n8n-event-workflow}
 \end{figure}
 
-Die Spielzeit-Kette WF17 → WF15 → WF14 trennt Minutenaktualisierung, Phasenvalidierung und Zusammenfassungsgenerierung in drei unabhängig auslösbare Schritte. WF17 aktualisiert Spielminute und -status und bleibt ohne Phasenwechsel auf dieses Update beschränkt. Bei einem Phasenwechsel, etwa von Minute~45 auf Halbzeit oder von Halbzeit auf Minute~46, übergibt WF17 an WF15. WF15 validiert den Übergang regelbasiert, persistiert ihn als synthetisches Phasenereignis und zieht bei Endzuständen fehlende Phasen nach. Bei Halbzeit und Abpfiff löst WF15 den WF14 aus, der den Zusammenfassungstext generiert und gemäß \texttt{ticker\_mode} veröffentlicht.
+Die Spielzeit-Kette (WF17 → WF15 → WF14) trennt Minutenaktualisierung, Phasenvalidierung und Zusammenfassungsgenerierung in drei unabhängig auslösbare Schritte. Der erste Schritt aktualisiert Spielminute und -status und endet dort, solange kein Phasenwechsel eintritt. Tritt ein Phasenwechsel ein, etwa von Minute~45 auf Halbzeit oder von Halbzeit auf Minute~46, übernimmt der zweite Schritt, der den Übergang regelbasiert validiert, persistiert ihn als synthetisches Phasenereignis und zieht bei Endzuständen fehlende Phasen nach. An Halbzeit und Abpfiff schließt der dritte Schritt die Kette ab und generiert den Zusammenfassungstext gemäß \texttt{ticker\_mode}.
 
 Die Import-Workflows WF01–08 sichern die Stamm- und Spieldatenbasis per idempotenter Schreibvorgänge. Eine Ausnahme bilden Aufstellungen, die per DELETE mit anschließendem Neuinsert geschrieben werden, da partielle Updates nach nachträglichen Korrekturen inkonsistente Snapshots hinterlassen können. WF09 und WF11–13 sind redaktionell über das Frontend ausgelöste Medienpfade. Während WF09 Spielernamen über einen JavaScript-Knoten normalisiert, gegen ScorePlay-Felder abgleicht und Treffer per WebSocket an das Frontend übergibt, importieren WF11–13 Social-Media-Inhalte von Twitter/X, YouTube und Instagram ohne diese Normalisierung direkt per Plattform-API. WF16 löst einen direkten LLM-Aufruf ausschließlich bei inhaltlich neuen Statistikfakten aus, wobei die Duplikaterkennung vollständig workflow-intern erfolgt.
 
@@ -401,7 +399,7 @@ Die Verifikation der n8n-Ebene folgt einem szenariobasierten Ansatz, da das Lauf
 
 \subsection{Frontend-Tests (Jest + React Testing Library)}\label{impl-frontend-tests}
 
-Das Frontend wird durch 187 Tests mit Jest und React Testing Library abgesichert, aufgeteilt in 55 Hook-Tests, 65 Komponenten-Tests und 67 Utility-Tests. Hook-Tests isolieren Zustandsübergänge von UI-Rendering-Effekten und prüfen über \texttt{renderHook} mit simulierten API-Antworten unter anderem das Reload-Verhalten, den Ticker-Reset bei Spielwechsel sowie die Fehlertoleranz bei fehlschlagenden API-Aufrufen. Komponenten-Tests verifizieren sichtbare Elemente und Interaktionsverhalten gegen den gerenderten DOM. In der Utility-Kategorie entfällt der größte Anteil auf \texttt{parseCommand} mit 29 Testfällen, da seine Ausgabe die API-Payload der Slash-Command-Interaktion unmittelbar bestimmt und damit die Eingabesicherheit im Live-Betrieb absichert.
+Das Frontend wird durch 187 Tests mit Jest und React Testing Library abgesichert, aufgeteilt in 55 Hook-Tests, 65 Komponenten-Tests und 67 Utility-Tests. Hook-Tests isolieren Zustandsübergänge von UI-Rendering-Effekten und prüfen über \texttt{renderHook} mit simulierten API-Antworten unter anderem das Reload-Verhalten, den Ticker-Reset bei Spielwechsel sowie die Fehlertoleranz bei fehlschlagenden API-Aufrufen. Komponenten-Tests verifizieren sichtbare Elemente und Interaktionsverhalten gegen den gerenderten DOM. In der Utility-Kategorie entfällt der größte Anteil auf \texttt{parseCommand} mit 29 Testfällen, da seine Ausgabe die Schnittstellendaten der Kommandoeingabe unmittelbar bestimmt und damit die Eingabesicherheit im Live-Betrieb absichert.
 
 Alle 187 Tests werden fehlerfrei ausgeführt. Ergänzend beträgt die statische Typenabdeckung 98{,}02\,\% (18\,665 von 19\,041 Ausdrücken, gemessen mit \texttt{npx type-coverage --detail}), sodass TypeScript-Checks die Laufzeit-Testabdeckung um eine Compile-Zeit-Absicherung der Aufrufsignaturen erweitern.
 
