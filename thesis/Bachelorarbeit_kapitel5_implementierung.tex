@@ -138,7 +138,7 @@ Die Kontextanreicherung wählt abhängig vom Ereignistyp zwischen zwei Pfaden. F
 
 \subsection{Prompt-Design und Stilkonditionierung}\label{prompt-design-stilkonditionierung}
 
-Der Prompt gliedert sich in sechs Module: Rolleninstruktion mit eingebetteter Sprachangabe, STIL-Block, FAKTEN-Block, SPIELKONTEXT-Block, STILREFERENZEN-Block und REGELN-Block. Diese Modularität erlaubt es, einzelne Module bei fehlenden Daten wegzulassen, den STIL-Block instanzspezifisch auszutauschen und den STILREFERENZEN-Block pro Aufruf dynamisch zu befüllen, ohne den Prompt-Kern zu verändern. Der folgende Auszug zeigt die Struktur für ein Torereignis im euphorischen Stilprofil:
+Der Prompt gliedert sich in sechs Module: Rolleninstruktion mit eingebetteter Sprachangabe, \texttt{STIL}, \texttt{FAKTEN}, \texttt{SPIELKONTEXT}, \texttt{STILREFERENZEN} und \texttt{REGELN}. Die modulare Struktur erlaubt es, einzelne Blöcke bei fehlenden Daten wegzulassen, den Stil-Block instanzspezifisch auszutauschen und den Referenzblock pro Aufruf dynamisch zu befüllen, ohne den Prompt-Kern zu verändern. Der folgende Auszug zeigt die Struktur für ein Torereignis im euphorischen Stilprofil:
 
 \begin{Shaded}
 \begin{Highlighting}[]
@@ -159,13 +159,9 @@ Der Prompt gliedert sich in sechs Module: Rolleninstruktion mit eingebetteter Sp
 \end{Highlighting}
 \end{Shaded}
 
-Das Zusammenspiel der Module erzeugt einen Text, der ohne Minutenangabe im Präsens verfasst ist, den stilistischen Korridor der STILREFERENZEN aufnimmt und den berechneten Spielstand integriert. Drei Designentscheidungen tragen dazu bei. Die Trennung von FAKTEN- und SPIELKONTEXT-Block hält faktische Ereignisdaten und spielstandbezogene Rahmendaten getrennt, wodurch der SPIELKONTEXT-Block für Vorberichts-Ereignisse durch spezialisierte Kontextmodule ersetzt werden kann. Die Few-Shot-Konditionierung über den STILREFERENZEN-Block überträgt den gewünschten stilistischen Korridor durch ausgewählte Beispiele, ohne das Modell nachzutrainieren. Die Bündelung von Negativbedingungen im REGELN-Block fasst alle expliziten Verbote an einer Stelle zusammen, sodass Abweichungen im Betrieb gezielt lokalisierbar bleiben.
+Drei Designentscheidungen prägen die Prompt-Struktur. Die Trennung von \texttt{FAKTEN} und \texttt{SPIELKONTEXT} hält faktische Ereignisdaten und spielstandbezogene Rahmendaten getrennt, was es erlaubt, den Kontextblock für Vorberichts-Ereignisse durch spezialisierte Module zu ersetzen. Der \texttt{STILREFERENZEN}-Block überträgt den gewünschten stilistischen Korridor durch bis zu drei zufällig ausgewählte Einträge aus dem nach Ereignistyp, Instanz und Liga gefilterten Referenzpool, ohne das Modell nachzutrainieren. Die Zufallsauswahl verhindert dabei Formulierungswiederholungen bei gleichartigen Ereignissen. Der \texttt{REGELN}-Block bündelt alle expliziten Verbote an einer Stelle, sodass Abweichungen im Betrieb gezielt lokalisierbar bleiben.
 
-Der STILREFERENZEN-Block wird pro Generierungsaufruf mit bis zu drei zufällig ausgewählten Einträgen aus dem nach Ereignistyp, Instanz und Liga gefilterten Referenzpool befüllt. Die Zufallsauswahl verhindert monotone Formulierungswiederholungen bei gleichartigen Ereignissen, während der stilistische Korridor durch den Filter gewahrt bleibt.
-
-Für Vorberichts-Ereignisse wird dem Prompt ein zusätzlicher Instruktionsblock vorangestellt, der Live-Aktionsbegriffe explizit ausschließt und so verhindert, dass das Modell vor Spielbeginn Spielszenen halluziniert. Er greift für alle Ereignistypen mit dem Präfix \texttt{pre\_match}.
-
-Für die vereinsspezifische Instanz wird ein extern übermitteltes neutrales Stilprofil backend-zentral auf \texttt{euphorisch} überschrieben, damit die Stilbindung unabhängig vom aufrufenden Workflow konsistent greift. Der Fan-Team-Parameter wird dabei aus dem Heim-Team des Spielkontexts abgeleitet und der Stilbeschreibung vorangestellt.
+Für Ereignisse mit dem Präfix \texttt{pre\_match} wird dem Prompt ein zusätzlicher Instruktionsblock vorangestellt, der Live-Aktionsbegriffe ausschließt und Halluzinationen von Spielszenen vor Anpfiff verhindert. Für die vereinsspezifische Instanz wird ein übermitteltes neutrales Stilprofil serverseitig auf \texttt{euphorisch} überschrieben, damit die Stilbindung unabhängig vom aufrufenden Workflow konsistent greift.
 
 
 \section{Frontend-Implementierung}\label{frontend-implementierung}
