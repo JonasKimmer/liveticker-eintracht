@@ -42,16 +42,25 @@ Der vereinsspezifische Ticker-Stil ist fan-nah, emotional und parteiisch zugunst
 
 \subsection{Bestehendes Redaktionssystem}\label{ist-zustand-bestehendes-system}
 
-Das eingesetzte System ist ein eigens entwickeltes Backend des Website-Dienstleisters, über dessen Schnittstelle Ticker-Einträge direkt in die vereinseigene App ausgespielt werden. Es repräsentiert den Stand eines rein manuellen Werkzeugs ohne KI-Integration.
+Eintracht Frankfurt betreibt bis einschließlich der Saison 2025/26 ein eigens entwickeltes Backend eines Website-Dienstleisters, über das Ticker-Einträge direkt in die vereinseigene App ausgespielt werden. Das Werkzeug ist rein manuell und verfügt über keine KI-Integration.
 
 \begin{figure}[H]
 \centering
 \includegraphics[width=0.95\textwidth]{altsystem_eintracht.png}
-\caption[Bestehendes Liveticker-Redaktionssystem]{Bestehendes Liveticker-Redaktionssystem bei Eintracht Frankfurt (Stand: Saison 2024/25). Links: Ticker-Editor mit manueller Score-Pflege. Mitte: Feed bereits erstellter Meldungen. Rechts: Aufstellungs-Panel ohne geladene Spielerdaten.}
+\caption[Bestehendes Liveticker-Redaktionssystem bei Eintracht Frankfurt]{Bestehendes Liveticker-Redaktionssystem bei Eintracht Frankfurt (Saison 2024/25). Links: Ticker-Editor. Mitte: Eintragsfeed. Rechts: Aufstellungs-Panel.}
 \label{fig:altsystem}
 \end{figure}
 
-Das System weist sechs strukturelle Defizite auf. Jede Form von KI-Unterstützung oder technischer Stilführung fehlt, sodass vereinsspezifische Schreibkonventionen im Redaktionswerkzeug weder durchgesetzt noch als Vorschlag unterbreitet werden können. Spielstand und Ereignisdaten werden vollständig manuell erfasst, obwohl externe Livedatenquellen wie Opta und DFBnet dem Verein zur Verfügung stehen und eine automatisierte Einspeisung technisch möglich wäre. Die Medienintegration ist auf eine einfache Dateiauswahl ohne Galeriefunktion oder Anbindung an soziale Netzwerke beschränkt. Eine mehrsprachige Textgenerierung oder automatische Übersetzung fehlt. Spielstatistiken und Aufstellungsdaten stehen zwar im übergeordneten Spielzentrum bereit, sind jedoch nicht in den Redaktionseditor eingebunden, weshalb eine kontextbezogene Nutzung während der Texterstellung nicht möglich ist. Das System ist ein über mehrere Saisons gewachsenes, individuell entwickeltes Werkzeug, das im Verlauf der Saison 2024/25 mehrfach Korrekturen erforderte und dessen Wartung und Erweiterung durch die Abhängigkeit vom externen Dienstleister erschwert wird.
+Das System weist sechs strukturelle Defizite auf:
+
+\begin{itemize}\tightlist
+\item \textbf{Keine KI-Unterstützung:} Vereinsspezifische Schreibkonventionen können weder durchgesetzt noch als Vorschlag unterbreitet werden.
+\item \textbf{Manuelle Datenpflege:} Spielstand und Ereignisdaten werden vollständig manuell erfasst, obwohl Livedatenquellen wie Opta und DFBnet verfügbar wären.
+\item \textbf{Eingeschränkte Medienintegration:} Es steht nur eine einfache Dateiauswahl ohne Galeriefunktion oder Anbindung an soziale Netzwerke zur Verfügung.
+\item \textbf{Keine Mehrsprachigkeit:} Eine mehrsprachige Textgenerierung oder automatische Übersetzung fehlt.
+\item \textbf{Fehlende Kontexteinbindung:} Spielstatistiken und Aufstellungsdaten sind nicht in den Redaktionseditor eingebunden und damit während der Texterstellung nicht nutzbar.
+\item \textbf{Hohe Wartungsabhängigkeit:} Das über mehrere Saisons gewachsene Werkzeug erforderte in der Saison 2024/25 mehrfach Korrekturen. Erweiterungen sind durch die Abhängigkeit vom externen Dienstleister erschwert.
+\end{itemize}
 
 
 
