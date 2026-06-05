@@ -235,15 +235,15 @@ Modell & N & Korrektheit & Tonalität & Vollständigkeit & Gesamt \\
 \endhead
 \bottomrule\noalign{}
 \endlastfoot
-\texttt{google/gemini-2.5-flash}    & 30 & 4{,}33 & 4{,}03 & 4{,}23 & 4{,}20 \\
-\texttt{anthropic/claude-haiku-4-5} & 30 & 4{,}37 & 4{,}30 & \textbf{4{,}57} & 4{,}41 \\
-\texttt{openai/gpt-4.1-mini}        & 30 & \textbf{4{,}60} & \textbf{4{,}73} & 4{,}10 & \textbf{4{,}48} \\
+\texttt{google/gemini-2.5-flash}    & 30 & 4{,}43 & 3{,}87 & 4{,}20 & 4{,}17 \\
+\texttt{anthropic/claude-haiku-4-5} & 30 & 4{,}40 & 4{,}27 & \textbf{4{,}57} & \textbf{4{,}41} \\
+\texttt{openai/gpt-4.1-mini}        & 30 & \textbf{4{,}60} & \textbf{4{,}53} & 4{,}07 & 4{,}40 \\
 \end{longtable}
 }
 
 \emph{LLM-as-Judge (claude-sonnet-4-5 via OpenRouter). N\,=\,30 je Modell (10 Events $\times$ 3 Stile). Skala 1--5.}
 
-GPT-4.1-mini erzielt die höchste Gesamtqualität (Ø~4{,}48), insbesondere bei Tonalität (4{,}73). Claude~Haiku~4.5 zeigt die stärkste Vollständigkeit (4{,}57) bei konsistentem Gesamtniveau (Ø~4{,}41). Gemini~2.5~Flash liegt qualitativ zurück (Ø~4{,}20), ist mit 591\,ms Median jedoch das mit Abstand schnellste Modell. Der Modellvergleich macht damit einen klaren Speed-Quality-Trade-off sichtbar: Das schnellste Modell erzielt die niedrigste Gesamtqualität, während GPT-4.1-mini bei mittlerer Latenz die besten Qualitätswerte erreicht.
+Claude~Haiku~4.5 und GPT-4.1-mini liegen mit Ø~4{,}41 bzw.\ Ø~4{,}40 gleichauf. Claude~Haiku~4.5 erzielt die stärkste Vollständigkeit (4{,}57), GPT-4.1-mini die höchste Korrektheit (4{,}60) und Tonalität (4{,}53). Gemini~2.5~Flash liegt qualitativ zurück (Ø~4{,}17), ist mit 591\,ms Median jedoch das mit Abstand schnellste Modell. Der Speed-Quality-Trade-off bleibt damit eindeutig: Das schnellste Modell erzielt die niedrigste Gesamtqualität, während die langsameren Modelle bei Qualität nahezu gleichwertig sind.
 
 \subsection{Veröffentlichungslatenz der Betriebsmodi}\label{ttp-abschaetzung}
 
