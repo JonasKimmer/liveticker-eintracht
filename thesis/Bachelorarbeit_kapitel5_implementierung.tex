@@ -72,7 +72,7 @@ Das \texttt{TickerEntry}-Modell verknüpft über \texttt{event\_id} und \texttt{
 
 Zusammengesetzte Indizes optimieren die häufigsten Zugriffspfade für publizierte Einträge, Phasenfilter und die Deduplizierungsprüfung auf Ereignisebene, während Unique Constraints semantische Eindeutigkeit auf Datenbankebene sichern. Für den KI-Generierungspfad werden zentrale Match-Kontextdaten darüber hinaus in einer gemeinsamen Abfrage vorgeladen, um Datenbankroundtrips im Request-Pfad zu minimieren.
 
-Auf Schnittstellenebene übernimmt die Pydantic-Schema-Schicht die Validierung ein- und ausgehender Daten. Für jeden Endpunkt definieren spezialisierte Request- und Response-Schemata die zulässigen Felder und Typen, sodass fehlerhafte Eingaben bereits vor der Service-Schicht zurückgewiesen und Ausgaben in einem konsistenten Format bereitgestellt werden. Die Datenbankzugriffe sind in einer Repository-Schicht gekapselt, die je Domänenentität eine eigene Klasse vorsieht, wodurch die Service-Schicht von Persistenzdetails entkoppelt und jede Repository-Klasse isoliert testbar bleibt.
+Auf Schnittstellenebene übernimmt die Pydantic-Schema-Schicht die Validierung ein- und ausgehender Daten. Für jeden Endpunkt definieren spezialisierte Request- und Response-Schemata die zulässigen Felder und Typen, sodass fehlerhafte Eingaben bereits vor der Service-Schicht zurückgewiesen und Ausgaben in einem konsistenten Format bereitgestellt werden. Die Datenbankzugriffe sind in einer Repository-Schicht gekapselt, die je Domänenentität eine eigene Klasse vorsieht, wodurch die Service-Schicht von Datenbankdetails entkoppelt und jede Repository-Klasse isoliert testbar bleibt.
 
 \subsection{API-Router und Endpunktstruktur}\label{api-router-endpunktstruktur}
 
