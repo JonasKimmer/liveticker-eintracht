@@ -1,13 +1,12 @@
 \chapter{Evaluation}\label{evaluation}
 
-Dieses Kapitel evaluiert das entwickelte System empirisch und schafft damit die Grundlage zur Beantwortung der Forschungsfrage. Die Evaluation umfasst die Textqualität der KI-Generierung (Abschnitt~\ref{evaluation-der-ki-textgenerierung}), LLM-Konfigurationsexperimente zu Few-Shot, Temperatur, Mehrsprachigkeit und Modellwahl (Abschnitt~\ref{llm-konfigurationsexperimente}), das Performance- und Laufzeitverhalten (Abschnitt~\ref{performance-und-laufzeitverhalten}) sowie einen Anforderungsabgleich als Soll-Ist-Vergleich (Abschnitt~\ref{anforderungsabgleich-soll-ist-vergleich}).
+Dieses Kapitel evaluiert das entwickelte System empirisch und schafft damit die Grundlage zur Beantwortung der Forschungsfrage. Die Evaluation kombiniert manuelle Bewertung, automatisierte LLM-as-Judge-Verfahren und gezielte Konfigurationsexperimente, um Textqualität, Laufzeitverhalten und Anforderungserfüllung des Systems empirisch zu erfassen.
 
 
 \section{Evaluation der
 KI-Textgenerierung}\label{evaluation-der-ki-textgenerierung}
 
-Die Evaluation der KI-Textgenerierung untersucht, inwiefern das System journalistische Qualitätsanforderungen hinsichtlich Korrektheit, Tonalität und Vollständigkeit erfüllt. Alle Texte wurden mit \texttt{google/gemini-2.0-flash-lite-001} aus Bundesliga-Spielen der Saison~2025/26 generiert und nach diesen drei Dimensionen auf einer Skala von 1 bis 5 bewertet. Der Abschnitt gliedert sich in einen qualitativen Stilvergleich (Abschnitt~\ref{einfluss-der-stilprofile}), eine manuelle Fehleranalyse (Abschnitt~\ref{qualitative-analyse-der-generierten-texte}) und eine LLM-as-Judge-Evaluation (Abschnitt~\ref{erweiterte-evaluation}).
-
+Die Evaluation der KI-Textgenerierung untersucht, inwiefern das System journalistische Qualitätsanforderungen hinsichtlich Korrektheit, Tonalität und Vollständigkeit erfüllt. Alle Texte wurden mit \texttt{google/gemini-2.0-flash-lite-001} aus Bundesliga-Spielen der Saison~2025/26 generiert und nach diesen drei Dimensionen auf einer Skala von 1 bis 5 bewertet.
 \subsection{Stilvergleich}\label{einfluss-der-stilprofile}
 
 Zur qualitativen Veranschaulichung werden die Stilprofile \texttt{neutral}, \texttt{euphorisch} und \texttt{kritisch} anhand realer Ausgaben für dasselbe Ereignis verglichen. Als Grundlage dienen drei generierte Einträge für das Tor von C.~Uzun in der 2.~Spielminute des Spiels Borussia Dortmund gegen Eintracht Frankfurt, Endstand 0:1, mit Vorlage von Dahoud.
@@ -110,7 +109,7 @@ kritisch    & 46 & 4{,}09 & 3{,}70 & 3{,}98 & 3{,}92 \\
 
 Das neutrale Stilprofil erzielt den höchsten Gesamtwert (Ø~4{,}65). Das euphorische Profil liegt mit Ø~4{,}07 im Mittelfeld, wobei die Tonalität mit 3{,}60 die schwächste Einzeldimension bildet. Das kritische Profil weist mit Ø~3{,}92 den niedrigsten Gesamtwert auf; die Korrektheit (4{,}09) und Vollständigkeit (3{,}98) bleiben hinter den anderen Profilen zurück.
 
-Eine ereignistypspezifische Analyse zeigt, dass Gelbekarten-Ereignisse den Tonalitätswert des euphorischen Profils auffällig belasten: 75\,\% der euphorisch generierten Gelbekarten-Einträge erzielen T\,\(\leq\)\,3, fünf Einträge erhalten T\,=\,1. Das Modell generiert konsistent empörte oder resignierte Texte wie \emph{„Na, das ist doch mal wieder typisch!''} statt des angeforderten euphorischen Stils, weil Gelbe Karten als inhärent negative Ereignisse die Stilkonditionierung überlagern.
+Eine ereignistypspezifische Analyse zeigt, dass Gelbekarten-Ereignisse den Tonalitätswert des euphorischen Profils auffällig belasten: 75\,\% der euphorisch generierten Gelbekarten-Einträge erzielen T\,\(\leq\)\,3, fünf Einträge erhalten T\,=\,1. Das Modell generiert konsistent empörte oder resignierte Texte wie \emph{„Na, das ist doch mal wieder typisch!''} statt des angeforderten euphorischen Stils.
 
 \section{LLM-Konfigurationsexperimente}\label{llm-konfigurationsexperimente}
 
@@ -136,7 +135,7 @@ kritisch   & 4{,}15 & 3{,}54 & 3{,}46 & 3{,}72 & 4{,}15 & 3{,}69 & 3{,}46 & 3{,}
 \end{longtable}
 }
 
-Few-Shot-Referenzen verbessern die Gesamtqualität um $\Delta$\,=\,+0{,}10, wobei der Effekt deutlich stilabhängig ausfällt. Den stärksten Gewinn verzeichnet das \texttt{euphorisch}-Profil bei der Tonalität (+0{,}69), da die Referenztexte das Stilprofil in Richtung emotionaler Wertungen verschieben. Beim \texttt{neutral}-Profil steigt die Tonalität ebenfalls (+0{,}42), die Vollständigkeit geht dagegen leicht zurück. Beim \texttt{kritisch}-Profil kehrt sich der Tonalitätseffekt um, Korrektheit und Vollständigkeit bleiben stabil.
+Few-Shot-Referenzen verbessern die Gesamtqualität um $\Delta$\,=\,+0{,}10, wobei der Effekt deutlich stilabhängig ausfällt. Den stärksten Gewinn verzeichnet das \texttt{euphorisch}-Profil bei der Tonalität (+0{,}69). Beim \texttt{neutral}-Profil steigt die Tonalität ebenfalls (+0{,}42), die Vollständigkeit geht dagegen leicht zurück. Beim \texttt{kritisch}-Profil kehrt sich der Tonalitätseffekt um, Korrektheit und Vollständigkeit bleiben stabil.
 
 \subsection{Temperaturvergleich}\label{temperaturvergleich}
 
@@ -241,7 +240,7 @@ Modell & N & Median (ms) & P95 (ms) & Std.\ (ms) \\
 
 \emph{Direktmessung via OpenRouter (kein Backend-Overhead). Identischer Prompt je Aufruf. Fehlerrate: 0\,\% bei allen drei Modellen.}
 
-Gemini~2.5~Flash erzielt mit 591\,ms Median die kürzeste Generierungslatenz und ist damit 1{,}9-fach schneller als GPT-4.1-mini und 2{,}8-fach schneller als Claude~Haiku~4.5. Claude~Haiku~4.5 weist mit einer Standardabweichung von 177\,ms das konstanteste Antwortverhalten auf. GPT-4.1-mini zeigt mit 521\,ms die höchste Streuung.
+Gemini~2.5~Flash erzielt mit 591\,ms Median die kürzeste Generierungslatenz und ist damit 1{,}9-fach schneller als GPT-4.1-mini und 2{,}8-fach schneller als Claude~Haiku~4.5. Bei der Streuung zeigt Claude~Haiku~4.5 mit 177\,ms das konstanteste Verhalten, GPT-4.1-mini mit 521\,ms die höchste und Gemini~2.5~Flash mit 295\,ms einen mittleren Wert.
 
 \subsection{Veröffentlichungslatenz der Betriebsmodi}\label{ttp-abschaetzung}
 
@@ -283,7 +282,7 @@ Workflow & N & Median (ms) & P95 (ms) \\
 
 \emph{*\,Einzelmessung aus n8n-Dashboard (manuell). Alle übrigen Werte: n8n-Execution-Log via REST-API.}
 
-WF15 liegt nur als Einzelmessung (N\,=\,1) vor. Der Wert von 8\,632\,ms ist daher nicht als repräsentativer Median interpretierbar, sondern dokumentiert den einzigen protokollierten Ausführungslauf. Die geringe Stichprobe ist durch die Ereignislogik des Workflows bedingt, da relevante Phasenübergänge im Beobachtungszeitraum nur selten auftreten. Der WF10-Median von rund 8\,s liegt innerhalb des in Kapitel~\ref{motivation-und-anforderungen} definierten Latenzrahmens (N4) und bleibt im Zielkorridor der interviewbasierten Publikationspraxis (30--90\,s), reduziert jedoch den Spielraum für zusätzliche Verzögerungen im \texttt{auto}-Pfad. Auf Basis dieser Laufzeiten schlüsselt die folgende Tabelle den kritischen TTP-Pfad des \texttt{auto}-Modus auf (Polling-Intervall: 15~s, vgl. Abschnitt~\ref{frontend-polling}). Das Datenbankfeld \texttt{generation\_ms} dient dabei der Plausibilisierung der LLM-Teilzeit und wird nicht zusätzlich zur bereits gemessenen WF10-Gesamtlaufzeit addiert:
+WF15 liegt als Einzelmessung vor (N\,=\,1) und ist nicht als repräsentativer Median interpretierbar; relevante Phasenübergänge traten im Beobachtungszeitraum nur einmal auf. Der WF10-Median von rund 8\,s liegt innerhalb des in Kapitel~\ref{motivation-und-anforderungen} definierten Latenzrahmens (N4) und bleibt im Zielkorridor der interviewbasierten Publikationspraxis (30--90\,s), reduziert jedoch den Spielraum für zusätzliche Verzögerungen im \texttt{auto}-Pfad. Auf Basis dieser Laufzeiten schlüsselt die folgende Tabelle den kritischen TTP-Pfad des \texttt{auto}-Modus auf (Polling-Intervall: 15~s, vgl. Abschnitt~\ref{frontend-polling}). Das Datenbankfeld \texttt{generation\_ms} dient dabei der Plausibilisierung der LLM-Teilzeit und wird nicht zusätzlich zur bereits gemessenen WF10-Gesamtlaufzeit addiert:
 
 {\def\LTcaptype{none}
 \begin{longtable}[]{@{}llll@{}}
