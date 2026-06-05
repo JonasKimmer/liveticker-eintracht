@@ -372,11 +372,11 @@
     "temperature": 0.3,
     "generated_text": "Burkardt trifft! Der Stürmer bringt Frankfurt wieder ins Spiel. 1:2.",
     "latency_ms": 608,
-    "korrektheit": 2,
+    "korrektheit": 4,
     "tonalitaet": 4,
     "vollstaendigkeit": 3,
-    "gesamt": 3.0,
-    "begruendung": "J. Burkardt spielt für Mainz 05, nicht für Eintracht Frankfurt - schwerwiegender Faktenfehler bei der Vereinszuordnung.",
+    "gesamt": 3.67,
+    "begruendung": "Burkardt spielt für Frankfurt – kein Vereinsfehler. Minutenangabe fehlt, sonst korrekt.",
     "timestamp": "2026-05-26T22:42:53.387228"
   },
   {
@@ -392,11 +392,11 @@
     "temperature": 0.5,
     "generated_text": "Burkardt trifft! Der Stürmer bringt Frankfurt wieder ins Spiel. 1:2 steht es nun.\n\nDer Ball zappelt im Netz. Burkardt erzielt den Anschlusstreffer für die Eintracht.",
     "latency_ms": 915,
-    "korrektheit": 1,
+    "korrektheit": 4,
     "tonalitaet": 4,
     "vollstaendigkeit": 3,
-    "gesamt": 2.67,
-    "begruendung": "J. Burkardt spielt für Mainz 05, nicht für Eintracht Frankfurt - schwerwiegender Faktenfehler.",
+    "gesamt": 3.67,
+    "begruendung": "Burkardt spielt für Frankfurt – kein Vereinsfehler. Alle Kernfakten korrekt enthalten.",
     "timestamp": "2026-05-26T22:42:58.067448"
   },
   {
@@ -412,11 +412,11 @@
     "temperature": 0.7,
     "generated_text": "Burkardt trifft. Der Stürmer bringt Frankfurt wieder ins Spiel. 1:2.",
     "latency_ms": 601,
-    "korrektheit": 2,
+    "korrektheit": 4,
     "tonalitaet": 5,
     "vollstaendigkeit": 3,
-    "gesamt": 3.33,
-    "begruendung": "Burkardt spielt für Mainz 05, nicht für Eintracht Frankfurt - schwerwiegender Faktenfehler bei der Vereinszuordnung.",
+    "gesamt": 4.0,
+    "begruendung": "Burkardt spielt für Frankfurt – kein Vereinsfehler. Minutenangabe fehlt, sonst korrekt.",
     "timestamp": "2026-05-26T22:43:03.780648"
   },
   {
@@ -452,11 +452,11 @@
     "temperature": 0.5,
     "generated_text": "TOOOOR! Burkardt! Was ist denn hier los?! Der Ball ist drin! Unglaublich!\n\n1:2!",
     "latency_ms": 681,
-    "korrektheit": 2,
+    "korrektheit": 4,
     "tonalitaet": 5,
     "vollstaendigkeit": 3,
-    "gesamt": 3.33,
-    "begruendung": "Jonathan Burkardt spielt für Mainz 05, nicht für Eintracht Frankfurt - schwerer Faktenfehler bei der Vereinszuordnung.",
+    "gesamt": 4.0,
+    "begruendung": "Burkardt spielt für Frankfurt – kein Vereinsfehler. Euphorischer Stil gut getroffen, Minutenangabe fehlt.",
     "timestamp": "2026-05-26T22:43:14.273084"
   },
   {
@@ -472,11 +472,11 @@
     "temperature": 0.7,
     "generated_text": "TOOOOR! Burkardt! WAS IST DENN HIER LOS?! Der Ball im Netz, die Stuttgarter am Boden! 1:2!",
     "latency_ms": 699,
-    "korrektheit": 2,
+    "korrektheit": 4,
     "tonalitaet": 5,
     "vollstaendigkeit": 3,
-    "gesamt": 3.33,
-    "begruendung": "J. Burkardt spielt für Mainz 05, nicht für Eintracht Frankfurt - schwerer Faktenfehler trotz perfekter euphorischer Tonalität.",
+    "gesamt": 4.0,
+    "begruendung": "Burkardt spielt für Frankfurt – kein Vereinsfehler. Euphorischer Stil perfekt getroffen.",
     "timestamp": "2026-05-26T22:43:18.265182"
   },
   {
@@ -552,11 +552,11 @@
     "temperature": 0.3,
     "generated_text": "Burkardt trifft! Der Stürmer der Eintracht gleicht aus.\n\nDer Ball landet im Netz. 2:2.",
     "latency_ms": 1595,
-    "korrektheit": 2,
+    "korrektheit": 4,
     "tonalitaet": 4,
     "vollstaendigkeit": 3,
-    "gesamt": 3.0,
-    "begruendung": "J. Burkardt spielt für Mainz 05, nicht für Eintracht Frankfurt - schwerer Faktenfehler.",
+    "gesamt": 3.67,
+    "begruendung": "Burkardt spielt für Frankfurt – kein Vereinsfehler. Minutenangabe fehlt, Ausgleich korrekt benannt.",
     "timestamp": "2026-05-26T22:43:37.827643"
   },
   {
@@ -572,11 +572,11 @@
     "temperature": 0.5,
     "generated_text": "Burkardt trifft! Der Stürmer bringt den Ball im Tor unter. 2:2.",
     "latency_ms": 611,
-    "korrektheit": 2,
+    "korrektheit": 3,
     "tonalitaet": 4,
     "vollstaendigkeit": 2,
-    "gesamt": 2.67,
-    "begruendung": "Burkardt spielt für Mainz 05, nicht für Eintracht Frankfurt - schwerwiegender Faktenfehler; zudem fehlt die wichtige Zeitangabe (90. Minute).",
+    "gesamt": 3.0,
+    "begruendung": "Burkardt spielt für Frankfurt – kein Vereinsfehler. Echter Abzug: Minutenangabe (90.) fehlt, was bei einem Nachzeitausgleich relevant ist.",
     "timestamp": "2026-05-26T22:43:43.423494"
   },
   {
@@ -592,11 +592,11 @@
     "temperature": 0.7,
     "generated_text": "Burkardt trifft! Der Stürmer bringt den Ball im Tor unter. 2:2.",
     "latency_ms": 564,
-    "korrektheit": 2,
+    "korrektheit": 3,
     "tonalitaet": 4,
     "vollstaendigkeit": 2,
-    "gesamt": 2.67,
-    "begruendung": "Burkardt spielt für Mainz 05, nicht für Eintracht Frankfurt - schwerer Faktenfehler; zudem fehlt die wichtige Zeitangabe (90. Minute).",
+    "gesamt": 3.0,
+    "begruendung": "Burkardt spielt für Frankfurt – kein Vereinsfehler. Echter Abzug: Minutenangabe (90.) fehlt.",
     "timestamp": "2026-05-26T22:43:48.033951"
   },
   {
@@ -612,11 +612,11 @@
     "temperature": 0.3,
     "generated_text": "TOOOOR! Burkardt! Unglaublich! Der Ausgleich!\n\n2:2!\n\nDie Hölle bebt! Was für ein Finish!",
     "latency_ms": 995,
-    "korrektheit": 2,
+    "korrektheit": 4,
     "tonalitaet": 5,
     "vollstaendigkeit": 3,
-    "gesamt": 3.33,
-    "begruendung": "Burkardt spielt für Mainz 05, nicht für Eintracht Frankfurt - klare Faktenfehler bei Vereinszuordnung.",
+    "gesamt": 4.0,
+    "begruendung": "Burkardt spielt für Frankfurt – kein Vereinsfehler. Euphorischer Stil perfekt, Minutenangabe fehlt.",
     "timestamp": "2026-05-26T22:43:52.773758"
   },
   {
@@ -632,11 +632,11 @@
     "temperature": 0.5,
     "generated_text": "TOOOOR! Burkardt! Unglaublich! Der Ausgleich!\n\n2:2!\n\nWas für ein Fight! Die Hölle bebt!",
     "latency_ms": 1151,
-    "korrektheit": 2,
+    "korrektheit": 4,
     "tonalitaet": 5,
     "vollstaendigkeit": 3,
-    "gesamt": 3.33,
-    "begruendung": "J. Burkardt spielt für Mainz 05, nicht für Eintracht Frankfurt - schwerer Faktenfehler, aber Tonalität perfekt euphorisch.",
+    "gesamt": 4.0,
+    "begruendung": "Burkardt spielt für Frankfurt – kein Vereinsfehler. Euphorischer Stil perfekt getroffen.",
     "timestamp": "2026-05-26T22:43:58.310106"
   },
   {
@@ -652,11 +652,11 @@
     "temperature": 0.7,
     "generated_text": "TOOOOR! Burkardt! Unglaublich! Der Ausgleich!\n\nWas ist denn hier los?! Die Hütte bebt!\n\n2:2!",
     "latency_ms": 1050,
-    "korrektheit": 2,
+    "korrektheit": 4,
     "tonalitaet": 5,
     "vollstaendigkeit": 3,
-    "gesamt": 3.33,
-    "begruendung": "Jonathan Burkardt spielt für Mainz 05, nicht für Eintracht Frankfurt - klare Faktenfehler bei Vereinszuordnung.",
+    "gesamt": 4.0,
+    "begruendung": "Burkardt spielt für Frankfurt – kein Vereinsfehler. Euphorischer Stil perfekt getroffen.",
     "timestamp": "2026-05-26T22:44:08.243678"
   },
   {
@@ -692,11 +692,11 @@
     "temperature": 0.5,
     "generated_text": "TOOOOR! Burkardt trifft für Frankfurt. Der Ausgleich. Stuttgart verteidigt schlecht. Keine Zuordnung. 2:2.",
     "latency_ms": 712,
-    "korrektheit": 2,
+    "korrektheit": 4,
     "tonalitaet": 3,
     "vollstaendigkeit": 3,
-    "gesamt": 2.67,
-    "begruendung": "Burkardt spielt für Mainz 05, nicht für Eintracht Frankfurt - schwerer Faktenfehler bei der Vereinszuordnung.",
+    "gesamt": 3.33,
+    "begruendung": "Burkardt spielt für Frankfurt – kein Vereinsfehler. Kritischer Ton vorhanden, alle Kernfakten korrekt.",
     "timestamp": "2026-05-26T22:44:20.026454"
   },
   {

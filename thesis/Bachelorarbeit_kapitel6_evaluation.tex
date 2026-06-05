@@ -118,7 +118,7 @@ Ergänzend zur Hauptevaluation untersuchen drei gezielte Experimente den Einflus
 
 \subsection{Few-Shot-Ablationsstudie}\label{few-shot-ablation}
 
-Um den kausalen Beitrag der Stilreferenzen zu isolieren, wurden in einem gepaarten Ablationstest dieselben Events zweimal generiert: einmal mit Few-Shot-Referenzen, einmal ohne, bei sonst konstanten Parametern ($T\,=\,0{,}5$, N\,=\,40 Paare). Da der Eventpool Champions-League-Auswärtsspiele mit Gegentoren einschließt, sind \texttt{euphorisch}-Werte strukturell niedriger und nicht direkt mit der Hauptevaluation vergleichbar.
+Die Ablationsstudie isoliert den kausalen Beitrag der Few-Shot-Referenzen, indem dieselben N\,=\,40 Events jeweils mit und ohne Stilreferenzen generiert wurden, bei konstanter Temperatur ($T\,=\,0{,}5$) und identischem Modell. Das gepaarte Design erlaubt einen direkten Vergleich ohne Störvariablen.
 
 {\def\LTcaptype{none}
 \begin{longtable}[]{@{}lrrrrrrrr@{}}
@@ -151,14 +151,14 @@ Stil & \multicolumn{4}{c}{$T\,=\,0{,}3$} & \multicolumn{4}{c}{$T\,=\,0{,}5$} & \
 \endhead
 \bottomrule\noalign{}
 \endlastfoot
-neutral    & 3{,}86 & 4{,}71 & 3{,}86 & 4{,}14 & 3{,}57 & 4{,}71 & 3{,}29 & 3{,}86 & 4{,}00 & 4{,}86 & 4{,}00 & 4{,}29 \\
-euphorisch & 3{,}86 & 3{,}00 & 3{,}71 & 3{,}52 & 2{,}86 & 2{,}71 & 3{,}43 & 3{,}00 & 3{,}43 & 2{,}71 & 3{,}57 & 3{,}24 \\
-kritisch   & 4{,}83 & 3{,}00 & 4{,}00 & 3{,}95 & 4{,}33 & 3{,}67 & 3{,}83 & 3{,}95 & 4{,}83 & 4{,}33 & 4{,}50 & 4{,}56 \\
-\textbf{Gesamt} & \textbf{4{,}15} & \textbf{3{,}60} & \textbf{3{,}85} & \textbf{3{,}87} & \textbf{3{,}55} & \textbf{3{,}70} & \textbf{3{,}50} & \textbf{3{,}58} & \textbf{4{,}05} & \textbf{3{,}95} & \textbf{4{,}00} & \textbf{4{,}00} \\
+neutral    & 4{,}43 & 4{,}71 & 3{,}86 & 4{,}33 & 4{,}14 & 4{,}71 & 3{,}29 & 4{,}05 & 4{,}43 & 4{,}86 & 4{,}00 & 4{,}43 \\
+euphorisch & 4{,}14 & 3{,}00 & 3{,}71 & 3{,}62 & 3{,}43 & 2{,}71 & 3{,}43 & 3{,}19 & 4{,}00 & 2{,}71 & 3{,}57 & 3{,}43 \\
+kritisch   & 4{,}83 & 3{,}00 & 4{,}00 & 3{,}94 & 4{,}67 & 3{,}67 & 3{,}83 & 4{,}06 & 4{,}83 & 4{,}33 & 4{,}50 & 4{,}55 \\
+\textbf{Gesamt} & \textbf{4{,}45} & \textbf{3{,}60} & \textbf{3{,}85} & \textbf{3{,}97} & \textbf{4{,}05} & \textbf{3{,}70} & \textbf{3{,}50} & \textbf{3{,}75} & \textbf{4{,}40} & \textbf{3{,}95} & \textbf{4{,}00} & \textbf{4{,}12} \\
 \end{longtable}
 }
 
-$T\,=\,0{,}7$ erzielt den höchsten Gesamtwert (Ø~4{,}00), $T\,=\,0{,}5$ den niedrigsten (Ø~3{,}58). Das Ergebnis ist stilabhängig. Für \texttt{neutral} und \texttt{kritisch} schneidet $T\,=\,0{,}7$ am besten ab (4{,}29 bzw.\ 4{,}56). Für \texttt{euphorisch} liefert $T\,=\,0{,}3$ den höchsten Wert (3{,}52). Bei N\,=\,20 Einträgen je Temperatur entfallen je Stilprofil etwa sieben Datenpunkte pro Zelle. Die beobachteten Unterschiede sind daher als Tendenzwerte zu verstehen; aufgrund der kleinen Zellgrößen sind die stilspezifischen Differenzen nicht inferenzstatistisch belastbar. 
+$T\,=\,0{,}7$ erzielt den höchsten Gesamtwert (Ø~4{,}12), $T\,=\,0{,}5$ den niedrigsten (Ø~3{,}75). Das Ergebnis ist stilabhängig. Für \texttt{neutral} und \texttt{kritisch} schneidet $T\,=\,0{,}7$ am besten ab (4{,}43 bzw.\ 4{,}55). Für \texttt{euphorisch} liefert $T\,=\,0{,}3$ den höchsten Wert (3{,}62). Bei N\,=\,20 Einträgen je Temperatur entfallen je Stilprofil etwa sieben Datenpunkte pro Zelle. Die beobachteten Unterschiede sind daher als Tendenzwerte zu verstehen; aufgrund der kleinen Zellgrößen sind die stilspezifischen Differenzen nicht inferenzstatistisch belastbar. 
 
 \subsection{Mehrsprachige Qualitätsevaluation}\label{mehrsprachige-verifikation}
 
