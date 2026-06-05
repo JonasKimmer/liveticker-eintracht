@@ -263,28 +263,28 @@ Nr. & Anforderung & Nachweis \\
 \bottomrule\noalign{}
 \endlastfoot
 \multicolumn{3}{l}{\emph{Funktionale Anforderungen}} \\
-F1 & Drei Betriebsmodi (auto, coop, manual) & \texttt{PATCH /matches/\{id\}/ticker-mode}, 5 API-Tests \\
-F2 & KI-Generierung für alle Event-Typen & 24 Typen in \texttt{EVENT\_TYPE\_LABEL}, Bulk-Endpoint \\
+F1 & Drei Betriebsmodi (\texttt{auto}, \texttt{coop}, \texttt{manual}) & \texttt{PATCH /matches/\{id\}/ticker-mode}, 5 API-Tests \\
+F2 & KI-Generierung für alle Ereignistypen & 24 Typen in \texttt{EVENT\_TYPE\_LABEL}, Bulk-Endpoint \\
 F3 & Drei Stilprofile & \texttt{STYLE\_DESC} im Prompt, per Match konfigurierbar \\
 F4 & Stilkonfiguration über vereinsspezifische Referenztexte & Bis zu 3 Referenzen aus \texttt{style\_references}, nach Event-Typ gefiltert \\
-F5 & Ticker-Lifecycle (draft → published / rejected) & State-Machine mit publish/reject/retract, 21 API-Tests \\
+F5 & Ticker-Lifecycle (\texttt{draft} → \texttt{published} / \texttt{rejected}) & State-Machine mit publish/reject/retract, 21 API-Tests \\
 F6 & Slash-Command-gestützte manuelle Ticker-Erstellung & 11 Phasen- und 14 Event-Commands (in \texttt{CMD\_MAP}), 45 Unit-Tests; direkte Tastatureingabe ohne Formularwechsel als Zeitdruck-Maßnahme (vgl. Abschnitt~\ref{modusimplementierung-im-frontend}) \\
 F7 & Mehrsprachige Textgenerierung & \texttt{translate\_text()} mit Temperatur 0{,}1, Batch-Endpoint, funktional verifiziert (N\,=\,21 Einträge), LLM-as-Judge-Qualitätsevaluation vgl. Abschnitt~\ref{mehrsprachige-verifikation}, kein Muttersprachler-Test (vgl. Abschnitt~\ref{technische-einordnung}) \\
 F8 & Automatischer, idempotenter ETL-Datenimport & 17 n8n-Workflows in 6 Gruppen (fortlaufend als WF01--WF17 bezeichnet), UPSERT-Strategien für Events, Spieler, Teams \\
 F9 & Anbieterunabhängige LLM-Integration mit Ausfallsicherheit & 5 Provider (openrouter → gemini → openai → anthropic → mock) \\
 F10 & Idempotente Generierung und Deduplizierung & Prüfung auf bestehenden Eintrag per \texttt{event\_id} vor LLM-Aufruf \\
 F11 & Pre-Match-Kontextgenerierung & 7 Context-Builder in \texttt{llm\_context\_builders.py} \\
-F12 & Live-Statistik-Updates & \texttt{ctx\_live\_stats()} in \texttt{llm\_context\_builders.py}, automatische Zwischenstand-Texte, durch \texttt{test\_ticker\_service.py} (Context-Builder-Tests) abgedeckt \\
+F12 & Echtzeit-Statistikaktualisierungen & \texttt{ctx\_live\_stats()} in \texttt{llm\_context\_builders.py}, automatische Zwischenstand-Texte, durch \texttt{test\_ticker\_service.py} (Context-Builder-Tests) abgedeckt \\
 F13 & Medienintegration (ScorePlay, Social-Media-Panels) & MediaQueue-Architektur, n8n-Workflows 09, 11--13 (ScorePlay, X, YouTube, Instagram), instanzspezifische Panel-Einblendung im Frontend \\
-F14 & Spielphasen-Management & WF17 erkennt Phasenänderungen, löst über WF15 Halbzeit- und Abpfiff-Generierung aus \\
-F15 & Undo nach Publikation & Undo-Option nach Publikation, setzt Eintrag auf \texttt{draft} zurück \\
+F14 & Spielphasenverwaltung & WF17 erkennt Phasenänderungen, löst über WF15 Halbzeit- und Abpfiff-Generierung aus \\
+F15 & Rückgängig-Funktion nach Publikation & Rückgängig-Option nach Publikation, setzt Eintrag auf \texttt{draft} zurück \\
 F16 & REST-API zur vollständigen Systemsteuerung & 71 Endpunkte unter \texttt{/api/v1}, 13 Router-Dateien, 95 API-Integrationstests \\
 F17 & White-Label-Fähigkeit & \texttt{src/config/whitelabel.ts} (Frontend-Branding), \texttt{DEFAULT\_TICKER\_INSTANCE} in \texttt{constants.py} (Backend-Instanz), instanzspezifische Few-Shot-Filterung über \texttt{style\_references} (vgl. Abschnitt~\ref{prompt-design-stilkonditionierung}) \\
 \midrule\noalign{}
 \multicolumn{3}{l}{\emph{Qualitätsanforderungen}} \\
-N1 & Responsive UI & Playwright-Test 375×812 (iPhone~X\,/\,XS\,/\,12\,mini u.\,a.), Mobile Tab Bar \\
+N1 & Mobiloptimierte Benutzeroberfläche & Playwright-Test 375×812 (iPhone~X\,/\,XS\,/\,12\,mini u.\,a.), Mobile Tab Bar \\
 N2 & Fehlerresistenz Frontend & \texttt{ErrorBoundary} mit Fallback-UI, 4 Tests \\
-N3 & Keyboard-First-Bedienung & \texttt{Ctrl+1/2/3}, \texttt{TAB}/\texttt{ESC}, \texttt{?}-Modal, vgl. Abschnitt~\ref{modusimplementierung-im-frontend} \\
+N3 & Tastaturorientierte Bedienung & \texttt{Ctrl+1/2/3}, \texttt{TAB}/\texttt{ESC}, \texttt{?}-Modal, vgl. Abschnitt~\ref{modusimplementierung-im-frontend} \\
 N4 & LLM-Antwortlatenz & Backend-to-LLM-to-Backend Median 3\,338\,ms, Modell-P95 unter 2\,800\,ms (vgl. Abschnitt~\ref{performance-und-laufzeitverhalten}), Anforderung P95\,$<$\,30\,s erfüllt \\
 N5 & Systemverfügbarkeit & Lifespan-Migrationen, Health-Check-Endpoint, automatisches WebSocket-Reconnect, kein manueller Eingriff im Spielbetrieb erforderlich \\
 \end{longtable}
