@@ -190,8 +190,7 @@ App
       |- PitchFormation
       `- StatRow
 \end{verbatim}
-
-Das \texttt{LeftPanel} enthält die publizierte Ticker-Ansicht, das \texttt{CenterPanel} bildet den redaktionellen Arbeitsbereich mit Ereigniskarten, Editor und Zusammenfassungskomponenten und das \texttt{RightPanel} stellt Statistiken und Aufstellungsdaten bereit. Jedes Panel ist durch eine \texttt{ErrorBoundary}-Instanz gesichert, sodass Rendering-Fehler einzelner Komponenten die übrigen Panels nicht beeinträchtigen. Beim Start zeigt \texttt{LiveTicker} den \texttt{StartScreen}, auf dem der Ticker-Modus vorgewählt und beim Öffnen eines Spiels als \texttt{ticker\_mode} persistiert wird. \texttt{useNavigation} kapselt die Navigationskette und übergibt die Spiel-ID an \texttt{useMatchData}, das die Datensynchronisation startet.
+Das \texttt{CenterPanel} enthält die publizierte Ticker-Ansicht, das \texttt{LeftPanel} den redaktionellen Arbeitsbereich mit Ereigniskarten, Editor und Zusammenfassungskomponenten und das \texttt{RightPanel} stellt Statistiken und Aufstellungsdaten bereit. Jedes Panel ist durch eine \texttt{ErrorBoundary}-Instanz gesichert, sodass Rendering-Fehler einzelner Komponenten die übrigen Panels nicht beeinträchtigen. Beim Start zeigt \texttt{LiveTicker} den \texttt{StartScreen}, auf dem der Ticker-Modus vorgewählt und beim Öffnen eines Spiels als \texttt{ticker\_mode} persistiert wird. \texttt{useNavigation} kapselt die Navigationskette und übergibt die Spiel-ID an \texttt{useMatchData}, das die Datensynchronisation startet.
 
 Auf Zustandsebene werden die drei Context-Provider in fester Reihenfolge geschachtelt, wobei \texttt{TickerModeContext} die äußerste und \texttt{TickerActionsContext} die innerste Schicht bildet, sodass tiefere Komponenten automatisch alle übergeordneten Contexts sehen. \texttt{EntryEditor} erhält seine Eingaben ausschließlich über Props von \texttt{CenterPanel}, wodurch die Kopplung an globale Ticker-States auf die Panel-Ebene begrenzt bleibt.
 
@@ -222,7 +221,7 @@ Hook & Verantwortlichkeit \\
 
 Weitere Hooks bilden eine ergänzende Funktionsschicht für Navigation, Draft-Verwaltung, Auto-Publikation und Batch-Aktionen.
 
-\texttt{useMatchTriggers} kapselt alle Datenimport- und Auslöseeffekte des Frontends. Beim Öffnen eines Spiels startet der Hook mehrere parallele Import-Aufrufe und löst anschließend die Phasentextgenerierung aus. Ist das Spiel bereits in einem fortgeschrittenen Zustand, wird zusätzlich der Catch-up-Endpunkt aufgerufen. Da LLM-Aufrufe mehrere Sekunden dauern können, setzt der Hook gestaffelte Reload-Impulse, damit neue Entwürfe ohne Nutzerinteraktion erscheinen.
+\texttt{useMatchTriggers} kapselt alle Datenimport- und Auslöseeffekte des Frontends. Beim Öffnen eines Spiels startet der Hook mehrere parallele Import-Aufrufe und löst anschließend die Phasentextgenerierung aus. Ist das Spiel bereits in einem fortgeschrittenen Zustand, wird zusätzlich der Nachholendpunkt für fehlende Phasentexte aufgerufen. Da LLM-Aufrufe mehrere Sekunden dauern können, setzt der Hook gestaffelte Reload-Impulse, damit neue Entwürfe ohne Nutzerinteraktion erscheinen.
 
 Der Medienpfad folgt einem abweichenden Kommunikationsmuster. \texttt{useMediaWebSocket} hält eine persistente WebSocket-Verbindung aufrecht, die bei Verbindungsabbruch mit exponentiell wachsender Wartezeit neu aufgebaut wird, sodass eingehende Medieninhalte ohne den Mehraufwand regelmäßiger Abfragen latenzarm zugestellt werden.
 
@@ -256,7 +255,7 @@ Der Slash-Command-Parser verarbeitet Kommandoeingaben vollständig clientseitig 
 {\def\LTcaptype{none} % do not increment counter
 \begin{longtable}[]{@{}llll@{}}
 \toprule\noalign{}
-Command & Ausgabe & Phase & Icon \\
+Kommando & Ausgabe & Phase & Icon \\
 \midrule\noalign{}
 \endhead
 \bottomrule\noalign{}
@@ -305,7 +304,7 @@ Der aktive Modus (\texttt{auto} / \texttt{coop} / \texttt{manual}) wird von \tex
 
 \texttt{Ctrl+1} bis \texttt{Ctrl+3} schalten den aktiven Modus. \texttt{?} öffnet ein Kürzel-Modal mit einer Übersicht aller verfügbaren Kombinationen, sodass eine vollständige Tastatursteuerung ohne externe Dokumentation möglich ist.
 
-Die drei Modi unterscheiden sich im Publikationsverhalten. Im Auto-Modus werden KI-generierte Einträge direkt publiziert, wobei ein ergänzender Frontend-Pfad die Nachsteuerung offener Entwürfe übernimmt und durch Deduplikationslogik gegen Mehrfachverarbeitung abgesichert ist. Im Coop-Modus legt die KI einen Entwurf an, der der redaktionellen Freigabe per \texttt{TAB} oder Ablehnung per \texttt{ESC} bedarf. Im manuellen Modus werden Einträge ohne KI-Unterstützung direkt als publiziert angelegt.
+Die drei Modi unterscheiden sich im Publikationsverhalten. Im Auto-Modus werden KI-generierte Einträge direkt publiziert, wobei ein ergänzender Frontend-Pfad die Nachsteuerung offener Entwürfe übernimmt und durch Deduplikationslogik gegen Mehrfachverarbeitung abgesichert ist. Im Coop-Modus legt die KI einen Entwurf an, der per \texttt{TAB} freigegeben oder per \texttt{ESC} abgelehnt werden kann. Im manuellen Modus werden Einträge ohne KI-Unterstützung direkt als publiziert angelegt.
 
 \begin{figure}[H]
 \centering
@@ -316,7 +315,7 @@ Die drei Modi unterscheiden sich im Publikationsverhalten. Im Auto-Modus werden 
 
 \texttt{useNameAutocomplete} prüft beim Tippen das zuletzt eingegebene Wort gegen die geladene Aufstellungsliste und schlägt Treffer präfixbasiert inline vor. Da die Aufstellung beim Öffnen des Spiels vollständig vorgeladen ist, sind keine zusätzlichen API-Aufrufe nötig, wodurch Tippfehler bei ungewöhnlichen Spielernamen im Live-Betrieb verhindert werden.
 
-Das Frontend bietet drei Wege, publizierte Einträge nachzubearbeiten: ein 5-Sekunden-Undo-Toast direkt nach der Publikation, ein Drei-Punkte-Menü pro Eintrag für Inline-Bearbeitung und nicht-destruktives Löschen sowie einen Stornieren-Button, der einen Eintrag jederzeit in den Entwurfsstatus zurücksetzt. Alle drei Wege führen zu keiner irreversiblen Löschung von Datenbankeinträgen.
+Das Frontend bietet drei Wege, publizierte Einträge nachzubearbeiten: ein 5-Sekunden-Rückgängig-Hinweis direkt nach der Publikation, ein Drei-Punkte-Menü pro Eintrag für direkte Bearbeitung und nicht-destruktives Löschen sowie einen Stornieren-Button, der einen Eintrag jederzeit in den Entwurfsstatus zurücksetzt. Alle drei Wege führen zu keiner irreversiblen Löschung von Datenbankeinträgen.
 
 Rendering-Fehler werden pro Panel durch \texttt{ErrorBoundary}-Instanzen abgefangen, sodass ein Absturz einer Komponente die übrigen Panels arbeitsfähig lässt. API-Fehler werden in zwei Stufen behandelt: Kritische Operationen wie Publikation und Generierung geben einen Toast mit Fehlermeldung aus, während Hintergrundfehler aus Polling- und Auto-Import-Prozessen still geloggt werden, um den Redaktionsfluss nicht zu unterbrechen. \texttt{useApiStatus} überwacht \texttt{GET /health} und zeigt einen persistenten Statusindikator (\texttt{ok} / \texttt{degraded} / \texttt{offline}), der Konnektivitätsprobleme frühzeitig sichtbar macht.
 
