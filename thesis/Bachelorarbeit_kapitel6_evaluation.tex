@@ -63,13 +63,6 @@ kritisch    & 46 & 4{,}09 & 3{,}70 & 3{,}98 & 3{,}92 \\
 
 \emph{N\,=\,140 Einträge aus 19 Spielen.}
 
-\begin{figure}[H]
-\centering
-\DiagramQualitaetStilprofil
-\caption[LLM-as-Judge-Ergebnisse nach Stilprofil]{LLM-as-Judge-Ergebnisse nach Stilprofil: Korrektheit, Tonalität und Vollständigkeit (je 1--5, N\,=\,140)}
-\label{fig:llm-judge-stilprofil}
-\end{figure}
-
 Korrektheit und Vollständigkeit fallen über alle drei Profile hinweg homogen hoch aus. Die Tonalität zeigt die stärkste Profilabhängigkeit und bildet beim euphorischen sowie beim kritischen Profil jeweils die schwächste Einzeldimension. Die Ergebnisse wurden stichprobenartig auf inhaltliche Plausibilität geprüft und stimmen mit den qualitativen Beobachtungen des Entwicklers aus dem laufenden Systembetrieb überein.
 
 
@@ -183,6 +176,8 @@ Dieser Abschnitt misst die Generierungslatenz der drei evaluierten LLM-Modelle (
 
 \subsection{Modellvergleich der Generierungslatenz}\label{modellvergleich-latenz}\label{systemlatenz}
 
+Der Vergleich misst die Ende-zu-Ende-Generierungslatenz der drei eingesetzten LLM-Modelle unter identischer Prompt-Konfiguration.
+
 {\footnotesize\def\LTcaptype{none}
 \begin{longtable}[]{@{}
   >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.36}}
@@ -206,7 +201,7 @@ Modell & N & Median (ms) & P95 (ms) & Std.\ (ms) \\
 
 Gemini~2.5~Flash erzielt mit 591\,ms Median die kürzeste Latenz. Claude~Haiku~4.5 zeigt mit 177\,ms die geringste Streuung.
 
-\subsection{Veröffentlichungslatenz der Betriebsmodi}\label{ttp-abschaetzung}
+\subsection{n8n-Workflow-Laufzeiten}\label{ttp-abschaetzung}
 
 Die folgende Tabelle dokumentiert die gemessenen Laufzeiten der n8n-Workflows, gegliedert nach Funktionsgruppe.
 
@@ -246,6 +241,7 @@ Workflow & N & Median (ms) & P95 (ms) \\
 
 \emph{*\,Einzelmessung aus n8n-Dashboard (manuell). Alle übrigen Werte: n8n-Execution-Log via REST-API.}
 
+Im \texttt{auto}-Modus bestimmt \texttt{WF10} mit einem P95 von 18\,269\,ms die dominante Latenzkomponente, womit die Anforderung N4 (P95\,$<$\,30\,s) deutlich erfüllt ist. Im \texttt{coop}-Modus entfällt die maschinelle Generierungslatenz auf die redaktionelle Freigabe, sodass die systemseitige Veröffentlichungslatenz unter einer Sekunde liegt.
 
 \section{Anforderungsabgleich}\label{anforderungsabgleich-soll-ist-vergleich}\label{technische-qualitätssicherung}
 
@@ -289,4 +285,6 @@ N4 & LLM-Antwortlatenz & Backend-to-LLM-to-Backend Median 3\,338\,ms, Modell-P95
 N5 & Systemverfügbarkeit & Lifespan-Migrationen, Health-Check-Endpoint, automatisches WebSocket-Reconnect, kein manueller Eingriff im Spielbetrieb erforderlich \\
 \end{longtable}
 }
+
+Die einzige nicht vollständig erfüllte Anforderung ist F7 (Mehrsprachige Textgenerierung). Die Funktionalität ist implementiert und per LLM-as-Judge für Deutsch und Spanisch verifiziert, ein Muttersprachler-Test für nicht-deutschsprachige Märkte steht jedoch aus.
 
