@@ -4,7 +4,7 @@ Dieses Kapitel beschreibt die Implementierung des Liveticker-Systems als lauffä
 
 \section{Backend-Implementierung}\label{backend-implementierung}
 
-Das Backend ist als FastAPI-Anwendung mit geschichteter Architektur implementiert. Der Abschnitt gliedert sich in Projektstruktur, Konfiguration und Entry Point (Abschnitt~\ref{projektstruktur-und-application-entry-point}), Datenmodelle und Datenzugriff (Abschnitt~\ref{datenmodelle-datenbankschema-und-api-validierung}), API-Router und Endpunktstruktur (Abschnitt~\ref{api-router-endpunktstruktur}), Ticker-Service und Domänenlogik (Abschnitt~\ref{ticker-service-domuxe4nenlogik}), LLM-Service und Fehlerbehandlung (Abschnitt~\ref{llm-service-prompt-aufbau-und-provider-dispatch}) sowie Idempotenz und Generierungssteuerung (Abschnitt~\ref{idempotenz-und-generierungssteuerung}).
+Das Backend ist als FastAPI-Anwendung mit geschichteter Architektur implementiert. Der Abschnitt gliedert sich in Projektstruktur, Konfiguration und Entry Point (Abschnitt~\ref{projektstruktur-und-application-entry-point}), Datenmodelle und Datenzugriff (Abschnitt~\ref{datenmodelle-datenbankschema-und-api-validierung}), API-Router und Endpunktstruktur (Abschnitt~\ref{api-router-endpunktstruktur}), Ticker-Service, LLM-Service und Fehlerbehandlung (Abschnitt~\ref{ticker-service-domuxe4nenlogik}) sowie Idempotenz und Generierungssteuerung (Abschnitt~\ref{idempotenz-und-generierungssteuerung}).
 
 \subsection{Projektstruktur, Konfiguration und Entry Point}\label{projektstruktur-und-application-entry-point}
 
@@ -99,7 +99,7 @@ Die vereinsspezifische Instanz ergänzt den Generierungspfad um \texttt{POST /ap
 Für Medieninhalte ergänzt ein WebSocket-Endpunkt unter \texttt{/ws/media} die HTTP-Routen. Eingehende Medieninhalte werden über \texttt{POST /api/v1/media/incoming} zunächst persistiert und anschließend an verbundene Redakteur-Clients verteilt, sodass ein hybrider Medienpfad aus persistierter Speicherung und unmittelbarer UI-Aktualisierung entsteht.
 
 
-\subsection{Ticker-Service und Domänenlogik}\label{ticker-service-domuxe4nenlogik}
+\subsection{Ticker-Service, LLM-Service und Fehlerbehandlung}\label{ticker-service-domuxe4nenlogik}\label{llm-service-prompt-aufbau-und-provider-dispatch}
 
 Der \texttt{ticker\_service} ist als Modul zustandsloser Funktionen implementiert. Als einziger gemeinsamer Zustand begrenzt eine modulweit geteilte Semaphore die Anzahl gleichzeitiger LLM-Aufrufe und reduziert so Lastspitzen je Prozessinstanz.
 
@@ -107,12 +107,7 @@ Die Generierungslogik gliedert sich in drei Verarbeitungsschritte. Zunächst erz
 
 Den Abschluss der KI-Pipeline bildet \texttt{make\_ai\_entry()}, das aus den LLM-Ergebnissen ein \texttt{TickerEntryCreate}-Schema mit \texttt{source="ai"} erzeugt und den initialen Publikationsstatus aus dem Aufrufparameter ableitet. Für den KI-unabhängigen manuellen Pfad steht \texttt{make\_manual\_entry()} bereit, das \texttt{source="manual"} setzt und standardmäßig \texttt{status=published} verwendet, bei Bedarf jedoch abweichende Statuswerte akzeptiert.
 
-
-\subsection{LLM-Service und Fehlerbehandlung}\label{llm-service-prompt-aufbau-und-provider-dispatch}
-
-Der \texttt{LLMService} initialisiert pro Prozessinstanz genau einen Provider-Client, um wiederholte Initialisierungen im Aufrufpfad zu vermeiden. Die Providerauswahl erfolgt anhand der konfigurierten Zugangsdaten nach einer festen Priorisierungslogik, sodass bei fehlenden Schlüsseln automatisch auf den nächsten verfügbaren Anbieter zurückgegriffen wird.
-
-Die Fehlerbehandlung unterscheidet zwischen Ratenbegrenzungs- und transienten Verbindungsfehlern. Bei HTTP-429-Antworten wird eine lineare, bei transienten Fehlern eine exponentielle Wartezeit vor der Wiederholung eingesetzt. Beide Varianten sind auf \texttt{LLM\_RETRY\_ATTEMPTS} Versuche begrenzt, wonach die Ausnahme an den aufrufenden \texttt{ticker\_service} weitergereicht wird.
+Der \texttt{LLMService} initialisiert pro Prozessinstanz genau einen Provider-Client, um wiederholte Initialisierungen im Aufrufpfad zu vermeiden. Die Providerauswahl erfolgt anhand der konfigurierten Zugangsdaten nach einer festen Priorisierungslogik, sodass bei fehlenden Schlüsseln automatisch auf den nächsten verfügbaren Anbieter zurückgegriffen wird. Die Fehlerbehandlung unterscheidet zwischen Ratenbegrenzungs- und transienten Verbindungsfehlern. Bei HTTP-429-Antworten wird eine lineare, bei transienten Fehlern eine exponentielle Wartezeit vor der Wiederholung eingesetzt. Beide Varianten sind auf \texttt{LLM\_RETRY\_ATTEMPTS} Versuche begrenzt, wonach die Ausnahme an den aufrufenden \texttt{ticker\_service} weitergereicht wird.
 
 \subsection{Idempotenz und Generierungssteuerung}\label{idempotenz-und-generierungssteuerung}
 
