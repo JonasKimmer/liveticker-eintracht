@@ -78,7 +78,7 @@ Die häufigste Fehlerklasse ist Stil-Inkonsistenz beim neutralen Profil (8/40, 2
 
 \subsection{LLM-as-Judge-Evaluation}\label{erweiterte-evaluation}
 
-Beim LLM-as-Judge-Verfahren übernimmt ein vom generierenden Modell verschiedenes Sprachmodell die Rolle des Bewerters und beurteilt Ausgaben anhand definierter Qualitätskriterien, ohne dass für jeden Bewertungsschritt menschliche Annotation erforderlich ist (vgl. Zheng et al.~2023, S.~8). Im vorliegenden Design beurteilt \texttt{claude-sonnet-4-5} als unabhängiges Judge-Modell N\,=\,80 Einträge aus 30 Spielen, die Spielereignisse wie Tore, Wechsel und Karten abdecken, wobei 5 eine fehlerfreie, stilkonsistente Ausgabe kennzeichnet und 1 grundlegende Fehler oder Halluzinationen.
+Beim LLM-as-Judge-Verfahren übernimmt ein vom generierenden Modell verschiedenes Sprachmodell die Rolle des Bewerters und beurteilt Ausgaben anhand definierter Qualitätskriterien, ohne dass für jeden Bewertungsschritt menschliche Annotation erforderlich ist (vgl. Zheng et al.~2023, S.~8). Im vorliegenden Design beurteilt \texttt{claude-sonnet-4-5} als unabhängiges Judge-Modell N\,=\,140 Einträge aus 19 Spielen, die Spielereignisse wie Tore, Wechsel und Karten abdecken, wobei 5 eine fehlerfreie, stilkonsistente Ausgabe kennzeichnet und 1 grundlegende Fehler oder Halluzinationen.
 
 {\def\LTcaptype{none} % do not increment counter
 \begin{longtable}[]{@{}
@@ -94,23 +94,23 @@ Stil & n & Korrektheit & Tonalität & Vollständigkeit & Gesamt \\
 \endhead
 \bottomrule\noalign{}
 \endlastfoot
-neutral     & 27 & 4{,}81 & 4{,}81 & 4{,}81 & 4{,}82 \\
-kritisch    & 26 & 4{,}35 & 4{,}04 & 4{,}58 & 4{,}32 \\
-euphorisch  & 27 & 3{,}22 & 2{,}93 & 3{,}67 & 3{,}27 \\
-\textbf{Gesamt} & \textbf{80} & \textbf{4{,}12} & \textbf{3{,}92} & \textbf{4{,}35} & \textbf{4{,}13} \\
+neutral     & 47 & 4{,}83 & 4{,}32 & 4{,}81 & 4{,}65 \\
+euphorisch  & 47 & 4{,}51 & 3{,}60 & 4{,}11 & 4{,}07 \\
+kritisch    & 46 & 4{,}09 & 3{,}70 & 3{,}98 & 3{,}92 \\
+\textbf{Gesamt} & \textbf{140} & \textbf{4{,}48} & \textbf{3{,}87} & \textbf{4{,}30} & \textbf{4{,}22} \\
 \end{longtable}
 }
 
 \begin{figure}[H]
 \centering
 \DiagramQualitaetStilprofil
-\caption[LLM-as-Judge-Ergebnisse nach Stilprofil]{LLM-as-Judge-Ergebnisse nach Stilprofil: Korrektheit, Tonalität und Vollständigkeit (je 1--5, N\,=\,80)}
+\caption[LLM-as-Judge-Ergebnisse nach Stilprofil]{LLM-as-Judge-Ergebnisse nach Stilprofil: Korrektheit, Tonalität und Vollständigkeit (je 1--5, N\,=\,140)}
 \label{fig:llm-judge-stilprofil}
 \end{figure}
 
-Das neutrale Stilprofil erzielt den höchsten Gesamtwert (4{,}82). Das kritische Profil liegt mit Ø~4{,}32 im Mittelfeld und erreicht insbesondere bei der Vollständigkeit hohe Werte (4{,}58). Das euphorische Profil weist mit Ø~3{,}27 die niedrigsten Werte auf. Die größten Abstände zeigen sich bei Tonalität (2{,}93) und Korrektheit (3{,}22). Die größere Stichprobe bestätigt den Befund der manuellen Analyse: sachlich-neutrale Ausgaben sind am robustesten, stark emotionalisierte Profile fehleranfälliger.
+Das neutrale Stilprofil erzielt den höchsten Gesamtwert (Ø~4{,}65). Das euphorische Profil liegt mit Ø~4{,}07 im Mittelfeld, wobei die Tonalität mit 3{,}60 die schwächste Einzeldimension bildet. Das kritische Profil weist mit Ø~3{,}92 den niedrigsten Gesamtwert auf; die Korrektheit (4{,}09) und Vollständigkeit (3{,}98) bleiben hinter den anderen Profilen zurück.
 
-Eine ereignistypspezifische Analyse zeigt, dass Wechsel-Ereignisse den Tonalitätswert des euphorischen Profils auffällig belasten: 59\,\% der euphorisch generierten Wechsel-Einträge erzielen T\,\(\leq\)\,3, sechs Einträge erhalten T\,=\,1. Das Modell generiert für Einwechslungen konsistent skeptisch-resignierte Texte wie \emph{„Na, ob das noch was ändert?''} statt des angeforderten euphorischen Stils.
+Eine ereignistypspezifische Analyse zeigt, dass Gelbekarten-Ereignisse den Tonalitätswert des euphorischen Profils auffällig belasten: 75\,\% der euphorisch generierten Gelbekarten-Einträge erzielen T\,\(\leq\)\,3, fünf Einträge erhalten T\,=\,1. Das Modell generiert konsistent empörte oder resignierte Texte wie \emph{„Na, das ist doch mal wieder typisch!''} statt des angeforderten euphorischen Stils, weil Gelbe Karten als inhärent negative Ereignisse die Stilkonditionierung überlagern.
 
 \section{LLM-Konfigurationsexperimente}\label{llm-konfigurationsexperimente}
 
@@ -162,8 +162,7 @@ $T\,=\,0{,}7$ erzielt den höchsten Gesamtwert (Ø~4{,}12), $T\,=\,0{,}5$ den ni
 
 \subsection{Mehrsprachige Qualitätsevaluation}\label{mehrsprachige-verifikation}
 
-Zur Verifikation von F7 (Mehrsprachige Textgenerierung) wurden zunächst 21 Einträge eines Pokalspiels (FV Engers~07 vs.\ Eintracht Frankfurt) mit dem Sprachparameter \texttt{es} (Spanisch) generiert und funktional verifiziert. Alle 21 Aufrufe lieferten Status \texttt{ok}. Sprachspezifische Ausdruckskonventionen wurden korrekt adaptiert (\texttt{TOOOOR!} $\to$ \texttt{GOOOOL!}, Minutenformat \texttt{Minuto~44:}).
-
+Um den Einfluss der Zielsprache auf die Ausgabequalität zu messen, wurden dieselben N\,=\,21 Events parallel auf Deutsch und Spanisch generiert, bei konstanter Temperatur ($T\,=\,0{,}5$) und ohne Few-Shot-Referenzen.
 
 {\def\LTcaptype{none}
 \begin{longtable}[]{@{}lrrrrrrrr@{}}
