@@ -22,7 +22,7 @@ Innerhalb des Prompting-Paradigmas lassen sich drei wesentliche Techniken unters
 
 Moderne Chat-Modelle unterscheiden strukturell zwischen zwei Prompt-Rollen (vgl. OpenAI 2023, S.~62). Der \textbf{System Prompt} legt die übergeordnete Persona sowie Stilanforderungen, inhaltliche Grenzen und das Ausgabeformat fest, während der \textbf{User Prompt} die konkrete Aufgabe mit aufgabenspezifischen Daten enthält. Diese Trennung erlaubt es, allgemeine Verhaltensregeln einmalig im System Prompt zu definieren und den User Prompt auf die jeweilige Aufgabe zu beschränken.
 
-Ein weiterer zentraler Steuerungsparameter ist die \textbf{Temperature}, die die Wahrscheinlichkeitsverteilung der Token-Auswahl beeinflusst (vgl. Brown et al.~2020; OpenAI 2023, S.~24). Niedrige Werte führen zu deterministischeren, faktentreueren Ausgaben, während höhere Werte die kreative Varianz erhöhen. Generierungsaufgaben mit Stilanforderungen profitieren von mittleren Temperaturwerten, Übersetzungsaufgaben mit strengen Treuekriterien von niedrigen.
+Ein weiterer zentraler Steuerungsparameter ist die \textbf{Temperature}, die bestimmt, wie stark das Modell bei der Wortwahl von der jeweils wahrscheinlichsten Option abweicht (vgl. Brown et al.~2020; OpenAI 2023, S.~24). Niedrige Werte führen zu deterministischeren, faktentreueren Ausgaben, höhere Werte erhöhen die stilistische Varianz. Generierungsaufgaben mit Stilanforderungen profitieren von mittleren Temperaturwerten, Übersetzungsaufgaben mit strengen Treuekriterien von niedrigen.
 
 
 \section{Automatisierte Sportberichterstattung}\label{automatisierte-sportberichterstattung}
