@@ -1,6 +1,6 @@
 \chapter{Evaluation}\label{evaluation}
 
-Dieses Kapitel evaluiert das entwickelte System empirisch und schafft damit die Grundlage zur Beantwortung der Forschungsfrage. Die Evaluation umfasst die Textqualität der KI-Generierung (Abschnitt~\ref{evaluation-der-ki-textgenerierung}), LLM-Konfigurationsexperimente zu Few-Shot, Temperatur und Mehrsprachigkeit (Abschnitt~\ref{llm-konfigurationsexperimente}), das Performance- und Laufzeitverhalten (Abschnitt~\ref{performance-und-laufzeitverhalten}) sowie einen Anforderungsabgleich als Soll-Ist-Vergleich (Abschnitt~\ref{anforderungsabgleich-soll-ist-vergleich}).
+Dieses Kapitel evaluiert das entwickelte System empirisch und schafft damit die Grundlage zur Beantwortung der Forschungsfrage. Die Evaluation umfasst die Textqualität der KI-Generierung (Abschnitt~\ref{evaluation-der-ki-textgenerierung}), LLM-Konfigurationsexperimente zu Few-Shot, Temperatur, Mehrsprachigkeit und Modellwahl (Abschnitt~\ref{llm-konfigurationsexperimente}), das Performance- und Laufzeitverhalten (Abschnitt~\ref{performance-und-laufzeitverhalten}) sowie einen Anforderungsabgleich als Soll-Ist-Vergleich (Abschnitt~\ref{anforderungsabgleich-soll-ist-vergleich}).
 
 
 \section{Evaluation der
@@ -114,7 +114,7 @@ Eine ereignistypspezifische Analyse zeigt, dass Gelbekarten-Ereignisse den Tonal
 
 \section{LLM-Konfigurationsexperimente}\label{llm-konfigurationsexperimente}
 
-Ergänzend zur Hauptevaluation untersuchen drei gezielte Experimente den Einfluss der Konfigurationsparameter Few-Shot-Referenzen (Abschnitt~\ref{few-shot-ablation}), Temperatur (Abschnitt~\ref{temperaturvergleich}) und Zielsprache (Abschnitt~\ref{mehrsprachige-verifikation}) auf die Ausgabequalität. Alle Experimente verwenden \texttt{google/gemini-2.0-flash-lite-001} als Generierungsmodell und \texttt{claude-sonnet-4-5} als Bewerter; die Bewertung erfolgt nach denselben Dimensionen und auf derselben Skala wie in Abschnitt~\ref{evaluation-der-ki-textgenerierung}.
+Ergänzend zur Hauptevaluation untersuchen vier gezielte Experimente den Einfluss der Konfigurationsparameter Few-Shot-Referenzen (Abschnitt~\ref{few-shot-ablation}), Temperatur (Abschnitt~\ref{temperaturvergleich}), Zielsprache (Abschnitt~\ref{mehrsprachige-verifikation}) und Modellwahl (Abschnitt~\ref{modellvergleich-qualitaet}) auf die Ausgabequalität. Die ersten drei Experimente verwenden \texttt{google/gemini-2.0-flash-lite-001} als Generierungsmodell und \texttt{claude-sonnet-4-5} als Bewerter; die Bewertung erfolgt nach denselben Dimensionen und auf derselben Skala wie in Abschnitt~\ref{evaluation-der-ki-textgenerierung}.
 
 \subsection{Few-Shot-Ablationsstudie}\label{few-shot-ablation}
 
@@ -184,11 +184,37 @@ kritisch   & 4{,}14 & 3{,}86 & 3{,}57 & 3{,}86 & 4{,}00 & 4{,}00 & 4{,}29 & 4{,}
 
 Unter kontrollierten Bedingungen erzielt Spanisch in allen drei Stilprofilen höhere Gesamtwerte. Der stärkste Unterschied zeigt sich beim \texttt{euphorisch}-Profil ($\Delta\,=\,0{,}67$, Ø~4{,}24 vs.\ 3{,}57), wo die spanische Tonalität deutlich besser bewertet wird. Im Gesamtergebnis liegt Spanisch um $\Delta\,=\,0{,}37$ vorne (Ø~4{,}27 vs.\ 3{,}90).
 
+\subsection{Modellvergleich der Textqualität}\label{modellvergleich-qualitaet}
 
+Die Textqualität der drei Modelle wurde mit dem LLM-as-Judge-Verfahren bewertet (Bewerter: \texttt{claude-sonnet-4-5}). Dafür wurden N\,=\,10 abgeschlossene Bundesliga- und Champions-League-Spiele mit je drei Stilprofilen generiert (30 Einträge je Modell). Ereignisse mit einer durchschnittlichen Korrektheitsbewertung unter 3{,}5 wurden aus der Auswertung ausgeschlossen. Da diese Ausschlüsse modellabhängig ausfallen können und hier nicht separat je Modell ausgewiesen werden, ist der Qualitätsvergleich als gefilterte Stichprobe zu interpretieren.
+
+{\footnotesize\def\LTcaptype{none}
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.36}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.08}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.14}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.14}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.14}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.14}}@{}}
+\toprule\noalign{}
+Modell & N & Korrektheit & Tonalität & Vollständigkeit & Gesamt \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+\texttt{google/gemini-2.5-flash}    & 30 & 4{,}43 & 3{,}87 & 4{,}20 & 4{,}17 \\
+\texttt{anthropic/claude-haiku-4-5} & 30 & 4{,}40 & 4{,}27 & \textbf{4{,}57} & \textbf{4{,}41} \\
+\texttt{openai/gpt-4.1-mini}        & 30 & \textbf{4{,}60} & \textbf{4{,}53} & 4{,}07 & 4{,}40 \\
+\end{longtable}
+}
+
+\emph{LLM-as-Judge (\texttt{claude-sonnet-4-5} via OpenRouter). N\,=\,30 je Modell (10 Events $\times$ 3 Stile). Skala 1--5.}
+
+Claude~Haiku~4.5 und GPT-4.1-mini liegen mit Ø~4{,}41 bzw.\ Ø~4{,}40 gleichauf. Claude~Haiku~4.5 erzielt die stärkste Vollständigkeit (4{,}57), GPT-4.1-mini die höchste Korrektheit (4{,}60) und Tonalität (4{,}53). Gemini~2.5~Flash liegt qualitativ zurück (Ø~4{,}17), ist mit 591\,ms Median jedoch das mit Abstand schnellste Modell. Der Speed-Quality-Trade-off bleibt damit eindeutig: Das schnellste Modell erzielt die niedrigste Gesamtqualität, während die langsameren Modelle bei Qualität nahezu gleichwertig sind.
 
 \section{Performance und Laufzeitverhalten}\label{performance-und-laufzeitverhalten}\label{llm-latenz}
 
-Dieser Abschnitt vergleicht die Generierungslatenz und Textqualität der drei evaluierten LLM-Modelle (Abschnitte~\ref{modellvergleich-latenz} und~\ref{modellvergleich-qualitaet}) und leitet daraus das Time-to-Publish-Potenzial der Betriebsmodi ab (Abschnitt~\ref{ttp-abschaetzung}). Die Implikationen des Speed-Quality-Trade-offs werden in Abschnitt~\ref{modellauswahl} diskutiert.
+Dieser Abschnitt misst die Generierungslatenz der drei evaluierten LLM-Modelle (Abschnitt~\ref{modellvergleich-latenz}) und leitet daraus das Time-to-Publish-Potenzial der Betriebsmodi ab (Abschnitt~\ref{ttp-abschaetzung}).
 
 \subsection{Modellvergleich der Generierungslatenz}\label{modellvergleich-latenz}\label{systemlatenz}
 
@@ -216,34 +242,6 @@ Modell & N & Median (ms) & P95 (ms) & Std.\ (ms) \\
 \emph{Direktmessung via OpenRouter (kein Backend-Overhead). Identischer Prompt je Aufruf. Fehlerrate: 0\,\% bei allen drei Modellen.}
 
 Gemini~2.5~Flash erzielt mit 591\,ms Median die kürzeste Generierungslatenz und ist damit 1{,}9-fach schneller als GPT-4.1-mini und 2{,}8-fach schneller als Claude~Haiku~4.5. Claude~Haiku~4.5 weist mit einer Standardabweichung von 177\,ms das konstanteste Antwortverhalten auf. GPT-4.1-mini zeigt mit 521\,ms die höchste Streuung.
-
-\subsection{Modellvergleich der Textqualität}\label{modellvergleich-qualitaet}
-
-Die Textqualität der drei Modelle wurde ergänzend mit dem LLM-as-Judge-Verfahren bewertet (vgl. Abschnitt~\ref{erweiterte-evaluation}, Bewerter: \texttt{claude-sonnet-4-5}). Dafür wurden N\,=\,10 abgeschlossene Bundesliga- und Champions-League-Spiele mit je drei Stilprofilen generiert (30 Einträge je Modell). Ereignisse mit einer durchschnittlichen Korrektheitsbewertung unter 3{,}5 wurden aus der Auswertung ausgeschlossen. Da diese Ausschlüsse modellabhängig ausfallen können und hier nicht separat je Modell ausgewiesen werden, ist der Qualitätsvergleich als gefilterte Stichprobe zu interpretieren.
-
-{\footnotesize\def\LTcaptype{none}
-\begin{longtable}[]{@{}
-  >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.36}}
-  >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.08}}
-  >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.14}}
-  >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.14}}
-  >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.14}}
-  >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.14}}@{}}
-\toprule\noalign{}
-Modell & N & Korrektheit & Tonalität & Vollständigkeit & Gesamt \\
-\midrule\noalign{}
-\endhead
-\bottomrule\noalign{}
-\endlastfoot
-\texttt{google/gemini-2.5-flash}    & 30 & 4{,}43 & 3{,}87 & 4{,}20 & 4{,}17 \\
-\texttt{anthropic/claude-haiku-4-5} & 30 & 4{,}40 & 4{,}27 & \textbf{4{,}57} & \textbf{4{,}41} \\
-\texttt{openai/gpt-4.1-mini}        & 30 & \textbf{4{,}60} & \textbf{4{,}53} & 4{,}07 & 4{,}40 \\
-\end{longtable}
-}
-
-\emph{LLM-as-Judge (claude-sonnet-4-5 via OpenRouter). N\,=\,30 je Modell (10 Events $\times$ 3 Stile). Skala 1--5.}
-
-Claude~Haiku~4.5 und GPT-4.1-mini liegen mit Ø~4{,}41 bzw.\ Ø~4{,}40 gleichauf. Claude~Haiku~4.5 erzielt die stärkste Vollständigkeit (4{,}57), GPT-4.1-mini die höchste Korrektheit (4{,}60) und Tonalität (4{,}53). Gemini~2.5~Flash liegt qualitativ zurück (Ø~4{,}17), ist mit 591\,ms Median jedoch das mit Abstand schnellste Modell. Der Speed-Quality-Trade-off bleibt damit eindeutig: Das schnellste Modell erzielt die niedrigste Gesamtqualität, während die langsameren Modelle bei Qualität nahezu gleichwertig sind.
 
 \subsection{Veröffentlichungslatenz der Betriebsmodi}\label{ttp-abschaetzung}
 
