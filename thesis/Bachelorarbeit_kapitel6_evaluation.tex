@@ -1,10 +1,9 @@
 \chapter{Evaluation}\label{evaluation}
 
-Dieses Kapitel evaluiert das entwickelte System empirisch und schafft damit die Grundlage zur Beantwortung der Forschungsfrage. Die Evaluation kombiniert automatisierte LLM-as-Judge-Verfahren und gezielte Konfigurationsexperimente, um Textqualität, Laufzeitverhalten und Anforderungserfüllung des Systems empirisch zu erfassen. Abschnitt~\ref{evaluation-der-ki-textgenerierung} untersucht die journalistische Textqualität, Abschnitt~\ref{llm-konfigurationsexperimente} analysiert den Einfluss von Konfigurationsparametern, Abschnitt~\ref{performance-und-laufzeitverhalten} bewertet das Laufzeitverhalten, und Abschnitt~\ref{anforderungsabgleich-soll-ist-vergleich} dokumentiert den Anforderungsabgleich.
+Dieses Kapitel evaluiert das entwickelte System empirisch und schafft damit die Grundlage zur Beantwortung der Forschungsfrage. Die Evaluation kombiniert automatisierte LLM-as-Judge-Verfahren und gezielte Konfigurationsexperimente, um Textqualität, Laufzeitverhalten und Anforderungserfüllung des Systems empirisch zu erfassen. Abschnitt~\ref{evaluation-der-ki-textgenerierung} bewertet die Textqualität der KI-Generierung, Abschnitt~\ref{llm-konfigurationsexperimente} analysiert den Einfluss von Konfigurationsparametern, Abschnitt~\ref{performance-und-laufzeitverhalten} bewertet das Laufzeitverhalten, und Abschnitt~\ref{anforderungsabgleich-soll-ist-vergleich} dokumentiert den Anforderungsabgleich.
 
 
-\section{Evaluation der
-KI-Textgenerierung}\label{evaluation-der-ki-textgenerierung}
+\section{Hauptevaluation der Textqualität}\label{evaluation-der-ki-textgenerierung}
 
 Die Evaluation der KI-Textgenerierung untersucht, inwiefern das System journalistische Qualitätsanforderungen hinsichtlich Korrektheit, Tonalität und Vollständigkeit erfüllt. Alle Bewertungen erfolgen auf einer Skala von 1 bis 5, wobei 5 eine fehlerfreie, stilkonsistente Ausgabe kennzeichnet und 1 grundlegende Fehler oder Halluzinationen anzeigt. Als Evaluationskorpus dienen Bundesliga-Spiele der Saison~2025/26 mit Ereignissen wie Toren, Wechseln und Karten. Als Judge-Modell kommt durchgehend \texttt{claude-sonnet-4-5} zum Einsatz, sofern nicht anders angegeben. Abschnitt~\ref{einfluss-der-stilprofile} veranschaulicht die Stilprofile anhand realer Ausgaben, Abschnitt~\ref{erweiterte-evaluation} dokumentiert die quantitative LLM-as-Judge-Bewertung.
 
@@ -152,7 +151,7 @@ Unter kontrollierten Bedingungen erzielt Spanisch in allen drei Stilprofilen hö
 
 \subsection{Modellvergleich der Textqualität}\label{modellvergleich-qualitaet}
 
-Einträge mit einer durchschnittlichen Korrektheitsbewertung unter 3{,}5 wurden ausgeschlossen, weshalb der Qualitätsvergleich als gefilterte Stichprobe zu interpretieren ist.
+Der Vergleich analysiert, ob die Wahl des generierenden Modells einen messbaren Einfluss auf Korrektheit, Tonalität und Vollständigkeit hat, bei sonst identischer Konfiguration.
 
 {\footnotesize\def\LTcaptype{none}
 \begin{longtable}[]{@{}
