@@ -32,7 +32,7 @@ kritisch   & „Uzun. 0:1. Dahoud mit der Vorlage. Dortmunds Abwehr unsortiert. 
 \end{longtable}
 }
 
-Das neutrale Profil beschreibt das Ereignis sachlich und vollständig, das euphorische setzt auf Ausrufe und emotionale Verdichtung, das kritische benennt Ergebnis und taktische Einordnung ohne Jubel.
+Alle drei Profile transportieren dieselben Kernfakten — Torschütze, Spielstand, Minute — unterscheiden sich aber deutlich in Verdichtungsgrad und emotionalem Register.
 
 \subsection{Manuelle Fehleranalyse}\label{qualitative-analyse-der-generierten-texte}
 
@@ -72,7 +72,7 @@ Beispiel
 „87. Minute: SILVA! WAS EIN DING! Der Ball zappelt im Netz! 4:0! TOOOOR!''
 \end{quote}
 
-Die häufigste Fehlerklasse ist Stil-Inkonsistenz beim neutralen Profil (8/40, 20\,\%), gefolgt von Wiederholungen stereotyper Satzbausteine (5/40, 13\,\%). Fakten-Halluzinationen traten mit 5\,\% selten auf. Zwei Fehlerklassen traten in keinem der 40 bewerteten Einträge auf: Weder Team-Verwechslungen noch Überlängen wurden beobachtet.
+Die häufigste Fehlerklasse ist Stil-Inkonsistenz beim neutralen Profil (8/40, 20\,\%), gefolgt von Wiederholungen (5/40, 13\,\%) und Fakten-Halluzinationen (2/40, 5\,\%). Team-Verwechslungen und Überlängen traten nicht auf.
 
 
 
@@ -114,7 +114,7 @@ Eine ereignistypspezifische Analyse zeigt, dass Gelbekarten-Ereignisse den Tonal
 
 \section{LLM-Konfigurationsexperimente}\label{llm-konfigurationsexperimente}
 
-Ergänzend zur Hauptevaluation untersuchen vier gezielte Experimente den Einfluss der Konfigurationsparameter Few-Shot-Referenzen (Abschnitt~\ref{few-shot-ablation}), Temperatur (Abschnitt~\ref{temperaturvergleich}), Zielsprache (Abschnitt~\ref{mehrsprachige-verifikation}) und Modellwahl (Abschnitt~\ref{modellvergleich-qualitaet}) auf die Ausgabequalität. Die ersten drei Experimente verwenden \texttt{google/gemini-2.0-flash-lite-001} als Generierungsmodell und \texttt{claude-sonnet-4-5} als Bewerter; die Bewertung erfolgt nach denselben Dimensionen und auf derselben Skala wie in Abschnitt~\ref{evaluation-der-ki-textgenerierung}.
+Ergänzend zur Hauptevaluation untersuchen vier gezielte Experimente den Einfluss der Konfigurationsparameter Few-Shot-Referenzen (Abschnitt~\ref{few-shot-ablation}), Temperatur (Abschnitt~\ref{temperaturvergleich}), Zielsprache (Abschnitt~\ref{mehrsprachige-verifikation}) und Modellwahl (Abschnitt~\ref{modellvergleich-qualitaet}) auf die Ausgabequalität. Generierungsmodell und Bewertungsschema entsprechen durchgehend Abschnitt~\ref{evaluation-der-ki-textgenerierung}; abweichende Konfigurationen werden je Experiment ausgewiesen.
 
 \subsection{Few-Shot-Ablationsstudie}\label{few-shot-ablation}
 
@@ -300,7 +300,7 @@ Frontend-Polling & Ja & bis 15~s & Abschnitt~\ref{frontend-polling} \\
 \end{longtable}
 }
 
-Da ein kontrolliertes Feldexperiment nicht durchführbar war, bleibt die architekturbasierte TTP von $\approx$\,15--40~s eine Potenzialabschätzung. Die manuelle Baseline liegt bei 30--120~s (vgl. Abschnitt~\ref{redaktioneller-aufwand-bei-livetickern}). Der Interviewpartner nannte für typische Ereignisse 30--90~s (vgl. Abschnitt~\ref{experteninterview-auswertung}). Für den \texttt{coop}-Modus erhöht sich die Gesamtpublikationslatenz um die variable redaktionelle Prüfzeit.
+Da ein kontrolliertes Feldexperiment nicht durchführbar war, bleibt die architekturbasierte TTP von $\approx$\,15--40~s eine Potenzialabschätzung. Die manuelle Baseline liegt bei 30--120~s (vgl. Abschnitt~\ref{redaktioneller-aufwand-bei-livetickern}). Für den \texttt{coop}-Modus erhöht sich die Gesamtpublikationslatenz um die variable redaktionelle Prüfzeit.
 
 
 \section{Anforderungsabgleich}\label{anforderungsabgleich-soll-ist-vergleich}\label{technische-qualitätssicherung}
@@ -346,4 +346,4 @@ N5 & Systemverfügbarkeit & Lifespan-Migrationen, Health-Check-Endpoint, automat
 \end{longtable}
 }
 
-Die Evaluation belegt die technische Realisierbarkeit des Systems. Korrektheit und Vollständigkeit sind überwiegend robust. Tonalität bleibt profil- und kontextabhängig und begründet den zentralen Optimierungsbedarf für den weiteren Ausbau.
+Die Evaluation belegt die technische Realisierbarkeit des Systems und liefert die empirische Grundlage zur Beantwortung der Forschungsfrage. 21 von 22 Anforderungen sind erfüllt. Korrektheit und Vollständigkeit sind über alle Konfigurationen hinweg robust; die Tonalität variiert profil- und ereignistypabhängig und markiert den zentralen Optimierungsbereich, der in Kapitel~\ref{diskussion} eingeordnet wird.
