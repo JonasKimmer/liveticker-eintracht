@@ -1,18 +1,16 @@
 \chapter{Evaluation}\label{evaluation}
 
-Dieses Kapitel evaluiert das in Kapitel~\ref{systemkonzeption} konzipierte und in Kapitel~\ref{implementierung} realisierte System empirisch und schafft damit die Grundlage zur Beantwortung der Forschungsfrage (vgl. Abschnitt~\ref{forschungsfrage}). Die Evaluation erfolgt aus drei Perspektiven: Textqualität der KI-Generierung (Abschnitt~\ref{evaluation-der-ki-textgenerierung}), Performance und Laufzeitverhalten (Abschnitt~\ref{performance-und-laufzeitverhalten}) sowie Anforderungsabgleich als Soll-Ist-Vergleich (Abschnitt~\ref{anforderungsabgleich-soll-ist-vergleich}).
+Dieses Kapitel evaluiert das entwickelte System empirisch und schafft damit die Grundlage zur Beantwortung der Forschungsfrage. Die Evaluation umfasst die Textqualität der KI-Generierung (Abschnitt~\ref{evaluation-der-ki-textgenerierung}), LLM-Konfigurationsexperimente zu Few-Shot, Temperatur und Mehrsprachigkeit (Abschnitt~\ref{llm-konfigurationsexperimente}), das Performance- und Laufzeitverhalten (Abschnitt~\ref{performance-und-laufzeitverhalten}) sowie einen Anforderungsabgleich als Soll-Ist-Vergleich (Abschnitt~\ref{anforderungsabgleich-soll-ist-vergleich}).
 
 
 \section{Evaluation der
 KI-Textgenerierung}\label{evaluation-der-ki-textgenerierung}
 
-Die Evaluation der KI-Textgenerierung untersucht, inwiefern das System journalistische Qualitätsanforderungen hinsichtlich Korrektheit, Tonalität und Vollständigkeit erfüllt. Sie kombiniert einen qualitativen Stilvergleich (Abschnitt~\ref{einfluss-der-stilprofile}), eine manuelle Fehleranalyse (Abschnitt~\ref{qualitative-analyse-der-generierten-texte}) und eine LLM-as-Judge-Evaluation (Abschnitt~\ref{erweiterte-evaluation}) mit drei Zusatzexperimenten zu Few-Shot-Referenzen (Abschnitt~\ref{few-shot-ablation}), Temperaturwahl (Abschnitt~\ref{temperaturvergleich}) und Mehrsprachigkeit (Abschnitt~\ref{mehrsprachige-verifikation}).
-
-Alle Tabellenwerte sind auf zwei Dezimalstellen gerundet. Gesamtwerte wurden aus ungerundeten Rohwerten berechnet und können daher geringfügig von der rechnerischen Mittelung der dargestellten Rundungswerte abweichen.
+Die Evaluation der KI-Textgenerierung untersucht, inwiefern das System journalistische Qualitätsanforderungen hinsichtlich Korrektheit, Tonalität und Vollständigkeit erfüllt. Alle Texte wurden mit \texttt{google/gemini-2.0-flash-lite-001} aus Bundesliga-Spielen der Saison~2025/26 generiert und nach diesen drei Dimensionen auf einer Skala von 1 bis 5 bewertet. Der Abschnitt gliedert sich in einen qualitativen Stilvergleich (Abschnitt~\ref{einfluss-der-stilprofile}), eine manuelle Fehleranalyse (Abschnitt~\ref{qualitative-analyse-der-generierten-texte}) und eine LLM-as-Judge-Evaluation (Abschnitt~\ref{erweiterte-evaluation}).
 
 \subsection{Stilvergleich}\label{einfluss-der-stilprofile}
 
-Die drei Stilprofile (\texttt{neutral}, \texttt{euphorisch}, \texttt{kritisch}) erzeugen für dasselbe Ereignis klar unterscheidbare Texte. Als qualitatives Illustrationsbeispiel dienen drei reale Ausgaben für ein Tor von C.~Uzun in der 2.~Minute (Borussia Dortmund vs.\ Eintracht Frankfurt, 0:1, Vorlage Dahoud), generiert mit Few-Shot-Referenzen ($T\,=\,0{,}5$, \texttt{google/gemini-2.0-flash-lite-001}). Die Texte stammen aus dem Datensatz der Few-Shot-Ablation (vgl.\ Abschnitt~\ref{few-shot-ablation}).
+Zur qualitativen Veranschaulichung werden die Stilprofile \texttt{neutral}, \texttt{euphorisch} und \texttt{kritisch} anhand realer Ausgaben für dasselbe Ereignis verglichen. Als Grundlage dienen drei generierte Einträge für das Tor von C.~Uzun in der 2.~Spielminute des Spiels Borussia Dortmund gegen Eintracht Frankfurt, Endstand 0:1, mit Vorlage von Dahoud.
 
 {\def\LTcaptype{none} % do not increment counter
 \begin{longtable}[]{@{}
@@ -34,11 +32,11 @@ kritisch   & „Uzun. 0:1. Dahoud mit der Vorlage. Dortmunds Abwehr unsortiert. 
 \end{longtable}
 }
 
-\texttt{neutral} beschreibt das Ereignis sachlich und vollständig (LLM-as-Judge: K/T/V\,=\,5/5/5). \texttt{euphorisch} setzt auf Ausrufe, Großschreibung und emotionale Verdichtung (T\,=\,5). \texttt{kritisch} benennt Ergebnis, Vorlage und taktische Einordnung ohne Jubel (T\,=\,4). Der qualitative Vergleich belegt die stilistische Steuerbarkeit des Systems. Die folgenden Abschnitte untersuchen die dabei sichtbar werdenden Fehlerprofile und Qualitätsgrenzen systematischer.
+Das neutrale Profil beschreibt das Ereignis sachlich und vollständig, das euphorische setzt auf Ausrufe und emotionale Verdichtung, das kritische benennt Ergebnis und taktische Einordnung ohne Jubel.
 
 \subsection{Manuelle Fehleranalyse}\label{qualitative-analyse-der-generierten-texte}
 
-40 KI-generierte Ticker-Einträge aus 15 Bundesliga-Spielen der Saison~2025/26 wurden manuell nach \textbf{Korrektheit}, \textbf{Tonalität} und \textbf{Vollständigkeit} bewertet. Die Bewertung erfolgte auf einer Skala von 1 bis 5. Der Bewerter war der Entwickler. Der Gesamtdurchschnitt liegt bei 4{,}3 (Korrektheit Ø~4{,}6, Tonalität Ø~4{,}1, Vollständigkeit Ø~4{,}3). Aufgrund des Ein-Bewerter-Designs ist die Interrater-Reliabilität nicht bestimmbar. Die Ergebnisse sind daher als indikative Qualitätsbefunde zu interpretieren. Konkret ist der Gesamtwert von 4{,}3 als Orientierungswert einzuordnen, nicht als belastbare externe Validierung der Textqualität. Die Analyse identifizierte folgende Fehlerklassen:
+40 Ticker-Einträge aus 15 Spielen wurden manuell bewertet. Der Gesamtdurchschnitt beträgt 4{,}3 (Korrektheit Ø~4{,}6, Tonalität Ø~4{,}1, Vollständigkeit Ø~4{,}3). Da die Bewertung durch den Entwickler erfolgte, sind die Ergebnisse als indikative Qualitätsbefunde zu interpretieren. Die Analyse identifizierte fünf Fehlerklassen, deren Häufigkeit und Ausprägung die folgende Tabelle zusammenfasst.
 
 {\footnotesize\def\LTcaptype{none} % do not increment counter
 \begin{longtable}[]{@{}
@@ -68,34 +66,19 @@ Beispiel
 \end{longtable}
 }
 
-\emph{Beispiel: Tor (euphorisch, Bewertung 5\,/\,5\,/\,5):}
+\emph{Beispiel: euphorischer Eintrag für ein Tor von F.~Silva (Borussia Dortmund vs.\ SC~Freiburg, 87.~Minute):}
 
 \begin{quote}
-„87. Minute: SILVA! WAS EIN DING! Der Ball zappelt im Netz! 4:0! TOOOOR!'' \emph{(F. Silva, Borussia Dortmund vs.~SC Freiburg, 87.~Minute)}
+„87. Minute: SILVA! WAS EIN DING! Der Ball zappelt im Netz! 4:0! TOOOOR!''
 \end{quote}
 
 Die häufigste Fehlerklasse ist Stil-Inkonsistenz beim neutralen Profil (8/40, 20\,\%), gefolgt von Wiederholungen stereotyper Satzbausteine (5/40, 13\,\%). Fakten-Halluzinationen traten mit 5\,\% selten auf. Zwei Fehlerklassen traten in keinem der 40 bewerteten Einträge auf: Weder Team-Verwechslungen noch Überlängen wurden beobachtet.
 
-Um diese manuellen Befunde über eine größere Stichprobe automatisiert abzusichern, wurde ergänzend ein LLM-as-Judge-Verfahren eingesetzt.
 
 
 \subsection{LLM-as-Judge-Evaluation}\label{erweiterte-evaluation}
 
-Das LLM-as-Judge-Verfahren setzt ein vom generierenden Modell verschiedenes Sprachmodell als automatisierten Bewerter ein, der KI-generierte Ausgaben entlang definierter Qualitätsdimensionen beurteilt ohne dass menschliche Annotationen für jeden Bewertungsschritt erforderlich sind (vgl. Zheng et al.~2023, S.~8). Korrelationsstudien zeigen eine moderate Übereinstimmung mit menschlichen Urteilen bei deutlich geringerem Annotationsaufwand (vgl. Zheng et al.~2023, S.~8). Mögliche Bewerterverzerrungen sind dabei zu berücksichtigen und werden in Abschnitt~\ref{methodische-einordnung} diskutiert.
-
-Im vorliegenden Evaluationsdesign bewertet \texttt{claude-sonnet-4-5} als unabhängiges Judge-Modell die N\,=\,80 Einträge aus 30 Bundesliga-Spielen der Saison~2025/26, generiert mit \texttt{google/gemini-2.0-flash-lite-001}, entlang derselben Dimensionen wie in Abschnitt~\ref{qualitative-analyse-der-generierten-texte} (Korrektheit, Tonalität, Vollständigkeit, je 1--5). Der Bewertungsprompt operationalisiert jede Dimension über explizite Ankerskalen und stilspezifische Definitionen. Ausschnitt aus dem Systemprompt:
-
-\begin{quote}\small
-\textbf{KORREKTHEIT (1--5):} 5\,=\,alle Fakten korrekt (Spieler, Team, Minute, Spielstand), 3\,=\,ein klarer Faktenfehler, 1\,=\,grundlegend falsche Fakten oder Halluzination.
-
-\textbf{TONALITÄT (1--5):} neutral\,=\,sachlich, Reporter-Ton, keine Emotionen, euphorisch\,=\,leidenschaftlich, Fan-Perspektive, Jubel, kritisch\,=\,analytisch-bewertend, taktische Einordnung, distanzierter Ton. 5\,=\,Stil vollständig und konsistent, 1\,=\,gegenteiliger Stil.
-
-\textbf{VOLLSTÄNDIGKEIT (1--5):} 5\,=\,alle Schlüsselfakten vorhanden, 3\,=\,zwei Fakten fehlen oder werden nur vage angedeutet, 1\,=\,kaum informativ.
-
-\textbf{Anti-Bias:} Längere Texte sind NICHT automatisch vollständiger. Kreativität und Originalität sind KEIN Bewertungskriterium.
-\end{quote}
-
-Das neutrale Referenzbeispiel aus Abschnitt~\ref{einfluss-der-stilprofile} (K/T/V\,=\,5/5/5) illustriert eine Bewertung mit maximalen Werten je Dimension: sachliche Faktennennung, vollständige Schlüsselangaben, stilkonsistenter Reporter-Ton ohne emotionale Elemente.
+Beim LLM-as-Judge-Verfahren übernimmt ein vom generierenden Modell verschiedenes Sprachmodell die Rolle des Bewerters und beurteilt Ausgaben anhand definierter Qualitätskriterien, ohne dass für jeden Bewertungsschritt menschliche Annotation erforderlich ist (vgl. Zheng et al.~2023, S.~8). Im vorliegenden Design beurteilt \texttt{claude-sonnet-4-5} als unabhängiges Judge-Modell N\,=\,80 Einträge aus 30 Spielen, die Spielereignisse wie Tore, Wechsel und Karten abdecken, wobei 5 eine fehlerfreie, stilkonsistente Ausgabe kennzeichnet und 1 grundlegende Fehler oder Halluzinationen.
 
 {\def\LTcaptype{none} % do not increment counter
 \begin{longtable}[]{@{}
@@ -118,8 +101,6 @@ euphorisch  & 27 & 3{,}22 & 2{,}93 & 3{,}67 & 3{,}27 \\
 \end{longtable}
 }
 
-\emph{K = Korrektheit, T = Tonalität, V = Vollständigkeit (je 1--5). Bewerter: Claude Sonnet~4.5 via OpenRouter. Datenbasis: Football API~v3, Bundesliga Saison 2025/26.}
-
 \begin{figure}[H]
 \centering
 \DiagramQualitaetStilprofil
@@ -127,13 +108,17 @@ euphorisch  & 27 & 3{,}22 & 2{,}93 & 3{,}67 & 3{,}27 \\
 \label{fig:llm-judge-stilprofil}
 \end{figure}
 
-Das neutrale Stilprofil erzielt den höchsten Gesamtwert (4{,}82). Das kritische Profil liegt mit Ø~4{,}32 im Mittelfeld und erreicht insbesondere bei der Vollständigkeit hohe Werte (4{,}58). Das euphorische Profil weist mit Ø~3{,}27 die niedrigsten Werte auf. Die größten Abstände zeigen sich bei Tonalität (2{,}93) und Korrektheit (3{,}22). Die größere Stichprobe bestätigt damit den Befund der manuellen Analyse: Sachlich-neutrale Ausgaben sind am robustesten, stark emotionalisierte Profile fehleranfälliger.
+Das neutrale Stilprofil erzielt den höchsten Gesamtwert (4{,}82). Das kritische Profil liegt mit Ø~4{,}32 im Mittelfeld und erreicht insbesondere bei der Vollständigkeit hohe Werte (4{,}58). Das euphorische Profil weist mit Ø~3{,}27 die niedrigsten Werte auf. Die größten Abstände zeigen sich bei Tonalität (2{,}93) und Korrektheit (3{,}22). Die größere Stichprobe bestätigt den Befund der manuellen Analyse: sachlich-neutrale Ausgaben sind am robustesten, stark emotionalisierte Profile fehleranfälliger.
 
-Eine ereignistypspezifische Analyse zeigt, dass Wechsel-Ereignisse den Tonalitätswert des euphorischen Profils strukturell belasten. Von den euphorisch generierten Wechsel-Einträgen erzielen 59\,\% einen Tonalitätswert T\,\(\leq\)\,3; sechs Einträge erhalten T\,=\,1. Das LLM generiert für Einwechslungen — insbesondere in späten Spielminuten oder bei ungünstigem Spielstand — konsistent skeptisch-resignierte Texte (\emph{„Na, ob das noch was ändert?''}, \emph{„Hoffentlich wird das nix''}) statt des angeforderten euphorischen Stils. Ursache ist eine Übergewichtung des Spielkontexts gegenüber der Stilanweisung: Das Modell bewertet einen Wechsel implizit als Indikator für eine schwierige Spielsituation und wählt einen kontextuell \emph{plausiblen}, aber stilverletzenden Ton. Dieser Befund verweist auf eine strukturelle Grenze kontextsensibler Stilsteuerung, die in Abschnitt~\ref{stilreferenzen} weiter eingeordnet wird.
+Eine ereignistypspezifische Analyse zeigt, dass Wechsel-Ereignisse den Tonalitätswert des euphorischen Profils auffällig belasten: 59\,\% der euphorisch generierten Wechsel-Einträge erzielen T\,\(\leq\)\,3, sechs Einträge erhalten T\,=\,1. Das Modell generiert für Einwechslungen konsistent skeptisch-resignierte Texte wie \emph{„Na, ob das noch was ändert?''} statt des angeforderten euphorischen Stils.
+
+\section{LLM-Konfigurationsexperimente}\label{llm-konfigurationsexperimente}
+
+Ergänzend zur Hauptevaluation untersuchen drei gezielte Experimente den Einfluss der Konfigurationsparameter Few-Shot-Referenzen (Abschnitt~\ref{few-shot-ablation}), Temperatur (Abschnitt~\ref{temperaturvergleich}) und Zielsprache (Abschnitt~\ref{mehrsprachige-verifikation}) auf die Ausgabequalität. Alle Experimente verwenden \texttt{google/gemini-2.0-flash-lite-001} als Generierungsmodell und \texttt{claude-sonnet-4-5} als Bewerter; die Bewertung erfolgt nach denselben Dimensionen und auf derselben Skala wie in Abschnitt~\ref{evaluation-der-ki-textgenerierung}.
 
 \subsection{Few-Shot-Ablationsstudie}\label{few-shot-ablation}
 
-Um den kausalen Beitrag der Stilreferenzen zu isolieren, wurden in einem gepaarten Ablationstest dieselben Events zweimal generiert: einmal mit den drei stilspezifischen Few-Shot-Referenzen aus der Datenbank, einmal ohne. Alle übrigen Parameter blieben konstant (Modell: \texttt{google/gemini-2.0-flash-lite-001}, Temperatur~0{,}5, N\,=\,40 Paare, Saison~2025/26, Bundesliga und Champions League). Da der Eventpool Champions-League-Auswärtsspiele mit Gegentoren einschließt, sind \texttt{euphorisch}-Texte zu solchen Events aus Eintracht-Fan-Perspektive strukturell niedriger bewertet. Die absoluten Profilwerte sind daher nicht direkt mit der Hauptevaluation vergleichbar.
+Um den kausalen Beitrag der Stilreferenzen zu isolieren, wurden in einem gepaarten Ablationstest dieselben Events zweimal generiert: einmal mit Few-Shot-Referenzen, einmal ohne, bei sonst konstanten Parametern ($T\,=\,0{,}5$, N\,=\,40 Paare). Da der Eventpool Champions-League-Auswärtsspiele mit Gegentoren einschließt, sind \texttt{euphorisch}-Werte strukturell niedriger und nicht direkt mit der Hauptevaluation vergleichbar.
 
 {\def\LTcaptype{none}
 \begin{longtable}[]{@{}lrrrrrrrr@{}}
@@ -151,16 +136,11 @@ kritisch   & 3{,}85 & 3{,}54 & 3{,}46 & 3{,}62 & 3{,}46 & 3{,}69 & 3{,}46 & 3{,}
 \end{longtable}
 }
 
-\emph{K\,=\,Korrektheit, T\,=\,Tonalität, V\,=\,Vollständigkeit (je 1--5). Gepaartes Design: gleiche Events, N\,=\,40 Paare. Bewerter: Claude Sonnet~4.5.}
-
 Few-Shot-Referenzen verbessern die Gesamtqualität um $\Delta$\,=\,+0{,}16. Der Effekt ist stilabhängig. Beim \texttt{euphorisch}-Profil steigt die Tonalität um +0{,}85, dem stärksten Einzeleffekt des Experiments. Beim \texttt{neutral}-Profil verbessert sich ebenfalls die Tonalität (+0{,}42), während die Vollständigkeit leicht zurückgeht ($-$0{,}43). Beim \texttt{kritisch}-Profil kehrt sich der Tonalitätseffekt um ($-$0{,}15). Die euphorisch geprägten Referenztexte verlagern das Stilprofil in Richtung emotionaler Wertungen. Die Korrektheit verbessert sich mit Few-Shot bei allen drei Profilen (+0{,}22 bis +0{,}39).
-
-Die Einordnung des Ablationseffekts folgt in Abschnitt~\ref{stilreferenzen}.
-
 
 \subsection{Temperaturvergleich}\label{temperaturvergleich}
 
-Der Temperaturparameter steuert die stochastische Varianz der LLM-Ausgabe. Die Produktionskonfiguration verwendet $T\,=\,0{,}5$ als Kompromiss zwischen sprachlicher Variation und faktischer Präzision (vgl.\ Abschnitt~\ref{temperatur-context}). Zur empirischen Einordnung wurden drei Temperaturwerte verglichen (N\,=\,60, je 20 pro Temperatur, Modell: \texttt{google/gemini-2.0-flash-lite-001}, mit Few-Shot-Referenzen, Saison~2025/26).
+Der Temperaturparameter steuert die stochastische Varianz der LLM-Ausgabe. Zur empirischen Einordnung wurden drei Werte verglichen (N\,=\,60, je 20 pro Temperatur, mit Few-Shot-Referenzen).
 
 {\footnotesize\def\LTcaptype{none}
 \begin{longtable}[]{@{}lrrrrrrrrrrrr@{}}
@@ -178,10 +158,7 @@ kritisch   & 4{,}83 & 3{,}00 & 4{,}00 & 3{,}95 & 4{,}33 & 3{,}67 & 3{,}83 & 3{,}
 \end{longtable}
 }
 
-\emph{K\,=\,Korrektheit, T\,=\,Tonalität, V\,=\,Vollständigkeit (je 1--5). N\,=\,20 je Temperatur (N\,=\,60 gesamt). Bewerter: Claude Sonnet~4.5.}
-
-$T\,=\,0{,}7$ erzielt den höchsten Gesamtwert (Ø~4{,}00), $T\,=\,0{,}5$ den niedrigsten (Ø~3{,}58). Das Ergebnis ist stilabhängig. Für \texttt{neutral} und \texttt{kritisch} schneidet $T\,=\,0{,}7$ am besten ab (4{,}29 bzw.\ 4{,}56). Für \texttt{euphorisch} liefert $T\,=\,0{,}3$ den höchsten Wert (3{,}52). Bei N\,=\,20 Einträgen je Temperatur entfallen je Stilprofil etwa sieben Datenpunkte pro Zelle. Die beobachteten Unterschiede sind daher als Tendenzwerte zu verstehen; aufgrund der kleinen Zellgrößen sind die stilspezifischen Differenzen nicht inferenzstatistisch belastbar. Die Einordnung des Befunds für die Produktionskonfiguration $T\,=\,0{,}5$ folgt in Abschnitt~\ref{temperatur-context}.
-
+$T\,=\,0{,}7$ erzielt den höchsten Gesamtwert (Ø~4{,}00), $T\,=\,0{,}5$ den niedrigsten (Ø~3{,}58). Das Ergebnis ist stilabhängig. Für \texttt{neutral} und \texttt{kritisch} schneidet $T\,=\,0{,}7$ am besten ab (4{,}29 bzw.\ 4{,}56). Für \texttt{euphorisch} liefert $T\,=\,0{,}3$ den höchsten Wert (3{,}52). Bei N\,=\,20 Einträgen je Temperatur entfallen je Stilprofil etwa sieben Datenpunkte pro Zelle. Die beobachteten Unterschiede sind daher als Tendenzwerte zu verstehen; aufgrund der kleinen Zellgrößen sind die stilspezifischen Differenzen nicht inferenzstatistisch belastbar. 
 
 \subsection{Mehrsprachige Qualitätsevaluation}\label{mehrsprachige-verifikation}
 
