@@ -164,7 +164,6 @@ $T\,=\,0{,}7$ erzielt den höchsten Gesamtwert (Ø~4{,}12), $T\,=\,0{,}5$ den ni
 
 Zur Verifikation von F7 (Mehrsprachige Textgenerierung) wurden zunächst 21 Einträge eines Pokalspiels (FV Engers~07 vs.\ Eintracht Frankfurt) mit dem Sprachparameter \texttt{es} (Spanisch) generiert und funktional verifiziert. Alle 21 Aufrufe lieferten Status \texttt{ok}. Sprachspezifische Ausdruckskonventionen wurden korrekt adaptiert (\texttt{TOOOOR!} $\to$ \texttt{GOOOOL!}, Minutenformat \texttt{Minuto~44:}).
 
-Ergänzend wurde eine qualitative LLM-as-Judge-Evaluation durchgeführt: N\,=\,39 Paare aus Bundesliga- und Champions-League-Spielen der Saison~2025/26 wurden parallel auf Deutsch ($T\,=\,0{,}5$, mit Few-Shot) und Spanisch ($T\,=\,0{,}1$, ohne Few-Shot) generiert und von \texttt{claude-sonnet-4-5} nach denselben Dimensionen bewertet. \emph{Hinweis: Da dieser Vergleich Temperatur ($T\,=\,0{,}5$ vs.\ $T\,=\,0{,}1$) und Few-Shot-Einsatz konfundiert, ist er nur explorativ. Ein kontrollierter Vergleich unter identischen Bedingungen folgt anschließend.}
 
 {\def\LTcaptype{none}
 \begin{longtable}[]{@{}lrrrrrrrr@{}}
@@ -175,36 +174,16 @@ Stil & \multicolumn{4}{c}{Deutsch} & \multicolumn{4}{c}{Spanisch} \\
 \endhead
 \bottomrule\noalign{}
 \endlastfoot
-neutral    & 3{,}62 & 4{,}62 & 4{,}08 & 4{,}10 & 3{,}54 & 4{,}08 & 4{,}08 & 3{,}90 \\
-euphorisch & 3{,}54 & 3{,}62 & 3{,}85 & 3{,}67 & 3{,}38 & 4{,}00 & 3{,}38 & 3{,}59 \\
-kritisch   & 3{,}46 & 3{,}23 & 3{,}31 & 3{,}33 & 4{,}00 & 4{,}08 & 4{,}23 & 4{,}10 \\
-\textbf{Gesamt} & \textbf{3{,}54} & \textbf{3{,}82} & \textbf{3{,}74} & \textbf{3{,}70} & \textbf{3{,}64} & \textbf{4{,}05} & \textbf{3{,}90} & \textbf{3{,}86} \\
-\end{longtable}
-}
-
-\emph{K\,=\,Korrektheit, T\,=\,Tonalität, V\,=\,Vollständigkeit (je 1--5). N\,=\,39 Paare. DE: $T\,=\,0{,}5$, mit Few-Shot. ES: $T\,=\,0{,}1$, ohne Few-Shot. Bewerter: Claude Sonnet~4.5.}
-
-Die spanischen Ausgaben erzielen einen höheren Gesamtwert (Ø~3{,}86 vs.\ 3{,}70). Der \texttt{kritisch}-Vorteil ($\Delta\,=\,0{,}77$) ist aufgrund des Konfunds nicht interpretierbar. Zur Trennung der Effekte folgt ein kontrollierter Vergleich (T\,=\,0{,}5, kein Few-Shot für beide Sprachen, N\,=\,21 Paare, Saison~2025/26), dessen Ergebnisse für die finale sprachvergleichende Einordnung maßgeblich sind.
-
-{\def\LTcaptype{none}
-\begin{longtable}[]{@{}lrrrrrrrr@{}}
-\toprule\noalign{}
-Stil & \multicolumn{4}{c}{Deutsch} & \multicolumn{4}{c}{Spanisch} \\
-     & K & T & V & Ø & K & T & V & Ø \\
-\midrule\noalign{}
-\endhead
-\bottomrule\noalign{}
-\endlastfoot
-neutral    & 4{,}00 & 4{,}43 & 4{,}14 & 4{,}19 & 3{,}86 & 4{,}00 & 4{,}00 & 3{,}95 \\
-euphorisch & 3{,}57 & 2{,}86 & 3{,}86 & 3{,}43 & 4{,}14 & 4{,}57 & 3{,}86 & 4{,}19 \\
-kritisch   & 4{,}00 & 3{,}86 & 3{,}57 & 3{,}81 & 3{,}43 & 3{,}29 & 3{,}71 & 3{,}48 \\
-\textbf{Gesamt} & \textbf{3{,}86} & \textbf{3{,}71} & \textbf{3{,}86} & \textbf{3{,}81} & \textbf{3{,}81} & \textbf{3{,}95} & \textbf{3{,}86} & \textbf{3{,}87} \\
+neutral    & 4{,}29 & 4{,}43 & 4{,}14 & 4{,}29 & 4{,}43 & 4{,}43 & 4{,}57 & 4{,}48 \\
+euphorisch & 4{,}00 & 2{,}86 & 3{,}86 & 3{,}57 & 4{,}29 & 4{,}57 & 3{,}86 & 4{,}24 \\
+kritisch   & 4{,}14 & 3{,}86 & 3{,}57 & 3{,}86 & 4{,}00 & 4{,}00 & 4{,}29 & 4{,}10 \\
+\textbf{Gesamt} & \textbf{4{,}14} & \textbf{3{,}71} & \textbf{3{,}86} & \textbf{3{,}90} & \textbf{4{,}24} & \textbf{4{,}33} & \textbf{4{,}24} & \textbf{4{,}27} \\
 \end{longtable}
 }
 
 \emph{K\,=\,Korrektheit, T\,=\,Tonalität, V\,=\,Vollständigkeit (je 1--5). N\,=\,21 Paare. DE und ES: $T\,=\,0{,}5$, kein Few-Shot. Bewerter: Claude Sonnet~4.5.}
 
-Unter kontrollierten Bedingungen kehrt sich der \texttt{kritisch}-Vorteil um: Statt eines spanischen Vorteils von $\Delta\,=\,0{,}77$ zeigt sich ein deutscher Vorteil von $\Delta\,=\,0{,}33$ (3{,}81 vs.\ 3{,}48). Im Gesamtergebnis verbleibt nur ein kleiner spanischer Vorsprung (Ø~3{,}87 vs.\ 3{,}81), getragen vor allem vom \texttt{euphorisch}-Profil ($\Delta\,=\,0{,}76$). Die Einordnung beider Befunde findet sich in Abschnitt~\ref{stilreferenzen}.
+Unter kontrollierten Bedingungen erzielt Spanisch in allen drei Stilprofilen höhere Gesamtwerte. Der stärkste Unterschied zeigt sich beim \texttt{euphorisch}-Profil ($\Delta\,=\,0{,}67$, Ø~4{,}24 vs.\ 3{,}57), wo die spanische Tonalität deutlich besser bewertet wird. Im Gesamtergebnis liegt Spanisch um $\Delta\,=\,0{,}37$ vorne (Ø~4{,}27 vs.\ 3{,}90).
 
 
 
