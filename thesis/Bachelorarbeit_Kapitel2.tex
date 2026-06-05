@@ -90,20 +90,20 @@ Herleitung
 \bottomrule\noalign{}
 \endlastfoot
 F1 & Drei Betriebsmodi (\texttt{auto}, \texttt{coop}, \texttt{manual}) & Kap.~\ref{problemstellung-und-zielsetzung}, \ref{redaktioneller-aufwand-bei-livetickern} \\
-F2 & KI-Textgenerierung für alle Event-Typen & Kap.~\ref{redaktioneller-aufwand-bei-livetickern}, \ref{anforderungsanalyse-am-beispiel-eintracht-frankfurt} \\
-F3 & Drei Stilprofile (neutral, euphorisch, kritisch) & Kap.~\ref{white-label-bedarf-im-profisport} \\
+F2 & KI-Textgenerierung für alle Ereignistypen & Kap.~\ref{redaktioneller-aufwand-bei-livetickern}, \ref{anforderungsanalyse-am-beispiel-eintracht-frankfurt} \\
+F3 & Drei Stilprofile (\texttt{neutral}, \texttt{euphorisch}, \texttt{kritisch}) & Kap.~\ref{white-label-bedarf-im-profisport} \\
 F4 & Stilkonfiguration über vereinsspezifische Referenztexte & Kap.~\ref{white-label-bedarf-im-profisport} \\
-F5 & Ticker-Lifecycle (draft → published / rejected / deleted) & Kap.~\ref{redaktioneller-aufwand-bei-livetickern} \\
+F5 & Ticker-Lifecycle (\texttt{draft} → \texttt{published} / \texttt{rejected} / \texttt{deleted}) & Kap.~\ref{redaktioneller-aufwand-bei-livetickern} \\
 F6 & Slash-Command-gestützte manuelle Ticker-Erstellung & Kap.~\ref{redaktioneller-aufwand-bei-livetickern} (Zeitdruck) \\
 F7 & Mehrsprachige Textgenerierung (Deutsch, Englisch, Spanisch, Französisch) & Kap.~\ref{mehrsprachigkeit-als-herausforderung} \\
 F8 & Automatischer, idempotenter ETL-Datenimport aus externen Sportdatenquellen & Kap.~\ref{redaktioneller-aufwand-bei-livetickern}, \ref{anforderungsanalyse-am-beispiel-eintracht-frankfurt} (Echtzeit-Betrieb) \\
 F9 & Anbieterunabhängige LLM-Integration mit Ausfallsicherheit & Kap.~\ref{redaktioneller-aufwand-bei-livetickern} (Verfügbarkeit) \\
 F10 & Idempotente Generierung und Deduplizierung von Ticker-Einträgen & Kap.~\ref{redaktioneller-aufwand-bei-livetickern} (Korrektheit, Echtzeit-Betrieb) \\
 F11 & Pre-Match-Kontextgenerierung (Verletzungen, H2H-Daten, Spielortinformationen) & Kap.~\ref{redaktioneller-aufwand-bei-livetickern} (Kontextanreicherung) \\
-F12 & Live-Statistik-Updates & Kap.~\ref{redaktioneller-aufwand-bei-livetickern} (Echtzeit) \\
-F13 & Medienintegration (ScorePlay-Bildmaterial, Social-Media-Panels für YouTube, X, Instagram) & Kap.~\ref{ist-zustand-bestehendes-system} (Defizit: fehlende Medienintegration im Altsystem) \\
-F14 & Spielphasen-Management (Anpfiff, Halbzeit, Abpfiff) & Kap.~\ref{redaktioneller-aufwand-bei-livetickern} (Echtzeit-Betrieb) \\
-F15 & Undo nach Publikation & Kap.~\ref{redaktioneller-aufwand-bei-livetickern} (Fehleranfälligkeit unter Zeitdruck) \\
+F12 & Echtzeit-Statistikaktualisierungen & Kap.~\ref{redaktioneller-aufwand-bei-livetickern} (Echtzeit) \\
+F13 & Medienintegration (ScorePlay-Bildmaterial, Social-Media-Panels für YouTube, X, Instagram) & Kap.~\ref{ist-zustand-bestehendes-system} \\
+F14 & Spielphasenverwaltung (Anpfiff, Halbzeit, Abpfiff) & Kap.~\ref{redaktioneller-aufwand-bei-livetickern} (Echtzeit-Betrieb) \\
+F15 & Rückgängig-Funktion nach Publikation & Kap.~\ref{redaktioneller-aufwand-bei-livetickern} (Fehleranfälligkeit unter Zeitdruck) \\
 F16 & REST-API zur umfassenden Systemsteuerung (Modus, Ticker-Lifecycle, Spielverwaltung) & Kap.~\ref{redaktioneller-aufwand-bei-livetickern} (Echtzeit-Betrieb) \\
 F17 & White-Label-Fähigkeit (vereinsspezifische Instanzkonfiguration über Umgebungsvariablen ohne Quellcodeänderung) & Kap.~\ref{white-label-bedarf-im-profisport}, \ref{anforderungsanalyse-am-beispiel-eintracht-frankfurt} \\
 \end{longtable}
@@ -128,9 +128,9 @@ Herleitung
 \endhead
 \bottomrule\noalign{}
 \endlastfoot
-N1 & Responsive UI (Mobile-tauglich) & Kap.~\ref{redaktioneller-aufwand-bei-livetickern} (Einsatzszenarien) \\
+N1 & Mobiloptimierte Benutzeroberfläche & Kap.~\ref{redaktioneller-aufwand-bei-livetickern} (Einsatzszenarien) \\
 N2 & Fehlerresistenz im Frontend & Kap.~\ref{redaktioneller-aufwand-bei-livetickern} (Robustheit) \\
-N3 & Keyboard-First-Bedienung: Kernoperationen (Freigabe, Ablehnung, Modusumschaltung) per Tastatur ohne Mauseinsatz & Kap.~\ref{redaktioneller-aufwand-bei-livetickern} (Zeitdruck) \\
+N3 & Tastaturorientierte Bedienung: Kernoperationen (Freigabe, Ablehnung, Modusumschaltung) ohne Mauseinsatz & Kap.~\ref{redaktioneller-aufwand-bei-livetickern} (Zeitdruck) \\
 N4 & LLM-Antwortlatenz: P95 unter 30\,s im produktiven Betrieb & Kap.~\ref{redaktioneller-aufwand-bei-livetickern} (Echtzeit-Betrieb) \\
 N5 & Systemverfügbarkeit: kein manueller Eingriff erforderlich während eines laufenden Spiels & Kap.~\ref{redaktioneller-aufwand-bei-livetickern} (Echtzeit-Betrieb) \\
 \end{longtable}
