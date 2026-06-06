@@ -316,12 +316,12 @@ Für unvollständige Eingaben gibt der Parser gezielte Hinweise zurück, die im 
 
 Der aktive Modus (\texttt{auto} / \texttt{coop} / \texttt{manual}) wird von \texttt{useTicker} orchestriert, das \texttt{useTickerMode} intern kapselt und beim Laden eines Spiels mit dem in der Datenbank gespeicherten \texttt{ticker\_mode} initialisiert. Modusänderungen werden unmittelbar lokal gesetzt, bevor die Backend-Anfrage abgeschlossen ist, sodass der angezeigte Modus bei fehlschlagender Anfrage beim nächsten Spielladen aus der Datenbank korrigiert wird. Inhaltlich unterscheiden sich die drei Modi im Publikationsverhalten. Im Auto-Modus werden KI-generierte Einträge direkt publiziert, wobei ein ergänzender Frontend-Pfad die Nachsteuerung offener Entwürfe übernimmt und durch Deduplikationslogik gegen Mehrfachverarbeitung abgesichert ist. Im Coop-Modus legt die KI einen Entwurf an, der per \texttt{TAB} freigegeben oder per \texttt{ESC} abgelehnt werden kann. Im manuellen Modus werden Einträge ohne KI-Unterstützung direkt als publiziert angelegt.
 
-Das System ist vollständig per Tastatur bedienbar. \texttt{Ctrl+1} bis \texttt{Ctrl+3} schalten den aktiven Modus, und \texttt{?} öffnet ein Kürzel-Modal mit einer Übersicht aller verfügbaren Kombinationen, ohne dass externe Dokumentation erforderlich ist.
+Das System ist vollständig per Tastatur bedienbar. \texttt{Ctrl+1} bis \texttt{Ctrl+3} schalten den aktiven Modus, und \texttt{?} öffnet ein Kürzel-Modal, das ausschließlich die im aktiven Modus verfügbaren Kombinationen anzeigt. Im \texttt{coop}-Modus werden dabei die meisten Kürzel eingeblendet, da \texttt{TAB} und \texttt{ESC} für die Entwurfsfreigabe hinzukommen, während im \texttt{auto}- und \texttt{manual}-Modus nur die modusübergreifenden Kürzel erscheinen.
 
 \begin{figure}[H]
 \centering
 \includegraphics[width=0.7\textwidth]{frontend_shortcuts.png}
-\caption[Tastaturkürzel-Modal]{Tastaturkürzel-Modal mit allen verfügbaren Kombinationen.}
+\caption[Tastaturkürzel-Modal im Coop-Modus]{Tastaturkürzel-Modal im Coop-Modus mit dem vollständigen Kürzelsatz.}
 \label{fig:frontend-shortcuts}
 \end{figure}
 
