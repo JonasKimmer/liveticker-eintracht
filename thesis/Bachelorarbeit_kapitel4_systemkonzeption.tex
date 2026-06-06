@@ -1,12 +1,12 @@
 \chapter{Systemkonzeption}\label{systemkonzeption}
 
-Dieses Kapitel konkretisiert die Systemarchitektur des Liveticker-Systems. Es gliedert sich in Systemüberblick (Abschnitt~\ref{überblick-und-schichtenmodell}), Backend-Konzeption (Abschnitt~\ref{backend-konzeption}), Datenbankkonzeption (Abschnitt~\ref{datenbankkonzeption}), n8n-Workflow-Konzeption (Abschnitt~\ref{workflow-konzeption-n8n}), LLM-Textgenerierung (Abschnitt~\ref{ki-komponente}), Frontend-Konzeption (Abschnitt~\ref{frontend-konzeption}) sowie Deployment-Konzept (Abschnitt~\ref{deployment-konzept}).
+Dieses Kapitel konkretisiert die Systemarchitektur des Liveticker-Systems. Es gliedert sich in Systemüberblick (Abschnitt~\ref{überblick-und-schichtenmodell}), Backend-Architektur (Abschnitt~\ref{backend-konzeption}), Datenbankarchitektur (Abschnitt~\ref{datenbankkonzeption}), n8n-Workflows (Abschnitt~\ref{workflow-konzeption-n8n}), LLM-Textgenerierung (Abschnitt~\ref{ki-komponente}), Frontend-Architektur (Abschnitt~\ref{frontend-konzeption}) sowie Deployment (Abschnitt~\ref{deployment-konzept}).
 
 
 
 \section{Systemüberblick}\label{überblick-und-schichtenmodell}
 
-Im Systemüberblick werden Schichtenmodell (Abschnitt~\ref{schichtenmodell}), Kommunikations- und Triggerarchitektur (Abschnitt~\ref{kommunikations--und-triggerarchitektur}), White-Label-Konzept (Abschnitt~\ref{partner-team-konzept-und-white-label-steuerung}), Schreibstile (Abschnitt~\ref{schreibstile}) sowie Ticker-Status-Lifecycle und Betriebsmodi (Abschnitt~\ref{status-lifecycle-und-betriebsmodi}) zusammengeführt.
+Im Systemüberblick werden Schichtenmodell (Abschnitt~\ref{schichtenmodell}), Kommunikations- und Triggerarchitektur (Abschnitt~\ref{kommunikations--und-triggerarchitektur}), White-Label-Konfiguration und Schreibstile (Abschnitt~\ref{partner-team-konzept-und-white-label-steuerung}) sowie Ticker-Lifecycle und Betriebsmodi (Abschnitt~\ref{status-lifecycle-und-betriebsmodi}) zusammengeführt.
 
 
 
@@ -23,7 +23,7 @@ Die \textbf{Präsentationsschicht} ist als konfigurierbares White-Label-Frontend
 \begin{figure}[H]
 \centering
 \DiagramSystemArchitektur
-\caption[Systemarchitektur]{Dreischichtige Systemarchitektur mit externen Diensten}
+\caption[Systemarchitektur]{Dreischichtige Systemarchitektur}
 \label{fig:systemarchitektur}
 \end{figure}
 
@@ -42,22 +42,16 @@ Im laufenden Betrieb hält das Frontend den Datenstand über periodisches Pollin
 
 Phasenübergänge schließlich lösen automatisch Folgeprozesse aus, die ohne Frontend-Beteiligung Phasenwechsel-Einträge, Zusammenfassungen und weitere Einträge erzeugen.
 
-\begin{figure}[H]
-\centering
-\DiagramCommunicationFlow
-\caption[Kommunikationsfluss]{Kommunikationsfluss: Frontend, Backend, n8n und externe APIs}
-\label{fig:kommunikationsfluss}
-\end{figure}
 
 
 
-\subsection{Instanzkonfiguration und Schreibstile}\label{partner-team-konzept-und-white-label-steuerung}\label{schreibstile}
+\subsection{White-Label-Konfiguration und Schreibstile}\label{partner-team-konzept-und-white-label-steuerung}\label{schreibstile}
 
 Das System unterscheidet eine vereinsspezifische White-Label-Instanz und eine generische Instanz, denen Spiele über konfigurierbare Teammerkmale zugeordnet werden. Diese Unterscheidung wird im Frontend, in den Integrationspfaden und in den n8n-Workflows durchgängig ausgewertet. Auf Anwendungsebene umfasst eine neue Instanz Branding, Teamzuordnung sowie die Adressierung der angebundenen Dienste. Manuell gepflegte Few-Shot-Referenztexte in der Datenbank bilden den Zielstil der jeweiligen Instanz ab.
 
 Das System unterstützt drei Schreibstile, die Tonalität, Wortwahl und Satzrhythmus der generierten Texte steuern. Während \textbf{neutral} sachliche, faktenorientierte Berichterstattung anstrebt und \textbf{kritisch} einen analytischeren, pointierteren Ton setzt, adressiert \textbf{euphorisch} die Fan-Perspektive mit emotionaler, mitreißender Sprache. In der vereinsspezifischen Instanz ist \textbf{euphorisch} als Standardprofil konfiguriert und wird dort durch zusätzliche Social-Media- und Medienpanels ergänzt.
 
-\subsection{Status-Lifecycle und Betriebsmodi}\label{status-lifecycle-und-betriebsmodi}
+\subsection{Ticker-Lifecycle und Betriebsmodi}\label{status-lifecycle-und-betriebsmodi}
 
 Das System unterscheidet drei Betriebsmodi, die je Spiel konfiguriert werden können und bestimmen, wie Ticker-Einträge erzeugt und veröffentlicht werden.
 
@@ -81,9 +75,9 @@ Jeder Ticker-Eintrag durchläuft ein Statusmodell mit vier Zuständen. \texttt{d
 
 
 
-\section{Backend-Konzeption}\label{backend-konzeption}
+\section{Backend-Architektur}\label{backend-konzeption}
 
-Das Backend ist als API-zentrierte FastAPI-Applikation konzipiert. Die Konzeption behandelt Schichtstruktur (Abschnitt~\ref{interne-schichtstruktur}) und Service-Schicht (Abschnitt~\ref{llm-service-architektur}).
+Das Backend ist als API-zentrierte FastAPI-Applikation konzipiert. Der Abschnitt gliedert sich in Schichtstruktur (Abschnitt~\ref{interne-schichtstruktur}) und Service-Schicht (Abschnitt~\ref{llm-service-architektur}).
 
 \subsection{Schichtstruktur}\label{interne-schichtstruktur}
 
@@ -100,9 +94,9 @@ Der \texttt{TickerService} bündelt die fachlichen Kernfunktionen der Generierun
 Der \texttt{LLMService} ist als provideragnostische Abstraktionsschicht konzipiert. Er nimmt Prompt und Konfigurationsparameter entgegen und delegiert den Aufruf an den jeweils konfigurierten Anbieter, sodass übergeordnete Schichten von konkreten Provider-Implementierungen entkoppelt bleiben. Diese Kapselung erleichtert Modell- und Anbieterwechsel und erhöht die Robustheit gegenüber temporären Anbieterstörungen. Ergänzend übernimmt er die Übersetzung fertiger Ticker-Texte in einem nachgelagerten Schritt. Generierung und Übersetzung sind bewusst unterschiedlich parametrisiert, da Übersetzungen primär Konsistenz sichern sollen, während Generierung stilistische Variation benötigt.
 
 
-\section{Datenbankkonzeption}\label{datenbankkonzeption}
+\section{Datenbankarchitektur}\label{datenbankkonzeption}
 
-Die Datenbankkonzeption beschreibt Datenmodell und Schemadesign (Abschnitt~\ref{schemadesign-prinzipien}) sowie Schreibpfade und Schemaverwaltung (Abschnitt~\ref{persistenzstrategie}).
+Der Abschnitt beschreibt Datenmodell und Schemadesign (Abschnitt~\ref{schemadesign-prinzipien}) sowie Schreibpfade und Schemaverwaltung (Abschnitt~\ref{persistenzstrategie}).
 \subsection{Datenmodell und Schemadesign}\label{schemadesign-prinzipien}
 
 Das Schema gliedert sich in drei Entitätsgruppen: Stammdaten (Saisons, Wettbewerbe, Teams, Spieler), Spieldaten (Spiele, Ereignisse, Lineups, Statistiken) und Redaktionsdaten (Ticker-Einträge, Stilreferenzen, Mediendaten). Die folgende Abbildung zeigt die Entitäten und ihre Beziehungen im Überblick.
@@ -124,11 +118,11 @@ Die \textbf{Indexstrategie} orientiert sich an den häufigsten Abfragemustern. Z
 
 Für die Datenpersistenz werden zwei Schreibpfade unterschieden. Redaktionelle Schreibvorgänge wie Ticker-Einträge und Statusübergänge werden über die ORM-Schicht persistiert, die Validierung und Transaktionskontrolle sicherstellt. Datenimporte aus n8n erfolgen dagegen direkt per SQL, da sich idempotente Schreiboperationen auf Datenbankebene effizienter umsetzen lassen. Alembic übernimmt die Schemaverwaltung durch versionierte Migrationen, wodurch Schemaänderungen reproduzierbar und rückrollbar bleiben.
 
-\section{n8n-Workflow-Konzeption}\label{workflow-konzeption-n8n}
+\section{n8n-Workflows}\label{workflow-konzeption-n8n}
 
-Die n8n-Integrationsschicht orchestriert Datenflüsse zwischen externen Schnittstellen, Datenbank und Backend-Endpunkten. Die Konzeption behandelt Designprinzipien (Abschnitt~\ref{n8n-designprinzipien}) und die daraus abgeleiteten Workflow-Klassen (Abschnitt~\ref{workflow-klassen}).
+Die n8n-Integrationsschicht orchestriert Datenflüsse zwischen externen Schnittstellen, Datenbank und Backend-Endpunkten. Die Konzeption behandelt Workflow-Designprinzipien (Abschnitt~\ref{n8n-designprinzipien}) und die daraus abgeleiteten Workflow-Klassen (Abschnitt~\ref{workflow-klassen}).
 
-\subsection{Designprinzipien}\label{n8n-designprinzipien}
+\subsection{Workflow-Designprinzipien}\label{n8n-designprinzipien}
 
 Um stabilen Betrieb über mehrere Instanzen und erneute Auslösungen hinweg zu gewährleisten, folgen die Workflows fünf Designprinzipien. \textbf{Idempotenz} wird in ereignisgetriebenen Pfaden mehrstufig abgesichert, indem Datenbankschreibvorgänge per Upsert erfolgen, Generierungspfade vor dem LLM-Aufruf auf vorhandene Einträge prüfen und Backend-Endpunkte eine schichtenunabhängige Duplikatkontrolle durchführen. Die \textbf{Fehlerbehandlung} ist bewusst selektiv ausgelegt und konfiguriert automatische Wiederholungen nur in Teilpfaden, in denen kurzzeitige Verbindungsfehler zu erwarten sind.
 
@@ -168,7 +162,7 @@ Die Aufteilung reduziert Kopplung und ermöglicht die unabhängige Anpassung ein
 
 \section{LLM-Textgenerierung}\label{ki-komponente}
 
-Spielereignisse werden kontextbasiert in stilspezifische Ticker-Texte überführt, wobei faktische Zuverlässigkeit und stilistische Steuerbarkeit als zentrale Designziele gelten. Die Konzeption umfasst Generierungspipeline und Prompt-Design (Abschnitt~\ref{generierungspipeline}), Modell- und Provider-Wahl (Abschnitt~\ref{multi-provider-architektur}) sowie Evaluationsstrategie (Abschnitt~\ref{evaluationsstrategie-llm}).
+Spielereignisse werden kontextbasiert in stilspezifische Ticker-Texte überführt, wobei faktische Zuverlässigkeit und stilistische Steuerbarkeit als zentrale Designziele gelten. Die Konzeption umfasst Generierungspipeline und Prompt-Design (Abschnitt~\ref{generierungspipeline}), Modell- und Provider-Wahl (Abschnitt~\ref{multi-provider-architektur}) sowie LLM-Evaluationsstrategie (Abschnitt~\ref{evaluationsstrategie-llm}).
 
 \subsection{Generierungspipeline und Prompt-Design}\label{generierungspipeline}\label{prompt-engineering-strategie}
 
@@ -191,17 +185,17 @@ Das Backend spricht Modelle mehrerer Anbieter über eine einheitliche OpenAI-kom
 
 Standardmäßig ist \textbf{Gemini 2.0 Flash Lite} konfiguriert, ausgewählt auf Basis des Zielkonflikts aus Latenz, Kosten und Qualität für strukturierte Kurztextaufgaben. Da die Tickergenerierung kurze, faktengebundene Ausgaben erfordert, können kleinere Modelle vergleichbare Qualität bei deutlich geringerer Latenz und niedrigeren Kosten erzielen. Die Service-Abstraktion unterstützt darüber hinaus alternative Konfigurationen für Evaluations- und Vergleichsläufe.
 
-\subsection{Evaluationsstrategie}\label{evaluationsstrategie-llm}
+\subsection{LLM-Evaluationsstrategie}\label{evaluationsstrategie-llm}
 
 Die Evaluation operationalisiert die Textqualität anhand drei journalistischer Qualitätsdimensionen. \textbf{Korrektheit} misst die faktische Übereinstimmung mit den Ereignisdaten, \textbf{Tonalität} die stilistische Übereinstimmung mit dem gewählten Profil und \textbf{Vollständigkeit} die Abdeckung relevanter Ereignisinformationen. Für die manuelle Begutachtung werden generierte Texte als strukturierte Stichprobe exportiert.
 
 Die Evaluation kombiniert eine manuelle Stichprobe für qualitative Tiefenschärfe mit dem LLM-as-Judge-Verfahren für skalierbare Vergleiche über Stilprofile, Temperaturen und Modelle hinweg. Als Judge-Modell dient dabei ein vom Generierungsmodell unabhängiges System.
 
-\section{Frontend-Konzeption}\label{frontend-konzeption}
+\section{Frontend-Architektur}\label{frontend-konzeption}
 
-Das Frontend basiert auf React und TypeScript für strukturierte asynchrone Datenverarbeitung und typsichere Schnittstellenabsicherung. Die Frontend-Konzeption umfasst Architekturprinzipien (Abschnitt~\ref{architekturprinzipien}), Datensynchronisation (Abschnitt~\ref{datensynchronisation}) sowie Redaktionsfluss und Layout (Abschnitt~\ref{dreispalten-layout-und-redaktionsfluss}).
+Das Frontend basiert auf React und TypeScript für strukturierte asynchrone Datenverarbeitung und typsichere Schnittstellenabsicherung. Der Abschnitt gliedert sich in Frontend-Architekturprinzipien (Abschnitt~\ref{architekturprinzipien}), Datensynchronisation (Abschnitt~\ref{datensynchronisation}) sowie Redaktionsfluss und Layout (Abschnitt~\ref{dreispalten-layout-und-redaktionsfluss}).
 
-\subsection{Architekturprinzipien}\label{architekturprinzipien}
+\subsection{Frontend-Architekturprinzipien}\label{architekturprinzipien}
 
 Die Frontend-Architektur trennt Zustandslogik und API-Zugriffsschicht, um Änderungen lokal begrenzt zu halten und einzelne Schichten isoliert testbar zu machen. Die Zustands- und Interaktionslogik ist in Custom Hooks ausgelagert, die Navigation, Datensynchronisation, Echtzeitkommunikation und Redaktionsinteraktion abdecken. Latenzsensible Interaktionen aktualisieren zunächst den lokalen UI-Zustand, während die Persistierung asynchron über API-Aufrufe abgeschlossen wird.
 
@@ -217,7 +211,7 @@ Da die LLM-Verarbeitung in n8n asynchron erfolgt, wiederholt das Frontend nach W
 
 \subsection{Redaktionsfluss und Layout}\label{dreispalten-layout-und-redaktionsfluss}
 
-Die Redaktionsoberfläche ist als Dreispalten-Layout konzipiert, das den vollständigen Redaktionsfluss von der Entwurfsprüfung bis zur Publikation abbildet. Die Layoutkonzeption wurde in einem interaktiven Figma-Prototyp ausgearbeitet (vgl.\ Abbildung~\ref{fig:figma-wireframe}).
+Die Redaktionsoberfläche ist als Dreispalten-Layout konzipiert, das den vollständigen Redaktionsfluss von der Entwurfsprüfung bis zur Publikation abbildet. Die Layoutkonzeption wurde in einem interaktiven Figma-Prototyp ausgearbeitet, der als konzeptionelle Ausgangsbasis diente. Im iterativen Entwicklungsprozess wurden Layoutdetails und Interaktionsmuster auf Basis praktischer Erkenntnisse aus dem Live-Betrieb schrittweise verfeinert, sodass die finale Implementierung in einzelnen Bereichen vom Prototyp abweicht.
 
 \begin{figure}[H]
 \centering
@@ -231,7 +225,7 @@ Das linke Panel passt seinen Inhalt an den Betriebsmodus an. Im \texttt{coop}-Mo
 Angesichts des operativen Zeitdrucks im Live-Betrieb unterstützt die Oberfläche zentrale Interaktionen über Tastatursteuerung auf mehreren Ebenen, darunter globale Shortcuts, tastaturbedienbare Auswahl- und Befehlslisten sowie modusspezifische Schnellaktionen. Für die manuelle Texteingabe ist ein Slash-Command-Parser konzipiert, der Phasen- und Event-Einträge direkt ohne Formularnavigation erzeugt. Versehentliche Publikationen lassen sich innerhalb eines kurzen Zeitfensters rückgängig machen, da eine Rückmeldung nach jeder Publikation eine Undo-Option bereitstellt, die den Eintrag in den Entwurfsstatus zurücksetzt. Im \texttt{auto}-Modus wird das linke Panel ausgeblendet und das Layout auf zwei Spalten reduziert, da kein Editierbereich benötigt wird.
 
 
-\section{Deployment-Konzept}\label{deployment-konzept}
+\section{Deployment}\label{deployment-konzept}
 
 Das Deployment-Konzept orientiert sich an zustandsarmen, unabhängig betreibbaren Diensten, umgebungsvariablenbasierter Konfiguration und einer deklarativen Infrastrukturbeschreibung im Repository, die reproduzierbare Deployments sicherstellt. Die White-Label-Ausprägung wird auf Anwendungsebene über Konfiguration und Instanzparameter gesteuert, nicht über getrennte Codebasen.
 

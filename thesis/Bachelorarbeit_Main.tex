@@ -23,6 +23,7 @@
 \usepackage{framed}
 \usepackage{float}
 \usepackage{xfp}
+\usepackage{titlesec}
 \usepackage{calc}
 \usepackage{tikz}
 \usepackage{pgfplots}
@@ -143,6 +144,9 @@
 \newunicodechar{║}{\texttt{||}}
 
 \geometry{inner=4cm, outer=2.5cm, top=2.5cm, bottom=2.5cm}
+
+\titleformat{\chapter}[hang]{\normalfont\LARGE\bfseries}{\thechapter}{0.6em}{}
+\titlespacing*{\chapter}{0pt}{2ex}{1.5ex}
 \onehalfspacing
 \emergencystretch 3em
 
@@ -153,6 +157,14 @@
 \fancyhead[R]{\thepage}
 \lfoot{Bachelorarbeit}
 \rfoot{Jonas Kimmer}
+
+\fancypagestyle{plain}{%
+  \fancyhf{}%
+  \fancyhead[L]{\nouppercase{\leftmark}}%
+  \fancyhead[R]{\thepage}%
+  \lfoot{Bachelorarbeit}%
+  \rfoot{Jonas Kimmer}%
+}
 
 \hypersetup{
     colorlinks=true,
