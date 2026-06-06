@@ -155,6 +155,7 @@
   \vspace*{2ex}%
   {\noindent\normalfont\LARGE\bfseries #1\par\nobreak\vspace{1.5ex}}}
 \makeatother
+\newcounter{savefrontpage}
 \onehalfspacing
 \emergencystretch 3em
 
@@ -311,6 +312,7 @@ VLM       \> Vision-Language Model \\
 
 % CHAPTER 1: EINLEITUNG
 \clearpage
+\setcounter{savefrontpage}{\value{page}}
 \pagenumbering{arabic}
 \input{Bachelorarbeit_Kapitel1}
 
@@ -337,6 +339,8 @@ VLM       \> Vision-Language Model \\
 
 % LITERATURVERZEICHNIS
 \clearpage
+\pagenumbering{roman}
+\setcounter{page}{\value{savefrontpage}}
 \input{Bachelorarbeit_Literaturverzeichnis}
 
 % ANHANG
