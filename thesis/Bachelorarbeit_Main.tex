@@ -24,7 +24,6 @@
 \usepackage{float}
 \usepackage{enumitem}
 \usepackage{xfp}
-\usepackage{titlesec}
 \usepackage{tocloft}
 \renewcommand{\cftchapleader}{\cftdotfill{\cftdotsep}}
 \usepackage{calc}
@@ -148,8 +147,14 @@
 
 \geometry{inner=4cm, outer=2.5cm, top=2.5cm, bottom=2.5cm}
 
-\titleformat{\chapter}[hang]{\normalfont\LARGE\bfseries}{\thechapter}{0.6em}{}
-\titlespacing*{\chapter}{0pt}{2ex}{1.5ex}
+\makeatletter
+\def\@makechapterhead#1{%
+  \vspace*{2ex}%
+  {\noindent\normalfont\LARGE\bfseries\thechapter\hspace{0.6em}#1\par\nobreak\vspace{1.5ex}}}
+\def\@makeschapterhead#1{%
+  \vspace*{2ex}%
+  {\noindent\normalfont\LARGE\bfseries #1\par\nobreak\vspace{1.5ex}}}
+\makeatother
 \onehalfspacing
 \emergencystretch 3em
 
@@ -262,10 +267,7 @@ Veröffentlichung der Arbeit im Internet & & \\[0.5em]
 \tableofcontents
 
 % ABKÜRZUNGSVERZEICHNIS
-\clearpage
-\phantomsection
-\markboth{Abkürzungsverzeichnis}{}
-{\normalfont\LARGE\bfseries Abkürzungsverzeichnis\par\vspace{1.5ex}}%
+\chapter*{Abkürzungsverzeichnis}
 \addcontentsline{toc}{chapter}{Abkürzungsverzeichnis}
 \begin{tabbing}
 \hspace{3.5cm} \= \kill
@@ -303,10 +305,7 @@ VLM       \> Vision-Language Model \\
 \end{tabbing}
 
 % ABBILDUNGSVERZEICHNIS
-\clearpage
-\phantomsection
-\markboth{Abbildungsverzeichnis}{}
-{\normalfont\LARGE\bfseries Abbildungsverzeichnis\par\vspace{1.5ex}}%
+\chapter*{Abbildungsverzeichnis}
 \addcontentsline{toc}{chapter}{Abbildungsverzeichnis}
 \makeatletter\@starttoc{lof}\makeatother
 
