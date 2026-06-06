@@ -192,6 +192,13 @@ App
 \end{verbatim}
 Das \texttt{CenterPanel} enthält die publizierte Ticker-Ansicht, das \texttt{LeftPanel} den redaktionellen Arbeitsbereich mit Ereigniskarten, Editor und Zusammenfassungskomponenten und das \texttt{RightPanel} stellt Statistiken und Aufstellungsdaten bereit. Jedes Panel ist durch eine \texttt{ErrorBoundary}-Instanz gesichert, sodass Rendering-Fehler einzelner Komponenten die übrigen Panels nicht beeinträchtigen. Beim Start zeigt \texttt{LiveTicker} den \texttt{StartScreen}, auf dem der Ticker-Modus vorgewählt und beim Öffnen eines Spiels als \texttt{ticker\_mode} persistiert wird. \texttt{useNavigation} kapselt die Navigationskette und übergibt die Spiel-ID an \texttt{useMatchData}, das die Datensynchronisation startet.
 
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.75\textwidth]{frontend_startscreen.png}
+\caption[StartScreen mit Spiel- und Modusauswahl]{StartScreen mit Spielauswahl und Modusvorwahl in der englischen Benutzeroberfläche.}
+\label{fig:frontend-startscreen}
+\end{figure}
+
 Auf Zustandsebene werden die drei Context-Provider in fester Reihenfolge geschachtelt, wobei \texttt{TickerModeContext} die äußerste und \texttt{TickerActionsContext} die innerste Schicht bildet, sodass tiefere Komponenten automatisch alle übergeordneten Contexts sehen. \texttt{EntryEditor} erhält seine Eingaben ausschließlich über Props von \texttt{CenterPanel}, wodurch die Kopplung an globale Ticker-States auf die Panel-Ebene begrenzt bleibt.
 
 
@@ -339,6 +346,13 @@ Der \texttt{LanguagePicker} ermöglicht die Umschaltung zwischen Deutsch, Englis
 Die vereinsspezifische Instanz erweitert die generische Redaktionsoberfläche um medienspezifische Komponenten. Das \texttt{MediaPickerPanel} wird bei Spielen des konfigurierten Vereins eingeblendet und erlaubt den Import von ScorePlay-Bildern sowie Social-Media-Inhalten verschiedener Plattformen über Importbuttons. Die geladenen Medien erscheinen als anklickbare Kacheln, über die sich Spielphase, Spielminute und ein Freitext ergänzen lassen, bevor der Eintrag direkt publiziert wird. Die Kopfzeile zeigt einen \texttt{EF}-Indikator, der den aktiven euphorischen Schreibstil mit vereinsspezifischen Stilreferenzen signalisiert.
 
 Die instanzspezifische Konfiguration ist über das \texttt{WhitelabelConfig}-Interface typisiert und umfasst Vereinsname, Vereinskennzeichen, Farbwerte sowie die API-Endpunkte für Backend und n8n. Die Werte werden je Einsatzumgebung über Umgebungsvariablen gesetzt, sodass dieselbe Codebasis beide Instanzen bedient.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{frontend_whitelabel.png}
+\caption[Vereinsspezifische Redaktionsoberfläche der Eintracht-Frankfurt-Instanz]{Vereinsspezifische Redaktionsoberfläche der Eintracht-Frankfurt-Instanz mit MediaPickerPanel (Mitte) und \texttt{EF}-Indikator in der Kopfzeile.}
+\label{fig:frontend-whitelabel}
+\end{figure}
 
 
 \section{n8n-Workflows}\label{n8n-workflow-implementierung}
