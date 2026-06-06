@@ -263,6 +263,7 @@ Veröffentlichung der Arbeit im Internet & & \\[0.5em]
 
 % ABKÜRZUNGSVERZEICHNIS
 \chapter*{Abkürzungsverzeichnis}
+\phantomsection
 \markboth{Abkürzungsverzeichnis}{}
 \addcontentsline{toc}{chapter}{Abkürzungsverzeichnis}
 \begin{tabbing}
@@ -301,9 +302,11 @@ VLM       \> Vision-Language Model \\
 \end{tabbing}
 
 % ABBILDUNGSVERZEICHNIS
+\chapter*{Abbildungsverzeichnis}
 \phantomsection
+\markboth{Abbildungsverzeichnis}{}
 \addcontentsline{toc}{chapter}{Abbildungsverzeichnis}
-\listoffigures
+\makeatletter\@starttoc{lof}\makeatother
 
 % CHAPTER 1: EINLEITUNG
 \pagenumbering{arabic}
