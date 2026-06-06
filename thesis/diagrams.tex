@@ -49,8 +49,8 @@
   \draw[arrow] (api)  -- (db);
   \draw[arrow] (api)  -- (fe);
   \draw[arrow] (fe)   -- (api);
-  \draw[arrow] (fe.south) to[out=270, in=270, looseness=0.4]
-    node[below, font=\scriptsize] {Webhook-Trigger} (n8n.south);
+  \draw[arrow] (fe.north) to[out=130, in=50, looseness=0.55]
+    node[above, font=\scriptsize] {Webhook-Trigger} (n8n.north);
 
   % Layer labels below boxes
   \node[below=0.25cm of ext_box,  font=\small\itshape] {Externe Dienste};
@@ -89,21 +89,6 @@
 \end{tikzpicture}%
 }
 
-%% DIAGRAM 4: Event Processing Workflow
-\newcommand{\DiagramEventWorkflow}{%
-\begin{tikzpicture}[node distance=1.8cm, auto]
-  \node[block, text width=2cm] (event) {Event\\Input};
-  \node[block, right of=event, text width=2cm] (dispatch) {Dispatch\\to\\Handlers};
-  \node[block, right of=dispatch, text width=2cm] (enrich) {Enrich Data};
-  \node[block, right of=enrich, text width=2cm] (llm) {LLM Call};
-  \node[block, right of=llm, text width=2cm] (store) {Store\\Ticker};
-  
-  \draw[arrow] (event) -- (dispatch);
-  \draw[arrow] (dispatch) -- (enrich);
-  \draw[arrow] (enrich) -- (llm);
-  \draw[arrow] (llm) -- (store);
-\end{tikzpicture}%
-}
 
 %% DIAGRAM 5: Logical Data Model (simplified ER)
 \newcommand{\DiagramDataModel}{%
@@ -125,37 +110,65 @@
 \end{tikzpicture}%
 }
 
-%% DIAGRAM 6: Communication Flow (Sequence-like but in TikZ)
+%% DIAGRAM 6: Communication Flow
 \newcommand{\DiagramCommunicationFlow}{%
 \begin{tikzpicture}[auto]
-  \tikzset{actor/.style={rectangle, draw, fill=orange!15, text width=2.2cm,
-    text centered, minimum height=1cm, font=\small}}
+  \tikzset{
+    actor/.style={rectangle, draw, fill=orange!15, text width=2.2cm,
+      text centered, minimum height=1cm, font=\small},
+    store/.style={rectangle, draw, fill=green!15, text width=2.0cm,
+      text centered, minimum height=0.9cm, font=\small},
+  }
 
-  % Akteure in festen Abständen
-  \node[actor] (fe)  at (0,   0) {React\\Frontend};
-  \node[actor] (be)  at (4,   0) {FastAPI\\Backend};
-  \node[actor] (n8n) at (8,   0) {n8n\\Workflows};
-  \node[actor] (api) at (12,  0) {Football-API};
+  % Obere Reihe: Laufzeitkomponenten
+  \node[actor] (fe)  at (0,  0) {React\\Frontend};
+  \node[actor] (be)  at (4,  0) {FastAPI\\Backend};
+  \node[actor] (n8n) at (8,  0) {n8n\\Workflows};
+  \node[actor] (api) at (12, 0) {Football-API};
 
-  % Frontend ↔ Backend (REST) — leicht versetzt für saubere Pfeile
-  \draw[arrow] ([yshift= 8pt]fe.east)  -- node[above, font=\scriptsize] {GET /matches}   ([yshift= 8pt]be.west);
-  \draw[arrow] ([yshift=-2pt]be.west)  -- node[below, font=\scriptsize] {JSON response}  ([yshift=-2pt]fe.east);
+  % Untere Reihe: Datenhaltung und KI
+  \node[store] (db)  at (4,  -2.8) {PostgreSQL};
+  \node[store] (llm) at (8,  -2.8) {LLM\\Provider};
 
-  % Backend → Frontend (WebSocket) — gestrichelt, Bogen oben
-  \draw[arrow, dashed] ([yshift=3pt]be.north) to[out=140, in=40]
-    node[above, font=\scriptsize, pos=0.5] {WebSocket (/ws/media)} ([yshift=3pt]fe.north);
+  % Frontend ↔ Backend (REST)
+  \draw[arrow] ([yshift= 7pt]fe.east) -- node[above, font=\scriptsize] {REST}
+               ([yshift= 7pt]be.west);
+  \draw[arrow] ([yshift=-7pt]be.west) -- node[below, font=\scriptsize] {REST}
+               ([yshift=-7pt]fe.east);
+
+  % Backend → Frontend (WebSocket, gestrichelt)
+  \draw[arrow, dashed] (be.north) to[out=145, in=35]
+    node[above, font=\scriptsize] {WebSocket} (fe.north);
+
+  % Frontend → n8n (Webhook-Trigger)
+  \draw[arrow] (fe.north) to[out=55, in=125]
+    node[above, font=\scriptsize] {Webhook-Trigger} (n8n.north);
+
+  % n8n → Backend (POST)
+  \draw[arrow] ([yshift=-5pt]n8n.west) to[out=205, in=335]
+    node[below, font=\scriptsize] {POST /api/v1} ([yshift=-5pt]be.east);
 
   % n8n ↔ Football-API
-  \draw[arrow] ([yshift= 3pt]n8n.east) -- node[above, font=\scriptsize] {HTTP request}  ([yshift= 3pt]api.west);
-  \draw[arrow] ([yshift=-3pt]api.west) -- node[below, font=\scriptsize] {JSON response} ([yshift=-3pt]n8n.east);
+  \draw[arrow] ([yshift= 3pt]n8n.east) -- node[above, font=\scriptsize] {HTTP}
+               ([yshift= 3pt]api.west);
+  \draw[arrow] ([yshift=-3pt]api.west) -- node[below, font=\scriptsize] {JSON}
+               ([yshift=-3pt]n8n.east);
 
-  % n8n → Backend (POST) — Bogen unten, klar getrennt
-  \draw[arrow] ([yshift=-6pt]n8n.west) to[out=200, in=340]
-    node[below, font=\scriptsize, pos=0.5] {POST /api/v1} ([yshift=-6pt]be.east);
+  % Backend → PostgreSQL (ORM, vertikal)
+  \draw[arrow] ([xshift=-4pt]be.south) -- node[left, font=\scriptsize] {ORM}
+               ([xshift=-4pt]db.north);
 
-  % Frontend → n8n (Webhook-Trigger) — Bogen oben, klar sichtbar
-  \draw[arrow] (fe.north) to[out=50, in=130]
-    node[above, font=\scriptsize, pos=0.5] {Webhook-Trigger} (n8n.north);
+  % Backend → LLM Provider
+  \draw[arrow] ([xshift=4pt]be.south) to[out=300, in=165]
+    node[below left, font=\scriptsize] {LLM-Aufruf} (llm.west);
+
+  % n8n → PostgreSQL (direktes SQL)
+  \draw[arrow] ([xshift=-4pt]n8n.south) to[out=260, in=10]
+    node[above right, font=\scriptsize] {SQL} (db.north east);
+
+  % n8n → LLM Provider (vertikal)
+  \draw[arrow] ([xshift=4pt]n8n.south) -- node[right, font=\scriptsize] {LLM-Aufruf}
+               ([xshift=4pt]llm.north);
 
 \end{tikzpicture}%
 }
@@ -163,29 +176,31 @@
 %% DIAGRAM 7: LLM Prompt Engineering Pipeline
 \newcommand{\DiagramPromptPipeline}{%
 \begin{tikzpicture}
-  \tikzset{input/.style={rectangle, draw, fill=orange!15, text width=1.8cm, text centered, minimum height=0.8cm, font=\small}}
+  \tikzset{input/.style={rectangle, draw, fill=orange!15, text width=2.0cm, text centered, minimum height=0.8cm, font=\small}}
   \tikzset{process/.style={rectangle, draw, fill=blue!15, text width=1.6cm, text centered, minimum height=0.8cm, font=\small}}
 
-  % Inputs (left column, 5 nodes, 1.5cm spacing)
-  \node[input] (event)     at (0,  0)    {Event-Typ};
-  \node[input] (facts)     at (0, -1.5)  {Fakten\\(Spieler, Min.)};
-  \node[input] (stilprofil)at (0, -3)    {Stilprofil};
-  \node[input] (context)   at (0, -4.5)  {Match-\\Kontext};
-  \node[input] (fewshot)   at (0, -6)    {Few-Shot\\Referenzen};
+  % Sechs Bausteine (linke Spalte)
+  \node[input] (rolle)    at (0,  0)    {Rollen-\\instruktion};
+  \node[input] (stil)     at (0, -1.4)  {Stil-\\instruktion};
+  \node[input] (fakten)   at (0, -2.8)  {Fakten-\\block};
+  \node[input] (kontext)  at (0, -4.2)  {Kontext-\\block};
+  \node[input] (fewshot)  at (0, -5.6)  {Few-Shot-\\Block};
+  \node[input] (regeln)   at (0, -7.0)  {Regel-\\block};
 
-  % Process (centered vertically at -3)
-  \node[process] (prompt) at (3.5, -3)   {Prompt-\\aufbau};
-  \node[process] (llm)    at (6,   -3)   {LLM\\Call};
-  \node[process] (output) at (8.5, -3)   {Ticker-\\Text};
+  % Verarbeitungsknoten (vertikal zentriert bei -3.5)
+  \node[process] (prompt) at (3.8, -3.5) {Prompt-\\aufbau};
+  \node[process] (llm)    at (6.2, -3.5) {LLM\\Call};
+  \node[process] (output) at (8.6, -3.5) {Ticker-\\Text};
 
-  % Connections
-  \draw[arrow] (event)      -- (prompt);
-  \draw[arrow] (facts)      -- (prompt);
-  \draw[arrow] (stilprofil) -- (prompt);
-  \draw[arrow] (context)    -- (prompt);
-  \draw[arrow] (fewshot)    -- (prompt);
-  \draw[arrow] (prompt) -- (llm);
-  \draw[arrow] (llm)    -- (output);
+  % Verbindungen
+  \draw[arrow] (rolle)   -- (prompt);
+  \draw[arrow] (stil)    -- (prompt);
+  \draw[arrow] (fakten)  -- (prompt);
+  \draw[arrow] (kontext) -- (prompt);
+  \draw[arrow] (fewshot) -- (prompt);
+  \draw[arrow] (regeln)  -- (prompt);
+  \draw[arrow] (prompt)  -- (llm);
+  \draw[arrow] (llm)     -- (output);
 \end{tikzpicture}%
 }
 
@@ -322,39 +337,6 @@
 \end{tikzpicture}%
 }
 
-%% ─── DIAGRAM 14: LLM-Latenz Histogramm (pgfplots) ────────────────────────
-\newcommand{\DiagramLatenzenHistogram}{%
-\begin{tikzpicture}
-\begin{axis}[
-  ybar,
-  bar width=28pt,
-  width=11cm, height=6.5cm,
-  xlabel={Latenz-Intervall (ms)},
-  ylabel={Messungen (N)},
-  ymin=0, ymax=14,
-  ytick={0,2,4,6,8,10,12},
-  xtick={1,2,3,4,5,6},
-  xticklabels={{\scriptsize $<$\,300},
-               {\scriptsize 300\,--\,800},
-               {\scriptsize 800\,--\,1\,100},
-               {\scriptsize 1\,100\,--\,1\,400},
-               {\scriptsize 1\,400\,--\,1\,800},
-               {\scriptsize 1\,800\,--\,2\,200}},
-  xticklabel style={rotate=30, anchor=east, font=\scriptsize},
-  ymajorgrids=true,
-  nodes near coords,
-  nodes near coords style={font=\scriptsize},
-  enlarge x limits=0.15,
-  every axis/.append style={font=\small},
-  title={\small Bimodale Verteilung: Cache-Treffer ($<$300\,ms) vs.\ Kaltgenerierung},
-  title style={font=\small},
-]
-\addplot+[fill=blue!30, draw=blue!60] coordinates {
-  (1,11) (2,0) (3,6) (4,4) (5,3) (6,1)
-};
-\end{axis}
-\end{tikzpicture}%
-}
 
 %% DIAGRAM: Workflow-Timeline (Spieltag-Gantt)
 \newcommand{\DiagramWorkflowTimeline}{%

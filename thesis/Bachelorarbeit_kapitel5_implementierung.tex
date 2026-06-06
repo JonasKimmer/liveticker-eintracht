@@ -194,8 +194,8 @@ Das \texttt{CenterPanel} enthält die publizierte Ticker-Ansicht, das \texttt{Le
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.75\textwidth]{frontend_startscreen.png}
-\caption[StartScreen mit Spiel- und Modusauswahl]{StartScreen mit Spielauswahl und Modusvorwahl in der englischen Benutzeroberfläche.}
+\includegraphics[width=0.85\textwidth]{frontend_startscreen.png}
+\caption[Startseite mit Spielauswahl]{Startseite mit Spielauswahl und Modusvorwahl.}
 \label{fig:frontend-startscreen}
 \end{figure}
 
@@ -320,6 +320,13 @@ Das System ist vollständig per Tastatur bedienbar. \texttt{Ctrl+1} bis \texttt{
 
 \begin{figure}[H]
 \centering
+\includegraphics[width=0.7\textwidth]{frontend_shortcuts.png}
+\caption[Tastaturkürzel-Modal]{Tastaturkürzel-Modal mit allen verfügbaren Kombinationen.}
+\label{fig:frontend-shortcuts}
+\end{figure}
+
+\begin{figure}[H]
+\centering
 \includegraphics[width=\textwidth]{frontend_coop.png}
 \caption[LiveTicker-Editor im Coop-Modus]{LiveTicker-Editor im Coop-Modus mit KI-generierten Entwürfen (links), Publikationsliste (Mitte) und Statistik-Panel (rechts).}
 \label{fig:frontend-coop}
@@ -339,6 +346,13 @@ Für die Nachbearbeitung publizierter Einträge stehen drei Wege bereit. Ein 5-S
 Rendering-Fehler werden pro Panel durch \texttt{ErrorBoundary}-Instanzen abgefangen, sodass ein Absturz einer Komponente die übrigen Panels arbeitsfähig lässt. API-Fehler werden in zwei Stufen behandelt: Kritische Operationen wie Publikation und Generierung geben einen Toast mit Fehlermeldung aus, während Hintergrundfehler aus Polling- und Auto-Import-Prozessen still geloggt werden, um den Redaktionsfluss nicht zu unterbrechen. \texttt{useApiStatus} überwacht \texttt{GET /health} und zeigt einen persistenten Statusindikator (\texttt{ok} / \texttt{degraded} / \texttt{offline}), der Konnektivitätsprobleme frühzeitig sichtbar macht.
 
 Der \texttt{LanguagePicker} ermöglicht die Umschaltung zwischen Deutsch, Englisch, Spanisch und Französisch. Ein Sprachwechsel löst mit einer Entprellverzögerung von 600\,ms \texttt{translateTickerBatch} aus, das alle Ticker-Einträge des aktiven Spiels über den Batch-Übersetzungsendpunkt in die Zielsprache überführt und anschließend neu lädt.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{frontend_multilang.png}
+\caption[Ticker-Einträge nach Sprachumschaltung]{Ticker-Einträge nach Sprachumschaltung ins Englische über den LanguagePicker.}
+\label{fig:frontend-multilang}
+\end{figure}
 
 
 \subsection{White-Label-Erweiterungen}\label{frontend-whitelabel}
