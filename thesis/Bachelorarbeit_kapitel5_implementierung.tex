@@ -1,8 +1,8 @@
 \chapter{Implementierung}\label{implementierung}
 
-Dieses Kapitel beschreibt die Implementierung des Liveticker-Systems als lauffähige Webanwendung und dokumentiert Entscheidungen, die für Laufzeitverhalten, Systemqualität und Betriebsstabilität relevant sind. Das Kapitel gliedert sich in Backend-Implementierung (Abschnitt~\ref{backend-implementierung}), KI-Generierungspipeline (Abschnitt~\ref{ki-generierungspipeline}), Frontend-Implementierung (Abschnitt~\ref{frontend-implementierung}), n8n-Workflow-Implementierung (Abschnitt~\ref{n8n-workflow-implementierung}), Qualitätssicherung und Tests (Abschnitt~\ref{qualituxe4tssicherung-und-tests}) sowie Deployment (Abschnitt~\ref{deployment}).
+Dieses Kapitel beschreibt die Implementierung des Liveticker-Systems als lauffähige Webanwendung und dokumentiert Entscheidungen, die für Laufzeitverhalten, Systemqualität und Betriebsstabilität relevant sind. Das Kapitel gliedert sich in Backend (Abschnitt~\ref{backend-implementierung}), KI-Generierungspipeline (Abschnitt~\ref{ki-generierungspipeline}), Frontend (Abschnitt~\ref{frontend-implementierung}), n8n-Workflows (Abschnitt~\ref{n8n-workflow-implementierung}), Qualitätssicherung und Tests (Abschnitt~\ref{qualituxe4tssicherung-und-tests}) sowie Deployment (Abschnitt~\ref{deployment}).
 
-\section{Backend-Implementierung}\label{backend-implementierung}
+\section{Backend}\label{backend-implementierung}
 
 Das Backend ist als FastAPI-Anwendung mit geschichteter Architektur implementiert. Der Abschnitt gliedert sich in Projektstruktur, Konfiguration und Entry Point (Abschnitt~\ref{projektstruktur-und-application-entry-point}), Datenmodelle und Datenzugriff (Abschnitt~\ref{datenmodelle-datenbankschema-und-api-validierung}), API-Router und Endpunktstruktur (Abschnitt~\ref{api-router-endpunktstruktur}), Ticker-Service, LLM-Service und Fehlerbehandlung (Abschnitt~\ref{ticker-service-domuxe4nenlogik}) sowie Idempotenz und Generierungssteuerung (Abschnitt~\ref{idempotenz-und-generierungssteuerung}).
 
@@ -24,7 +24,7 @@ backend/app/
 \begin{figure}[H]
 \centering
 \DiagramBackendSchichten
-\caption[Backend-Schichtenarchitektur]{Backend-Schichtenarchitektur: Router \textrightarrow{} Service \textrightarrow{} Repository \textrightarrow{} DB}
+\caption[Backend-Schichtenarchitektur]{Backend-Schichtenarchitektur}
 \label{fig:backend-schichten}
 \end{figure}
 
@@ -131,7 +131,7 @@ Die Kontextanreicherung wählt abhängig vom Ereignistyp zwischen zwei Pfaden. F
 \begin{figure}[H]
 \centering
 \DiagramTickerGenerationFlow
-\caption[Ablauf der KI-Generierungspipeline]{Ablauf der KI-Generierungspipeline: Ereignis-Import bis publizierter Ticker-Eintrag}
+\caption[Ablauf der KI-Generierungspipeline]{Ablauf der KI-Generierungspipeline}
 \label{fig:ki-generierungspipeline}
 \end{figure}
 
@@ -164,9 +164,9 @@ Drei Designentscheidungen prägen die Prompt-Struktur. Die Trennung von \texttt{
 Für Ereignisse mit dem Präfix \texttt{pre\_match} wird dem Prompt ein zusätzlicher Instruktionsblock vorangestellt, der Live-Aktionsbegriffe ausschließt und Halluzinationen von Spielszenen vor Anpfiff verhindert. Für die vereinsspezifische Instanz wird ein übermitteltes neutrales Stilprofil serverseitig auf \texttt{euphorisch} überschrieben, damit die Stilbindung unabhängig vom aufrufenden Workflow konsistent greift.
 
 
-\section{Frontend-Implementierung}\label{frontend-implementierung}
+\section{Frontend}\label{frontend-implementierung}
 
-Die Frontend-Implementierung überführt die konzeptionellen Entscheidungen zu Architektur, Zustandsmanagement und Redaktionsfluss in lauffähigen TypeScript-Code. Der Abschnitt gliedert sich in Komponentenhierarchie und Zustandsarchitektur (Abschnitt~\ref{komponentenhierarchie}), Hook-Architektur und Polling (Abschnitt~\ref{hook-architektur}), Kommandoeingabe-Parser (Abschnitt~\ref{slash-command-parser-parsecommand.ts}), Modusimplementierung (Abschnitt~\ref{modusimplementierung-im-frontend}) sowie White-Label-Erweiterungen (Abschnitt~\ref{frontend-whitelabel}).
+Die Frontend-Implementierung überführt die konzeptionellen Entscheidungen zu Architektur, Zustandsmanagement und Redaktionsfluss in lauffähigen TypeScript-Code. Der Abschnitt gliedert sich in Komponentenhierarchie und Zustandsarchitektur (Abschnitt~\ref{komponentenhierarchie}), Hook-Architektur und Polling (Abschnitt~\ref{hook-architektur}), Kommandoeingabe-Parser (Abschnitt~\ref{slash-command-parser-parsecommand.ts}), Betriebsmodi-Steuerung (Abschnitt~\ref{modusimplementierung-im-frontend}) sowie White-Label-Erweiterungen (Abschnitt~\ref{frontend-whitelabel}).
 
 \subsection{Komponentenhierarchie und Zustandsarchitektur}\label{komponentenhierarchie}
 
@@ -220,6 +220,13 @@ Hook & Verantwortlichkeit \\
 }
 
 Weitere Hooks bilden eine ergänzende Funktionsschicht für Navigation, Draft-Verwaltung, Auto-Publikation und Batch-Aktionen.
+
+\begin{figure}[H]
+\centering
+\DiagramCommunicationFlow
+\caption[Kommunikationsfluss der Systemkomponenten]{Kommunikationsfluss der Systemkomponenten}
+\label{fig:kommunikationsfluss}
+\end{figure}
 
 \texttt{useMatchTriggers} kapselt alle Datenimport- und Auslöseeffekte des Frontends. Beim Öffnen eines Spiels startet der Hook mehrere parallele Import-Aufrufe und löst anschließend die Phasentextgenerierung aus. Ist das Spiel bereits in einem fortgeschrittenen Zustand, wird zusätzlich der Nachholendpunkt für fehlende Phasentexte aufgerufen. Da LLM-Aufrufe mehrere Sekunden dauern können, setzt der Hook gestaffelte Reload-Impulse, damit neue Entwürfe ohne Nutzerinteraktion erscheinen.
 
@@ -293,12 +300,12 @@ Für unvollständige Eingaben gibt der Parser gezielte Hinweise zurück, die im 
 \begin{figure}[H]
 \centering
 \includegraphics[width=\textwidth]{frontend_slash_command.png}
-\caption[Kommandoeingabe-Parser]{Kommandoeingabe-Parser: Eingabe \texttt{/g Marmoush SGE} erzeugt einen strukturierten Ticker-Eintrag mit Icon, Minute und formatiertem Text ohne Backend-Aufruf.}
+\caption[Kommandoeingabe-Parser]{Kommandoeingabe-Parser mit Eingabe \texttt{/g~Marmoush~SGE} und generiertem Ticker-Eintrag ohne Backend-Aufruf.}
 \label{fig:frontend-slash-command}
 \end{figure}
 
 
-\subsection{Modusimplementierung}\label{modusimplementierung-im-frontend}
+\subsection{Betriebsmodi-Steuerung}\label{modusimplementierung-im-frontend}
 
 Der aktive Modus (\texttt{auto} / \texttt{coop} / \texttt{manual}) wird von \texttt{useTicker} orchestriert, das \texttt{useTickerMode} intern kapselt und beim Laden eines Spiels mit dem in der Datenbank gespeicherten \texttt{ticker\_mode} initialisiert. Modusänderungen werden unmittelbar lokal gesetzt, bevor die Backend-Anfrage abgeschlossen ist, sodass der angezeigte Modus bei fehlschlagender Anfrage beim nächsten Spielladen aus der Datenbank korrigiert wird. Inhaltlich unterscheiden sich die drei Modi im Publikationsverhalten. Im Auto-Modus werden KI-generierte Einträge direkt publiziert, wobei ein ergänzender Frontend-Pfad die Nachsteuerung offener Entwürfe übernimmt und durch Deduplikationslogik gegen Mehrfachverarbeitung abgesichert ist. Im Coop-Modus legt die KI einen Entwurf an, der per \texttt{TAB} freigegeben oder per \texttt{ESC} abgelehnt werden kann. Im manuellen Modus werden Einträge ohne KI-Unterstützung direkt als publiziert angelegt.
 
@@ -307,13 +314,20 @@ Das System ist vollständig per Tastatur bedienbar. \texttt{Ctrl+1} bis \texttt{
 \begin{figure}[H]
 \centering
 \includegraphics[width=\textwidth]{frontend_coop.png}
-\caption[LiveTicker-Editor im Coop-Modus]{LiveTicker-Editor im Coop-Modus: links KI-generierte Entwürfe (Freigabe per TAB, Ablehnung per ESC), Mitte Publikationsliste, rechts Statistik-Panel.}
+\caption[LiveTicker-Editor im Coop-Modus]{LiveTicker-Editor im Coop-Modus mit KI-generierten Entwürfen (links), Publikationsliste (Mitte) und Statistik-Panel (rechts).}
 \label{fig:frontend-coop}
 \end{figure}
 
 Für die Eingabe von Spielernamen bietet der Editor eine Autovervollständigung. \texttt{useNameAutocomplete} prüft beim Tippen das zuletzt eingegebene Wort gegen die geladene Aufstellungsliste und schlägt Treffer präfixbasiert inline vor. Da die Aufstellung beim Öffnen des Spiels vollständig vorgeladen ist, sind keine zusätzlichen API-Aufrufe nötig, wodurch Tippfehler bei ungewöhnlichen Spielernamen im Live-Betrieb verhindert werden.
 
 Für die Nachbearbeitung publizierter Einträge stehen drei Wege bereit. Ein 5-Sekunden-Rückgängig-Hinweis direkt nach der Publikation ermöglicht das schnelle Zurücknehmen, ein Drei-Punkte-Menü pro Eintrag erlaubt direkte Bearbeitung und nicht-destruktives Löschen, und ein Stornieren-Button setzt einen Eintrag jederzeit in den Entwurfsstatus zurück. Alle drei Wege führen zu keiner irreversiblen Löschung von Datenbankeinträgen.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{frontend_published_entries.png}
+\caption[Publizierte Ticker-Einträge im LeftPanel]{Publizierte Ticker-Einträge im LeftPanel mit Bearbeitungsoptionen über das Drei-Punkte-Menü.}
+\label{fig:frontend-published-entries}
+\end{figure}
 
 Rendering-Fehler werden pro Panel durch \texttt{ErrorBoundary}-Instanzen abgefangen, sodass ein Absturz einer Komponente die übrigen Panels arbeitsfähig lässt. API-Fehler werden in zwei Stufen behandelt: Kritische Operationen wie Publikation und Generierung geben einen Toast mit Fehlermeldung aus, während Hintergrundfehler aus Polling- und Auto-Import-Prozessen still geloggt werden, um den Redaktionsfluss nicht zu unterbrechen. \texttt{useApiStatus} überwacht \texttt{GET /health} und zeigt einen persistenten Statusindikator (\texttt{ok} / \texttt{degraded} / \texttt{offline}), der Konnektivitätsprobleme frühzeitig sichtbar macht.
 
@@ -327,7 +341,7 @@ Die vereinsspezifische Instanz erweitert die generische Redaktionsoberfläche um
 Die instanzspezifische Konfiguration ist über das \texttt{WhitelabelConfig}-Interface typisiert und umfasst Vereinsname, Vereinskennzeichen, Farbwerte sowie die API-Endpunkte für Backend und n8n. Die Werte werden je Einsatzumgebung über Umgebungsvariablen gesetzt, sodass dieselbe Codebasis beide Instanzen bedient.
 
 
-\section{n8n-Workflow-Implementierung}\label{n8n-workflow-implementierung}
+\section{n8n-Workflows}\label{n8n-workflow-implementierung}
 
 Die n8n-Ebene überführt die 17 versionierten Workflows (WF01–WF17) in produktionsfähige Automatisierungsabläufe, die Football-API, Backend und KI-Pipeline zur betrieblichen Gesamtschicht verbinden. Der Abschnitt gliedert sich in Workflow-Überblick (Abschnitt~\ref{workflow-ueberblick}) sowie Workflow-Abläufe (Abschnitt~\ref{kernworkflows-live}).
 
@@ -380,7 +394,7 @@ WF10 übernimmt die Echtzeitverarbeitung neuer Spielereignisse. Nach dem Webhook
 \begin{figure}[H]
 \centering
 \includegraphics[width=\textwidth]{n8n_event_workflow.png}
-\caption[Events-LLM-Workflow (WF10)]{Events-LLM-Workflow (WF10): Webhook-Eingang, UPSERT, Instanz-Routing (\texttt{ef\_whitelabel} / \texttt{generic}), LLM-Trigger und EF-spezifischer Manual-Zweig.}
+\caption[Events-LLM-Workflow WF10]{Events-LLM-Workflow WF10 mit Webhook-Eingang, UPSERT, Instanz-Routing (\texttt{ef\_whitelabel} / \texttt{generic}) und LLM-Trigger.}
 \label{fig:n8n-event-workflow}
 \end{figure}
 
@@ -397,14 +411,14 @@ Die Implementierung wird durch automatisierte Tests in drei Schichten sowie eine
 
 Die Verifikation der n8n-Ebene folgt einem szenariobasierten Ansatz, da das Laufzeitverhalten der Workflows sich einer klassischen Unit-Test-Isolation entzieht. Geprüft werden alle 17 Workflows entlang ihrer operativen Kernpfade, von der Datenimport-Kette über Ereignisverarbeitung und Medienpfade bis zur Spielzeit-Kette. Schwerpunkte bilden die Idempotenz wiederholter Trigger-Aufrufe, der korrekte Eingang von Ereignis-, Prematch-, Statistik- und Mediendaten, das Auslöseverhalten der Spielzeit-Kette bei Phasenwechseln sowie die statusabhängige Generierung im jeweiligen Betriebsmodus. Der Nachweis stützt sich auf die Beobachtung des laufenden Systems: Korrektheit und Vollständigkeit der verarbeiteten Daten werden anhand der Redaktionsoberfläche und persistierter Datenbankzustände beurteilt, die Workflow-Ausführung über die n8n-Protokolle nachvollzogen. Die Verifikation bestätigte das erwartete Systemverhalten in allen geprüften Szenarien.
 
-\subsection{Frontend-Tests (Jest + React Testing Library)}\label{impl-frontend-tests}
+\subsection{Frontend-Tests}\label{impl-frontend-tests}
 
 Das Frontend wird durch 187 Tests mit Jest und React Testing Library abgesichert, aufgeteilt in 55 Hook-Tests, 65 Komponenten-Tests und 67 Utility-Tests. Hook-Tests isolieren Zustandsübergänge von UI-Rendering-Effekten und prüfen über \texttt{renderHook} mit simulierten API-Antworten unter anderem das Reload-Verhalten, den Ticker-Reset bei Spielwechsel sowie die Fehlertoleranz bei fehlschlagenden API-Aufrufen. Komponenten-Tests verifizieren sichtbare Elemente und Interaktionsverhalten gegen den gerenderten DOM. In der Utility-Kategorie entfällt der größte Anteil auf \texttt{parseCommand} mit 29 Testfällen, da seine Ausgabe die Schnittstellendaten der Kommandoeingabe unmittelbar bestimmt und damit die Eingabesicherheit im Live-Betrieb absichert.
 
 Alle 187 Tests werden fehlerfrei ausgeführt. Ergänzend beträgt die statische Typenabdeckung 98{,}02\,\% (18\,665 von 19\,041 Ausdrücken, gemessen mit \texttt{npx type-coverage --detail}), sodass TypeScript-Checks die Laufzeit-Testabdeckung um eine Compile-Zeit-Absicherung der Aufrufsignaturen erweitern.
 
 
-\subsection{Backend-Tests (pytest)}\label{impl-backend-tests}
+\subsection{Backend-Tests}\label{impl-backend-tests}
 
 Das Backend ist mit pytest in 246 Testfällen über 214 Testfunktionen in 14 Dateien abgesichert. Parametrisierte Tests decken Kombinationsfälle ab, darunter unterschiedliche Zielsprachen im Übersetzungspfad und verschiedene Ereignistypen in der Generierungspipeline, ohne Testduplikate zu erzeugen.
 
@@ -412,7 +426,7 @@ Repository-Integrationstests laufen gegen eine isolierte PostgreSQL-Testinstanz 
 
 Alle 246 Testfälle werden fehlerfrei ausgeführt. Die Gesamtabdeckung beträgt 79\,\%, gemessen mit \texttt{pytest-cov}. Datenmodelle, Schemas und Hilfsfunktionen erreichen 97–100\,\%. API-Router und Services weisen niedrigere Werte auf, da Endpunkte für externe Medien-Integrationen und die LLM-Generierungspipeline externe Dienste voraussetzen, die in automatisierten Läufen nicht verfügbar sind. Repositories bleiben aus vergleichbarem Grund unter dem Gesamtschnitt, da Sonderfälle der Conflict-Resolution nur gegen eine Live-Datenbank vollständig prüfbar sind.
 
-\subsection{End-to-End-Tests (Playwright)}\label{impl-e2e-tests}
+\subsection{End-to-End-Tests}\label{impl-e2e-tests}
 
 Die sechs E2E-Tests werden mit Playwright im Chromium-Browser ausgeführt und validieren grundlegende Nutzerinteraktionen gegen die gerenderte Oberfläche, darunter App-Start, Navigation, fehlerfreies Laden und das Öffnen des Tastaturkürzel-Modals. Als eigenständige Testschicht ergänzen sie die Jest-Suite, indem sie das Zusammenspiel von Komponenten, Routing und Zustandsmanagement im realen Browser prüfen, das Unit-Tests nicht abdecken. Die Suite ist so konzipiert, dass sie auch ohne erreichbares Backend ausführbar bleibt, sodass interaktive Elemente zustandsabhängig geprüft werden. Ein Viewport-Test verifiziert ergänzend die korrekte App-Initialisierung auf mobilen Bildschirmgrößen. Alle sechs Tests werden fehlerfrei ausgeführt.
 
