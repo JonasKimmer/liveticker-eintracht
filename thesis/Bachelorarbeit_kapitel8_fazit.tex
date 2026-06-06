@@ -38,6 +38,13 @@ Die Limitationen der Arbeit legen folgende Erweiterungsrichtungen nahe, geordnet
 \item \textbf{Erweiterung des Referenzkorpus:} Ein stilprofilspezifisch aufgebauter Korpus historischer Vereinsticker würde die stilistische Konsistenz über den aktuellen Few-Shot-Ansatz hinaus verbessern.
 \end{itemize}
 
+\paragraph{Langfristig}
+\begin{itemize}\tightlist
+\item \textbf{Ausweitung auf weitere Sportarten:} Die Systemarchitektur ist sportartunabhängig konzipiert, setzt jedoch ereignistypspezifische Context-Builder und Stilreferenzen voraus. Eine Übertragung auf Basketball, Eishockey oder Tennis erfordert die Modellierung sportartspezifischer Ereignistypen sowie den Aufbau eines entsprechenden Referenzkorpus, ohne dass die Kernarchitektur geändert werden müsste.
+\item \textbf{Fine-Tuning auf vereinseigenem Stilkorpus:} Für Instanzen mit ausreichend historischem Textmaterial wäre ein vereinsspezifisches Fine-Tuning gegenüber dem Few-Shot-Ansatz eine strukturelle Verbesserung. Das Modell würde stilistische Konventionen internalisieren statt sie per Prompt-Konditionierung abzurufen, was den Interferenzeffekt zwischen Stilinstruktion und Referenzbeispielen grundsätzlich beseitigen würde.
+\item \textbf{Muttersprachler-Evaluation aller unterstützten Sprachen:} Die Mehrsprachigkeitskomponente ist für Deutsch und Spanisch per LLM-as-Judge verifiziert. Eine externe Bewertung durch Muttersprachler für Englisch, Spanisch und Französisch ist Voraussetzung dafür, die Mehrsprachigkeitsanforderung vollständig als erfüllt einzustufen.
+\end{itemize}
+
 
 
 \section{Schlusswort}\label{schlusswort}
