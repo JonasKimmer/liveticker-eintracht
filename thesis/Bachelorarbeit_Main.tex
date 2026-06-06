@@ -180,6 +180,7 @@
 \date{April 2026}
 
 \begin{document}
+\pagenumbering{roman}
 
 % TITLEPAGE
 \begin{titlepage}
@@ -306,6 +307,7 @@ VLM       \> Vision-Language Model \\
 \addcontentsline{toc}{chapter}{Abbildungsverzeichnis}
 
 % CHAPTER 1: EINLEITUNG
+\pagenumbering{arabic}
 \input{Bachelorarbeit_Kapitel1}
 
 % CHAPTER 2: MOTIVATION UND ANFORDERUNGEN
@@ -330,6 +332,8 @@ VLM       \> Vision-Language Model \\
 \input{Bachelorarbeit_kapitel8_fazit}
 
 % ANHANG
+\pagenumbering{roman}
+\setcounter{page}{1}
 \appendix
 \input{Bachelorarbeit_Appendix}
 
