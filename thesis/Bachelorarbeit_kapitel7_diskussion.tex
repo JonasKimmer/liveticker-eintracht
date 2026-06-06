@@ -1,13 +1,13 @@
 \chapter{Diskussion}\label{diskussion}
 
-Die Evaluation in Kapitel~\ref{evaluation} hat die empirische Grundlage gelegt. Dieses Kapitel ordnet deren Bedeutung, Grenzen und Konsequenzen ein. Die Argumentation folgt einer triangulierenden Logik aus quantitativen Befunden, LLM-as-Judge-Bewertung und externer Praxisperspektive. Der Abschnitt gliedert sich in die Interpretation der Kernergebnisse (Abschnitt~\ref{interpretation-kernergebnisse}), die Diskussion zentraler Designentscheidungen (Abschnitt~\ref{designentscheidungen}), das Experteninterview (Abschnitt~\ref{experteninterview-auswertung}), den Beitrag zur Forschung (Abschnitt~\ref{beitrag-zur-forschung}) sowie Limitationen und Übertragbarkeit (Abschnitt~\ref{kritische-reflexion}).
+Die Evaluation in Kapitel~\ref{evaluation} hat die empirische Grundlage gelegt. Dieses Kapitel ordnet deren Bedeutung, Grenzen und Konsequenzen ein. Die Argumentation folgt einer triangulierenden Logik aus quantitativen Befunden, LLM-as-Judge-Bewertung und externer Praxisperspektive. Der Abschnitt gliedert sich in die Interpretation der Kernergebnisse (Abschnitt~\ref{interpretation-kernergebnisse}), die Diskussion zentraler Entwurfsentscheidungen (Abschnitt~\ref{designentscheidungen}), die Auswertung des Experteninterviews (Abschnitt~\ref{experteninterview-auswertung}), den Beitrag zur Forschung (Abschnitt~\ref{beitrag-zur-forschung}) sowie Limitationen und Übertragbarkeit (Abschnitt~\ref{kritische-reflexion}).
 
 
 \section{Interpretation der Kernergebnisse}\label{interpretation-kernergebnisse}
 
-Der Abschnitt gliedert sich in die Betrachtung der Stilprofile (Abschnitt~\ref{diskussion-stilprofile}), die Analyse des Few-Shot-Effekts (Abschnitt~\ref{diskussion-fewshot}) sowie die Diskussion der Mehrsprachigkeit (Abschnitt~\ref{diskussion-mehrsprachigkeit}).
+Der Abschnitt gliedert sich in Stilprofile und Generierungsqualität (Abschnitt~\ref{diskussion-stilprofile}), die Analyse des Few-Shot-Effekts (Abschnitt~\ref{diskussion-fewshot}) sowie Mehrsprachige Ausgabequalität (Abschnitt~\ref{diskussion-mehrsprachigkeit}).
 
-\subsection{Stilprofile}\label{diskussion-stilprofile}
+\subsection{Stilprofile und Generierungsqualität}\label{diskussion-stilprofile}
 
 Das neutrale Stilprofil erzielt in allen drei Evaluationsverfahren die höchsten Werte und ist damit das robusteste Profil des Systems. Die Ursache liegt in der strukturellen Passung zwischen Stilinstruktion und Aufgabe: Sachliche Beschreibung eines Ereignisses mit Fakten aus dem Prompt ist für das Modell weniger ambivalent als die emotional aufgeladene Konditionierung von \texttt{euphorisch} oder die analytisch-wertende von \texttt{kritisch}. Der hohe Korrektheitswert bestätigt, dass die faktische Grundstruktur des Prompts sauber verarbeitet wird.
 
@@ -21,15 +21,15 @@ Die Few-Shot-Ablation (vgl. Abschnitt~\ref{few-shot-ablation}) belegt, dass Stil
 
 Für \texttt{euphorisch} verstärken die Referenzen genau den emotionalen Register, den die Stilinstruktion fordert. Für \texttt{kritisch} entsteht dagegen eine Interferenz: Das Modell erhält gleichzeitig die Instruktion, analytisch-wertend zu schreiben, und Beispieltexte, die es emotional aufzuladen versuchen. Die Stilinstruktion verliert dabei an Gewicht, weil das Modell die Referenzen als starkes implizites Signal gewichtet. Beim \texttt{neutral}-Profil wirkt der Bias subtiler, weil euphorisch geprägte Texte typischerweise kürzer und ausdrucksstärker sind. Das Modell übernimmt dieses komprimierte Register und lässt ergänzende Kontextinformationen weg, was die Vollständigkeit drückt. Der Zielkonflikt lässt sich daher nicht durch Prompt-Anpassungen allein auflösen, sondern erfordert eine stilprofilspezifisch ausgewählte und erweiterte Referenzbasis.
 
-\subsection{Mehrsprachigkeit}\label{diskussion-mehrsprachigkeit}
+\subsection{Mehrsprachige Ausgabequalität}\label{diskussion-mehrsprachigkeit}
 
 Der Mehrsprachigkeitsvergleich (vgl. Abschnitt~\ref{mehrsprachige-verifikation}) liefert ein überraschendes Ergebnis: Spanische Ausgaben übertreffen deutsche in allen drei Stilprofilen, besonders deutlich beim euphorischen Profil. Das ist erklärungsbedürftig, weil das System für deutschen Kontext entwickelt wurde und die Stilreferenzen ausschließlich auf Deutsch vorliegen.
 
 Zwei Ursachen sind plausibel, ohne dass die vorliegenden Daten zwischen ihnen trennen können. Erstens könnte ein Bewerterbias des Judge-Modells vorliegen: Spanischer Fußballjargon ist im Trainingskorpus großer Sprachmodelle stark vertreten, was dazu führt, dass \texttt{claude-sonnet-4-5} spanische Texte stilistisch vertrauter und damit höher bewertet. Zweitens könnte das Generierungsmodell auf einem umfangreicheren spanischsprachigen Sportkorpus trainiert worden sein, sodass es spanische Stilmuster mit weniger Prompt-Konditionierung abruft. Beide Erklärungen weisen in dieselbe Richtung: Der Befund sagt mehr über die Evaluation als über die tatsächliche Textqualität aus. Eine muttersprachliche Qualitätsprüfung durch externe Rater ist deshalb vor dem produktiven Einsatz in nicht-deutschsprachigen Märkten zwingend.
 
-\section{Zentrale Designentscheidungen}\label{designentscheidungen}
+\section{Zentrale Entwurfsentscheidungen}\label{designentscheidungen}
 
-Drei Designentscheidungen prägen das System maßgeblich und lassen sich auf Basis der Evaluationsbefunde einordnen.
+Drei Entwurfsentscheidungen prägen das System maßgeblich und lassen sich auf Basis der Evaluationsbefunde einordnen.
 
 \subsection{Prompt-Architektur}\label{diskussion-der-prompt-architektur}
 
@@ -37,7 +37,7 @@ Drei Designentscheidungen prägen das System maßgeblich und lassen sich auf Bas
 
 \textbf{Temperatur.} Dass die optimale Einstellung stilabhängig ausfällt (vgl. Abschnitt~\ref{temperaturvergleich}), lässt sich aus der Natur der drei Stilprofile ableiten. Das \texttt{euphorisch}-Profil verlangt ein konsistentes emotionales Register, das bei hoher stochastischer Varianz leicht bricht. Ein niedrigerer Wert hält das Modell enger an der Stilinstruktion, weil der Auswahlraum für das nächste Token kleiner ist. Für \texttt{neutral} und \texttt{kritisch} gilt das Gegenteil: Sprachliche Variation ist hier kein Risiko, sondern eine Anforderung, da monotone Formulierungen bei häufigen Ereignistypen besonders auffallen. Ein höherer Wert verbreitert den Formulierungsraum und wirkt damit direkt der beobachteten Phrasenwiederholung entgegen. Die aktuelle Einheitskonfiguration ist ein Kompromiss, der keines der drei Profile optimal bedient, was eine stilspezifische Parametrierung ohne Architekturänderung nahelegt.
 
-\subsection{Modellwahl}\label{modellauswahl}
+\subsection{Bewertung der Modellwahl}\label{modellauswahl}
 
 Der Modellvergleich (vgl. Abschnitte~\ref{modellvergleich-latenz} und~\ref{modellvergleich-qualitaet}) zeigt, dass die verglichenen Modelle in Qualität und Latenz nah beieinanderliegen. Dass Claude~Haiku~4.5 und GPT-4.1-mini qualitativ gleichauf liegen, deutet darauf hin, dass die Aufgabe für aktuelle Kleinmodelle gut beherrschbar ist: strukturierte Ereignisdaten in kurze, stilkonditionierte Texte zu übersetzen, ist kein Alleinstellungsmerkmal starker Frontier-Modelle mehr. Der gemessene Qualitätsunterschied zu Gemini~2.5~Flash ist messbar, aber gering.
 
@@ -54,7 +54,7 @@ Der \texttt{auto}-Modus verschiebt den Engpass vollständig auf das Modell. Die 
 Der \texttt{coop}-Modus greift einen bekannten Grundsatz redaktioneller Arbeit auf: Einen fertigen Entwurf zu beurteilen ist kognitiv schneller als ihn zu erstellen, weil Lesen und Entscheiden weniger mentale Ressourcen binden als Erinnern, Formulieren und Strukturieren unter Zeitdruck. Die Gesamtlatenz sinkt dadurch strukturell unter die manuelle Baseline, ohne die Qualitätssicherung aufzugeben. Die Aufgabe des Redakteurs verschiebt sich von der Textproduktion zur Textkontrolle — und damit zu einer Tätigkeit, für die journalistische Ausbildung stärker qualifiziert als für schnelles Tippen.
 
 
-\section{Experteninterview}\label{experteninterview-auswertung}
+\section{Auswertung des Experteninterviews}\label{experteninterview-auswertung}
 
 Das leitfadengestützte Experteninterview mit einem Senior Manager Redaktion und Digital Media bei Eintracht Frankfurt ergänzt die Evaluationsbefunde um eine Praxisperspektive, die aus strukturierten Messdaten nicht ableitbar ist. Der folgende Abschnitt beschränkt sich auf Erkenntnisse, die nicht bereits aus der Evaluation folgen.
 
@@ -69,7 +69,7 @@ Die Experteneinschätzung konvergiert in zentralen Punkten mit den Evaluationsbe
 
 \section{Beitrag zur Forschung}\label{beitrag-zur-forschung}
 
-Das vorliegende System ist im Sinne von Hevner et al.\ (2004, S.~77) eine \textbf{Instantiierung}, also ein lauffähiges, produktionsnah bereitgestelltes System, das hybride KI-gestützte Texterstellung mit Human-in-the-Loop in einer realen Organisationsumgebung erprobt (vgl. Abschnitt~\ref{anforderungsabgleich-soll-ist-vergleich}). Die Arbeit leistet drei Beiträge zum aktuellen Forschungsstand.
+Das vorliegende System ist im Sinne von Hevner et al.\ (2004, S.~77) eine Instantiierung, also ein lauffähiges, produktionsnah bereitgestelltes System, das hybride KI-gestützte Texterstellung mit Human-in-the-Loop in einer realen Organisationsumgebung erprobt (vgl. Abschnitt~\ref{anforderungsabgleich-soll-ist-vergleich}). Die Arbeit leistet drei Beiträge zum aktuellen Forschungsstand.
 
 Der \textbf{architektonische Beitrag} besteht im dreistufigen Betriebsmodus-Konzept (\texttt{manual}, \texttt{auto}, \texttt{coop}) als übertragbarem Muster für LLM-gestützte Redaktionssysteme. Die Trennung von Generierung und Publikation ist keine technische Selbstverständlichkeit, sondern eine Designentscheidung mit journalistischer Konsequenz, die redaktionelle Kontrolle zur konfigurierbaren Systemdimension macht. Vergleichbare Arbeiten zur automatisierten Sportberichterstattung (vgl. Abschnitt~\ref{automatisierte-sportberichterstattung}) beschreiben überwiegend templatebasierte Systeme, die Textproduktion automatisieren, redaktionelle Kontrolllogik aber nicht als Designziel behandeln.
 

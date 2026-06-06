@@ -1,13 +1,13 @@
 \chapter{Evaluation}\label{evaluation}
 
-Dieses Kapitel evaluiert das entwickelte System empirisch und schafft damit die Grundlage zur Beantwortung der Forschungsfrage. Die Textqualitätsevaluation in Abschnitt~\ref{evaluation-der-ki-textgenerierung} und die Konfigurationsexperimente in Abschnitt~\ref{llm-konfigurationsexperimente} setzen durchgehend das \textbf{LLM-as-Judge}-Verfahren ein, bei dem ein vom generierenden Modell verschiedenes Sprachmodell die Rolle des Bewerters übernimmt und Ausgaben anhand definierter Qualitätskriterien beurteilt, ohne dass menschliche Annotation erforderlich ist (vgl. Zheng et al.~2023, S.~8). Abschnitt~\ref{performance-und-laufzeitverhalten} bewertet das Laufzeitverhalten, und Abschnitt~\ref{anforderungsabgleich-soll-ist-vergleich} dokumentiert den Anforderungsabgleich.
+Dieses Kapitel evaluiert das entwickelte System empirisch und schafft damit die Grundlage zur Beantwortung der Forschungsfrage. Die Textqualitätsevaluation in Abschnitt~\ref{evaluation-der-ki-textgenerierung} und die Konfigurationsexperimente in Abschnitt~\ref{llm-konfigurationsexperimente} setzen durchgehend das \textbf{LLM-as-Judge}-Verfahren ein, bei dem ein vom generierenden Modell verschiedenes Sprachmodell die Rolle des Bewerters übernimmt und Ausgaben anhand definierter Qualitätskriterien beurteilt, ohne dass menschliche Annotation erforderlich ist (vgl. Zheng et al.~2023, S.~8). Abschnitt~\ref{performance-und-laufzeitverhalten} bewertet das Laufzeitverhalten, und Abschnitt~\ref{anforderungsabgleich-soll-ist-vergleich} dokumentiert den Soll-Ist-Vergleich der Systemanforderungen.
 
 
 \section{Hauptevaluation der Textqualität}\label{evaluation-der-ki-textgenerierung}
 
 Die Evaluation der KI-Textgenerierung untersucht, inwiefern das System journalistische Qualitätsanforderungen hinsichtlich Korrektheit, Tonalität und Vollständigkeit erfüllt. Alle Bewertungen erfolgen auf einer Skala von 1 bis 5, wobei 5 eine fehlerfreie, stilkonsistente Ausgabe kennzeichnet und 1 grundlegende Fehler oder Halluzinationen anzeigt. Als Evaluationskorpus dienen Bundesliga-Spiele der Saison~2025/26 mit Ereignissen wie Toren, Wechseln und Karten. Als Judge-Modell kommt durchgehend \texttt{claude-sonnet-4-5} zum Einsatz, sofern nicht anders angegeben. Abschnitt~\ref{einfluss-der-stilprofile} veranschaulicht die Stilprofile anhand realer Ausgaben, Abschnitt~\ref{erweiterte-evaluation} dokumentiert die quantitative LLM-as-Judge-Bewertung.
 
-\subsection{Stilvergleich}\label{einfluss-der-stilprofile}
+\subsection{Vergleich der Stilprofile}\label{einfluss-der-stilprofile}
 
 Zur qualitativen Veranschaulichung werden die Stilprofile \texttt{neutral}, \texttt{euphorisch} und \texttt{kritisch} anhand realer Ausgaben für dasselbe Ereignis verglichen. Als Grundlage dienen drei generierte Einträge für das Tor von C.~Uzun in der 2.~Spielminute des Spiels Borussia Dortmund gegen Eintracht Frankfurt, Endstand 0:1, mit Vorlage von Dahoud.
 
@@ -36,7 +36,7 @@ Alle drei Profile transportieren dieselben Kernfakten wie Torschütze, Spielstan
 
 
 
-\subsection{Ergebnisse}\label{erweiterte-evaluation}
+\subsection{Ergebnisse der Hauptevaluation}\label{erweiterte-evaluation}
 
 {\def\LTcaptype{none} % do not increment counter
 \begin{longtable}[]{@{}
@@ -168,7 +168,7 @@ Modell & N & Korrektheit & Tonalität & Vollständigkeit & Gesamt \\
 
 Alle drei Modelle erreichen Gesamtwerte über 4{,}0. Claude~Haiku~4.5 und GPT-4.1-mini liegen qualitativ nahezu gleichauf und unterscheiden sich vorwiegend in der Stärkenverteilung über die drei Dimensionen. Gemini~2.5~Flash fällt qualitativ zurück und erzielt mit 591\,ms Median die niedrigste Latenz der drei Modelle.
 
-\section{Performance und Laufzeitverhalten}\label{performance-und-laufzeitverhalten}\label{llm-latenz}
+\section{Systemleistung und Laufzeitverhalten}\label{performance-und-laufzeitverhalten}\label{llm-latenz}
 
 Dieser Abschnitt misst die Generierungslatenz der drei evaluierten LLM-Modelle (Abschnitt~\ref{modellvergleich-latenz}) und leitet daraus das Time-to-Publish-Potenzial der Betriebsmodi ab (Abschnitt~\ref{ttp-abschaetzung}).
 
@@ -227,7 +227,7 @@ Workflow & N & Median (ms) & P95 (ms) \\
 
 Im \texttt{auto}-Modus bestimmt \texttt{WF10} mit einem P95 von 18\,269\,ms die dominante Latenzkomponente, womit die Anforderung N4 (P95\,$<$\,30\,s) deutlich erfüllt ist. Im \texttt{coop}-Modus entfällt die maschinelle Generierungslatenz auf die redaktionelle Freigabe, sodass die systemseitige Veröffentlichungslatenz unter einer Sekunde liegt.
 
-\section{Anforderungsabgleich}\label{anforderungsabgleich-soll-ist-vergleich}\label{technische-qualitätssicherung}
+\section{Soll-Ist-Vergleich der Systemanforderungen}\label{anforderungsabgleich-soll-ist-vergleich}\label{technische-qualitätssicherung}
 
 21 der 22 in Abschnitt~\ref{zusammenfassung-der-systemanforderungen} hergeleiteten Anforderungen sind vollständig erfüllt. Die folgende Tabelle dokumentiert den Nachweis je Anforderung.
 

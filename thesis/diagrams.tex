@@ -43,14 +43,11 @@
   \draw[arrow] (fapi) -- (n8n);
   \draw[arrow] (sp)   -- (n8n);
   \draw[arrow] (llm)  -- (n8n);
-  \draw[arrow] (llm.north) to[out=80, in=155] (api.north west);
-  \draw[arrow] (n8n)  -- (api);
+  \draw[arrow] (n8n)  -- (api) node[midway, above, font=\scriptsize] {Webhook-Trigger};
   \draw[arrow] (n8n)  -- (db);
   \draw[arrow] (api)  -- (db);
   \draw[arrow] (api)  -- (fe);
   \draw[arrow] (fe)   -- (api);
-  \draw[arrow] (fe.north) to[out=130, in=50, looseness=0.55]
-    node[above, font=\scriptsize] {Webhook-Trigger} (n8n.north);
 
   % Layer labels below boxes
   \node[below=0.25cm of ext_box,  font=\small\itshape] {Externe Dienste};

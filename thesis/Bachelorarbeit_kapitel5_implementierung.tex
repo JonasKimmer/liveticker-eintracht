@@ -1,12 +1,12 @@
 \chapter{Implementierung}\label{implementierung}
 
-Dieses Kapitel beschreibt die Implementierung des Liveticker-Systems als lauffähige Webanwendung und dokumentiert Entscheidungen, die für Laufzeitverhalten, Systemqualität und Betriebsstabilität relevant sind. Das Kapitel gliedert sich in Backend (Abschnitt~\ref{backend-implementierung}), KI-Generierungspipeline (Abschnitt~\ref{ki-generierungspipeline}), Frontend (Abschnitt~\ref{frontend-implementierung}), n8n-Workflows (Abschnitt~\ref{n8n-workflow-implementierung}), Qualitätssicherung und Tests (Abschnitt~\ref{qualituxe4tssicherung-und-tests}) sowie Deployment (Abschnitt~\ref{deployment}).
+Dieses Kapitel beschreibt die Implementierung des Liveticker-Systems als lauffähige Webanwendung und dokumentiert Entscheidungen, die für Laufzeitverhalten, Systemqualität und Betriebsstabilität relevant sind. Das Kapitel gliedert sich in Backend-Implementierung (Abschnitt~\ref{backend-implementierung}), KI-Generierungspipeline (Abschnitt~\ref{ki-generierungspipeline}), Frontend-Implementierung (Abschnitt~\ref{frontend-implementierung}), Workflow-Automatisierung mit n8n (Abschnitt~\ref{n8n-workflow-implementierung}), Qualitätssicherung und Tests (Abschnitt~\ref{qualituxe4tssicherung-und-tests}) sowie Deployment und Betriebsinfrastruktur (Abschnitt~\ref{deployment}).
 
-\section{Backend}\label{backend-implementierung}
+\section{Backend-Implementierung}\label{backend-implementierung}
 
-Das Backend ist als FastAPI-Anwendung mit geschichteter Architektur implementiert. Der Abschnitt gliedert sich in Projektstruktur, Konfiguration und Entry Point (Abschnitt~\ref{projektstruktur-und-application-entry-point}), Datenmodelle und Datenzugriff (Abschnitt~\ref{datenmodelle-datenbankschema-und-api-validierung}), API-Router und Endpunktstruktur (Abschnitt~\ref{api-router-endpunktstruktur}), Ticker-Service, LLM-Service und Fehlerbehandlung (Abschnitt~\ref{ticker-service-domuxe4nenlogik}) sowie Idempotenz und Generierungssteuerung (Abschnitt~\ref{idempotenz-und-generierungssteuerung}).
+Das Backend ist als FastAPI-Anwendung mit geschichteter Architektur implementiert. Der Abschnitt gliedert sich in Projektstruktur, Konfiguration und Anwendungseinstiegspunkt (Abschnitt~\ref{projektstruktur-und-application-entry-point}), Datenmodelle, Schemata und Datenzugriff (Abschnitt~\ref{datenmodelle-datenbankschema-und-api-validierung}), API-Router und Endpunktstruktur (Abschnitt~\ref{api-router-endpunktstruktur}), Ticker-Service, LLM-Service und Fehlerbehandlung (Abschnitt~\ref{ticker-service-domuxe4nenlogik}) sowie Idempotenz und Generierungssteuerung (Abschnitt~\ref{idempotenz-und-generierungssteuerung}).
 
-\subsection{Projektstruktur, Konfiguration und Entry Point}\label{projektstruktur-und-application-entry-point}
+\subsection{Projektstruktur, Konfiguration und Anwendungseinstiegspunkt}\label{projektstruktur-und-application-entry-point}
 
 Das Backend ist unter \texttt{backend/app/} in sieben funktionale Pakete gegliedert. Die Trennung von \texttt{utils/} und \texttt{services/} folgt dem Schichtungsprinzip, sodass \texttt{services/} fachliche Logik mit Datenbankzugriff bündelt, während \texttt{utils/} ausschließlich abhängigkeitsarme Hilfsfunktionen enthält.
 
@@ -24,7 +24,7 @@ backend/app/
 \begin{figure}[H]
 \centering
 \DiagramBackendSchichten
-\caption[Backend-Schichtenarchitektur]{Backend-Schichtenarchitektur}
+\caption[Schichtenarchitektur des FastAPI-Backends]{Backend-Schichtenarchitektur.}
 \label{fig:backend-schichten}
 \end{figure}
 
@@ -32,7 +32,7 @@ Die Konfiguration ist in einer zentralen Settings-Schicht gebündelt, die ihre W
 
 Die Datenbankschicht basiert auf synchronem SQLAlchemy, da Datenbankoperationen kurzlaufend sind und ein Wechsel auf asynchrone Persistenz ohne nachgewiesenen Latenzvorteil zusätzliche Komplexität verursachen würde. LLM-Aufrufe und externe API-Aufrufe werden dagegen asynchron ausgeführt, da dort die dominanten Latenzen entstehen. Schema-Migrationen werden beim Start kontrolliert angewendet, sodass ein konsistenter Datenbankschema-Stand über Entwicklungs- und Produktionsumgebungen hinweg sichergestellt ist.
 
-\subsection{Datenmodelle, Schemas und Datenzugriff}\label{datenmodelle-datenbankschema-und-api-validierung}
+\subsection{Datenmodelle, Schemata und Datenzugriff}\label{datenmodelle-datenbankschema-und-api-validierung}
 
 Das Schema umfasst 17 ORM-Modelle (18 Tabellen). Die folgende Übersicht zeigt die Kernentitäten mit ihren relevanten Feldern:
 
@@ -131,14 +131,14 @@ Die Kontextanreicherung wählt abhängig vom Ereignistyp zwischen zwei Pfaden. F
 \begin{figure}[H]
 \centering
 \DiagramTickerGenerationFlow
-\caption[Ablauf der KI-Generierungspipeline]{Ablauf der KI-Generierungspipeline}
+\caption[Ablauf der KI-Generierungspipeline]{Ablauf der KI-Generierungspipeline.}
 \label{fig:ki-generierungspipeline}
 \end{figure}
 
 
 \subsection{Prompt-Design und Stilkonditionierung}\label{prompt-design-stilkonditionierung}
 
-Der Prompt gliedert sich in sechs Module: Rolleninstruktion mit eingebetteter Sprachangabe, \texttt{STIL}, \texttt{FAKTEN}, \texttt{SPIELKONTEXT}, \texttt{STILREFERENZEN} und \texttt{REGELN}. Die modulare Struktur erlaubt es, einzelne Blöcke bei fehlenden Daten wegzulassen, den Stil-Block instanzspezifisch auszutauschen und den Referenzblock pro Aufruf dynamisch zu befüllen, ohne den Prompt-Kern zu verändern. Der folgende Auszug zeigt die Struktur für ein Torereignis im euphorischen Stilprofil:
+Der Prompt gliedert sich in sechs Module: Rolleninstruktion mit eingebetteter Sprachangabe, \textbf{STIL}, \textbf{FAKTEN}, \textbf{SPIELKONTEXT}, \textbf{STILREFERENZEN} und \textbf{REGELN}. Die modulare Struktur erlaubt es, einzelne Blöcke bei fehlenden Daten wegzulassen, den Stil-Block instanzspezifisch auszutauschen und den Referenzblock pro Aufruf dynamisch zu befüllen, ohne den Prompt-Kern zu verändern. Der folgende Auszug zeigt die Struktur für ein Torereignis im euphorischen Stilprofil:
 
 \begin{Shaded}
 \begin{Highlighting}[]
@@ -159,14 +159,14 @@ Der Prompt gliedert sich in sechs Module: Rolleninstruktion mit eingebetteter Sp
 \end{Highlighting}
 \end{Shaded}
 
-Drei Designentscheidungen prägen die Prompt-Struktur. Die Trennung von \texttt{FAKTEN} und \texttt{SPIELKONTEXT} hält faktische Ereignisdaten und spielstandbezogene Rahmendaten getrennt, was es erlaubt, den Kontextblock für Vorberichts-Ereignisse durch spezialisierte Module zu ersetzen. Der \texttt{STILREFERENZEN}-Block überträgt den gewünschten stilistischen Korridor durch bis zu drei zufällig ausgewählte Einträge aus dem nach Ereignistyp, Instanz und Liga gefilterten Referenzpool, ohne das Modell nachzutrainieren. Die Zufallsauswahl verhindert dabei Formulierungswiederholungen bei gleichartigen Ereignissen. Der \texttt{REGELN}-Block bündelt alle expliziten Verbote an einer Stelle, sodass Abweichungen im Betrieb gezielt lokalisierbar bleiben.
+Drei Designentscheidungen prägen die Prompt-Struktur. Die Trennung von \textbf{FAKTEN} und \textbf{SPIELKONTEXT} hält faktische Ereignisdaten und spielstandbezogene Rahmendaten getrennt, was es erlaubt, den Kontextblock für Vorberichts-Ereignisse durch spezialisierte Module zu ersetzen. Der \textbf{STILREFERENZEN}-Block überträgt den gewünschten stilistischen Korridor durch bis zu drei zufällig ausgewählte Einträge aus dem nach Ereignistyp, Instanz und Liga gefilterten Referenzpool, ohne das Modell nachzutrainieren. Die Zufallsauswahl verhindert dabei Formulierungswiederholungen bei gleichartigen Ereignissen. Der \textbf{REGELN}-Block bündelt alle expliziten Verbote an einer Stelle, sodass Abweichungen im Betrieb gezielt lokalisierbar bleiben.
 
 Für Ereignisse mit dem Präfix \texttt{pre\_match} wird dem Prompt ein zusätzlicher Instruktionsblock vorangestellt, der Live-Aktionsbegriffe ausschließt und Halluzinationen von Spielszenen vor Anpfiff verhindert. Für die vereinsspezifische Instanz wird ein übermitteltes neutrales Stilprofil serverseitig auf \texttt{euphorisch} überschrieben, damit die Stilbindung unabhängig vom aufrufenden Workflow konsistent greift.
 
 
-\section{Frontend}\label{frontend-implementierung}
+\section{Frontend-Implementierung}\label{frontend-implementierung}
 
-Die Frontend-Implementierung überführt die konzeptionellen Entscheidungen zu Architektur, Zustandsmanagement und Redaktionsfluss in lauffähigen TypeScript-Code. Der Abschnitt gliedert sich in Komponentenhierarchie und Zustandsarchitektur (Abschnitt~\ref{komponentenhierarchie}), Hook-Architektur und Polling (Abschnitt~\ref{hook-architektur}), Kommandoeingabe-Parser (Abschnitt~\ref{slash-command-parser-parsecommand.ts}), Betriebsmodi-Steuerung (Abschnitt~\ref{modusimplementierung-im-frontend}) sowie White-Label-Erweiterungen (Abschnitt~\ref{frontend-whitelabel}).
+Die Frontend-Implementierung überführt die konzeptionellen Entscheidungen zu Architektur, Zustandsmanagement und Redaktionsfluss in lauffähigen TypeScript-Code. Der Abschnitt gliedert sich in Komponentenhierarchie und Zustandsarchitektur (Abschnitt~\ref{komponentenhierarchie}), Reaktive Datensynchronisation (Abschnitt~\ref{hook-architektur}), Slash-Kommando-Verarbeitung (Abschnitt~\ref{slash-command-parser-parsecommand.ts}), Implementierung der Betriebsmodi-Steuerung (Abschnitt~\ref{modusimplementierung-im-frontend}) sowie White-Label-Erweiterungen (Abschnitt~\ref{frontend-whitelabel}).
 
 \subsection{Komponentenhierarchie und Zustandsarchitektur}\label{komponentenhierarchie}
 
@@ -195,14 +195,14 @@ Das \texttt{CenterPanel} enthält die publizierte Ticker-Ansicht, das \texttt{Le
 \begin{figure}[H]
 \centering
 \includegraphics[width=0.85\textwidth]{frontend_startscreen.png}
-\caption[Startseite mit Spielauswahl]{Startseite mit Spielauswahl und Modusvorwahl.}
+\caption[Startseite des Liveticker-Frontends mit Spielauswahl]{Startseite des Liveticker-Frontends mit Spielauswahl und Modusvorwahl.}
 \label{fig:frontend-startscreen}
 \end{figure}
 
 Auf Zustandsebene werden die drei Context-Provider in fester Reihenfolge geschachtelt, wobei \texttt{TickerModeContext} die äußerste und \texttt{TickerActionsContext} die innerste Schicht bildet, sodass tiefere Komponenten automatisch alle übergeordneten Contexts sehen. \texttt{EntryEditor} erhält seine Eingaben ausschließlich über Props von \texttt{CenterPanel}, wodurch die Kopplung an globale Ticker-States auf die Panel-Ebene begrenzt bleibt.
 
 
-\subsection{Hook-Architektur und Polling}\label{hook-architektur}
+\subsection{Reaktive Datensynchronisation}\label{hook-architektur}
 
 Alle Backend- und n8n-Aufrufe werden über eine zentrale API-Schicht geleitet, die je einen Axios-Client für Backend- und Webhook-Aufrufe instanziiert, sodass beide Kommunikationspfade in Basis-URL und Fehlersemantik unabhängig konfiguriert werden können. Die Schicht ist vollständig typisiert und die Endpunktbasis wird je Deployment-Instanz über Umgebungsvariablen gesetzt, sodass fehlerhafte Aufruf-Signaturen zur Compile-Zeit auffallen und Hooks von konkreten URL-Pfaden entkoppelt bleiben.
 
@@ -231,7 +231,7 @@ Weitere Hooks bilden eine ergänzende Funktionsschicht für Navigation, Draft-Ve
 \begin{figure}[H]
 \centering
 \DiagramCommunicationFlow
-\caption[Kommunikationsfluss der Systemkomponenten]{Kommunikationsfluss der Systemkomponenten}
+\caption[Kommunikationsfluss der Systemkomponenten]{Kommunikationsfluss der Systemkomponenten.}
 \label{fig:kommunikationsfluss}
 \end{figure}
 
@@ -259,9 +259,9 @@ Statistiken, Spielminuten-Sync & 60\,s & Live, PreMatch, ToBeConfirmed \\
 \texttt{useLiveMinute} leitet die angezeigte Spielminute primär aus \texttt{match.minute} ab, das von n8n bei Spielminuten-Aktualisierungen gesetzt wird. Fehlt dieser Wert, berechnet der Hook die Minute aus der Anstoßzeit. In der ersten Halbzeit entspricht sie den seit Anpfiff vergangenen Minuten, in der zweiten wird der Halbzeitblock herausgerechnet und der Zähler fortgesetzt.
 
 
-\subsection{Kommandoeingabe-Parser}\label{slash-command-parser-parsecommand.ts}
+\subsection{Slash-Kommando-Verarbeitung}\label{slash-command-parser-parsecommand.ts}
 
-Der Kommandoeingabe-Parser verarbeitet Kommandoeingaben vollständig clientseitig und wandelt sie ohne Backend-Aufruf in strukturierte Ticker-Texte um, wodurch im zeitkritischen Live-Betrieb keine Netzwerklatenz entsteht. Das Ergebnisobjekt enthält Typ, formatierten Text, Warnungen und Gültigkeitsstatus sowie Metadaten zu Icon, Phase und Minute. Die Kommandos gliedern sich in zwei Typen:
+Die Slash-Kommando-Verarbeitung erfolgt vollständig clientseitig und wandelt Kommandoeingaben ohne Backend-Aufruf in strukturierte Ticker-Texte um, wodurch im zeitkritischen Live-Betrieb keine Netzwerklatenz entsteht. Das Ergebnisobjekt enthält Typ, formatierten Text, Warnungen und Gültigkeitsstatus sowie Metadaten zu Icon, Phase und Minute. Die Kommandos gliedern sich in zwei Typen:
 
 \begin{itemize}\tightlist
 \item \textbf{Phasenkommandos} erzeugen vordefinierte Texte mit optionaler Minutenangabe. Die folgende Tabelle zeigt eine Auswahl:
@@ -307,12 +307,12 @@ Für unvollständige Eingaben gibt der Parser gezielte Hinweise zurück, die im 
 \begin{figure}[H]
 \centering
 \includegraphics[width=\textwidth]{frontend_slash_command.png}
-\caption[Kommandoeingabe-Parser]{Kommandoeingabe-Parser mit Eingabe \texttt{/g~Marmoush~SGE} und generiertem Ticker-Eintrag ohne Backend-Aufruf.}
+\caption[Slash-Kommando-Eingabe mit generiertem Ticker-Entwurf]{Slash-Kommando-Eingabe mit Eingabe \texttt{/g~Marmoush~SGE} und generiertem Ticker-Eintrag ohne Backend-Aufruf.}
 \label{fig:frontend-slash-command}
 \end{figure}
 
 
-\subsection{Betriebsmodi-Steuerung}\label{modusimplementierung-im-frontend}
+\subsection{Implementierung der Betriebsmodi-Steuerung}\label{modusimplementierung-im-frontend}
 
 Der aktive Modus (\texttt{auto} / \texttt{coop} / \texttt{manual}) wird von \texttt{useTicker} orchestriert, das \texttt{useTickerMode} intern kapselt und beim Laden eines Spiels mit dem in der Datenbank gespeicherten \texttt{ticker\_mode} initialisiert. Modusänderungen werden unmittelbar lokal gesetzt, bevor die Backend-Anfrage abgeschlossen ist, sodass der angezeigte Modus bei fehlschlagender Anfrage beim nächsten Spielladen aus der Datenbank korrigiert wird. Inhaltlich unterscheiden sich die drei Modi im Publikationsverhalten. Im Auto-Modus werden KI-generierte Einträge direkt publiziert, wobei ein ergänzender Frontend-Pfad die Nachsteuerung offener Entwürfe übernimmt und durch Deduplikationslogik gegen Mehrfachverarbeitung abgesichert ist. Im Coop-Modus legt die KI einen Entwurf an, der per \texttt{TAB} freigegeben oder per \texttt{ESC} abgelehnt werden kann. Im manuellen Modus werden Einträge ohne KI-Unterstützung direkt als publiziert angelegt.
 
@@ -321,7 +321,7 @@ Das System ist vollständig per Tastatur bedienbar. \texttt{Ctrl+1} bis \texttt{
 \begin{figure}[H]
 \centering
 \includegraphics[width=0.7\textwidth]{frontend_shortcuts.png}
-\caption[Tastaturkürzel-Modal im Coop-Modus]{Tastaturkürzel-Modal im Coop-Modus mit dem vollständigen Kürzelsatz.}
+\caption[Tastaturkürzel-Übersicht im Coop-Modus]{Tastaturkürzel-Übersicht im Coop-Modus mit dem vollständigen Kürzelsatz.}
 \label{fig:frontend-shortcuts}
 \end{figure}
 
@@ -339,7 +339,7 @@ Für die Nachbearbeitung publizierter Einträge stehen drei Wege bereit. Ein 5-S
 \begin{figure}[H]
 \centering
 \includegraphics[width=\textwidth]{frontend_published_entries.png}
-\caption[Publizierte Ticker-Einträge im LeftPanel]{Publizierte Ticker-Einträge im LeftPanel mit Bearbeitungsoptionen über das Drei-Punkte-Menü.}
+\caption[Publizierte Ticker-Einträge mit Bearbeitungsoptionen]{Publizierte Ticker-Einträge in der Seitenleiste mit Bearbeitungsoptionen über das Drei-Punkte-Menü.}
 \label{fig:frontend-published-entries}
 \end{figure}
 
@@ -350,7 +350,7 @@ Der \texttt{LanguagePicker} ermöglicht die Umschaltung zwischen Deutsch, Englis
 \begin{figure}[H]
 \centering
 \includegraphics[width=\textwidth]{frontend_multilang.png}
-\caption[Ticker-Einträge nach Sprachumschaltung]{Ticker-Einträge nach Sprachumschaltung in die Zielsprache über den LanguagePicker.}
+\caption[Ticker-Einträge nach Sprachumschaltung]{Ticker-Einträge nach Sprachumschaltung in die Zielsprache über die Sprachauswahl-Komponente.}
 \label{fig:frontend-multilang}
 \end{figure}
 
@@ -364,14 +364,14 @@ Die instanzspezifische Konfiguration ist über das \texttt{WhitelabelConfig}-Int
 \begin{figure}[H]
 \centering
 \includegraphics[width=\textwidth]{frontend_whitelabel.png}
-\caption[Vereinsspezifische Redaktionsoberfläche der Eintracht-Frankfurt-Instanz]{Vereinsspezifische Redaktionsoberfläche der Eintracht-Frankfurt-Instanz mit MediaPickerPanel (Mitte) und \texttt{EF}-Indikator in der Kopfzeile.}
+\caption[Vereinsspezifische Redaktionsoberfläche der Eintracht-Frankfurt-Instanz]{Vereinsspezifische Redaktionsoberfläche der Eintracht-Frankfurt-Instanz mit Medienauswahl-Panel (Mitte) und Vereinskennung in der Kopfzeile.}
 \label{fig:frontend-whitelabel}
 \end{figure}
 
 
-\section{n8n-Workflows}\label{n8n-workflow-implementierung}
+\section{Workflow-Automatisierung mit n8n}\label{n8n-workflow-implementierung}
 
-Die n8n-Ebene überführt die 17 versionierten Workflows (WF01–WF17) in produktionsfähige Automatisierungsabläufe, die Football-API, Backend und KI-Pipeline zur betrieblichen Gesamtschicht verbinden. Der Abschnitt gliedert sich in Workflow-Überblick (Abschnitt~\ref{workflow-ueberblick}) sowie Workflow-Abläufe (Abschnitt~\ref{kernworkflows-live}).
+Die n8n-Ebene überführt die 17 versionierten Workflows (WF01–WF17) in produktionsfähige Automatisierungsabläufe, die Football-API, Backend und KI-Pipeline zur betrieblichen Gesamtschicht verbinden. Der Abschnitt gliedert sich in Workflow-Überblick (Abschnitt~\ref{workflow-ueberblick}) sowie Ablauflogik der Kern-Workflows (Abschnitt~\ref{kernworkflows-live}).
 
 \subsection{Workflow-Überblick}\label{workflow-ueberblick}
 
@@ -409,20 +409,20 @@ Die zeitliche Aktivität der Workflows über einen Spieltag verdeutlicht, wie di
 \begin{figure}[H]
 \centering
 \DiagramWorkflowTimeline
-\caption[Zeitliche Aktivität der n8n-Workflows]{Zeitliche Aktivität der n8n-Workflows über einen Spieltag}
+\caption[Zeitliche Aktivität der n8n-Workflows]{Zeitliche Aktivität der n8n-Workflows über einen Spieltag.}
 \label{fig:workflow-timeline}
 \end{figure}
 
 
 
-\subsection{Workflow-Abläufe}\label{kernworkflows-live}\label{events-llm-workflow}\label{spielzeit-kette}\label{vorbereitung-monitoring}
+\subsection{Ablauflogik der Kern-Workflows}\label{kernworkflows-live}\label{events-llm-workflow}\label{spielzeit-kette}\label{vorbereitung-monitoring}
 
 WF10 übernimmt die Echtzeitverarbeitung neuer Spielereignisse. Nach dem Webhook-Eingang werden alle Ereignisse des Spiels von der Football-API abgerufen und durch einen JavaScript-Knoten normalisiert, der unter anderem gleichzeitige Gelbe und Rote Karten desselben Spielers zu einem Gelb-Rot-Ereignis zusammenführt. Per UPSERT werden die Ereignisse idempotent persistiert, wobei das Rückgabefeld \texttt{is\_new} neue von bereits bekannten Ereignissen trennt. Für neue Ereignisse ohne vorhandenen Ticker-Eintrag wird die KI-Textgenerierung ausgelöst; parallel dazu aktualisiert ein eigener Zweig den Spielstand in der Datenbank. Im \texttt{ef\_whitelabel}-Zweig wird bei Torereignissen ein Torjubel-Eintrag mit Spielervideo angelegt, sofern für den Torschützen eine Video-URL in der Datenbank hinterlegt ist. Wechselt das Spiel in die Elfmeterschießen-Phase und liegt noch kein entsprechender Eintrag vor, ruft ein gesonderter Zweig den aktuellen Penaltystand ab und persistiert das Ergebnis als zusammenfassenden Manualeintrag.
 
 \begin{figure}[H]
 \centering
 \includegraphics[width=\textwidth]{n8n_event_workflow.png}
-\caption[Events-LLM-Workflow WF10]{Events-LLM-Workflow WF10 mit Webhook-Eingang, UPSERT, Instanz-Routing (\texttt{ef\_whitelabel} / \texttt{generic}) und LLM-Trigger.}
+\caption[Ereignisgesteuerter n8n-Workflow zur LLM-Generierung]{Ereignisgesteuerter n8n-Workflow zur LLM-Generierung (WF10) mit Webhook-Eingang, UPSERT, Instanz-Routing und LLM-Trigger.}
 \label{fig:n8n-event-workflow}
 \end{figure}
 
@@ -459,7 +459,7 @@ Alle 246 Testfälle werden fehlerfrei ausgeführt. Die Gesamtabdeckung beträgt 
 Die sechs End-to-End-Tests werden mit Playwright im Chromium-Browser ausgeführt und validieren grundlegende Nutzerinteraktionen gegen die gerenderte Oberfläche, darunter App-Start, Navigation, fehlerfreies Laden und das Öffnen des Tastaturkürzel-Modals. Als eigenständige Testschicht ergänzen sie die Jest-Suite, indem sie das Zusammenspiel von Komponenten, Routing und Zustandsmanagement im realen Browser prüfen, das Unit-Tests nicht abdecken. Die Suite ist so konzipiert, dass sie auch ohne erreichbares Backend ausführbar bleibt, sodass interaktive Elemente zustandsabhängig geprüft werden. Ein Viewport-Test verifiziert ergänzend die korrekte App-Initialisierung auf mobilen Bildschirmgrößen. Alle sechs Tests werden fehlerfrei ausgeführt.
 
 
-\section{Deployment}\label{deployment}
+\section{Deployment und Betriebsinfrastruktur}\label{deployment}
 
 Das Deployment überführt die vier Systemkomponenten in einen produktionsfähigen Betrieb. Backend und Frontend sind deklarativ konfiguriert, werden bei jedem Repository-Push automatisch neu bereitgestellt und beziehen alle Zugangsdaten ausschließlich aus Umgebungsvariablen. Das FastAPI-Backend wird als Docker-Container auf der PaaS-Plattform Render betrieben, wobei ein Health-Check sicherstellt, dass eingehende Anfragen erst nach erfolgreicher Integritätsprüfung weitergeleitet werden. Das React-Frontend wird als statische Anwendung über ein Content-Delivery-Netzwerk ausgeliefert, wobei eine serverseitige Umleitungsregel das clientseitige Routing der Single-Page-Anwendung gewährleistet. Die PostgreSQL-Datenbank wird als Managed Service über Supabase bereitgestellt, das Backups, Replikation und Systemaktualisierungen ohne operativen Aufwand auf Anwendungsseite übernimmt.
 
