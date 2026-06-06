@@ -178,28 +178,7 @@ Dieser Abschnitt misst die Generierungslatenz der drei evaluierten LLM-Modelle (
 
 Der Vergleich misst die Ende-zu-Ende-Generierungslatenz der drei eingesetzten LLM-Modelle unter identischer Prompt-Konfiguration.
 
-{\footnotesize\def\LTcaptype{none}
-\begin{longtable}[]{@{}
-  >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.36}}
-  >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.08}}
-  >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.18}}
-  >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.18}}
-  >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.18}}@{}}
-\toprule\noalign{}
-Modell & N & Median (ms) & P95 (ms) & Std.\ (ms) \\
-\midrule\noalign{}
-\endhead
-\bottomrule\noalign{}
-\endlastfoot
-\texttt{google/gemini-2.5-flash}        & 10 & \textbf{591} & \textbf{1\,459} & 295 \\
-\texttt{openai/gpt-4.1-mini}            & 10 & 1\,111        & 2\,759 & 521 \\
-\texttt{anthropic/claude-haiku-4-5}     & 10 & 1\,668        & 1\,825 & \textbf{177} \\
-\end{longtable}
-}
-
-\emph{N\,=\,10 je Modell. Identischer Prompt, Fehlerrate 0\,\%.}
-
-Gemini~2.5~Flash erzielt mit 591\,ms Median die kürzeste Latenz. Claude~Haiku~4.5 zeigt mit 177\,ms die geringste Streuung.
+Gemini~2.5~Flash erzielt mit 591\,ms Median die kürzeste Latenz. Claude~Haiku~4.5 zeigt mit 177\,ms Standardabweichung die geringste Streuung, GPT-4.1-mini mit 521\,ms die höchste.
 
 \begin{figure}[H]
 \centering
