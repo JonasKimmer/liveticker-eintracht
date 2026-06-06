@@ -1,11 +1,11 @@
 \chapter{Diskussion}\label{diskussion}
 
-Die Evaluation in Kapitel~\ref{evaluation} hat die empirische Grundlage gelegt. Dieses Kapitel ordnet deren Bedeutung, Grenzen und Konsequenzen ein. Die Argumentation folgt einer triangulierenden Logik aus quantitativen Befunden, LLM-as-Judge-Bewertung und externer Praxisperspektive. Der Abschnitt gliedert sich in die Interpretation der Kernergebnisse (Abschnitt~\ref{interpretation-kernergebnisse}), die Diskussion zentraler Designentscheidungen (Abschnitt~\ref{designentscheidungen}), die externe Validierung durch das Experteninterview (Abschnitt~\ref{experteninterview-auswertung}), den Beitrag zur Forschung (Abschnitt~\ref{beitrag-zur-forschung}), Limitationen (Abschnitt~\ref{kritische-reflexion}) sowie ethische und regulatorische Anforderungen (Abschnitt~\ref{ethik}).
+Die Evaluation in Kapitel~\ref{evaluation} hat die empirische Grundlage gelegt. Dieses Kapitel ordnet deren Bedeutung, Grenzen und Konsequenzen ein. Die Argumentation folgt einer triangulierenden Logik aus quantitativen Befunden, LLM-as-Judge-Bewertung und externer Praxisperspektive. Der Abschnitt gliedert sich in die Interpretation der Kernergebnisse (Abschnitt~\ref{interpretation-kernergebnisse}), die Diskussion zentraler Designentscheidungen (Abschnitt~\ref{designentscheidungen}), das Experteninterview (Abschnitt~\ref{experteninterview-auswertung}), den Beitrag zur Forschung (Abschnitt~\ref{beitrag-zur-forschung}) sowie Limitationen und Übertragbarkeit (Abschnitt~\ref{kritische-reflexion}).
 
 
 \section{Interpretation der Kernergebnisse}\label{interpretation-kernergebnisse}
 
-Die Evaluationsbefunde werden entlang der drei inhaltlichen Schwerpunkte interpretiert: Stilprofile, Few-Shot-Effekt und Mehrsprachigkeit.
+Der Abschnitt gliedert sich in die Betrachtung der Stilprofile (Abschnitt~\ref{diskussion-stilprofile}), die Analyse des Few-Shot-Effekts (Abschnitt~\ref{diskussion-fewshot}) sowie die Diskussion der Mehrsprachigkeit (Abschnitt~\ref{diskussion-mehrsprachigkeit}).
 
 \subsection{Stilprofile}\label{diskussion-stilprofile}
 
@@ -27,7 +27,7 @@ Der Mehrsprachigkeitsvergleich (vgl. Abschnitt~\ref{mehrsprachige-verifikation})
 
 Zwei Ursachen sind plausibel, ohne dass die vorliegenden Daten zwischen ihnen trennen können. Erstens könnte ein Bewerterbias des Judge-Modells vorliegen: Spanischer Fußballjargon ist im Trainingskorpus großer Sprachmodelle stark vertreten, was dazu führt, dass \texttt{claude-sonnet-4-5} spanische Texte stilistisch vertrauter und damit höher bewertet. Zweitens könnte das Generierungsmodell auf einem umfangreicheren spanischsprachigen Sportkorpus trainiert worden sein, sodass es spanische Stilmuster mit weniger Prompt-Konditionierung abruft. Beide Erklärungen weisen in dieselbe Richtung: Der Befund sagt mehr über die Evaluation als über die tatsächliche Textqualität aus. Eine muttersprachliche Qualitätsprüfung durch externe Rater ist deshalb vor dem produktiven Einsatz in nicht-deutschsprachigen Märkten zwingend (vgl. Abschnitt~\ref{ausblick}). 
 
-\section{Designentscheidungen und ihre Konsequenzen}\label{designentscheidungen}
+\section{Zentrale Designentscheidungen}\label{designentscheidungen}
 
 Drei Designentscheidungen prägen das System maßgeblich und lassen sich auf Basis der Evaluationsbefunde einordnen.
 
@@ -54,7 +54,7 @@ Der \texttt{auto}-Modus verschiebt den Engpass vollständig auf das Modell. Die 
 Der \texttt{coop}-Modus greift einen bekannten Grundsatz redaktioneller Arbeit auf: Einen fertigen Entwurf zu beurteilen ist kognitiv schneller als ihn zu erstellen, weil Lesen und Entscheiden weniger mentale Ressourcen binden als Erinnern, Formulieren und Strukturieren unter Zeitdruck. Die Gesamtlatenz sinkt dadurch strukturell unter die manuelle Baseline, ohne die Qualitätssicherung aufzugeben. Die Aufgabe des Redakteurs verschiebt sich von der Textproduktion zur Textkontrolle — und damit zu einer Tätigkeit, für die journalistische Ausbildung stärker qualifiziert als für schnelles Tippen.
 
 
-\section{Externe Validierung}\label{experteninterview-auswertung}
+\section{Experteninterview}\label{experteninterview-auswertung}
 
 Das leitfadengestützte Experteninterview mit einem Senior Manager Redaktion und Digital Media bei Eintracht Frankfurt ergänzt die Evaluationsbefunde um eine Praxisperspektive, die aus strukturierten Messdaten nicht ableitbar ist. Der folgende Abschnitt beschränkt sich auf Erkenntnisse, die nicht bereits aus der Evaluation folgen.
 
@@ -62,7 +62,7 @@ Die Produktionsbedingungen bestätigen die zentrale Architekturannahme. Vereinss
 
 Den Eintracht-Ticker-Stil beschreibt der Interviewpartner als emotional, parteiisch, fannah und „typisch hessisch" und damit in seinem Ausdruck stets „durch die Eintracht-Brille" geschrieben, bei gleichzeitigem Primat der sachlichen Information. Die generierten Texte werden als tendenziell generisch eingestuft, weil Atmosphäre, Trainergestik und situative Wahrnehmung nicht aus strukturierten Ereignisdaten ableitbar sind. Als konkretes Beispiel nennt er einen Notarzteinsatz bei gleichzeitiger 4:0-Führung, in dem das System weiterhin euphorisch schreiben würde, da es nur den Spielstand kennt. Dieser Befund benennt eine strukturelle Grenze des Ansatzes, die über das Messinstrumentarium der Evaluation hinausgeht. Ergänzend weist er darauf hin, dass auch manuell verfasste Ticker bei häufigen Ereignistypen an sprachliche Grenzen stoßen, da der Pool an Synonymen irgendwann erschöpft sei. Dies stützt die beobachtete Phrasenwiederholung als strukturell bedingt, nicht als modellspezifische Schwäche.
 
-Auf die direkte Frage nach der Qualität KI-generierter Texte fällt die Antwort explizit negativ aus. Der Interviewpartner bringt das strukturelle Problem auf den Punkt: KI setze bei der Inhaltserstellung „mehr auf Wahrscheinlichkeit als auf Wahrheit". Einen vollständig KI-gestützten Liveticker-Regelbetrieb schließt er für den Profibereich explizit aus. Für den Jugendfußball mit geringerer Reichweite und niedrigerem redaktionellem Anspruch sieht er Diskussionspotenzial. Zur Kennzeichnungsfrage äußert er, dass die Herkunft eines Textes grundsätzlich eine Rolle spiele und Transparenz gegenüber Lesern angemessen sei. Diese Einschätzung stimmt mit der in Abschnitt~\ref{ethik} diskutierten regulatorischen Kennzeichnungspflicht überein.
+Auf die direkte Frage nach der Qualität KI-generierter Texte fällt die Antwort explizit negativ aus. Der Interviewpartner bringt das strukturelle Problem auf den Punkt: KI setze bei der Inhaltserstellung „mehr auf Wahrscheinlichkeit als auf Wahrheit". Einen vollständig KI-gestützten Liveticker-Regelbetrieb schließt er für den Profibereich explizit aus. Für den Jugendfußball mit geringerer Reichweite und niedrigerem redaktionellem Anspruch sieht er Diskussionspotenzial. Zur Kennzeichnungsfrage äußert er, dass die Herkunft eines Textes grundsätzlich eine Rolle spiele und Transparenz gegenüber Lesern angemessen sei. Diese Einschätzung stützt das Transparenzgebot, das in der aktuellen Regulierungsdiskussion um KI-generierte Medieninhalte zunehmend gefordert wird.
 
 Die Experteneinschätzung konvergiert in zentralen Punkten mit den Evaluationsbefunden und stützt die Einschätzung, dass \texttt{coop} für strukturierte Ereignisse und \texttt{manual} für situativen Kommentar die sinnvolle Kombination für den Produktivbetrieb darstellt.
 
