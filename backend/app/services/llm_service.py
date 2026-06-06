@@ -119,7 +119,7 @@ class LLMService:
             self._client = OpenAI(
                 api_key=api_key, base_url="https://openrouter.ai/api/v1"
             )
-            self.model = model or "google/gemini-2.0-flash-lite"
+            self.model = model or "google/gemini-2.5-flash-lite"
         elif provider == "openai":
             self._require_key()
             from openai import OpenAI
