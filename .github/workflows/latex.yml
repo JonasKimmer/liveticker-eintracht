@@ -29,6 +29,9 @@ jobs:
           xelatex -interaction=nonstopmode -no-shell-escape Bachelorarbeit_Main.tex || true
           echo "First pass complete"
           xelatex -interaction=nonstopmode -no-shell-escape Bachelorarbeit_Main.tex || true
+          echo "Second pass complete"
+          xelatex -interaction=nonstopmode -no-shell-escape Bachelorarbeit_Main.tex || true
+          echo "Third pass complete"
 
       - name: Check PDF was created
         run: |
