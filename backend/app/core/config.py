@@ -38,7 +38,7 @@ class Settings(BaseSettings):
     PUBLIC_BASE_URL: str = "http://localhost:8001"
 
     # LLM Settings
-    OPENROUTER_MODEL: Optional[str] = "google/gemini-2.0-flash-lite-001"
+    OPENROUTER_MODEL: Optional[str] = "google/gemini-2.0-flash-lite"
     LLM_CONCURRENCY: int = 8  # Max gleichzeitige LLM-Requests (Semaphore)
 
     # API-Football Settings
