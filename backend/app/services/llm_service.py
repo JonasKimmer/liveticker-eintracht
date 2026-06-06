@@ -111,7 +111,7 @@ class LLMService:
             from google import genai
 
             self._client = genai.Client(api_key=api_key)
-            self.model = model or "gemini-2.0-flash-lite-001"
+            self.model = model or "gemini-2.0-flash-lite"
         elif provider == "openrouter":
             self._require_key()
             from openai import OpenAI
@@ -119,7 +119,7 @@ class LLMService:
             self._client = OpenAI(
                 api_key=api_key, base_url="https://openrouter.ai/api/v1"
             )
-            self.model = model or "google/gemini-2.0-flash-lite-001"
+            self.model = model or "google/gemini-2.0-flash-lite"
         elif provider == "openai":
             self._require_key()
             from openai import OpenAI
@@ -272,9 +272,14 @@ class LLMService:
         lang = self._LANG_NAMES.get(language, language)
         style_desc = STYLE_DESC.get(style, STYLE_DESC["neutral"])
         if style == "euphorisch":
-            resolved_fan_team = fan_team or (context_data or {}).get("home_team") or team_name
+            resolved_fan_team = (
+                fan_team or (context_data or {}).get("home_team") or team_name
+            )
             if resolved_fan_team:
-                style_desc = f"Du schreibst als leidenschaftlicher Fan von {resolved_fan_team}.\n" + style_desc
+                style_desc = (
+                    f"Du schreibst als leidenschaftlicher Fan von {resolved_fan_team}.\n"
+                    + style_desc
+                )
 
         event_lines = self._build_event_lines(
             event_type, event_detail, minute, player_name, assist_name, team_name
