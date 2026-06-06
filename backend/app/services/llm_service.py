@@ -507,7 +507,7 @@ _PROVIDER_KEY_MAP: dict[str, str | None] = {
 
 _PROVIDER_DEFAULT_MODEL: dict[str, str] = {
     "openrouter": settings.OPENROUTER_MODEL,
-    "gemini": "gemini-2.0-flash-lite-001",
+    "gemini": "gemini-2.0-flash-lite",
     "openai": "gpt-4o-mini",
     "anthropic": "claude-haiku-4-5-20251001",
 }
