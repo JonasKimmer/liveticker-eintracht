@@ -422,6 +422,36 @@
 \end{tikzpicture}%
 }
 
+%% ─── DIAGRAM 15: Modellvergleich Generierungslatenz ─────────────────────────
+%% Datenbasis: §6.3.1, N=10 je Modell
+\newcommand{\DiagramLatenzModelle}{%
+\begin{tikzpicture}
+\begin{axis}[
+  ybar, bar width=0.55cm,
+  width=10cm, height=6cm,
+  ymin=0, ymax=3200,
+  ylabel={Latenz (ms)},
+  ytick={0,500,1000,1500,2000,2500,3000},
+  symbolic x coords={Gemini 2.5 Flash, GPT-4.1-mini, Claude Haiku 4.5},
+  xtick=data,
+  xticklabel style={font=\small, align=center},
+  legend style={at={(0.5,1.03)}, anchor=south, legend columns=2, font=\footnotesize},
+  enlarge x limits=0.35,
+  ymajorgrids=true,
+  grid style={gray!25},
+  every axis/.append style={font=\small},
+]
+\addplot+[fill=blue!40, draw=blue!60] coordinates {
+  (Gemini 2.5 Flash, 591) (GPT-4.1-mini, 1111) (Claude Haiku 4.5, 1668)
+};
+\addplot+[fill=orange!30, draw=orange!60] coordinates {
+  (Gemini 2.5 Flash, 1459) (GPT-4.1-mini, 2759) (Claude Haiku 4.5, 1825)
+};
+\legend{Median, P95}
+\end{axis}
+\end{tikzpicture}%
+}
+
 %% ────────────────────────────────────────────────────────────────────────────
 %% END OF DIAGRAM DEFINITIONS
 %% All figures are embedded in their respective chapters using \DiagramXXX commands

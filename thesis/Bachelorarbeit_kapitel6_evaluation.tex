@@ -36,7 +36,7 @@ Alle drei Profile transportieren dieselben Kernfakten wie Torschütze, Spielstan
 
 
 
-\subsection{LLM-as-Judge-Evaluation}\label{erweiterte-evaluation}
+\subsection{Ergebnisse}\label{erweiterte-evaluation}
 
 Beim LLM-as-Judge-Verfahren übernimmt ein vom generierenden Modell verschiedenes Sprachmodell die Rolle des Bewerters und beurteilt Ausgaben anhand definierter Qualitätskriterien, ohne dass für jeden Bewertungsschritt menschliche Annotation erforderlich ist (vgl. Zheng et al.~2023, S.~8).
 
@@ -200,6 +200,13 @@ Modell & N & Median (ms) & P95 (ms) & Std.\ (ms) \\
 \emph{N\,=\,10 je Modell. Identischer Prompt, Fehlerrate 0\,\%.}
 
 Gemini~2.5~Flash erzielt mit 591\,ms Median die kürzeste Latenz. Claude~Haiku~4.5 zeigt mit 177\,ms die geringste Streuung.
+
+\begin{figure}[H]
+\centering
+\DiagramLatenzModelle
+\caption[Generierungslatenz der drei LLM-Modelle]{Generierungslatenz der drei LLM-Modelle im Vergleich (Median und P95).}
+\label{fig:latenz-modelle}
+\end{figure}
 
 \subsection{n8n-Workflow-Laufzeiten}\label{ttp-abschaetzung}
 
