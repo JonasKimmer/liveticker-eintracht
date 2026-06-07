@@ -181,7 +181,7 @@ Die Generierungspipeline gliedert sich in zwei Stufen. In der ersten wird der Sp
 \label{fig:prompt-aufbau}
 \end{figure}
 
-Die \textbf{Rolleninstruktion} legt die journalistische Perspektive fest, die Stilinstruktion konditioniert das Modell auf eines der drei Stilprofile neutral, euphorisch oder kritisch. \textbf{Faktenblock} und Kontextblock stellen die ereignisspezifischen Rohdaten und den rekonstruierten Spielstand bereit. Der \textbf{Few-Shot-Block} enthält manuell ausgewählte Referenztexte, die nach Ereignistyp und Vereinsinstanz gefiltert werden. Eine variierende Referenzauswahl reduziert Formulierungswiederholungen, ohne den stilistischen Korridor zu verlassen. Der \textbf{Regelblock} ist als unveränderliche Modellanweisung eingebettet und kodiert zentrale Liveticker-Konventionen wie kurze Hauptsätze, Präsens für laufende Spielszenen und stilabhängige emotionale Zuspitzung \cite{hauser2008, smulczynski2020}.
+Die Rolleninstruktion legt die journalistische Perspektive fest, die Stilinstruktion konditioniert das Modell auf eines der drei Stilprofile neutral, euphorisch oder kritisch. Faktenblock und Kontextblock stellen die ereignisspezifischen Rohdaten und den rekonstruierten Spielstand bereit. Der Few-Shot-Block enthält manuell ausgewählte Referenztexte, die nach Ereignistyp und Vereinsinstanz gefiltert werden. Eine variierende Referenzauswahl reduziert Formulierungswiederholungen, ohne den stilistischen Korridor zu verlassen. Der Regelblock ist als unveränderliche Modellanweisung eingebettet und kodiert zentrale Liveticker-Konventionen wie kurze Hauptsätze, Präsens für laufende Spielszenen und stilabhängige emotionale Zuspitzung \cite{hauser2008, smulczynski2020}.
 
 Für Pre-Match-Ereignisse ist der Prompt-Kontext auf Vorberichtsinhalte beschränkt, um Halluzinationen über noch nicht eingetretene Spielszenarien zu verhindern. In der vereinsspezifischen Instanz überschreibt das Backend das Stilprofil zugunsten des euphorischen Profils, wodurch Stilkonsistenz unabhängig vom auslösenden Triggerpfad gewährleistet ist.
 
@@ -193,7 +193,7 @@ Standardmäßig ist Gemini 2.0 Flash Lite konfiguriert, ausgewählt auf Basis de
 
 \subsection{LLM-Evaluationsstrategie}\label{evaluationsstrategie-llm}
 
-Die Evaluation operationalisiert die Textqualität anhand drei journalistischer Qualitätsdimensionen. \textbf{Korrektheit} misst die faktische Übereinstimmung mit den Ereignisdaten, \textbf{Tonalität} die stilistische Übereinstimmung mit dem gewählten Profil und \textbf{Vollständigkeit} die Abdeckung relevanter Ereignisinformationen. Für die manuelle Begutachtung werden generierte Texte als strukturierte Stichprobe exportiert.
+Die Evaluation operationalisiert die Textqualität anhand drei journalistischer Qualitätsdimensionen. Korrektheit misst die faktische Übereinstimmung mit den Ereignisdaten, Tonalität die stilistische Übereinstimmung mit dem gewählten Profil und Vollständigkeit die Abdeckung relevanter Ereignisinformationen. Für die manuelle Begutachtung werden generierte Texte als strukturierte Stichprobe exportiert.
 
 Die Evaluation kombiniert eine manuelle Stichprobe für qualitative Tiefenschärfe mit dem LLM-as-Judge-Verfahren für skalierbare Vergleiche über Stilprofile, Temperaturen und Modelle hinweg. Als Judge-Modell dient dabei ein vom Generierungsmodell unabhängiges System.
 

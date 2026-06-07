@@ -138,7 +138,7 @@ Die Kontextanreicherung wählt abhängig vom Ereignistyp zwischen zwei Pfaden. F
 
 \subsection{Prompt-Design und Stilkonditionierung}\label{prompt-design-stilkonditionierung}
 
-Der Prompt gliedert sich in sechs Module: Rolleninstruktion mit eingebetteter Sprachangabe, \textbf{STIL}, \textbf{FAKTEN}, \textbf{SPIELKONTEXT}, \textbf{STILREFERENZEN} und \textbf{REGELN}. Die modulare Struktur erlaubt es, einzelne Blöcke bei fehlenden Daten wegzulassen, den Stil-Block instanzspezifisch auszutauschen und den Referenzblock pro Aufruf dynamisch zu befüllen, ohne den Prompt-Kern zu verändern. Der folgende Auszug zeigt die Struktur für ein Torereignis im euphorischen Stilprofil:
+Der Prompt gliedert sich in sechs Module: Rolleninstruktion mit eingebetteter Sprachangabe, Stil, Fakten, Spielkontext, Stilreferenzen und Regeln. Die modulare Struktur erlaubt es, einzelne Blöcke bei fehlenden Daten wegzulassen, den Stil-Block instanzspezifisch auszutauschen und den Referenzblock pro Aufruf dynamisch zu befüllen, ohne den Prompt-Kern zu verändern. Der folgende Auszug zeigt die Struktur für ein Torereignis im euphorischen Stilprofil:
 
 \begin{Shaded}
 \begin{Highlighting}[]
@@ -159,7 +159,7 @@ Der Prompt gliedert sich in sechs Module: Rolleninstruktion mit eingebetteter Sp
 \end{Highlighting}
 \end{Shaded}
 
-Drei Designentscheidungen prägen die Prompt-Struktur. Die Trennung von \textbf{FAKTEN} und \textbf{SPIELKONTEXT} hält faktische Ereignisdaten und spielstandbezogene Rahmendaten getrennt, was es erlaubt, den Kontextblock für Vorberichts-Ereignisse durch spezialisierte Module zu ersetzen. Der \textbf{STILREFERENZEN}-Block überträgt den gewünschten stilistischen Korridor durch bis zu drei zufällig ausgewählte Einträge aus dem nach Ereignistyp, Instanz und Liga gefilterten Referenzpool, ohne das Modell nachzutrainieren. Die Zufallsauswahl verhindert dabei Formulierungswiederholungen bei gleichartigen Ereignissen. Der \textbf{REGELN}-Block bündelt alle expliziten Verbote an einer Stelle, sodass Abweichungen im Betrieb gezielt lokalisierbar bleiben.
+Drei Designentscheidungen prägen die Prompt-Struktur. Die Trennung von Fakten und Spielkontext hält faktische Ereignisdaten und spielstandbezogene Rahmendaten getrennt, was es erlaubt, den Kontextblock für Vorberichts-Ereignisse durch spezialisierte Module zu ersetzen. Der Stilreferenzen-Block überträgt den gewünschten stilistischen Korridor durch bis zu drei zufällig ausgewählte Einträge aus dem nach Ereignistyp, Instanz und Liga gefilterten Referenzpool, ohne das Modell nachzutrainieren. Die Zufallsauswahl verhindert dabei Formulierungswiederholungen bei gleichartigen Ereignissen. Der Regeln-Block bündelt alle expliziten Verbote an einer Stelle, sodass Abweichungen im Betrieb gezielt lokalisierbar bleiben.
 
 Für Ereignisse mit dem Präfix \texttt{pre\_match} wird dem Prompt ein zusätzlicher Instruktionsblock vorangestellt, der Live-Aktionsbegriffe ausschließt und Halluzinationen von Spielszenen vor Anpfiff verhindert. Für die vereinsspezifische Instanz wird ein übermitteltes neutrales Stilprofil serverseitig auf \texttt{euphorisch} überschrieben, damit die Stilbindung unabhängig vom aufrufenden Workflow konsistent greift.
 
