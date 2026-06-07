@@ -38,6 +38,8 @@ Alle drei Profile transportieren dieselben Kernfakten wie Torschütze, Spielstan
 
 \subsection{Ergebnisse der Hauptevaluation}\label{erweiterte-evaluation}
 
+Die folgende Tabelle zeigt die LLM-as-Judge-Bewertungen der drei Stilprofile nach Korrektheit, Tonalität und Vollständigkeit.
+
 {\def\LTcaptype{none} % do not increment counter
 \begin{longtable}[]{@{}
   >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.14}}
@@ -94,7 +96,7 @@ Few-Shot-Referenzen verbessern die Gesamtqualität um $\Delta$\,=\,+0{,}10, wobe
 
 \subsection{Temperaturvergleich}\label{temperaturvergleich}
 
-Der Temperaturparameter steuert die stochastische Varianz der LLM-Ausgabe.
+Der Temperaturparameter steuert die stochastische Varianz der LLM-Ausgabe. Die folgende Tabelle zeigt die Qualitätswerte je Stilprofil für drei Temperaturkonfigurationen.
 
 {\footnotesize\def\LTcaptype{none}
 \begin{longtable}[]{@{}lrrrrrrrrrrrr@{}}
@@ -174,9 +176,7 @@ Dieser Abschnitt misst die Generierungslatenz der drei evaluierten LLM-Modelle (
 
 \subsection{Modellvergleich der Generierungslatenz}\label{modellvergleich-latenz}\label{systemlatenz}
 
-Der Vergleich misst die Ende-zu-Ende-Generierungslatenz der drei eingesetzten LLM-Modelle unter identischer Prompt-Konfiguration.
-
-Gemini~2.5~Flash erzielt mit 591\,ms Median die kürzeste Latenz. Claude~Haiku~4.5 zeigt mit 177\,ms Standardabweichung die geringste Streuung, GPT-4.1-mini mit 521\,ms die höchste.
+Der Vergleich misst die Ende-zu-Ende-Generierungslatenz der drei eingesetzten LLM-Modelle unter identischer Prompt-Konfiguration. Die folgende Abbildung zeigt die Generierungslatenz der drei Modelle im Vergleich.
 
 \begin{figure}[H]
 \centering
@@ -184,6 +184,8 @@ Gemini~2.5~Flash erzielt mit 591\,ms Median die kürzeste Latenz. Claude~Haiku~4
 \caption[Generierungslatenz der drei LLM-Modelle]{Generierungslatenz der drei LLM-Modelle im Vergleich (Median und P95).}
 \label{fig:latenz-modelle}
 \end{figure}
+
+Gemini~2.5~Flash erzielt mit 591\,ms Median die kürzeste Latenz. Claude~Haiku~4.5 zeigt mit 177\,ms Standardabweichung die geringste Streuung, GPT-4.1-mini mit 521\,ms die höchste.
 
 \subsection{n8n-Workflow-Laufzeiten}\label{ttp-abschaetzung}
 
