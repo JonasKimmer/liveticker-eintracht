@@ -53,7 +53,7 @@ Die folgende Abbildung zeigt den Kommunikationsfluss zwischen den Systemkomponen
 \label{fig:kommunikationsfluss}
 \end{figure}
 
-Das Frontend kommuniziert mit dem Backend über REST und empfängt Echtzeit-Ereignisse per WebSocket. Datenimporte werden vom Frontend per Webhook an n8n delegiert, das die externe Sportdaten-API abfragt und die Ergebnisse sowohl an das Backend weiterleitet als auch direkt in der Datenbank ablegt. Das Backend greift über ein ORM auf die Datenbank zu und ruft den LLM-Provider zur Textgenerierung auf; n8n kann den LLM-Provider für automatisch ausgelöste Generierungen ebenfalls direkt ansprechen.
+Das Frontend kommuniziert mit dem Backend über REST und empfängt Echtzeit-Ereignisse per WebSocket. Datenimporte werden vom Frontend per Webhook an n8n delegiert, das die externe Sportdaten-API abfragt und die Ergebnisse sowohl an das Backend weiterleitet als auch direkt in der Datenbank ablegt. Das Backend greift über ein ORM auf die Datenbank zu und ruft den LLM-Provider zur Textgenerierung auf. Für automatisch ausgelöste Generierungen kann n8n den LLM-Provider ebenfalls direkt ansprechen.
 
 \subsection{White-Label-Konfiguration und Schreibstile}\label{partner-team-konzept-und-white-label-steuerung}\label{schreibstile}
 
