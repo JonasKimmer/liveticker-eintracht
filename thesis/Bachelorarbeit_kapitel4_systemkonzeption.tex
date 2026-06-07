@@ -97,7 +97,7 @@ Das Backend ist als API-zentrierte FastAPI-Applikation konzipiert. Der Abschnitt
 
 Das Backend ist als versionierte REST-API ausgelegt und folgt einem geschichteten Aufbau aus Router-, Schema-, Service- und Repository-Schicht. Zwischen Router und Service validiert eine Pydantic-Schema-Schicht eingehende Requests und ausgehende Responses anhand typsicherer Schemata. Die Repository-Schicht kapselt Datenbankzugriffe und entkoppelt übergeordnete Schichten von Datenbankdetails. Die Service-Schicht bündelt die fachliche Verarbeitungslogik in spezialisierten Komponenten. Asynchrone Verarbeitung wird dort eingesetzt, wo externe Latenzen dominieren, während Datenbankoperationen kontrolliert und transaktionssicher organisiert bleiben.
 
-Über die üblichen Standard-Datenbankoperationen (Lesen, Schreiben, Aktualisieren, Löschen) hinaus unterscheidet das Backend zwei spezialisierte Pfade. KI-Generierungsanfragen durchlaufen den \texttt{TickerService}, der Datenbankzugriffe und \texttt{LLMService} koordiniert. Medienuploads werden vom Router entgegengenommen, persistiert und unmittelbar an verbundene Clients weitergeleitet. Um Mehrfachauslösungen zu verhindern, ist das Triggerdesign idempotent ausgelegt, sodass wiederholte Anfragen keinen doppelten Ticker-Eintrag erzeugen.
+Über Standard-Datenbankoperationen hinaus unterscheidet das Backend zwei spezialisierte Pfade. KI-Generierungsanfragen durchlaufen den \texttt{TickerService}, der Datenbankzugriffe und \texttt{LLMService} koordiniert. Medienuploads werden vom Router entgegengenommen, persistiert und unmittelbar an verbundene Clients weitergeleitet. Um Mehrfachauslösungen zu verhindern, ist das Triggerdesign idempotent ausgelegt, sodass wiederholte Anfragen keinen doppelten Ticker-Eintrag erzeugen.
 
 \subsection{Geschäftslogik der Service-Schicht}\label{llm-service-architektur}
 
@@ -152,11 +152,11 @@ Die \textbf{Zugriffsschicht} richtet sich nach der Aufgabenlogik des jeweiligen 
 
 Die Workflows gliedern sich nach Funktion und Zugriffsschicht in sieben Klassen:
 
-{\def\LTcaptype{none} % do not increment counter
 \begin{longtable}[]{@{}
   >{\raggedright\arraybackslash}p{(\linewidth - 2\tabcolsep) * \real{0.28}}
   >{\raggedright\arraybackslash}p{(\linewidth - 2\tabcolsep) * \real{0.42}}
   >{\raggedright\arraybackslash}p{(\linewidth - 2\tabcolsep) * \real{0.30}}@{}}
+\caption{Funktionsbereiche der n8n-Workflow-Automatisierung}\label{tab:workflow-klassen}\\
 \toprule\noalign{}
 Gruppe & Aufgabe & Zugriffsschicht \\
 \midrule\noalign{}
@@ -171,12 +171,8 @@ Gruppe & Aufgabe & Zugriffsschicht \\
 \textbf{F) Monitoring} & Qualitätsevaluation generierter Texte & Backend REST / LLM direkt \\
 \textbf{G) Spielzeit} & Spielminuten-Tracking und Phasenübergänge & DB + Backend REST \\
 \end{longtable}
-}
 
 Die Aufteilung reduziert Kopplung und ermöglicht die unabhängige Anpassung einzelner Prozessklassen. Gruppen D und F kombinieren Backend-Abfragen mit einem direkten LLM-Aufruf, da ihre Kontextanforderungen den standardisierten Generierungsendpunkt übersteigen.
-
-
-
 
 
 
@@ -252,7 +248,3 @@ Das Deployment-Konzept orientiert sich an zustandsarmen, unabhängig betreibbare
 Als PaaS-Anbieter wurde Render gewählt, da die Plattform den kombinierten Betrieb der Anwendungskomponenten sowie automatische Git-Deployments ohne zusätzliche Deployment-Pipeline unterstützt. Das Backend wird als Docker-Container betrieben, sodass Laufzeitumgebung und Abhängigkeiten zwischen lokaler Ausführung und Produktionsumgebung konsistent bleiben. Die erforderliche PostgreSQL-Datenbank wird als externer Dienst über Umgebungsvariablen eingebunden. Das Frontend wird als statischer Build ausgeliefert, der keine dedizierte Laufzeitumgebung erfordert.
 
 n8n ist als eigenständige, containerisierte Integrationskomponente konzipiert. Die Instanz wird über einen Tunnel-Dienst für externe Webhook-Aufrufe zugänglich gemacht, wodurch Workflow-Iterationen ohne Redeploy-Zyklen möglich bleiben.
-
-
-
-
