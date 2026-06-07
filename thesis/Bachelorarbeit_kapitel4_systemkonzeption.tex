@@ -203,7 +203,7 @@ Für Pre-Match-Ereignisse ist der Prompt-Kontext auf Vorberichtsinhalte beschrä
 
 Das Backend spricht Modelle mehrerer Anbieter über eine einheitliche OpenAI-kompatible Schnittstelle an, sodass Anbieter- und Modellwechsel ohne Änderungen an der Generierungslogik möglich bleiben. Diese Abstraktion erhöht zudem die Systemrobustheit, da bei Störungen einzelner Anbieter auf Alternativen umgestellt werden kann.
 
-Standardmäßig ist Gemini 2.0 Flash Lite konfiguriert, ausgewählt auf Basis des Zielkonflikts aus Latenz, Kosten und Qualität für strukturierte Kurztextaufgaben. Da die Tickergenerierung kurze, faktengebundene Ausgaben erfordert, können kleinere Modelle vergleichbare Qualität bei deutlich geringerer Latenz und niedrigeren Kosten erzielen. Die Service-Abstraktion unterstützt darüber hinaus alternative Konfigurationen für Evaluations- und Vergleichsläufe.
+Standardmäßig ist Gemini 2.5 Flash konfiguriert, ausgewählt auf Basis des Zielkonflikts aus Latenz, Kosten und Qualität für strukturierte Kurztextaufgaben. Da die Tickergenerierung kurze, faktengebundene Ausgaben erfordert, können kleinere Modelle vergleichbare Qualität bei deutlich geringerer Latenz und niedrigeren Kosten erzielen. Die Service-Abstraktion unterstützt darüber hinaus alternative Konfigurationen für Evaluations- und Vergleichsläufe.
 
 \subsection{LLM-Evaluationsstrategie}\label{evaluationsstrategie-llm}
 
