@@ -27,19 +27,13 @@ Die Datenbankschicht basiert auf synchronem SQLAlchemy, da Datenbankoperationen 
 
 Das Schema umfasst 17 ORM-Modelle (18 Tabellen). Die folgende Übersicht zeigt die Kernentitäten mit ihren relevanten Feldern:
 
-{\small\def\LTcaptype{none} % do not increment counter
-\begin{longtable}[]{@{}
+{\small\begin{longtable}[]{@{}
   >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.2300}}
   >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.2700}}
   >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.5000}}@{}}
+\caption{Kernentitäten des Datenbankschemas mit relevanten Feldern}\label{tab:kernentitaeten}\\
 \toprule\noalign{}
-\begin{minipage}[b]{\linewidth}\raggedright
-Modell
-\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
-Tabelle
-\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
-Kernfelder
-\end{minipage} \\
+Modell & Tabelle & Kernfelder \\
 \midrule\noalign{}
 \endhead
 \bottomrule\noalign{}
@@ -59,7 +53,7 @@ Kernfelder
 
 Stammdaten-Entitäten tragen drei Schlüsselfelder: einen internen Primärschlüssel für performante Joins, einen externen \texttt{source\_id}-Bezeichner als Upsert-Schlüssel für idempotente Reimports sowie eine UUID für externe Konsumenten. Mehrsprachige Anzeigefelder und externe Strukturen mit variablem Schema sind als JSONB modelliert. Ergänzend bilden \texttt{media\_clip} und \texttt{media\_queue} den persistenten Anteil des WebSocket-Medienpfades ab.
 
-Das \texttt{TickerEntry}-Modell verknüpft über \texttt{event\_id} und \texttt{synthetic\_event\_id} den generierten Text mit dem auslösenden Ereignis. Die Felder \texttt{status} (\texttt{draft}/\allowbreak\texttt{published}/\allowbreak\texttt{rejected}/\allowbreak\texttt{deleted}) und \texttt{source} (\texttt{ai}/\texttt{manual}) bilden den Ticker-Lifecycle ab. Das Feld \texttt{instance} ermöglicht darüber hinaus die instanzspezifische Filterung der Few-Shot-Referenzen und die White-Label-Datentrennung ohne separate Datenbankschemata. Die zugehörigen Enums sind zentral definiert, sodass Modelle und API-Schemas auf einer konsistenten Typbasis aufbauen.
+Das \texttt{TickerEntry}-Modell verknüpft über \texttt{event\_id} und \texttt{synthetic\_event\_id} den generierten Text mit dem auslösenden Ereignis. Die Felder \texttt{status} (\texttt{draft}/\allowbreak\texttt{published}/\allowbreak\texttt{rejected}/\allowbreak\texttt{deleted}) und \texttt{source} (\texttt{ai}/\texttt{manual}) bilden den Ticker-Lifecycle ab. Das Feld \texttt{instance} (\texttt{ef\_whitelabel} oder \texttt{generic}) ermöglicht darüber hinaus die instanzspezifische Filterung der Few-Shot-Referenzen und die White-Label-Datentrennung ohne separate Datenbankschemata. Die zugehörigen Enums sind zentral definiert, sodass Modelle und API-Schemas auf einer konsistenten Typbasis aufbauen.
 
 Zusammengesetzte Indizes optimieren die häufigsten Zugriffspfade für publizierte Einträge, Phasenfilter und die Deduplizierungsprüfung auf Ereignisebene, während Unique Constraints semantische Eindeutigkeit auf Datenbankebene sichern. Für den KI-Generierungspfad werden zentrale Match-Kontextdaten darüber hinaus in einer gemeinsamen Abfrage vorgeladen, um Datenbankroundtrips im Request-Pfad zu minimieren.
 
@@ -108,7 +102,7 @@ Steigt ein Redakteur in ein bereits laufendes oder beendetes Spiel ein, fehlen P
 
 \section{KI-Generierungspipeline}\label{ki-generierungspipeline}
 
-Die KI-Generierungspipeline überführt Spielereignisse in stilspezifische Ticker-Texte. Der Abschnitt behandelt Kontextanreicherung (Abschnitt~\ref{kontextanreicherung-pipeline}) sowie Prompt-Design und Stilkonditionierung (Abschnitt~\ref{prompt-design-stilkonditionierung}).
+Die KI-Generierungspipeline überführt Spielereignisse in stilspezifische Ticker-Texte. Der Abschnitt behandelt Kontextanreicherung (Abschnitt~\ref{kontextanreicherung-pipeline}), Prompt-Design und Stilkonditionierung (Abschnitt~\ref{prompt-design-stilkonditionierung}) sowie die Evaluationsinfrastruktur (Abschnitt~\ref{evaluationsinfrastruktur}).
 
 \subsection{Spielstandberechnung und Kontextanreicherung}\label{kontextanreicherung-pipeline}
 
@@ -143,6 +137,9 @@ Drei Designentscheidungen prägen die Prompt-Struktur. Die Trennung von Fakten u
 
 Für Ereignisse mit dem Präfix \texttt{pre\_match} wird dem Prompt ein zusätzlicher Instruktionsblock vorangestellt, der Live-Aktionsbegriffe ausschließt und Halluzinationen von Spielszenen vor Anpfiff verhindert. Für die vereinsspezifische Instanz wird ein übermitteltes neutrales Stilprofil serverseitig auf \texttt{euphorisch} überschrieben, damit die Stilbindung unabhängig vom aufrufenden Workflow konsistent greift.
 
+\subsection{Evaluationsinfrastruktur}\label{evaluationsinfrastruktur}
+
+Die Evaluationsinfrastruktur ermöglicht die kontrollierte Neugenerierung aller Spielereignisse über ein Python-Skript mit konfigurierbarem Provider, Modell, Stil und Zielsprache. Die generierten Texte werden anschließend über einen separaten OpenRouter-Aufruf durch ein unabhängiges Judge-Modell bewertet. Diese Pipeline bildet die technische Grundlage für den Modell- und Parametervergleich in Kapitel~\ref{evaluation}.
 
 \section{Frontend-Implementierung}\label{frontend-implementierung}
 
@@ -234,7 +231,7 @@ Ereignis & \texttt{/s Trapp Kaua SGE} & „Wechsel — Trapp ↔ Kaua (SGE)'' & 
 \end{longtable}
 }
 
-Für unvollständige Eingaben gibt der Parser gezielte Hinweise zurück, die im Editor unmittelbar angezeigt werden. Unbekannte Kommandos werden mit einem Fehlerstatus zurückgegeben, statt einen Laufzeitfehler auszulösen.
+Unbekannte Kommandos werden mit einem Fehlerstatus zurückgegeben, statt einen Laufzeitfehler auszulösen.
 
 Die folgende Abbildung zeigt die Slash-Kommando-Eingabe mit generiertem Ticker-Eintrag.
 
@@ -250,7 +247,7 @@ Die folgende Abbildung zeigt die Slash-Kommando-Eingabe mit generiertem Ticker-E
 
 Der aktive Modus (\texttt{auto} / \texttt{coop} / \texttt{manual}) wird von \texttt{useTicker} orchestriert, das \texttt{useTickerMode} intern kapselt und beim Laden eines Spiels mit dem in der Datenbank gespeicherten \texttt{ticker\_mode} initialisiert. Modusänderungen werden unmittelbar lokal gesetzt, bevor die Backend-Anfrage abgeschlossen ist, sodass der angezeigte Modus bei fehlschlagender Anfrage beim nächsten Spielladen aus der Datenbank korrigiert wird. Inhaltlich unterscheiden sich die drei Modi im Publikationsverhalten. Im Auto-Modus werden KI-generierte Einträge direkt publiziert, wobei ein ergänzender Frontend-Pfad die Nachsteuerung offener Entwürfe übernimmt und durch Deduplikationslogik gegen Mehrfachverarbeitung abgesichert ist. Im Coop-Modus legt die KI einen Entwurf an, der per \texttt{TAB} freigegeben oder per \texttt{ESC} abgelehnt werden kann. Im manuellen Modus werden Einträge ohne KI-Unterstützung direkt als publiziert angelegt.
 
-Das System ist vollständig per Tastatur bedienbar. \texttt{Ctrl+1} bis \texttt{Ctrl+3} schalten den aktiven Modus, und \texttt{?} öffnet ein Kürzel-Modal, das ausschließlich die im aktiven Modus verfügbaren Kombinationen anzeigt. Im \texttt{coop}-Modus werden dabei die meisten Kürzel eingeblendet, da \texttt{TAB} und \texttt{ESC} für die Entwurfsfreigabe hinzukommen, während im \texttt{auto}- und \texttt{manual}-Modus nur die modusübergreifenden Kürzel erscheinen.
+Das System ist vollständig per Tastatur bedienbar. \texttt{Ctrl+1} bis \texttt{Ctrl+3} schalten den aktiven Modus, und \texttt{?} öffnet ein Kürzel-Modal, das ausschließlich die im aktiven Modus verfügbaren Kombinationen anzeigt. Im \texttt{coop}-Modus werden dabei die meisten Tastaturkürzel angezeigt, da \texttt{TAB} und \texttt{ESC} für die Entwurfsfreigabe hinzukommen, während im \texttt{auto}- und \texttt{manual}-Modus nur die modusübergreifenden Kürzel erscheinen.
 
 Die folgende Abbildung zeigt die Tastaturkürzel-Übersicht im Coop-Modus.
 
@@ -316,7 +313,7 @@ Die instanzspezifische Konfiguration ist als typisiertes \texttt{WhitelabelConfi
 \end{Highlighting}
 \end{Shaded}
 
-Die Werte werden je Instanz über Umgebungsvariablen gesetzt und beim Start einmalig geladen. Die Instanzerkennung erfolgt zur Laufzeit: Die Hauptkomponente prüft beim Öffnen eines Spiels, ob eines der beteiligten Teams den konfigurierten \texttt{teamKeyword} enthält, und leitet daraus die Instanzkennung \texttt{ef\_whitelabel} oder \texttt{generic} ab. Diese Kennung wird an alle nachgelagerten API- und Webhook-Aufrufe angehängt, sodass Backend und n8n jeden Request der richtigen Instanz zuordnen und vereinsspezifisches Routing anwenden können. Auf der Oberfläche steuert dieselbe Kennung das conditional Rendering vereinsspezifischer Komponenten wie das Medienpanel und den Stilindikator in der Kopfzeile.
+Die Werte werden je Instanz über Umgebungsvariablen gesetzt und beim Start einmalig geladen. Die Instanzerkennung erfolgt zur Laufzeit: Die Hauptkomponente prüft beim Öffnen eines Spiels, ob eines der beteiligten Teams den konfigurierten \texttt{teamKeyword} enthält, und leitet daraus die Instanzkennung \texttt{ef\_whitelabel} oder \texttt{generic} ab. Diese Kennung wird an alle nachgelagerten API- und Webhook-Aufrufe angehängt, sodass Backend und n8n jeden Request der richtigen Instanz zuordnen und vereinsspezifisches Routing anwenden können. Auf der Oberfläche steuert dieselbe Kennung das bedingte Rendering vereinsspezifischer Komponenten wie das Medienpanel und den Stilindikator in der Kopfzeile.
 
 Die folgende Abbildung zeigt die vereinsspezifische Redaktionsoberfläche der Eintracht-Frankfurt-Instanz.
 
@@ -411,9 +408,7 @@ Alle 187 Tests werden fehlerfrei ausgeführt. Ergänzend beträgt die statische 
 
 Das Backend ist mit pytest in 246 Testfällen über 214 Testfunktionen in 14 Dateien abgesichert. Parametrisierte Tests decken Kombinationsfälle ab, darunter unterschiedliche Zielsprachen im Übersetzungspfad und verschiedene Ereignistypen in der Generierungspipeline, ohne Testduplikate zu erzeugen.
 
-Repository-Integrationstests laufen gegen eine isolierte PostgreSQL-Testinstanz mit transaktionsbasierter Testisolation und automatischem Rollback, um Datenbankoperationen unabhängig vom Produktivsystem zu prüfen. Service-Unit-Tests verifizieren die Domänenlogik der Spielstandberechnung, Kontextanreicherung und Eintragserzeugung ohne Datenbankabhängigkeit, wobei der LLM-Service mit einem Mock-Provider instanziiert wird, sodass keine externen API-Aufrufe entstehen. Ergänzend umfasst die Implementierung eine Evaluationsinfrastruktur für die kontrollierte Neugenerierung aller Spielereignisse mit konfigurierbarem Provider, Modell, Stil und Zielsprache.
-
-Alle 246 Testfälle werden fehlerfrei ausgeführt. Die Gesamtabdeckung beträgt 79\,\%, gemessen mit \texttt{pytest-cov}. Datenmodelle, Schemas und Hilfsfunktionen erreichen 97–100\,\%. API-Router und Services weisen niedrigere Werte auf, da Endpunkte für externe Medien-Integrationen und die LLM-Generierungspipeline externe Dienste voraussetzen, die in automatisierten Läufen nicht verfügbar sind. Repositories bleiben aus vergleichbarem Grund unter dem Gesamtschnitt, da Sonderfälle der Conflict-Resolution nur gegen eine Live-Datenbank vollständig prüfbar sind.
+Repository-Integrationstests laufen gegen eine isolierte PostgreSQL-Testinstanz mit transaktionsbasierter Testisolation und automatischem Rollback, um Datenbankoperationen unabhängig vom Produktivsystem zu prüfen. Service-Unit-Tests verifizieren die Domänenlogik der Spielstandberechnung, Kontextanreicherung und Eintragserzeugung ohne Datenbankabhängigkeit, wobei der LLM-Service mit einem Mock-Provider instanziiert wird, sodass keine externen API-Aufrufe entstehen. Alle 246 Testfälle werden fehlerfrei ausgeführt. Die Gesamtabdeckung beträgt 79\,\%, gemessen mit \texttt{pytest-cov}. Datenmodelle, Schemas und Hilfsfunktionen erreichen 97–100\,\%. API-Router und Services weisen niedrigere Werte auf, da Endpunkte für externe Medien-Integrationen und die LLM-Generierungspipeline externe Dienste voraussetzen, die in automatisierten Läufen nicht verfügbar sind. Repositories bleiben aus vergleichbarem Grund unter dem Gesamtschnitt, da Sonderfälle der Conflict-Resolution nur gegen eine Live-Datenbank vollständig prüfbar sind.
 
 \subsection{End-to-End-Tests}\label{impl-e2e-tests}
 
@@ -422,6 +417,6 @@ Die sechs End-to-End-Tests werden mit Playwright im Chromium-Browser ausgeführt
 
 \section{Deployment und Betriebsinfrastruktur}\label{deployment}
 
-Das Deployment überführt die vier Systemkomponenten in einen produktionsfähigen Betrieb. Backend und Frontend sind deklarativ konfiguriert, werden bei jedem Repository-Push automatisch neu bereitgestellt und beziehen alle Zugangsdaten ausschließlich aus Umgebungsvariablen. Das FastAPI-Backend wird als Docker-Container auf der PaaS-Plattform Render betrieben, die deklarative Konfiguration, automatisches Redeploy bei jedem Repository-Push und integrierte Health-Checks ohne eigene Serverinfrastruktur ermöglicht. Das React-Frontend wird als statische Anwendung über ein Content-Delivery-Netzwerk ausgeliefert, wobei eine serverseitige Umleitungsregel das clientseitige Routing der Single-Page-Anwendung gewährleistet. Die PostgreSQL-Datenbank wird als Managed Service über Supabase bereitgestellt, das Backups, Replikation und Systemaktualisierungen ohne operativen Aufwand auf Anwendungsseite übernimmt und damit den Entwicklungsfokus auf die Anwendungslogik konzentriert.
+Das Deployment überführt die vier Systemkomponenten in einen produktionsfähigen Betrieb. Backend und Frontend sind deklarativ konfiguriert und beziehen alle Zugangsdaten ausschließlich aus Umgebungsvariablen. Das FastAPI-Backend wird als Docker-Container auf der PaaS-Plattform Render betrieben, die automatisches Redeploy bei jedem Repository-Push und integrierte Health-Checks ohne eigene Serverinfrastruktur ermöglicht. Das React-Frontend wird als statische Anwendung über ein Content-Delivery-Netzwerk ausgeliefert, wobei eine serverseitige Umleitungsregel das clientseitige Routing der Single-Page-Anwendung gewährleistet. Die PostgreSQL-Datenbank wird als Managed Service über Supabase bereitgestellt, das Backups, Replikation und Systemaktualisierungen ohne operativen Aufwand auf Anwendungsseite übernimmt.
 
 Die n8n-Instanz wird abweichend davon als lokaler Docker-Container betrieben und ist über einen ngrok-Tunnel für eingehende Football-API-Webhooks erreichbar. Hintergrund ist, dass die Kaltstart-Charakteristik kostenloser PaaS-Pläne die für den Live-Betrieb erforderlichen Webhook-Latenzen nicht zuverlässig gewährleistet. Die Betriebsgrenzen dieses Setups werden in Kapitel~\ref{diskussion} eingeordnet.
