@@ -15,7 +15,7 @@
   % External Services
   \node[externa] (fapi) at (0, 2.4)  {Football-API\\api-sports.io};
   \node[externa] (llm)  at (0, 0.4)  {LLM Provider\\OpenRouter};
-  \node[externa] (sp)   at (0, -1.6) {ScorePlay\\Media};
+  \node[externa] (sp)   at (0, -1.6) {Medienanbieter};
 
   % Integrationsschicht
   \node[block] (n8n) at (4, 0.4) {n8n\\Workflows};
@@ -43,7 +43,7 @@
   \draw[arrow] (fapi) -- (n8n);
   \draw[arrow] (sp)   -- (n8n);
   \draw[arrow] (llm)  -- (n8n);
-  \draw[arrow] (n8n)  -- (api) node[midway, above, font=\scriptsize] {Webhook-Trigger};
+  \draw[arrow] (n8n)  -- (api);
   \draw[arrow] (n8n)  -- (db);
   \draw[arrow] (api)  -- (db);
   \draw[arrow] (api)  -- (fe);

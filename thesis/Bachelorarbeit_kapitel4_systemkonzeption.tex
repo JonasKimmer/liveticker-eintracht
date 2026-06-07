@@ -163,11 +163,11 @@ Gruppe & Aufgabe & Zugriffsschicht \\
 \endhead
 \bottomrule\noalign{}
 \endlastfoot
-\textbf{A) Stammdaten} & Import von Saisons, Wettbewerben, Teams & DB direkt \\
-\textbf{B) Matchdaten} & Import von Spielstand, Lineups, Statistiken & DB direkt \\
-\textbf{C) Ereignis-Generierung} & LLM-Generierung bei Spielereignissen & DB direkt / Backend REST \\
+\textbf{A) Stammdaten} & Import von Saisons, Wettbewerben, Teams & Datenbank \\
+\textbf{B) Matchdaten} & Import von Spielstand, Lineups, Statistiken & Datenbank \\
+\textbf{C) Ereignis-Generierung} & LLM-Generierung bei Spielereignissen & Datenbank / Backend REST \\
 \textbf{D) Phasen-Zusammenfassungen} & Zusammenfassung für Spielphasen & Backend REST / LLM direkt \\
-\textbf{E) Medien \& Social} & Medienimport und Social-Verarbeitung & Backend REST / DB direkt \\
+\textbf{E) Medien \& Social} & Medienimport und Social-Verarbeitung & Backend REST / Datenbank \\
 \textbf{F) Monitoring} & Qualitätsevaluation generierter Texte & Backend REST / LLM direkt \\
 \textbf{G) Spielzeit} & Spielminuten-Tracking und Phasenübergänge & DB + Backend REST \\
 \end{longtable}
