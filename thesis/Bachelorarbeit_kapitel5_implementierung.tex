@@ -21,6 +21,8 @@ backend/app/
 `-- core/            # Konfiguration, Datenbankverbindung, Enums, Konstanten
 \end{verbatim}
 
+Die folgende Abbildung zeigt die Schichtenarchitektur des Backends.
+
 \begin{figure}[H]
 \centering
 \DiagramBackendSchichten
@@ -126,7 +128,7 @@ Die KI-Generierungspipeline überführt Spielereignisse in stilspezifische Ticke
 
 Die Football-API stellt den Spielstand ausschließlich als aggregierten Endstand bereit, nicht als Zwischenstand zum jeweiligen Ereigniszeitpunkt. \texttt{score\_at\_event()} rekonstruiert diesen, indem alle vorangegangenen Torereignisse sequenziell ausgewertet werden. Die Rekonstruktion beginnt beim Initialstand 0:0 und aktualisiert den Spielstand ausschließlich für valide Torereignisse mit eindeutig zugeordneter Team-ID. Fehlerhafte Datensätze werden ausgefiltert, sodass die Pipeline auch bei unvollständigen Eingaben fortgesetzt wird. Fehlen Teamreferenzen vollständig, wird die Textgenerierung ohne Zwischenstandsangabe fortgesetzt.
 
-Die Kontextanreicherung wählt abhängig vom Ereignistyp zwischen zwei Pfaden. Für Live-Ereignisse wird ein Kontextblock mit Heim- und Auswärtsteam sowie dem berechneten Zwischenstand zusammengestellt. Für Pre-Match-Ereignisse stellen spezialisierte Kontextmodule Head-to-Head-Statistiken, Tabellenstand und Prognosen bereit. Fehlen einzelne Daten, bleiben die Kontexte durch Leerwerte und Platzhalter erzeugbar, sodass die Pipeline robust bleibt. Abbildung~\ref{fig:ki-generierungspipeline} zeigt den vollständigen Ablauf beider Pfade.
+Die Kontextanreicherung wählt abhängig vom Ereignistyp zwischen zwei Pfaden. Für Live-Ereignisse wird ein Kontextblock mit Heim- und Auswärtsteam sowie dem berechneten Zwischenstand zusammengestellt. Für Pre-Match-Ereignisse stellen spezialisierte Kontextmodule Head-to-Head-Statistiken, Tabellenstand und Prognosen bereit. Fehlen einzelne Daten, bleiben die Kontexte durch Leerwerte und Platzhalter erzeugbar, sodass die Pipeline robust bleibt. Die folgende Abbildung zeigt den vollständigen Ablauf beider Pfade.
 
 \begin{figure}[H]
 \centering
@@ -192,6 +194,8 @@ App
 \end{verbatim}
 Das \texttt{CenterPanel} enthält die publizierte Ticker-Ansicht, das \texttt{LeftPanel} den redaktionellen Arbeitsbereich mit Ereigniskarten, Editor und Zusammenfassungskomponenten und das \texttt{RightPanel} stellt Statistiken und Aufstellungsdaten bereit. Jedes Panel ist durch eine \texttt{ErrorBoundary}-Instanz gesichert, sodass Rendering-Fehler einzelner Komponenten die übrigen Panels nicht beeinträchtigen. Beim Start zeigt \texttt{LiveTicker} den \texttt{StartScreen}, auf dem der Ticker-Modus vorgewählt und beim Öffnen eines Spiels als \texttt{ticker\_mode} persistiert wird. \texttt{useNavigation} kapselt die Navigationskette und übergibt die Spiel-ID an \texttt{useMatchData}, das die Datensynchronisation startet.
 
+Die folgende Abbildung zeigt den Startscreen mit Spielauswahl und Modusvorwahl.
+
 \begin{figure}[H]
 \centering
 \includegraphics[width=0.85\textwidth]{frontend_startscreen.png}
@@ -228,13 +232,6 @@ Hook & Verantwortlichkeit \\
 
 Weitere Hooks bilden eine ergänzende Funktionsschicht für Navigation, Draft-Verwaltung, Auto-Publikation und Batch-Aktionen.
 
-\begin{figure}[H]
-\centering
-\DiagramCommunicationFlow
-\caption[Kommunikationsfluss der Systemkomponenten]{Kommunikationsfluss der Systemkomponenten.}
-\label{fig:kommunikationsfluss}
-\end{figure}
-
 \texttt{useMatchTriggers} kapselt alle Datenimport- und Auslöseeffekte des Frontends. Beim Öffnen eines Spiels startet der Hook mehrere parallele Import-Aufrufe und löst anschließend die Phasentextgenerierung aus. Ist das Spiel bereits in einem fortgeschrittenen Zustand, wird zusätzlich der Nachholendpunkt für fehlende Phasentexte aufgerufen. Da LLM-Aufrufe mehrere Sekunden dauern können, setzt der Hook gestaffelte Reload-Impulse, damit neue Entwürfe ohne Nutzerinteraktion erscheinen.
 
 Der Medienpfad folgt einem abweichenden Kommunikationsmuster. \texttt{useMediaWebSocket} hält eine persistente WebSocket-Verbindung aufrecht, die bei Verbindungsabbruch mit exponentiell wachsender Wartezeit neu aufgebaut wird, sodass eingehende Medieninhalte ohne den Mehraufwand regelmäßiger Abfragen latenzarm zugestellt werden.
@@ -257,7 +254,6 @@ Statistiken, Spielminuten-Sync & 60\,s & Live, PreMatch, ToBeConfirmed \\
 }
 
 \texttt{useLiveMinute} leitet die angezeigte Spielminute primär aus \texttt{match.minute} ab, das von n8n bei Spielminuten-Aktualisierungen gesetzt wird. Fehlt dieser Wert, berechnet der Hook die Minute aus der Anstoßzeit. In der ersten Halbzeit entspricht sie den seit Anpfiff vergangenen Minuten, in der zweiten wird der Halbzeitblock herausgerechnet und der Zähler fortgesetzt.
-
 
 \subsection{Slash-Kommando-Verarbeitung}\label{slash-command-parser-parsecommand.ts}
 
@@ -304,6 +300,8 @@ Kommando & Ausgabe \\
 
 Für unvollständige Eingaben gibt der Parser gezielte Hinweise zurück, die im Editor unmittelbar angezeigt werden. Unbekannte Kommandos werden mit einem Fehlerstatus zurückgegeben, statt einen Laufzeitfehler auszulösen.
 
+Die folgende Abbildung zeigt die Slash-Kommando-Eingabe mit generiertem Ticker-Eintrag.
+
 \begin{figure}[H]
 \centering
 \includegraphics[width=\textwidth]{frontend_slash_command.png}
@@ -318,12 +316,16 @@ Der aktive Modus (\texttt{auto} / \texttt{coop} / \texttt{manual}) wird von \tex
 
 Das System ist vollständig per Tastatur bedienbar. \texttt{Ctrl+1} bis \texttt{Ctrl+3} schalten den aktiven Modus, und \texttt{?} öffnet ein Kürzel-Modal, das ausschließlich die im aktiven Modus verfügbaren Kombinationen anzeigt. Im \texttt{coop}-Modus werden dabei die meisten Kürzel eingeblendet, da \texttt{TAB} und \texttt{ESC} für die Entwurfsfreigabe hinzukommen, während im \texttt{auto}- und \texttt{manual}-Modus nur die modusübergreifenden Kürzel erscheinen.
 
+Die folgende Abbildung zeigt die Tastaturkürzel-Übersicht im Coop-Modus.
+
 \begin{figure}[H]
 \centering
 \includegraphics[width=0.7\textwidth]{frontend_shortcuts.png}
 \caption[Tastaturkürzel-Übersicht im Coop-Modus]{Tastaturkürzel-Übersicht im Coop-Modus mit dem vollständigen Kürzelsatz.}
 \label{fig:frontend-shortcuts}
 \end{figure}
+
+Die folgende Abbildung zeigt den LiveTicker-Editor im Coop-Modus mit KI-Entwürfen, Publikationsliste und Statistik-Panel.
 
 \begin{figure}[H]
 \centering
@@ -336,6 +338,8 @@ Für die Eingabe von Spielernamen bietet der Editor eine Autovervollständigung.
 
 Für die Nachbearbeitung publizierter Einträge stehen drei Wege bereit. Ein 5-Sekunden-Rückgängig-Hinweis direkt nach der Publikation ermöglicht das schnelle Zurücknehmen, ein Drei-Punkte-Menü pro Eintrag erlaubt direkte Bearbeitung und nicht-destruktives Löschen, und ein Stornieren-Button setzt einen Eintrag jederzeit in den Entwurfsstatus zurück. Alle drei Wege führen zu keiner irreversiblen Löschung von Datenbankeinträgen.
 
+Die folgende Abbildung zeigt die Bearbeitungsoptionen für publizierte Einträge über das Drei-Punkte-Menü.
+
 \begin{figure}[H]
 \centering
 \includegraphics[width=\textwidth]{frontend_published_entries.png}
@@ -346,6 +350,8 @@ Für die Nachbearbeitung publizierter Einträge stehen drei Wege bereit. Ein 5-S
 Rendering-Fehler werden pro Panel durch \texttt{ErrorBoundary}-Instanzen abgefangen, sodass ein Absturz einer Komponente die übrigen Panels arbeitsfähig lässt. API-Fehler werden in zwei Stufen behandelt: Kritische Operationen wie Publikation und Generierung geben einen Toast mit Fehlermeldung aus, während Hintergrundfehler aus Polling- und Auto-Import-Prozessen still geloggt werden, um den Redaktionsfluss nicht zu unterbrechen. \texttt{useApiStatus} überwacht \texttt{GET /health} und zeigt einen persistenten Statusindikator (\texttt{ok} / \texttt{degraded} / \texttt{offline}), der Konnektivitätsprobleme frühzeitig sichtbar macht.
 
 Der \texttt{LanguagePicker} ermöglicht die Umschaltung zwischen Deutsch, Englisch, Spanisch und Französisch. Ein Sprachwechsel löst mit einer Entprellverzögerung von 600\,ms \texttt{translateTickerBatch} aus, das alle Ticker-Einträge des aktiven Spiels über den Batch-Übersetzungsendpunkt in die Zielsprache überführt und anschließend neu lädt.
+
+Die folgende Abbildung zeigt die Ticker-Einträge nach Sprachumschaltung.
 
 \begin{figure}[H]
 \centering
@@ -360,6 +366,8 @@ Der \texttt{LanguagePicker} ermöglicht die Umschaltung zwischen Deutsch, Englis
 Die vereinsspezifische Instanz erweitert die generische Redaktionsoberfläche um medienspezifische Komponenten. Das \texttt{MediaPickerPanel} wird bei Spielen des konfigurierten Vereins eingeblendet und erlaubt den Import von ScorePlay-Bildern sowie Social-Media-Inhalten verschiedener Plattformen über Importbuttons. Die geladenen Medien erscheinen als anklickbare Kacheln, über die sich Spielphase, Spielminute und ein Freitext ergänzen lassen, bevor der Eintrag direkt publiziert wird. Die Kopfzeile zeigt einen \texttt{EF}-Indikator, der den aktiven euphorischen Schreibstil mit vereinsspezifischen Stilreferenzen signalisiert.
 
 Die instanzspezifische Konfiguration ist über das \texttt{WhitelabelConfig}-Interface typisiert und umfasst Vereinsname, Vereinskennzeichen, Farbwerte sowie die API-Endpunkte für Backend und n8n. Die Werte werden je Einsatzumgebung über Umgebungsvariablen gesetzt, sodass dieselbe Codebasis beide Instanzen bedient.
+
+Die folgende Abbildung zeigt die vereinsspezifische Redaktionsoberfläche der Eintracht-Frankfurt-Instanz.
 
 \begin{figure}[H]
 \centering
@@ -418,6 +426,8 @@ Die zeitliche Aktivität der Workflows über einen Spieltag verdeutlicht, wie di
 \subsection{Ablauflogik der Kern-Workflows}\label{kernworkflows-live}\label{events-llm-workflow}\label{spielzeit-kette}\label{vorbereitung-monitoring}
 
 WF10 übernimmt die Echtzeitverarbeitung neuer Spielereignisse. Nach dem Webhook-Eingang werden alle Ereignisse des Spiels von der Football-API abgerufen und durch einen JavaScript-Knoten normalisiert, der unter anderem gleichzeitige Gelbe und Rote Karten desselben Spielers zu einem Gelb-Rot-Ereignis zusammenführt. Per UPSERT werden die Ereignisse idempotent persistiert, wobei das Rückgabefeld \texttt{is\_new} neue von bereits bekannten Ereignissen trennt. Für neue Ereignisse ohne vorhandenen Ticker-Eintrag wird die KI-Textgenerierung ausgelöst; parallel dazu aktualisiert ein eigener Zweig den Spielstand in der Datenbank. Im \texttt{ef\_whitelabel}-Zweig wird bei Torereignissen ein Torjubel-Eintrag mit Spielervideo angelegt, sofern für den Torschützen eine Video-URL in der Datenbank hinterlegt ist. Wechselt das Spiel in die Elfmeterschießen-Phase und liegt noch kein entsprechender Eintrag vor, ruft ein gesonderter Zweig den aktuellen Penaltystand ab und persistiert das Ergebnis als zusammenfassenden Manualeintrag.
+
+Die folgende Abbildung zeigt den ereignisgesteuerten Workflow mit Webhook-Eingang, UPSERT, Instanz-Routing und LLM-Trigger.
 
 \begin{figure}[H]
 \centering

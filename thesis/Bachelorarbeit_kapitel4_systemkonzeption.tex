@@ -20,6 +20,8 @@ Die \textbf{Anwendungsschicht} gliedert sich in FastAPI (Python) als Anwendungsl
 
 Die \textbf{Präsentationsschicht} ist als konfigurierbares White-Label-Frontend realisiert. Sie deckt den vollständigen Redaktionsworkflow von der Spielauswahl bis zur Publikation ab und ist je Instanz über Stil, Sprache und Branding anpassbar.
 
+Die folgende Abbildung zeigt das dreischichtige Systemmodell mit seinen Hauptkomponenten.
+
 \begin{figure}[H]
 \centering
 \DiagramSystemArchitektur
@@ -42,7 +44,14 @@ Im laufenden Betrieb hält das Frontend den Datenstand über periodisches Pollin
 
 Phasenübergänge schließlich lösen automatisch Folgeprozesse aus, die ohne Frontend-Beteiligung Phasenwechsel-Einträge, Zusammenfassungen und weitere Einträge erzeugen.
 
+Die folgende Abbildung zeigt den Kommunikationsfluss zwischen den Systemkomponenten.
 
+\begin{figure}[H]
+\centering
+\DiagramCommunicationFlow
+\caption[Kommunikationsfluss der Systemkomponenten]{Kommunikationsfluss der Systemkomponenten.}
+\label{fig:kommunikationsfluss}
+\end{figure}
 
 
 \subsection{White-Label-Konfiguration und Schreibstile}\label{partner-team-konzept-und-white-label-steuerung}\label{schreibstile}
@@ -57,6 +66,8 @@ Das System unterscheidet drei Betriebsmodi, die je Spiel konfiguriert werden kö
 
 Im \texttt{auto}-Modus werden KI-generierte Einträge ohne Redakteurseingriff publiziert. Der \texttt{coop}-Modus erzeugt KI-Entwürfe, die der Redakteur freigeben, ablehnen, bearbeiten oder mit einem anderen Schreibstil neu generieren lassen kann. Im \texttt{manual}-Modus erstellt und veröffentlicht der Redakteur Einträge eigenständig.
 
+Die folgende Abbildung zeigt die drei Betriebsmodi im Überblick.
+
 \begin{figure}[H]
 \centering
 \DiagramBetriebsmodi
@@ -65,6 +76,8 @@ Im \texttt{auto}-Modus werden KI-generierte Einträge ohne Redakteurseingriff pu
 \end{figure}
 
 Jeder Ticker-Eintrag durchläuft ein Statusmodell mit vier Zuständen. \texttt{draft} bezeichnet einen unveröffentlichten Entwurf, der primär für KI-Einträge im \texttt{coop}-Modus auftritt. \texttt{published} macht den Eintrag im Ticker sichtbar, \texttt{rejected} kennzeichnet abgelehnte Entwürfe und \texttt{deleted} entfernt einen Eintrag aus dem sichtbaren Feed ohne physische Löschung. Publizierte Einträge können auf \texttt{draft} zurückgestuft und anschließend weiterbearbeitet oder erneut veröffentlicht werden.
+
+Die folgende Abbildung zeigt den Zustandsautomaten der Ticker-Einträge.
 
 \begin{figure}[H]
 \centering
