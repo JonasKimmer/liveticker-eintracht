@@ -4,7 +4,7 @@ Dieses Kapitel arbeitet die technologischen Grundlagen auf, die zur Umsetzung de
 
 \section{Large Language Models}\label{large-language-models}
 
-Large Language Models (LLM) werden auf umfangreichen Textdaten trainiert und können natürliche Sprache verstehen und generieren. Technisch basieren sie auf der Transformer-Architektur, die Text mithilfe von Aufmerksamkeitsmechanismen (Attention) verarbeitet, indem das Modell alle anderen Token im Kontext nach ihrer Relevanz gewichtet, wodurch es semantische Zusammenhänge über lange Sequenzen erfasst \cite{vaswani2017}. LLMs unterstützen zudem In-Context Learning, bei dem sich Modelle über Beispiele im Prompt konditionieren lassen, ohne ihre Gewichte anzupassen \cite{brown2020}. Few-Shot Prompting nutzt dieses Prinzip, indem konkrete Beispielpaare im Prompt das gewünschte Ausgabeverhalten demonstrieren.
+Large Language Models (LLM) werden auf umfangreichen Textdaten trainiert und können natürliche Sprache verstehen und generieren. Technisch basieren sie auf der Transformer-Architektur, die Text mithilfe von Aufmerksamkeitsmechanismen (Attention) verarbeitet, indem das Modell alle anderen Token im Kontext nach ihrer Relevanz gewichtet, wodurch es semantische Zusammenhänge über lange Sequenzen erfasst \cite{vaswani2017}. LLMs unterstützen zudem In-Context Learning, bei dem sich Modelle über Beispiele im Prompt konditionieren lassen, ohne ihre Gewichte anzupassen \cite{brown2020}. Few-Shot Prompting nutzt dieses Prinzip, indem konkrete Beispielpaare im Prompt das gewünschte Ausgabeverhalten demonstrieren \cite{brown2020}.
 
 LLMs unterscheiden sich erheblich in Parameteranzahl und Inferenzaufwand. Bei strukturierten Aufgaben mit kurzen Ausgaben erzielen kleinere Modelle häufig eine vergleichbare Ausgabequalität bei deutlich geringerer Latenz und niedrigeren Kosten als parameterreichere Modelle \cite{brown2020, openai2023}. Die Modellwahl ist damit eine eigenständige Designentscheidung mit unmittelbarem Einfluss auf Latenz und Betriebskosten.
 
@@ -36,9 +36,6 @@ Trotz dieser Entwicklung sind in der redaktionellen Praxis weiterhin templatebas
 Die Grenzen vollständiger Automatisierung zeigen sich in der journalistischen Praxis deutlich. Sportberichterstattung lebt wesentlich von Emotionen und nicht allein von Fakten, weshalb rein datengetriebene Systeme stilistisch als unzureichend gelten. Darüber hinaus sind solche Systeme den Eingabedaten vollständig ausgeliefert, sodass Ereignisse, die in den strukturierten Rohdaten nicht erfasst sind, zu Systemversagen führen \cite{beils2023}.
 
 Das Konzept des Human-in-the-Loop (HITL) bezeichnet Systemdesigns, in denen menschliche Akteure gezielt in automatisierte Entscheidungsprozesse eingebunden bleiben. Im journalistischen Kontext ist dieses Prinzip besonders relevant, weil die publizistische Verantwortung für Korrektheit, Ton und Relevanz nicht vollständig an ein Modell delegiert werden kann. Ticker unterscheiden sich je nach Medium grundlegend, da vereinsnahe Redaktionen aus der Perspektive der eigenen Fans berichten, während neutrale Plattformen sachliche Information priorisieren \cite{beils2023}. Diese redaktionelle Standpunktentscheidung ist strukturell menschlich. Für das Genre Liveticker, das von sprachlicher Lebendigkeit und situativer Einordnung lebt, verstoßen templatebasierte Ausgaben zudem gegen diese Konventionen und senken die Leserbindung \cite{hauser2008, beils2023}.
-
-
-
 
 
 
