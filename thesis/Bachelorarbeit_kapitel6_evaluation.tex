@@ -11,16 +11,12 @@ Die Evaluation der KI-Textgenerierung untersucht, inwiefern das System journalis
 
 Zur qualitativen Veranschaulichung werden die Stilprofile \texttt{neutral}, \texttt{euphorisch} und \texttt{kritisch} anhand realer Ausgaben für dasselbe Ereignis verglichen. Als Grundlage dienen drei generierte Einträge für das Tor von C.~Uzun in der 2.~Spielminute des Spiels Borussia Dortmund gegen Eintracht Frankfurt, Endstand 0:1, mit Vorlage von Dahoud.
 
-{\def\LTcaptype{none} % do not increment counter
 \begin{longtable}[]{@{}
   >{\raggedright\arraybackslash}p{(\linewidth - 2\tabcolsep) * \real{0.0714}}
   >{\raggedright\arraybackslash}p{(\linewidth - 2\tabcolsep) * \real{0.9286}}@{}}
+\caption{Generierte Ticker-Texte je Stilprofil für dasselbe Ereignis}\label{tab:stilprofile-vergleich}\\
 \toprule\noalign{}
-\begin{minipage}[b]{\linewidth}\raggedright
-Stil
-\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
-Generierter Text
-\end{minipage} \\
+Stil & Generierter Text \\
 \midrule\noalign{}
 \endhead
 \bottomrule\noalign{}
@@ -29,7 +25,6 @@ neutral    & „Früh klingelt es im Dortmunder Kasten. Uzun bringt Frankfurt in
 euphorisch & „TOOOOR! Uzun! Was ein Start! Dahoud mit dem Traumpass! Die Kiste brennt! 0:1!'' \\
 kritisch   & „Uzun. 0:1. Dahoud mit der Vorlage. Dortmunds Abwehr unsortiert. Frankfurt eiskalt.'' \\
 \end{longtable}
-}
 
 Alle drei Profile enthalten übereinstimmend Torschütze, Spielstand und Minute als Kernfakten, unterscheiden sich aber deutlich in Verdichtungsgrad und emotionalem Register.
 
@@ -40,7 +35,6 @@ Alle drei Profile enthalten übereinstimmend Torschütze, Spielstand und Minute 
 
 Die folgende Tabelle zeigt die LLM-as-Judge-Bewertungen der drei Stilprofile nach Korrektheit, Tonalität und Vollständigkeit.
 
-{\def\LTcaptype{none} % do not increment counter
 \begin{longtable}[]{@{}
   >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.14}}
   >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.06}}
@@ -48,6 +42,7 @@ Die folgende Tabelle zeigt die LLM-as-Judge-Bewertungen der drei Stilprofile nac
   >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.20}}
   >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.25}}
   >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.15}}@{}}
+\caption{LLM-as-Judge-Bewertungen nach Stilprofil (N\,=\,140)}\label{tab:hauptevaluation}\\
 \toprule\noalign{}
 Stil & n & Korrektheit & Tonalität & Vollständigkeit & Gesamt \\
 \midrule\noalign{}
@@ -59,11 +54,10 @@ euphorisch  & 47 & 4{,}51 & 3{,}60 & 4{,}11 & 4{,}07 \\
 kritisch    & 46 & 4{,}09 & 3{,}70 & 3{,}98 & 3{,}92 \\
 \textbf{Gesamt} & \textbf{140} & \textbf{4{,}48} & \textbf{3{,}87} & \textbf{4{,}30} & \textbf{4{,}22} \\
 \end{longtable}
-}
 
 \emph{N\,=\,140 Einträge aus 19 Spielen.}
 
-Korrektheit und Vollständigkeit fallen über alle drei Profile hinweg homogen hoch aus. Die Tonalität zeigt die stärkste Profilabhängigkeit und bildet beim euphorischen sowie beim kritischen Profil jeweils die schwächste Einzeldimension. Die Ergebnisse wurden stichprobenartig auf inhaltliche Plausibilität geprüft und stimmen mit den qualitativen Beobachtungen des Entwicklers aus dem laufenden Systembetrieb überein.
+Korrektheit und Vollständigkeit fallen über alle drei Profile hinweg homogen hoch aus. Die Tonalität zeigt die stärkste Profilabhängigkeit und bildet beim euphorischen sowie beim kritischen Profil jeweils die schwächste Einzeldimension. Die Ergebnisse wurden stichprobenartig auf inhaltliche Plausibilität geprüft und stimmen mit den qualitativen Beobachtungen aus dem laufenden Systembetrieb überein.
 
 
 \section{LLM-Konfigurationsexperimente}\label{llm-konfigurationsexperimente}
@@ -74,8 +68,8 @@ Ergänzend zur Hauptevaluation untersuchen vier gezielte Experimente den Einflus
 
 Die Ablationsstudie vergleicht die Ausgabequalität mit und ohne Few-Shot-Referenzen bei sonst identischer Konfiguration.
 
-{\def\LTcaptype{none}
 \begin{longtable}[]{@{}lrrrrrrrr@{}}
+\caption{Few-Shot-Ablationsstudie: Qualitätsvergleich mit und ohne Referenzen}\label{tab:fewshot-ablation}\\
 \toprule\noalign{}
 Stil & \multicolumn{4}{c}{Mit Few-Shot} & \multicolumn{4}{c}{Ohne Few-Shot} \\
      & K & T & V & Ø & K & T & V & Ø \\
@@ -88,7 +82,6 @@ euphorisch & 3{,}00 & 3{,}23 & 3{,}00 & 3{,}08 & 2{,}62 & 2{,}54 & 3{,}08 & 2{,}
 kritisch   & 4{,}15 & 3{,}54 & 3{,}46 & 3{,}72 & 4{,}15 & 3{,}69 & 3{,}46 & 3{,}77 \\
 \textbf{Gesamt} & \textbf{3{,}77} & \textbf{3{,}85} & \textbf{3{,}40} & \textbf{3{,}67} & \textbf{3{,}60} & \textbf{3{,}52} & \textbf{3{,}58} & \textbf{3{,}57} \\
 \end{longtable}
-}
 
 \emph{N\,=\,40. $T\,=\,0{,}5$, identisches Modell.}
 
@@ -98,8 +91,9 @@ Few-Shot-Referenzen verbessern die Gesamtqualität um $\Delta$\,=\,+0{,}10, wobe
 
 Der Temperaturparameter steuert die stochastische Varianz der LLM-Ausgabe. Die folgende Tabelle zeigt die Qualitätswerte je Stilprofil für drei Temperaturkonfigurationen.
 
-{\footnotesize\def\LTcaptype{none}
+{\footnotesize
 \begin{longtable}[]{@{}lrrrrrrrrrrrr@{}}
+\caption{Qualitätswerte nach Stilprofil und Temperaturkonfiguration (N\,=\,60)}\label{tab:temperaturvergleich}\\
 \toprule\noalign{}
 Stil & \multicolumn{4}{c}{$T\,=\,0{,}3$} & \multicolumn{4}{c}{$T\,=\,0{,}5$} & \multicolumn{4}{c}{$T\,=\,0{,}7$} \\
      & K & T & V & Ø & K & T & V & Ø & K & T & V & Ø \\
@@ -116,14 +110,14 @@ kritisch   & 4{,}83 & 3{,}00 & 4{,}00 & 3{,}94 & 4{,}67 & 3{,}67 & 3{,}83 & 4{,}
 
 \emph{N\,=\,60, je 20 pro Temperatur. Mit Few-Shot-Referenzen.}
 
-Die optimale Temperatur ist stilabhängig. Für \texttt{neutral} und \texttt{kritisch} schneidet $T\,=\,0{,}7$ am besten ab, für \texttt{euphorisch} $T\,=\,0{,}3$. Bei etwa sieben Datenpunkten je Stilprofil und Temperatur sind die Differenzen als Tendenzwerte zu interpretieren. 
+Die optimale Temperatur ist stilabhängig. Für \texttt{neutral} und \texttt{kritisch} schneidet $T\,=\,0{,}7$ am besten ab, für \texttt{euphorisch} $T\,=\,0{,}3$. Bei n\,=\,7 Datenpunkten je Konfiguration lassen sich die Unterschiede nur als Tendenzen bewerten. 
 
 \subsection{Mehrsprachige Qualitätsevaluation}\label{mehrsprachige-verifikation}
 
 Der Vergleich misst den Einfluss der Zielsprache auf die Ausgabequalität bei sonst identischer Konfiguration.
 
-{\def\LTcaptype{none}
 \begin{longtable}[]{@{}lrrrrrrrr@{}}
+\caption{Sprachvergleich Deutsch vs. Spanisch nach Stilprofil (N\,=\,21)}\label{tab:sprachvergleich}\\
 \toprule\noalign{}
 Stil & \multicolumn{4}{c}{Deutsch} & \multicolumn{4}{c}{Spanisch} \\
      & K & T & V & Ø & K & T & V & Ø \\
@@ -136,7 +130,6 @@ euphorisch & 4{,}00 & 2{,}86 & 3{,}86 & 3{,}57 & 4{,}29 & 4{,}57 & 3{,}86 & 4{,}
 kritisch   & 4{,}14 & 3{,}86 & 3{,}57 & 3{,}86 & 4{,}00 & 4{,}00 & 4{,}29 & 4{,}10 \\
 \textbf{Gesamt} & \textbf{4{,}14} & \textbf{3{,}71} & \textbf{3{,}86} & \textbf{3{,}90} & \textbf{4{,}24} & \textbf{4{,}33} & \textbf{4{,}24} & \textbf{4{,}27} \\
 \end{longtable}
-}
 
 \emph{N\,=\,21 Paare. DE und ES: $T\,=\,0{,}5$, kein Few-Shot.}
 
@@ -146,7 +139,7 @@ Unter kontrollierten Bedingungen erzielt Spanisch in allen drei Stilprofilen hö
 
 Der Vergleich analysiert, ob die Wahl des generierenden Modells einen messbaren Einfluss auf Korrektheit, Tonalität und Vollständigkeit hat, bei sonst identischer Konfiguration.
 
-{\footnotesize\def\LTcaptype{none}
+{\footnotesize
 \begin{longtable}[]{@{}
   >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.36}}
   >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.08}}
@@ -154,6 +147,7 @@ Der Vergleich analysiert, ob die Wahl des generierenden Modells einen messbaren 
   >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.14}}
   >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.14}}
   >{\raggedright\arraybackslash}p{(\linewidth - 8\tabcolsep) * \real{0.14}}@{}}
+\caption{Modellvergleich der Textqualität (N\,=\,30 je Modell)}\label{tab:modellvergleich-qualitaet}\\
 \toprule\noalign{}
 Modell & N & Korrektheit & Tonalität & Vollständigkeit & Gesamt \\
 \midrule\noalign{}
@@ -191,12 +185,13 @@ Gemini~2.5~Flash erzielt mit 591\,ms Median die kürzeste Latenz. Claude~Haiku~4
 
 Die folgende Tabelle dokumentiert die gemessenen Laufzeiten der n8n-Workflows, gegliedert nach Funktionsgruppe.
 
-{\footnotesize\def\LTcaptype{none}
+{\footnotesize
 \begin{longtable}[]{@{}
   >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.52}}
   >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.10}}
   >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.19}}
   >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.19}}@{}}
+\caption{Gemessene n8n-Workflow-Laufzeiten nach Funktionsgruppe}\label{tab:n8n-laufzeiten}\\
 \toprule\noalign{}
 Workflow & N & Median (ms) & P95 (ms) \\
 \midrule\noalign{}
@@ -227,17 +222,17 @@ Workflow & N & Median (ms) & P95 (ms) \\
 
 \emph{*\,Einzelmessung aus n8n-Dashboard (manuell). Alle übrigen Werte: n8n-Execution-Log via REST-API.}
 
-Im \texttt{auto}-Modus bestimmt \texttt{WF10} mit einem P95 von 18\,269\,ms die dominante Latenzkomponente, womit die Anforderung N4 ($<$\,30\,s) deutlich erfüllt ist. Im \texttt{coop}-Modus entfällt die maschinelle Generierungslatenz auf die redaktionelle Freigabe, sodass die systemseitige Veröffentlichungslatenz unter einer Sekunde liegt.
+Im \texttt{auto}-Modus bestimmt \texttt{WF10} mit einem P95 von 18\,269\,ms die dominante Latenzkomponente, womit die Anforderung N4 ($<$\,30\,s) deutlich erfüllt ist. Im \texttt{coop}-Modus verlagert sich die systemseitige Latenz auf die redaktionelle Freigabe, sodass die maschinelle Veröffentlichungslatenz unter einer Sekunde liegt.
 
 \section{Soll-Ist-Vergleich der Systemanforderungen}\label{anforderungsabgleich-soll-ist-vergleich}\label{technische-qualitätssicherung}
 
 21 der 22 in Abschnitt~\ref{zusammenfassung-der-systemanforderungen} hergeleiteten Anforderungen sind vollständig erfüllt. Die folgende Tabelle dokumentiert den Nachweis je Anforderung.
 
-{\def\LTcaptype{none} % do not increment counter
 \begin{longtable}[]{@{}
   >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.06}}
   >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.38}}
   >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.56}}@{}}
+\caption{Soll-Ist-Abgleich der Systemanforderungen}\label{tab:soll-ist}\\
 \toprule\noalign{}
 Nr. & Anforderung & Nachweis \\
 \midrule\noalign{}
@@ -270,7 +265,6 @@ N3 & Tastaturorientierte Bedienung & Tastaturkürzel für Modus, Freigabe und Ab
 N4 & LLM-Antwortlatenz & Median 3\,338\,ms, Anforderung erfüllt, vgl. Abschnitt~\ref{performance-und-laufzeitverhalten} \\
 N5 & Systemverfügbarkeit & Lifespan-Migrationen, Health-Check-Endpoint, automatisches WebSocket-Reconnect, kein manueller Eingriff im Spielbetrieb erforderlich \\
 \end{longtable}
-}
 
 Die einzige nicht vollständig erfüllte Anforderung ist F7, die mehrsprachige Textgenerierung. Die Funktionalität ist implementiert und per LLM-as-Judge für Deutsch und Spanisch verifiziert, ein Muttersprachler-Test für nicht-deutschsprachige Märkte steht jedoch aus.
 

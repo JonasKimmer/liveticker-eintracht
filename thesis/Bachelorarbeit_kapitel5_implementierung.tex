@@ -19,7 +19,7 @@ Die folgende Abbildung zeigt die Schichtenarchitektur des Backends.
 \label{fig:backend-schichten}
 \end{figure}
 
-Die Konfiguration ist in einer zentralen Settings-Schicht gebündelt, die ihre Werte aus Umgebungsvariablen bezieht, lokal per \texttt{.env}-Datei und im Deployment als Plattform-Secrets. Fehlt beim Start eine gültige Datenbankverbindung, wird der Start mit einem Validierungsfehler abgebrochen, um inkonsistenten Betriebszustand zu verhindern.
+Die Konfiguration ist in einer zentralen Settings-Schicht gebündelt, die ihre Werte aus Umgebungsvariablen bezieht, lokal per \texttt{.env}-Datei und im Deployment als Plattform-Secrets. Fehlt beim Start eine gültige Datenbankverbindung, schlägt der Start mit einem Validierungsfehler fehl, um inkonsistenten Betriebszustand zu verhindern.
 
 Die Datenbankschicht basiert auf synchronem SQLAlchemy, da Datenbankoperationen kurzlaufend sind und ein Wechsel auf asynchrone Persistenz ohne nachgewiesenen Latenzvorteil zusätzliche Komplexität verursachen würde. LLM-Aufrufe und externe API-Aufrufe werden dagegen asynchron ausgeführt, da dort die dominanten Latenzen entstehen. Schema-Migrationen werden beim Start kontrolliert angewendet, sodass ein konsistenter Datenbankschema-Stand über Entwicklungs- und Produktionsumgebungen hinweg sichergestellt ist.
 
@@ -171,10 +171,10 @@ Alle Backend- und n8n-Aufrufe werden über eine zentrale API-Schicht geleitet, d
 
 Die Zustandslogik ist in funktionsübergreifende und komponentenspezifische Hooks gegliedert, wobei erstere zentral verwaltet und letztere lokal bei ihrer Komponente gehalten werden, um komponentenübergreifende Kopplung zu minimieren. Die folgende Tabelle zeigt die fünf zentralen Feature-Hooks einschließlich der Polling-Sub-Hooks \texttt{useMatchCore}, \texttt{useMatchEvents}, \texttt{useMatchTicker} und \texttt{useLiveMinute}, deren Verhalten im Anschluss beschrieben wird:
 
-{\def\LTcaptype{none} % do not increment counter
 \begin{longtable}[]{@{}
   >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.27}}
   >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.73}}@{}}
+\caption{Zentrale Feature-Hooks des Frontends}\label{tab:feature-hooks}\\
 \toprule\noalign{}
 Hook & Verantwortlichkeit \\
 \midrule\noalign{}
@@ -187,7 +187,6 @@ Hook & Verantwortlichkeit \\
 \texttt{useMatchTriggers} & n8n-Webhook-Trigger, Catch-up-Phasengenerierung, Spielminuten-Sync \\
 \texttt{useMediaWebSocket} & WebSocket-Verbindung zu \texttt{/ws/media} mit exponentiellem Reconnect-Backoff \\
 \end{longtable}
-}
 
 Weitere Hooks bilden eine ergänzende Funktionsschicht für Navigation, Draft-Verwaltung, Auto-Publikation und Batch-Aktionen.
 
@@ -198,8 +197,8 @@ Der Medienpfad folgt einem abweichenden Kommunikationsmuster. \texttt{useMediaWe
 \label{frontend-polling}
 \texttt{resolvePollingInterval} passt den Abruftakt der einzelnen Datenpfade an den aktuellen Spielstatus an. Events, Ticker und Matchdaten, deren Änderungsfrequenz im Live-Betrieb hoch ist, werden in einem kürzeren Intervall abgefragt. Statistik- und Spielminuten-Abfragen laufen in einem längeren Takt, da ihr Informationsstand seltener wechselt und häufigere Abrufe die API-Last ohne Mehrwert erhöhen würden.
 
-{\def\LTcaptype{none} % do not increment counter
 \begin{longtable}[]{@{}llp{6.5cm}@{}}
+\caption{Polling-Intervalle nach Ressourcentyp und Spielstatus}\label{tab:polling-intervalle}\\
 \toprule\noalign{}
 Ressource & Intervall & Bedingung \\
 \midrule\noalign{}
@@ -210,7 +209,6 @@ Events, Ticker, Matchdaten & 15\,s & Live, FullTime, null (Standardwert) \\
 Events, Ticker, Matchdaten & 20\,s & PreMatch und alle anderen Zustände \\
 Statistiken, Spielminuten-Sync & 60\,s & Live, PreMatch, ToBeConfirmed \\
 \end{longtable}
-}
 
 \texttt{useLiveMinute} leitet die angezeigte Spielminute primär aus \texttt{match.minute} ab, das von n8n bei Spielminuten-Aktualisierungen gesetzt wird. Fehlt dieser Wert, berechnet der Hook die Minute aus der Anstoßzeit. In der ersten Halbzeit entspricht sie den seit Anpfiff vergangenen Minuten, in der zweiten wird der Halbzeitblock herausgerechnet und der Zähler fortgesetzt.
 
@@ -218,8 +216,8 @@ Statistiken, Spielminuten-Sync & 60\,s & Live, PreMatch, ToBeConfirmed \\
 
 Die Slash-Kommando-Verarbeitung ist vollständig clientseitig implementiert, um im zeitkritischen Live-Betrieb keine Netzwerklatenz zu erzeugen. Der Parser validiert Eingaben vor der Verarbeitung und gibt gezielte Hinweise bei unvollständiger oder unbekannter Syntax zurück, sodass Eingabefehler im Redaktionsfluss frühzeitig sichtbar werden. Die folgende Tabelle zeigt repräsentative Kommandos der beiden Typen Phasen- und Ereigniskommandos:
 
-{\def\LTcaptype{none} % do not increment counter
 \begin{longtable}[]{@{}llll@{}}
+\caption{Repräsentative Slash-Kommandos nach Typ}\label{tab:slash-kommandos-beispiele}\\
 \toprule\noalign{}
 Typ & Kommando & Ausgabe & Phase \\
 \midrule\noalign{}
@@ -233,7 +231,6 @@ Ereignis & \texttt{/g Uzun SGE} & „TOR — Can Uzun (SGE)'' & — \\
 Ereignis & \texttt{/gelb Koch SGE} & „Gelb — Koch (SGE)'' & — \\
 Ereignis & \texttt{/s Trapp Kaua SGE} & „Wechsel — Trapp ↔ Kaua (SGE)'' & — \\
 \end{longtable}
-}
 
 Unbekannte Kommandos werden mit einem Fehlerstatus zurückgegeben, statt einen Laufzeitfehler auszulösen.
 
@@ -271,7 +268,7 @@ Die folgende Abbildung zeigt den LiveTicker-Editor im Coop-Modus mit KI-Entwürf
 \label{fig:frontend-coop}
 \end{figure}
 
-Für die Eingabe von Spielernamen bietet der Editor eine Autovervollständigung. \texttt{useNameAutocomplete} prüft beim Tippen das zuletzt eingegebene Wort gegen die geladene Aufstellungsliste und schlägt Treffer präfixbasiert inline vor. Da die Aufstellung beim Öffnen des Spiels vollständig vorgeladen ist, sind keine zusätzlichen API-Aufrufe nötig, wodurch Tippfehler bei ungewöhnlichen Spielernamen im Live-Betrieb verhindert werden.
+Für die Eingabe von Spielernamen bietet der Editor eine Autovervollständigung. \texttt{useNameAutocomplete} prüft beim Tippen das zuletzt eingegebene Wort gegen die geladene Aufstellungsliste und schlägt Treffer präfixbasiert inline vor. Da die Aufstellung beim Öffnen des Spiels vollständig vorgeladen ist, ermöglicht dies exakte Spielernamen-Completion im Live-Betrieb ohne zusätzliche API-Aufrufe.
 
 Für die Nachbearbeitung publizierter Einträge stehen drei Wege bereit. Ein 5-Sekunden-Rückgängig-Hinweis direkt nach der Publikation ermöglicht das schnelle Zurücknehmen, ein Drei-Punkte-Menü pro Eintrag erlaubt direkte Bearbeitung und nicht-destruktives Löschen, und ein Stornieren-Button setzt einen Eintrag jederzeit in den Entwurfsstatus zurück. Alle drei Wege führen zu keiner irreversiblen Löschung von Datenbankeinträgen.
 
