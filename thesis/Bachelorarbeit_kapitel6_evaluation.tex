@@ -110,7 +110,7 @@ kritisch   & 4{,}83 & 3{,}00 & 4{,}00 & 3{,}94 & 4{,}67 & 3{,}67 & 3{,}83 & 4{,}
 
 \emph{N\,=\,60, je 20 pro Temperatur. Mit Few-Shot-Referenzen.}
 
-Die optimale Temperatur ist stilabhängig. Für \texttt{neutral} und \texttt{kritisch} schneidet $T\,=\,0{,}7$ am besten ab, für \texttt{euphorisch} $T\,=\,0{,}3$. 
+Die optimale Temperatur ist stilabhängig. Für \texttt{neutral} und \texttt{kritisch} schneidet $T\,=\,0{,}7$ am besten ab, für \texttt{euphorisch} $T\,=\,0{,}3$. Als Kompromiss für alle Profile ist $T\,=\,0{,}5$ im Produktionssystem konfiguriert.
 
 \subsection{Mehrsprachige Qualitätsevaluation}\label{mehrsprachige-verifikation}
 
@@ -162,7 +162,7 @@ Modell & N & Korrektheit & Tonalität & Vollständigkeit & Gesamt \\
 
 \emph{LLM-as-Judge. N\,=\,30 je Modell (10 Spiele $\times$ 3 Stilprofile).}
 
-Alle drei Modelle erreichen Gesamtwerte über 4{,}0. Claude~Haiku~4.5 und GPT-4.1-mini liegen mit einem Gesamtdurchschnitt von Ø\,4{,}41 bzw. Ø\,4{,}40 qualitativ nahezu gleichauf und unterscheiden sich vorwiegend in der Stärkenverteilung über die drei Dimensionen. Gemini~2.5~Flash erreicht mit Ø\,4{,}17 den niedrigsten Qualitätswert, erzielt dafür mit 591\,ms Median die kürzeste Generierungslatenz der drei Modelle.
+Alle drei Modelle erreichen Gesamtwerte über 4{,}0. Claude~Haiku~4.5 und GPT-4.1-mini liegen mit einem Gesamtdurchschnitt von Ø\,4{,}41 bzw. Ø\,4{,}40 qualitativ nahezu gleichauf und unterscheiden sich vorwiegend in der Stärkenverteilung über die drei Dimensionen. Gemini~2.5~Flash erreicht mit Ø\,4{,}17 den niedrigsten Qualitätswert.
 
 \section{Systemleistung und Laufzeitverhalten}\label{performance-und-laufzeitverhalten}\label{llm-latenz}
 
