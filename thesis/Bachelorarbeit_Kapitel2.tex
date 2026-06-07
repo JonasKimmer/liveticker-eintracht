@@ -17,13 +17,13 @@ Das Skalierungsproblem verschärft sich an Spieltagen mit Parallelspielen erhebl
 
 Die Globalisierung des Profifußballs hat die Erwartungen an die Reichweite digitaler Inhalte grundlegend verändert. Internationale Fangemeinschaften erwarten heute eine mediale Begleitung in ihrer Landessprache. Am Beispiel der Premier League zeigt sich dieser Wandel besonders deutlich. Der internationale Markt ist für die Liga längst bedeutender als der heimische englische. Dies betrifft zunehmend auch Bundesliga-Vereine mit zweistelligen Millionen-Reichweiten auf globalen Plattformen \cite{beils2023}. Eine rein deutschsprachige Berichterstattung wird dieser Reichweite nicht mehr gerecht.
 
-Mehrsprachige Berichterstattung beschränkt sich nicht auf eine reine Übersetzung existierender Inhalte. Im Kontext von Sport-Livetickern variieren sprachliche Konventionen, sprachliche Ausdrucksweisen und die emotionale Tonalität kulturspezifisch. Es handelt sich daher weniger um ein Übersetzungs- als um ein Lokalisierungsproblem. Jede weitere Sprache erfordert spezialisiertes Personal für Übersetzungs- und Anpassungsprozesse, was unter den ohnehin ressourcenknappen Echtzeit-Bedingungen die wirtschaftlichen und personellen Kapazitäten der meisten Vereinsredaktionen übersteigt \cite{blum2023}.
+Mehrsprachige Berichterstattung beschränkt sich nicht auf eine reine Übersetzung existierender Inhalte. Im Kontext von Sport-Livetickern variieren sprachliche Konventionen, Ausdrucksweisen und die emotionale Tonalität kulturspezifisch. Es handelt sich daher weniger um ein Übersetzungs- als um ein Lokalisierungsproblem. Jede weitere Sprache erfordert spezialisiertes Personal für Übersetzungs- und Anpassungsprozesse, was unter den ohnehin ressourcenknappen Echtzeit-Bedingungen die wirtschaftlichen und personellen Kapazitäten der meisten Vereinsredaktionen übersteigt \cite{blum2023}.
 
 
 
 \section{White-Label-Bedarf im Profifußball}\label{white-label-bedarf-im-profisport}
 
-Vereine kommunizieren heute zunehmend direkt mit ihrer Anhängerschaft und haben eigene Redaktionen aufgebaut. Anders als überregionale Medien betrachten Vereinsticker die Partie aus der Perspektive der eigenen Fans \cite{beils2023}, weshalb Ereignisse je nach Kanal unterschiedlich getönt sein müssen. Der Vereinskanal spricht emotionale Fanbindung an, während neutrale Plattformen sachliche Information priorisieren. Bei anhaltenden Rückständen oder schwachen Leistungen des eigenen Teams kann darüber hinaus ein kritisch-analysierender Stil angemessener sein als unkritische Euphorie.
+Vereine kommunizieren heute zunehmend direkt mit ihrer Anhängerschaft und haben eigene Redaktionen aufgebaut. Anders als überregionale Medien betrachten Vereinsticker die Partie aus der Perspektive der eigenen Fans, weshalb Ereignisse je nach Kanal unterschiedlich getönt sein müssen \cite{beils2023}. Der Vereinskanal spricht emotionale Fanbindung an, während neutrale Plattformen sachliche Information priorisieren. Bei anhaltenden Rückständen oder schwachen Leistungen des eigenen Teams kann darüber hinaus ein kritisch-analysierender Stil angemessener sein als unkritische Euphorie.
 Diese Variabilität konsistent einzuhalten stellt Redaktionen vor eine eigenständige Herausforderung, die personelle Fluktuation zusätzlich verschärft \cite{blum2023}. Die Markenstimme muss systemseitig konfigurierbar sein.
 
 Dieses Konsistenzproblem lässt sich technisch durch das Konzept des Software Product Line Engineering adressieren, das in der Praxis häufig als White-Label-Prinzip adaptiert wird. Dabei wird ein generisches Kernsystem so konzipiert, dass es für verschiedene Abnehmer durch definierte Variabilität individuell konfigurierbar ist, ohne den Quellcode zu ändern. Auf die Liveticker-Produktion übertragen bedeutet dies, dass eine einzige Codebasis für beliebige Vereine instanziiert werden kann, ohne dass für jeden Verein eine separate Implementierung gepflegt werden muss. Beispielsweise kann dieselbe Codebasis als Eintracht-Instanz mit fan-naher Tonalität oder als neutrale Instanz mit sachlicher Tonalität betrieben werden, während sich primär Konfigurationsparameter wie Branding, Stilreferenzen und Datenquellen unterscheiden \cite{pohl2005}.
@@ -72,11 +72,11 @@ Aus den drei Anforderungsdimensionen und der Fallstudie Eintracht Frankfurt lass
 
 \paragraph{Funktionale Anforderungen}\label{funktionale-anforderungen}
 
-{\def\LTcaptype{none} % do not increment counter
 \begin{longtable}[]{@{}
   >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.0370}}
   >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.6667}}
   >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.2963}}@{}}
+\caption{Funktionale Anforderungen}\label{tab:funktionale-anforderungen}\\
 \toprule\noalign{}
 \begin{minipage}[b]{\linewidth}\raggedright
 Nr.
@@ -107,15 +107,14 @@ F15 & Rückgängig-Funktion nach Publikation & Kap.~\ref{redaktioneller-aufwand-
 F16 & REST-API zur umfassenden Systemsteuerung (Modus, Ticker-Lifecycle, Spielverwaltung) & Kap.~\ref{redaktioneller-aufwand-bei-livetickern} \\
 F17 & Vereinsspezifische Instanzkonfiguration über Umgebungsvariablen ohne Quellcodeänderung & Kap.~\ref{white-label-bedarf-im-profisport}, \ref{anforderungsanalyse-am-beispiel-eintracht-frankfurt} \\
 \end{longtable}
-}
 
 \paragraph{Qualitätsanforderungen}\label{nicht-funktionale-anforderungen}
 
-{\def\LTcaptype{none} % do not increment counter
 \begin{longtable}[]{@{}
   >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.0469}}
   >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.5938}}
   >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3594}}@{}}
+\caption{Qualitätsanforderungen}\label{tab:qualitaetsanforderungen}\\
 \toprule\noalign{}
 \begin{minipage}[b]{\linewidth}\raggedright
 Nr.
@@ -134,7 +133,6 @@ N3 & Tastaturorientierte Bedienung: Kernoperationen ohne Mauseinsatz & Kap.~\ref
 N4 & LLM-Antwortlatenz unter 30\,s im produktiven Betrieb & Kap.~\ref{redaktioneller-aufwand-bei-livetickern} \\
 N5 & Systemverfügbarkeit: kein manueller Eingriff erforderlich während eines laufenden Spiels & Kap.~\ref{redaktioneller-aufwand-bei-livetickern} \\
 \end{longtable}
-}
 
 
 Die drei Anforderungsdimensionen operativer Zeitdruck, Mehrsprachigkeit und White-Label-Bedarf sind keine isolierten Herausforderungen, sondern greifen strukturell ineinander. Zeitdruck begrenzt die Kapazität manueller Produktion, Mehrsprachigkeit multipliziert diesen Aufwand, und White-Label-Betrieb verlangt eine stilistische Konsistenz, die personalabhängige Produktion allein nicht zuverlässig sicherstellen kann. Eine integrierte Lösung ist daher erforderlich. Der Soll-Ist-Abgleich in Abschnitt~\ref{anforderungsabgleich-soll-ist-vergleich} prüft die Einlösung dieser Anforderungen empirisch.
