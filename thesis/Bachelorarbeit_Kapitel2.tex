@@ -7,9 +7,9 @@ Das Kapitel vertieft die drei Anforderungsdimensionen operative Produktionsbedin
 
 Im Liveticker müssen in Abständen von einer bis drei Minuten Ereignisse unter simultaner Beobachtung des Spielgeschehens wahrgenommen, journalistisch bewertet, kontextualisiert und in sprachlich angemessene Form gebracht werden (vgl. Hauser 2008, S.~3--4). Diese kognitive Parallelverarbeitung macht den Liveticker zu einer Echtzeit-Textgattung, die sich fundamental von retrospektiven Formaten wie dem Spielbericht unterscheidet (vgl. Hauser 2008, S.~2--3). Zusätzlich muss ein Ticker ein heterogenes Publikum gleichzeitig bedienen. Nutzer ohne TV-Bild erwarten eine primäre Beschreibung des Spielgeschehens, während Nutzer mit TV-Bild auf zusätzliche Einordnung und Unterhaltung angewiesen sind (vgl. McEnnis 2016, zit. n. Bluhm \& Schäfer 2023, S.~24 u.~36). Diese Doppelfunktion verschärft den Anforderungsdruck weiter, da der Text gleichzeitig faktisch korrekt, sprachlich angemessen und unterhaltsam sein muss (vgl. Meier 2018, zit. n. Bluhm \& Schäfer 2023, S.~27).
 
-Schreiben und Publizieren fallen in einem einzigen Schritt zusammen (vgl. Walter 2020, S.~29). Ticker-Autoren müssen daneben häufig weitere Aufgaben übernehmen, etwa die Erstellung des abschließenden Spielberichts (vgl. Bluhm \& Schäfer 2023, S.~35). Die Fehleranfälligkeit steigt unter diesen Bedingungen deutlich. Zahlendreher bei Spielminuten, falsch zugeordnete Spielernamen oder stilistische Brüche innerhalb eines Tickers sind unter hohem Produktionsdruck erwartbare Fehlerbilder (vgl. Walter 2020, S.~29, Bluhm \& Schäfer 2023, S.~35).
+Schreiben und Publizieren fallen in einem einzigen Schritt zusammen (vgl. 978-3-658-03881-6 Seite 204,205). Ticker-Autoren müssen daneben häufig weitere Aufgaben übernehmen, etwa die Erstellung des abschließenden Spielberichts (vgl. Bluhm \& Schäfer 2023, S.~35). Die Fehleranfälligkeit steigt unter diesen Bedingungen deutlich. Zahlendreher bei Spielminuten, falsch zugeordnete Spielernamen oder stilistische Brüche innerhalb eines Tickers sind unter hohem Produktionsdruck erwartbare Fehlerbilder (vgl. Beils 2023, S.~58; Bluhm \& Schäfer 2023, S.~33 u.~35).
 
-Das Skalierungsproblem verschärft sich an Spieltagen mit Parallelspielen erheblich, wenn mehrere Partien zeitgleich stattfinden. Redaktionen, die für mehrere Spiele Ticker anbieten, müssen entweder entsprechend viele Autoren gleichzeitig einsetzen oder einzelne Autoren mehrere Ticker parallel betreuen lassen, mit absehbaren Qualitätseinbußen (vgl. Bluhm \& Schäfer 2023, S.~32, 35). Erschwerend kommt hinzu, dass Liveticker-Stellen häufig mit wechselndem freien Personal besetzt werden (vgl. Bluhm \& Schäfer 2023, S.~32). Konsistente Tonalität und sprachliches Niveau sind unter diesen Bedingungen manuell nur eingeschränkt zu gewährleisten. Für Vereinsredaktionen mit kleinen Teams ist eine rein manuelle Skalierung damit personell und wirtschaftlich kaum darstellbar.
+Das Skalierungsproblem verschärft sich an Spieltagen mit Parallelspielen erheblich, wenn mehrere Partien zeitgleich stattfinden. Redaktionen, die für mehrere Spiele Ticker anbieten, müssen entweder entsprechend viele Autoren gleichzeitig einsetzen oder einzelne Autoren mehrere Ticker parallel betreuen lassen, mit absehbaren Qualitätseinbußen (vgl. Bluhm \& Schäfer 2023, S.~32, 35). Erschwerend kommt hinzu, dass Liveticker-Stellen häufig mit wechselndem freien Personal besetzt werden (vgl. Bluhm \& Schäfer 2023, S.~32). Konsistente Tonalität und sprachliches Niveau sind unter diesen Bedingungen manuell nur eingeschränkt zu gewährleisten (vgl. Bluhm & Schäfer 2023, ). Für Vereinsredaktionen mit kleinen Teams ist eine rein manuelle Skalierung damit personell und wirtschaftlich kaum darstellbar (beils).
 
 
 
@@ -24,9 +24,9 @@ Mehrsprachige Berichterstattung beschränkt sich nicht auf eine reine Übersetzu
 \section{White-Label-Bedarf im Profifußball}\label{white-label-bedarf-im-profisport}
 
 Vereine kommunizieren heute zunehmend direkt mit ihrer Anhängerschaft und haben eigene Redaktionen aufgebaut (vgl. Beils 2023, S.~155). Anders als überregionale Medien betrachten Vereinsticker die Partie aus der Perspektive der eigenen Fans (vgl. Canalp, zit. n. Beils 2023, S.~57), weshalb Ereignisse je nach Kanal unterschiedlich getönt sein müssen. Der Vereinskanal spricht emotionale Fanbindung an, während neutrale Plattformen sachliche Information priorisieren. Bei anhaltenden Rückständen oder schwachen Leistungen des eigenen Teams kann darüber hinaus ein kritisch-analysierender Stil angemessener sein als unkritische Euphorie.
-Diese Variabilität konsistent einzuhalten stellt Redaktionen vor eine eigenständige Herausforderung, die personelle Fluktuation zusätzlich verschärft. Die Markenstimme muss systemseitig konfigurierbar sein.
+Diese Variabilität konsistent einzuhalten stellt Redaktionen vor eine eigenständige Herausforderung, die personelle Fluktuation zusätzlich verschärft (vgl. Bluhm \& Schäfer 2023, S.~32). Die Markenstimme muss systemseitig konfigurierbar sein.
 
-Dieses Konsistenzproblem lässt sich durch White-Label-Architekturen technisch adressieren (vgl. Pohl et al.\ 2005, S.~12). Ein generisches Kernsystem wird so konzipiert, dass es für verschiedene Abnehmer individuell konfigurierbar ist, ohne den Quellcode zu ändern. Auf die Liveticker-Produktion übertragen bedeutet dies, dass eine einzige Codebasis für beliebige Vereine instanziierbar sein sollte, ohne dass für jeden Verein eine separate Implementierung gepflegt wird. Beispielsweise kann dieselbe Codebasis als Eintracht-Instanz mit fan-naher Tonalität oder als neutrale Instanz mit sachlicher Tonalität betrieben werden, während sich primär Konfigurationsparameter wie Branding, Stilreferenzen und Datenquellen unterscheiden.
+Dieses Konsistenzproblem lässt sich technisch durch das Konzept des Software Product Line Engineering adressieren, das in der Praxis häufig als White-Label-Prinzip adaptiert wird. Dabei wird ein generisches Kernsystem so konzipiert, dass es für verschiedene Abnehmer durch definierte Variabilität individuell konfigurierbar ist, ohne den Quellcode zu ändern (vgl. Pohl et al.\ 2005, S.~20). Auf die Liveticker-Produktion übertragen bedeutet dies, dass eine einzige Codebasis für beliebige Vereine instanziiert werden kann, ohne dass für jeden Verein eine separate Implementierung gepflegt werden muss (vgl. Pohl et al.\ 2005, S.~32). Beispielsweise kann dieselbe Codebasis als Eintracht-Instanz mit fan-naher Tonalität oder als neutrale Instanz mit sachlicher Tonalität betrieben werden, während sich primär Konfigurationsparameter wie Branding, Stilreferenzen und Datenquellen unterscheiden (vgl. Pohl et al.\ 2005, S.~30).
 
 
 \section{Fallstudie Eintracht Frankfurt}\label{anforderungsanalyse-am-beispiel-eintracht-frankfurt}
@@ -94,18 +94,18 @@ F2 & KI-Textgenerierung für alle Ereignistypen & Kap.~\ref{redaktioneller-aufwa
 F3 & Drei Stilprofile (\texttt{neutral}, \texttt{euphorisch}, \texttt{kritisch}) & Kap.~\ref{white-label-bedarf-im-profisport} \\
 F4 & Stilkonfiguration über vereinsspezifische Referenztexte & Kap.~\ref{white-label-bedarf-im-profisport} \\
 F5 & Ticker-Lifecycle (\texttt{draft} → \texttt{published} / \texttt{rejected} / \texttt{deleted}) & Kap.~\ref{redaktioneller-aufwand-bei-livetickern} \\
-F6 & Slash-Command-gestützte manuelle Ticker-Erstellung & Kap.~\ref{redaktioneller-aufwand-bei-livetickern} (Zeitdruck) \\
+F6 & Slash-Command-gestützte manuelle Ticker-Erstellung & Kap.~\ref{redaktioneller-aufwand-bei-livetickern} \\
 F7 & Mehrsprachige Textgenerierung (Deutsch, Englisch, Spanisch, Französisch) & Kap.~\ref{mehrsprachigkeit-als-herausforderung} \\
-F8 & Automatischer, idempotenter ETL-Datenimport aus externen Sportdatenquellen & Kap.~\ref{redaktioneller-aufwand-bei-livetickern}, \ref{anforderungsanalyse-am-beispiel-eintracht-frankfurt} (Echtzeit-Betrieb) \\
-F9 & Anbieterunabhängige LLM-Integration mit Ausfallsicherheit & Kap.~\ref{redaktioneller-aufwand-bei-livetickern} (Verfügbarkeit) \\
-F10 & Idempotente Generierung und Deduplizierung von Ticker-Einträgen & Kap.~\ref{redaktioneller-aufwand-bei-livetickern} (Korrektheit, Echtzeit-Betrieb) \\
-F11 & Pre-Match-Kontextgenerierung (Verletzungen, Head-to-Head-Daten, Spielortinformationen) & Kap.~\ref{redaktioneller-aufwand-bei-livetickern} (Kontextanreicherung) \\
-F12 & Echtzeit-Statistikaktualisierungen & Kap.~\ref{redaktioneller-aufwand-bei-livetickern} (Echtzeit) \\
+F8 & Automatischer, idempotenter ETL-Datenimport aus externen Sportdatenquellen & Kap.~\ref{redaktioneller-aufwand-bei-livetickern}, \ref{anforderungsanalyse-am-beispiel-eintracht-frankfurt} \\
+F9 & Anbieterunabhängige LLM-Integration mit Ausfallsicherheit & Kap.~\ref{redaktioneller-aufwand-bei-livetickern} \\
+F10 & Idempotente Generierung und Deduplizierung von Ticker-Einträgen & Kap.~\ref{redaktioneller-aufwand-bei-livetickern} \\
+F11 & Vorspiel-Kontextgenerierung (Verletzungen, Direktvergleich, Spielortinformationen) & Kap.~\ref{redaktioneller-aufwand-bei-livetickern} \\
+F12 & Echtzeit-Statistikaktualisierungen & Kap.~\ref{redaktioneller-aufwand-bei-livetickern} \\
 F13 & Medienintegration (ScorePlay-Bildmaterial, Social-Media-Panels für YouTube, X, Instagram) & Kap.~\ref{ist-zustand-bestehendes-system} \\
-F14 & Spielphasenverwaltung (Anpfiff, Halbzeit, Abpfiff) & Kap.~\ref{redaktioneller-aufwand-bei-livetickern} (Echtzeit-Betrieb) \\
-F15 & Rückgängig-Funktion nach Publikation & Kap.~\ref{redaktioneller-aufwand-bei-livetickern} (Fehleranfälligkeit unter Zeitdruck) \\
-F16 & REST-API zur umfassenden Systemsteuerung (Modus, Ticker-Lifecycle, Spielverwaltung) & Kap.~\ref{redaktioneller-aufwand-bei-livetickern} (Echtzeit-Betrieb) \\
-F17 & White-Label-Fähigkeit (vereinsspezifische Instanzkonfiguration über Umgebungsvariablen ohne Quellcodeänderung) & Kap.~\ref{white-label-bedarf-im-profisport}, \ref{anforderungsanalyse-am-beispiel-eintracht-frankfurt} \\
+F14 & Spielphasenverwaltung (Anpfiff, Halbzeit, Abpfiff) & Kap.~\ref{redaktioneller-aufwand-bei-livetickern} \\
+F15 & Rückgängig-Funktion nach Publikation & Kap.~\ref{redaktioneller-aufwand-bei-livetickern} \\
+F16 & REST-API zur umfassenden Systemsteuerung (Modus, Ticker-Lifecycle, Spielverwaltung) & Kap.~\ref{redaktioneller-aufwand-bei-livetickern} \\
+F17 & Vereinsspezifische Instanzkonfiguration über Umgebungsvariablen ohne Quellcodeänderung & Kap.~\ref{white-label-bedarf-im-profisport}, \ref{anforderungsanalyse-am-beispiel-eintracht-frankfurt} \\
 \end{longtable}
 }
 

@@ -170,7 +170,7 @@ Alle drei Modelle erreichen Gesamtwerte über 4{,}0. Claude~Haiku~4.5 und GPT-4.
 
 \section{Systemleistung und Laufzeitverhalten}\label{performance-und-laufzeitverhalten}\label{llm-latenz}
 
-Dieser Abschnitt misst die Generierungslatenz der drei evaluierten LLM-Modelle (Abschnitt~\ref{modellvergleich-latenz}) und leitet daraus das Time-to-Publish-Potenzial der Betriebsmodi ab (Abschnitt~\ref{ttp-abschaetzung}).
+Dieser Abschnitt misst die Generierungslatenz der drei evaluierten LLM-Modelle (Abschnitt~\ref{modellvergleich-latenz}) und leitet daraus das Publikationslatenz-Potenzial der Betriebsmodi ab (Abschnitt~\ref{ttp-abschaetzung}).
 
 \subsection{Modellvergleich der Generierungslatenz}\label{modellvergleich-latenz}\label{systemlatenz}
 
@@ -253,7 +253,7 @@ F7 & Mehrsprachige Textgenerierung & \texttt{translate\_text()}, Batch-Endpoint,
 F8 & Automatischer, idempotenter ETL-Datenimport & WF01--WF17, UPSERT-Strategien für Ereignisse, Spieler, Teams \\
 F9 & Anbieterunabhängige LLM-Integration mit Ausfallsicherheit & 5 Provider (openrouter → gemini → openai → anthropic → mock) \\
 F10 & Idempotente Generierung und Deduplizierung & Prüfung auf bestehenden Eintrag per \texttt{event\_id} vor LLM-Aufruf \\
-F11 & Pre-Match-Kontextgenerierung & 7 Context-Builder in \texttt{llm\_context\_builders.py} \\
+F11 & Vorspiel-Kontextgenerierung & 7 Context-Builder in \texttt{llm\_context\_builders.py} \\
 F12 & Echtzeit-Statistikaktualisierungen & \texttt{ctx\_live\_stats()} in \texttt{llm\_context\_builders.py}, Context-Builder-Tests abgedeckt \\
 F13 & Medienintegration (ScorePlay, Social-Media-Panels) & MediaQueue-Architektur, WF09, 11--13, instanzspezifische Panel-Einblendung \\
 F14 & Spielphasenverwaltung & WF17 erkennt Phasenänderungen, löst über WF15 Halbzeit- und Abpfiff-Generierung aus \\

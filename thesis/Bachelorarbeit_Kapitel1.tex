@@ -11,7 +11,7 @@ Constantin Seibt die operative Kernherausforderung der Liveticker-Berichterstatt
 eine Einschätzung, die im modernen digitalen Sportjournalismus bis heute
 nichts an Aktualität verloren hat (Seibt, zit.~n. Beils 2023, S.~56). Die Aussage markiert nicht nur eine stilistische Zuspitzung, sondern verweist auf ein strukturelles Produktionsproblem digitaler Echtzeitberichterstattung. Aus diesem Problemkontext ergeben sich drei Anforderungsdimensionen, die den Bedarf an technologischer Unterstützung begründen.
 
-Erstens zwingt der operative Zeitdruck Redakteure dazu, Spielereignisse in Echtzeit zu beobachten, einzuordnen und in stilistisch kohärente Kurztexte zu überführen, typischerweise in Abständen von ein bis drei Minuten (vgl. Walter 2020, S.~29, Bluhm \& Schäfer 2023, S.~27 u.~35). Zweitens stehen Redaktionen vor wachsenden Internationalisierungsanforderungen, da Profifußballvereine zunehmend internationale Fanbases bedienen (vgl. Beils 2023, S.~219) und Inhalte parallel in mehreren Sprachen bereitstellen müssen, was ohne entsprechendes mehrsprachiges Personal kaum aufrechtzuerhalten ist. Drittens begründet der strukturelle Wandel der Vereine zu eigenständigen Medienproduzenten einen konkreten Produktbedarf an Redaktionswerkzeugen mit konfigurierbarem vereinsspezifischem Ton und vereinsidentitätskonformer Gestaltung (vgl. Beils 2023, S.~8 u.~155).
+Erstens zwingt der operative Zeitdruck Redakteure dazu, Spielereignisse in Echtzeit zu beobachten, einzuordnen und in stilistisch kohärente Kurztexte zu überführen, typischerweise in Abständen von ein bis drei Minuten (vgl. Hauser 2008, S.~4; Bluhm \& Schäfer 2023, S.~27\,f.). Zweitens stehen Redaktionen vor wachsenden Internationalisierungsanforderungen, da Profifußballvereine zunehmend internationale Fanbases bedienen (vgl. Beils 2023, S.~219) und Inhalte parallel in mehreren Sprachen bereitstellen müssen, was ohne entsprechendes mehrsprachiges Personal kaum aufrechtzuerhalten ist. Drittens begründet der strukturelle Wandel der Vereine zu eigenständigen Medienproduzenten einen konkreten Produktbedarf an Redaktionswerkzeugen mit konfigurierbarem vereinsspezifischem Ton und vereinsidentitätskonformer Gestaltung (vgl. Beils 2023, S.~8 u.~155).
 
 Ziel der Arbeit ist ein produktionsfähiges Redaktionssystem, das diese Anforderungen durch den Einsatz von Large Language Models adressiert und den Zielkonflikt zwischen Geschwindigkeit und Qualität im Redaktionsprozess reduziert, während Entscheidungshoheit und publizistische Verantwortung beim Menschen verbleiben. Produktionsfähig bedeutet in dieser Arbeit, dass das System im realen Live-Betrieb einsetzbar ist, Kernprozesse stabil unterstützt und die abgeleiteten Anforderungen weitgehend erfüllt. Das System wird am Fallbeispiel Eintracht Frankfurt als vereinsspezifische White-Label-Instanz realisiert sowie als generische Instanz für beliebige Vereine ausgelegt. Die Praxisorientierung wird durch die Kooperation mit der Stackwork GmbH im IT-Bereich von Eintracht Frankfurt abgesichert.
 
@@ -31,7 +31,7 @@ Qualitätsanforderungen hinsichtlich Korrektheit, Tonalität und
 Vollständigkeit?}
 \end{quote}
 
-Der erste Teil ist im Sinne des Design Science Research (vgl. Hevner et al.~2004) konstruktiv angelegt und umfasst Konzeption, Architekturentscheidungen und prototypische Implementierung eines produktionsfähigen Systems. Der zweite Teil evaluiert empirisch, inwiefern das System journalistische Mindestanforderungen an Korrektheit, Tonalität und Vollständigkeit erfüllt.
+Der erste Teil ist im Sinne des Design Science Research (vgl. Hevner et al.~2004) konstruktiv angelegt und umfasst Konzeption, Architekturentscheidungen und prototypische Implementierung eines produktionsfähigen Systems. (vgl. design-research-in-information-systems-4c3y9stijm.pdf seite 99) Der zweite Teil evaluiert empirisch, inwiefern das System journalistische Mindestanforderungen an Korrektheit, Tonalität und Vollständigkeit erfüllt.
 
 
 \section{Methodisches Vorgehen}\label{methodisches-vorgehen}
@@ -39,15 +39,15 @@ Der erste Teil ist im Sinne des Design Science Research (vgl. Hevner et al.~2004
 Die Arbeit folgt einem konstruktiven Forschungsansatz im Sinne des
 Design Science Research (vgl. Hevner et al.~2004). Ein
 softwarebasiertes Artefakt wird als Antwort auf ein identifiziertes
-Praxisproblem entworfen, implementiert und evaluiert.
+Praxisproblem entworfen, implementiert und evaluiert (Design_Science_in_Information_Systems_Research (1).pdf).
 
-Das methodische Vorgehen umfasst fünf aufeinander aufbauende Phasen: Problemanalyse, Technologierecherche, Systemkonzeption, Implementierung und Evaluation.
+Das methodische Vorgehen umfasst fünf aufeinander aufbauende Phasen: Problemanalyse, Technologierecherche, Systemkonzeption, Implementierung und Evaluation (design-research-in-information-systems-4c3y9stijm.pdf).
 
-Die Evaluationsmethodik operationalisiert die Forschungsfrage entlang einer zeitlichen und einer qualitativen Dimension. Die zeitliche Dimension wird über die Time-to-Publish-Metrik erfasst. Die qualitative Dimension umfasst Korrektheit, Tonalität und Vollständigkeit und wird durch eine LLM-as-Judge-Bewertung analysiert. Die Anforderungen wurden iterativ mit professionellen Redakteuren und der Redaktionsleitung verfeinert. Ein leitfadengestütztes Experteninterview mit einem Senior Manager Redaktion und Digital Media bei Eintracht Frankfurt ergänzt die quantitativen Befunde um eine praxisnahe Außenperspektive.
+Die Evaluationsmethodik operationalisiert die Forschungsfrage entlang einer zeitlichen und einer qualitativen Dimension. Die zeitliche Dimension wird über die Publikationslatenz erfasst. Die qualitative Dimension umfasst Korrektheit, Tonalität und Vollständigkeit und wird durch eine LLM-as-Judge-Bewertung analysiert. Die Anforderungen wurden iterativ mit professionellen Redakteuren und der Redaktionsleitung verfeinert. Ein leitfadengestütztes Experteninterview mit einem Senior Manager Redaktion und Digital Media bei Eintracht Frankfurt ergänzt die quantitativen Befunde um eine praxisnahe Außenperspektive.
 
 \section{Abgrenzung}\label{abgrenzung}
 
-Bewusst ausgeklammert bleiben systematische Nutzerstudien und eine Authentifizierungsschicht für den Mehrbenutzerbetrieb. Der Einsatz ist auf ein netzwerkisoliertes internes Werkzeug beschränkt. Inhaltlich fokussiert die Arbeit Fußball-Liveticker im Live-Spielbetrieb. Nicht-Spielinhalte, andere Sportarten, ein Muttersprachler-Test der Mehrsprachigkeit sowie ein Langzeitbetrieb über eine vollständige Spielsaison bleiben außerhalb des Untersuchungsrahmens.
+Die Arbeit grenzt ihren Untersuchungsgegenstand in zwei Dimensionen ab. Methodisch sind systematische Nutzerstudien sowie eine Authentifizierungsschicht für den Mehrbenutzerbetrieb nicht Bestandteil der Arbeit, da das System als netzwerkisoliertes internes Werkzeug konzipiert und evaluiert wurde. Inhaltlich beschränkt sich die Untersuchung auf Fußball-Liveticker im Live-Spielbetrieb. Nicht-Spielinhalte, andere Sportarten und ein Langzeitbetrieb über eine vollständige Spielsaison liegen außerhalb des Untersuchungsrahmens. Eine muttersprachliche Qualitätsprüfung der Mehrsprachigkeitskomponente bleibt einer Folgestudie vorbehalten.
 
 \section{Aufbau der Arbeit}\label{aufbau-der-arbeit}
 
