@@ -139,7 +139,11 @@ Für Ereignisse mit dem Präfix \texttt{pre\_match} wird dem Prompt ein zusätzl
 
 \subsection{Evaluationsinfrastruktur}\label{evaluationsinfrastruktur}
 
-Die Evaluationsinfrastruktur ermöglicht die kontrollierte Neugenerierung aller Spielereignisse über ein Python-Skript mit konfigurierbarem Provider, Modell, Stil und Zielsprache. Die generierten Texte werden anschließend über einen separaten OpenRouter-Aufruf durch ein unabhängiges Judge-Modell bewertet. Diese Pipeline bildet die technische Grundlage für den Modell- und Parametervergleich in Kapitel~\ref{evaluation}.
+Der Modell- und Parametervergleich in Kapitel~\ref{evaluation} setzt eine reproduzierbare Generierungspipeline voraus, die unabhängig vom laufenden System betrieben werden kann. Dafür wurden eigenständige Python-Skripte entwickelt, die direkt über die OpenRouter-API kommunizieren und keinen aktiven Backend-Server erfordern.
+
+Als Datenbasis dienen echte Spielereignisse aus der Football-API, die zuvor über das Backend erfasst und als Testdatensatz persistiert wurden. Die Generierungsskripte parametrisieren Provider, Modell, Stilprofil und Zielsprache über Kommandozeilenargumente, sodass Vergleichsläufe mit identischem Datensatz unter kontrollierten Bedingungen reproduzierbar sind. Die Ergebnisse werden in CSV-Dateien persistiert, auf deren Basis ein separates Judge-Skript aufbaut.
+
+Das Judge-Skript sendet jeden generierten Text zusammen mit dem zugehörigen Ereigniskontext an ein unabhängiges Sprachmodell (\texttt{claude-sonnet-4-5} via OpenRouter) und fordert eine strukturierte Bewertung in drei Dimensionen an. Korrektheit misst die faktische Übereinstimmung mit dem Ereigniskontext, Tonalität die Stilkonsistenz gegenüber dem angeforderten Profil und Vollständigkeit die Abdeckung der Schlüsselfakten. Jede Dimension wird auf einer Skala von 1 bis 5 bewertet. Der System-Prompt des Judge-Modells definiert Schwellenwerte für jede Stufe, um Bewertungsdrift über Läufe hinweg zu begrenzen. Das Skript ist resume-fähig — bereits bewertete Zeilen werden übersprungen, sodass unterbrochene Läufe ohne Datenverlust fortgesetzt werden können.
 
 \section{Frontend-Implementierung}\label{frontend-implementierung}
 
