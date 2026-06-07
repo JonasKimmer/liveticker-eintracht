@@ -226,20 +226,21 @@ Im \texttt{auto}-Modus bestimmt \texttt{WF10} mit einem P95 von 18\,269\,ms die 
 
 \section{Soll-Ist-Vergleich der Systemanforderungen}\label{anforderungsabgleich-soll-ist-vergleich}\label{technische-qualitätssicherung}
 
-21 der 22 in Abschnitt~\ref{zusammenfassung-der-systemanforderungen} hergeleiteten Anforderungen sind vollständig erfüllt. Die folgende Tabelle dokumentiert den Nachweis je Anforderung.
+21 der 22 in Abschnitt~\ref{zusammenfassung-der-systemanforderungen} hergeleiteten Anforderungen sind vollständig erfüllt. Die folgenden Tabellen dokumentieren den Nachweis je Anforderung.
+
+\paragraph{Funktionale Anforderungen}
 
 \begin{longtable}[]{@{}
   >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.06}}
   >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.38}}
   >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.56}}@{}}
-\caption{Soll-Ist-Abgleich der Systemanforderungen}\label{tab:soll-ist}\\
+\caption{Soll-Ist-Abgleich: Funktionale Anforderungen}\label{tab:soll-ist-funktional}\\
 \toprule\noalign{}
 Nr. & Anforderung & Nachweis \\
 \midrule\noalign{}
 \endhead
 \bottomrule\noalign{}
 \endlastfoot
-\multicolumn{3}{l}{\emph{Funktionale Anforderungen}} \\
 F1 & Drei Betriebsmodi (\texttt{auto}, \texttt{coop}, \texttt{manual}) & Moduswechsel über REST-API, durch Integrationstests abgedeckt \\
 F2 & KI-Generierung für alle Ereignistypen & 24 Ereignistypen implementiert, Bulk-Generierungsendpunkt vorhanden \\
 F3 & Drei Stilprofile & Stilkonditionierung im Prompt, per Spiel konfigurierbar \\
@@ -257,8 +258,21 @@ F14 & Spielphasenverwaltung & Automatische Phasenerkennung löst Halbzeit- und A
 F15 & Rückgängig-Funktion nach Publikation & Rückgängig-Option nach Publikation, setzt Eintrag auf \texttt{draft} zurück \\
 F16 & REST-API zur vollständigen Systemsteuerung & Vollständige REST-API mit versionierten Endpunkten, durch Integrationstests abgedeckt \\
 F17 & White-Label-Fähigkeit & Instanzspezifische Konfiguration über Umgebungsvariablen, instanzspezifische Few-Shot-Filterung, vgl. Abschnitt~\ref{prompt-design-stilkonditionierung} \\
+\end{longtable}
+
+\paragraph{Qualitätsanforderungen}
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.06}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.38}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.56}}@{}}
+\caption{Soll-Ist-Abgleich: Qualitätsanforderungen}\label{tab:soll-ist-qualitaet}\\
+\toprule\noalign{}
+Nr. & Anforderung & Nachweis \\
 \midrule\noalign{}
-\multicolumn{3}{l}{\emph{Qualitätsanforderungen}} \\
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
 N1 & Mobiloptimierte Benutzeroberfläche & Responsives Layout, mobile Navigationsleiste, durch E2E-Test abgedeckt \\
 N2 & Fehlerresistenz Frontend & Fehlergrenze mit Fallback-UI, durch Tests abgedeckt \\
 N3 & Tastaturorientierte Bedienung & Tastaturkürzel für Modus, Freigabe und Ablehnung, Hilfs-Modal, vgl. Abschnitt~\ref{modusimplementierung-im-frontend} \\
