@@ -11,7 +11,7 @@ Die Evaluation der KI-Textgenerierung untersucht, inwiefern das System journalis
 
 Zur qualitativen Veranschaulichung werden die Stilprofile \texttt{neutral}, \texttt{euphorisch} und \texttt{kritisch} anhand realer Ausgaben für dasselbe Ereignis verglichen. Als Grundlage dienen drei generierte Einträge für das Tor von C.~Uzun in der 2.~Spielminute des Spiels Borussia Dortmund gegen Eintracht Frankfurt, Endstand 0:1, mit Vorlage von Dahoud.
 
-\begin{longtable}[]{@{}
+{\small\begin{longtable}[]{@{}
   >{\raggedright\arraybackslash}p{(\linewidth - 2\tabcolsep) * \real{0.0714}}
   >{\raggedright\arraybackslash}p{(\linewidth - 2\tabcolsep) * \real{0.9286}}@{}}
 \caption{Generierte Ticker-Texte je Stilprofil für dasselbe Ereignis}\label{tab:stilprofile-vergleich}\\
@@ -24,7 +24,7 @@ Stil & Generierter Text \\
 neutral    & „Früh klingelt es im Dortmunder Kasten. Uzun bringt Frankfurt in Führung. Dahoud mit der Vorlage. 0:1.'' \\
 euphorisch & „TOOOOR! Uzun! Was ein Start! Dahoud mit dem Traumpass! Die Kiste brennt! 0:1!'' \\
 kritisch   & „Uzun. 0:1. Dahoud mit der Vorlage. Dortmunds Abwehr unsortiert. Frankfurt eiskalt.'' \\
-\end{longtable}
+\end{longtable}}
 
 Alle drei Profile enthalten übereinstimmend Torschütze, Spielstand und Minute als Kernfakten, unterscheiden sich aber deutlich in Verdichtungsgrad und emotionalem Register.
 
@@ -110,7 +110,7 @@ kritisch   & 4{,}83 & 3{,}00 & 4{,}00 & 3{,}94 & 4{,}67 & 3{,}67 & 3{,}83 & 4{,}
 
 \emph{N\,=\,60, je 20 pro Temperatur. Mit Few-Shot-Referenzen.}
 
-Die optimale Temperatur ist stilabhängig. Für \texttt{neutral} und \texttt{kritisch} schneidet $T\,=\,0{,}7$ am besten ab, für \texttt{euphorisch} $T\,=\,0{,}3$. Bei n\,=\,7 Datenpunkten je Konfiguration lassen sich die Unterschiede nur als Tendenzen bewerten. 
+Die optimale Temperatur ist stilabhängig. Für \texttt{neutral} und \texttt{kritisch} schneidet $T\,=\,0{,}7$ am besten ab, für \texttt{euphorisch} $T\,=\,0{,}3$. 
 
 \subsection{Mehrsprachige Qualitätsevaluation}\label{mehrsprachige-verifikation}
 
