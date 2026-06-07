@@ -1,6 +1,6 @@
 \chapter{Einleitung}\label{einleitung}
 
-Ein Liveticker ist eine Form der Echtzeitberichterstattung, in der Spielereignisse und redaktionelle Einordnungen eines Fußballspiels fortlaufend als kurze Texteinträge publiziert werden (vgl.~\cite{hauser2008}, \cite{bluhm2023}). Er hat sich zu einer zentralen Darstellungsform digitaler Sportkommunikation entwickelt (vgl.~\cite{beils2023}). Vereine und Medien publizieren heute in Echtzeit über eigene Plattformen und übernehmen damit Aufgaben, die zuvor stärker in klassischen Redaktionsstrukturen gebündelt waren (vgl.~\cite{beils2023}). Dieser strukturelle Wandel verschärft den operativen Druck auf Redakteure. Geschwindigkeit, stilistische Konsistenz und Mehrsprachigkeit müssen unter Echtzeit-Bedingungen gleichzeitig gewährleistet werden, ein Zielkonflikt, den das folgende System adressiert.
+Ein Liveticker ist eine Form der Echtzeitberichterstattung, in der Spielereignisse und redaktionelle Einordnungen eines Fußballspiels fortlaufend als kurze Texteinträge publiziert werden \cite{hauser2008, bluhm2023}. Er hat sich zu einer zentralen Darstellungsform digitaler Sportkommunikation entwickelt \cite{beils2023}. Vereine und Medien publizieren heute in Echtzeit über eigene Plattformen und übernehmen damit Aufgaben, die zuvor stärker in klassischen Redaktionsstrukturen gebündelt waren. Dieser strukturelle Wandel verschärft den operativen Druck auf Redakteure. Geschwindigkeit, stilistische Konsistenz und Mehrsprachigkeit müssen unter Echtzeit-Bedingungen gleichzeitig gewährleistet werden, ein Zielkonflikt, den das folgende System adressiert.
 
 \section{Problemstellung und Zielsetzung}\label{problemstellung-und-zielsetzung}
 
@@ -9,9 +9,9 @@ Konzept ist die komplette Überforderung. Des Autors. Des Schreibens. Und
 der Wirklichkeit."\, Mit diesen Worten beschreibt der Journalist
 Constantin Seibt die operative Kernherausforderung der Liveticker-Berichterstattung,
 eine Einschätzung, die im modernen digitalen Sportjournalismus bis heute
-nichts an Aktualität verloren hat (Seibt, zit.~n. \cite{beils2023}). Die Aussage markiert nicht nur eine stilistische Zuspitzung, sondern verweist auf ein strukturelles Produktionsproblem digitaler Echtzeitberichterstattung. Aus diesem Problemkontext ergeben sich drei Anforderungsdimensionen, die den Bedarf an technologischer Unterstützung begründen.
+nichts an Aktualität verloren hat \cite{beils2023}. Die Aussage markiert nicht nur eine stilistische Zuspitzung, sondern verweist auf ein strukturelles Produktionsproblem digitaler Echtzeitberichterstattung. Aus diesem Problemkontext ergeben sich drei Anforderungsdimensionen, die den Bedarf an technologischer Unterstützung begründen.
 
-Erstens zwingt der operative Zeitdruck Redakteure dazu, Spielereignisse in Echtzeit zu beobachten, einzuordnen und in stilistisch kohärente Kurztexte zu überführen, typischerweise in Abständen von ein bis drei Minuten (vgl.~\cite{hauser2008}, \cite{bluhm2023}). Zweitens stehen Redaktionen vor wachsenden Internationalisierungsanforderungen, da Profifußballvereine zunehmend internationale Fanbases bedienen (vgl.~\cite{beils2023}) und Inhalte parallel in mehreren Sprachen bereitstellen müssen, was ohne entsprechendes mehrsprachiges Personal kaum aufrechtzuerhalten ist. Drittens begründet der strukturelle Wandel der Vereine zu eigenständigen Medienproduzenten einen konkreten Produktbedarf an Redaktionswerkzeugen mit konfigurierbarem vereinsspezifischem Ton und vereinsidentitätskonformer Gestaltung (vgl.~\cite{beils2023}).
+Erstens zwingt der operative Zeitdruck Redakteure dazu, Spielereignisse in Echtzeit zu beobachten, einzuordnen und in stilistisch kohärente Kurztexte zu überführen, typischerweise in Abständen von ein bis drei Minuten \cite{hauser2008, bluhm2023}. Zweitens stehen Redaktionen vor wachsenden Internationalisierungsanforderungen, da Profifußballvereine zunehmend internationale Fanbases bedienen \cite{beils2023} und Inhalte parallel in mehreren Sprachen bereitstellen müssen, was ohne entsprechendes mehrsprachiges Personal kaum aufrechtzuerhalten ist. Drittens begründet der strukturelle Wandel der Vereine zu eigenständigen Medienproduzenten einen konkreten Produktbedarf an Redaktionswerkzeugen mit konfigurierbarem vereinsspezifischem Ton und vereinsidentitätskonformer Gestaltung \cite{beils2023}.
 
 Ziel der Arbeit ist ein produktionsfähiges Redaktionssystem, das diese Anforderungen durch den Einsatz von Large Language Models adressiert und den Zielkonflikt zwischen Geschwindigkeit und Qualität im Redaktionsprozess reduziert, während Entscheidungshoheit und publizistische Verantwortung beim Menschen verbleiben. Produktionsfähig bedeutet in dieser Arbeit, dass das System im realen Live-Betrieb einsetzbar ist, Kernprozesse stabil unterstützt und die abgeleiteten Anforderungen weitgehend erfüllt. Das System wird am Fallbeispiel Eintracht Frankfurt als vereinsspezifische White-Label-Instanz realisiert sowie als generische Instanz für beliebige Vereine ausgelegt. Die Praxisorientierung wird durch die Kooperation mit der Stackwork GmbH im IT-Bereich von Eintracht Frankfurt abgesichert.
 
@@ -31,13 +31,13 @@ Qualitätsanforderungen hinsichtlich Korrektheit, Tonalität und
 Vollständigkeit?}
 \end{quote}
 
-Der erste Teil ist im Sinne des Design Science Research (vgl.~\cite{hevner2004}) konstruktiv angelegt und umfasst Konzeption, Architekturentscheidungen und prototypische Implementierung eines produktionsfähigen Systems (vgl.~\cite{designresearch}). Der zweite Teil evaluiert empirisch, inwiefern das System journalistische Mindestanforderungen an Korrektheit, Tonalität und Vollständigkeit erfüllt.
+Der erste Teil ist im Sinne des Design Science Research \cite{hevner2004} konstruktiv angelegt und umfasst Konzeption, Architekturentscheidungen und prototypische Implementierung eines produktionsfähigen Systems \cite{designresearch}. Der zweite Teil evaluiert empirisch, inwiefern das System journalistische Mindestanforderungen an Korrektheit, Tonalität und Vollständigkeit erfüllt.
 
 
 \section{Methodisches Vorgehen}\label{methodisches-vorgehen}
 
 Die Arbeit folgt einem konstruktiven Forschungsansatz im Sinne des
-Design Science Research (vgl.~\cite{hevner2004}). Ein
+Design Science Research \cite{hevner2004}. Ein
 softwarebasiertes Artefakt wird als Antwort auf ein identifiziertes
 Praxisproblem entworfen, implementiert und evaluiert \cite{designscience}.
 
