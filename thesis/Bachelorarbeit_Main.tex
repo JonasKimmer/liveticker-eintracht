@@ -39,7 +39,6 @@
 \input{diagrams.tex}
 
 % Reduce overfull/underfull hbox warnings in text paragraphs
-\setlength{\emergencystretch}{3em}
 
 % Pandoc compatibility
 \providecommand{\tightlist}{%
@@ -298,6 +297,11 @@ UUID      \> Universally Unique Identifier \\
 \chapter*{Abbildungsverzeichnis}
 \addcontentsline{toc}{chapter}{Abbildungsverzeichnis}
 \makeatletter\@starttoc{lof}\makeatother
+
+% TABELLENVERZEICHNIS
+\chapter*{Tabellenverzeichnis}
+\addcontentsline{toc}{chapter}{Tabellenverzeichnis}
+\makeatletter\@starttoc{lot}\makeatother
 
 % CHAPTER 1: EINLEITUNG
 \clearpage
