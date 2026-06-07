@@ -1,6 +1,6 @@
 \chapter{Evaluation}\label{evaluation}
 
-Dieses Kapitel evaluiert das entwickelte System empirisch und schafft damit die Grundlage zur Beantwortung der Forschungsfrage. Die Textqualitätsevaluation in Abschnitt~\ref{evaluation-der-ki-textgenerierung} und die Konfigurationsexperimente in Abschnitt~\ref{llm-konfigurationsexperimente} setzen durchgehend das LLM-as-Judge-Verfahren ein, dessen technische Umsetzung in Abschnitt~\ref{evaluationsinfrastruktur} beschrieben ist. Abschnitt~\ref{performance-und-laufzeitverhalten} bewertet das Laufzeitverhalten, und Abschnitt~\ref{anforderungsabgleich-soll-ist-vergleich} dokumentiert den Soll-Ist-Vergleich der Systemanforderungen.
+Dieses Kapitel evaluiert das entwickelte System empirisch und schafft damit die Grundlage zur Beantwortung der Forschungsfrage. Die Textqualitätsevaluation in Abschnitt~\ref{evaluation-der-ki-textgenerierung} und die Konfigurationsexperimente in Abschnitt~\ref{llm-konfigurationsexperimente} setzen durchgehend das LLM-as-Judge-Verfahren ein. Alle LLM-as-Judge-Ergebnisse wurden stichprobenartig auf inhaltliche Plausibilität geprüft und stimmen mit den qualitativen Beobachtungen aus dem laufenden Systembetrieb überein. Abschnitt~\ref{performance-und-laufzeitverhalten} bewertet das Laufzeitverhalten, und Abschnitt~\ref{anforderungsabgleich-soll-ist-vergleich} dokumentiert den Soll-Ist-Vergleich der Systemanforderungen.
 
 
 \section{Hauptevaluation der Textqualität}\label{evaluation-der-ki-textgenerierung}
@@ -57,7 +57,7 @@ kritisch    & 46 & 4{,}09 & 3{,}70 & 3{,}98 & 3{,}92 \\
 
 \emph{N\,=\,140 Einträge aus 19 Spielen.}
 
-Korrektheit und Vollständigkeit fallen über alle drei Profile hinweg homogen hoch aus. Die Tonalität zeigt die stärkste Profilabhängigkeit und bildet beim euphorischen sowie beim kritischen Profil jeweils die schwächste Einzeldimension. Die Ergebnisse wurden stichprobenartig auf inhaltliche Plausibilität geprüft und stimmen mit den qualitativen Beobachtungen aus dem laufenden Systembetrieb überein.
+Korrektheit und Vollständigkeit fallen über alle drei Profile hinweg homogen hoch aus. Die Tonalität zeigt die stärkste Profilabhängigkeit und bildet beim euphorischen sowie beim kritischen Profil jeweils die schwächste Einzeldimension.
 
 
 \section{LLM-Konfigurationsexperimente}\label{llm-konfigurationsexperimente}
@@ -175,7 +175,7 @@ Der Vergleich misst die Ende-zu-Ende-Generierungslatenz der drei eingesetzten LL
 \begin{figure}[H]
 \centering
 \DiagramLatenzModelle
-\caption[Generierungslatenz der drei LLM-Modelle]{Generierungslatenz der drei LLM-Modelle im Vergleich (Median und P95).}
+\caption[Generierungslatenz der drei LLM-Modelle]{Generierungslatenz der drei LLM-Modelle im Vergleich.}
 \label{fig:latenz-modelle}
 \end{figure}
 
