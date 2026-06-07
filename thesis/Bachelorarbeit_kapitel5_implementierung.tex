@@ -10,16 +10,16 @@ Das Backend ist als FastAPI-Anwendung mit geschichteter Architektur implementier
 
 Das Backend ist unter \texttt{backend/app/} in sieben funktionale Pakete gegliedert. Die Trennung von \texttt{utils/} und \texttt{services/} folgt dem Schichtungsprinzip, sodass \texttt{services/} fachliche Logik mit Datenbankzugriff bündelt, während \texttt{utils/} ausschließlich abhängigkeitsarme Hilfsfunktionen enthält.
 
-\begin{verbatim}
+\begin{Verbatim}[fontsize=\small]
 backend/app/
 |-- api/v1/          # HTTP-Router (FastAPI)
 |-- models/          # SQLAlchemy ORM-Modelle (17 Dateien)
-|-- repositories/    # Datenbankzugriff (in der Regel je Domaenenentitaet eine Klasse)
+|-- repositories/    # Datenbankzugriff (je Domaenenentitaet eine Klasse)
 |-- schemas/         # Pydantic-Schemas (Request / Response)
 |-- services/        # Fachliche Services (llm_service, ticker_service)
 |-- utils/           # Hilfsmodule (context_builders, metrics)
 `-- core/            # Konfiguration, Datenbankverbindung, Enums, Konstanten
-\end{verbatim}
+\end{Verbatim}
 
 Die folgende Abbildung zeigt die Schichtenarchitektur des Backends.
 
@@ -128,15 +128,7 @@ Die KI-Generierungspipeline überführt Spielereignisse in stilspezifische Ticke
 
 Die Football-API stellt den Spielstand ausschließlich als aggregierten Endstand bereit, nicht als Zwischenstand zum jeweiligen Ereigniszeitpunkt. \texttt{score\_at\_event()} rekonstruiert diesen, indem alle vorangegangenen Torereignisse sequenziell ausgewertet werden. Die Rekonstruktion beginnt beim Initialstand 0:0 und aktualisiert den Spielstand ausschließlich für valide Torereignisse mit eindeutig zugeordneter Team-ID. Fehlerhafte Datensätze werden ausgefiltert, sodass die Pipeline auch bei unvollständigen Eingaben fortgesetzt wird. Fehlen Teamreferenzen vollständig, wird die Textgenerierung ohne Zwischenstandsangabe fortgesetzt.
 
-Die Kontextanreicherung wählt abhängig vom Ereignistyp zwischen zwei Pfaden. Für Live-Ereignisse wird ein Kontextblock mit Heim- und Auswärtsteam sowie dem berechneten Zwischenstand zusammengestellt. Für Pre-Match-Ereignisse stellen spezialisierte Kontextmodule Head-to-Head-Statistiken, Tabellenstand und Prognosen bereit. Fehlen einzelne Daten, bleiben die Kontexte durch Leerwerte und Platzhalter erzeugbar, sodass die Pipeline robust bleibt. Die folgende Abbildung zeigt den vollständigen Ablauf beider Pfade.
-
-\begin{figure}[H]
-\centering
-\DiagramTickerGenerationFlow
-\caption[Ablauf der KI-Generierungspipeline]{Ablauf der KI-Generierungspipeline.}
-\label{fig:ki-generierungspipeline}
-\end{figure}
-
+Die Kontextanreicherung wählt abhängig vom Ereignistyp zwischen zwei Pfaden. Für Live-Ereignisse wird ein Kontextblock mit Heim- und Auswärtsteam sowie dem berechneten Zwischenstand zusammengestellt. Für Pre-Match-Ereignisse stellen spezialisierte Kontextmodule Head-to-Head-Statistiken, Tabellenstand und Prognosen bereit. Fehlen einzelne Daten, bleiben die Kontexte durch Leerwerte und Platzhalter erzeugbar, sodass die Pipeline robust bleibt.
 
 \subsection{Prompt-Design und Stilkonditionierung}\label{prompt-design-stilkonditionierung}
 
@@ -174,24 +166,23 @@ Die Frontend-Implementierung überführt die konzeptionellen Entscheidungen zu A
 
 Die Hauptansicht (\texttt{LiveTicker}) gliedert sich in drei eigenständige Panel-Komponenten, die über gemeinsame Context-Provider mit Daten und Aktions-Callbacks versorgt werden:
 
-\begin{verbatim}
+\begin{Verbatim}[fontsize=\small]
 App
-`- LiveTicker  [TickerModeContext | TickerDataContext
-               | TickerActionsContext]
+`- LiveTicker  [TickerModeContext | TickerDataContext | TickerActionsContext]
    |- LeftPanel
    |  `- PublishedEntry
    |- CenterPanel
-   |  |- AutoModePanel          (nur im Auto-Modus)
-   |  |- EventCard       --onGenerate-----------> TickerActionsContext
-   |  |- EntryEditor     --onManualPublish-------> TickerActionsContext
-   |  |- SummaryDraftCard --onPublished----------> TickerActionsContext
+   |  |- AutoModePanel           (nur im Auto-Modus)
+   |  |- EventCard        --onGenerate---------> TickerActionsContext
+   |  |- EntryEditor      --onManualPublish----> TickerActionsContext
+   |  |- SummaryDraftCard --onPublished--------> TickerActionsContext
    |  |- SummarySection / PublishedSummarySection / StatsDraftSection
-   |  `- MediaPickerPanel (ScorePlay) | YouTubePanel | TwitterPanel | InstagramPanel
+   |  `- MediaPickerPanel | YouTubePanel | TwitterPanel | InstagramPanel
    `- RightPanel
       |- Collapsible  (Statistiken, Aufstellung, Spieler)
       |- PitchFormation
       `- StatRow
-\end{verbatim}
+\end{Verbatim}
 Das \texttt{CenterPanel} enthält die publizierte Ticker-Ansicht, das \texttt{LeftPanel} den redaktionellen Arbeitsbereich mit Ereigniskarten, Editor und Zusammenfassungskomponenten und das \texttt{RightPanel} stellt Statistiken und Aufstellungsdaten bereit. Jedes Panel ist durch eine \texttt{ErrorBoundary}-Instanz gesichert, sodass Rendering-Fehler einzelner Komponenten die übrigen Panels nicht beeinträchtigen. Beim Start zeigt \texttt{LiveTicker} den \texttt{StartScreen}, auf dem der Ticker-Modus vorgewählt und beim Öffnen eines Spiels als \texttt{ticker\_mode} persistiert wird. \texttt{useNavigation} kapselt die Navigationskette und übergibt die Spiel-ID an \texttt{useMatchData}, das die Datensynchronisation startet.
 
 Die folgende Abbildung zeigt den Startscreen mit Spielauswahl und Modusvorwahl.
@@ -416,7 +407,7 @@ Die zeitliche Aktivität der Workflows über einen Spieltag verdeutlicht, wie di
 
 \begin{figure}[H]
 \centering
-\DiagramWorkflowTimeline
+\resizebox{\textwidth}{!}{\DiagramWorkflowTimeline}
 \caption[Zeitliche Aktivität der n8n-Workflows]{Zeitliche Aktivität der n8n-Workflows über einen Spieltag.}
 \label{fig:workflow-timeline}
 \end{figure}

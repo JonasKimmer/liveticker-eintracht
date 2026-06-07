@@ -141,9 +141,9 @@
   \draw[arrow] (fe.north) to[out=55, in=125]
     node[above, font=\scriptsize] {Webhook-Trigger} (n8n.north);
 
-  % n8n → Backend (POST)
+  % n8n → Backend (REST)
   \draw[arrow] ([yshift=-5pt]n8n.west) to[out=205, in=335]
-    node[below, font=\scriptsize] {POST /api/v1} ([yshift=-5pt]be.east);
+    node[below, font=\scriptsize] {REST} ([yshift=-5pt]be.east);
 
   % n8n ↔ Football-API
   \draw[arrow] ([yshift= 3pt]n8n.east) -- node[above, font=\scriptsize] {HTTP}
