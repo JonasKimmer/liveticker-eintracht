@@ -189,7 +189,7 @@ Für Pre-Match-Ereignisse ist der Prompt-Kontext auf Vorberichtsinhalte beschrä
 
 Das Backend spricht Modelle mehrerer Anbieter über eine einheitliche OpenAI-kompatible Schnittstelle an, sodass Anbieter- und Modellwechsel ohne Änderungen an der Generierungslogik möglich bleiben. Diese Abstraktion erhöht zudem die Systemrobustheit, da bei Störungen einzelner Anbieter auf Alternativen umgestellt werden kann.
 
-Standardmäßig ist \textbf{Gemini 2.0 Flash Lite} konfiguriert, ausgewählt auf Basis des Zielkonflikts aus Latenz, Kosten und Qualität für strukturierte Kurztextaufgaben. Da die Tickergenerierung kurze, faktengebundene Ausgaben erfordert, können kleinere Modelle vergleichbare Qualität bei deutlich geringerer Latenz und niedrigeren Kosten erzielen. Die Service-Abstraktion unterstützt darüber hinaus alternative Konfigurationen für Evaluations- und Vergleichsläufe.
+Standardmäßig ist Gemini 2.0 Flash Lite konfiguriert, ausgewählt auf Basis des Zielkonflikts aus Latenz, Kosten und Qualität für strukturierte Kurztextaufgaben. Da die Tickergenerierung kurze, faktengebundene Ausgaben erfordert, können kleinere Modelle vergleichbare Qualität bei deutlich geringerer Latenz und niedrigeren Kosten erzielen. Die Service-Abstraktion unterstützt darüber hinaus alternative Konfigurationen für Evaluations- und Vergleichsläufe.
 
 \subsection{LLM-Evaluationsstrategie}\label{evaluationsstrategie-llm}
 
@@ -235,7 +235,7 @@ Angesichts des operativen Zeitdrucks im Live-Betrieb unterstützt die Oberfläch
 
 Das Deployment-Konzept orientiert sich an zustandsarmen, unabhängig betreibbaren Diensten, umgebungsvariablenbasierter Konfiguration und einer deklarativen Infrastrukturbeschreibung im Repository, die reproduzierbare Deployments sicherstellt. Die White-Label-Ausprägung wird auf Anwendungsebene über Konfiguration und Instanzparameter gesteuert, nicht über getrennte Codebasen.
 
-Als PaaS-Anbieter wurde \textbf{Render} gewählt, da die Plattform den kombinierten Betrieb der Anwendungskomponenten sowie automatische Git-Deployments ohne zusätzliche Deployment-Pipeline unterstützt. Das Backend wird als Docker-Container betrieben, sodass Laufzeitumgebung und Abhängigkeiten zwischen lokaler Ausführung und Produktionsumgebung konsistent bleiben. Die erforderliche PostgreSQL-Datenbank wird als externer Dienst über Umgebungsvariablen eingebunden. Das Frontend wird als statischer Build ausgeliefert, der keine dedizierte Laufzeitumgebung erfordert.
+Als PaaS-Anbieter wurde Render gewählt, da die Plattform den kombinierten Betrieb der Anwendungskomponenten sowie automatische Git-Deployments ohne zusätzliche Deployment-Pipeline unterstützt. Das Backend wird als Docker-Container betrieben, sodass Laufzeitumgebung und Abhängigkeiten zwischen lokaler Ausführung und Produktionsumgebung konsistent bleiben. Die erforderliche PostgreSQL-Datenbank wird als externer Dienst über Umgebungsvariablen eingebunden. Das Frontend wird als statischer Build ausgeliefert, der keine dedizierte Laufzeitumgebung erfordert.
 
 n8n ist als eigenständige, containerisierte Integrationskomponente konzipiert. Die Instanz wird über einen Tunnel-Dienst für externe Webhook-Aufrufe zugänglich gemacht, wodurch Workflow-Iterationen ohne Redeploy-Zyklen möglich bleiben.
 
