@@ -135,15 +135,15 @@
 
   % Backend → Frontend (WebSocket, gestrichelt)
   \draw[arrow, dashed] (be.north) to[out=145, in=35]
-    node[above, font=\scriptsize] {WebSocket} (fe.north);
+    node[above, font=\scriptsize, pos=0.5] {WebSocket} (fe.north);
 
   % Frontend → n8n (Webhook-Trigger)
   \draw[arrow] (fe.north) to[out=55, in=125]
-    node[above, font=\scriptsize] {Webhook-Trigger} (n8n.north);
+    node[above, font=\scriptsize, pos=0.5] {Webhook-Trigger} (n8n.north);
 
-  % n8n → Backend (REST)
+  % n8n → Backend (REST) – Label über den Bogen
   \draw[arrow] ([yshift=-5pt]n8n.west) to[out=205, in=335]
-    node[below, font=\scriptsize] {REST} ([yshift=-5pt]be.east);
+    node[below, font=\scriptsize, pos=0.5, yshift=-3pt] {REST} ([yshift=-5pt]be.east);
 
   % n8n ↔ Football-API
   \draw[arrow] ([yshift= 3pt]n8n.east) -- node[above, font=\scriptsize] {HTTP}
@@ -155,13 +155,13 @@
   \draw[arrow] ([xshift=-4pt]be.south) -- node[left, font=\scriptsize] {ORM}
                ([xshift=-4pt]db.north);
 
-  % Backend → LLM Provider
+  % Backend → LLM Provider – Label nach rechts oben vom Bogen versetzt
   \draw[arrow] ([xshift=4pt]be.south) to[out=300, in=165]
-    node[below left, font=\scriptsize] {LLM-Aufruf} (llm.west);
+    node[above right, font=\scriptsize, pos=0.3] {LLM-Aufruf} (llm.west);
 
-  % n8n → PostgreSQL (direktes SQL)
+  % n8n → PostgreSQL (direktes SQL) – Label nach links versetzt
   \draw[arrow] ([xshift=-4pt]n8n.south) to[out=260, in=10]
-    node[above right, font=\scriptsize] {SQL} (db.north east);
+    node[left, font=\scriptsize, pos=0.45] {SQL} (db.north east);
 
   % n8n → LLM Provider (vertikal)
   \draw[arrow] ([xshift=4pt]n8n.south) -- node[right, font=\scriptsize] {LLM-Aufruf}
@@ -189,13 +189,14 @@
   \node[process] (llm)    at (6.2, -3.5) {LLM\\Call};
   \node[process] (output) at (8.6, -3.5) {Ticker-\\Text};
 
-  % Verbindungen
-  \draw[arrow] (rolle)   -- (prompt);
-  \draw[arrow] (stil)    -- (prompt);
-  \draw[arrow] (fakten)  -- (prompt);
-  \draw[arrow] (kontext) -- (prompt);
-  \draw[arrow] (fewshot) -- (prompt);
-  \draw[arrow] (regeln)  -- (prompt);
+  % Verbindungen – out=0 damit Pfeile horizontal aus den Nodes austreten
+  % und dann in den Prompt-aufbau-Node von verschiedenen Winkeln eintreten
+  \draw[arrow] (rolle)   to[out=0, in=130] (prompt);
+  \draw[arrow] (stil)    to[out=0, in=148] (prompt);
+  \draw[arrow] (fakten)  to[out=0, in=166] (prompt);
+  \draw[arrow] (kontext) to[out=0, in=194] (prompt);
+  \draw[arrow] (fewshot) to[out=0, in=212] (prompt);
+  \draw[arrow] (regeln)  to[out=0, in=230] (prompt);
   \draw[arrow] (prompt)  -- (llm);
   \draw[arrow] (llm)     -- (output);
 \end{tikzpicture}%
