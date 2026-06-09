@@ -53,7 +53,7 @@ Auf Backend-Ebene bilden FastAPI und PostgreSQL die Grundlage. FastAPI ist ein P
 
 Die Kommunikation zwischen Backend und Frontend folgt für Echtzeitanwendungen wie Liveticker zwei etablierten Mustern. HTTP-Polling ist einfach und kompatibel, erzeugt aber Latenz und Overhead bei leeren Antworten \cite{delatorre2019}. WebSocket bietet eine bidirektionale, persistente Verbindung mit minimalem Overhead nach dem initialen Verbindungsaufbau und ist latenzoptimal für ereignisgetriebene Datenströme \cite{rfc6455, delatorre2019}. In der Praxis kombinieren Systeme häufig beide Muster für unterschiedliche Datenpfade.
 
-Das Frontend setzt auf React, ein komponentenbasiertes Single-Page-Framework, das asynchrone Live-Datenpfade, klare Komponentenzerlegung und etablierte Test- und Build-Werkzeuge unterstützt. TypeScript ergänzt React als statische Typschicht und reduziert Schnittstellenfehler zwischen Komponenten, API-Antworten und Zustandsobjekten bereits zur Kompilierzeit.
+Das Frontend setzt auf React, ein komponentenbasiertes Single-Page-Framework, das asynchrone Live-Datenpfade, klare Komponentenzerlegung und etablierte Test- und Build-Werkzeuge unterstützt \cite{react}. TypeScript ergänzt React als statische Typschicht und reduziert Schnittstellenfehler zwischen Komponenten, API-Antworten und Zustandsobjekten bereits zur Kompilierzeit \cite{typescript}.
 
 Für das Deployment abstrahiert Platform-as-a-Service die Infrastrukturverwaltung und ermöglicht Releases direkt aus Git-Branches. Docker-Container kapseln Anwendung und Laufzeitumgebung in einem reproduzierbaren Image und bilden damit die standardisierte Deployment-Einheit für solche Plattformen.
 
