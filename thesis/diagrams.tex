@@ -13,29 +13,29 @@
 \begin{tikzpicture}[node distance=1.6cm, auto]
 
   % External Services
-  \node[externa] (fapi) at (0, 2.4)  {Football-API\\api-sports.io};
-  \node[externa] (llm)  at (0, 0.4)  {LLM Provider\\OpenRouter};
-  \node[externa] (sp)   at (0, -1.6) {Medienanbieter};
+  \node[externa] (fapi) at (0,  2.0) {Football-API\\api-sports.io};
+  \node[externa] (llm)  at (0,  0.4) {LLM Provider\\OpenRouter};
+  \node[externa] (sp)   at (0, -1.2) {Medienanbieter};
 
   % Integrationsschicht
-  \node[block] (n8n) at (4, 0.4) {n8n\\Workflows};
+  \node[block] (n8n) at (3.5, 0.4) {n8n\\Workflows};
 
   % Anwendungsschicht
-  \node[block] (api) at (8, 1.4)  {FastAPI\\Backend};
-  \node[db]    (db)  at (8, -0.8) {PostgreSQL};
+  \node[block] (api) at (7.2,  1.2) {FastAPI\\Backend};
+  \node[db]    (db)  at (7.2, -0.7) {PostgreSQL};
 
   % Präsentationsschicht
-  \node[block] (fe) at (12, 0.4) {React\\Frontend};
+  \node[block] (fe) at (11.0, 0.4) {React\\Frontend};
 
   % Layer background boxes
   \begin{pgfonlayer}{background}
     \node[draw=gray!50, fill=gray!8, rounded corners=4pt, inner sep=8pt,
           fit=(fapi)(llm)(sp)] (ext_box) {};
-    \node[draw=blue!35, fill=blue!4, rounded corners=4pt, inner sep=10pt,
+    \node[draw=blue!35, fill=blue!4, rounded corners=4pt, inner sep=8pt,
           fit=(n8n)] (int_box) {};
-    \node[draw=blue!35, fill=blue!4, rounded corners=4pt, inner sep=10pt,
+    \node[draw=blue!35, fill=blue!4, rounded corners=4pt, inner sep=8pt,
           fit=(api)(db)] (app_box) {};
-    \node[draw=blue!35, fill=blue!4, rounded corners=4pt, inner sep=10pt,
+    \node[draw=blue!35, fill=blue!4, rounded corners=4pt, inner sep=8pt,
           fit=(fe)] (pres_box) {};
   \end{pgfonlayer}
 
