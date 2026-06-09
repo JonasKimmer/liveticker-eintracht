@@ -10,6 +10,7 @@
 
 %% DIAGRAM 1: System Architecture (3-Schichten + Externe)
 \newcommand{\DiagramSystemArchitektur}{%
+\resizebox{\textwidth}{!}{%
 \begin{tikzpicture}[node distance=1.6cm, auto]
 
   % External Services
@@ -25,7 +26,7 @@
   \node[db]    (db)  at (7.2, -0.7) {PostgreSQL};
 
   % Präsentationsschicht
-  \node[block] (fe) at (11.0, 0.4) {React\\Frontend};
+  \node[block] (fe) at (12.5, 0.4) {React\\Frontend};
 
   % Layer background boxes
   \begin{pgfonlayer}{background}
@@ -56,6 +57,7 @@
   \node[below=0.25cm of pres_box, font=\small\itshape] {Präsentationsschicht};
 
 \end{tikzpicture}%
+}% end resizebox
 }
 
 
