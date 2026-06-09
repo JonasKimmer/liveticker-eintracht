@@ -226,7 +226,7 @@ Im \texttt{auto}-Modus bestimmt \texttt{WF10} mit einem P95 von 18\,269\,ms die 
 
 \section{Soll-Ist-Vergleich der Systemanforderungen}\label{anforderungsabgleich-soll-ist-vergleich}\label{technische-qualitätssicherung}
 
-21 der 22 in Abschnitt~\ref{zusammenfassung-der-systemanforderungen} hergeleiteten Anforderungen sind vollständig erfüllt. Die folgenden Tabellen dokumentieren den Nachweis je Anforderung.
+21 der 22 in Abschnitt~\ref{zusammenfassung-der-systemanforderungen} hergeleiteten Anforderungen sind vollständig erfüllt. Tabellen~\ref{tab:soll-ist-funktional} und~\ref{tab:soll-ist-qualitaet} dokumentieren den Nachweis je Anforderung.
 
 \newpage
 \paragraph{Funktionale Anforderungen}
@@ -247,8 +247,8 @@ F2 & KI-Generierung für alle Ereignistypen & 24 Ereignistypen implementiert, Bu
 F3 & Drei Stilprofile & Stilkonditionierung im Prompt, per Spiel konfigurierbar \\
 F4 & Stilkonfiguration über vereinsspezifische Referenztexte & Bis zu 3 vereinsspezifische Referenztexte, nach Ereignistyp gefiltert \\
 F5 & Ticker-Lifecycle (\texttt{draft} → \texttt{published} / \texttt{rejected}) & State-Machine mit publish/reject/retract, durch Integrationstests abgedeckt \\
-F6 & Slash-Command-gestützte manuelle Ticker-Erstellung & 25 Slash-Commands implementiert, durch Unit-Tests abgedeckt, vgl. Abschnitt~\ref{modusimplementierung-im-frontend} \\
-F7 & Mehrsprachige Textgenerierung & Mehrsprachiger Batch-Endpoint, LLM-as-Judge-Verifikation, vgl. Abschnitt~\ref{mehrsprachige-verifikation} \\
+F6 & Slash-Command-gestützte manuelle Ticker-Erstellung & 25 Slash-Commands implementiert, durch Unit-Tests abgedeckt \\
+F7 & Mehrsprachige Textgenerierung & Mehrsprachiger Batch-Endpoint, LLM-as-Judge-Verifikation \\
 F8 & Automatischer, idempotenter ETL-Datenimport & 17 n8n-Workflows, UPSERT-Strategien für Ereignisse, Spieler, Teams \\
 F9 & Anbieterunabhängige LLM-Integration mit Ausfallsicherheit & Fallback-Kette über 5 Provider \\
 F10 & Idempotente Generierung und Deduplizierung & Deduplizierungsprüfung per Ereignis-ID vor LLM-Aufruf \\
@@ -258,7 +258,7 @@ F13 & Medienintegration externer Bild- und Social-Media-Inhalte & MediaQueue-Arc
 F14 & Spielphasenverwaltung & Automatische Phasenerkennung löst Halbzeit- und Abpfiff-Generierung aus \\
 F15 & Rückgängig-Funktion nach Publikation & Rückgängig-Option nach Publikation, setzt Eintrag auf \texttt{draft} zurück \\
 F16 & REST-API zur vollständigen Systemsteuerung & Vollständige REST-API mit versionierten Endpunkten, durch Integrationstests abgedeckt \\
-F17 & White-Label-Fähigkeit & Instanzspezifische Konfiguration über Umgebungsvariablen, instanzspezifische Few-Shot-Filterung, vgl. Abschnitt~\ref{prompt-design-stilkonditionierung} \\
+F17 & White-Label-Fähigkeit & Instanzspezifische Konfiguration über Umgebungsvariablen, instanzspezifische Few-Shot-Filterung \\
 \end{longtable}
 
 \newpage
@@ -277,8 +277,8 @@ Nr. & Anforderung & Nachweis \\
 \endlastfoot
 N1 & Mobiloptimierte Benutzeroberfläche & Responsives Layout, mobile Navigationsleiste, durch E2E-Test abgedeckt \\
 N2 & Fehlerresistenz Frontend & Fehlergrenze mit Fallback-UI, durch Tests abgedeckt \\
-N3 & Tastaturorientierte Bedienung & Tastaturkürzel für Modus, Freigabe und Ablehnung, Hilfs-Modal, vgl. Abschnitt~\ref{modusimplementierung-im-frontend} \\
-N4 & LLM-Antwortlatenz & Median 3\,338\,ms, Anforderung erfüllt, vgl. Abschnitt~\ref{performance-und-laufzeitverhalten} \\
+N3 & Tastaturorientierte Bedienung & Tastaturkürzel für Modus, Freigabe und Ablehnung, Hilfs-Modal \\
+N4 & LLM-Antwortlatenz & Median 3\,338\,ms, Anforderung erfüllt \\
 N5 & Systemverfügbarkeit & Lifespan-Migrationen, Health-Check-Endpoint, automatisches WebSocket-Reconnect, kein manueller Eingriff im Spielbetrieb erforderlich \\
 \end{longtable}
 
