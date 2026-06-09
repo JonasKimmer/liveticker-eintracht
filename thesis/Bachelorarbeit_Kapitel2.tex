@@ -1,6 +1,6 @@
 \chapter{Motivation und Anforderungen}\label{motivation-und-anforderungen}
 
-Das Kapitel vertieft die drei Anforderungsdimensionen operative Produktionsbedingungen, Mehrsprachigkeit und White-Label-Bedarf, konkretisiert diese am Fallbeispiel Eintracht Frankfurt und leitet auf dieser Grundlage formale Systemanforderungen ab.
+Das Kapitel vertieft die drei Anforderungsdimensionen operative Produktionsbedingungen (Abschnitt~\ref{redaktioneller-aufwand-bei-livetickern}), Mehrsprachigkeit (Abschnitt~\ref{mehrsprachigkeit-als-herausforderung}) und White-Label-Bedarf (Abschnitt~\ref{white-label-bedarf-im-profisport}), konkretisiert diese am Fallbeispiel Eintracht Frankfurt (Abschnitt~\ref{anforderungsanalyse-am-beispiel-eintracht-frankfurt}) und leitet auf dieser Grundlage die Systemanforderungen ab (Abschnitt~\ref{zusammenfassung-der-systemanforderungen}).
 
 \section{Operative Produktionsbedingungen}\label{redaktioneller-aufwand-bei-livetickern}
 
@@ -35,14 +35,16 @@ Die Analyse basiert auf einem leitfadengestützten Experteninterview mit einem S
 
 \subsection{Redaktionsstruktur und Stilprofil}\label{fallstudie-eintracht-frankfurt}
 
-Eintracht Frankfurt bestreitet pro Saison bis zu 60 Pflichtspiele. Die Liveticker-Produktion wird von einem zweiköpfigen Team aus Redakteur und technischem Administrator verantwortet, das stets vor Ort im Stadion präsent ist, auch bei Auswärtsspielen. Pro Spiel fallen abhängig von der Ereignisdichte typischerweise 60 bis 120 Ticker-Einträge an, wobei der Redakteur ausschließlich für Ticker-Inhalte einschließlich Bildauswahl und Medieneinbettung zuständig ist. Als primäres Geschwindigkeitsziel gilt, konkurrierende Medien wie Kicker oder Bundesliga.de in der Publikationsgeschwindigkeit zu übertreffen. Als Zielsprache für die internationale Fanbasis wurde im Interview Englisch bestätigt.
+Eintracht Frankfurt bestreitet pro Saison bis zu 60 Pflichtspiele. Die Liveticker-Produktion verantwortet ein zweiköpfiges Team aus Redakteur und technischem Administrator, das sowohl bei Heim- als auch bei Auswärtsspielen stets vor Ort präsent ist. Pro Spiel fallen abhängig von der Ereignisdichte typischerweise 60 bis 120 Ticker-Einträge an. Der Redakteur ist dabei ausschließlich für die inhaltliche Seite zuständig, einschließlich Bildauswahl und Medieneinbettung.
 
-Der vereinsspezifische Ticker-Stil ist fan-nah, emotional und parteiisch zugunsten Eintrachts, ohne dabei unsachlich zu werden. Prägend sind eine klare Eintracht-Sprache sowie eine typisch hessische Färbung. Vereinsspezifische Schreibkonventionen wie die TOOOOR-Schreibweise oder das Vereinskürzel SGE sind in der Praxis etabliert, jedoch nicht in einem formalen Stilguide dokumentiert.
+Das primäre Geschwindigkeitsziel besteht darin, konkurrierende Medien wie Kicker oder Bundesliga.de in der Publikationsgeschwindigkeit zu übertreffen. Für die internationale Fanbasis wurde im Interview Englisch als Zielsprache neben Deutsch bestätigt.
+
+Der vereinsspezifische Ticker-Stil ist fan-nah, emotional und parteiisch zugunsten Eintrachts, ohne dabei unsachlich zu werden. Prägend sind eine klare Eintracht-Sprache sowie eine typisch hessische Färbung. Schreibkonventionen wie die TOOOOR-Schreibweise oder das Vereinskürzel SGE sind redaktionell etabliert, jedoch nicht in einem formalen Stilguide dokumentiert.
 
 
 \subsection{Defizite des bestehenden Redaktionssystems}\label{ist-zustand-bestehendes-system}
 
-Eintracht Frankfurt betreibt bis einschließlich der Saison 2025/26 ein eigens entwickeltes Backend eines Website-Dienstleisters, über das Ticker-Einträge direkt in die vereinseigene App ausgespielt werden. Das Werkzeug ist rein manuell und verfügt über keine KI-Integration. Die folgende Abbildung zeigt die Benutzeroberfläche des bestehenden Redaktionssystems.
+Eintracht Frankfurt betreibt bis einschließlich der Saison 2025/26 ein eigens entwickeltes Backend eines Website-Dienstleisters, über das Ticker-Einträge direkt in die vereinseigene App ausgespielt werden. Die folgende Abbildung zeigt die Benutzeroberfläche des bestehenden Redaktionssystems.
 
 \begin{figure}[H]
 \centering
@@ -66,9 +68,9 @@ Das System weist sechs strukturelle Defizite auf:
 
 
 
-\section{Formale Systemanforderungen}\label{zusammenfassung-der-systemanforderungen}
+\section{Systemanforderungen}\label{zusammenfassung-der-systemanforderungen}
 
-Aus den drei Anforderungsdimensionen und der Fallstudie Eintracht Frankfurt lassen sich 22 formale Systemanforderungen ableiten, gegliedert in 17 funktionale und 5 Qualitätsanforderungen.
+Aus den drei Anforderungsdimensionen und der Fallstudie Eintracht Frankfurt lassen sich 22 Systemanforderungen ableiten, gegliedert in 17 funktionale und 5 Qualitätsanforderungen. Die folgenden Tabellen dokumentieren die Anforderungen im Überblick.
 
 \paragraph{Funktionale Anforderungen}\label{funktionale-anforderungen}
 

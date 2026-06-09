@@ -124,15 +124,15 @@ Das Schema gliedert sich in drei Entitätsgruppen: Stammdaten (Saisons, Wettbewe
 
 Das Datenmodell folgt fünf Gestaltungsprinzipien.
 
-Die \textbf{Schlüsselstrategie} sieht für zentrale Stamm- und Match-Entitäten drei Schlüsselfelder vor: einen internen Primärschlüssel für performante Joins, einen externen Football-API-Bezeichner für idempotentes Upsert-Matching bei Reimports sowie eine UUID für externe Konsumenten. Abhängige Entitäten wie Ereignisse und Ticker-Einträge werden dagegen primär über interne IDs und Fremdschlüsselbezüge adressiert.
+Die Schlüsselstrategie sieht für zentrale Stamm- und Match-Entitäten drei Schlüsselfelder vor: einen internen Primärschlüssel für performante Joins, einen externen Football-API-Bezeichner für idempotentes Upsert-Matching bei Reimports sowie eine UUID für externe Konsumenten. Abhängige Entitäten wie Ereignisse und Ticker-Einträge werden dagegen primär über interne IDs und Fremdschlüsselbezüge adressiert.
 
-\textbf{Referenzielle Integrität} wird über zwei Löschstrategien sichergestellt. Abhängige Entitäten werden bei Spiellöschung mitentfernt, übergeordnete Kontextentitäten erhalten Null-Bindungen, sodass historische Datensätze erhalten bleiben. Zusammengesetzte Unique Constraints sichern Eindeutigkeit auf Datenbankebene.
+Referenzielle Integrität wird über zwei Löschstrategien sichergestellt. Abhängige Entitäten werden bei Spiellöschung mitentfernt, übergeordnete Kontextentitäten erhalten Null-Bindungen, sodass historische Datensätze erhalten bleiben. Zusammengesetzte Unique Constraints sichern Eindeutigkeit auf Datenbankebene.
 
 JSONB kommt für mehrsprachige Anzeigefelder und externe Strukturen mit variablem Schema zum Einsatz, wodurch der Großteil des Schemas vollständig typisiert bleibt.
 
 Für die Instanzkodierung trägt jeder Ticker-Eintrag und jede Stilreferenz ein Instanzfeld, das die Instanzzugehörigkeit direkt im Datensatz kodiert und die White-Label-Trennung ohne separate Datenbankschemata ermöglicht.
 
-Die \textbf{Indexstrategie} orientiert sich an den häufigsten Abfragemustern. Zusammengesetzte Indizes sichern Antwortzeiten bei tickerbezogenen Filter- und Join-Operationen im Live-Betrieb. Dedizierte Indizes unterstützen die Duplikatprüfung auf Ereignisebene sowie zentrale Fremdschlüsselbeziehungen.
+Die Indexstrategie orientiert sich an den häufigsten Abfragemustern. Zusammengesetzte Indizes sichern Antwortzeiten bei tickerbezogenen Filter- und Join-Operationen im Live-Betrieb. Dedizierte Indizes unterstützen die Duplikatprüfung auf Ereignisebene sowie zentrale Fremdschlüsselbeziehungen.
 
 \subsection{Schreibpfade und Schemaverwaltung}\label{persistenzstrategie}
 
@@ -144,9 +144,9 @@ Die n8n-Integrationsschicht orchestriert Datenflüsse zwischen externen Schnitts
 
 \subsection{Entwurfsprinzipien der Workflow-Automatisierung}\label{n8n-designprinzipien}
 
-Um stabilen Betrieb über mehrere Instanzen und erneute Auslösungen hinweg zu gewährleisten, folgen die Workflows fünf Designprinzipien. \textbf{Idempotenz} wird in ereignisgetriebenen Pfaden mehrstufig abgesichert, indem Datenbankschreibvorgänge per Upsert erfolgen, Generierungspfade vor dem LLM-Aufruf auf vorhandene Einträge prüfen und Backend-Endpunkte eine schichtenunabhängige Duplikatkontrolle durchführen. Die \textbf{Fehlerbehandlung} ist bewusst selektiv ausgelegt und konfiguriert automatische Wiederholungen nur in Teilpfaden, in denen kurzzeitige Verbindungsfehler zu erwarten sind.
+Um stabilen Betrieb über mehrere Instanzen und erneute Auslösungen hinweg zu gewährleisten, folgen die Workflows fünf Designprinzipien. Idempotenz wird in ereignisgetriebenen Pfaden mehrstufig abgesichert, indem Datenbankschreibvorgänge per Upsert erfolgen, Generierungspfade vor dem LLM-Aufruf auf vorhandene Einträge prüfen und Backend-Endpunkte eine schichtenunabhängige Duplikatkontrolle durchführen. Die Fehlerbehandlung ist bewusst selektiv ausgelegt und konfiguriert automatische Wiederholungen nur in Teilpfaden, in denen kurzzeitige Verbindungsfehler zu erwarten sind.
 
-Die \textbf{Zugriffsschicht} richtet sich nach der Aufgabenlogik des jeweiligen Workflows. Datennahe Importpfade schreiben direkt in die Datenbank, Workflows mit Fachlogik delegieren an Backend-Endpunkte, und Pfade mit erweitertem Kontextbedarf können zusätzlich direkt mit dem LLM-Provider interagieren. Die \textbf{Parametersteuerung} erfolgt über Webhook-Aufrufe, die Spiel-ID, Betriebsmodus und Instanzparameter übergeben, sodass White-Label-Routing und Modussteuerung konfigurationsgesteuert bleiben. Werden Workflows verkettet, geschieht dies über HTTP-Webhooks, wobei jeder Ablauf unabhängig auslösbar bleibt.
+Die Zugriffsschicht richtet sich nach der Aufgabenlogik des jeweiligen Workflows. Datennahe Importpfade schreiben direkt in die Datenbank, Workflows mit Fachlogik delegieren an Backend-Endpunkte, und Pfade mit erweitertem Kontextbedarf können zusätzlich direkt mit dem LLM-Provider interagieren. Die Parametersteuerung erfolgt über Webhook-Aufrufe, die Spiel-ID, Betriebsmodus und Instanzparameter übergeben, sodass White-Label-Routing und Modussteuerung konfigurationsgesteuert bleiben. Werden Workflows verkettet, geschieht dies über HTTP-Webhooks, wobei jeder Ablauf unabhängig auslösbar bleibt.
 
 \subsection{Funktionsbereiche der Workflow-Automatisierung}\label{workflow-klassen}
 
@@ -227,7 +227,7 @@ Da die LLM-Verarbeitung in n8n asynchron erfolgt, wiederholt das Frontend nach W
 
 \subsection{Redaktionsfluss und Oberflächenaufbau}\label{dreispalten-layout-und-redaktionsfluss}
 
-Die Redaktionsoberfläche ist als Dreispalten-Layout konzipiert, das den vollständigen Redaktionsfluss von der Entwurfsprüfung bis zur Publikation abbildet. Die Layoutkonzeption wurde in einem interaktiven Figma-Prototyp ausgearbeitet, der als konzeptionelle Ausgangsbasis diente. Im iterativen Entwicklungsprozess wurden Layoutdetails und Interaktionsmuster auf Basis praktischer Erkenntnisse aus dem Live-Betrieb schrittweise verfeinert, sodass die finale Implementierung in einzelnen Bereichen vom Prototyp abweicht.
+Die Redaktionsoberfläche ist als Dreispalten-Layout konzipiert, das den vollständigen Redaktionsfluss von der Entwurfsprüfung bis zur Publikation abbildet. Die Layoutkonzeption wurde in einem interaktiven Figma-Prototyp ausgearbeitet, der als konzeptionelle Ausgangsbasis diente. Im iterativen Entwicklungsprozess wurden Layoutdetails und Interaktionsmuster auf Basis praktischer Erkenntnisse aus dem Live-Betrieb schrittweise verfeinert, sodass die finale Implementierung in einzelnen Bereichen vom Prototyp abweicht. Die folgende Abbildung zeigt den Figma-Prototyp der Redaktionsoberfläche.
 
 \begin{figure}[H]
 \centering

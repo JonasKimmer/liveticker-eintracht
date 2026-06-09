@@ -147,7 +147,7 @@ Das Judge-Skript sendet jeden generierten Text zusammen mit dem zugehörigen Ere
 
 \section{Frontend-Implementierung}\label{frontend-implementierung}
 
-Die Frontend-Implementierung überführt die konzeptionellen Entscheidungen zu Architektur, Zustandsmanagement und Redaktionsfluss in lauffähigen TypeScript-Code. Der Abschnitt gliedert sich in Komponentenhierarchie und Zustandsarchitektur (Abschnitt~\ref{komponentenhierarchie}), Reaktive Datensynchronisation (Abschnitt~\ref{hook-architektur}), Slash-Kommando-Verarbeitung (Abschnitt~\ref{slash-command-parser-parsecommand.ts}), Implementierung der Betriebsmodi-Steuerung (Abschnitt~\ref{modusimplementierung-im-frontend}), Mehrsprachige Ausgabe (Abschnitt~\ref{frontend-mehrsprachigkeit}) sowie White-Label-Erweiterungen (Abschnitt~\ref{frontend-whitelabel}).
+Die Frontend-Implementierung überführt die konzeptionellen Entscheidungen zu Architektur, Zustandsmanagement und Redaktionsfluss in lauffähigen TypeScript-Code. Der Abschnitt gliedert sich in Komponentenhierarchie und Zustandsarchitektur (Abschnitt~\ref{komponentenhierarchie}), Reaktive Datensynchronisation (Abschnitt~\ref{hook-architektur}), Slash-Kommando-Verarbeitung (Abschnitt~\ref{slash-command-parser-parsecommand.ts}), Modus-Orchestrierung und Editorinteraktion (Abschnitt~\ref{modusimplementierung-im-frontend}), Mehrsprachige Ausgabe (Abschnitt~\ref{frontend-mehrsprachigkeit}) sowie White-Label-Erweiterungen (Abschnitt~\ref{frontend-whitelabel}).
 
 \subsection{Komponentenhierarchie und Zustandsarchitektur}\label{komponentenhierarchie}
 
@@ -244,11 +244,11 @@ Die folgende Abbildung zeigt die Slash-Kommando-Eingabe mit generiertem Ticker-E
 \end{figure}
 
 
-\subsection{Implementierung der Betriebsmodi-Steuerung}\label{modusimplementierung-im-frontend}
+\subsection{Modus-Orchestrierung und Editorinteraktion}\label{modusimplementierung-im-frontend}
 
 Der aktive Modus (\texttt{auto} / \texttt{coop} / \texttt{manual}) wird von \texttt{useTicker} orchestriert, das \texttt{useTickerMode} intern kapselt und beim Laden eines Spiels mit dem in der Datenbank gespeicherten \texttt{ticker\_mode} initialisiert. Modusänderungen werden unmittelbar lokal gesetzt, bevor die Backend-Anfrage abgeschlossen ist, sodass der angezeigte Modus bei fehlschlagender Anfrage beim nächsten Spielladen aus der Datenbank korrigiert wird. Inhaltlich unterscheiden sich die drei Modi im Publikationsverhalten. Im Auto-Modus werden KI-generierte Einträge direkt publiziert, wobei ein ergänzender Frontend-Pfad die Nachsteuerung offener Entwürfe übernimmt und durch Deduplikationslogik gegen Mehrfachverarbeitung abgesichert ist. Im Coop-Modus legt die KI einen Entwurf an, der per \texttt{TAB} freigegeben oder per \texttt{ESC} abgelehnt werden kann. Im manuellen Modus werden Einträge ohne KI-Unterstützung direkt als publiziert angelegt.
 
-Das System ist vollständig per Tastatur bedienbar. \texttt{Ctrl+1} bis \texttt{Ctrl+3} schalten den aktiven Modus, und \texttt{?} öffnet ein Kürzel-Modal, das ausschließlich die im aktiven Modus verfügbaren Kombinationen anzeigt. Im \texttt{coop}-Modus werden dabei die meisten Tastaturkürzel angezeigt, da \texttt{TAB} und \texttt{ESC} für die Entwurfsfreigabe hinzukommen, während im \texttt{auto}- und \texttt{manual}-Modus nur die modusübergreifenden Kürzel erscheinen.
+Das System ist vollständig per Tastatur bedienbar. \texttt{Ctrl+1} bis \texttt{Ctrl+3} schalten den aktiven Modus, und \texttt{Shift+?} öffnet ein Kürzel-Modal, das ausschließlich die im aktiven Modus verfügbaren Kombinationen anzeigt. Im \texttt{coop}-Modus werden dabei die meisten Tastaturkürzel angezeigt, da \texttt{TAB} und \texttt{ESC} für die Entwurfsfreigabe hinzukommen, während im \texttt{auto}- und \texttt{manual}-Modus nur die modusübergreifenden Kürzel erscheinen.
 
 Die folgende Abbildung zeigt die Tastaturkürzel-Übersicht im Coop-Modus.
 
@@ -268,7 +268,14 @@ Die folgende Abbildung zeigt den LiveTicker-Editor im Coop-Modus mit KI-Entwürf
 \label{fig:frontend-coop}
 \end{figure}
 
-Für die Eingabe von Spielernamen bietet der Editor eine Autovervollständigung. \texttt{useNameAutocomplete} prüft beim Tippen das zuletzt eingegebene Wort gegen die geladene Aufstellungsliste und schlägt Treffer präfixbasiert inline vor. Da die Aufstellung beim Öffnen des Spiels vollständig vorgeladen ist, ermöglicht dies exakte Spielernamen-Completion im Live-Betrieb ohne zusätzliche API-Aufrufe.
+Für die Eingabe von Spielernamen bietet der Editor eine Autovervollständigung. \texttt{useNameAutocomplete} prüft beim Tippen das zuletzt eingegebene Wort gegen die geladene Aufstellungsliste und schlägt Treffer präfixbasiert inline vor. Da die Aufstellung beim Öffnen des Spiels vollständig vorgeladen ist, ermöglicht dies exakte Spielernamen-Completion im Live-Betrieb ohne zusätzliche API-Aufrufe. Die folgende Abbildung zeigt die Autovervollständigung im Editor.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{frontend_autocomplete.png}
+\caption[Spielernamen-Autovervollständigung im Editor]{Spielernamen-Autovervollständigung mit präfixbasiertem Inline-Vorschlag.}
+\label{fig:frontend-autocomplete}
+\end{figure}
 
 Für die Nachbearbeitung publizierter Einträge stehen drei Wege bereit. Ein 5-Sekunden-Rückgängig-Hinweis direkt nach der Publikation ermöglicht das schnelle Zurücknehmen, ein Drei-Punkte-Menü pro Eintrag erlaubt direkte Bearbeitung und nicht-destruktives Löschen, und ein Stornieren-Button setzt einen Eintrag jederzeit in den Entwurfsstatus zurück. Alle drei Wege führen zu keiner irreversiblen Löschung von Datenbankeinträgen.
 
