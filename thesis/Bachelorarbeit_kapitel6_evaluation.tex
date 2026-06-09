@@ -9,7 +9,7 @@ Die Evaluation der KI-Textgenerierung untersucht, inwiefern das System journalis
 
 \subsection{Vergleich der Stilprofile}\label{einfluss-der-stilprofile}
 
-Zur qualitativen Veranschaulichung werden die Stilprofile \texttt{neutral}, \texttt{euphorisch} und \texttt{kritisch} anhand realer Ausgaben für dasselbe Ereignis verglichen. Als Grundlage dienen drei generierte Einträge für das Tor von C.~Uzun in der 2.~Spielminute des Spiels Borussia Dortmund gegen Eintracht Frankfurt, Endstand 0:1, mit Vorlage von Dahoud.
+Zur qualitativen Veranschaulichung werden die Stilprofile \texttt{neutral}, \texttt{euphorisch} und \texttt{kritisch} anhand realer Ausgaben für dasselbe Ereignis verglichen. Als Grundlage dienen drei generierte Einträge für das Tor von C.~Uzun in der 2.~Spielminute des Spiels Borussia Dortmund gegen Eintracht Frankfurt, Endstand 0:1, mit Vorlage von Dahoud (Tabelle~\ref{tab:stilprofile-vergleich}).
 
 {\small\begin{longtable}[]{@{}
   >{\raggedright\arraybackslash}p{(\linewidth - 2\tabcolsep) * \real{0.13}}
@@ -66,7 +66,7 @@ Ergänzend zur Hauptevaluation untersuchen vier gezielte Experimente den Einflus
 
 \subsection{Few-Shot-Ablationsstudie}\label{few-shot-ablation}
 
-Die Ablationsstudie vergleicht die Ausgabequalität mit und ohne Few-Shot-Referenzen bei sonst identischer Konfiguration.
+Tabelle~\ref{tab:fewshot-ablation} vergleicht die Ausgabequalität mit und ohne Few-Shot-Referenzen bei sonst identischer Konfiguration.
 
 \begin{longtable}[]{@{}lrrrrrrrr@{}}
 \caption{Few-Shot-Ablationsstudie: Qualitätsvergleich mit und ohne Referenzen}\label{tab:fewshot-ablation}\\
@@ -114,7 +114,7 @@ Die optimale Temperatur ist stilabhängig. Für \texttt{neutral} und \texttt{kri
 
 \subsection{Mehrsprachige Qualitätsevaluation}\label{mehrsprachige-verifikation}
 
-Der Vergleich misst den Einfluss der Zielsprache auf die Ausgabequalität bei sonst identischer Konfiguration.
+Tabelle~\ref{tab:sprachvergleich} misst den Einfluss der Zielsprache auf die Ausgabequalität bei sonst identischer Konfiguration.
 
 \begin{longtable}[]{@{}lrrrrrrrr@{}}
 \caption{Sprachvergleich Deutsch vs. Spanisch nach Stilprofil (N\,=\,21)}\label{tab:sprachvergleich}\\
@@ -137,7 +137,7 @@ Unter kontrollierten Bedingungen erzielt Spanisch in allen drei Stilprofilen hö
 
 \subsection{Modellvergleich der Textqualität}\label{modellvergleich-qualitaet}
 
-Der Vergleich analysiert, ob die Wahl des generierenden Modells einen messbaren Einfluss auf Korrektheit, Tonalität und Vollständigkeit hat, bei sonst identischer Konfiguration.
+Tabelle~\ref{tab:modellvergleich-qualitaet} analysiert, ob die Wahl des generierenden Modells einen messbaren Einfluss auf Korrektheit, Tonalität und Vollständigkeit hat, bei sonst identischer Konfiguration.
 
 {\footnotesize
 \begin{longtable}[]{@{}

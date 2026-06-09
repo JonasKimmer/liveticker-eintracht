@@ -25,7 +25,7 @@ Die Datenbankschicht basiert auf synchronem SQLAlchemy, da Datenbankoperationen 
 
 \subsection{Datenmodelle, Schemata und Datenzugriff}\label{datenmodelle-datenbankschema-und-api-validierung}
 
-Das Schema umfasst 17 ORM-Modelle (18 Tabellen). Die folgende Übersicht zeigt die Kernentitäten mit ihren relevanten Feldern:
+Das Schema umfasst 17 ORM-Modelle (18 Tabellen). Tabelle~\ref{tab:kernentitaeten} zeigt die Kernentitäten mit ihren relevanten Feldern:
 
 {\small\begin{longtable}[]{@{}
   >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.2300}}
@@ -61,7 +61,7 @@ Auf Schnittstellenebene übernimmt die Pydantic-Schema-Schicht die Validierung e
 
 \subsection{API-Router und Endpunktstruktur}\label{api-router-endpunktstruktur}
 
-Die API ist unter dem Präfix \texttt{/api/v1} versioniert und gliedert sich in vier Bereiche: Stammdaten, Ticker-Lifecycle, Medien und Spielkontext. Die zentralen Endpunkte des Ticker-Lifecycles sind:
+Die API ist unter dem Präfix \texttt{/api/v1} versioniert und gliedert sich in vier Bereiche: Stammdaten, Ticker-Lifecycle, Medien und Spielkontext. Die zentralen Endpunkte des Ticker-Lifecycles zeigt Tabelle~\ref{tab:api-endpoints}:
 
 {\small\begin{longtable}[]{@{}
   >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.48}}
@@ -310,9 +310,9 @@ Abbildung~\ref{fig:frontend-multilang} zeigt die Ticker-Einträge nach Sprachums
 \label{fig:frontend-multilang}
 \end{figure}
 
+\newpage
 \subsection{White-Label-Erweiterungen}\label{frontend-whitelabel}
 
-\newpage
 Die instanzspezifische Konfiguration ist als typisiertes \texttt{WhitelabelConfig}-Interface implementiert, das Vereinskennung, Farbwerte und API-Endpunkte bündelt. Der folgende Auszug zeigt die relevanten Felder:
 
 \begin{Shaded}
@@ -375,7 +375,7 @@ WF17 & Spielminuten-Update & API-Polling, löst WF15 bei Phasenänderung aus \\
 \end{longtable}
 }
 
-Die zeitliche Aktivität der Workflows über einen Spieltag verdeutlicht, wie die vier Funktionsbereiche ineinandergreifen und welche Workflows im Live-Betrieb parallel aktiv sind.
+Abbildung~\ref{fig:workflow-timeline} verdeutlicht die zeitliche Aktivität der Workflows über einen Spieltag und zeigt, wie die vier Funktionsbereiche ineinandergreifen und welche Workflows im Live-Betrieb parallel aktiv sind.
 
 \clearpage
 \begin{figure}[H]
