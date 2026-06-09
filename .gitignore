@@ -2,6 +2,8 @@ __pycache__/
 *.pyc
 .coverage
 node_modules/
+.env
+**/.env
 .claude/
 frontend/playwright-report/
 frontend/test-results/
