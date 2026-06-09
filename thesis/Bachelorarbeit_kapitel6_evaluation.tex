@@ -33,7 +33,7 @@ Alle drei Profile enthalten übereinstimmend Torschütze, Spielstand und Minute 
 
 \subsection{Ergebnisse der Hauptevaluation}\label{erweiterte-evaluation}
 
-Die folgende Tabelle zeigt die LLM-as-Judge-Bewertungen der drei Stilprofile nach Korrektheit, Tonalität und Vollständigkeit.
+Tabelle~\ref{tab:hauptevaluation} zeigt die LLM-as-Judge-Bewertungen der drei Stilprofile nach Korrektheit, Tonalität und Vollständigkeit.
 
 \begin{longtable}[]{@{}
   >{\raggedright\arraybackslash}p{(\linewidth - 10\tabcolsep) * \real{0.14}}
@@ -89,7 +89,7 @@ Few-Shot-Referenzen verbessern die Gesamtqualität um $\Delta$\,=\,+0{,}10, wobe
 
 \subsection{Temperaturvergleich}\label{temperaturvergleich}
 
-Der Temperaturparameter steuert die stochastische Varianz der LLM-Ausgabe. Die folgende Tabelle zeigt die Qualitätswerte je Stilprofil für drei Temperaturkonfigurationen.
+Der Temperaturparameter steuert die stochastische Varianz der LLM-Ausgabe. Tabelle~\ref{tab:temperaturvergleich} zeigt die Qualitätswerte je Stilprofil für drei Temperaturkonfigurationen.
 
 {\footnotesize
 \begin{longtable}[]{@{}lrrrrrrrrrrrr@{}}
@@ -170,7 +170,7 @@ Dieser Abschnitt misst die Generierungslatenz der drei evaluierten LLM-Modelle (
 
 \subsection{Modellvergleich der Generierungslatenz}\label{modellvergleich-latenz}\label{systemlatenz}
 
-Der Vergleich misst die Ende-zu-Ende-Generierungslatenz der drei eingesetzten LLM-Modelle unter identischer Prompt-Konfiguration. Die folgende Abbildung zeigt die Generierungslatenz der drei Modelle im Vergleich.
+Der Vergleich misst die Ende-zu-Ende-Generierungslatenz der drei eingesetzten LLM-Modelle unter identischer Prompt-Konfiguration. Abbildung~\ref{fig:latenz-modelle} zeigt die Generierungslatenz der drei Modelle im Vergleich.
 
 \begin{figure}[H]
 \centering
@@ -183,7 +183,7 @@ Gemini~2.5~Flash erzielt mit 591\,ms Median die kürzeste Latenz. Claude~Haiku~4
 
 \subsection{n8n-Workflow-Laufzeiten}\label{ttp-abschaetzung}
 
-Die folgende Tabelle dokumentiert die gemessenen Laufzeiten der n8n-Workflows, gegliedert nach Funktionsgruppe.
+Tabelle~\ref{tab:n8n-laufzeiten} dokumentiert die gemessenen Laufzeiten der n8n-Workflows, gegliedert nach Funktionsgruppe.
 
 {\footnotesize
 \begin{longtable}[]{@{}
@@ -226,7 +226,7 @@ Im \texttt{auto}-Modus bestimmt \texttt{WF10} mit einem P95 von 18\,269\,ms die 
 
 \section{Soll-Ist-Vergleich der Systemanforderungen}\label{anforderungsabgleich-soll-ist-vergleich}\label{technische-qualitätssicherung}
 
-21 der 22 in Abschnitt~\ref{zusammenfassung-der-systemanforderungen} hergeleiteten Anforderungen sind vollständig erfüllt. Die folgenden Tabellen dokumentieren den Nachweis je Anforderung.
+21 der 22 in Abschnitt~\ref{zusammenfassung-der-systemanforderungen} hergeleiteten Anforderungen sind vollständig erfüllt. Tabellen~\ref{tab:soll-ist-funktional} und~\ref{tab:soll-ist-qualitaet} dokumentieren den Nachweis je Anforderung.
 
 \paragraph{Funktionale Anforderungen}
 

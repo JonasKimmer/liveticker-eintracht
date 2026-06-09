@@ -20,7 +20,7 @@ Die \textbf{Anwendungsschicht} gliedert sich in FastAPI (Python) als Anwendungsl
 
 Die \textbf{Präsentationsschicht} ist als konfigurierbares White-Label-Frontend realisiert. Sie deckt den vollständigen Redaktionsworkflow von der Spielauswahl bis zur Publikation ab und ist je Instanz über Stil, Sprache und Branding anpassbar.
 
-Die folgende Abbildung zeigt das dreischichtige Systemmodell mit seinen Hauptkomponenten.
+Abbildung~\ref{fig:systemarchitektur} zeigt das dreischichtige Systemmodell mit seinen Hauptkomponenten.
 
 \begin{figure}[H]
 \centering
@@ -44,7 +44,7 @@ Im laufenden Betrieb hält das Frontend den Datenstand über periodisches Pollin
 
 Phasenübergänge schließlich lösen automatisch Folgeprozesse aus, die ohne Frontend-Beteiligung Phasenwechsel-Einträge, Zusammenfassungen und weitere Einträge erzeugen.
 
-Die folgende Abbildung zeigt den Kommunikationsfluss zwischen den Systemkomponenten.
+Abbildung~\ref{fig:kommunikationsfluss} zeigt den Kommunikationsfluss zwischen den Systemkomponenten.
 
 \begin{figure}[H]
 \centering
@@ -67,7 +67,7 @@ Das System unterscheidet drei Betriebsmodi, die je Spiel konfiguriert werden kö
 
 Im \texttt{auto}-Modus werden KI-generierte Einträge ohne Redakteurseingriff publiziert. Der \texttt{coop}-Modus erzeugt KI-Entwürfe, die der Redakteur freigeben, ablehnen, bearbeiten oder mit einem anderen Schreibstil neu generieren lassen kann. Im \texttt{manual}-Modus erstellt und veröffentlicht der Redakteur Einträge eigenständig.
 
-Die folgende Abbildung zeigt die drei Betriebsmodi im Überblick.
+Abbildung~\ref{fig:betriebsmodi} zeigt die drei Betriebsmodi im Überblick.
 
 \begin{figure}[H]
 \centering
@@ -78,7 +78,7 @@ Die folgende Abbildung zeigt die drei Betriebsmodi im Überblick.
 
 Jeder Ticker-Eintrag durchläuft ein Statusmodell mit vier Zuständen. \texttt{draft} bezeichnet einen unveröffentlichten Entwurf, der primär für KI-Einträge im \texttt{coop}-Modus auftritt. \texttt{published} macht den Eintrag im Ticker sichtbar, \texttt{rejected} kennzeichnet abgelehnte Entwürfe und \texttt{deleted} entfernt einen Eintrag aus dem sichtbaren Feed ohne physische Löschung. Publizierte Einträge können auf \texttt{draft} zurückgestuft und anschließend weiterbearbeitet oder erneut veröffentlicht werden.
 
-Die folgende Abbildung zeigt den Zustandsautomaten der Ticker-Einträge.
+Abbildung~\ref{fig:zustandsautomat} zeigt den Zustandsautomaten der Ticker-Einträge.
 
 \begin{figure}[H]
 \centering
@@ -113,7 +113,7 @@ Der \texttt{LLMService} ist als provideragnostische Abstraktionsschicht konzipie
 Der Abschnitt beschreibt Datenmodell und Schemadesign (Abschnitt~\ref{schemadesign-prinzipien}) sowie Schreibpfade und Schemaverwaltung (Abschnitt~\ref{persistenzstrategie}).
 \subsection{Datenmodell und Schemadesign}\label{schemadesign-prinzipien}
 
-Das Schema gliedert sich in drei Entitätsgruppen: Stammdaten (Saisons, Wettbewerbe, Teams, Spieler), Spieldaten (Spiele, Ereignisse, Lineups, Statistiken) und Redaktionsdaten (Ticker-Einträge, Stilreferenzen, Mediendaten). Die folgende Abbildung zeigt die Entitäten und ihre Beziehungen im Überblick.
+Das Schema gliedert sich in drei Entitätsgruppen: Stammdaten (Saisons, Wettbewerbe, Teams, Spieler), Spieldaten (Spiele, Ereignisse, Lineups, Statistiken) und Redaktionsdaten (Ticker-Einträge, Stilreferenzen, Mediendaten). Abbildung~\ref{fig:er-diagramm} zeigt die Entitäten und ihre Beziehungen im Überblick.
 
 \begin{figure}[H]
   \centering
@@ -187,7 +187,7 @@ Spielereignisse werden kontextbasiert in stilspezifische Ticker-Texte überführ
 
 \subsection{Generierungspipeline und Prompt-Design}\label{generierungspipeline}\label{prompt-engineering-strategie}
 
-Die Generierungspipeline gliedert sich in zwei Stufen. In der ersten wird der Spielstand zum Ereigniszeitpunkt aus den gespeicherten Ereignissen rekonstruiert, um faktische Korrektheit unabhängig vom Zeitpunkt des Dateneingangs sicherzustellen. In der zweiten werden die aufbereiteten Daten in einem modularen Prompt aus sechs Bausteinen zusammengeführt, die folgende Abbildung zeigt.
+Die Generierungspipeline gliedert sich in zwei Stufen. In der ersten wird der Spielstand zum Ereigniszeitpunkt aus den gespeicherten Ereignissen rekonstruiert, um faktische Korrektheit unabhängig vom Zeitpunkt des Dateneingangs sicherzustellen. In der zweiten werden die aufbereiteten Daten in einem modularen Prompt aus sechs Bausteinen zusammengeführt, wie Abbildung~\ref{fig:prompt-aufbau} zeigt.
 
 \begin{figure}[H]
 \centering
@@ -232,7 +232,7 @@ Da die LLM-Verarbeitung in n8n asynchron erfolgt, wiederholt das Frontend nach W
 
 \subsection{Redaktionsfluss und Oberflächenaufbau}\label{dreispalten-layout-und-redaktionsfluss}
 
-Die Redaktionsoberfläche ist als Dreispalten-Layout konzipiert, das den vollständigen Redaktionsfluss von der Entwurfsprüfung bis zur Publikation abbildet. Die Layoutkonzeption wurde in einem interaktiven Figma-Prototyp ausgearbeitet, der als konzeptionelle Ausgangsbasis diente. Im iterativen Entwicklungsprozess wurden Layoutdetails und Interaktionsmuster auf Basis praktischer Erkenntnisse aus dem Live-Betrieb schrittweise verfeinert, sodass die finale Implementierung in einzelnen Bereichen vom Prototyp abweicht. Die folgende Abbildung zeigt den Figma-Prototyp der Redaktionsoberfläche.
+Die Redaktionsoberfläche ist als Dreispalten-Layout konzipiert, das den vollständigen Redaktionsfluss von der Entwurfsprüfung bis zur Publikation abbildet. Die Layoutkonzeption wurde in einem interaktiven Figma-Prototyp ausgearbeitet, der als konzeptionelle Ausgangsbasis diente. Im iterativen Entwicklungsprozess wurden Layoutdetails und Interaktionsmuster auf Basis praktischer Erkenntnisse aus dem Live-Betrieb schrittweise verfeinert, sodass die finale Implementierung in einzelnen Bereichen vom Prototyp abweicht. Abbildung~\ref{fig:figma-wireframe} zeigt den Figma-Prototyp der Redaktionsoberfläche.
 
 \begin{figure}[H]
 \centering

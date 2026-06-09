@@ -10,7 +10,7 @@ Das Backend ist als FastAPI-Anwendung mit geschichteter Architektur implementier
 
 Das Backend ist in sieben funktionale Pakete gegliedert, die Router, Modelle, Repositories, Schemas, Services, Hilfsfunktionen und Kernkonfiguration trennen. Die Trennung von Hilfsmodulen und Services folgt dem Schichtungsprinzip, sodass Services fachliche Logik mit Datenbankzugriff bündeln, während Hilfsmodule ausschließlich abhängigkeitsarme Funktionen enthalten.
 
-Die folgende Abbildung zeigt die Schichtenarchitektur des Backends.
+Abbildung~\ref{fig:backend-schichten} zeigt die Schichtenarchitektur des Backends.
 
 \begin{figure}[H]
 \centering
@@ -153,7 +153,7 @@ Die Frontend-Implementierung überführt die konzeptionellen Entscheidungen zu A
 
 Die Hauptansicht (\texttt{LiveTicker}) gliedert sich in drei eigenständige Panel-Komponenten, die über gemeinsame Context-Provider mit Daten und Aktions-Callbacks versorgt werden. Das \texttt{LeftPanel} bildet den redaktionellen Arbeitsbereich mit Ereigniskarten, Editor, Zusammenfassungskomponenten und modusabhängigen Unterkomponenten, das \texttt{CenterPanel} zeigt den chronologischen Feed publizierter Ticker-Einträge, und das \texttt{RightPanel} stellt Statistiken und Aufstellungsdaten bereit. Jedes Panel ist durch eine \texttt{ErrorBoundary}-Instanz gesichert, sodass Rendering-Fehler einzelner Komponenten die übrigen Panels nicht beeinträchtigen. Beim Start zeigt \texttt{LiveTicker} den \texttt{StartScreen}, auf dem der Ticker-Modus vorgewählt und beim Öffnen eines Spiels als \texttt{ticker\_mode} persistiert wird. \texttt{useNavigation} kapselt die Navigationskette und übergibt die Spiel-ID an \texttt{useMatchData}, das die Datensynchronisation startet.
 
-Die folgende Abbildung zeigt den Startscreen mit Spielauswahl und Modusvorwahl.
+Abbildung~\ref{fig:frontend-startscreen} zeigt den Startscreen mit Spielauswahl und Modusvorwahl.
 
 \begin{figure}[H]
 \centering
@@ -169,7 +169,7 @@ Auf Zustandsebene werden die drei Context-Provider in fester Reihenfolge geschac
 
 Alle Backend- und n8n-Aufrufe werden über eine zentrale API-Schicht geleitet, die je einen Axios-Client für Backend- und Webhook-Aufrufe instanziiert, sodass beide Kommunikationspfade in Basis-URL und Fehlersemantik unabhängig konfiguriert werden können. Die Schicht ist vollständig typisiert und die Endpunktbasis wird je Deployment-Instanz über Umgebungsvariablen gesetzt, sodass fehlerhafte Aufruf-Signaturen zur Compile-Zeit auffallen und Hooks von konkreten URL-Pfaden entkoppelt bleiben.
 
-Die Zustandslogik ist in funktionsübergreifende und komponentenspezifische Hooks gegliedert, wobei erstere zentral verwaltet und letztere lokal bei ihrer Komponente gehalten werden, um komponentenübergreifende Kopplung zu minimieren. Die folgende Tabelle zeigt die fünf zentralen Feature-Hooks einschließlich der Polling-Sub-Hooks \texttt{useMatchCore}, \texttt{useMatchEvents}, \texttt{useMatchTicker} und \texttt{useLiveMinute}, deren Verhalten im Anschluss beschrieben wird:
+Die Zustandslogik ist in funktionsübergreifende und komponentenspezifische Hooks gegliedert, wobei erstere zentral verwaltet und letztere lokal bei ihrer Komponente gehalten werden, um komponentenübergreifende Kopplung zu minimieren. Tabelle~\ref{tab:feature-hooks} zeigt die fünf zentralen Feature-Hooks einschließlich der Polling-Sub-Hooks \texttt{useMatchCore}, \texttt{useMatchEvents}, \texttt{useMatchTicker} und \texttt{useLiveMinute}, deren Verhalten im Anschluss beschrieben wird:
 
 \begin{longtable}[]{@{}
   >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.27}}
@@ -219,7 +219,7 @@ Statistiken, Spielminuten-Sync & 60\,s & Live, PreMatch, ToBeConfirmed \\
 
 \subsection{Slash-Kommando-Verarbeitung}\label{slash-command-parser-parsecommand.ts}
 
-Die Slash-Kommando-Verarbeitung ist vollständig clientseitig implementiert, um im zeitkritischen Live-Betrieb keine Netzwerklatenz zu erzeugen. Der Parser validiert Eingaben vor der Verarbeitung und gibt gezielte Hinweise bei unvollständiger oder unbekannter Syntax zurück, sodass Eingabefehler im Redaktionsfluss frühzeitig sichtbar werden. Die folgende Tabelle zeigt repräsentative Kommandos der beiden Typen Phasen- und Ereigniskommandos:
+Die Slash-Kommando-Verarbeitung ist vollständig clientseitig implementiert, um im zeitkritischen Live-Betrieb keine Netzwerklatenz zu erzeugen. Der Parser validiert Eingaben vor der Verarbeitung und gibt gezielte Hinweise bei unvollständiger oder unbekannter Syntax zurück, sodass Eingabefehler im Redaktionsfluss frühzeitig sichtbar werden. Tabelle~\ref{tab:slash-kommandos-beispiele} zeigt repräsentative Kommandos der beiden Typen Phasen- und Ereigniskommandos:
 
 \begin{longtable}[]{@{}llll@{}}
 \caption{Repräsentative Slash-Kommandos nach Typ}\label{tab:slash-kommandos-beispiele}\\
@@ -239,7 +239,7 @@ Ereignis & \texttt{/s Trapp Kaua SGE} & „Wechsel — Trapp ↔ Kaua (SGE)'' & 
 
 Unbekannte Kommandos werden mit einem Fehlerstatus zurückgegeben, statt einen Laufzeitfehler auszulösen.
 
-Die folgende Abbildung zeigt die Slash-Kommando-Eingabe mit generiertem Ticker-Eintrag.
+Abbildung~\ref{fig:frontend-slash-command} zeigt die Slash-Kommando-Eingabe mit generiertem Ticker-Eintrag.
 
 \begin{figure}[H]
 \centering
@@ -255,7 +255,7 @@ Der aktive Modus (\texttt{auto} / \texttt{coop} / \texttt{manual}) wird von \tex
 
 Das System ist vollständig per Tastatur bedienbar. \texttt{Ctrl+1} bis \texttt{Ctrl+3} schalten den aktiven Modus, und \texttt{Shift+?} öffnet ein Kürzel-Modal, das ausschließlich die im aktiven Modus verfügbaren Kombinationen anzeigt. Im \texttt{coop}-Modus werden dabei die meisten Tastaturkürzel angezeigt, da \texttt{TAB} und \texttt{ESC} für die Entwurfsfreigabe hinzukommen, während im \texttt{auto}- und \texttt{manual}-Modus nur die modusübergreifenden Kürzel erscheinen.
 
-Die folgende Abbildung zeigt die Tastaturkürzel-Übersicht im Coop-Modus.
+Abbildung~\ref{fig:frontend-shortcuts} zeigt die Tastaturkürzel-Übersicht im Coop-Modus.
 
 \begin{figure}[H]
 \centering
@@ -264,7 +264,7 @@ Die folgende Abbildung zeigt die Tastaturkürzel-Übersicht im Coop-Modus.
 \label{fig:frontend-shortcuts}
 \end{figure}
 
-Die folgende Abbildung zeigt den LiveTicker-Editor im Coop-Modus mit KI-Entwürfen, Publikationsliste und Statistik-Panel.
+Abbildung~\ref{fig:frontend-coop} zeigt den LiveTicker-Editor im Coop-Modus mit KI-Entwürfen, Publikationsliste und Statistik-Panel.
 
 \begin{figure}[H]
 \centering
@@ -273,7 +273,7 @@ Die folgende Abbildung zeigt den LiveTicker-Editor im Coop-Modus mit KI-Entwürf
 \label{fig:frontend-coop}
 \end{figure}
 
-Für die Eingabe von Spielernamen bietet der Editor eine Autovervollständigung. \texttt{useNameAutocomplete} prüft beim Tippen das zuletzt eingegebene Wort gegen die geladene Aufstellungsliste und schlägt Treffer präfixbasiert inline vor. Da die Aufstellung beim Öffnen des Spiels vollständig vorgeladen ist, ermöglicht dies exakte Spielernamen-Completion im Live-Betrieb ohne zusätzliche API-Aufrufe. Die folgende Abbildung zeigt die Autovervollständigung im Editor.
+Für die Eingabe von Spielernamen bietet der Editor eine Autovervollständigung. \texttt{useNameAutocomplete} prüft beim Tippen das zuletzt eingegebene Wort gegen die geladene Aufstellungsliste und schlägt Treffer präfixbasiert inline vor. Da die Aufstellung beim Öffnen des Spiels vollständig vorgeladen ist, ermöglicht dies exakte Spielernamen-Completion im Live-Betrieb ohne zusätzliche API-Aufrufe. Abbildung~\ref{fig:frontend-autocomplete} zeigt die Autovervollständigung im Editor.
 
 \begin{figure}[H]
 \centering
@@ -284,7 +284,7 @@ Für die Eingabe von Spielernamen bietet der Editor eine Autovervollständigung.
 
 Für die Nachbearbeitung publizierter Einträge stehen drei Wege bereit. Ein 5-Sekunden-Rückgängig-Hinweis direkt nach der Publikation ermöglicht das schnelle Zurücknehmen, ein Drei-Punkte-Menü pro Eintrag erlaubt direkte Bearbeitung und nicht-destruktives Löschen, und ein Stornieren-Button setzt einen Eintrag jederzeit in den Entwurfsstatus zurück. Alle drei Wege führen zu keiner irreversiblen Löschung von Datenbankeinträgen.
 
-Die folgende Abbildung zeigt die Bearbeitungsoptionen für publizierte Einträge über das Drei-Punkte-Menü.
+Abbildung~\ref{fig:frontend-published-entries} zeigt die Bearbeitungsoptionen für publizierte Einträge über das Drei-Punkte-Menü.
 
 \begin{figure}[H]
 \centering
@@ -300,7 +300,7 @@ API-Fehler werden in zwei Stufen behandelt: Kritische Operationen wie Publikatio
 
 Die Sprachumschaltung ermöglicht den Wechsel zwischen Deutsch, Englisch, Spanisch und Französisch. Ein Sprachwechsel überführt alle Ticker-Einträge des aktiven Spiels per Batch-Übersetzungsendpunkt in die Zielsprache, wobei eine Entprellverzögerung unbeabsichtigte Mehrfachaufrufe bei schneller Eingabe verhindert. Da die Übersetzung nachgelagert zur KI-Generierung erfolgt, bleibt der deutschsprachige Originaltext in der Datenbank erhalten und kann jederzeit wiederhergestellt werden.
 
-Die folgende Abbildung zeigt die Ticker-Einträge nach Sprachumschaltung.
+Abbildung~\ref{fig:frontend-multilang} zeigt die Ticker-Einträge nach Sprachumschaltung.
 
 \begin{figure}[H]
 \centering
@@ -328,7 +328,7 @@ Die instanzspezifische Konfiguration ist als typisiertes \texttt{WhitelabelConfi
 
 Die Werte werden je Instanz über Umgebungsvariablen gesetzt und beim Start einmalig geladen. Die Instanzerkennung erfolgt zur Laufzeit: Die Hauptkomponente prüft beim Öffnen eines Spiels, ob eines der beteiligten Teams den konfigurierten \texttt{teamKeyword} enthält, und leitet daraus die Instanzkennung \texttt{ef\_whitelabel} oder \texttt{generic} ab. Diese Kennung wird an alle nachgelagerten API- und Webhook-Aufrufe angehängt, sodass Backend und n8n jeden Request der richtigen Instanz zuordnen und vereinsspezifisches Routing anwenden können. Auf der Oberfläche steuert dieselbe Kennung das bedingte Rendering vereinsspezifischer Komponenten wie das Medienpanel und den Stilindikator in der Kopfzeile.
 
-Die folgende Abbildung zeigt die vereinsspezifische Redaktionsoberfläche der Eintracht-Frankfurt-Instanz.
+Abbildung~\ref{fig:frontend-whitelabel} zeigt die vereinsspezifische Redaktionsoberfläche der Eintracht-Frankfurt-Instanz.
 
 \begin{figure}[H]
 \centering
@@ -344,7 +344,7 @@ Die n8n-Ebene überführt die 17 versionierten Workflows (WF01–WF17) in produk
 
 \subsection{Workflow-Überblick}\label{workflow-ueberblick}
 
-Die folgende Tabelle gibt einen Überblick über alle 17 Workflows mit ihrer funktionalen Zuordnung und Kurzbeschreibung.
+Tabelle~\ref{tab:n8n-workflow-overview} gibt einen Überblick über alle 17 Workflows mit ihrer funktionalen Zuordnung und Kurzbeschreibung.
 
 {\small
 \begin{longtable}[]{@{}
@@ -389,7 +389,7 @@ Die zeitliche Aktivität der Workflows über einen Spieltag verdeutlicht, wie di
 
 WF10 übernimmt die Echtzeitverarbeitung neuer Spielereignisse. Der eingehende Webhook-Aufruf trägt die vom Frontend abgeleitete Instanzkennung, anhand derer WF10 zwischen dem generischen und dem \texttt{ef\_whitelabel}-Zweig verzweigt. Nach dem Webhook-Eingang werden alle Ereignisse des Spiels von der Football-API abgerufen und durch einen JavaScript-Knoten normalisiert, der unter anderem gleichzeitige Gelbe und Rote Karten desselben Spielers zu einem Gelb-Rot-Ereignis zusammenführt. Per UPSERT werden die Ereignisse idempotent persistiert, wobei das Rückgabefeld \texttt{is\_new} neue von bereits bekannten Ereignissen trennt. Für neue Ereignisse ohne vorhandenen Ticker-Eintrag wird die KI-Textgenerierung ausgelöst. Parallel dazu aktualisiert ein eigener Zweig den Spielstand in der Datenbank. Im \texttt{ef\_whitelabel}-Zweig wird bei Torereignissen ein Torjubel-Eintrag mit Spielervideo angelegt, sofern für den Torschützen eine Video-URL in der Datenbank hinterlegt ist. Wechselt das Spiel in die Elfmeterschießen-Phase und liegt noch kein entsprechender Eintrag vor, ruft ein gesonderter Zweig den aktuellen Penaltystand ab und persistiert das Ergebnis als zusammenfassenden Manualeintrag.
 
-Die folgende Abbildung zeigt den ereignisgesteuerten Workflow mit Webhook-Eingang, UPSERT, Instanz-Routing und LLM-Trigger.
+Abbildung~\ref{fig:n8n-event-workflow} zeigt den ereignisgesteuerten Workflow mit Webhook-Eingang, UPSERT, Instanz-Routing und LLM-Trigger.
 
 \begin{figure}[H]
 \centering
