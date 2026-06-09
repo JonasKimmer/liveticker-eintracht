@@ -151,7 +151,7 @@ Die Frontend-Implementierung überführt die konzeptionellen Entscheidungen zu A
 
 \subsection{Komponentenhierarchie und Zustandsarchitektur}\label{komponentenhierarchie}
 
-Die Hauptansicht (\texttt{LiveTicker}) gliedert sich in drei eigenständige Panel-Komponenten, die über gemeinsame Context-Provider mit Daten und Aktions-Callbacks versorgt werden. Das \texttt{LeftPanel} zeigt die publizierte Ticker-Ansicht, das \texttt{CenterPanel} bildet den redaktionellen Arbeitsbereich mit Ereigniskarten, Editor, Zusammenfassungskomponenten und modusabhängigen Unterkomponenten, und das \texttt{RightPanel} stellt Statistiken und Aufstellungsdaten bereit. Jedes Panel ist durch eine \texttt{ErrorBoundary}-Instanz gesichert, sodass Rendering-Fehler einzelner Komponenten die übrigen Panels nicht beeinträchtigen. Beim Start zeigt \texttt{LiveTicker} den \texttt{StartScreen}, auf dem der Ticker-Modus vorgewählt und beim Öffnen eines Spiels als \texttt{ticker\_mode} persistiert wird. \texttt{useNavigation} kapselt die Navigationskette und übergibt die Spiel-ID an \texttt{useMatchData}, das die Datensynchronisation startet.
+Die Hauptansicht (\texttt{LiveTicker}) gliedert sich in drei eigenständige Panel-Komponenten, die über gemeinsame Context-Provider mit Daten und Aktions-Callbacks versorgt werden. Das \texttt{LeftPanel} bildet den redaktionellen Arbeitsbereich mit Ereigniskarten, Editor, Zusammenfassungskomponenten und modusabhängigen Unterkomponenten, das \texttt{CenterPanel} zeigt den chronologischen Feed publizierter Ticker-Einträge, und das \texttt{RightPanel} stellt Statistiken und Aufstellungsdaten bereit. Jedes Panel ist durch eine \texttt{ErrorBoundary}-Instanz gesichert, sodass Rendering-Fehler einzelner Komponenten die übrigen Panels nicht beeinträchtigen. Beim Start zeigt \texttt{LiveTicker} den \texttt{StartScreen}, auf dem der Ticker-Modus vorgewählt und beim Öffnen eines Spiels als \texttt{ticker\_mode} persistiert wird. \texttt{useNavigation} kapselt die Navigationskette und übergibt die Spiel-ID an \texttt{useMatchData}, das die Datensynchronisation startet.
 
 Die folgende Abbildung zeigt den Startscreen mit Spielauswahl und Modusvorwahl.
 
@@ -199,6 +199,11 @@ Der Medienpfad folgt einem abweichenden Kommunikationsmuster. \texttt{useMediaWe
 
 \begin{longtable}[]{@{}llp{6.5cm}@{}}
 \caption{Polling-Intervalle nach Ressourcentyp und Spielstatus}\label{tab:polling-intervalle}\\
+\toprule\noalign{}
+Ressource & Intervall & Bedingung \\
+\midrule\noalign{}
+\endfirsthead
+\caption[]{}\\
 \toprule\noalign{}
 Ressource & Intervall & Bedingung \\
 \midrule\noalign{}
