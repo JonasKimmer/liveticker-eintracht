@@ -242,23 +242,23 @@ Nr. & Anforderung & Nachweis \\
 \endhead
 \bottomrule\noalign{}
 \endlastfoot
-F1 & Drei Betriebsmodi (\texttt{auto}, \texttt{coop}, \texttt{manual}) & Moduswechsel über REST-API, durch Integrationstests abgedeckt \\
+F1 & Drei Betriebsmodi (\texttt{auto}, \texttt{coop}, \texttt{manual}) & Moduswechsel über REST-API, Integrationstests vorhanden \\
 F2 & KI-Generierung für alle Ereignistypen & 24 Ereignistypen implementiert, Bulk-Generierungsendpunkt vorhanden \\
 F3 & Drei Stilprofile & Stilkonditionierung im Prompt, per Spiel konfigurierbar \\
-F4 & Stilkonfiguration über vereinsspezifische Referenztexte & Bis zu 3 vereinsspezifische Referenztexte, nach Ereignistyp gefiltert \\
-F5 & Ticker-Lifecycle (\texttt{draft} → \texttt{published} / \texttt{rejected}) & State-Machine mit publish/reject/retract, durch Integrationstests abgedeckt \\
-F6 & Slash-Command-gestützte manuelle Ticker-Erstellung & 25 Slash-Commands implementiert, durch Unit-Tests abgedeckt \\
+F4 & Stilkonfiguration über vereinsspezifische Referenztexte & Bis zu 3 Referenztexte je Instanz, nach Ereignistyp gefiltert \\
+F5 & Ticker-Lifecycle (\texttt{draft} → \texttt{published} / \texttt{rejected}) & State-Machine mit publish/reject/retract, Integrationstests vorhanden \\
+F6 & Slash-Command-gestützte manuelle Ticker-Erstellung & 25 Slash-Commands implementiert, Unit-Tests vorhanden \\
 F7 & Mehrsprachige Textgenerierung & Mehrsprachiger Batch-Endpoint, LLM-as-Judge-Verifikation \\
 F8 & Automatischer, idempotenter ETL-Datenimport & 17 n8n-Workflows, UPSERT-Strategien für Ereignisse, Spieler, Teams \\
 F9 & Anbieterunabhängige LLM-Integration mit Ausfallsicherheit & Fallback-Kette über 5 Provider \\
 F10 & Idempotente Generierung und Deduplizierung & Deduplizierungsprüfung per Ereignis-ID vor LLM-Aufruf \\
-F11 & Vorspiel-Kontextgenerierung & 7 Context-Builder für Verletzungen, Direktvergleich und Spielortinformationen \\
-F12 & Echtzeit-Statistikaktualisierungen & Live-Statistik-Context-Builder, durch Tests abgedeckt \\
+F11 & Vorspiel-Kontextgenerierung & 7 Context-Builder für Verletzungen, Direktvergleich und Spielortdaten \\
+F12 & Echtzeit-Statistikaktualisierungen & Live-Statistik-Context-Builder, Unit-Tests vorhanden \\
 F13 & Medienintegration externer Bild- und Social-Media-Inhalte & MediaQueue-Architektur, instanzspezifische Panel-Einblendung \\
-F14 & Spielphasenverwaltung & Automatische Phasenerkennung löst Halbzeit- und Abpfiff-Generierung aus \\
-F15 & Rückgängig-Funktion nach Publikation & Rückgängig-Option nach Publikation, setzt Eintrag auf \texttt{draft} zurück \\
-F16 & REST-API zur vollständigen Systemsteuerung & Vollständige REST-API mit versionierten Endpunkten, durch Integrationstests abgedeckt \\
-F17 & White-Label-Fähigkeit & Instanzspezifische Konfiguration über Umgebungsvariablen, instanzspezifische Few-Shot-Filterung \\
+F14 & Spielphasenverwaltung & Automatische Phasenerkennung, Halbzeit- und Abpfiff-Generierung \\
+F15 & Rückgängig-Funktion nach Publikation & Rückgängig-Option setzt Eintrag auf \texttt{draft} zurück \\
+F16 & REST-API zur vollständigen Systemsteuerung & Vollständige REST-API mit versionierten Endpunkten, Integrationstests vorhanden \\
+F17 & White-Label-Fähigkeit & Instanzspezifische Konfiguration über Umgebungsvariablen und Few-Shot-Filterung \\
 \end{longtable}
 
 \newpage
@@ -275,11 +275,11 @@ Nr. & Anforderung & Nachweis \\
 \endhead
 \bottomrule\noalign{}
 \endlastfoot
-N1 & Mobiloptimierte Benutzeroberfläche & Responsives Layout, mobile Navigationsleiste, durch E2E-Test abgedeckt \\
-N2 & Fehlerresistenz Frontend & Fehlergrenze mit Fallback-UI, durch Tests abgedeckt \\
+N1 & Mobiloptimierte Benutzeroberfläche & Responsives Layout, mobile Navigationsleiste, E2E-Tests vorhanden \\
+N2 & Fehlerresistenz Frontend & Fehlergrenze mit Fallback-UI, Unit-Tests vorhanden \\
 N3 & Tastaturorientierte Bedienung & Tastaturkürzel für Modus, Freigabe und Ablehnung, Hilfs-Modal \\
 N4 & LLM-Antwortlatenz & Median 3\,338\,ms, Anforderung erfüllt \\
-N5 & Systemverfügbarkeit & Lifespan-Migrationen, Health-Check-Endpoint, automatisches WebSocket-Reconnect, kein manueller Eingriff im Spielbetrieb erforderlich \\
+N5 & Systemverfügbarkeit & Health-Check-Endpoint, automatisches WebSocket-Reconnect, Lifespan-Migrationen \\
 \end{longtable}
 
 Die einzige nicht vollständig erfüllte Anforderung ist F7, die mehrsprachige Textgenerierung. Die Funktionalität ist implementiert und per LLM-as-Judge für Deutsch und Spanisch verifiziert, ein Muttersprachler-Test für nicht-deutschsprachige Märkte steht jedoch aus.
