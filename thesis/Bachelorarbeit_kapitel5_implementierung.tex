@@ -197,6 +197,7 @@ Der Medienpfad folgt einem abweichenden Kommunikationsmuster. \texttt{useMediaWe
 \label{frontend-polling}
 \texttt{resolvePollingInterval} passt den Abruftakt der einzelnen Datenpfade an den aktuellen Spielstatus an. Events, Ticker und Matchdaten, deren Änderungsfrequenz im Live-Betrieb hoch ist, werden in einem kürzeren Intervall abgefragt. Statistik- und Spielminuten-Abfragen laufen in einem längeren Takt, da ihr Informationsstand seltener wechselt und häufigere Abrufe die API-Last ohne Mehrwert erhöhen würden.
 
+\newpage
 \begin{longtable}[]{@{}llp{6.5cm}@{}}
 \caption{Polling-Intervalle nach Ressourcentyp und Spielstatus}\label{tab:polling-intervalle}\\
 \toprule\noalign{}
@@ -311,6 +312,7 @@ Abbildung~\ref{fig:frontend-multilang} zeigt die Ticker-Einträge nach Sprachums
 
 \subsection{White-Label-Erweiterungen}\label{frontend-whitelabel}
 
+\newpage
 Die instanzspezifische Konfiguration ist als typisiertes \texttt{WhitelabelConfig}-Interface implementiert, das Vereinskennung, Farbwerte und API-Endpunkte bündelt. Der folgende Auszug zeigt die relevanten Felder:
 
 \begin{Shaded}
