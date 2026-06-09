@@ -149,6 +149,7 @@ Um stabilen Betrieb über mehrere Instanzen und erneute Auslösungen hinweg zu g
 
 Die Zugriffsschicht richtet sich nach der Aufgabenlogik des jeweiligen Workflows. Datennahe Importpfade schreiben direkt in die Datenbank, Workflows mit Fachlogik delegieren an Backend-Endpunkte, und Pfade mit erweitertem Kontextbedarf können zusätzlich direkt mit dem LLM-Provider interagieren. Die Parametersteuerung erfolgt über Webhook-Aufrufe, die Spiel-ID, Betriebsmodus und Instanzparameter übergeben, sodass White-Label-Routing und Modussteuerung konfigurationsgesteuert bleiben. Werden Workflows verkettet, geschieht dies über HTTP-Webhooks, wobei jeder Ablauf unabhängig auslösbar bleibt.
 
+\newpage
 \subsection{Funktionsbereiche der Workflow-Automatisierung}\label{workflow-klassen}
 
 Die Workflows gliedern sich nach Funktion und Zugriffsschicht in sieben Klassen, wie Tabelle~\ref{tab:workflow-klassen} zeigt:
