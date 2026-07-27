@@ -1,3 +1,9 @@
+"""
+Teams Router
+============
+Endpunkte für Vereinsverwaltung inkl. Paginierung und externer ID-Suche.
+"""
+
 import logging
 from typing import Optional
 
@@ -6,6 +12,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
+from app.utils.http_errors import handle_integrity_error, require_or_404
 from app.repositories.competition_repository import CompetitionRepository
 from app.repositories.competition_team_repository import CompetitionTeamRepository
 from app.repositories.country_repository import CountryRepository
@@ -93,12 +100,7 @@ def get_team(
     teamId: int,
     db: Session = Depends(get_db),
 ) -> TeamResponse:
-    team = TeamRepository(db).get_by_id(teamId)
-    if not team:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Team not found"
-        )
-    return team
+    return require_or_404(TeamRepository(db).get_by_id(teamId), "Team not found")
 
 
 # ------------------------------------------------------------------ #
@@ -116,14 +118,8 @@ def create_team(
     data: TeamCreate,
     db: Session = Depends(get_db),
 ) -> TeamResponse:
-    try:
+    with handle_integrity_error("A team with conflicting data already exists."):
         return TeamRepository(db).create(data)
-    except IntegrityError:
-        logger.exception("IntegrityError creating team: %s", data.name)
-        raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
-            detail="A team with conflicting data already exists.",
-        )
 
 
 # ------------------------------------------------------------------ #
@@ -146,19 +142,9 @@ def update_team(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
             detail="Request body must contain at least one field to update.",
         )
-    try:
+    with handle_integrity_error("Update would violate a unique constraint."):
         updated = TeamRepository(db).update(teamId, data)
-    except IntegrityError:
-        logger.exception("IntegrityError updating team id=%s", teamId)
-        raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
-            detail="Update would violate a unique constraint.",
-        )
-    if not updated:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Team not found"
-        )
-    return updated
+    return require_or_404(updated, "Team not found")
 
 
 # ------------------------------------------------------------------ #
@@ -174,10 +160,7 @@ def delete_team(
     teamId: int,
     db: Session = Depends(get_db),
 ) -> None:
-    if not TeamRepository(db).delete(teamId):
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Team not found"
-        )
+    require_or_404(TeamRepository(db).delete(teamId), "Team not found")
 
 
 # ------------------------------------------------------------------ #
@@ -273,11 +256,7 @@ def assign_team(
     teamId: int,
     db: Session = Depends(get_db),
 ) -> CompetitionTeamAssignResponse:
-    competition = CompetitionRepository(db).get_by_id(competitionId)
-    if not competition:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Competition not found"
-        )
+    competition = require_or_404(CompetitionRepository(db).get_by_id(competitionId), "Competition not found")
 
     try:
         entry, _ = CompetitionTeamRepository(db).create_by_ids(

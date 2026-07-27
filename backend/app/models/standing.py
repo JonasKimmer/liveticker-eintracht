@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, TIMESTAMP, ForeignKey
+from sqlalchemy import Column, Integer, TIMESTAMP, ForeignKey, UniqueConstraint
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from app.core.database import Base
@@ -17,7 +17,7 @@ class Standing(Base):
     match_id = Column(
         Integer, ForeignKey("matches.id", ondelete="SET NULL"), nullable=True
     )
-    team_id = Column(Integer, ForeignKey("teams.id"), nullable=False)
+    team_id = Column(Integer, ForeignKey("teams.id", ondelete="CASCADE"), nullable=False, index=True)
     matchday = Column(Integer, nullable=True)
     position = Column(Integer, nullable=True)
     played = Column(Integer, nullable=True)
@@ -28,6 +28,10 @@ class Standing(Base):
     goals_against = Column(Integer, nullable=True)
     points = Column(Integer, nullable=True)
     created_at = Column(TIMESTAMP(timezone=True), server_default=func.now())
+
+    __table_args__ = (
+        UniqueConstraint("season_id", "competition_id", "team_id", name="uq_standing"),
+    )
 
     season = relationship("Season", back_populates="standings")
     competition = relationship("Competition", back_populates="standings")

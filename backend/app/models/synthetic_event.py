@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, TIMESTAMP, ForeignKey
+from sqlalchemy import Column, Index, Integer, String, TIMESTAMP, ForeignKey
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
@@ -16,5 +16,9 @@ class SyntheticEvent(Base):
     minute = Column(Integer, nullable=True)
     data = Column(JSONB, nullable=True)
     created_at = Column(TIMESTAMP(timezone=True), server_default=func.now())
+
+    __table_args__ = (
+        Index("ix_synthetic_events_type", "type"),
+    )
 
     match = relationship("Match", back_populates="synthetic_events")

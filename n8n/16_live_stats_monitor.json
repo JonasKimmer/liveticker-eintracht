@@ -1,0 +1,362 @@
+{
+  "nodes": [
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://openrouter.ai/api/v1/chat/completions",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"model\": \"google/gemini-2.0-flash-001\",\n  \"messages\": [\n    {\n      \"role\": \"system\",\n      \"content\": \"Du bist ein Fußball-Live-Ticker-Redakteur. {{ $json.instance === 'ef_whitelabel' ? 'Schreibe aus Sicht eines leidenschaftlichen Eintracht-Frankfurt-Fans. Emotionaler, packender Stil — passe die Emotion an die Spielsituation an (Führung: stolz und energiegeladen, Rückstand: frustriert und kritisch).' : 'Schreibe sachlich und neutral.' }} Maximal 2-3 Sätze. Kein Hashtag, keine Überschrift. Sprache: {{ $json.language }}.\"\n    },\n    {\n      \"role\": \"user\",\n      \"content\": \"Spielstand: {{ $json.scoreStr }}\\nMinute: {{ $json.minute }}'\\n\\nStatistiken:\\n{{ $json.facts.join('\\\\n') }}\\n\\nSchreibe jetzt den Ticker-Eintrag.\"\n    }\n  ],\n  \"max_tokens\": 200,\n  \"temperature\": 0.7\n}\n",
+        "options": {}
+      },
+      "id": "e9b4c551-d4a1-484d-9741-1046fefcc18f",
+      "name": "Generate Text1",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1408,
+        -480
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "o9sSk9ZOxtD4rV7z",
+          "name": "Header Auth account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "live-stats-monitor",
+        "options": {}
+      },
+      "id": "018125c2-040e-4d0c-8527-a989aaff72ec",
+      "name": "Webhook2",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -192,
+        -480
+      ],
+      "webhookId": "e63759cf-8567-4034-823f-30494d40d16a"
+    },
+    {
+      "parameters": {
+        "url": "=https://liveticker-backend.onrender.com/api/v1/matches/{{ $json.body.match_id }}",
+        "options": {}
+      },
+      "id": "c83237b9-d352-4ebb-9c2b-6811f521eac2",
+      "name": "Get Match2",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        16,
+        -480
+      ]
+    },
+    {
+      "parameters": {
+        "url": "=https://v3.football.api-sports.io/fixtures?id={{ $json.externalId }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {}
+      },
+      "id": "f76e8ba9-a395-4921-9712-01315aaa0ce7",
+      "name": "Get Fixture2",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        208,
+        -480
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "nw1wvLZ4u2BCZRVl",
+          "name": "Header Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "check-live",
+              "leftValue": "=1H,2H,ET,P",
+              "rightValue": "={{ $json.response[0].fixture.status.short }}",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "7bce5bc2-e741-4353-bb2e-76fb5da54cfc",
+      "name": "Is Live?2",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        400,
+        -480
+      ]
+    },
+    {
+      "parameters": {
+        "url": "=https://v3.football.api-sports.io/fixtures/statistics?fixture={{ $('Get Match2').item.json.externalId }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {}
+      },
+      "id": "8db020cc-a30a-4efb-8d03-005f3e1543e4",
+      "name": "Get Statistics2",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        608,
+        -480
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "nw1wvLZ4u2BCZRVl",
+          "name": "Header Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "=https://liveticker-backend.onrender.com/api/v1/ticker/match/{{ $('Webhook2').item.json.body.match_id }}?all_entries=true",
+        "options": {}
+      },
+      "id": "dadd5cb8-df22-4102-8133-d056f842351b",
+      "name": "Get Existing Ticker2",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        816,
+        -480
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// --- Eingaben ---\nconst stats = $('Get Statistics2').item.json.response || [];\nconst fixture = $('Get Fixture2').item.json.response[0];\nconst tickerRaw = $('Get Existing Ticker2').item.json;\nconst ticker = Array.isArray(tickerRaw) ? tickerRaw : [];\nconst body = $('Webhook2').item.json.body;\n\n// Bereits verwendete Icons aus vorhandenen Ticker-Einträgen\nconst usedIcons = new Set(ticker.map(t => t.icon).filter(Boolean));\n\n// Aktuelles Spielresultat\nconst homeGoals = fixture.goals?.home ?? 0;\nconst awayGoals = fixture.goals?.away ?? 0;\nconst minute = fixture.fixture?.status?.elapsed ?? null;\nconst homeName = fixture.teams?.home?.name || body.instance;\nconst awayName = fixture.teams?.away?.name || 'Gegner';\n\n// Statistiken als Key→Value-Map (home team = erster Eintrag)\nconst homeTeamId = fixture.teams?.home?.id;\nconst statMap = {};\nfor (const team of stats) {\n  const side = team.team?.id === homeTeamId ? 'home' : 'away';\n  for (const s of (team.statistics || [])) {\n    statMap[s.type] = statMap[s.type] || {};\n    statMap[s.type][side] = s.value;\n  }\n}\n\n// Fakten aufbauen — nur die, deren Icon noch nicht im Ticker sind\nconst STAT_ICONS = {\n  'Ball Possession':  '⚽ Ballbesitz',\n  'Total Shots':      '🎯 Torschüsse',\n  'Shots on Goal':    '🥅 Aufs Tor',\n  'Corner Kicks':     '🚩 Ecken',\n  'Fouls':            '🟨 Fouls',\n  'Yellow Cards':     '🟨 Gelbe Karten',\n  'Red Cards':        '🟥 Rote Karten',\n  'Passes %':         '📊 Pass-Genauigkeit',\n  'Offsides':         '🚫 Abseits',\n};\n\nconst facts = [];\nfor (const [apiKey, label] of Object.entries(STAT_ICONS)) {\n  if (statMap[apiKey] && !usedIcons.has(label)) {\n    const h = statMap[apiKey].home;\n    const a = statMap[apiKey].away;\n    if (h !== null && h !== undefined && a !== null && a !== undefined) {\n      facts.push(`${label}: ${h} – ${a}`);\n    }\n  }\n}\n\nconst scoreStr = `${homeName} ${homeGoals}:${awayGoals} ${awayName}`;\n\nreturn [{\n  json: {\n    hasFacts: facts.length > 0,\n    facts,\n    scoreStr,\n    minute,\n    homeName,\n    awayName,\n    match_id: body.match_id,\n    instance: body.instance || 'generic',\n    language: body.language || 'de',\n    auto_publish: body.ticker_mode === 'auto',\n  }\n}];"
+      },
+      "id": "4aca5cf6-9999-492a-9ced-577f124dd287",
+      "name": "Analyze Facts2",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1008,
+        -480
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "has-facts",
+              "leftValue": "={{ $json.hasFacts }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equal"
+              }
+            },
+            {
+              "id": "8db12a8b-5509-4f76-920f-3441c21d96dd",
+              "leftValue": "={{ $json.facts.length }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "id": "9df05d7e-c686-4463-967f-55ccbf7087d3",
+      "name": "Has New Facts?2",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        1216,
+        -480
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const llmText = $('Generate Text1').item.json.choices?.[0]?.message?.content?.trim() || '';\nconst facts = $('Analyze Facts2').item.json;\n\nif (!llmText) throw new Error('LLM returned empty text');\n\nconst model = $('Generate Text1').item.json.model || 'google/gemini-2.0-flash-001';\n\nreturn [{\n  json: {\n    match_id: facts.match_id,\n    text: llmText,\n    minute: facts.minute,\n    status: facts.auto_publish ? 'published' : 'draft',\n    icon: '📊',\n    style: facts.instance === 'ef_whitelabel' ? 'euphorisch' : 'neutral',\n    instance: facts.instance,\n    llm_model: model,\n    source: 'ai',\n  }\n}];"
+      },
+      "id": "ec9f846c-520c-4d9f-9fec-e7cdce4ac47d",
+      "name": "Build Ticker Entry2",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1616,
+        -480
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://liveticker-backend.onrender.com/api/v1/ticker/manual",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"match_id\": {{ $json.match_id }},\n  \"text\": \"{{ $json.text }}\",\n  \"minute\": {{ $json.minute }},\n  \"status\": \"{{ $json.status }}\",\n  \"icon\": \"📊\",\n  \"style\": \"{{ $json.style }}\",\n  \"instance\": \"{{ $json.instance }}\",\n  \"llm_model\": \"{{ $json.llm_model }}\",\n  \"source\": \"ai\"\n}\n",
+        "options": {}
+      },
+      "id": "1f99ea14-906c-4167-8d8a-662d01a5085f",
+      "name": "POST to Ticker2",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1808,
+        -480
+      ]
+    }
+  ],
+  "connections": {
+    "Generate Text1": {
+      "main": [
+        [
+          {
+            "node": "Build Ticker Entry2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook2": {
+      "main": [
+        [
+          {
+            "node": "Get Match2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Match2": {
+      "main": [
+        [
+          {
+            "node": "Get Fixture2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Fixture2": {
+      "main": [
+        [
+          {
+            "node": "Is Live?2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is Live?2": {
+      "main": [
+        [
+          {
+            "node": "Get Statistics2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Statistics2": {
+      "main": [
+        [
+          {
+            "node": "Get Existing Ticker2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Existing Ticker2": {
+      "main": [
+        [
+          {
+            "node": "Analyze Facts2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Analyze Facts2": {
+      "main": [
+        [
+          {
+            "node": "Has New Facts?2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Has New Facts?2": {
+      "main": [
+        [
+          {
+            "node": "Generate Text1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Ticker Entry2": {
+      "main": [
+        [
+          {
+            "node": "POST to Ticker2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "meta": {
+    "instanceId": "c812d7c91145a37daf0cb923fa307183fa91637fdbe8017dda5dce71e0f572b5"
+  }
+}

@@ -1,0 +1,195 @@
+{
+  "stats": [
+    {
+      "model": "google/gemini-2.5-flash",
+      "n": 10,
+      "errors": 0,
+      "mean_ms": 664,
+      "median_ms": 591,
+      "stdev_ms": 295,
+      "p95_ms": 1459,
+      "min_ms": 398,
+      "max_ms": 1459
+    },
+    {
+      "model": "openai/gpt-4.1-mini",
+      "n": 10,
+      "errors": 0,
+      "mean_ms": 1289,
+      "median_ms": 1111,
+      "stdev_ms": 521,
+      "p95_ms": 2759,
+      "min_ms": 1039,
+      "max_ms": 2759
+    },
+    {
+      "model": "anthropic/claude-haiku-4-5",
+      "n": 10,
+      "errors": 0,
+      "mean_ms": 1597,
+      "median_ms": 1668,
+      "stdev_ms": 177,
+      "p95_ms": 1825,
+      "min_ms": 1299,
+      "max_ms": 1825
+    }
+  ],
+  "raw": {
+    "google/gemini-2.5-flash": [
+      {
+        "latency_ms": 613,
+        "text": "67' Tor für Eintracht Frankfurt. Omar Marmoush trifft nach Vorlage von Hugo Larsson zum 1:0.",
+        "status": "ok"
+      },
+      {
+        "latency_ms": 527,
+        "text": "67. Min: Tor für Eintracht Frankfurt. Omar Marmoush trifft nach Vorlage von Hugo Larsson zum 1:0.",
+        "status": "ok"
+      },
+      {
+        "latency_ms": 480,
+        "text": "67' TOR für Eintracht Frankfurt. Omar Marmoush trifft nach Vorlage von Hugo Larsson zum 1:0 gegen Borussia Dortmund.",
+        "status": "ok"
+      },
+      {
+        "latency_ms": 601,
+        "text": "67. Min: Tor für Eintracht Frankfurt. Omar Marmoush trifft nach Vorlage von Hugo Larsson zum 1:0.",
+        "status": "ok"
+      },
+      {
+        "latency_ms": 733,
+        "text": "67. Min: Tor für Eintracht Frankfurt. Omar Marmoush trifft nach Vorlage von Hugo Larsson zum 1:0.",
+        "status": "ok"
+      },
+      {
+        "latency_ms": 1459,
+        "text": "67. Min: Tor für Eintracht Frankfurt. Omar Marmoush trifft nach Vorlage von Hugo Larsson zum 1:0.",
+        "status": "ok"
+      },
+      {
+        "latency_ms": 398,
+        "text": "67. Minute: Tor für Eintracht Frankfurt. Omar Marmoush trifft nach Vorlage von Hugo Larsson zum 1:0.",
+        "status": "ok"
+      },
+      {
+        "latency_ms": 680,
+        "text": "67' Tor für Eintracht Frankfurt. Omar Marmoush erzielt das 1:0 nach Vorlage von Hugo Larsson.",
+        "status": "ok"
+      },
+      {
+        "latency_ms": 581,
+        "text": "67' Tor für Eintracht Frankfurt. Omar Marmoush erzielt das 1:0 nach Vorlage von Hugo Larsson.",
+        "status": "ok"
+      },
+      {
+        "latency_ms": 572,
+        "text": "67. Min: Tor für Eintracht Frankfurt. Omar Marmoush trifft nach Vorlage von Hugo Larsson zum 1:0.",
+        "status": "ok"
+      }
+    ],
+    "openai/gpt-4.1-mini": [
+      {
+        "latency_ms": 1112,
+        "text": "67. Minute: Omar Marmoush erzielt das 1:0 für Eintracht Frankfurt nach Vorlage von Hugo Larsson.",
+        "status": "ok"
+      },
+      {
+        "latency_ms": 1078,
+        "text": "67. Minute: Omar Marmoush trifft nach Vorlage von Hugo Larsson zum 1:0 für Eintracht Frankfurt gegen Borussia Dortmund.",
+        "status": "ok"
+      },
+      {
+        "latency_ms": 1182,
+        "text": "67. Minute: Omar Marmoush erzielt das 1:0 für Eintracht Frankfurt nach Vorlage von Hugo Larsson. Spielstand nun 1:0 gegen Borussia Dortmund.",
+        "status": "ok"
+      },
+      {
+        "latency_ms": 1039,
+        "text": "67. Minute: Omar Marmoush erzielt das 1:0 für Eintracht Frankfurt nach Vorlage von Hugo Larsson.",
+        "status": "ok"
+      },
+      {
+        "latency_ms": 1269,
+        "text": "67. Minute: Omar Marmoush trifft zum 1:0 für Eintracht Frankfurt nach Vorlage von Hugo Larsson.",
+        "status": "ok"
+      },
+      {
+        "latency_ms": 1094,
+        "text": "67. Minute: Omar Marmoush trifft nach Vorlage von Hugo Larsson zum 1:0 für Eintracht Frankfurt gegen Borussia Dortmund.",
+        "status": "ok"
+      },
+      {
+        "latency_ms": 1110,
+        "text": "67. Minute: Omar Marmoush erzielt das 1:0 für Eintracht Frankfurt nach Vorlage von Hugo Larsson gegen Borussia Dortmund.",
+        "status": "ok"
+      },
+      {
+        "latency_ms": 2759,
+        "text": "67. Minute: Omar Marmoush erzielt das 1:0 für Eintracht Frankfurt nach Vorlage von Hugo Larsson gegen Borussia Dortmund.",
+        "status": "ok"
+      },
+      {
+        "latency_ms": 1190,
+        "text": "67. Minute: Omar Marmoush erzielt das 1:0 für Eintracht Frankfurt nach Vorlage von Hugo Larsson gegen Borussia Dortmund.",
+        "status": "ok"
+      },
+      {
+        "latency_ms": 1054,
+        "text": "67. Minute: Omar Marmoush erzielt das 1:0 für Eintracht Frankfurt nach Vorlage von Hugo Larsson gegen Borussia Dortmund.",
+        "status": "ok"
+      }
+    ],
+    "anthropic/claude-haiku-4-5": [
+      {
+        "latency_ms": 1764,
+        "text": "**67. Minute - Tor für Eintracht Frankfurt**\n\nOmar Marmoush trifft nach Vorlage von Hugo Larsson zum 1:0 für Frankfurt. Die Eintracht geht gegen Dortmund in Führung.",
+        "status": "ok"
+      },
+      {
+        "latency_ms": 1645,
+        "text": "**67.** Tor für Eintracht Frankfurt. Marmoush trifft nach Vorlage von Larsson zum 1:0. Die Gastgeber gehen in Führung.",
+        "status": "ok"
+      },
+      {
+        "latency_ms": 1825,
+        "text": "**67. Minute - Tor für Eintracht Frankfurt**\n\nOmar Marmoush bringt Frankfurt in Führung. Hugo Larsson bereitet das 1:0 vor.",
+        "status": "ok"
+      },
+      {
+        "latency_ms": 1693,
+        "text": "**67. Minute - Tor für Eintracht Frankfurt**\n\nOmar Marmoush trifft zum 1:0. Hugo Larsson bereitete das Tor vor.",
+        "status": "ok"
+      },
+      {
+        "latency_ms": 1442,
+        "text": "**67. Minute - Tor für Eintracht Frankfurt**\n\nOmar Marmoush bringt Frankfurt in Führung. Hugo Larsson bereitete das 1:0 vor.",
+        "status": "ok"
+      },
+      {
+        "latency_ms": 1402,
+        "text": "**67. Minute - Tor für Eintracht Frankfurt**\n\nOmar Marmoush trifft nach Vorlage von Hugo Larsson zum 1:0 für Frankfurt. Die Eintracht geht gegen Dortmund in Führung.",
+        "status": "ok"
+      },
+      {
+        "latency_ms": 1486,
+        "text": "**67. Minute - TOR für Eintracht Frankfurt**\n\nOmar Marmoush trifft nach Vorlage von Hugo Larsson zum 1:0 für Frankfurt. Die Eintracht geht in Führung gegen Dortmund.",
+        "status": "ok"
+      },
+      {
+        "latency_ms": 1299,
+        "text": "**67. Minute | Tor für Frankfurt**\n\nMarmoush bringt Frankfurt in Führung. Larsson bereitet das 1:0 vor.",
+        "status": "ok"
+      },
+      {
+        "latency_ms": 1690,
+        "text": "**67. Minute – Tor für Eintracht Frankfurt**\n\nOmar Marmoush bringt Frankfurt in Führung. Hugo Larsson bereitet das 1:0 vor.",
+        "status": "ok"
+      },
+      {
+        "latency_ms": 1728,
+        "text": "**67. Minute - TOR für Eintracht Frankfurt**\n\nOmar Marmoush trifft nach Vorlage von Hugo Larsson zum 1:0. Frankfurt geht in Führung gegen Dortmund.",
+        "status": "ok"
+      }
+    ]
+  }
+}

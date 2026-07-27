@@ -1,0 +1,125 @@
+{
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "3555f418-e7a5-4d9b-ac87-5b591b4bc0d0",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [-144, 48],
+      "id": "3c85eac9-ad58-4873-8e62-c828b292becd",
+      "name": "Webhook",
+      "webhookId": "3555f418-e7a5-4d9b-ac87-5b591b4bc0d0"
+    },
+    {
+      "parameters": {
+        "respondWith": "allIncomingItems",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [896, 48],
+      "id": "95ba05a7-7668-44a0-bc20-b0d89d514de6",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "jsCode": "const results = [];\nfor (const item of $input.all()) {\n  const markdown = item.json.data.markdown || '';\n  const videoRegex = /### \\[(.*?)\\]\\((https:\\/\\/www\\.youtube\\.com\\/watch\\?v=[^\\s)]+)/g;\n  let match;\n  while ((match = videoRegex.exec(markdown)) !== null) {\n    const url = match[2];\n    // Regex statt new URL() — URL-Klasse nicht im n8n Sandbox verfügbar\n    const vidMatch = url.match(/[?&]v=([A-Za-z0-9_-]{11})/);\n    const vid = vidMatch ? vidMatch[1] : null;\n    results.push({\n      json: {\n        titel: match[1],\n        url: url,\n        vid: vid,\n        thumbnail: vid ? `https://img.youtube.com/vi/${vid}/mqdefault.jpg` : null\n      }\n    });\n  }\n}\nif (results.length === 0) {\n  return [{ json: { error: 'Keine Videos gefunden.' } }];\n}\nreturn results;\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [352, 48],
+      "id": "f4421559-365b-406c-9e78-13d574096352",
+      "name": "Code: Youtube Videos extrahieren"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO media_clips (vid, video_url, thumbnail_url, title, source, published)\nVALUES (\n  '{{ $json.vid }}',\n  '{{ $json.url }}',\n  '{{ $json.thumbnail }}',\n  '{{ $json.titel.replace(/'/g, \"''\") }}',\n  'youtube',\n  false\n)\nON CONFLICT (vid) WHERE vid IS NOT NULL DO UPDATE SET\n  title = EXCLUDED.title,\n  thumbnail_url = EXCLUDED.thumbnail_url",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [560, 48],
+      "id": "3a34891c-397b-4b58-9463-8978e49a9951",
+      "name": "DB: Insert YouTube Clip",
+      "credentials": {
+        "postgres": {
+          "id": "5VeE2cikA9rLeOKz",
+          "name": "Postgres account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "scrape",
+        "url": "=https://www.youtube.com/@Eintracht",
+        "requestOptions": {}
+      },
+      "type": "@mendable/n8n-nodes-firecrawl.firecrawl",
+      "typeVersion": 1,
+      "position": [144, 48],
+      "id": "7807f0f1-0c6c-403c-9f92-04ffff23098f",
+      "name": "Youtube Videos Eintracht extrahieren2",
+      "credentials": {
+        "firecrawlApi": {
+          "id": "WmG9wDO1CzTyZ39j",
+          "name": "Firecrawl account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Youtube Videos Eintracht extrahieren2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code: Youtube Videos extrahieren": {
+      "main": [
+        [
+          {
+            "node": "DB: Insert YouTube Clip",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DB: Insert YouTube Clip": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Youtube Videos Eintracht extrahieren2": {
+      "main": [
+        [
+          {
+            "node": "Code: Youtube Videos extrahieren",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "meta": {
+    "instanceId": "c812d7c91145a37daf0cb923fa307183fa91637fdbe8017dda5dce71e0f572b5"
+  }
+}

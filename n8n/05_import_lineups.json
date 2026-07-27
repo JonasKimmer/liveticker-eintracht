@@ -1,0 +1,200 @@
+{
+  "nodes": [
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "WITH upserted AS (\n  INSERT INTO players (external_id, display_name, position, team_id, sport, jersey_number)\n  SELECT\n    $3::integer,\n    $4,\n    $7,\n    (SELECT id FROM teams WHERE external_id = $2::integer),\n    'Football',\n    $5::integer\n  WHERE $3::integer IS NOT NULL\n  ON CONFLICT (external_id) DO UPDATE SET\n    display_name  = COALESCE(EXCLUDED.display_name,  players.display_name),\n    position      = COALESCE(EXCLUDED.position,      players.position),\n    team_id       = COALESCE(EXCLUDED.team_id,       players.team_id),\n    jersey_number = COALESCE(EXCLUDED.jersey_number, players.jersey_number)\n  RETURNING id\n)\nINSERT INTO lineups\n  (match_id, team_id, player_id, player_name, jersey_number, status, position, is_substituted, number_of_goals, has_yellow_card, has_red_card, formation)\nSELECT\n  $1::integer,\n  (SELECT id FROM teams WHERE external_id = $2::integer),\n  (SELECT id FROM upserted\n   UNION ALL\n   SELECT id FROM players WHERE external_id = $3::integer\n   LIMIT 1),\n  $4,\n  $5::integer,\n  $6,\n  $7,\n  $8::boolean,\n  0, false, false,\n  $9",
+        "options": {
+          "queryReplacement": "={{ [$json.match_id, $json.team_external_id, $json.player_external_id, $json.player_name, $json.jersey_number, $json.status, $json.position, $json.is_substituted, $json.formation] }}"
+        }
+      },
+      "id": "4d16fe5a-8b78-4f87-b908-072657445dba",
+      "name": "UPSERT Player + INSERT Lineup",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.4,
+      "position": [976, 16],
+      "credentials": {
+        "postgres": {
+          "id": "5VeE2cikA9rLeOKz",
+          "name": "Postgres account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT external_id FROM matches WHERE id = $1",
+        "options": {
+          "queryReplacement": "={{ [$json.body.match_id] }}"
+        }
+      },
+      "id": "958a2c1f-28f3-407b-9caa-f78359561a6a",
+      "name": "Get external_id7",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.4,
+      "position": [80, 16],
+      "credentials": {
+        "postgres": {
+          "id": "5VeE2cikA9rLeOKz",
+          "name": "Postgres account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "https://v3.football.api-sports.io/fixtures/lineups",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "fixture",
+              "value": "={{ $json.external_id }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "6ed99837-f3f5-4551-82d7-839a5801ddb2",
+      "name": "API: Lineup abrufen9",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [304, 16],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "nw1wvLZ4u2BCZRVl",
+          "name": "Header Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "DELETE FROM lineups WHERE match_id = $1",
+        "options": {
+          "queryReplacement": "={{ [$('Webhook Lineup8').first().json.body.match_id] }}"
+        }
+      },
+      "id": "3ff960d7-71e0-4555-be49-e6432b781ccd",
+      "name": "DELETE alte Lineups8",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.4,
+      "position": [528, 16],
+      "credentials": {
+        "postgres": {
+          "id": "5VeE2cikA9rLeOKz",
+          "name": "Postgres account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const apiResponse = $('API: Lineup abrufen9').first().json;\nconst matchId = $('Webhook Lineup8').first().json.body.match_id;\n\nif (!apiResponse.response || apiResponse.response.length === 0) return [];\n\nconst items = [];\n\napiResponse.response.forEach(teamData => {\n  const formation = teamData.formation;\n\n  const players = [\n    ...teamData.startXI.map(p => ({ ...p.player, is_substitute: false })),\n    ...teamData.substitutes.map(p => ({ ...p.player, is_substitute: true }))\n  ];\n\n  players.forEach(p => {\n    items.push({ json: {\n      match_id: matchId,\n      team_external_id: teamData.team.id,\n      formation,\n      player_external_id: p.id,\n      player_name: p.name || null,\n      jersey_number: p.number || null,\n      status: p.is_substitute ? 'Sub' : 'Start',\n      position: p.pos || null,\n      is_substituted: false\n    }});\n  });\n\n  if (teamData.coach?.name) {\n    items.push({ json: {\n      match_id: matchId,\n      team_external_id: teamData.team.id,\n      formation,\n      player_external_id: null,\n      player_name: teamData.coach.name,\n      jersey_number: null,\n      status: 'Coach',\n      position: null,\n      is_substituted: false\n    }});\n  }\n});\n\nreturn items;"
+      },
+      "id": "787c77e0-47e1-4e37-bd8d-e15349a1e58b",
+      "name": "Lineups extrahieren9",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [752, 16]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={ \"status\": \"ok\", \"match_id\": {{ $('Webhook Lineup8').first().json.body.match_id }} }",
+        "options": {}
+      },
+      "id": "b7f8432b-d86f-4a68-b3bd-ef7d70f26fae",
+      "name": "Respond to Webhook8",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [1200, 16]
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "lineups",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "834f1cc3-642b-4605-9d0f-5c60c751a4b7",
+      "name": "Webhook Lineup8",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [-208, 16],
+      "webhookId": "6188adc1-362c-45e1-9e8a-abd1889bbe3b"
+    }
+  ],
+  "connections": {
+    "UPSERT Player + INSERT Lineup": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook8",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get external_id7": {
+      "main": [
+        [
+          {
+            "node": "API: Lineup abrufen9",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "API: Lineup abrufen9": {
+      "main": [
+        [
+          {
+            "node": "DELETE alte Lineups8",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DELETE alte Lineups8": {
+      "main": [
+        [
+          {
+            "node": "Lineups extrahieren9",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Lineups extrahieren9": {
+      "main": [
+        [
+          {
+            "node": "UPSERT Player + INSERT Lineup",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook Lineup8": {
+      "main": [
+        [
+          {
+            "node": "Get external_id7",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "meta": {
+    "instanceId": "c812d7c91145a37daf0cb923fa307183fa91637fdbe8017dda5dce71e0f572b5"
+  }
+}

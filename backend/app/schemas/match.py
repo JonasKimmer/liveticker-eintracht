@@ -1,11 +1,13 @@
 from datetime import date, datetime
+from decimal import Decimal
 from enum import Enum
-from math import ceil
 from typing import Any, Optional
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict, Field, computed_field, field_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 from pydantic.alias_generators import to_camel
+
+from app.schemas.base import LocalizedTitle, PaginatedResponse
 
 
 # ------------------------------------------------------------------ #
@@ -36,11 +38,6 @@ class MatchPhase(str, Enum):
 # ------------------------------------------------------------------ #
 # Sub-schemas                                                          #
 # ------------------------------------------------------------------ #
-
-
-class LocalizedTitle(BaseModel):
-    de: Optional[str] = Field(None, max_length=200)
-    en: Optional[str] = Field(None, max_length=200)
 
 
 class JerseyInfo(BaseModel):
@@ -114,6 +111,7 @@ class MatchUpdate(BaseModel):
     is_scheduled: Optional[bool] = None
     is_kickoff_confirmed: Optional[bool] = None
     minute: Optional[int] = Field(None, ge=0, le=120)
+    minute_extra: Optional[int] = Field(None, ge=0, le=30)
     number_of_goal_scorers: Optional[int] = Field(None, ge=0)
     number_of_viewers: Optional[int] = Field(None, ge=0)
     team_home_jersey: Optional[JerseyInfo] = None
@@ -121,6 +119,11 @@ class MatchUpdate(BaseModel):
     broadcasts: Optional[list[int]] = None
     matchday_title: Optional[LocalizedTitle] = None
     localized_title: Optional[LocalizedTitle] = None
+    ticker_mode: Optional[str] = Field(None, pattern="^(auto|coop|manual)$")
+
+
+class TickerModeUpdate(BaseModel):
+    mode: str = Field(..., pattern="^(auto|coop|manual)$")
 
 
 # ------------------------------------------------------------------ #
@@ -129,7 +132,9 @@ class MatchUpdate(BaseModel):
 
 
 class MatchTeamInfo(BaseModel):
-    model_config = ConfigDict(from_attributes=True, populate_by_name=True, alias_generator=to_camel)
+    model_config = ConfigDict(
+        from_attributes=True, populate_by_name=True, alias_generator=to_camel
+    )
 
     id: int
     name: str
@@ -147,7 +152,7 @@ class MatchResponse(BaseModel):
 
     kickoff: Optional[datetime] = None
     is_kickoff_confirmed: bool
-    localized_title: Optional[dict] = None
+    localized_title: Optional[LocalizedTitle] = None
     match_phase: Optional[str] = None
     title: Optional[str] = None
     id: int
@@ -164,18 +169,22 @@ class MatchResponse(BaseModel):
     away_team_id: Optional[int] = Field(None, serialization_alias="teamAwayId")
     home_score: Optional[int] = Field(None, serialization_alias="teamHomeScore")
     away_score: Optional[int] = Field(None, serialization_alias="teamAwayScore")
+    penalty_home_score: Optional[int] = Field(None, serialization_alias="penaltyHomeScore")
+    penalty_away_score: Optional[int] = Field(None, serialization_alias="penaltyAwayScore")
     matchday: Optional[int] = None
     venue: Optional[str] = None
     city: Optional[str] = None
-    matchday_title: Optional[dict] = None
+    matchday_title: Optional[LocalizedTitle] = None
     number_of_goal_scorers: Optional[int] = None
-    team_home_jersey: Optional[dict] = None
-    team_away_jersey: Optional[dict] = None
+    team_home_jersey: Optional[JerseyInfo] = None
+    team_away_jersey: Optional[JerseyInfo] = None
     broadcasts: Optional[list] = None
     number_of_viewers: Optional[int] = None
     match_state: Optional[str] = None
     minute: Optional[int] = None
+    minute_extra: Optional[int] = None
     ends_at: Optional[datetime] = None
+    ticker_mode: str = "coop"
     home_team: Optional[MatchTeamInfo] = None
     away_team: Optional[MatchTeamInfo] = None
 
@@ -187,31 +196,8 @@ class MatchResponse(BaseModel):
         return v
 
 
-class PaginatedMatchResponse(BaseModel):
-    model_config = ConfigDict(populate_by_name=True, alias_generator=to_camel)
-
-    items: list[MatchResponse]
-    total: int
-    page: int
-    page_size: int
-    page_count: int
-    has_previous_page: bool
-    has_next_page: bool
-
-    @classmethod
-    def create(
-        cls, items: list[MatchResponse], total: int, page: int, page_size: int
-    ) -> "PaginatedMatchResponse":
-        page_count = ceil(total / page_size) if page_size > 0 else 0
-        return cls(
-            items=items,
-            total=total,
-            page=page,
-            page_size=page_size,
-            page_count=page_count,
-            has_previous_page=page > 1,
-            has_next_page=page < page_count,
-        )
+class PaginatedMatchResponse(PaginatedResponse[MatchResponse]):
+    pass
 
 
 # ------------------------------------------------------------------ #
@@ -291,7 +277,7 @@ class LineupPlayerResponse(BaseModel):
 class TeamStatisticsInput(BaseModel):
     model_config = ConfigDict(populate_by_name=True, alias_generator=to_camel)
 
-    possession_percentage: Optional[str] = Field(None, max_length=10)
+    possession_percentage: Optional[Decimal] = Field(None, ge=0, le=100)
     total_pass: Optional[int] = Field(None, ge=0)
     accurate_pass: Optional[int] = Field(None, ge=0)
     duel_won: Optional[int] = Field(None, ge=0)
@@ -330,7 +316,7 @@ class MatchStatisticResponse(BaseModel):
     id: int
     match_id: int
     team_id: int
-    possession_percentage: Optional[str] = None
+    possession_percentage: Optional[Decimal] = None
     total_pass: Optional[int] = None
     accurate_pass: Optional[int] = None
     duel_won: Optional[int] = None

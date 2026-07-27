@@ -1,0 +1,12 @@
+__pycache__/
+*.pyc
+.coverage
+node_modules/
+.env
+**/.env
+.claude/
+frontend/playwright-report/
+frontend/test-results/
+**/.DS_Store
+backend/.venv311/
+*.zip

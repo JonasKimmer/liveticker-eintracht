@@ -1,0 +1,141 @@
+_id,nr,match,event_type,minute,player,team,score,style,korrektheit,tonalitaet,gesamt
+1375863_goal_9_M. Ho,1,SV Elversberg vs. 1. FC Heidenheim,goal,9,M. Honsak,1. FC Heidenheim,0:1,neutral,5,4,4.67
+1375863_yellow_card_43_Hakta,2,SV Elversberg vs. 1. FC Heidenheim,yellow_card,43,Haktab Omar Traore,1. FC Heidenheim,1:1,euphorisch,5,2,3.67
+1224273_red_card_9_Carl ,3,Borussia Dortmund vs. Holstein Kiel,red_card,9,Carl Johansson,Holstein Kiel,1:0,kritisch,5,3,4.33
+1375863_substitution_18_S. Şa,4,SV Elversberg vs. 1. FC Heidenheim,substitution,18,S. Şahin,SV Elversberg,0:1,neutral,3,5,4.0
+1224268_own_goal_1_L. Øs,5,VfL Wolfsburg vs. 1899 Hoffenheim,own_goal,1,L. Østigård,VfL Wolfsburg,0:1,euphorisch,5,5,5.0
+1375863_goal_30_R. Fe,6,SV Elversberg vs. 1. FC Heidenheim,goal,30,R. Fellhauer,SV Elversberg,1:1,kritisch,5,5,5.0
+1375863_yellow_card_55_Luca ,7,SV Elversberg vs. 1. FC Heidenheim,yellow_card,55,Luca Kerber,1. FC Heidenheim,1:1,neutral,5,5,5.0
+1224264_red_card_11_Samue,8,VfB Stuttgart vs. FC Augsburg,red_card,11,Samuel Essende,FC Augsburg,1:0,euphorisch,5,5,5.0
+1375863_substitution_23_M. Pi,9,SV Elversberg vs. 1. FC Heidenheim,substitution,23,M. Pieringer,1. FC Heidenheim,0:1,kritisch,2,4,3.33
+1375863_goal_95_Léo S,10,SV Elversberg vs. 1. FC Heidenheim,goal,95,Léo Scienza,1. FC Heidenheim,1:2,neutral,5,3,4.33
+1375863_yellow_card_68_Tom Z,11,SV Elversberg vs. 1. FC Heidenheim,yellow_card,68,Tom Zimmerschied,SV Elversberg,1:1,euphorisch,5,2,4.0
+1375863_substitution_78_L. Ke,12,SV Elversberg vs. 1. FC Heidenheim,substitution,78,L. Kerber,1. FC Heidenheim,1:1,kritisch,3,4,3.67
+1375862_goal_18_L. Pe,13,1. FC Heidenheim vs. SV Elversberg,goal,18,L. Petkov,SV Elversberg,0:1,neutral,5,3,4.33
+1375863_yellow_card_79_Paul ,14,SV Elversberg vs. 1. FC Heidenheim,yellow_card,79,Paul Wanner,1. FC Heidenheim,1:1,euphorisch,5,4,4.33
+1375863_substitution_78_M. Ho,15,SV Elversberg vs. 1. FC Heidenheim,substitution,78,M. Honsak,1. FC Heidenheim,1:1,kritisch,4,5,4.67
+1375862_goal_42_F. As,16,1. FC Heidenheim vs. SV Elversberg,goal,42,F. Asllani,SV Elversberg,0:2,neutral,5,3,4.33
+1375862_yellow_card_26_Adria,17,1. FC Heidenheim vs. SV Elversberg,yellow_card,26,Adrian Beck,1. FC Heidenheim,0:1,euphorisch,5,5,4.67
+1375863_substitution_86_T. Zi,18,SV Elversberg vs. 1. FC Heidenheim,substitution,86,T. Zimmerschied,SV Elversberg,1:1,kritisch,4,5,4.67
+1375862_goal_62_T. Si,19,1. FC Heidenheim vs. SV Elversberg,goal,62,T. Siersleben,1. FC Heidenheim,1:2,neutral,5,3,4.33
+1224276_yellow_card_42_Rasmu,20,SC Freiburg vs. Eintracht Frankfurt,yellow_card,42,Rasmus Kristensen,Eintracht Frankfurt,1:0,euphorisch,5,2,3.67
+1375863_substitution_97_L. Pe,21,SV Elversberg vs. 1. FC Heidenheim,substitution,97,L. Petkov,SV Elversberg,1:1,kritisch,4,5,4.67
+1375862_goal_64_M. Ho,22,1. FC Heidenheim vs. SV Elversberg,goal,64,M. Honsak,1. FC Heidenheim,2:2,neutral,5,3,4.33
+1224276_yellow_card_58_Max R,23,SC Freiburg vs. Eintracht Frankfurt,yellow_card,58,Max Rosenfelder,SC Freiburg,1:1,euphorisch,5,1,3.33
+1375863_substitution_97_M. Da,24,SV Elversberg vs. 1. FC Heidenheim,substitution,97,M. Damar,SV Elversberg,1:1,kritisch,5,4,4.33
+1224276_goal_27_R. Do,25,SC Freiburg vs. Eintracht Frankfurt,goal,27,R. Doan,SC Freiburg,1:0,neutral,5,4,4.67
+1224276_yellow_card_72_Ansga,26,SC Freiburg vs. Eintracht Frankfurt,yellow_card,72,Ansgar Knauff,Eintracht Frankfurt,1:3,euphorisch,5,1,3.33
+1375863_substitution_97_Léo S,27,SV Elversberg vs. 1. FC Heidenheim,substitution,97,Léo Scienza,1. FC Heidenheim,1:1,kritisch,3,2,3.0
+1224276_goal_49_A. Kn,28,SC Freiburg vs. Eintracht Frankfurt,goal,49,A. Knauff,Eintracht Frankfurt,1:1,neutral,5,3,4.33
+1224276_yellow_card_86_Phili,29,SC Freiburg vs. Eintracht Frankfurt,yellow_card,86,Philipp Lienhart,SC Freiburg,1:3,euphorisch,5,2,3.33
+1375863_substitution_97_F. Kr,30,SV Elversberg vs. 1. FC Heidenheim,substitution,97,F. Krätzig,1. FC Heidenheim,1:1,kritisch,3,2,3.0
+1224276_goal_61_R. Kr,31,SC Freiburg vs. Eintracht Frankfurt,goal,61,R. Kristensen,Eintracht Frankfurt,1:2,neutral,5,3,4.0
+1224276_yellow_card_89_Nnamd,32,SC Freiburg vs. Eintracht Frankfurt,yellow_card,89,Nnamdi Collins,Eintracht Frankfurt,1:3,euphorisch,5,1,3.33
+1375862_substitution_46_M. Pi,33,1. FC Heidenheim vs. SV Elversberg,substitution,46,M. Pieringer,1. FC Heidenheim,0:2,kritisch,3,5,4.0
+1224276_goal_63_E. Sk,34,SC Freiburg vs. Eintracht Frankfurt,goal,63,E. Skhiri,Eintracht Frankfurt,1:3,neutral,5,3,4.33
+1224276_yellow_card_96_Natha,35,SC Freiburg vs. Eintracht Frankfurt,yellow_card,96,Nathaniel Brown,Eintracht Frankfurt,1:3,euphorisch,5,2,3.67
+1375862_substitution_46_N. Do,36,1. FC Heidenheim vs. SV Elversberg,substitution,46,N. Dorsch,1. FC Heidenheim,0:2,kritisch,4,5,4.67
+1224279_goal_50_L. Nm,37,Borussia Mönchengladbach vs. VfL Wolfsburg,goal,50,L. Nmecha,VfL Wolfsburg,0:1,neutral,5,3,4.0
+1224278_yellow_card_40_Stefa,38,FSV Mainz 05 vs. Bayer Leverkusen,yellow_card,40,Stefan Bell,FSV Mainz 05,1:0,euphorisch,5,5,5.0
+1375862_substitution_46_A. Be,39,1. FC Heidenheim vs. SV Elversberg,substitution,46,A. Beck,1. FC Heidenheim,0:2,kritisch,3,2,3.0
+1224278_goal_35_P. Ne,40,FSV Mainz 05 vs. Bayer Leverkusen,goal,35,P. Nebel,FSV Mainz 05,1:0,neutral,5,3,4.33
+1224278_yellow_card_40_Exequ,41,FSV Mainz 05 vs. Bayer Leverkusen,yellow_card,40,Exequiel Palacios,Bayer Leverkusen,1:0,euphorisch,5,1,3.67
+1375862_substitution_76_M. Ho,42,1. FC Heidenheim vs. SV Elversberg,substitution,76,M. Honsak,1. FC Heidenheim,2:2,kritisch,4,5,4.67
+1224278_goal_49_P. Sc,43,FSV Mainz 05 vs. Bayer Leverkusen,goal,49,P. Schick,Bayer Leverkusen,1:1,neutral,5,3,4.33
+1224278_yellow_card_52_Aleix,44,FSV Mainz 05 vs. Bayer Leverkusen,yellow_card,52,Aleix García,Bayer Leverkusen,1:0,euphorisch,5,2,3.33
+1375862_substitution_78_T. Zi,45,1. FC Heidenheim vs. SV Elversberg,substitution,78,T. Zimmerschied,SV Elversberg,2:2,kritisch,3,4,3.67
+1224278_goal_54_P. Sc,46,FSV Mainz 05 vs. Bayer Leverkusen,goal,54,P. Schick,Bayer Leverkusen,1:2,neutral,5,4,4.67
+1224278_yellow_card_59_Piero,47,FSV Mainz 05 vs. Bayer Leverkusen,yellow_card,59,Piero Hincapié,Bayer Leverkusen,1:2,euphorisch,2,3,3.0
+1375862_substitution_78_R. Fe,48,1. FC Heidenheim vs. SV Elversberg,substitution,78,R. Fellhauer,SV Elversberg,2:2,kritisch,4,2,3.67
+1224278_goal_63_J. Bu,49,FSV Mainz 05 vs. Bayer Leverkusen,goal,63,J. Burkardt,FSV Mainz 05,2:2,neutral,5,3,4.33
+1224278_yellow_card_68_Arthu,50,FSV Mainz 05 vs. Bayer Leverkusen,yellow_card,68,Arthur,Bayer Leverkusen,2:2,euphorisch,5,2,4.0
+1375862_substitution_86_L. Pe,51,1. FC Heidenheim vs. SV Elversberg,substitution,86,L. Petkov,SV Elversberg,2:2,kritisch,4,3,3.67
+1224273_goal_3_S. Gu,52,Borussia Dortmund vs. Holstein Kiel,goal,3,S. Guirassy,Borussia Dortmund,1:0,neutral,5,4,4.67
+1224278_yellow_card_81_Andre,53,FSV Mainz 05 vs. Bayer Leverkusen,yellow_card,81,Andreas Hanche-Olsen,FSV Mainz 05,2:2,euphorisch,5,2,3.67
+1375862_substitution_89_F. As,54,1. FC Heidenheim vs. SV Elversberg,substitution,89,F. Asllani,SV Elversberg,2:2,kritisch,4,5,4.67
+1224273_goal_47_M. Sa,55,Borussia Dortmund vs. Holstein Kiel,goal,47,M. Sabitzer,Borussia Dortmund,2:0,neutral,5,4,4.67
+1224278_yellow_card_83_Jonat,56,FSV Mainz 05 vs. Bayer Leverkusen,yellow_card,83,Jonathan Tah,Bayer Leverkusen,2:2,euphorisch,5,1,3.0
+1224276_substitution_66_M. Ro,57,SC Freiburg vs. Eintracht Frankfurt,substitution,66,M. Rosenfelder,SC Freiburg,1:3,kritisch,4,5,4.33
+1224273_goal_72_F. Nm,58,Borussia Dortmund vs. Holstein Kiel,goal,72,F. Nmecha,Borussia Dortmund,3:0,neutral,5,4,4.67
+1224278_yellow_card_87_Flori,59,FSV Mainz 05 vs. Bayer Leverkusen,yellow_card,87,Florian Wirtz,Bayer Leverkusen,2:2,euphorisch,5,2,3.67
+1224276_substitution_66_F. Ch,60,SC Freiburg vs. Eintracht Frankfurt,substitution,66,F. Chaïbi,Eintracht Frankfurt,1:3,kritisch,2,4,3.33
+1388606_goal_10_H. Ka,61,Bayern München vs. 1. FC Köln,goal,10,H. Kane,Bayern München,1:0,neutral,5,4,4.67
+1545417_yellow_card_9_Ruben,62,VfL Wolfsburg vs. SC Paderborn 07,yellow_card,9,Ruben Müller,SC Paderborn 07,0:0,euphorisch,5,5,4.67
+1545417_red_card_94_Jonah,63,VfL Wolfsburg vs. SC Paderborn 07,red_card,94,Jonah Sticker,SC Paderborn 07,0:0,kritisch,3,3,3.33
+1545417_substitution_60_S. Kl,64,VfL Wolfsburg vs. SC Paderborn 07,substitution,60,S. Klaas,SC Paderborn 07,0:0,neutral,5,5,5.0
+1388611_own_goal_64_N. Va,65,FC St. Pauli vs. VfL Wolfsburg,own_goal,64,N. Vasilj,VfL Wolfsburg,2:1,euphorisch,1,2,2.0
+1388606_goal_13_H. Ka,66,Bayern München vs. 1. FC Köln,goal,13,H. Kane,Bayern München,2:0,kritisch,5,4,4.67
+1545417_yellow_card_82_Santi,67,VfL Wolfsburg vs. SC Paderborn 07,yellow_card,82,Santiago Castañeda,SC Paderborn 07,0:0,neutral,5,5,5.0
+1388607_red_card_46_Tim L,68,Borussia Mönchengladbach vs. 1899 Hoffenheim,red_card,46,Tim Lemperle,1899 Hoffenheim,2:0,euphorisch,1,5,2.67
+1545417_substitution_60_R. Mu,69,VfL Wolfsburg vs. SC Paderborn 07,substitution,60,R. Muller,SC Paderborn 07,0:0,kritisch,3,4,3.33
+1388606_goal_18_S. El,70,Bayern München vs. 1. FC Köln,goal,18,S. El Mala,1. FC Köln,2:1,neutral,5,4,4.67
+1545417_yellow_card_87_Lovro,71,VfL Wolfsburg vs. SC Paderborn 07,yellow_card,87,Lovro Majer,VfL Wolfsburg,0:0,euphorisch,5,5,4.67
+1388600_red_card_5_Yukin,72,1899 Hoffenheim vs. Werder Bremen,red_card,5,Yukinari Sugawara,Werder Bremen,0:0,kritisch,4,4,3.67
+1545417_substitution_65_M. Sv,73,VfL Wolfsburg vs. SC Paderborn 07,substitution,65,M. Svanberg,VfL Wolfsburg,0:0,neutral,5,5,5.0
+1388606_goal_22_T. Bi,74,Bayern München vs. 1. FC Köln,goal,22,T. Bischof,Bayern München,3:1,euphorisch,3,5,4.0
+1545417_yellow_card_94_Jonah,75,VfL Wolfsburg vs. SC Paderborn 07,yellow_card,94,Jonah Sticker,SC Paderborn 07,0:0,kritisch,5,4,4.33
+1545417_substitution_65_A. Da,76,VfL Wolfsburg vs. SC Paderborn 07,substitution,65,A. Daghim,VfL Wolfsburg,0:0,neutral,5,5,5.0
+1388606_goal_69_H. Ka,77,Bayern München vs. 1. FC Köln,goal,69,H. Kane,Bayern München,4:1,euphorisch,5,5,5.0
+1545417_yellow_card_92_Jonah,78,VfL Wolfsburg vs. SC Paderborn 07,yellow_card,92,Jonah Sticker,SC Paderborn 07,0:0,kritisch,5,3,3.67
+1545417_substitution_74_Y. Ge,79,VfL Wolfsburg vs. SC Paderborn 07,substitution,74,Y. Gerhardt,VfL Wolfsburg,0:0,neutral,5,5,5.0
+1388606_goal_83_N. Ja,80,Bayern München vs. 1. FC Köln,goal,83,N. Jackson,Bayern München,5:1,euphorisch,5,5,5.0
+1388606_yellow_card_34_Joel ,81,Bayern München vs. 1. FC Köln,yellow_card,34,Joel Schmied,1. FC Köln,3:1,kritisch,5,3,4.0
+1545417_substitution_78_S. Ma,82,VfL Wolfsburg vs. SC Paderborn 07,substitution,78,S. Marino,SC Paderborn 07,0:0,neutral,5,5,5.0
+1388609_goal_24_J. Be,83,SC Freiburg vs. RB Leipzig,goal,24,J. Beste,SC Freiburg,1:0,euphorisch,5,5,4.67
+1388606_yellow_card_37_Konra,84,Bayern München vs. 1. FC Köln,yellow_card,37,Konrad Laimer,Bayern München,3:1,kritisch,5,3,4.0
+1545417_substitution_85_S. Ku,85,VfL Wolfsburg vs. SC Paderborn 07,substitution,85,S. Kumbedi,VfL Wolfsburg,0:0,neutral,5,5,5.0
+1388609_goal_26_I. Ma,86,SC Freiburg vs. RB Leipzig,goal,26,I. Matanovic,SC Freiburg,2:0,euphorisch,4,5,4.33
+1388609_yellow_card_77_Chris,87,SC Freiburg vs. RB Leipzig,yellow_card,77,Christoph Baumgartner,RB Leipzig,4:1,kritisch,5,3,3.67
+1545417_substitution_85_F. Bi,88,VfL Wolfsburg vs. SC Paderborn 07,substitution,85,F. Bilbija,SC Paderborn 07,0:0,neutral,5,5,4.67
+1388609_goal_33_A. Ou,89,SC Freiburg vs. RB Leipzig,goal,33,A. Ouedraogo,RB Leipzig,2:1,euphorisch,5,2,3.67
+1388607_yellow_card_32_Albia,90,Borussia Mönchengladbach vs. 1899 Hoffenheim,yellow_card,32,Albian Hajdari,1899 Hoffenheim,2:0,kritisch,5,3,3.67
+1388606_substitution_46_K. La,91,Bayern München vs. 1. FC Köln,substitution,46,K. Laimer,Bayern München,3:1,neutral,5,5,5.0
+1388609_goal_47_M. Gi,92,SC Freiburg vs. RB Leipzig,goal,47,M. Ginter,SC Freiburg,3:1,euphorisch,5,5,5.0
+1388607_yellow_card_35_Tim L,93,Borussia Mönchengladbach vs. 1899 Hoffenheim,yellow_card,35,Tim Lemperle,1899 Hoffenheim,2:0,kritisch,5,3,3.67
+1388606_substitution_46_J. Sc,94,Bayern München vs. 1. FC Köln,substitution,46,J. Schmied,1. FC Köln,3:1,neutral,5,5,5.0
+1388609_goal_75_D. Sc,95,SC Freiburg vs. RB Leipzig,goal,75,D. Scherhant,SC Freiburg,4:1,euphorisch,5,5,5.0
+1388607_yellow_card_40_Haris,96,Borussia Mönchengladbach vs. 1899 Hoffenheim,yellow_card,40,Haris Tabaković,Borussia Mönchengladbach,2:0,kritisch,1,4,2.67
+1388606_substitution_60_M. Ne,97,Bayern München vs. 1. FC Köln,substitution,60,M. Neuer,Bayern München,3:1,neutral,5,5,4.67
+1388613_goal_59_S. Gu,98,Werder Bremen vs. Borussia Dortmund,goal,59,S. Guirassy,Borussia Dortmund,0:1,euphorisch,5,1,3.33
+1388607_yellow_card_43_Phili,99,Borussia Mönchengladbach vs. 1899 Hoffenheim,yellow_card,43,Philipp Sander,Borussia Mönchengladbach,2:0,kritisch,5,4,4.0
+1388606_substitution_61_L. Ka,100,Bayern München vs. 1. FC Köln,substitution,61,L. Karl,Bayern München,3:1,neutral,5,5,5.0
+1388613_goal_90_Y. Co,101,Werder Bremen vs. Borussia Dortmund,goal,90,Y. Couto,Borussia Dortmund,0:2,euphorisch,2,3,2.67
+1388607_yellow_card_46_Tim L,102,Borussia Mönchengladbach vs. 1899 Hoffenheim,yellow_card,46,Tim Lemperle,1899 Hoffenheim,2:0,kritisch,5,5,4.67
+1388606_substitution_69_A. Ca,103,Bayern München vs. 1. FC Köln,substitution,69,A. Castro-Montes,1. FC Köln,3:1,neutral,5,5,5.0
+1388607_goal_14_H. Bo,104,Borussia Mönchengladbach vs. 1899 Hoffenheim,goal,14,H. Bolin,Borussia Mönchengladbach,1:0,euphorisch,5,5,5.0
+1388607_yellow_card_60_Leon ,105,Borussia Mönchengladbach vs. 1899 Hoffenheim,yellow_card,60,Leon Avdullahu,1899 Hoffenheim,2:0,kritisch,5,3,4.0
+1388606_substitution_70_J. Mu,106,Bayern München vs. 1. FC Köln,substitution,70,J. Musiala,Bayern München,4:1,neutral,5,5,5.0
+1388607_goal_23_H. Ta,107,Borussia Mönchengladbach vs. 1899 Hoffenheim,goal,23,H. Tabakovic,Borussia Mönchengladbach,2:0,euphorisch,5,5,4.67
+1388607_yellow_card_66_Wael ,108,Borussia Mönchengladbach vs. 1899 Hoffenheim,yellow_card,66,Wael Mohya,Borussia Mönchengladbach,2:0,kritisch,2,3,2.67
+1388606_substitution_80_S. El,109,Bayern München vs. 1. FC Köln,substitution,80,S. El Mala,1. FC Köln,4:1,neutral,5,5,5.0
+1388607_goal_81_K. Di,110,Borussia Mönchengladbach vs. 1899 Hoffenheim,goal,81,K. Diks,Borussia Mönchengladbach,3:0,euphorisch,4,5,4.0
+1388607_yellow_card_69_Alexa,111,Borussia Mönchengladbach vs. 1899 Hoffenheim,yellow_card,69,Alexander Prass,1899 Hoffenheim,2:0,kritisch,5,3,4.33
+1388606_substitution_80_M. Bu,112,Bayern München vs. 1. FC Köln,substitution,80,M. Bulter,1. FC Köln,4:1,neutral,5,5,5.0
+1388607_goal_90_R. Ha,113,Borussia Mönchengladbach vs. 1899 Hoffenheim,goal,90,R. Hack,Borussia Mönchengladbach,4:0,euphorisch,5,5,5.0
+1388607_yellow_card_79_Ozan ,114,Borussia Mönchengladbach vs. 1899 Hoffenheim,yellow_card,79,Ozan Kabak,1899 Hoffenheim,2:0,kritisch,5,4,4.0
+1388606_substitution_83_L. Go,115,Bayern München vs. 1. FC Köln,substitution,83,L. Goretzka,Bayern München,4:1,neutral,5,5,4.67
+1388605_goal_61_F. Vi,116,Bayer Leverkusen vs. Hamburger SV,goal,61,F. Vieira,Hamburger SV,0:1,euphorisch,5,5,5.0
+1388607_yellow_card_89_Shuto,117,Borussia Mönchengladbach vs. 1899 Hoffenheim,yellow_card,89,Shuto Machino,Borussia Mönchengladbach,3:0,kritisch,2,4,3.0
+1388606_substitution_92_J. Ka,118,Bayern München vs. 1. FC Köln,substitution,92,J. Kaminski,1. FC Köln,5:1,neutral,5,5,5.0
+1388605_goal_78_J. Qu,119,Bayer Leverkusen vs. Hamburger SV,goal,78,J. Quansah,Bayer Leverkusen,1:1,euphorisch,4,5,4.0
+1388605_yellow_card_24_Jorda,120,Bayer Leverkusen vs. Hamburger SV,yellow_card,24,Jordan Torunarigha,Hamburger SV,0:0,kritisch,5,4,4.33
+1388609_substitution_60_J. Be,121,SC Freiburg vs. RB Leipzig,substitution,60,J. Beste,SC Freiburg,3:1,neutral,3,5,4.0
+1388608_goal_10_C. An,122,Eintracht Frankfurt vs. VfB Stuttgart,goal,10,C. Andres,VfB Stuttgart,0:1,euphorisch,4,5,4.0
+1388605_yellow_card_66_Arthu,123,Bayer Leverkusen vs. Hamburger SV,yellow_card,66,Arthur,Bayer Leverkusen,0:1,kritisch,5,2,3.67
+1388609_substitution_60_N. Ho,124,SC Freiburg vs. RB Leipzig,substitution,60,N. Hofler,SC Freiburg,3:1,neutral,4,5,4.67
+1388608_goal_45_N. Na,125,Eintracht Frankfurt vs. VfB Stuttgart,goal,45,N. Nartey,VfB Stuttgart,0:2,euphorisch,5,5,5.0
+1388605_yellow_card_78_Nicol,126,Bayer Leverkusen vs. Hamburger SV,yellow_card,78,Nicolás Capaldo,Hamburger SV,0:1,kritisch,5,2,3.33
+1388609_substitution_63_B. He,127,SC Freiburg vs. RB Leipzig,substitution,63,B. Henrichs,RB Leipzig,3:1,neutral,2,5,3.33
+1388608_goal_72_J. Bu,128,Eintracht Frankfurt vs. VfB Stuttgart,goal,72,J. Burkardt,Eintracht Frankfurt,1:2,euphorisch,4,3,3.33
+1388608_yellow_card_27_Chema,129,Eintracht Frankfurt vs. VfB Stuttgart,yellow_card,27,Chema Andrés,VfB Stuttgart,0:1,kritisch,5,3,4.0
+1388609_substitution_63_B. Gr,130,SC Freiburg vs. RB Leipzig,substitution,63,B. Gruda,RB Leipzig,3:1,neutral,5,5,5.0
+1388608_goal_90_J. Bu,131,Eintracht Frankfurt vs. VfB Stuttgart,goal,90,J. Burkardt,Eintracht Frankfurt,2:2,euphorisch,4,5,4.33
+1388608_yellow_card_47_Farès,132,Eintracht Frankfurt vs. VfB Stuttgart,yellow_card,47,Farès Chaïbi,Eintracht Frankfurt,0:2,kritisch,5,4,4.33
+1388609_substitution_72_J. Ma,133,SC Freiburg vs. RB Leipzig,substitution,72,J. Manzambi,SC Freiburg,3:1,neutral,5,5,5.0
+1388610_goal_7_P. Ti,134,1. FC Heidenheim vs. FSV Mainz 05,goal,7,P. Tietz,FSV Mainz 05,0:1,euphorisch,5,5,5.0
+1388608_yellow_card_60_Aurèl,135,Eintracht Frankfurt vs. VfB Stuttgart,yellow_card,60,Aurèle Amenda,Eintracht Frankfurt,0:2,kritisch,5,4,4.33
+1388609_substitution_72_M. Gi,136,SC Freiburg vs. RB Leipzig,substitution,72,M. Ginter,SC Freiburg,3:1,neutral,5,5,5.0
+1388610_goal_43_N. Am,137,1. FC Heidenheim vs. FSV Mainz 05,goal,43,N. Amiri,FSV Mainz 05,0:2,euphorisch,4,3,3.67
+1388608_yellow_card_63_Maxim,138,Eintracht Frankfurt vs. VfB Stuttgart,yellow_card,63,Maximilian Mittelstädt,VfB Stuttgart,0:2,kritisch,5,5,4.67
+1388609_substitution_73_C. Ha,139,SC Freiburg vs. RB Leipzig,substitution,73,C. Harder,RB Leipzig,3:1,neutral,5,5,5.0
+1388612_goal_10_A. Il,140,Union Berlin vs. FC Augsburg,goal,10,A. Ilic,Union Berlin,1:0,euphorisch,5,5,5.0

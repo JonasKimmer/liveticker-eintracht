@@ -1,9 +1,10 @@
 from datetime import date, datetime
-from math import ceil
 from typing import Optional
 
 from pydantic import BaseModel, ConfigDict
 from pydantic.alias_generators import to_camel
+
+from app.schemas.base import PaginatedResponse
 
 
 # ------------------------------------------------------------------ #
@@ -152,28 +153,5 @@ class PlayerStatisticResponse(BaseModel):
     cards_red: Optional[int] = None
 
 
-class PaginatedPlayerResponse(BaseModel):
-    model_config = ConfigDict(populate_by_name=True, alias_generator=to_camel)
-
-    items: list[PlayerResponse]
-    total: int
-    page: int
-    page_size: int
-    page_count: int
-    has_previous_page: bool
-    has_next_page: bool
-
-    @classmethod
-    def create(
-        cls, items: list[PlayerResponse], total: int, page: int, page_size: int
-    ) -> "PaginatedPlayerResponse":
-        page_count = ceil(total / page_size) if page_size > 0 else 0
-        return cls(
-            items=items,
-            total=total,
-            page=page,
-            page_size=page_size,
-            page_count=page_count,
-            has_previous_page=page > 1,
-            has_next_page=page < page_count,
-        )
+class PaginatedPlayerResponse(PaginatedResponse[PlayerResponse]):
+    pass

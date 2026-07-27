@@ -30,8 +30,10 @@ engine = create_engine(
     poolclass=QueuePool,
     pool_size=settings.DB_POOL_SIZE,
     max_overflow=settings.DB_MAX_OVERFLOW,
-    pool_pre_ping=True,  # Test connections before using
-    echo=settings.DEBUG,  # Log SQL queries in debug mode
+    pool_pre_ping=True,
+    pool_recycle=300,  # recycle after 5 min – pgbouncer closes idle conns server-side
+    pool_timeout=30,
+    echo=settings.DEBUG,
 )
 
 # Session Factory

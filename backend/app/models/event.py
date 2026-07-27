@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Text, TIMESTAMP, ForeignKey
+from sqlalchemy import Column, Index, Integer, String, Text, TIMESTAMP, ForeignKey
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from app.core.database import Base
@@ -11,7 +11,7 @@ class Event(Base):
     external_id = Column(Integer, nullable=True)
     source_id = Column(String(100), nullable=True)  # Partner-API sourceId
     match_id = Column(
-        Integer, ForeignKey("matches.id", ondelete="CASCADE"), nullable=False
+        Integer, ForeignKey("matches.id", ondelete="CASCADE"), nullable=False, index=True
     )
     sport = Column(String(20), nullable=True)
     position = Column(Integer, nullable=True)  # Reihenfolge im Ticker
@@ -28,7 +28,7 @@ class Event(Base):
     image_url = Column(String(255), nullable=True)
     video_url = Column(String(255), nullable=True)
     source = Column(String(20), nullable=False, default="partner")
-    created_at = Column(TIMESTAMP(timezone=True), server_default=func.now())
+    created_at = Column(TIMESTAMP(timezone=True), server_default=func.now(), nullable=False)
 
     match = relationship("Match", back_populates="events")
     ticker_entries = relationship("TickerEntry", back_populates="event")

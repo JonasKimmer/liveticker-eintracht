@@ -1,21 +1,29 @@
+"""
+TeamRepository
+==============
+Datenbankzugriff für Vereinsdaten inkl. Paginierung und externer ID-Suche.
+"""
+
 import logging
-import math
 from typing import Optional
-from uuid import UUID
 
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from app.models.country import Country
 from app.models.team import Team
+from app.repositories.base import BaseRepository
 from app.schemas.team import PaginatedTeamResponse, TeamCreate, TeamResponse, TeamUpdate
+from app.utils.db_utils import str_or_none as _str_or_none
 
 logger = logging.getLogger(__name__)
 
 
-class TeamRepository:
+class TeamRepository(BaseRepository[Team]):
+    model = Team
+
     def __init__(self, db: Session) -> None:
-        self.db = db
+        super().__init__(db)
 
     # ------------------------------------------------------------------ #
     # Reads                                                                #
@@ -40,22 +48,15 @@ class TeamRepository:
             .limit(page_size)
             .all()
         )
-        page_count = math.ceil(total / page_size) if page_size else 1
-        return PaginatedTeamResponse(
+        return PaginatedTeamResponse.create(
             items=[TeamResponse.model_validate(t) for t in items],
             total=total,
             page=page,
             page_size=page_size,
-            page_count=page_count,
-            has_previous_page=page > 1,
-            has_next_page=page < page_count,
         )
 
     def get_by_id(self, team_id: int) -> Optional[Team]:
         return self.db.query(Team).filter(Team.id == team_id).first()
-
-    def get_by_uid(self, uid: UUID) -> Optional[Team]:
-        return self.db.query(Team).filter(Team.uid == uid).first()
 
     def get_by_country(self, country_name: str) -> list[Team]:
         return (
@@ -66,17 +67,12 @@ class TeamRepository:
             .all()
         )
 
-    def exists(self, team_id: int) -> bool:
-        return self.db.query(Team.id).filter(Team.id == team_id).scalar() is not None
-
     # ------------------------------------------------------------------ #
     # Writes                                                               #
     # ------------------------------------------------------------------ #
 
     def _resolve_country_id(self, country_name: str) -> Optional[int]:
-        country = (
-            self.db.query(Country).filter(Country.name == country_name).first()
-        )
+        country = self.db.query(Country).filter(Country.name == country_name).first()
         return country.id if country else None
 
     def create(self, data: TeamCreate) -> Team:
@@ -91,7 +87,7 @@ class TeamRepository:
             initials=data.initials,
             short_name=data.short_name,
             category=data.category.model_dump() if data.category else None,
-            logo_url=str(data.logo_url) if data.logo_url else None,
+            logo_url=_str_or_none(data.logo_url),
             is_partner_team=data.is_partner_team,
             position=data.position,
             hidden=data.hidden,
@@ -113,8 +109,8 @@ class TeamRepository:
             return None
 
         update_data = data.model_dump(exclude_unset=True)
-        if "logo_url" in update_data and update_data["logo_url"] is not None:
-            update_data["logo_url"] = str(update_data["logo_url"])
+        if "logo_url" in update_data:
+            update_data["logo_url"] = _str_or_none(update_data["logo_url"])
         if "category" in update_data and update_data["category"] is not None:
             update_data["category"] = data.category.model_dump(exclude_none=True)
 

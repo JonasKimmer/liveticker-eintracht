@@ -1,0 +1,225 @@
+﻿_id,match,league,event_type,minute,player,team,score,style,temperature,generated_text,latency_ms,korrektheit,tonalitaet,vollstaendigkeit,gesamt,begruendung,timestamp
+1388608_goal_10_C. An_neutral_T03,Eintracht Frankfurt vs. VfB Stuttgart,Bundesliga,goal,10,C. Andres,VfB Stuttgart,0:1,neutral,0.3,Andres bringt Stuttgart in Führung. Der Stürmer trifft nach Vorlage von Führich. 0:1.,1261,4,5,3,4.0,"Neutral formuliert und faktisch korrekt, aber Minutenangabe fehlt und Vorlagengeber nicht verifizierbar.",2026-05-26T22:41:23.545886
+1388608_goal_10_C. An_neutral_T05,Eintracht Frankfurt vs. VfB Stuttgart,Bundesliga,goal,10,C. Andres,VfB Stuttgart,0:1,neutral,0.5,Andres bringt Stuttgart in Führung. Der Stürmer trifft nach Vorlage von Fuhrich. 0:1.,1174,4,5,4,4.33,"Neutral formuliert und faktisch korrekt, nur Minutenangabe fehlt für vollständige Kontextinformation.",2026-05-26T22:41:28.346970
+1388608_goal_10_C. An_neutral_T07,Eintracht Frankfurt vs. VfB Stuttgart,Bundesliga,goal,10,C. Andres,VfB Stuttgart,0:1,neutral,0.7,Soeben klingelt es im Frankfurter Kasten! C. Andres bringt Stuttgart in Führung. Vorbereiter war C. Fuhrich. 0:1 der aktuelle Spielstand.,1346,5,5,5,5.0,"Alle Fakten korrekt, neutraler Stil eingehalten, alle relevanten Informationen enthalten.",2026-05-26T22:41:33.066171
+1388608_goal_10_C. An_euphorisch_T03,Eintracht Frankfurt vs. VfB Stuttgart,Bundesliga,goal,10,C. Andres,VfB Stuttgart,0:1,euphorisch,0.3,"TOOOOR! Der Ball ist drin! Andres!
+
+Was für ein Schock! Stuttgart führt!
+
+Fuhrich mit der Vorlage... unfassbar!
+
+Die Hütte ist still... 0:1!",1579,3,4,4,3.67,"Euphorischer Stil gut getroffen, aber 'Schock' und 'Hütte ist still' passen eher zur Heimfan-Perspektive statt neutraler Euphorie",2026-05-26T22:41:39.249010
+1388608_goal_10_C. An_euphorisch_T05,Eintracht Frankfurt vs. VfB Stuttgart,Bundesliga,goal,10,C. Andres,VfB Stuttgart,0:1,euphorisch,0.5,"TOOOOR! Der Ball ist drin! Andres!
+Was für ein Schock!
+Stuttgart führt!
+Fuhrich mit der Vorlage...
+Die Hütte verstummt!
+0:1!
+Auf geht's, Adler!
+Wir kommen zurück!",916,2,1,3,2.0,"Der Text ist aus Frankfurt-Sicht geschrieben statt neutral-euphorisch, nennt falsch 'Fuhrich' als Vorlagengeber ohne Bestätigung, und die Tonalität passt nicht zum euphorischen Stil für ein Stuttgart-Tor.",2026-05-26T22:41:45.457105
+1388608_goal_10_C. An_euphorisch_T07,Eintracht Frankfurt vs. VfB Stuttgart,Bundesliga,goal,10,C. Andres,VfB Stuttgart,0:1,euphorisch,0.7,"TOOOOR! Der Ball ist drin! Andres!
+
+Was ist denn hier los?! Die Stuttgarter führen!
+
+Fuhrich mit der Vorlage... unfassbar!
+
+0:1... die Scheiße!
+
+Auf geht's, Adler! Kämpfen und siegen!",1481,2,1,3,2.0,Vulgäre Ausdrucksweise und parteiische Frankfurt-Perspektive widersprechen professionellem euphorischem Stil komplett.,2026-05-26T22:41:50.916066
+1388608_goal_10_C. An_kritisch_T03,Eintracht Frankfurt vs. VfB Stuttgart,Bundesliga,goal,10,C. Andres,VfB Stuttgart,0:1,kritisch,0.3,TOOOOR! Andres bringt Stuttgart in Führung. Fuhrich mit der Vorlage. Frankfurt verteidigt hier zu passiv. 0:1.,1013,4,4,4,4.0,"Fakten stimmen, kritischer Ton vorhanden, könnte aber noch schärfer formuliert sein",2026-05-26T22:41:56.038357
+1388608_goal_10_C. An_kritisch_T05,Eintracht Frankfurt vs. VfB Stuttgart,Bundesliga,goal,10,C. Andres,VfB Stuttgart,0:1,kritisch,0.5,TOOOOR! Andres bringt Stuttgart in Führung. Fuhrich mit der Vorlage. Frankfurt verteidigt hier zu passiv. 0:1.,660,4,4,4,4.0,"Fakten stimmen, kritischer Ton vorhanden, könnte aber noch schärfer formuliert sein und mehr Details zur Defensivschwäche enthalten.",2026-05-26T22:42:00.418043
+1388608_goal_10_C. An_kritisch_T07,Eintracht Frankfurt vs. VfB Stuttgart,Bundesliga,goal,10,C. Andres,VfB Stuttgart,0:1,kritisch,0.7,TOOOOR! Andres bringt Stuttgart in Führung. Fuhrich mit der Vorlage. Frankfurt verteidigt hier zu passiv. 0:1.,725,4,4,4,4.0,"Fakten stimmen, kritischer Ton vorhanden, könnte aber noch schärfer formuliert sein",2026-05-26T22:42:05.191381
+1388608_goal_45_N. Na_neutral_T03,Eintracht Frankfurt vs. VfB Stuttgart,Bundesliga,goal,45,N. Nartey,VfB Stuttgart,0:2,neutral,0.3,Nartey trifft! Der Stuttgarter erhöht. Undav mit der Vorlage. 0:2 für den VfB.,730,5,5,4,4.67,"Fakten korrekt, neutral formuliert, nur Minute fehlt explizit im Text",2026-05-26T22:42:10.684701
+1388608_goal_45_N. Na_neutral_T05,Eintracht Frankfurt vs. VfB Stuttgart,Bundesliga,goal,45,N. Nartey,VfB Stuttgart,0:2,neutral,0.5,Nartey trifft! Der Stuttgarter erhöht. Undav mit der Vorlage. 0:2 für den VfB.,659,5,5,4,4.67,"Fakten korrekt, neutral formuliert, nur Minute fehlt explizit im Text",2026-05-26T22:42:14.964631
+1388608_goal_45_N. Na_neutral_T07,Eintracht Frankfurt vs. VfB Stuttgart,Bundesliga,goal,45,N. Nartey,VfB Stuttgart,0:2,neutral,0.7,Nartey trifft! Der Stuttgarter erhöht. Undav liefert die Vorlage. 0:2 für den VfB.,1155,5,5,5,5.0,"Alle Fakten korrekt erfasst, neutraler Stil eingehalten, Torschütze, Spielstand und Vorlagengeber vollständig genannt.",2026-05-26T22:42:19.691346
+1388608_goal_45_N. Na_euphorisch_T03,Eintracht Frankfurt vs. VfB Stuttgart,Bundesliga,goal,45,N. Nartey,VfB Stuttgart,0:2,euphorisch,0.3,"TOOOOR! Nartey! Was ist denn hier los?! Der Ball ist drin!
+
+0:2!
+
+Undav mit der Vorlage. Unglaublich!",1016,5,5,5,5.0,"Alle Fakten korrekt, euphorischer Stil perfekt getroffen, alle Schlüsselinformationen enthalten.",2026-05-26T22:42:24.038825
+1388608_goal_45_N. Na_euphorisch_T05,Eintracht Frankfurt vs. VfB Stuttgart,Bundesliga,goal,45,N. Nartey,VfB Stuttgart,0:2,euphorisch,0.5,"TOOOOR! Nartey! Was ist denn hier los?!
+Undav mit der Vorlage... unfassbar!
+0:2!
+Die Hölle bricht aus!
+Wir sind geschockt!
+Frankfurt wacht auf!",999,2,4,3,3.0,"Widersprüchliche Aussagen ('Die Hölle bricht aus' vs. 'Wir sind geschockt', 'Frankfurt wacht auf' passt nicht zu 0:2-Rückstand) deuten auf Verwirrung der Perspektive hin.",2026-05-26T22:42:29.015509
+1388608_goal_45_N. Na_euphorisch_T07,Eintracht Frankfurt vs. VfB Stuttgart,Bundesliga,goal,45,N. Nartey,VfB Stuttgart,0:2,euphorisch,0.7,"TOOOOR! Nartey! Was ist denn hier los?! Undav mit der Vorlage, der Ball drin!
+0:2!
+Die Hölle bricht aus!
+Unglaublich!
+Das darf doch nicht wahr sein!
+Wir kriegen die Krise!",936,3,5,4,4.0,"Undav als Vorlagengeber nicht verifizierbar, aber Tonalität perfekt euphorisch und alle Kernfakten (Torschütze, Minute, Spielstand) enthalten.",2026-05-26T22:42:34.541096
+1388608_goal_45_N. Na_kritisch_T03,Eintracht Frankfurt vs. VfB Stuttgart,Bundesliga,goal,45,N. Nartey,VfB Stuttgart,0:2,kritisch,0.3,TOOOOR! Nartey erhöht für Stuttgart. Undav mit der Vorlage. Frankfurt verteidigt kollektiv schlecht. 0:2.,593,5,4,4,4.33,"Fakten korrekt, kritischer Ton vorhanden, könnte aber noch schärfer formuliert sein",2026-05-26T22:42:38.827024
+1388608_goal_45_N. Na_kritisch_T05,Eintracht Frankfurt vs. VfB Stuttgart,Bundesliga,goal,45,N. Nartey,VfB Stuttgart,0:2,kritisch,0.5,TOOOOR! Nartey erhöht für Stuttgart. Undav mit der Vorlage. Frankfurt verteidigt kollektiv schlecht. 0:2.,687,5,4,4,4.33,"Fakten korrekt, kritischer Ton vorhanden, könnte aber noch schärfer formuliert sein",2026-05-26T22:42:43.373003
+1388608_goal_45_N. Na_kritisch_T07,Eintracht Frankfurt vs. VfB Stuttgart,Bundesliga,goal,45,N. Nartey,VfB Stuttgart,0:2,kritisch,0.7,"TOOOOR! Nartey erhöht für Stuttgart. Undav mit dem Zuspiel, die Frankfurter Abwehr zu weit weg. Frankfurt ungeordnet. 0:2.",821,5,4,5,4.67,"Fakten korrekt, kritischer Ton vorhanden aber könnte noch schärfer formuliert sein",2026-05-26T22:42:48.187173
+1388608_goal_72_J. Bu_neutral_T03,Eintracht Frankfurt vs. VfB Stuttgart,Bundesliga,goal,72,J. Burkardt,Eintracht Frankfurt,1:2,neutral,0.3,Burkardt trifft! Der Stürmer bringt Frankfurt wieder ins Spiel. 1:2.,608,4,4,3,3.67,"Burkardt spielt für Frankfurt – kein Vereinsfehler. Minutenangabe fehlt, sonst korrekt.",2026-05-26T22:42:53.387228
+1388608_goal_72_J. Bu_neutral_T05,Eintracht Frankfurt vs. VfB Stuttgart,Bundesliga,goal,72,J. Burkardt,Eintracht Frankfurt,1:2,neutral,0.5,"Burkardt trifft! Der Stürmer bringt Frankfurt wieder ins Spiel. 1:2 steht es nun.
+
+Der Ball zappelt im Netz. Burkardt erzielt den Anschlusstreffer für die Eintracht.",915,4,4,3,3.67,Burkardt spielt für Frankfurt – kein Vereinsfehler. Alle Kernfakten korrekt enthalten.,2026-05-26T22:42:58.067448
+1388608_goal_72_J. Bu_neutral_T07,Eintracht Frankfurt vs. VfB Stuttgart,Bundesliga,goal,72,J. Burkardt,Eintracht Frankfurt,1:2,neutral,0.7,Burkardt trifft. Der Stürmer bringt Frankfurt wieder ins Spiel. 1:2.,601,4,5,3,4.0,"Burkardt spielt für Frankfurt – kein Vereinsfehler. Minutenangabe fehlt, sonst korrekt.",2026-05-26T22:43:03.780648
+1388608_goal_72_J. Bu_euphorisch_T03,Eintracht Frankfurt vs. VfB Stuttgart,Bundesliga,goal,72,J. Burkardt,Eintracht Frankfurt,1:2,euphorisch,0.3,"TOOOOR! Burkardt! Der Ball ist drin! Unglaublich!
+
+Die Scheiße! 1:2!
+
+Was ist denn hier los?!",751,2,3,3,2.67,"Enthält vulgäre Ausdrücke die unprofessionell sind, Spielstand korrekt aber euphorische Tonalität durch Fluch gestört, Minutenangabe fehlt.",2026-05-26T22:43:08.709756
+1388608_goal_72_J. Bu_euphorisch_T05,Eintracht Frankfurt vs. VfB Stuttgart,Bundesliga,goal,72,J. Burkardt,Eintracht Frankfurt,1:2,euphorisch,0.5,"TOOOOR! Burkardt! Was ist denn hier los?! Der Ball ist drin! Unglaublich!
+
+1:2!",681,4,5,3,4.0,"Burkardt spielt für Frankfurt – kein Vereinsfehler. Euphorischer Stil gut getroffen, Minutenangabe fehlt.",2026-05-26T22:43:14.273084
+1388608_goal_72_J. Bu_euphorisch_T07,Eintracht Frankfurt vs. VfB Stuttgart,Bundesliga,goal,72,J. Burkardt,Eintracht Frankfurt,1:2,euphorisch,0.7,"TOOOOR! Burkardt! WAS IST DENN HIER LOS?! Der Ball im Netz, die Stuttgarter am Boden! 1:2!",699,4,5,3,4.0,Burkardt spielt für Frankfurt – kein Vereinsfehler. Euphorischer Stil perfekt getroffen.,2026-05-26T22:43:18.265182
+1388608_goal_72_J. Bu_kritisch_T03,Eintracht Frankfurt vs. VfB Stuttgart,Bundesliga,goal,72,J. Burkardt,Eintracht Frankfurt,1:2,kritisch,0.3,TOOOOR! Burkardt bringt Frankfurt zurück ins Spiel. Der Schuss aus kurzer Distanz. Die Stuttgarter Abwehr ungeordnet. 1:2.,970,5,2,4,3.67,"Fakten korrekt, aber für kritischen Stil fehlt die analytische Schärfe und hinterfragende Perspektive deutlich.",2026-05-26T22:43:22.940717
+1388608_goal_72_J. Bu_kritisch_T05,Eintracht Frankfurt vs. VfB Stuttgart,Bundesliga,goal,72,J. Burkardt,Eintracht Frankfurt,1:2,kritisch,0.5,TOOOOR! Burkardt trifft für Frankfurt. Der Schuss aus kurzer Distanz. Die Stuttgarter Abwehr ungeordnet. 1:2.,671,5,2,4,3.67,"Fakten korrekt, aber für kritischen Stil fehlt die analytische Schärfe und Bewertung der Defensivschwäche.",2026-05-26T22:43:27.890721
+1388608_goal_72_J. Bu_kritisch_T07,Eintracht Frankfurt vs. VfB Stuttgart,Bundesliga,goal,72,J. Burkardt,Eintracht Frankfurt,1:2,kritisch,0.7,"TOOOOR! Burkardt mit dem Treffer für Frankfurt. Der Anschlusstreffer.
+
+Die Stuttgarter Abwehr ungeordnet. Kein Zugriff.
+
+1:2.",693,5,5,5,5.0,"Alle Fakten korrekt, kritischer Ton durch Analyse der Stuttgarter Defensivschwäche, alle Schlüsselelemente enthalten.",2026-05-26T22:43:32.215381
+1388608_goal_90_J. Bu_neutral_T03,Eintracht Frankfurt vs. VfB Stuttgart,Bundesliga,goal,90,J. Burkardt,Eintracht Frankfurt,2:2,neutral,0.3,"Burkardt trifft! Der Stürmer der Eintracht gleicht aus.
+
+Der Ball landet im Netz. 2:2.",1595,4,4,3,3.67,"Burkardt spielt für Frankfurt – kein Vereinsfehler. Minutenangabe fehlt, Ausgleich korrekt benannt.",2026-05-26T22:43:37.827643
+1388608_goal_90_J. Bu_neutral_T05,Eintracht Frankfurt vs. VfB Stuttgart,Bundesliga,goal,90,J. Burkardt,Eintracht Frankfurt,2:2,neutral,0.5,Burkardt trifft! Der Stürmer bringt den Ball im Tor unter. 2:2.,611,3,4,2,3.0,"Burkardt spielt für Frankfurt – kein Vereinsfehler. Echter Abzug: Minutenangabe (90.) fehlt, was bei einem Nachzeitausgleich relevant ist.",2026-05-26T22:43:43.423494
+1388608_goal_90_J. Bu_neutral_T07,Eintracht Frankfurt vs. VfB Stuttgart,Bundesliga,goal,90,J. Burkardt,Eintracht Frankfurt,2:2,neutral,0.7,Burkardt trifft! Der Stürmer bringt den Ball im Tor unter. 2:2.,564,3,4,2,3.0,Burkardt spielt für Frankfurt – kein Vereinsfehler. Echter Abzug: Minutenangabe (90.) fehlt.,2026-05-26T22:43:48.033951
+1388608_goal_90_J. Bu_euphorisch_T03,Eintracht Frankfurt vs. VfB Stuttgart,Bundesliga,goal,90,J. Burkardt,Eintracht Frankfurt,2:2,euphorisch,0.3,"TOOOOR! Burkardt! Unglaublich! Der Ausgleich!
+
+2:2!
+
+Die Hölle bebt! Was für ein Finish!",995,4,5,3,4.0,"Burkardt spielt für Frankfurt – kein Vereinsfehler. Euphorischer Stil perfekt, Minutenangabe fehlt.",2026-05-26T22:43:52.773758
+1388608_goal_90_J. Bu_euphorisch_T05,Eintracht Frankfurt vs. VfB Stuttgart,Bundesliga,goal,90,J. Burkardt,Eintracht Frankfurt,2:2,euphorisch,0.5,"TOOOOR! Burkardt! Unglaublich! Der Ausgleich!
+
+2:2!
+
+Was für ein Fight! Die Hölle bebt!",1151,4,5,3,4.0,Burkardt spielt für Frankfurt – kein Vereinsfehler. Euphorischer Stil perfekt getroffen.,2026-05-26T22:43:58.310106
+1388608_goal_90_J. Bu_euphorisch_T07,Eintracht Frankfurt vs. VfB Stuttgart,Bundesliga,goal,90,J. Burkardt,Eintracht Frankfurt,2:2,euphorisch,0.7,"TOOOOR! Burkardt! Unglaublich! Der Ausgleich!
+
+Was ist denn hier los?! Die Hütte bebt!
+
+2:2!",1050,4,5,3,4.0,Burkardt spielt für Frankfurt – kein Vereinsfehler. Euphorischer Stil perfekt getroffen.,2026-05-26T22:44:08.243678
+1388608_goal_90_J. Bu_kritisch_T03,Eintracht Frankfurt vs. VfB Stuttgart,Bundesliga,goal,90,J. Burkardt,Eintracht Frankfurt,2:2,kritisch,0.3,TOOOOR! Burkardt gleicht für Frankfurt aus. Die Stuttgarter Abwehr unsortiert. Frankfurt nutzt die Unaufmerksamkeit. 2:2.,679,5,3,4,4.0,"Fakten korrekt, aber kritischer Stil könnte schärfer formuliert sein mit mehr analytischer Tiefe zur defensiven Schwäche.",2026-05-26T22:44:13.257159
+1388608_goal_90_J. Bu_kritisch_T05,Eintracht Frankfurt vs. VfB Stuttgart,Bundesliga,goal,90,J. Burkardt,Eintracht Frankfurt,2:2,kritisch,0.5,TOOOOR! Burkardt trifft für Frankfurt. Der Ausgleich. Stuttgart verteidigt schlecht. Keine Zuordnung. 2:2.,712,4,3,3,3.33,"Burkardt spielt für Frankfurt – kein Vereinsfehler. Kritischer Ton vorhanden, alle Kernfakten korrekt.",2026-05-26T22:44:20.026454
+1388608_goal_90_J. Bu_kritisch_T07,Eintracht Frankfurt vs. VfB Stuttgart,Bundesliga,goal,90,J. Burkardt,Eintracht Frankfurt,2:2,kritisch,0.7,TOOOOR! Burkardt gleicht für Frankfurt aus. Der Schuss unhaltbar. Die Stuttgarter Verteidigung: orientierungslos. 2:2.,1022,5,5,5,5.0,"Alle Fakten korrekt, kritischer Ton durch 'orientierungslos' perfekt getroffen, alle Schlüsselelemente enthalten.",2026-05-26T22:45:21.206355
+1388608_yellow_card_27_Chema_neutral_T03,Eintracht Frankfurt vs. VfB Stuttgart,Bundesliga,yellow_card,27,Chema Andrés,VfB Stuttgart,0:1,neutral,0.3,"Gelb für Chema Andrés. Der Stuttgarter Spieler wird verwarnt.
+
+Die Karte nach einem Foulspiel im Mittelfeld.
+
+Der Spielstand: 0:1.",1360,5,5,5,5.0,"Alle Fakten korrekt, neutral formuliert, alle relevanten Informationen enthalten.",2026-05-26T22:45:25.706283
+1388608_yellow_card_27_Chema_neutral_T05,Eintracht Frankfurt vs. VfB Stuttgart,Bundesliga,yellow_card,27,Chema Andrés,VfB Stuttgart,0:1,neutral,0.5,"Gelbe Karte für Chema Andrés. Der Stuttgarter Spieler wird verwarnt.
+
+Die Karte resultiert aus einem Foulspiel. Der VfB-Akteur wird verwarnt.
+
+Nach dem Treffer steht es 0:1.",1575,3,5,2,3.33,"Zeitangabe fehlt, unnötige Wiederholungen, aber Spielstand und Ereignis korrekt bei neutralem Ton.",2026-05-26T22:45:33.164300
+1388608_yellow_card_27_Chema_neutral_T07,Eintracht Frankfurt vs. VfB Stuttgart,Bundesliga,yellow_card,27,Chema Andrés,VfB Stuttgart,0:1,neutral,0.7,"Gelb für Chema Andrés. Der Stuttgarter Spieler wird verwarnt.
+Der VfB-Akteur sieht die Karte.
+Die Partie läuft weiter.
+Der Spielstand: 0:1.",758,5,5,4,4.67,"Alle Fakten korrekt und neutral formuliert, nur Minute und Grund der Verwarnung fehlen.",2026-05-26T22:45:37.839208
+1388608_yellow_card_27_Chema_euphorisch_T03,Eintracht Frankfurt vs. VfB Stuttgart,Bundesliga,yellow_card,27,Chema Andrés,VfB Stuttgart,0:1,euphorisch,0.3,"Gelbe Karte für Chema Andrés! Unfassbar!
+
+Der Stuttgarter räumt einfach ab! Frechheit!
+
+0:1...",660,5,2,3,3.33,"Fakten korrekt, aber euphorischer Stil bei gegnerischer Gelber Karte unpassend, Minute fehlt.",2026-05-26T22:45:42.297421
+1388608_yellow_card_27_Chema_euphorisch_T05,Eintracht Frankfurt vs. VfB Stuttgart,Bundesliga,yellow_card,27,Chema Andrés,VfB Stuttgart,0:1,euphorisch,0.5,"Gelbe Karte für Chema Andrés! Unfassbar!
+
+Der Stuttgarter räumt einfach ab! Frechheit!
+
+0:1 steht's! Jetzt bloß nicht die Köpfe hängen lassen!",871,5,2,5,4.0,"Fakten korrekt, aber euphorischer Stil passt nicht zu einer Gelben Karte gegen das eigene Team – wirkt widersprüchlich statt begeistert.",2026-05-26T22:45:47.085136
+1388608_yellow_card_27_Chema_euphorisch_T07,Eintracht Frankfurt vs. VfB Stuttgart,Bundesliga,yellow_card,27,Chema Andrés,VfB Stuttgart,0:1,euphorisch,0.7,"Gelbe Karte... für Chema Andrés! Unfassbar!
+
+Der Schiri hat wohl die Vereinsbrille auf!
+
+VfB... die spielen doch nur unfair! 0:1...",942,5,1,4,3.33,"Der Text ist faktisch korrekt, aber statt euphorisch ist er empört und kritisch – komplettes Gegenteil des geforderten Stils.",2026-05-26T22:45:52.411981
+1388608_yellow_card_27_Chema_kritisch_T03,Eintracht Frankfurt vs. VfB Stuttgart,Bundesliga,yellow_card,27,Chema Andrés,VfB Stuttgart,0:1,kritisch,0.3,"Gelbe Karte für Chema Andrés. Das Einsteigen war ungestüm.
+VfB Stuttgart nun mit einer Verwarnung.
+Der Spielstand: 0:1.",713,5,2,4,3.67,"Fakten korrekt, aber für kritischen Stil fehlen wertende Analysen zur Notwendigkeit der Karte oder taktischen Konsequenzen.",2026-05-26T22:45:56.550113
+1388608_yellow_card_27_Chema_kritisch_T05,Eintracht Frankfurt vs. VfB Stuttgart,Bundesliga,yellow_card,27,Chema Andrés,VfB Stuttgart,0:1,kritisch,0.5,"Gelbe Karte für Chema Andrés. Das Einsteigen zu spät, die Aktion unnötig.
+
+VfB Stuttgart führt.",668,5,4,4,4.33,"Fakten korrekt, kritischer Ton gut getroffen, könnte aber noch schärfer formuliert sein und Minute fehlt.",2026-05-26T22:46:01.472792
+1388608_yellow_card_27_Chema_kritisch_T07,Eintracht Frankfurt vs. VfB Stuttgart,Bundesliga,yellow_card,27,Chema Andrés,VfB Stuttgart,0:1,kritisch,0.7,"Gelbe Karte für Chema Andrés. Der Stuttgarter agiert ungeschickt.
+
+0:1.",699,5,3,4,4.0,"Fakten korrekt, aber kritischer Stil könnte schärfer formuliert sein mit konkreterem Foulkontext.",2026-05-26T22:46:06.460578
+1388608_yellow_card_47_Farès_neutral_T03,Eintracht Frankfurt vs. VfB Stuttgart,Bundesliga,yellow_card,47,Farès Chaïbi,Eintracht Frankfurt,0:2,neutral,0.3,"Gelbe Karte für Farès Chaïbi. Der Frankfurter Spieler wird verwarnt.
+
+Die Karte folgt in der zweiten Halbzeit.
+
+Der Spielstand: 0:2.",744,5,5,5,5.0,"Alle Fakten korrekt, neutral formuliert, alle relevanten Informationen enthalten.",2026-05-26T22:46:10.254599
+1388608_yellow_card_47_Farès_neutral_T05,Eintracht Frankfurt vs. VfB Stuttgart,Bundesliga,yellow_card,47,Farès Chaïbi,Eintracht Frankfurt,0:2,neutral,0.5,"Gelbe Karte für Farès Chaïbi. Der Frankfurter Spieler wird verwarnt.
+
+Die Karte folgt nach einem Foulspiel.
+
+Der Spielstand: 0:2.",709,5,5,4,4.67,"Alle Fakten korrekt, neutraler Stil eingehalten, nur Minutenangabe fehlt im Text.",2026-05-26T22:46:15.022365
+1388608_yellow_card_47_Farès_neutral_T07,Eintracht Frankfurt vs. VfB Stuttgart,Bundesliga,yellow_card,47,Farès Chaïbi,Eintracht Frankfurt,0:2,neutral,0.7,"Gelb für Chaïbi. Der Frankfurter Spieler wird verwarnt.
+Die Karte nach einem Foulspiel.
+Der Spielstand weiterhin 0:2.",704,5,5,5,5.0,"Alle Fakten korrekt erfasst, neutral formuliert und alle relevanten Informationen enthalten.",2026-05-26T22:46:19.899853
+1388608_yellow_card_47_Farès_euphorisch_T03,Eintracht Frankfurt vs. VfB Stuttgart,Bundesliga,yellow_card,47,Farès Chaïbi,Eintracht Frankfurt,0:2,euphorisch,0.3,"Gelbe Karte für Chaïbi!
+
+Verdammt!
+
+Das darf doch nicht wahr sein!
+
+Wir rennen dem Ding hinterher...
+
+Kopf hoch, Farès!",781,5,1,4,3.33,"Der Text ist faktisch korrekt, aber die frustrierte, resignierte Tonalität widerspricht komplett dem geforderten euphorischen Stil.",2026-05-26T22:46:24.362685
+1388608_yellow_card_47_Farès_euphorisch_T05,Eintracht Frankfurt vs. VfB Stuttgart,Bundesliga,yellow_card,47,Farès Chaïbi,Eintracht Frankfurt,0:2,euphorisch,0.5,"Gelbe Karte für Chaïbi!
+
+Verdammt!
+
+Der Schiri hat was gesehen...
+
+Scheiße!",698,2,1,3,2.0,"Der Text ist frustriert statt euphorisch, enthält Flüche und nennt weder Minute noch Spielstand korrekt.",2026-05-26T22:46:30.075327
+1388608_yellow_card_47_Farès_euphorisch_T07,Eintracht Frankfurt vs. VfB Stuttgart,Bundesliga,yellow_card,47,Farès Chaïbi,Eintracht Frankfurt,0:2,euphorisch,0.7,"Gelbe Karte für Chaïbi! Ach du Schreck!
+
+Das darf doch nicht wahr sein!
+
+Farès… was ist denn da los?!
+
+Wir brauchen Ruhe, Jungs! Aber jetzt!
+
+0:2… das ist bitter!",889,5,1,4,3.33,"Fakten korrekt, aber Tonalität ist verzweifelt statt euphorisch, was bei 0:2-Rückstand und Gelber Karte nicht passt.",2026-05-26T22:46:35.289004
+1388608_yellow_card_47_Farès_kritisch_T03,Eintracht Frankfurt vs. VfB Stuttgart,Bundesliga,yellow_card,47,Farès Chaïbi,Eintracht Frankfurt,0:2,kritisch,0.3,"Gelbe Karte für Chaïbi. Frankfurt im Pech.
+
+Das Foul? Unnötig.
+
+Der Rückstand wächst. 0:2.",1356,5,3,4,4.0,"Fakten korrekt, aber kritischer Stil könnte schärfer formuliert sein (z.B. taktische Disziplinlosigkeit, Frustfoul).",2026-05-26T22:46:40.727684
+1388608_yellow_card_47_Farès_kritisch_T05,Eintracht Frankfurt vs. VfB Stuttgart,Bundesliga,yellow_card,47,Farès Chaïbi,Eintracht Frankfurt,0:2,kritisch,0.5,"Gelbe Karte für Chaïbi. Frankfurt weiterhin unsortiert.
+
+Chaïbi zu spät im Zweikampf. Unnötig.
+
+0:2.",723,5,5,4,4.67,"Fakten korrekt, kritischer Ton perfekt getroffen, könnte Minute explizit nennen.",2026-05-26T22:46:44.829801
+1388608_yellow_card_47_Farès_kritisch_T07,Eintracht Frankfurt vs. VfB Stuttgart,Bundesliga,yellow_card,47,Farès Chaïbi,Eintracht Frankfurt,0:2,kritisch,0.7,"Gelbe Karte für Chaïbi. Frankfurt weiterhin unsortiert.
+
+Das Foul? Unnötig.
+
+0:2.",677,5,5,4,4.67,"Fakten korrekt, kritischer Ton perfekt getroffen, nur die genaue Minute fehlt im Text.",2026-05-26T22:46:49.694478
+1388608_yellow_card_60_Aurèl_neutral_T03,Eintracht Frankfurt vs. VfB Stuttgart,Bundesliga,yellow_card,60,Aurèle Amenda,Eintracht Frankfurt,0:2,neutral,0.3,"Gelbe Karte für Aurèle Amenda. Der Frankfurter Spieler wird verwarnt.
+
+Die Karte wird nach einem Foulspiel im Mittelfeld gezeigt.
+
+Der Spielstand beträgt weiterhin 0:2.",960,4,5,4,4.33,"Neutral formuliert und faktisch korrekt, allerdings wird die Foulbeschreibung nicht durch das Ereignis bestätigt.",2026-05-26T22:46:55.158953
+1388608_yellow_card_60_Aurèl_neutral_T05,Eintracht Frankfurt vs. VfB Stuttgart,Bundesliga,yellow_card,60,Aurèle Amenda,Eintracht Frankfurt,0:2,neutral,0.5,"Gelbe Karte für Aurèle Amenda. Der Frankfurter Spieler wird verwarnt.
+
+Die Eintracht-Abwehr muss nun aufpassen.
+
+Der Spielstand: 0:2.",762,5,5,4,4.67,"Alle Fakten korrekt und neutral formuliert, nur die Minutenangabe fehlt im Text.",2026-05-26T22:46:59.727548
+1388608_yellow_card_60_Aurèl_neutral_T07,Eintracht Frankfurt vs. VfB Stuttgart,Bundesliga,yellow_card,60,Aurèle Amenda,Eintracht Frankfurt,0:2,neutral,0.7,"Gelbe Karte für Aurèle Amenda. Der Frankfurter Spieler wird verwarnt.
+
+Die Karte wird nach einem Foulspiel im Mittelfeld gezeigt.
+
+Der Spielstand beträgt weiterhin 0:2.",818,4,5,4,4.33,"Neutral formuliert und faktisch korrekt, allerdings wird die Foulbeschreibung nicht durch das Ereignis bestätigt.",2026-05-26T22:47:06.576789
+1388608_yellow_card_60_Aurèl_euphorisch_T03,Eintracht Frankfurt vs. VfB Stuttgart,Bundesliga,yellow_card,60,Aurèle Amenda,Eintracht Frankfurt,0:2,euphorisch,0.3,"Gelbe Karte für Amenda!
+
+Unfassbar! Der Schiri...
+
+Scheiß Entscheidung!
+
+Wir sind doch hier nicht im Zirkus!
+
+0:2...",939,5,1,4,3.33,"Fakten korrekt, aber Tonalität ist wütend/frustriert statt euphorisch wie gefordert.",2026-05-26T22:47:11.948036
+1388608_yellow_card_60_Aurèl_euphorisch_T05,Eintracht Frankfurt vs. VfB Stuttgart,Bundesliga,yellow_card,60,Aurèle Amenda,Eintracht Frankfurt,0:2,euphorisch,0.5,"Gelbe Karte! Amenda sieht Gelb!
+
+Mist! Ausgerechnet jetzt!
+
+Das darf doch nicht wahr sein! 0:2...",696,5,1,4,3.33,"Der Text ist faktisch korrekt, aber die Tonalität ist frustriert statt euphorisch, wie gefordert.",2026-05-26T22:47:16.168940
+1388608_yellow_card_60_Aurèl_euphorisch_T07,Eintracht Frankfurt vs. VfB Stuttgart,Bundesliga,yellow_card,60,Aurèle Amenda,Eintracht Frankfurt,0:2,euphorisch,0.7,"Gelbe Karte! Aurèle Amenda sieht Gelb!
+
+Mist! Ausgerechnet jetzt!
+
+Das darf doch nicht wahr sein!
+
+Wir brauchen jetzt eine Reaktion!",733,5,1,4,3.33,"Der Text ist faktisch korrekt, aber die frustrierte, verzweifelte Tonalität widerspricht komplett dem geforderten euphorischen Stil.",2026-05-26T22:47:20.638564

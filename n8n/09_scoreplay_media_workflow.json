@@ -1,0 +1,205 @@
+{
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "scoreplay-media",
+        "options": {}
+      },
+      "id": "7f089cf1-bafe-41fe-af22-f30564aa5d0f",
+      "name": "Webhook Trigger5",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [-672, 320],
+      "webhookId": "scoreplay-media-trigger"
+    },
+    {
+      "parameters": {
+        "url": "https://media.scoreplay.io/v1/tag/search",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpQueryAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "query",
+              "value": "={{ ($json.body.player_name ?? '').split(' ').pop() }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "e1f62ba7-8672-4124-80a4-9bfb13721c72",
+      "name": "ScorePlay – Player suchen4",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [-384, 320],
+      "credentials": {
+        "httpQueryAuth": {
+          "id": "oIMMDjbZpLHQSiCM",
+          "name": "Query Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const body = $('Webhook Trigger5').first().json.body || {};\nconst raw = $input.first().json;\n\nconst players = Array.isArray(raw)\n  ? raw.flatMap(r => r.players || [])\n  : (raw.players || []);\n\nfunction normalize(str) {\n  return (str || '')\n    .toLowerCase()\n    .replace(/ø/g, 'o')\n    .replace(/ö/g, 'o')\n    .replace(/ü/g, 'u')\n    .replace(/ä/g, 'a')\n    .replace(/æ/g, 'ae')\n    .replace(/å/g, 'a')\n    .replace(/ß/g, 'ss')\n    .replace(/đ/g, 'd')\n    .replace(/[''`]/g, '')\n    .normalize('NFD')\n    .replace(/[\\u0300-\\u036f]/g, '');\n}\n\nconst searchBody = {\n  media_type: \"photo\",\n  order_by: \"created_at\",\n  order_type: \"desc\",\n  validated_accessible: true\n};\n\nif (body.player_name) {\n  const nameLower = normalize(body.player_name);\n  const match = players.find(p =>\n    normalize(p.full_name).includes(nameLower) ||\n    normalize(p.first_name).includes(nameLower) ||\n    normalize(p.last_name).includes(nameLower) ||\n    normalize(p.ai_name).includes(nameLower) ||\n    nameLower.includes(normalize(p.last_name))\n  );\n  if (match?.ID) searchBody.players = [match.ID];\n}\n\nreturn [{ json: { searchBody } }];"
+      },
+      "id": "7de01d2b-4e25-405d-be86-2b6230c12313",
+      "name": "Player-ID extrahieren4",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [-144, 320]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://media.scoreplay.io/v1/media/search",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpQueryAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ $json.searchBody }}",
+        "options": {}
+      },
+      "id": "139b6907-dafe-45bc-b4bb-ceedc1ca0f02",
+      "name": "ScorePlay API – Bilder suchen6",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [112, 320],
+      "credentials": {
+        "httpQueryAuth": {
+          "id": "oIMMDjbZpLHQSiCM",
+          "name": "Query Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const raw = $input.first().json;\nconst mediaList = Array.isArray(raw) ? raw : (raw.media || raw.data || []);\n\nconst result = [];\n\nfor (const media of mediaList) {\n  const files = media.files || [];\n  let thumbnail_url = null, compressed_url = null, original_url = null;\n\n  for (const file of files) {\n    const url = file.url || null;\n    if (!url) continue;\n    if (file.is_thumbnail === true) thumbnail_url = url;\n    else if (file.is_compressed === true) compressed_url = url;\n    else if (file.details === 'photographer_quality') original_url = url;\n  }\n\n  thumbnail_url = thumbnail_url || media.thumbnail_url || null;\n  compressed_url = compressed_url || media.compressed_url || null;\n  original_url = original_url || media.original_url || null;\n\n  result.push({ json: {\n    media_id: media.ID,\n    name: media.name || null,\n    thumbnail_url,\n    compressed_url,\n    original_url,\n    event_id: media.event_id || null\n  }});\n}\n\nreturn result;"
+      },
+      "id": "7be7b779-30b4-4264-a2ee-e9087dd2046d",
+      "name": "Felder extrahieren6",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [352, 320]
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "destinationFieldName": "items",
+        "options": {}
+      },
+      "id": "5d0434ba-c417-44f0-8824-87b7742d9e66",
+      "name": "Items aggregieren6",
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [592, 320]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://liveticker-backend.onrender.com/api/v1/media/incoming",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ $json.items }}",
+        "options": {}
+      },
+      "id": "0d38e3fa-962f-4a37-8b55-f2302d095b45",
+      "name": "FastAPI – /media/incoming6",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [832, 320]
+    }
+  ],
+  "connections": {
+    "Webhook Trigger5": {
+      "main": [
+        [
+          {
+            "node": "ScorePlay – Player suchen4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ScorePlay – Player suchen4": {
+      "main": [
+        [
+          {
+            "node": "Player-ID extrahieren4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Player-ID extrahieren4": {
+      "main": [
+        [
+          {
+            "node": "ScorePlay API – Bilder suchen6",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ScorePlay API – Bilder suchen6": {
+      "main": [
+        [
+          {
+            "node": "Felder extrahieren6",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Felder extrahieren6": {
+      "main": [
+        [
+          {
+            "node": "Items aggregieren6",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Items aggregieren6": {
+      "main": [
+        [
+          {
+            "node": "FastAPI – /media/incoming6",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "meta": {
+    "instanceId": "c812d7c91145a37daf0cb923fa307183fa91637fdbe8017dda5dce71e0f572b5"
+  }
+}

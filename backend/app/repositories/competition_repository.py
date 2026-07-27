@@ -1,19 +1,28 @@
+"""
+CompetitionRepository
+=====================
+Datenbankzugriff für Wettbewerbe (Ligen, Pokale).
+"""
+
 import logging
 from typing import Optional
-from uuid import UUID
 
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from app.models.competition import Competition
+from app.repositories.base import BaseRepository
 from app.schemas.competition import CompetitionCreate, CompetitionUpdate
+from app.utils.db_utils import str_or_none as _str_or_none
 
 logger = logging.getLogger(__name__)
 
 
-class CompetitionRepository:
+class CompetitionRepository(BaseRepository[Competition]):
+    model = Competition
+
     def __init__(self, db: Session) -> None:
-        self.db = db
+        super().__init__(db)
 
     # ------------------------------------------------------------------ #
     # Reads                                                                #
@@ -40,17 +49,6 @@ class CompetitionRepository:
             self.db.query(Competition).filter(Competition.id == competition_id).first()
         )
 
-    def get_by_uid(self, uid: UUID) -> Optional[Competition]:
-        return self.db.query(Competition).filter(Competition.uid == uid).first()
-
-    def exists(self, competition_id: int) -> bool:
-        return (
-            self.db.query(Competition.id)
-            .filter(Competition.id == competition_id)
-            .scalar()
-            is not None
-        )
-
     # ------------------------------------------------------------------ #
     # Writes                                                               #
     # ------------------------------------------------------------------ #
@@ -64,10 +62,8 @@ class CompetitionRepository:
             if data.localized_title
             else None,
             short_title=data.short_title,
-            logo_url=str(data.logo_url) if data.logo_url else None,
-            matchcenter_image_url=str(data.matchcenter_image_url)
-            if data.matchcenter_image_url
-            else None,
+            logo_url=_str_or_none(data.logo_url),
+            matchcenter_image_url=_str_or_none(data.matchcenter_image_url),
             has_standings_per_matchday=data.has_standings_per_matchday,
             hidden=data.hidden,
             position=data.position,
@@ -93,15 +89,9 @@ class CompetitionRepository:
 
         update_data = data.model_dump(exclude_unset=True)
 
-        if "logo_url" in update_data and update_data["logo_url"] is not None:
-            update_data["logo_url"] = str(update_data["logo_url"])
-        if (
-            "matchcenter_image_url" in update_data
-            and update_data["matchcenter_image_url"] is not None
-        ):
-            update_data["matchcenter_image_url"] = str(
-                update_data["matchcenter_image_url"]
-            )
+        for url_field in ("logo_url", "matchcenter_image_url"):
+            if url_field in update_data:
+                update_data[url_field] = _str_or_none(update_data[url_field])
         if (
             "localized_title" in update_data
             and update_data["localized_title"] is not None

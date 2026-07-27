@@ -1,0 +1,120 @@
+/* ============================================================
+   LiveTicker – Media (Publish Toast, Delete Toast)
+   ============================================================ */
+
+/* ── Publish Toast ────────────────────────────────────── */
+.lt-publish-toast {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  width: 340px;
+  background: #1a1a1a;
+  border: 1px solid #333;
+  border-radius: 10px;
+  padding: 14px 16px 10px;
+  z-index: 9999;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+  animation: lt-toast-in 0.2s ease;
+}
+@keyframes lt-toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.lt-publish-toast__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+.lt-publish-toast__status {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: #a3e635;
+}
+.lt-publish-toast__dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #a3e635;
+  flex-shrink: 0;
+}
+.lt-publish-toast__retract {
+  background: #ef4444;
+  border: none;
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  letter-spacing: 0.03em;
+  white-space: nowrap;
+  transition: background 0.15s;
+}
+.lt-publish-toast__retract:hover {
+  background: #dc2626;
+}
+.lt-publish-toast__text {
+  font-size: 0.8rem;
+  color: #ccc;
+  font-family: monospace;
+  margin: 0 0 10px;
+  line-height: 1.45;
+}
+.lt-publish-toast__bar-track {
+  height: 3px;
+  background: #333;
+  border-radius: 2px;
+  overflow: hidden;
+}
+.lt-publish-toast__bar {
+  height: 100%;
+  background: #a3e635;
+  border-radius: 2px;
+  transition: width 0.05s linear;
+}
+
+/* Delete Toast */
+.lt-delete-toast {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 9999;
+  background: #1a1a1a;
+  border: 1px solid #333;
+  border-left: 3px solid #4ade80;
+  border-radius: 8px;
+  padding: 0.65rem 1rem;
+  font-family: var(--lt-font-mono);
+  font-size: 0.75rem;
+  color: var(--lt-text-sec);
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+  animation: lt-toast-in 0.18s ease;
+  pointer-events: none;
+}
+.lt-delete-toast__icon {
+  color: #4ade80;
+  font-size: 0.8rem;
+}
+
+/* Publish textarea focus (replaces inline onFocus/onBlur handlers) */
+.lt-publish-textarea {
+  border-color: var(--lt-border);
+}
+.lt-publish-textarea:focus {
+  border-color: var(--lt-accent);
+}

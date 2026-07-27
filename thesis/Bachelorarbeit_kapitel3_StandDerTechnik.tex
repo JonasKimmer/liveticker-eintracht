@@ -1,0 +1,59 @@
+\chapter{Stand der Technik}\label{stand-der-technik}
+
+Dieses Kapitel arbeitet die technologischen Grundlagen auf, die zur Umsetzung der abgeleiteten Anforderungen erforderlich sind. Es behandelt Large Language Models (Abschnitt~\ref{large-language-models}), Prompt Engineering und Steuerungsparameter (Abschnitt~\ref{prompt-engineering}), automatisierte Sportberichterstattung (Abschnitt~\ref{automatisierte-sportberichterstattung}), Workflow-Automatisierung und Datenintegration (Abschnitt~\ref{workflow-automatisierung}) sowie den Webanwendungs- und Infrastruktur-Stack (Abschnitt~\ref{backend-frontend-und-deployment-technologien}).
+
+\section{Large Language Models}\label{large-language-models}
+
+Large Language Models (LLM) werden auf umfangreichen Textdaten trainiert und können natürliche Sprache verstehen und generieren. Technisch basieren sie auf der Transformer-Architektur, die Text mithilfe von Aufmerksamkeitsmechanismen (Attention) verarbeitet, indem das Modell alle anderen Token im Kontext nach ihrer Relevanz gewichtet, wodurch es semantische Zusammenhänge über lange Sequenzen erfasst \cite{vaswani2017}. LLMs unterstützen zudem In-Context Learning, bei dem sich Modelle über Beispiele im Prompt konditionieren lassen, ohne ihre Gewichte anzupassen. Few-Shot Prompting nutzt dieses Prinzip, indem konkrete Beispielpaare im Prompt das gewünschte Ausgabeverhalten demonstrieren \cite{brown2020}.
+
+LLMs unterscheiden sich erheblich in Parameteranzahl und Inferenzaufwand. Bei strukturierten Aufgaben mit kurzen Ausgaben erzielen kleinere Modelle häufig eine vergleichbare Ausgabequalität bei deutlich geringerer Latenz und niedrigeren Kosten als parameterreichere Modelle \cite{brown2020, openai2023}. Die Modellwahl ist damit eine eigenständige Designentscheidung mit unmittelbarem Einfluss auf Latenz und Betriebskosten.
+
+Trotz ihrer Leistungsfähigkeit weisen sie strukturelle Schwächen auf, insbesondere die Neigung zu Halluzinationen, also zur Generierung sachlich unzutreffender oder erfundener Inhalte. Das Fehlerspektrum reicht von faktischen Halluzinationen, bei denen Sachverhalte frei erfunden werden, bis zu kontextualen Halluzinationen, bei denen vorhandene Eingabedaten fehlerhaft interpretiert werden. Besonders kritisch sind frei erfundene Aussagen, weil sie ohne externen Faktenabgleich schwer zu erkennen sind \cite{openai2023}.
+
+LLMs lassen sich nicht nur zur Textgenerierung, sondern auch zur automatisierten Qualitätsbewertung von Sprachmodellausgaben einsetzen. Beim LLM-as-Judge-Verfahren übernimmt ein vom generierenden Modell unabhängiges Sprachmodell die Rolle eines Bewerters und beurteilt Ausgaben anhand definierter Qualitätskriterien, ohne dass menschliche Annotation erforderlich ist \cite{zheng2023}.
+
+
+
+\section{Prompt Engineering und Steuerungsparameter}\label{prompt-engineering}
+
+Prompt Engineering bezeichnet die systematische Gestaltung von Modelleingaben, um ein LLM ohne Änderung seiner Gewichte zu einem gewünschten Ausgabeverhalten zu lenken \cite{brown2020}.
+
+Für die Anwendung auf spezifische Aufgaben existieren zwei grundsätzliche Ansätze. Fine-tuning erfordert ein aufgabenspezifisches Nachtrainieren auf aufbereiteten Datensätzen und ist ressourcenintensiv, da es Rechenzeit, Infrastruktur und Datenpflege voraussetzt. Prompting-basierte Ansätze hingegen nutzen das vortrainierte Modell direkt und steuern dessen Verhalten über die Eingabeformulierung. Fehlen ausreichend aufbereitete Trainingsdaten, ist Prompting methodisch vorzuziehen, da Fine-tuning häufig mit eingeschränkter Generalisierbarkeit verbunden ist, während wenige Beispiele im Prompt ausreichen \cite{brown2020}.
+
+Innerhalb des Prompting-Paradigmas lassen sich drei wesentliche Techniken unterscheiden. Beim Zero-Shot Prompting erhält das Modell ausschließlich eine Aufgabenbeschreibung ohne Demonstrationsbeispiele. Beim Few-Shot Prompting werden zusätzlich wenige Beispiele als Stilreferenz bereitgestellt, die das Modell auf eine gewünschte Tonalität konditionieren, ohne dass Fine-tuning erforderlich ist \cite{brown2020}. Beim Role Prompting wird dem Modell eine explizite Persona zugewiesen, etwa die eines Sportjournalisten, die es auf eine konsistente sprachliche Identität verpflichtet \cite{openai2023}.
+
+Moderne Chat-Modelle unterscheiden strukturell zwischen zwei Prompt-Rollen. Der System Prompt legt die übergeordnete Persona sowie Stilanforderungen, inhaltliche Grenzen und das Ausgabeformat fest, während der User Prompt die konkrete Aufgabe mit aufgabenspezifischen Daten enthält. Diese Trennung erlaubt es, allgemeine Verhaltensregeln einmalig im System Prompt zu definieren und den User Prompt auf die jeweilige Aufgabe zu beschränken \cite{openai2023}.
+
+Ein weiterer zentraler Steuerungsparameter ist die Temperature, die bestimmt, wie stark das Modell bei der Wortwahl von der jeweils wahrscheinlichsten Option abweicht. Niedrige Werte führen zu deterministischeren, faktentreueren Ausgaben, höhere Werte erhöhen die stilistische Varianz. Generierungsaufgaben mit Stilanforderungen profitieren von mittleren Temperaturwerten, Übersetzungsaufgaben mit strengen Treuekriterien von niedrigen \cite{brown2020, openai2023}.
+
+
+\section{Automatisierte Sportberichterstattung}\label{automatisierte-sportberichterstattung}
+
+Die automatisierte Erzeugung natürlichsprachlicher Texte aus strukturierten Daten bildet die technische Grundlage für KI-gestützte Berichterstattungssysteme \cite{puduppully2021}. Die Systementwicklung lässt sich in drei Generationen beschreiben. Regelbasierte Template-Architekturen lieferten vorhersagbare, aber stilistisch monotone Ausgaben. Neuronale End-to-End-Systeme überwanden die Monotonie durch datengetriebenes Lernen, erforderten jedoch umfangreiches aufgabenspezifisches Training und tendierten zu faktischen Inkonsistenzen \cite{puduppully2021, beils2023}. LLM-basierte Systeme ermöglichen als dritte Generation eine flexible Stilkonditionierung durch Prompt-Design ohne aufgabenspezifisches Training \cite{openai2023}. Trotz dieser Entwicklung sind in der redaktionellen Praxis weiterhin templatebasierte Ansätze verbreitet. \textit{Die Welt} etwa erzeugt automatisierte Spielberichte über den Dienstleister Retresco, weil Zuverlässigkeit dort höher gewichtet wird als stilistische Varianz \cite{beils2023}.
+
+Die Grenzen vollständiger Automatisierung zeigen sich in der journalistischen Praxis deutlich. Sportberichterstattung lebt wesentlich von Emotionen und nicht allein von Fakten, weshalb rein datengetriebene Systeme stilistisch als unzureichend gelten. Darüber hinaus sind solche Systeme den Eingabedaten vollständig ausgeliefert, sodass Ereignisse, die in den strukturierten Rohdaten nicht erfasst sind, zu Systemversagen führen \cite{beils2023}.
+
+Das Konzept des Human-in-the-Loop (HITL) bezeichnet Systemdesigns, in denen menschliche Akteure gezielt in automatisierte Entscheidungsprozesse eingebunden bleiben. Im journalistischen Kontext ist dieses Prinzip besonders relevant, weil die publizistische Verantwortung für Korrektheit, Ton und Relevanz nicht vollständig an ein Modell delegiert werden kann \cite{beils2023}.
+
+
+
+
+\section{Workflow-Automatisierung und Datenintegration}\label{workflow-automatisierung}
+
+Die Datenbeschaffung in datengetriebenen Anwendungen folgt überwiegend dem Extract-Transform-Load-Prinzip (ETL), bei dem Daten aus heterogenen Quellen extrahiert, in ein einheitliches Zielformat transformiert und in den Datenspeicher geladen werden. Workflow-Orchestrierungsplattformen modellieren diese Logik als konfigurierbare Prozesse mit expliziten Abhängigkeiten zwischen Verarbeitungsschritten. Low-Code-Varianten reduzieren die Einstiegshürde gegenüber prozeduralem ETL-Code und erlauben bei Bedarf die Einbettung eigener Code-Blöcke \cite{freitas2025, venkiteela2025}. Neben cloudbasierten Diensten existieren lokal betreibbare Open-Source-Plattformen, die den Betrieb in der eigenen Infrastruktur mit voller Kontrolle über Datenflüsse ermöglichen. n8n ist eine solche Open-Source-Plattform, die ETL-Workflows als knotenbasierte Graphen modelliert, native Webhook-Unterstützung bietet und eigene Code-Blöcke in JavaScript oder Python erlaubt \cite{venkiteela2025, nakavisute2025}.
+
+Für Echtzeitanwendungen wie Liveticker ist die Orchestrierungslatenz ein zusätzliches Auswahlkriterium. Klassische Batch-ETL-Prozesse arbeiten mit Stunden- oder Minutentakten \cite{freitas2025}. Spielereignisse müssen dagegen innerhalb von Sekunden verarbeitet werden, weshalb Plattformen mit niedrigem Overhead, asynchroner Verarbeitung und effizienten Webhook-Mechanismen erforderlich sind \cite{nakavisute2025}.
+
+
+\section{Webanwendungs- und Infrastruktur-Stack}\label{backend-frontend-und-deployment-technologien}
+
+FastAPI ist ein Python-Backend-Framework, das den ASGI-Standard und asyncio nativ unterstützt und damit asynchrone externe API-Aufrufe mit niedrigem Overhead ermöglicht. Es stellt REST-konforme HTTP-Schnittstellen sowie native WebSocket-Verbindungen bereit. Eingehende und ausgehende Datenstrukturen werden über die integrierte Pydantic-Bibliothek typsicher validiert, ohne dass separate Validierungslogik erforderlich ist \cite{fastapi}.
+
+PostgreSQL als Persistenzschicht erzwingt über Fremdschlüsselbeziehungen referenzielle Integrität, unterstützt Joins über normalisierte Schemata, bietet native JSONB-Unterstützung für variable Datenstrukturen und garantiert ACID-Transaktionssicherheit für nebenläufige Schreibzugriffe \cite{postgresql2024}.
+
+Die Kommunikation zwischen Backend und Frontend folgt für Echtzeitanwendungen wie Liveticker zwei etablierten Mustern. HTTP-Polling ist einfach und kompatibel, erzeugt aber Latenz und Overhead bei leeren Antworten \cite{delatorre2019}. WebSocket bietet eine bidirektionale, persistente Verbindung mit minimalem Overhead nach dem initialen Verbindungsaufbau und ist latenzoptimal für ereignisgetriebene Datenströme \cite{rfc6455, delatorre2019}. In der Praxis kombinieren Systeme häufig beide Muster für unterschiedliche Datenpfade.
+
+React ist ein komponentenbasiertes Single-Page-Framework, das asynchrone Live-Datenpfade, klare Komponentenzerlegung und etablierte Test- und Build-Werkzeuge unterstützt \cite{react}. TypeScript ergänzt JavaScript als statische Typschicht und reduziert Schnittstellenfehler zwischen Modulen bereits zur Kompilierzeit \cite{typescript}.
+
+Für das Deployment abstrahiert Platform-as-a-Service die Infrastrukturverwaltung und ermöglicht Releases direkt aus Git-Branches. Docker-Container kapseln Anwendung und Laufzeitumgebung in einem reproduzierbaren Image und bilden damit die standardisierte Deployment-Einheit für solche Plattformen \cite{merkel2014}.
+

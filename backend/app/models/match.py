@@ -35,6 +35,8 @@ class Match(Base):
     )
     home_score = Column(Integer, nullable=True)
     away_score = Column(Integer, nullable=True)
+    penalty_home_score = Column(Integer, nullable=True)
+    penalty_away_score = Column(Integer, nullable=True)
     matchday = Column(Integer, nullable=True)
     matchday_title = Column(
         JSONB, nullable=True
@@ -51,7 +53,9 @@ class Match(Base):
     match_phase = Column(
         String(30), nullable=True
     )  # Undefined|PreMatch|FullTime|PostPoned|FirstHalf|SecondHalf
-    minute = Column(Integer, nullable=True)  # current live minute
+    minute = Column(Integer, nullable=True)
+    minute_extra = Column(Integer, nullable=True)  # stoppage time (Nachspielzeit)
+    ticker_mode = Column(String(10), nullable=False, default="coop")  # auto | coop | manual
     is_scheduled = Column(Boolean, nullable=False, default=False)
     is_kickoff_confirmed = Column(Boolean, nullable=False, default=False)
     number_of_goal_scorers = Column(Integer, nullable=True)

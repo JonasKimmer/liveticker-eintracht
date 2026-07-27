@@ -4,10 +4,7 @@ from uuid import UUID
 from pydantic import BaseModel, ConfigDict, Field, HttpUrl, field_validator
 from pydantic.alias_generators import to_camel
 
-
-class LocalizedTitle(BaseModel):
-    de: Optional[str] = Field(None, max_length=100)
-    en: Optional[str] = Field(None, max_length=100)
+from app.schemas.base import LocalizedTitle
 
 
 class CompetitionCreate(BaseModel):

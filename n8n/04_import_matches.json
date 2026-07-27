@@ -1,0 +1,246 @@
+{
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "import-matches",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "fe3670fe-d522-4640-96e3-7becc26ee20a",
+      "name": "Webhook Import Matches",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1.1,
+      "position": [-896, 96],
+      "webhookId": "import-matches",
+      "notes": "Body: { teamId: 169, leagueId: 78, season: 2025 }"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "1",
+              "name": "teamId",
+              "value": "={{ $json.body.teamId }}",
+              "type": "number"
+            },
+            {
+              "id": "2",
+              "name": "leagueId",
+              "value": "={{ $json.body.leagueId }}",
+              "type": "number"
+            },
+            {
+              "id": "3",
+              "name": "season",
+              "value": "={{ 2025 }}",
+              "type": "number"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "51c75470-f78b-4b19-aa0c-ff93ef39979b",
+      "name": "Variablen setzen",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [-672, 96]
+    },
+    {
+      "parameters": {
+        "url": "=https://v3.football.api-sports.io/fixtures?league={{ $json.leagueId }}&season={{ $json.season }}&team={{ $json.teamId }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {}
+      },
+      "id": "47a4e129-5e25-4147-ba43-4719d31738a1",
+      "name": "API: Fixtures abrufen",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [-448, 96],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "nw1wvLZ4u2BCZRVl",
+          "name": "Header Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const teamId = $('Variablen setzen').first().json.teamId;\nreturn $input.first().json.response.map(item => ({\n  json: {\n    ...item,\n    leagueId: item.league.id,\n    season: item.league.season,\n    teamId\n  }\n}));"
+      },
+      "id": "ade70424-5d5d-4a89-b747-3ba8738ec578",
+      "name": "Fixtures aufteilen",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [-224, 96]
+    },
+    {
+      "parameters": {
+        "jsCode": "const seen = new Set();\nconst teams = [];\nfor (const item of $input.all()) {\n  const f = item.json;\n  for (const t of [f.teams.home, f.teams.away]) {\n    if (!seen.has(t.id)) {\n      seen.add(t.id);\n      teams.push({ json: { external_id: t.id, name: t.name, logo: t.logo } });\n    }\n  }\n}\nreturn teams;"
+      },
+      "id": "ec546783-7408-4c1c-a27f-9472f11d1d64",
+      "name": "Teams extrahieren",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [0, 0]
+    },
+    {
+      "parameters": {
+        "jsCode": "return $('Fixtures aufteilen').all().map(item => ({ json: item.json }));"
+      },
+      "id": "5015c72b-d855-4256-85e0-e0633af9be5c",
+      "name": "Fixtures wieder laden",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [448, 0]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={ \"status\": \"ok\", \"teamId\": {{ $('Variablen setzen').first().json.teamId }}, \"leagueId\": {{ $('Variablen setzen').first().json.leagueId }} }",
+        "options": {}
+      },
+      "id": "ef0b1922-8f2a-46b9-8bf1-ebe55f789006",
+      "name": "Respond to Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [896, 0]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO teams (uid, external_id, name, sport, logo_url, position)\nVALUES (gen_random_uuid(), $1, $2, 'football', $3, 1)\nON CONFLICT (external_id) DO UPDATE SET\n  name     = EXCLUDED.name,\n  logo_url = EXCLUDED.logo_url",
+        "options": {
+          "queryReplacement": "={{ [$json.external_id, $json.name, $json.logo || null] }}"
+        }
+      },
+      "id": "1caa5ad0-6a9c-4135-b549-2f9436352bb6",
+      "name": "UPSERT Teams",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.4,
+      "position": [208, 0],
+      "credentials": {
+        "postgres": {
+          "id": "5VeE2cikA9rLeOKz",
+          "name": "Postgres account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO matches (uid, external_id, sport, competition_id, home_team_id, away_team_id, home_score, away_score, matchday, matchday_title, starts_at, venue, city, match_state, is_scheduled, is_kickoff_confirmed, updated_at)\nVALUES (gen_random_uuid(), $1, 'football',\n  (SELECT id FROM competitions WHERE external_id = $2),\n  (SELECT id FROM teams WHERE external_id = $3),\n  (SELECT id FROM teams WHERE external_id = $4),\n  $5, $6, $7, $8::jsonb, $9, $10, $11, $12, true, false, now())\nON CONFLICT (external_id) DO UPDATE SET\n  home_score     = EXCLUDED.home_score,\n  away_score     = EXCLUDED.away_score,\n  matchday       = EXCLUDED.matchday,\n  matchday_title = EXCLUDED.matchday_title,\n  match_state    = EXCLUDED.match_state,\n  starts_at      = EXCLUDED.starts_at,\n  venue          = EXCLUDED.venue,\n  city           = EXCLUDED.city,\n  updated_at     = now()",
+        "options": {
+          "queryReplacement": "={{ (() => { const round = $json.league.round || ''; const koMap = {'Knockout Round Play-offs':97,'Playoffs':97,'Round of 32':98,'Round of 16':99,'Quarter-finals':100,'Semi-finals':101,'3rd Place':102,'Final':103}; const num = parseInt(round.match(/\\d+/)?.[0]) || koMap[round] || null; const title = round ? JSON.stringify({de: round, en: round}) : null; return [$json.fixture.id, $json.league.id, $json.teams.home.id, $json.teams.away.id, $json.goals.home ?? null, $json.goals.away ?? null, num, title, $json.fixture.date || null, $json.fixture.venue?.name || null, $json.fixture.venue?.city || null, $json.fixture.status?.short === 'FT' ? 'FullTime' : (['1H','2H','HT','ET'].includes($json.fixture.status?.short) ? 'Live' : 'PreMatch')]; })() }}"
+        }
+      },
+      "id": "17cda49f-13a6-482d-bf2d-917839451171",
+      "name": "UPSERT Matches",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.4,
+      "position": [656, 0],
+      "credentials": {
+        "postgres": {
+          "id": "5VeE2cikA9rLeOKz",
+          "name": "Postgres account 2"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Webhook Import Matches": {
+      "main": [
+        [
+          {
+            "node": "Variablen setzen",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Variablen setzen": {
+      "main": [
+        [
+          {
+            "node": "API: Fixtures abrufen",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "API: Fixtures abrufen": {
+      "main": [
+        [
+          {
+            "node": "Fixtures aufteilen",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fixtures aufteilen": {
+      "main": [
+        [
+          {
+            "node": "Teams extrahieren",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Teams extrahieren": {
+      "main": [
+        [
+          {
+            "node": "UPSERT Teams",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fixtures wieder laden": {
+      "main": [
+        [
+          {
+            "node": "UPSERT Matches",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "UPSERT Teams": {
+      "main": [
+        [
+          {
+            "node": "Fixtures wieder laden",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "UPSERT Matches": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "meta": {
+    "instanceId": "c812d7c91145a37daf0cb923fa307183fa91637fdbe8017dda5dce71e0f572b5"
+  }
+}

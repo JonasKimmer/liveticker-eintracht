@@ -1,0 +1,51 @@
+\chapter{Fazit und Ausblick}\label{fazit-und-ausblick}
+
+Die Diskussion in Kapitel~\ref{diskussion} hat die Evaluationsbefunde eingeordnet und die Grenzen des Systems offengelegt. Dieses Kapitel beantwortet die Forschungsfrage (Abschnitt~\ref{beantwortung-der-forschungsfrage}), benennt konkrete Erweiterungsrichtungen (Abschnitt~\ref{ausblick}) und schließt mit einem Schlusswort (Abschnitt~\ref{schlusswort}).
+\section{Beantwortung der Forschungsfrage}\label{beantwortung-der-forschungsfrage}
+
+Die in Abschnitt~\ref{forschungsfrage} formulierte Forschungsfrage lautet:
+
+\begin{quote}
+\emph{Lässt sich ein hybrides KI-gestütztes Redaktionssystem für die
+Liveticker-Erstellung im Profifußball realisieren, das
+Echtzeit-Verarbeitung, Mehrsprachigkeit und White-Label-Betrieb
+unterstützt, und inwiefern erfüllt ein solches System journalistische
+Qualitätsanforderungen hinsichtlich Korrektheit, Tonalität und
+Vollständigkeit?}
+\end{quote}
+
+Das System ist realisierbar und erfüllt journalistische Qualitätsanforderungen, vollständig bei Korrektheit und Vollständigkeit, profilabhängig bei der Tonalität.
+
+\textbf{Realisierbarkeit:} Das System ist vollständig implementiert und produktionsnah bereitgestellt. 21 der 22 definierten Anforderungen sind erfüllt. Die Mehrsprachigkeitsanforderung ist funktional umgesetzt, die externe Qualitätssicherung für nicht-deutschsprachige Märkte steht noch aus. Im Sinne des Design Science Research \cite{hevner2004} leistet die Arbeit einen architektonischen, einen methodischen und einen praktischen Beitrag.
+
+\textbf{Journalistische Qualität:} Korrektheit und Vollständigkeit sind im evaluierten Kontext als weitgehend erfüllt zu bewerten. Die Tonalität ist profilabhängig und nur bedingt erfüllt. Das \texttt{neutral}-Profil ist das robusteste, \texttt{euphorisch} und \texttt{kritisch} weisen jeweils profilspezifische Schwächen auf, die in Kapitel~\ref{diskussion} eingeordnet sind. Die Prüfaufgabe des Redakteurs verschiebt sich von der Formulierung zur Beurteilung, während Entscheidungshoheit und publizistische Verantwortung beim Menschen verbleiben.
+
+
+\section{Ausblick}\label{ausblick}
+
+Die Limitationen der Arbeit legen folgende Erweiterungsrichtungen nahe, geordnet nach Umsetzungsnähe.
+
+\paragraph{Kurzfristig}
+\begin{itemize}\tightlist
+\item \textbf{Produktionsvorbereitung:} Ein verwaltetes n8n-Deployment, ein JWT-basiertes Rollenkonzept sowie eine Kennzeichnungsstrategie nach Art.~50 Abs.~4 EU AI Act und datenschutzkonforme Verarbeitungsvereinbarungen nach Art.~28 DSGVO sind gemeinsam Voraussetzung für einen öffentlichen Produktivbetrieb.
+\item \textbf{Generierungsqualität:} Eine stilprofilspezifische Temperaturkonfiguration ist ohne Architekturänderung umsetzbar und adressiert die belegte Profilabhängigkeit direkt. Stilgefilterte Referenzen und präzisierte Stilinstruktionen würden zusätzlich den Interferenzeffekt euphorischer Referenzen auf das \texttt{kritisch}-Profil beseitigen.
+\end{itemize}
+
+\paragraph{Mittelfristig}
+\begin{itemize}\tightlist
+\item \textbf{Kontrollierter Feldvergleich:} Eine Folgestudie mit professionellen Sportredakteuren würde Textqualität und Publikationslatenz je Betriebsmodus extern validieren.
+\item \textbf{Evaluation der Mehrsprachigkeit:} Eine Muttersprachler-Evaluation für Englisch, Spanisch und Französisch ist vor dem Einsatz in nicht-deutschsprachigen Märkten erforderlich.
+\item \textbf{Erweiterung des Referenzkorpus:} Ein stilprofilspezifisch aufgebauter Korpus historischer Vereinsticker würde die stilistische Konsistenz über den aktuellen Few-Shot-Ansatz hinaus verbessern.
+\end{itemize}
+
+\paragraph{Langfristig}
+\begin{itemize}\tightlist
+\item \textbf{Ausweitung auf weitere Sportarten:} Die Systemarchitektur ist sportartunabhängig konzipiert, setzt jedoch ereignistypspezifische Context-Builder und Stilreferenzen voraus. Eine Übertragung auf Basketball, Eishockey oder Tennis erfordert die Modellierung sportartspezifischer Ereignistypen sowie den Aufbau eines entsprechenden Referenzkorpus, ohne dass die Kernarchitektur geändert werden müsste.
+\item \textbf{Fine-Tuning auf vereinseigenem Stilkorpus:} Für Instanzen mit ausreichend historischem Textmaterial wäre ein vereinsspezifisches Fine-Tuning gegenüber dem Few-Shot-Ansatz eine strukturelle Verbesserung. Das Modell würde stilistische Konventionen internalisieren statt sie per Prompt-Konditionierung abzurufen, was den Interferenzeffekt zwischen Stilinstruktion und Referenzbeispielen grundsätzlich beseitigen würde.
+\end{itemize}
+
+
+
+\section{Schlusswort}\label{schlusswort}
+
+Das realisierte System adressiert die drei in Kapitel~\ref{einleitung} identifizierten Anforderungsdimensionen: operativen Zeitdruck, Internationalisierung und vereinsspezifischen Ton. Es ersetzt den Redakteur dabei nicht, sondern reduziert den kognitiven Engpass der simultanen Textproduktion und schafft damit Kapazität für journalistische Kernleistungen wie kontextuelle Einordnung und redaktionelle Verantwortung. Die zu Beginn der Arbeit zitierte Einschätzung Seibts zur „kompletten Überforderung" \cite{beils2023} des Liveticker-Autors bleibt als strukturelle Bedingung des Genres bestehen. Das System mildert sie, ohne sie aufzulösen.
