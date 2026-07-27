@@ -10,7 +10,10 @@ import type {
 } from "../types";
 
 const api = axios.create({ baseURL: config.apiBase });
-const n8n = axios.create({ baseURL: config.n8nBase });
+const n8n = axios.create({
+  baseURL: config.n8nBase,
+  headers: { "ngrok-skip-browser-warning": "true" },
+});
 
 // ── Teams ──────────────────────────────────────────────
 export const fetchCountries = (): Promise<AxiosResponse<string[]>> =>
